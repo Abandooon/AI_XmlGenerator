@@ -1,0 +1,19 @@
+# src/validation/syntax_check.py
+import lxml.etree as ET
+
+class SyntaxValidator:
+    def __init__(self, xsd_path: str):
+        self.schema = ET.XMLSchema(ET.parse(xsd_path))
+
+    def validate(self, xml_str: str) -> bool:
+        try:
+            doc = ET.fromstring(xml_str)
+            self.schema.assertValid(doc)
+            return True
+        except ET.DocumentInvalid as e:
+            print(f"语法错误: {e}")
+            return False
+
+# 使用示例
+validator = SyntaxValidator("data/raw/icm/swc.xsd")
+is_valid = validator.validate("<SWComponent><Cycle>10</Cycle></SWComponent>")

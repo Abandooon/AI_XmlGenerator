@@ -1,0 +1,7 @@
+# configs/ablation/static_validate.yaml
+modules:
+  generation:
+    use_constraint_injection: false
+  validation:
+    syntax_check: true
+    semantic_check: false  # 关闭语义验证
