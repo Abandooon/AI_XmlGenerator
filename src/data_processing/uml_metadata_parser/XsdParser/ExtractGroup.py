@@ -2,7 +2,7 @@ from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsd
 from src.data_processing.uml_metadata_parser.XsdParser.GroupInnerComplexType import process_group_inner_complex_type
 from src.data_processing.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
 from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
-
+import xml.etree.ElementTree as ET
 
 def extractGroup(root, element_wrapper):
     groups = {}
@@ -10,6 +10,9 @@ def extractGroup(root, element_wrapper):
     # 查找所有群组元素
     for group in root.findall("./{http://www.w3.org/2001/XMLSchema}group"):
         group_name = group.get('name')
+
+        description = extract_annotation(group)
+
         accumulated_elements = []
         accumulated_inner_classes = []
 
@@ -68,18 +71,29 @@ def extractGroup(root, element_wrapper):
                                 accumulated_elements.extend(elements)
                                 accumulated_inner_classes.extend(inner_classes)
 
+        # 读取input文件夹中的XsdIndex.arxml文件，匹配该文件group name和group_name,相同则提取其中的complexTypes并存到child中# 读取input文件夹中的XsdIndex.arxml文件，匹配该文件group name和group_name,相同则提取其中的complexTypes并存到child中
+        xsd_index_path = "input/XsdIndex.arxml"
+        tree = ET.parse(xsd_index_path)
+        root_index = tree.getroot()
+        for group in root_index.findall("./group"):
+            if group.get("name") == group_name:
+                complex_types = ",".join([to_pascal_case(ct.strip()) for ct in group.get("complexTypes").replace("//", ",").lstrip(",").split(",")])
+                child = complex_types
+                break
+
         groups[group_name] = {
             'name': to_pascal_case(group_name),
             'annotation': group_name,
             'type': 'abstract',
             'association': '',
             'generalization': '',
-            'description': '',
+            'description': description,
             'ocl': '',
-            'child':'',
+            'child':child,
             'label':'',
             'elements': accumulated_elements,
-            'innerClasses': accumulated_inner_classes
+            'innerClasses': accumulated_inner_classes,
+            'DynamicMethods': [],
         }
 
     return groups
@@ -95,6 +109,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
         minOccurs = element.get('minOccurs') or '0'
         element_name = element.get('name')
         element_type = element.get('type')  # 获取元素类型-----没有就是内部类，走到else里面
+
+        description = extract_annotation(element)
+
         wrapperElement = False
         if element_type:
             if maxOccurs == '1':
@@ -104,7 +121,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description,
+                    'ocl':"minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
                 })
             else:
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
@@ -113,7 +132,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'type': 'ArrayList<{}>'.format(element_type),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description,
+                    'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
                 })
         else:
             # 这里就是生成内部类对应的字段------嵌套内部类也要考虑list
@@ -131,7 +152,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
                                 'minOccurs': minOccurs,
-                                'maxOccurs': attr.get('maxOccurs')
+                                'maxOccurs': attr.get('maxOccurs'),
+                                'description': description,
+                                'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
                             })
                         #---将嵌套内部类提取出来放到外层
                         for innerInnerClass in inner_type.get('innerInnerClass'):
@@ -143,7 +166,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
                         'minOccurs': minOccurs,
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'description': description,
+                        'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
                     })
                     # 处理内部的complexType并生成内部类
                     for inner_type in inner_complex_types:
@@ -154,7 +179,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'type': 'ArrayList<{}>'.format(to_pascal_case(element_name)),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description,
+                    'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
                 })
                 # 处理内部的complexType并生成内部类
                 for inner_type in inner_complex_types:
@@ -162,3 +189,21 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
 
     return elements, inner_classes  # 返回元素列表
 
+def extract_annotation(group_element):
+    # 提取group标签中的xsd:annotation中的xsd:documentation和xsd:appinfo source="tags"、xsd:appinfo source="stereotypes"的内容，并存到description中
+    description = ""
+    annotation = group_element.find("./{http://www.w3.org/2001/XMLSchema}annotation")
+    if annotation is not None:
+        documentation = annotation.find("./{http://www.w3.org/2001/XMLSchema}documentation")
+        if documentation is not None and documentation.text:
+            description += "note:" + documentation.text.strip() + " "
+
+        appinfos = annotation.findall("./{http://www.w3.org/2001/XMLSchema}appinfo")
+        for appinfo in appinfos:
+            source = appinfo.get("source")
+            if source == "tags" and appinfo.text:
+                description += "tag:" + appinfo.text.strip() + " "
+            elif source == "stereotypes" and appinfo.text:
+                description += "stereotype:" + appinfo.text.strip() + " "
+    description = description.strip()
+    return description

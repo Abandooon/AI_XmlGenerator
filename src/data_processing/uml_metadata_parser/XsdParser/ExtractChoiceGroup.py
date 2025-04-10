@@ -1,3 +1,4 @@
+
 from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
 from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
 
@@ -72,6 +73,7 @@ def process_choiceRef(root, refName, maxOccurs,element_wrapper):
 #group ref的目的是提取引到的group中的element放到elements列表中，不需要做额外的事，对于group ref本身的操作已经在三个地方都写好了，只需提取element返回出去即可
 #调用proces_elements会循环依赖
 def extract_element(root, sequence, maxOccurs, element_wrapper):
+    from src.data_processing.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
     elements = []
     inner_classes = []
     wrapperElement = False
@@ -82,6 +84,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
             maxOccurs = element.get('maxOccurs') or maxOccurs
         element_name = element.get('name')  # 获取元素名称
         element_type = element.get('type')  # 获取元素类型
+        description= extract_annotation(element)
         if element_type:
             if maxOccurs == '1':
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
@@ -89,7 +92,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'name': to_camel_case(element_name),
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description,
                 })
             else:
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
@@ -97,7 +101,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'name': to_camel_case(element_name),
                     'type': 'ArrayList<{}>'.format(element_type),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description,
                 })
         #如果是内部类，要先看是否生成@wrapper注解，生成就直接就直接把内部类元素提到外层，不生成就正常element加内部类
         else:
@@ -112,7 +117,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                                 'name': to_camel_case(element_name),
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
-                                'maxOccurs': attr.get('maxOccurs')
+                                'maxOccurs': attr.get('maxOccurs'),
+                                'description': description
                             })
                         #---将嵌套内部类提取出来放到外层
                         for innerInnerClass in inner_type.get('innerInnerClass'):
@@ -123,7 +129,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'description': description
                     })
                     # 处理内部的complexType并生成内部类
                     for inner_type in inner_complex_types:
@@ -133,7 +140,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'name': to_camel_case(element_name) + 's',
                     'type': 'ArrayList<{}>'.format(to_pascal_case(element_name)),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
-                    'maxOccurs': maxOccurs
+                    'maxOccurs': maxOccurs,
+                    'description': description
                 })
                 # 处理内部的complexType并生成内部类
                 for inner_type in inner_complex_types:

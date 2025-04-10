@@ -1,4 +1,5 @@
 from src.data_processing.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
+from src.data_processing.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
 from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
 
 
@@ -6,6 +7,8 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
     name = complexType.get('name')  # 获取复杂类型的名称
     # --------------做成jaxb那样的----------------------
     mixed = complexType.get('mixed')  # 获取mixed属性
+    description = extract_annotation(complexType)
+
     if not name:
         return None  # 跳过没有名称的复杂类型-----内部类名定义在element
     attributes = []  # 初始化列表，用于存储复杂类型的属性
@@ -40,7 +43,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
                     'annotation': '@XmlValue',
                     'pattern': baseTypeInfo.get('pattern'),
                     'isPrimitiveType': baseTypeInfo.get('isPrimitiveType'),
-                    'source':'complexType.simpleContent'
+                    'source':'complexType.simpleContent',
                 })
         # 处理extension下的attributegroup
         for attributeGroupRef in base.findall("./{http://www.w3.org/2001/XMLSchema}attributeGroup"):
@@ -153,7 +156,13 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
         'innerClasses': inner_classes,  # 存储所有内部类信息
         'extends': extends,
         'objFactory': element_complex_type_mappings,  # Element 和 ComplexType 映射信息
-        'isAttribute': is_attribute
+        'isAttribute': is_attribute,
+        'description': description,
+        'type':'class',
+        'label':'',
+        'DynamicMethods': [],
+        'association': '',
+        'generalization': '',
     }
 #---------------多线程，可能由于异步导致提取内部类名不同----------------------
 # def extractComplexType(root, element_wrapper, groups, attributeGroups):
