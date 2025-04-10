@@ -1,0 +1,114 @@
+<all>
+  <xsd:element name="TT" type="AR:TT"/>
+  <xsd:element name="E" type="AR:EMPHASIS-TEXT"/>
+  <xsd:element name="SUP" type="AR:SUPSCRIPT"/>
+  <xsd:element name="SUB" type="AR:SUPSCRIPT"/>
+  <xsd:element name="IE" type="AR:INDEX-ENTRY"/>
+  <xsd:element name="BR" type="AR:BR"/>
+  <xsd:element name="XREF" type="AR:XREF"/>
+  <xsd:element name="XREF-TARGET" type="AR:XREF-TARGET"/>
+  <xsd:element name="STD" type="AR:STD"/>
+  <xsd:element name="XDOC" type="AR:XDOC"/>
+  <xsd:element name="XFILE" type="AR:XFILE"/>
+  <xsd:element name="FT" type="AR:L-PARAGRAPH"/>
+  <xsd:element name="FT" type="AR:L-OVERVIEW-PARAGRAPH"/>
+  <xsd:element name="TRACE-REF">
+    <xsd:complexType>
+      <xsd:simpleContent>
+        <xsd:extension base="AR:REF">
+          <xsd:attribute name="DEST" type="AR:TRACEABLE--SUBTYPES-ENUM" use="required"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+  </xsd:element>
+</all>
+        
+
+<xsd:group name="MIXED-CONTENT-FOR-LONG-NAME">
+    <xsd:choice>
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element name="TT" type="AR:TT"/>
+        <xsd:element name="E" type="AR:EMPHASIS-TEXT"/>
+        <xsd:element name="SUP" type="AR:SUPSCRIPT"/>
+        <xsd:element name="SUB" type="AR:SUPSCRIPT"/>
+        <xsd:element name="IE" type="AR:INDEX-ENTRY"/>
+      </xsd:choice>
+    </xsd:choice>
+  </xsd:group>
+
+<xsd:group name="MIXED-CONTENT-FOR-OVERVIEW-PARAGRAPH">
+    <xsd:choice>
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element name="BR" type="AR:BR"/>
+        <xsd:element name="FT" type="AR:L-OVERVIEW-PARAGRAPH"/>
+        <xsd:element name="TRACE-REF">
+          <xsd:complexType>
+            <xsd:simpleContent>
+              <xsd:extension base="AR:REF">
+                <xsd:attribute name="DEST" type="AR:TRACEABLE--SUBTYPES-ENUM" use="required"/>
+              </xsd:extension>
+            </xsd:simpleContent>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="TT" type="AR:TT"/>
+        <xsd:element name="XREF" type="AR:XREF"/>
+        <xsd:element name="XREF-TARGET" type="AR:XREF-TARGET"/>
+        <xsd:element name="E" type="AR:EMPHASIS-TEXT"/>
+        <xsd:element name="SUP" type="AR:SUPSCRIPT"/>
+        <xsd:element name="SUB" type="AR:SUPSCRIPT"/>
+        <xsd:element name="IE" type="AR:INDEX-ENTRY"/>
+      </xsd:choice>
+    </xsd:choice>
+  </xsd:group>
+
+<xsd:group name="MIXED-CONTENT-FOR-PARAGRAPH">
+    <xsd:choice>
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element name="FT" type="AR:L-PARAGRAPH"/>
+        <xsd:element name="TRACE-REF">
+          <xsd:complexType>
+            <xsd:simpleContent>
+              <xsd:extension base="AR:REF">
+                <xsd:attribute name="DEST" type="AR:TRACEABLE--SUBTYPES-ENUM" use="required"/>
+              </xsd:extension>
+            </xsd:simpleContent>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="TT" type="AR:TT"/>
+        <xsd:element name="BR" type="AR:BR"/>
+        <xsd:element name="XREF" type="AR:XREF"/>
+        <xsd:element name="XREF-TARGET" type="AR:XREF-TARGET"/>
+        <xsd:element name="E" type="AR:EMPHASIS-TEXT"/>
+        <xsd:element name="SUP" type="AR:SUPSCRIPT"/>
+        <xsd:element name="SUB" type="AR:SUPSCRIPT"/>
+        <xsd:element name="IE" type="AR:INDEX-ENTRY"/>
+        <xsd:element name="STD" type="AR:STD"/>
+        <xsd:element name="XDOC" type="AR:XDOC"/>
+        <xsd:element name="XFILE" type="AR:XFILE"/>
+      </xsd:choice>
+    </xsd:choice>
+  </xsd:group>
+
+<xsd:group name="MIXED-CONTENT-FOR-PLAIN-TEXT">
+    <xsd:sequence/>
+  </xsd:group>
+
+<xsd:group name="MIXED-CONTENT-FOR-UNIT-NAMES">
+    <xsd:choice>
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element name="SUP" type="AR:SUPSCRIPT"/>
+        <xsd:element name="SUB" type="AR:SUPSCRIPT"/>
+      </xsd:choice>
+    </xsd:choice>
+  </xsd:group>
+
+<xsd:group name="MIXED-CONTENT-FOR-VERBATIM">
+    <xsd:choice>
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element name="TT" type="AR:TT"/>
+        <xsd:element name="E" type="AR:EMPHASIS-TEXT"/>
+        <xsd:element name="XREF" type="AR:XREF"/>
+        <xsd:element name="BR" type="AR:BR"/>
+      </xsd:choice>
+    </xsd:choice>
+  </xsd:group>
