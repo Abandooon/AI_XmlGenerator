@@ -67,65 +67,63 @@ autosar_generator_project/
 *   **关键组件/文件:**
     *   `processor.py`: 包含 `NLProcessor` 类，封装 NLP 模型加载和文本处理逻辑。
 
-## 4.4 `src/kg_builder` - 知识图谱构建模块 (详细技术细节)
+## 4.4 `src/kg_builder` - 知识图谱构建模块
 
-**主要目标:** 将分散在 AUTOSAR 元模型文件和（可选的）标准文档中的领域知识，转化为结构化的、机器可读的知识图谱格式（如 RDF 三元组），为后续的 KG 查询和 LLM 上下文增强提供数据基础。**此模块通常作为预处理步骤离线运行**。
+**主要目标:** 将分散在 AUTOSAR 元模型文件和标准文档中的领域知识，转化为结构化的、机器可读的知识图谱格式（如 RDF 三元组），为后续的 KG 查询和 LLM 上下文增强提供数据基础。**此模块通常作为预处理步骤离线运行**。
 
 **核心流程:**
 
-1.  **解析 (Parsing):** 从不同来源（ARXML, Ecore, PDF）提取结构化或半结构化信息。
+1.  **解析 (Parsing):** 从不同来源（xsd,xmi,pdf(转word)）提取结构化或半结构化信息。
 2.  **本体设计 (Ontology Design - 概念步骤):** 定义如何在图谱中表示 AUTOSAR 概念、属性和关系。
 3.  **转换 (Transformation):** 将解析出的信息依据本体设计，映射为图谱元素（节点、边、属性）。
 4.  **填充 (Population):** 将转换后的图谱元素写入目标知识图谱存储（如 RDF 文件、三元组数据库、图数据库）。
 
 ---
 
-### 4.4.1 `metamodel_parser.py` - 元模型解析器
+### 4.4.1 `uml_metadata_parser` - 元模型解析器
 
 *   **功能职责:** 负责解析结构化的 AUTOSAR 元模型文件。
 *   **输入:**
-    *   AUTOSAR ARXML 文件 (`.arxml`): 一种基于 XML 的标准格式。
-    *   (可选) Ecore 模型文件 (`.ecore`): 如果使用 Eclipse Modeling Framework (EMF) 相关的元模型。
+    *   AUTOSAR 元模型文件 (`.xsd,.xmi`): 一种基于 XML 的标准格式。
 *   **技术实现:**
     *   **ARXML 解析:**
         *   **库:** 使用强大的 XML 处理库，如 `lxml`。
         *   **方法:**
-            *   利用 XPath 表达式精确导航和提取特定的 AUTOSAR 元素（如 `<AR-PACKAGE>`, `<ELEMENTS>`, `<SW-COMPONENT-TYPE>`, `<PORT-PROTOTYPE>`, `<COM-SIGNAL>` 等）及其属性（如 `UUID`）。
-            *   提取元素的 `<SHORT-NAME>` 和其他关键子元素的值。
-            *   识别和解析元素之间的关系，特别是：
-                *   **包含关系 (Containment):** 通过 XML 的层级结构体现（父子节点）。
-                *   **引用关系 (References):** 解析 `<*REF>` 元素（如 `<PORT-PROTOTYPE-REF>`, `<SIGNAL-REF>`），提取 `DEST` 属性（引用的类型）和引用路径（指向目标元素的 `SHORT-NAME` 路径或 `UUID`）。
-            *   处理变体点 (Variation Points) 和条件编译（如果需要）。
-    *   **Ecore 解析:**
-        *   **库:** 使用 `pyecore` 库。
-        *   **方法:** 加载 `.ecore` 文件，遍历模型中的 `EPackage`, `EClass`, `EAttribute`, `EReference` 等元元素。提取类名、属性名、属性类型、引用关系（包括引用的类型、上下界、是否为 containment 等）。
+            *   从xsd文件中提取类的属性和对应的xml标签以及ocl约束。
+            *   从xmi文件中提取类的继承结构和关联、依赖关系。
+            *   将两个提取结果合并，分为抽象类和实体类，并根据所属包划分层级和模块。
+            *   处理变体点 (Variation Points) 和条件编译（暂不考虑）。
 *   **输出:**
-    *   一个标准化的中间数据结构，例如 Python 的字典或自定义对象列表。这个结构应清晰地表示从元模型中提取出的所有相关元素、它们的属性、以及它们之间的包含和引用关系。
+    *   一个标准化的中间数据结构，这个结构应清晰地表示从元模型中提取出的所有相关元素、它们的属性、以及它们之间的包含和引用关系。
     *   **示例 (简化):**
-        ```python
-        [
-          {'id': 'uuid_swc_1', 'type': 'SwComponentType', 'short_name': 'MySWC', 'ports': ['uuid_port_a']},
-          {'id': 'uuid_port_a', 'type': 'PortPrototype', 'short_name': 'DataPort', 'direction': 'IN', 'interface_ref': 'uuid_if_x'},
-          # ...
+        ```json
+        "RunnableEntity": {
+            "annotation": "RUNNABLE-ENTITY",
+            "type": "abstract",
+            "association": "",
+            "fathers": "",
+            "description": "note:A RunnableEntity represents the smallest code-fragment that is provided by an AtomicSwComponentType and are executed under control of the RTE. RunnableEntities are for instance set up to respond to data reception or operation invocation on a server. tag:mmt.qualifiedName=\"RunnableEntity\" stereotype:atpObject",
+            "ocl": "",
+            "childs": "",
+            "label": "",
+            "elements": "[{'name': 'arguments', 'type': 'ArrayList<RunnableEntityArgument>', 'annotation': '@XmlElementWrapper(name=\"ARGUMENTS\")\\n@XmlElement(name=\"RUNNABLE-ENTITY-ARGUMENT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:This represents the formal definition of a an argument to a RunnableEntity. tag:mmt.qualifiedName=\"RunnableEntity.argument\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'asynchronousServerCallResultPoints', 'type': 'ArrayList<AsynchronousServerCallResultPoint>', 'annotation': '@XmlElementWrapper(name=\"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\")\\n@XmlElement(name=\"ASYNCHRONOUS-SERVER-CALL-RESULT-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The server call result point admits a runnable to fetch the result of an asynchronous server call.\\n\\nThe aggregation of AsynchronousServerCallResultPoint is subject to variability with the purpose to support the conditional existence of client server PortPrototypes and the variant existence of server call result points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.asynchronousServerCallResultPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'canBeInvokedConcurrently', 'type': 'Boolean', 'annotation': '@XmlElement(name=\"CAN-BE-INVOKED-CONCURRENTLY\")', 'minOccurs': '0', 'maxOccurs': '1', 'description': 'note:If the value of this attribute is set to \"true\" the enclosing RunnableEntity can be invoked concurrently (even for one instance of the corresponding AtomicSwComponentType). This implies that it is the responsibility of the implementation of the RunnableEntity to take care of this form of concurrency. Note that the default value of this attribute is set to \"false\". tag:mmt.qualifiedName=\"RunnableEntity.canBeInvokedConcurrently\";pureMM.maxOccurs=\"1\";pureMM.minOccurs=\"1\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'dataReadAccesss', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"DATA-READ-ACCESSS\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:RunnableEntity has implicit read access to dataElement of a sender-receiver PortPrototype or nv data of a nv data PortPrototype.\\n\\nThe aggregation of dataReadAccess is subject to variability with the purpose to support the conditional existence of sender receiver ports or the variant existence of dataReadAccess in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.dataReadAccess\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'dataReceivePointByArguments', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"DATA-RECEIVE-POINT-BY-ARGUMENTS\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:RunnableEntity has explicit read access to dataElement of a sender-receiver PortPrototype or nv data of a nv data PortPrototype.\\nThe result is passed back to the application by means of an argument in the function signature.\\n\\nThe aggregation of dataReceivePointByArgument is subject to variability with the purpose to support the conditional existence of sender receiver PortPrototype or the variant existence of data receive points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.dataReceivePointByArgument\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'dataReceivePointByValues', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"DATA-RECEIVE-POINT-BY-VALUES\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:RunnableEntity has explicit read access to dataElement of a sender-receiver PortPrototype or nv data of a nv data PortPrototype.\\n\\nThe result is passed back to the application by means of the return value.\\nThe aggregation of dataReceivePointByValue is subject to variability with the purpose to support the conditional existence of sender receiver ports or the variant existence of data receive points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.dataReceivePointByValue\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'dataSendPoints', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"DATA-SEND-POINTS\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:RunnableEntity has explicit write access to dataElement of a sender-receiver PortPrototype or nv data of a nv data PortPrototype.\\n\\nThe aggregation of dataSendPoint is subject to variability with the purpose to support the conditional existence of sender receiver PortPrototype or the variant existence of data send points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.dataSendPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'dataWriteAccesss', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"DATA-WRITE-ACCESSS\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:RunnableEntity has implicit write access to dataElement of a sender-receiver PortPrototype or nv data of a nv data PortPrototype.\\n\\nThe aggregation of dataWriteAccess is subject to variability with the purpose to support the conditional existence of sender receiver ports or the variant existence of dataWriteAccess in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.dataWriteAccess\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'externalTriggeringPoints', 'type': 'ArrayList<ExternalTriggeringPoint>', 'annotation': '@XmlElementWrapper(name=\"EXTERNAL-TRIGGERING-POINTS\")\\n@XmlElement(name=\"EXTERNAL-TRIGGERING-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The aggregation of ExternalTriggeringPoint is subject to variability with the purpose to support the conditional existence of trigger ports or the variant existence of external triggering points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.externalTriggeringPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'internalTriggeringPoints', 'type': 'ArrayList<InternalTriggeringPoint>', 'annotation': '@XmlElementWrapper(name=\"INTERNAL-TRIGGERING-POINTS\")\\n@XmlElement(name=\"INTERNAL-TRIGGERING-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The aggregation of InternalTriggeringPoint is subject to variability with the purpose to support the variant existence of internal triggering points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.internalTriggeringPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'modeAccessPoints', 'type': 'ArrayList<ModeAccessPoint>', 'annotation': '@XmlElementWrapper(name=\"MODE-ACCESS-POINTS\")\\n@XmlElement(name=\"MODE-ACCESS-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The runnable has a mode access point.\\nThe aggregation of ModeAccessPoint is subject to variability with the purpose to support the conditional existence of mode ports or the variant existence of mode access points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.modeAccessPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'modeSwitchPoints', 'type': 'ArrayList<ModeSwitchPoint>', 'annotation': '@XmlElementWrapper(name=\"MODE-SWITCH-POINTS\")\\n@XmlElement(name=\"MODE-SWITCH-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The runnable has a mode switch point.\\nThe aggregation of ModeSwitchPoint is subject to variability with the purpose to support the conditional existence of mode ports or the variant existence of mode switch points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.modeSwitchPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'parameterAccesss', 'type': 'ArrayList<ParameterAccess>', 'annotation': '@XmlElementWrapper(name=\"PARAMETER-ACCESSS\")\\n@XmlElement(name=\"PARAMETER-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The presence of a ParameterAccess implies that a RunnableEntity needs read only access to a ParameterDataPrototype which may either be local or within a PortPrototype.\\n\\nThe aggregation of ParameterAccess is subject to variability with the purpose to support the conditional existence of parameter ports and component local parameters as well as the variant existence of ParameterAccess (points) in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.parameterAccess\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'readLocalVariables', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"READ-LOCAL-VARIABLES\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The presence of a readLocalVariable implies that a RunnableEntity needs read access to a VariableDataPrototype in the role of implicitInterRunnableVariable or explicitInterRunnableVariable.\\n\\nThe aggregation of readLocalVariable is subject to variability with the purpose to support the conditional existence of implicitInterRunnableVariable and explicitInterRunnableVariable or the variant existence of readLocalVariable (points) in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.readLocalVariable\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'serverCallPoints', 'type': 'ServerCallPoints', 'annotation': '@XmlElement(name=\"SERVER-CALL-POINTS\")', 'minOccurs': '0', 'maxOccurs': '1', 'description': 'note:The RunnableEntity has a ServerCallPoint.\\nThe aggregation of ServerCallPoint is subject to variability with the purpose to support the conditional existence of client server PortPrototypes or the variant existence of server call points in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.serverCallPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'symbol', 'type': 'CIdentifier', 'annotation': '@XmlElement(name=\"SYMBOL\")', 'minOccurs': '0', 'maxOccurs': '1', 'description': 'note:The symbol describing this RunnableEntity\\'s entry point. This is considered the API of the RunnableEntity and is required during the RTE contract phase. tag:mmt.qualifiedName=\"RunnableEntity.symbol\";pureMM.maxOccurs=\"1\";pureMM.minOccurs=\"1\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'waitPoints', 'type': 'ArrayList<WaitPoint>', 'annotation': '@XmlElementWrapper(name=\"WAIT-POINTS\")\\n@XmlElement(name=\"WAIT-POINT\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The WaitPoint associated with the RunnableEntity. tag:mmt.qualifiedName=\"RunnableEntity.waitPoint\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'writtenLocalVariables', 'type': 'ArrayList<VariableAccess>', 'annotation': '@XmlElementWrapper(name=\"WRITTEN-LOCAL-VARIABLES\")\\n@XmlElement(name=\"VARIABLE-ACCESS\")', 'minOccurs': '0', 'maxOccurs': 'unbounded', 'description': 'note:The presence of a writtenLocalVariable implies that a RunnableEntity needs write access to a VariableDataPrototype in the role of implicitInterRunnableVariable or explicitInterRunnableVariable.\\n\\nThe aggregation of writtenLocalVariable is subject to variability with the purpose to support the conditional existence of implicitInterRunnableVariable and explicitInterRunnableVariable or the variant existence of writtenLocalVariable (points) in the implementation.\\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1. tag:mmt.qualifiedName=\"RunnableEntity.writtenLocalVariable\";pureMM.maxOccurs=\"-1\";pureMM.minOccurs=\"0\";vh.latestBindingTime=\"preCompileTime\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}, {'name': 'variationPoint', 'type': 'VariationPoint', 'annotation': '@XmlElement(name=\"VARIATION-POINT\")', 'minOccurs': '0', 'maxOccurs': '1', 'description': 'note:This element was generated/modified due to an atpVariation stereotype. tag:mmt.qualifiedName=\"RunnableEntity.variationPoint\";pureMM.maxOccurs=\"1\";pureMM.minOccurs=\"0\";xml.sequenceOffset=\"10000\"', 'ocl': 'minOccurs: 0, maxOccurs: 1'}]",
+            "innerClasses": "[{'InnerClassName': 'ServerCallPoints', 'InnerClassAttributes': [{'name': 'asynchronousServerCallPoint', 'type': 'ArrayList<AsynchronousServerCallPointWrapper>', 'annotation': '@XmlElement(name=\"ASYNCHRONOUS-SERVER-CALL-POINT\")', 'maxOccurs': 'unbounded'}, {'name': 'synchronousServerCallPoint', 'type': 'ArrayList<SynchronousServerCallPointWrapper>', 'annotation': '@XmlElement(name=\"SYNCHRONOUS-SERVER-CALL-POINT\")', 'maxOccurs': 'unbounded'}], 'extendsClass': None, 'innerInnerClass': [], 'xmlType': 'SERVER-CALL-POINTS'}]",
+            "DynamicMethods": "[]"
+        },
         ]
         ```
-*   **挑战:**
-    *   ARXML 文件可能非常庞大，需要高效的解析策略（如 `iterparse`）。
-    *   正确解析和表示复杂的引用关系（跨包引用、基于 UUID 的引用）。
-    *   处理不同版本的 AUTOSAR Schema 差异。
 
 ---
 
-### 4.4.2 `doc_processor.py` - 标准文档处理器 (可选)
+### 4.4.2 `doc_processor.py` - 标准文档处理器 
 
-*   **功能职责:** 从非结构化或半结构化的 AUTOSAR 标准文档（通常是 PDF 格式）中提取有价值的知识，如图谱中未明确包含的约束、规则或最佳实践。
-*   **输入:** PDF 格式的 AUTOSAR 标准文档 (`.pdf`)。
+*   **功能职责:** 从非结构化或半结构化的 AUTOSAR 标准文档中提取有价值的知识，如图谱中未明确包含的约束、规则或最佳实践。
+*   **输入:** word格式的规范文档。
 *   **技术实现:**
-    *   **PDF 文本提取:**
-        *   **库:** `PyPDF2`, `pdfminer.six`。
-        *   **方法:** 提取文档的纯文本内容。需要处理分页、页眉页脚、多栏布局、表格（可能需要特定库或技术将其转换为文本或结构化数据）、图片标题等。对于扫描版 PDF，可能需要 OCR (Optical Character Recognition) 工具（如 `pytesseract` 配合 Tesseract OCR 引擎）。
+    *   **word文本提取:**
+    *   **根据元数据构建术语库:**
     *   **信息抽取 (Information Extraction - IE):** 这是核心难点。
-        *   **命名实体识别 (NER):**
+        *   **命名实体识别 (NER，结合术语库):**
             *   **目标:** 识别文本中提及的 AUTOSAR 概念（如 "Runnable Entity", "Timing Constraint", "NvM Block"）。
             *   **方法:**
                 *   **基于规则:** 使用正则表达式、词典（Gazetteers，包含已知 AUTOSAR 术语列表）进行匹配。
@@ -136,6 +134,7 @@ autosar_generator_project/
                 *   **基于模式:** 定义词汇或句法模式（如 Dependency Parsing + 规则）来匹配关系短语。
                 *   **基于模型:** 使用监督学习或远程监督方法训练关系抽取模型。
         *   **约束/规则抽取:**
+            **首要目标是根据本体（可能是父类的也可能是子类的）提取[constr_xxx]约束[TPS_SWCT_xxx]规范和** 
             *   **目标:** 识别描述限制或条件的句子（如 "The short name *must not exceed* 128 characters", "A client-server port *shall only be connected* to a compatible server port"）。
             *   **方法:** 通常需要更复杂的 NLP 技术，如语义角色标注 (Semantic Role Labeling - SRL)、条件句识别，或结合关键词（"must", "shall", "should not", "if...then"）和句法分析。
 *   **输出:**
