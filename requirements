@@ -1,0 +1,57 @@
+# Core Libraries
+pyyaml>=5.4        # For loading YAML configuration files
+requests>=2.25     # For potential API calls (LLM, Drools KIE Server)
+lxml>=4.6          # For XML parsing and XSD validation
+
+# NLP Libraries (Choose one or more)
+# Option 1: spaCy (Recommended for general purpose NLP)
+# spacy>=3.0
+# Download models separately, e.g.: python -m spacy download en_core_web_sm
+# Option 2: NLTK (Classic NLP library)
+# nltk>=3.5
+# Requires downloading data separately, e.g., nltk.download('punkt')
+# Option 3: Transformers (For state-of-the-art models, potentially complex)
+# transformers>=4.0
+# sentencepiece # Often needed by transformers tokenizers
+# torch # Or tensorflow, depending on backend
+
+# LLM Interaction Libraries (Choose based on provider)
+# Option 1: OpenAI
+openai>=1.0        # Use version >= 1.0 for the new API structure
+# Option 2: LangChain (Abstraction layer, can use multiple backends)
+# langchain>=0.1
+# langchain-openai # Example integration
+# Option 3: Google Generative AI
+# google-generativeai
+# Option 4: Azure OpenAI
+# openai>=1.0 # Use the standard OpenAI library with Azure config
+
+# Knowledge Graph Libraries (Choose based on KG type)
+# Option 1: RDF / SPARQL
+rdflib>=6.0        # For working with RDF data locally
+sparqlwrapper>=1.8 # For querying remote SPARQL endpoints
+# Option 2: Neo4j (Graph Database)
+# neo4j>=5.0         # Official Neo4j Python driver
+# Option 3: Other graph databases might have their own drivers
+
+# Drools Interaction (No standard Python library)
+# Interaction is usually via REST API (use 'requests') or potentially subprocess calls.
+# If using a specific Python wrapper for Drools, add it here.
+# Example: pyDatalog (if using Datalog rules instead of full Drools)
+# pyDatalog
+
+# Experimentation and Analysis
+pandas>=1.3        # For handling results dataframes
+matplotlib>=3.4    # For plotting results
+seaborn>=0.11      # For enhanced plotting
+
+# Testing
+pytest>=6.2        # For running unit and integration tests
+pytest-cov         # For checking test coverage (optional)
+
+# Optional: PDF Processing (if reading standards from PDF)
+# PyPDF2>=3.0       # Or pdfminer.six
+# pdfminer.six
+
+# Optional: Ecore Metamodel Parsing (if using .ecore files)
+# pyecore           # Library for working with Ecore models

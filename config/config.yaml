@@ -1,0 +1,53 @@
+# Main Configuration File
+
+# --- API Keys ---
+# Store sensitive keys securely, e.g., environment variables or a secret manager
+# Example: openai_api_key: ${OPENAI_API_KEY}
+llm_api_keys:
+  openai: "YOUR_OPENAI_API_KEY_HERE" # Replace or use env variables
+  # Add other LLM provider keys if needed
+
+# --- Paths ---
+# Use relative paths from the project root or absolute paths
+paths:
+  data_root: "data/"
+  requirements: "data/requirements/"
+  metamodel: "data/metamodel/AUTOSAR_XYZ.arxml" # Example path
+  schemas: "data/schemas/AUTOSAR_XYZ.xsd"      # Example path
+  rules: "data/rules/semantic_constraints.drl" # Example path
+  knowledge_graph: "data/knowledge_graph/autosar_kg.endpoint_info" # Or connection string/file path
+  ground_truth: "data/ground_truth/"
+  results_root: "results/"
+  generated_xml: "results/generated_xml/"
+  logs: "results/logs/"
+  reports: "results/reports/"
+
+# --- Knowledge Graph ---
+kg:
+  endpoint: "http://localhost:7200/repositories/autosar" # Example SPARQL endpoint
+  # Add other KG connection details if needed (e.g., type, credentials)
+
+# --- LLM ---
+llm:
+  default_provider: "openai" # or 'azure', 'huggingface', etc.
+  default_model: "gpt-4"   # Specify the model name
+  temperature: 0.7
+  max_tokens: 2048
+  # Add other LLM parameters as needed
+
+# --- Experiment Settings ---
+experiments:
+  methods_to_run:
+    - "baseline1" # Naive LLM
+    - "baseline2" # LLM + XSD
+    - "baseline3" # LLM + XSD + Drools
+    - "proposed"  # LLM + XSD + Drools + KG
+  output_metrics_file: "metrics_summary.csv"
+
+# --- Validation ---
+validation:
+  xsd_schema_path: "data/schemas/AUTOSAR_XYZ.xsd" # Redundant? Maybe keep central path here
+  drools:
+    # Configuration for interacting with Drools (e.g., REST API endpoint if using Drools server)
+    rules_path: "data/rules/semantic_constraints.drl"
+    # endpoint: "http://localhost:8080/kie-server/services/rest/server/containers/instances/autosar-rules"
