@@ -4,7 +4,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 from lxml import etree
 
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 
 def generate_interface(input_dir, output_dir, groups, interface_package_name,package_name):

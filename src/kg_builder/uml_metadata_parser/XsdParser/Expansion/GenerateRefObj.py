@@ -3,7 +3,7 @@ import os
 
 from lxml import etree
 
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 
 def get_subtypes(input_dir, enumType):

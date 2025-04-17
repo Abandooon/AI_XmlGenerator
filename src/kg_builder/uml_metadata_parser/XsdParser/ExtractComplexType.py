@@ -1,17 +1,21 @@
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
 
 
 def process_complex_type(complexType, root, element_wrapper, groups, attributeGroups):
     name = complexType.get('name')  # 获取复杂类型的名称
     # --------------做成jaxb那样的----------------------
     mixed = complexType.get('mixed')  # 获取mixed属性
-    description = extract_annotation(complexType)
+    result = extract_annotation(complexType)
+    description = result['description']
+    pure_maxOccurs = result['pureMM_maxOccurs']
+    pure_minOccurs = result['pureMM_minOccurs']
 
     if not name:
         return None  # 跳过没有名称的复杂类型-----内部类名定义在element
     attributes = []  # 初始化列表，用于存储复杂类型的属性
+    elements = []
     extends = None
     inner_classes = []
     # 全局列表用于存储 Element 和 ComplexType 映射信息
@@ -100,7 +104,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
             if refName in groups:
                 if maxOccurs == '1':
                     for element in groups[refName]['elements']:
-                        attributes.append({
+                        elements.append({
                             'name': element['name'],
                             'type': element['type'],
                             'annotation': element['annotation'],
@@ -111,7 +115,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
                     inner_classes.extend([{**inner_class,'group':refName} for inner_class in groups[refName]['innerClasses']])
                 else:
                     for element in groups[refName]['elements']:
-                        attributes.append({
+                        elements.append({
                             'name': element['name'],
                             'type': element['type'] if element['type'].startswith('ArrayList') else 'ArrayList<{}>'.format(element['type']),
                             'annotation': element['annotation'],
@@ -142,7 +146,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
                             element_name))
             attributes = [attr for attr in attributes if '@XmlElement' not in attr['annotation']]
             if element_refs:
-                attributes.append({
+                elements.append({
                     'name': 'content',
                     'type': 'ArrayList<Serializable>',
                     'annotation': '@XmlElementRefs({\n        ' + ',\n        '.join(element_refs) + '\n    })\n    @XmlMixed',
@@ -153,6 +157,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
     return {
         'name': name,
         'attributes': attributes,
+        'elements': elements,
         'innerClasses': inner_classes,  # 存储所有内部类信息
         'extends': extends,
         'objFactory': element_complex_type_mappings,  # Element 和 ComplexType 映射信息

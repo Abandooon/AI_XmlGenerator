@@ -4,9 +4,9 @@ import re
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.data_processing.uml_metadata_parser.XsdParser.Expansion.GenerateRefObj import get_different_tag_elements, \
+from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateRefObj import get_different_tag_elements, \
     get_complex_ref, get_subtypes
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 
 def collect_wrapper_class_names(complexTypeClassesInfo):

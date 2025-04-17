@@ -1,4 +1,4 @@
-from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
+from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
 
 
 # 获取所有的attributeGroup和每个attributeGroup中的attribute（name和type），返回出去再遍历匹配引用的

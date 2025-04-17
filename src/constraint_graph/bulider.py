@@ -1,0 +1,1 @@
+# XSD+DROORS+KG ->CG+SHACL

@@ -1,11 +1,13 @@
 import os
-from src.data_processing.uml_metadata_parser.XsdParser.Expansion.GenerateInterface import generate_interface
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateInterface import generate_interface
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 # 维护一个全局的内部类信息列表
 inner_class_info_list = []
 # 新增一个全局的所有类信息列表
 all_class_info_list = []
+# 维护一个全局的重命名后的内部类信息列表
+extract_inner_class_info_list = []
 rename_element=[]
 def extract_internals_classes(complexType, output_dir, package_name, class_template, interfaces_name,groups,generate_abstract_interface,input_dir,interface_package_name):
     parent_class_name = None
@@ -70,6 +72,11 @@ def extract_internals_classes(complexType, output_dir, package_name, class_templ
                     'attributes': inner_class_attributes,
                     'isAttribute': complexType['isAttribute']
                 })
+                extract_inner_class_info_list.append({
+                    'name': new_inner_class_name,
+                    'attributes': inner_class_attributes,
+                    'isAttribute': complexType['isAttribute']
+                })
             else:
                 # 首次出现，生成类文件
                 inner_class_info_list.append({
@@ -80,6 +87,11 @@ def extract_internals_classes(complexType, output_dir, package_name, class_templ
                 })
                 # 将内部类信息添加到全局列表
                 all_class_info_list.append({
+                    'name': inner_class_name,
+                    'attributes': inner_class_attributes,
+                    'isAttribute': complexType['isAttribute']
+                })
+                extract_inner_class_info_list.append({
                     'name': inner_class_name,
                     'attributes': inner_class_attributes,
                     'isAttribute': complexType['isAttribute']
@@ -101,6 +113,11 @@ def extract_internals_classes(complexType, output_dir, package_name, class_templ
             for inner_inner_class in inner_inner_classes:
                 # 将嵌套内部类信息添加到全局列表
                 all_class_info_list.append({
+                    'name': inner_inner_class['InnerClassName'],
+                    'attributes': inner_inner_class['InnerClassAttributes'],
+                    'isAttribute': complexType['isAttribute']
+                })
+                extract_inner_class_info_list.append({
                     'name': inner_inner_class['InnerClassName'],
                     'attributes': inner_inner_class['InnerClassAttributes'],
                     'isAttribute': complexType['isAttribute']

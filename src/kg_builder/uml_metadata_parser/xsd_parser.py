@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import os
-import time
 
 from lxml import etree
-from jinja2 import Environment, FileSystemLoader
-
-from src.data_processing.uml_metadata_parser.XsdParser.Expansion.GenerateInterface import generate_interface
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case
-from src.data_processing.uml_metadata_parser.XsdParser.Expansion.GenerateWrapper import collect_wrapper_class_names, \
+from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateWrapper import collect_wrapper_class_names, \
     generate_wrapper_classes
-from src.data_processing.uml_metadata_parser.XsdParser.Expansion.InnerInnerExtractor import extract_internals_classes, \
-    all_class_info_list
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractAttributeGroup import extractAttributeGroup
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractComplexType import extractComplexType
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractGroup import extractGroup
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractSimpleType import extractSimpleType
-from src.data_processing.uml_metadata_parser.XsdParser.generateObjFactory import generate_object_factory
+from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.InnerInnerExtractor import extract_internals_classes, \
+    all_class_info_list, extract_inner_class_info_list
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractAttributeGroup import extractAttributeGroup
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractComplexType import extractComplexType
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extractGroup
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractSimpleType import extractSimpleType
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.generateObjFactory import generate_object_factory
+
 if __name__ == "__main__":
 
     input_dir = 'input'
@@ -52,6 +49,7 @@ if __name__ == "__main__":
 
         # 在生成内部类后，获取所有类的信息,全局列表
         all_classes_info = all_class_info_list
+        extract_inner_class =extract_inner_class_info_list
 
     # 生成objectfactory
     generate_object_factory(output_dir, package_name, element_complex_type_mappings, None)
@@ -80,7 +78,8 @@ if __name__ == "__main__":
         "groups": {key: serialize_element(value) for key, value in groups.items()},
         "attributeGroups": {key: serialize_element(value) for key, value in attributeGroups.items()},
         "simpleTypes": {index: serialize_element(value) for index, value in enumerate(simpleTypes)},
-        "complexTypes": {index: serialize_element(value) for index, value in enumerate(complexTypes)}
+        "complexTypes": {index: serialize_element(value) for index, value in enumerate(complexTypes)},
+        "extract_inner_class":{index: serialize_element(value) for index, value in enumerate(extract_inner_class)}
     }
     with open(metadata_file_path, 'w', encoding='utf-8') as metadata_file:
         import json

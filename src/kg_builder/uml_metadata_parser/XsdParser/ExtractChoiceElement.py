@@ -1,6 +1,6 @@
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
-from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
+from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
 
 
 def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_wrapper):
@@ -25,7 +25,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 'type': 'ArrayList<{}>'.format(element_type), #现在还是存在内部类中的，应该在外层提取到主类中
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name),
-                'maxOccurs': maxOccurs
+                'maxOccurs': maxOccurs,
+                'minOccurs': '0',
             })
         #wrapper，有嵌套内部类，只生成最内层类做为内部类
         else:
@@ -37,7 +38,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName,
                                                                                              element_name),
-                'maxOccurs': maxOccurs
+                'maxOccurs': maxOccurs,
+                'minOccurs': '0',
             })
             inner_class_name = to_pascal_case(element_name)  # 将元素名称转换为PascalCase，用作内部类的名称
             inner_complex_types = []  # 初始化列表，用于存储内部复杂类型信息
@@ -93,7 +95,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': element_type,
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'minOccurs': '0'
                     })
                 else:
                     element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
@@ -101,7 +104,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': 'ArrayList<{}>'.format(element_type),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'minOccurs': '0',
                         # 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name)
                     })
             else:
@@ -111,14 +115,16 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'minOccurs': '0',
                     })
                 else:
                     elements.append({
                         'name': to_camel_case(element_name),
                         'type': 'ArrayList<{}>'.format(to_pascal_case(element_name)),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs
+                        'maxOccurs': maxOccurs,
+                        'minOccurs': '0',
                         # 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name)
                     })
                 # 处理内部的 complexType 并生成内部类

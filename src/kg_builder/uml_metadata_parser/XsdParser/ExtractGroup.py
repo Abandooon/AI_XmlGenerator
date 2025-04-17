@@ -1,7 +1,7 @@
-from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-from src.data_processing.uml_metadata_parser.XsdParser.GroupInnerComplexType import process_group_inner_complex_type
-from src.data_processing.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
-from src.data_processing.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
+from src.kg_builder.uml_metadata_parser.XsdParser.GroupInnerComplexType import process_group_inner_complex_type
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
 import xml.etree.ElementTree as ET
 
 def extractGroup(root, element_wrapper):
@@ -11,7 +11,10 @@ def extractGroup(root, element_wrapper):
     for group in root.findall("./{http://www.w3.org/2001/XMLSchema}group"):
         group_name = group.get('name')
 
-        description = extract_annotation(group)
+        result = extract_annotation(group)
+        description = result['description']
+        pure_maxOccurs = result['pureMM_maxOccurs']
+        pure_minOccurs = result['pureMM_minOccurs']
 
         accumulated_elements = []
         accumulated_inner_classes = []
@@ -30,13 +33,6 @@ def extractGroup(root, element_wrapper):
                     for choice in choices:
                         innerMaxOccurs = choice.get('maxOccurs')
                         innerMinOccurs = choice.get('minOccurs')
-                        # 仅返回了第一个group ref元素
-                        # group = choice.find("./{http://www.w3.org/2001/XMLSchema}group")
-                        # if group is not None:
-                        #     refName = group.get('ref').split(':')[-1]
-                        #     elements, inner_classes = process_choiceRef(root, refName, innerMaxOccurs, element_wrapper)
-                        #     accumulated_elements.extend(elements)
-                        #     accumulated_inner_classes.extend(inner_classes)
                         groups_in_choice = choice.findall("./{http://www.w3.org/2001/XMLSchema}group")
                         if groups_in_choice is not None:
                             for group_in_choice in groups_in_choice:
@@ -88,6 +84,8 @@ def extractGroup(root, element_wrapper):
             'association': '',
             'generalization': '',
             'description': description,
+            'pure_minOccurs': pure_minOccurs,
+            'pure_maxOccurs': pure_maxOccurs,
             'ocl': '',
             'child':child,
             'label':'',
@@ -110,7 +108,10 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
         element_name = element.get('name')
         element_type = element.get('type')  # 获取元素类型-----没有就是内部类，走到else里面
 
-        description = extract_annotation(element)
+        result = extract_annotation(element)
+        description = result['description']
+        pure_maxOccurs = result['pureMM_maxOccurs']
+        pure_minOccurs = result['pureMM_minOccurs']
 
         wrapperElement = False
         if element_type:
@@ -123,7 +124,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
-                    'ocl':"minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
+                    'pure_minOccurs': pure_minOccurs,
+                    'pure_maxOccurs': pure_maxOccurs,
                 })
             else:
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
@@ -134,7 +136,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
-                    'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
+                    'pure_minOccurs': pure_minOccurs,
+                    'pure_maxOccurs': pure_maxOccurs,
                 })
         else:
             # 这里就是生成内部类对应的字段------嵌套内部类也要考虑list
@@ -154,7 +157,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                                 'minOccurs': minOccurs,
                                 'maxOccurs': attr.get('maxOccurs'),
                                 'description': description,
-                                'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
+                                'pure_minOccurs': pure_minOccurs,
+                                'pure_maxOccurs': pure_maxOccurs,
                             })
                         #---将嵌套内部类提取出来放到外层
                         for innerInnerClass in inner_type.get('innerInnerClass'):
@@ -168,7 +172,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         'minOccurs': minOccurs,
                         'maxOccurs': maxOccurs,
                         'description': description,
-                        'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
+                        'pure_minOccurs': pure_minOccurs,
+                        'pure_maxOccurs': pure_maxOccurs,
                     })
                     # 处理内部的complexType并生成内部类
                     for inner_type in inner_complex_types:
@@ -181,7 +186,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
-                    'ocl': "minOccurs: {}, maxOccurs: {}".format(minOccurs, maxOccurs)
+                    'pure_minOccurs': pure_minOccurs,
+                    'pure_maxOccurs': pure_maxOccurs,
                 })
                 # 处理内部的complexType并生成内部类
                 for inner_type in inner_complex_types:
@@ -190,20 +196,32 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
     return elements, inner_classes  # 返回元素列表
 
 def extract_annotation(group_element):
-    # 提取group标签中的xsd:annotation中的xsd:documentation和xsd:appinfo source="tags"、xsd:appinfo source="stereotypes"的内容，并存到description中
+    import re
     description = ""
+    pure_maxOccurs = ""
+    pure_minOccurs = ""
     annotation = group_element.find("./{http://www.w3.org/2001/XMLSchema}annotation")
     if annotation is not None:
         documentation = annotation.find("./{http://www.w3.org/2001/XMLSchema}documentation")
         if documentation is not None and documentation.text:
             description += "note:" + documentation.text.strip() + " "
-
         appinfos = annotation.findall("./{http://www.w3.org/2001/XMLSchema}appinfo")
         for appinfo in appinfos:
             source = appinfo.get("source")
             if source == "tags" and appinfo.text:
-                description += "tag:" + appinfo.text.strip() + " "
+                tag_text = appinfo.text.strip()
+                description += "tag:" + tag_text + " "
+                max_match = re.search(r'pureMM\.maxOccurs\s*:\s*(\S+)', tag_text)
+                if max_match:
+                    pure_maxOccurs = max_match.group(1)
+                min_match = re.search(r'pureMM\.minOccurs\s*:\s*(\S+)', tag_text)
+                if min_match:
+                    pure_minOccurs = min_match.group(1)
             elif source == "stereotypes" and appinfo.text:
                 description += "stereotype:" + appinfo.text.strip() + " "
     description = description.strip()
-    return description
+    return {
+        "description": description,
+        "pureMM_maxOccurs": pure_maxOccurs,
+        "pureMM_minOccurs": pure_minOccurs
+    }

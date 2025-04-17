@@ -1,3 +1,8 @@
+
+###########
+# 将；两种CGD区分开
+###########
+
 import logging
 from .base_generator import BaseGenerator
 from src.llm_interaction.prompt_formatter import format_basic_prompt, format_kg_enhanced_prompt

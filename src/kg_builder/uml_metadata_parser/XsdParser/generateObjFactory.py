@@ -1,6 +1,6 @@
 import os
 
-from src.data_processing.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava, to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava, to_pascal_case
 
 
 def generate_object_factory(output_dir, package_name, mappings,objectFactoryTemplate):
