@@ -1,10 +1,12 @@
 from src.kg_builder.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
+
 from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
 from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case,to_camel_case
 
 
 def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_wrapper):
     #这里是用来生成@xmlelementWrapper注解的，
+
     elements = []
     inner_classes = []
     #设置wrapperelement记录当前内部类是否生成wrapper，若是则要改主类element且不生成内部类
@@ -13,6 +15,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
     if len(choice.findall(
             "./{http://www.w3.org/2001/XMLSchema}element")) == 1 and maxOccurs != '1' and element_wrapper:
         single_element = choice.find("./{http://www.w3.org/2001/XMLSchema}element")
+        from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
+        result = extract_annotation(single_element)
+        description = result['description']
+        pure_maxOccurs = result['pureMM_maxOccurs']
+        pure_minOccurs = result['pureMM_minOccurs']
         # 如果single_element没有complextype
         innerComplextype = single_element.find("./{http://www.w3.org/2001/XMLSchema}complexType")
         wrapperElement = True
@@ -25,8 +32,9 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 'type': element_type, #现在还是存在内部类中的，应该在外层提取到主类中
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name),
-                'maxOccurs': maxOccurs,
-                'minOccurs': '0',
+                'description': description,
+                'pure_minOccurs': pure_minOccurs,
+                'pure_maxOccurs': pure_maxOccurs,
             })
         #wrapper，有嵌套内部类，只生成最内层类做为内部类
         else:
@@ -38,8 +46,9 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName,
                                                                                              element_name),
-                'maxOccurs': maxOccurs,
-                'minOccurs': '0',
+                'description': description,
+                'pure_minOccurs': pure_minOccurs,
+                'pure_maxOccurs': pure_maxOccurs,
             })
             inner_class_name = to_pascal_case(element_name)  # 将元素名称转换为PascalCase，用作内部类的名称
             inner_complex_types = []  # 初始化列表，用于存储内部复杂类型信息
@@ -86,6 +95,12 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
 
     else:
         for element in choice.findall("./{http://www.w3.org/2001/XMLSchema}element"):
+            from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
+            result = extract_annotation(element)
+            description = result['description']
+            pure_maxOccurs = result['pureMM_maxOccurs']
+            pure_minOccurs = result['pureMM_minOccurs']
+
             element_name = element.get('name')  # 获取元素名称
             element_type = element.get('type')  # 获取元素类型-----》没有就是内部类
             if element_type:
@@ -95,18 +110,18 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': element_type,
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs,
-                        'minOccurs': '0'
+                        'description': description,
+                        'pure_minOccurs': pure_minOccurs,
+                        'pure_maxOccurs': pure_maxOccurs,
                     })
                 else:
                     element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
                     elements.append({
                         'name': to_camel_case(element_name),
                         'type': element_type,
-                        'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs,
-                        'minOccurs': '0',
-                        # 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name)
+                        'annotation': '@XmlElement(name="{}")'.format(element_name),'description': description,
+                        'pure_minOccurs': pure_minOccurs,
+                        'pure_maxOccurs': pure_maxOccurs,
                     })
             else:
                 # 这里就是生成内部类对应的字段------》嵌套内部类也要考虑list
@@ -115,17 +130,18 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs,
-                        'minOccurs': '0',
+                        'description': description,
+                        'pure_minOccurs': pure_minOccurs,
+                        'pure_maxOccurs': pure_maxOccurs,
                     })
                 else:
                     elements.append({
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
-                        'maxOccurs': maxOccurs,
-                        'minOccurs': '0',
-                        # 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name)
+                        'description': description,
+                        'pure_minOccurs': pure_minOccurs,
+                        'pure_maxOccurs': pure_maxOccurs,
                     })
                 # 处理内部的 complexType 并生成内部类
 

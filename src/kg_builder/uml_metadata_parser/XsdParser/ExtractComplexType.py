@@ -7,10 +7,6 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
     name = complexType.get('name')  # 获取复杂类型的名称
     # --------------做成jaxb那样的----------------------
     mixed = complexType.get('mixed')  # 获取mixed属性
-    result = extract_annotation(complexType)
-    description = result['description']
-    pure_maxOccurs = result['pureMM_maxOccurs']
-    pure_minOccurs = result['pureMM_minOccurs']
 
     if not name:
         return None  # 跳过没有名称的复杂类型-----内部类名定义在element
@@ -161,8 +157,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
         'innerClasses': inner_classes,  # 存储所有内部类信息
         'extends': extends,
         'objFactory': element_complex_type_mappings,  # Element 和 ComplexType 映射信息
-        'isAttribute': is_attribute,
-        'description': description
+        'isAttribute': is_attribute
     }
 #---------------多线程，可能由于异步导致提取内部类名不同----------------------
 # def extractComplexType(root, element_wrapper, groups, attributeGroups):

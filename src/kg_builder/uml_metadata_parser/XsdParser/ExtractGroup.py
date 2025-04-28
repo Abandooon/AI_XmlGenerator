@@ -10,6 +10,18 @@ def extractGroup(root, element_wrapper):
     # 查找所有群组元素
     for group in root.findall("./{http://www.w3.org/2001/XMLSchema}group"):
         group_name = group.get('name')
+        # 根据group_name查找同名的complexType
+        matching_complex_type = None
+        for ct in root.findall(".//{http://www.w3.org/2001/XMLSchema}complexType"):
+            if ct.get('name') == group_name:
+                matching_complex_type = ct
+                break
+        # 如果找到了对应的complexType则提取其下所有的attributegroup
+        attribute_groups = []
+        if matching_complex_type is not None:
+            for attributeGroupRef in matching_complex_type.findall("./{http://www.w3.org/2001/XMLSchema}attributeGroup"):
+                refName = to_pascal_case(attributeGroupRef.get('ref').split(':')[-1])
+                attribute_groups.append(refName)
 
         result = extract_annotation(group)
         description = result['description']
@@ -85,7 +97,8 @@ def extractGroup(root, element_wrapper):
             'pure_maxOccurs': pure_maxOccurs,
             'child':child,
             'elements': accumulated_elements,
-            'innerClasses': accumulated_inner_classes
+            'innerClasses': accumulated_inner_classes,
+            'attributeGroups': ",".join(attribute_groups)
         }
 
     return groups
