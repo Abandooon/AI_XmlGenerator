@@ -80,18 +80,12 @@ def extractGroup(root, element_wrapper):
         groups[group_name] = {
             'name': to_pascal_case(group_name),
             'annotation': group_name,
-            'type': 'abstract',
-            'association': '',
-            'generalization': '',
             'description': description,
             'pure_minOccurs': pure_minOccurs,
             'pure_maxOccurs': pure_maxOccurs,
-            'ocl': '',
             'child':child,
-            'label':'',
             'elements': accumulated_elements,
-            'innerClasses': accumulated_inner_classes,
-            'DynamicMethods': [],
+            'innerClasses': accumulated_inner_classes
         }
 
     return groups
@@ -131,7 +125,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
                 elements.append({
                     'name': to_camel_case(element_name),
-                    'type': 'ArrayList<{}>'.format(element_type),
+                    'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
@@ -181,7 +175,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
             else:
                 elements.append({
                     'name': to_camel_case(element_name) + 's',
-                    'type': 'ArrayList<{}>'.format(to_pascal_case(element_name)),
+                    'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
@@ -210,11 +204,10 @@ def extract_annotation(group_element):
             source = appinfo.get("source")
             if source == "tags" and appinfo.text:
                 tag_text = appinfo.text.strip()
-                description += "tag:" + tag_text + " "
-                max_match = re.search(r'pureMM\.maxOccurs\s*:\s*(\S+)', tag_text)
+                max_match = re.search(r'pureMM\.maxOccurs\s*=\s*"(-?\d+)"', tag_text)
                 if max_match:
                     pure_maxOccurs = max_match.group(1)
-                min_match = re.search(r'pureMM\.minOccurs\s*:\s*(\S+)', tag_text)
+                min_match = re.search(r'pureMM\.minOccurs\s*=\s*"(\d+)"', tag_text)
                 if min_match:
                     pure_minOccurs = min_match.group(1)
             elif source == "stereotypes" and appinfo.text:

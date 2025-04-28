@@ -29,10 +29,20 @@
     <xsd:attribute name="T" type="AR:DATE--SIMPLE"/>
   </xsd:attributeGroup>
      <!-- element group for class Identifiable::MultilanguageReferrable -->
-  <xsd:group name="MULTILANGUAGE-REFERRABLE">
-    <xsd:sequence>
-      <xsd:element maxOccurs="1" minOccurs="0" name="LONG-NAME" type="AR:MULTILANGUAGE-LONG-NAME"/>
-    </xsd:sequence>
+   <xsd:group name="MULTILANGUAGE-REFERRABLE">
+      <xsd:annotation>
+         <xsd:documentation>Instances of this class can be referred to by their identifier (while adhering to namespace borders). They also may have a longName. But they are not considered to contribute substantially to the overall structure of an AUTOSAR description. In particular it does not contain other Referrables.</xsd:documentation>
+         <xsd:appinfo source="tags">mmt.qualifiedName="MultilanguageReferrable"</xsd:appinfo>
+         <xsd:appinfo source="stereotypes">atpObject</xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+         <xsd:element maxOccurs="1" minOccurs="0" name="LONG-NAME" type="AR:MULTILANGUAGE-LONG-NAME">
+            <xsd:annotation>
+               <xsd:documentation>This specifies the long name of the object. Long name is targeted to human readers and acts like a headline.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="MultilanguageReferrable.longName";pureMM.maxOccurs="1";pureMM.minOccurs="0"</xsd:appinfo>
+            </xsd:annotation>
+         </xsd:element>
+      </xsd:sequence>
   </xsd:group>
   <xsd:complexType name="IDENTIFIER">
     <xsd:annotation>
@@ -128,72 +138,125 @@
     <xsd:attribute name="L" type="AR:L-ENUM--SIMPLE" use="required"/>
   </xsd:attributeGroup>
         <!-- element group for class BswImplementation::BswImplementation -->
-  <xsd:group name="BSW-IMPLEMENTATION">
-    <xsd:sequence>
-      <xsd:element maxOccurs="1" minOccurs="0" name="AR-RELEASE-VERSION" type="AR:REVISION-LABEL-STRING"/>
-      <xsd:element maxOccurs="1" minOccurs="0" name="BEHAVIOR-REF">
-        <xsd:complexType>
-          <xsd:simpleContent>
-            <xsd:extension base="AR:REF">
-              <xsd:attribute name="DEST" type="AR:BSW-INTERNAL-BEHAVIOR--SUBTYPES-ENUM" use="required"/>
-            </xsd:extension>
-          </xsd:simpleContent>
-        </xsd:complexType>
-      </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="0" name="DEBUG-INFOS">
-        <xsd:complexType>
-          <xsd:choice maxOccurs="unbounded" minOccurs="0">
-            <xsd:element name="BSW-DEBUG-INFO" type="AR:BSW-DEBUG-INFO"/>
-          </xsd:choice>
-        </xsd:complexType>
-      </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="0" name="PRECONFIGURED-CONFIGURATION-REFS">
-        <xsd:complexType>
-          <xsd:choice maxOccurs="unbounded" minOccurs="0">
-            <xsd:element name="PRECONFIGURED-CONFIGURATION-REF">
-              <xsd:complexType>
-                <xsd:simpleContent>
+ <xsd:group name="BSW-IMPLEMENTATION">
+      <xsd:annotation>
+         <xsd:documentation>Contains the implementation specific information in addition to the generic specification (BswModuleDescription and BswBehavior).
+It is possible to have several different BswImplementations referring to the same BswBehavior.</xsd:documentation>
+         <xsd:appinfo source="tags">atp.recommendedPackage="BswImplementations";mmt.qualifiedName="BswImplementation"</xsd:appinfo>
+         <xsd:appinfo source="stereotypes">atpObject</xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+         <xsd:element maxOccurs="1" minOccurs="0" name="AR-RELEASE-VERSION" type="AR:REVISION-LABEL-STRING">
+            <xsd:annotation>
+               <xsd:documentation>Version of the AUTOSAR Release on which this implementation is based. The numbering contains three levels (major, minor, revision) which are defined by AUTOSAR.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.arReleaseVersion";pureMM.maxOccurs="1";pureMM.minOccurs="1"</xsd:appinfo>
+            </xsd:annotation>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="BEHAVIOR-REF">
+            <xsd:annotation>
+               <xsd:documentation>The behavior of this implementation.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.behavior";pureMM.maxOccurs="1";pureMM.minOccurs="1"</xsd:appinfo>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:simpleContent>
                   <xsd:extension base="AR:REF">
-                    <xsd:attribute name="DEST" type="AR:ECUC-MODULE-CONFIGURATION-VALUES--SUBTYPES-ENUM" use="required"/>
+                     <xsd:attribute name="DEST" type="AR:BSW-INTERNAL-BEHAVIOR--SUBTYPES-ENUM" use="required"/>
                   </xsd:extension>
-                </xsd:simpleContent>
-              </xsd:complexType>
-            </xsd:element>
-          </xsd:choice>
-        </xsd:complexType>
-      </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="0" name="RECOMMENDED-CONFIGURATION-REFS">
-        <xsd:complexType>
-          <xsd:choice maxOccurs="unbounded" minOccurs="0">
-            <xsd:element name="RECOMMENDED-CONFIGURATION-REF">
-              <xsd:complexType>
-                <xsd:simpleContent>
-                  <xsd:extension base="AR:REF">
-                    <xsd:attribute name="DEST" type="AR:ECUC-MODULE-CONFIGURATION-VALUES--SUBTYPES-ENUM" use="required"/>
-                  </xsd:extension>
-                </xsd:simpleContent>
-              </xsd:complexType>
-            </xsd:element>
-          </xsd:choice>
-        </xsd:complexType>
-      </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="0" name="VENDOR-API-INFIX" type="AR:IDENTIFIER"/>
-      <xsd:element maxOccurs="1" minOccurs="0" name="VENDOR-SPECIFIC-MODULE-DEF-REFS">
-        <xsd:complexType>
-          <xsd:choice maxOccurs="unbounded" minOccurs="0">
-            <xsd:element name="VENDOR-SPECIFIC-MODULE-DEF-REF">
-              <xsd:complexType>
-                <xsd:simpleContent>
-                  <xsd:extension base="AR:REF">
-                    <xsd:attribute name="DEST" type="AR:ECUC-MODULE-DEF--SUBTYPES-ENUM" use="required"/>
-                  </xsd:extension>
-                </xsd:simpleContent>
-              </xsd:complexType>
-            </xsd:element>
-          </xsd:choice>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:sequence>
+               </xsd:simpleContent>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="DEBUG-INFOS">
+            <xsd:annotation>
+               <xsd:documentation>Collects the debug info for this implementation.
+The upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was 1.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.debugInfo";pureMM.maxOccurs="-1";pureMM.minOccurs="0";vh.latestBindingTime="preCompileTime"</xsd:appinfo>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                  <xsd:element name="BSW-DEBUG-INFO" type="AR:BSW-DEBUG-INFO"/>
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="PRECONFIGURED-CONFIGURATION-REFS">
+            <xsd:annotation>
+               <xsd:documentation>Reference to the set of preconfigured (i.e. fixed) configuration values for this BswImplementation.
+
+If the BswImplementation represents a cluster of several modules, more than one EcucModuleConfigurationValues element can be referred (at most one per module), otherwise at most one such element can be referred.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.preconfiguredConfiguration";pureMM.maxOccurs="-1";pureMM.minOccurs="0";xml.roleWrapperElement="true"</xsd:appinfo>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                  <xsd:element name="PRECONFIGURED-CONFIGURATION-REF">
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="AR:REF">
+                              <xsd:attribute name="DEST" type="AR:ECUC-MODULE-CONFIGURATION-VALUES--SUBTYPES-ENUM" use="required"/>
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="RECOMMENDED-CONFIGURATION-REFS">
+            <xsd:annotation>
+               <xsd:documentation>Reference to one or more sets of recommended configuration values for this module or module cluster.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.recommendedConfiguration";pureMM.maxOccurs="-1";pureMM.minOccurs="0"</xsd:appinfo>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                  <xsd:element name="RECOMMENDED-CONFIGURATION-REF">
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="AR:REF">
+                              <xsd:attribute name="DEST" type="AR:ECUC-MODULE-CONFIGURATION-VALUES--SUBTYPES-ENUM" use="required"/>
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="VENDOR-API-INFIX" type="AR:IDENTIFIER">
+            <xsd:annotation>
+               <xsd:documentation>In driver modules which can be instantiated several times on a single ECU, SRS_BSW_00347 requires that the names of files, APIs, published parameters and memory allocation keywords are extended by the vendorId and a vendor specific name. 
+This parameter is used to specify the vendor specific name. In total, the implementation specific API name is generated as follows:
+&amp;lt;ModuleName&amp;gt;_&amp;lt;vendorId&amp;gt;_ &amp;lt;vendorApiInfix&amp;gt;_&amp;lt;API name from SWS&amp;gt;.
+
+E.g.  assuming that the vendorId of the implementer is 123 and the implementer chose a vendorApiInfix of "v11r456" an API name Can_Write defined in the SWS will translate to Can_123_v11r456_Write. 
+
+This attribute is mandatory for all modules with upper multiplicity &amp;gt; 1. It shall not be used for modules with upper multiplicity =1.
+
+See also SWS_BSW_00102.</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.vendorApiInfix";pureMM.maxOccurs="1";pureMM.minOccurs="0"</xsd:appinfo>
+            </xsd:annotation>
+         </xsd:element>
+         <xsd:element maxOccurs="1" minOccurs="0" name="VENDOR-SPECIFIC-MODULE-DEF-REFS">
+            <xsd:annotation>
+               <xsd:documentation>Reference to 
+
+* the vendor specific EcucModuleDef used in this BswImplementation if it represents a single module
+
+* several EcucModuleDefs used in this BswImplementation if it  represents a cluster of modules
+
+* one or no EcucModuleDefs used in this BswImplementation if it represents a library</xsd:documentation>
+               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.vendorSpecificModuleDef";pureMM.maxOccurs="-1";pureMM.minOccurs="0";xml.roleWrapperElement="true"</xsd:appinfo>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                  <xsd:element name="VENDOR-SPECIFIC-MODULE-DEF-REF">
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="AR:REF">
+                              <xsd:attribute name="DEST" type="AR:ECUC-MODULE-DEF--SUBTYPES-ENUM" use="required"/>
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:sequence>
   </xsd:group>
        <!-- complex type for class BswImplementation::BswImplementation -->
   <xsd:complexType abstract="false" mixed="false" name="BSW-IMPLEMENTATION">

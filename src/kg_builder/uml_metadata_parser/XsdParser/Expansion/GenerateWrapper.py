@@ -43,7 +43,7 @@ def generate_wrapper_classes(input_dir, complexTypeClassesInfo, output_dir, wrap
         #保存被引用的name与type不同的Element信息
         differentTagsElements = get_different_tag_elements(input_dir)
 
-        # todo：遍历类中的属性------------------------------------------------------------
+        # 遍历类中的属性------------------------------------------------------------
         # 1. Ref类且属性有dest，则搜索所有子类确定返回值类型，在模板中构建get方法
         # 2. 类中属性有ref，将这个ref中的查找方法放到该类中，（list？）
         # 3. 类中有ArrayList<Serializable>，查找引用的元素类，模板中提供方法

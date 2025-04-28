@@ -1,5 +1,5 @@
 from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 # 获取所有的attributeGroup和每个attributeGroup中的attribute（name和type），返回出去再遍历匹配引用的
 def extractAttributeGroup(root):
@@ -7,7 +7,7 @@ def extractAttributeGroup(root):
 
     # 查找所有的attributeGroup元素
     for attributeGroup in root.findall(".//{http://www.w3.org/2001/XMLSchema}attributeGroup"):
-        name = attributeGroup.get('name')  # 获取attributeGroup的名称
+        name = to_pascal_case(attributeGroup.get('name')) # 获取attributeGroup的名称
         attributes = []
 
         # 查找attributeGroup中的所有attribute元素

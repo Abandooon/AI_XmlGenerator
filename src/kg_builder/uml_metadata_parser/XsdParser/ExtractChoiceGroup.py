@@ -105,7 +105,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
                 elements.append({
                     'name': to_camel_case(element_name),
-                    'type': 'ArrayList<{}>'.format(element_type),
+                    'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'maxOccurs': maxOccurs,
                     'minOccurs': '0',
@@ -153,7 +153,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
             else:
                 elements.append({
                     'name': to_camel_case(element_name) + 's',
-                    'type': 'ArrayList<{}>'.format(to_pascal_case(element_name)),
+                    'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'maxOccurs': maxOccurs,
                     'description': description,

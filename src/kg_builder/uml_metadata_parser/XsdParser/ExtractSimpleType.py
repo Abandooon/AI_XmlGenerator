@@ -1,3 +1,4 @@
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
 def extractSimpleType(root):
     simpleTypes = []  # 初始化一个列表，用于存储简单类型的信息
 
@@ -30,6 +31,7 @@ def extractSimpleType(root):
 
         # 将简单类型的信息存储到字典中，并添加到列表中
         simpleTypes.append({
+            'id':to_pascal_case(name),
             'name': name,
             'base': baseType,
             'enumerations': enumerations,  # 添加枚举值列表

@@ -162,12 +162,7 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
         'extends': extends,
         'objFactory': element_complex_type_mappings,  # Element 和 ComplexType 映射信息
         'isAttribute': is_attribute,
-        'description': description,
-        'type':'class',
-        'label':'',
-        'DynamicMethods': [],
-        'association': '',
-        'generalization': '',
+        'description': description
     }
 #---------------多线程，可能由于异步导致提取内部类名不同----------------------
 # def extractComplexType(root, element_wrapper, groups, attributeGroups):
