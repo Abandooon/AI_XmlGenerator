@@ -20,6 +20,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
         description = result['description']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
+
+
         # 如果single_element没有complextype
         innerComplextype = single_element.find("./{http://www.w3.org/2001/XMLSchema}complexType")
         wrapperElement = True

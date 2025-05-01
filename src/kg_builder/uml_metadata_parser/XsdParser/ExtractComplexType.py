@@ -8,6 +8,17 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
     # --------------做成jaxb那样的----------------------
     mixed = complexType.get('mixed')  # 获取mixed属性
 
+    result = extract_annotation(complexType)
+    description = result['description']
+    pure_maxOccurs = result['pureMM_maxOccurs']
+    pure_minOccurs = result['pureMM_minOccurs']
+    qualifiedName = result['qualifiedName']
+    qualifiedNameParts = result['qualifiedNameParts']
+    attribute_groups = []
+    for attributeGroupRef in complexType.findall(".//{http://www.w3.org/2001/XMLSchema}attributeGroup"):
+        refName = to_pascal_case(attributeGroupRef.get('ref').split(':')[-1])
+        attribute_groups.append(refName)
+
     if not name:
         return None  # 跳过没有名称的复杂类型-----内部类名定义在element
     attributes = []  # 初始化列表，用于存储复杂类型的属性
@@ -152,12 +163,15 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
 
     return {
         'name': name,
+        'qualifiedName': qualifiedNameParts,
+        'document_name': qualifiedName,
         'attributes': attributes,
         'elements': elements,
         'innerClasses': inner_classes,  # 存储所有内部类信息
         'extends': extends,
         'objFactory': element_complex_type_mappings,  # Element 和 ComplexType 映射信息
-        'isAttribute': is_attribute
+        'isAttribute': is_attribute,
+        'attributeGroups': ",".join(attribute_groups)
     }
 #---------------多线程，可能由于异步导致提取内部类名不同----------------------
 # def extractComplexType(root, element_wrapper, groups, attributeGroups):

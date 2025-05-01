@@ -88,11 +88,16 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
         description = result['description']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
+        qualifiedName = result['qualifiedName']
+        qualifiedNameParts = result['qualifiedNameParts']
+
         if element_type:
             if maxOccurs == '1':
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
                 elements.append({
                     'name': to_camel_case(element_name),
+                    'qualifiedName': qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'maxOccurs': maxOccurs,
@@ -105,6 +110,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
                 elements.append({
                     'name': to_camel_case(element_name),
+                    'qualifiedName': qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'maxOccurs': maxOccurs,
@@ -124,6 +131,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                         for attr in inner_type.get('InnerClassAttributes'):
                             elements.append({
                                 'name': to_camel_case(element_name),
+                                'qualifiedName': qualifiedNameParts,
+                                'document_name': qualifiedName,
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
                                 'maxOccurs': attr.get('maxOccurs'),
@@ -139,6 +148,8 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                 else:
                     elements.append({
                         'name': to_camel_case(element_name),
+                        'qualifiedName': qualifiedNameParts,
+                        'document_name': qualifiedName,
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
                         'maxOccurs': maxOccurs,
@@ -152,7 +163,9 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                         inner_classes.append(inner_type)  # 将内部类信息单独存储
             else:
                 elements.append({
-                    'name': to_camel_case(element_name) + 's',
+                    'name': to_camel_case(element_name),
+                    'qualifiedName': qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'maxOccurs': maxOccurs,

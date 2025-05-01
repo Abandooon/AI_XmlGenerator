@@ -17,17 +17,17 @@ def mapXsdTypeToJava(xsdType, context='default'):
         'attribute_group': {
             # 只有不含enum的Simple没解析为类，所以要映射为基本类型，别的都解析为类了，默认驼峰类名即可引到
             'string': 'java.lang.String',
-            "STRING--SIMPLE": "java.lang.String",
-            "DATE--SIMPLE": "java.lang.String",
-            "TABLE-SEPARATOR-STRING--SIMPLE": "java.lang.String",
-            "PRIMITIVE-IDENTIFIER--SIMPLE": "java.lang.String",
-            "NMTOKENS-STRING--SIMPLE": "java.lang.String",
-            "VIEW-TOKENS--SIMPLE": "java.lang.String",
-            "NMTOKEN-STRING--SIMPLE": "java.lang.String",
-            "IDENTIFIER--SIMPLE": "java.lang.String",
-            "POSITIVE-INTEGER--SIMPLE": "java.lang.String",
-            "INTEGER--SIMPLE": "java.lang.String",
-            "MIME-TYPE-STRING--SIMPLE": "java.lang.String",
+            # "STRING--SIMPLE": "java.lang.String",
+            # "DATE--SIMPLE": "java.lang.String",
+            # "TABLE-SEPARATOR-STRING--SIMPLE": "java.lang.String",
+            # "PRIMITIVE-IDENTIFIER--SIMPLE": "java.lang.String",
+            # "NMTOKENS-STRING--SIMPLE": "java.lang.String",
+            # "VIEW-TOKENS--SIMPLE": "java.lang.String",
+            # "NMTOKEN-STRING--SIMPLE": "java.lang.String",
+            # "IDENTIFIER--SIMPLE": "java.lang.String",
+            # "POSITIVE-INTEGER--SIMPLE": "java.lang.String",
+            # "INTEGER--SIMPLE": "java.lang.String",
+            # "MIME-TYPE-STRING--SIMPLE": "java.lang.String",
         },
         'group': {
 

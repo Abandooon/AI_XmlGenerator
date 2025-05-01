@@ -18,6 +18,8 @@ def extractAttributeGroup(root):
             description = result['description']
             pure_maxOccurs = result['pureMM_maxOccurs']
             pure_minOccurs = result['pureMM_minOccurs']
+            qualifiedName = result['qualifiedName']
+            qualifiedNameParts = result['qualifiedNameParts']
 
             attrName = attribute.get('name')  # 获取属性的名称
             attrType = attribute.get('type')  # 获取属性的类型
@@ -25,6 +27,8 @@ def extractAttributeGroup(root):
                 attrType = attrType.split(':')[-1]  # 如果属性类型存在，去除命名空间，保留实际类型名
             attributes.append({
                 'name': to_camel_case(attrName),
+                'qualifiedName': qualifiedNameParts,
+                'document_name': qualifiedName,
                 'type': mapXsdTypeToJava(attrType, context='attribute_group'),
                 'annotation': attrName,
                 'description': description,

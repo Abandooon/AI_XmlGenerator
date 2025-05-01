@@ -19,7 +19,7 @@ def extractGroup(root, element_wrapper):
         # 如果找到了对应的complexType则提取其下所有的attributegroup
         attribute_groups = []
         if matching_complex_type is not None:
-            for attributeGroupRef in matching_complex_type.findall("./{http://www.w3.org/2001/XMLSchema}attributeGroup"):
+            for attributeGroupRef in matching_complex_type.findall(".//{http://www.w3.org/2001/XMLSchema}attributeGroup"):
                 refName = to_pascal_case(attributeGroupRef.get('ref').split(':')[-1])
                 attribute_groups.append(refName)
 
@@ -27,6 +27,8 @@ def extractGroup(root, element_wrapper):
         description = result['description']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
+        qualifiedName = result['qualifiedName']
+        qualifiedNameParts = result['qualifiedNameParts']
 
         accumulated_elements = []
         accumulated_inner_classes = []
@@ -90,7 +92,7 @@ def extractGroup(root, element_wrapper):
                 break
 
         groups[group_name] = {
-            'name': to_pascal_case(group_name),
+            'name': qualifiedName if qualifiedName else to_pascal_case(group_name),
             'annotation': group_name,
             'description': description,
             'pure_minOccurs': pure_minOccurs,
@@ -119,6 +121,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
         description = result['description']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
+        qualifiedName = result['qualifiedName']
+        qualifiedNameParts = result['qualifiedNameParts']
 
         wrapperElement = False
         if element_type:
@@ -126,6 +130,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
                 elements.append({
                     'name': to_camel_case(element_name),
+                    'qualifiedName' : qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
@@ -138,6 +144,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
                 elements.append({
                     'name': to_camel_case(element_name),
+                    'qualifiedName': qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
@@ -159,6 +167,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         for attr in inner_type.get('InnerClassAttributes'):
                             elements.append({
                                 'name': to_camel_case(element_name),
+                                'qualifiedName': qualifiedNameParts,
+                                'document_name': qualifiedName,
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
                                 'minOccurs': minOccurs,
@@ -174,6 +184,8 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                 else:
                     elements.append({
                         'name': to_camel_case(element_name),
+                        'qualifiedName': qualifiedNameParts,
+                        'document_name': qualifiedName,
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
                         'minOccurs': minOccurs,
@@ -187,7 +199,9 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         inner_classes.append(inner_type)  # 将内部类信息单独存储
             else:
                 elements.append({
-                    'name': to_camel_case(element_name) + 's',
+                    'name': to_camel_case(element_name),
+                    'qualifiedName': qualifiedNameParts,
+                    'document_name': qualifiedName,
                     'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
                     'minOccurs': minOccurs,
@@ -207,6 +221,7 @@ def extract_annotation(group_element):
     description = ""
     pure_maxOccurs = ""
     pure_minOccurs = ""
+    qualifiedName = ""
     annotation = group_element.find("./{http://www.w3.org/2001/XMLSchema}annotation")
     if annotation is not None:
         documentation = annotation.find("./{http://www.w3.org/2001/XMLSchema}documentation")
@@ -223,11 +238,17 @@ def extract_annotation(group_element):
                 min_match = re.search(r'pureMM\.minOccurs\s*=\s*"(\d+)"', tag_text)
                 if min_match:
                     pure_minOccurs = min_match.group(1)
+                qn_match = re.search(r'mmt\.qualifiedName\s*=\s*"([^"]+)"', tag_text)
+                if qn_match:
+                    qn = qn_match.group(1)
+                    qualifiedName = qn
             elif source == "stereotypes" and appinfo.text:
                 description += "stereotype:" + appinfo.text.strip() + " "
     description = description.strip()
     return {
         "description": description,
         "pureMM_maxOccurs": pure_maxOccurs,
-        "pureMM_minOccurs": pure_minOccurs
+        "pureMM_minOccurs": pure_minOccurs,
+        "qualifiedName": qualifiedName,
+        "qualifiedNameParts": qualifiedName.split('.', 1)[1] if '.' in qualifiedName else ""
     }
