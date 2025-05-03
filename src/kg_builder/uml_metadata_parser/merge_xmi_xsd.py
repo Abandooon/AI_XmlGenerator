@@ -58,6 +58,74 @@ def save_json_file(data, file_path):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+def remove_inner_classes_from_groups(metadata):
+    """从metadata的groups中删除innerClasses字段"""
+    groups = metadata.get("groups", {})
+    removed_count = 0
+
+    for group_name, group_data in groups.items():
+        if "innerClasses" in group_data:
+            del group_data["innerClasses"]
+            removed_count += 1
+
+    if removed_count > 0:
+        print(f"\n已从 {removed_count} 个groups元素中删除innerClasses字段")
+    else:
+        print("\n未在groups中找到innerClasses字段")
+
+    return metadata
+
+
+def remove_fields_from_structure(structure):
+    """从structure中删除Aggregation和parents字段"""
+    aggregation_count = 0
+    parents_count = 0
+
+    for class_name, class_data in structure.items():
+        if "Aggregation" in class_data:
+            del class_data["Aggregation"]
+            aggregation_count += 1
+
+        if "parents" in class_data:
+            del class_data["parents"]
+            parents_count += 1
+
+    if aggregation_count > 0 or parents_count > 0:
+        print(f"\n已删除 {aggregation_count} 个Aggregation字段和 {parents_count} 个parents字段")
+    else:
+        print("\n未在structure中找到需要删除的字段")
+
+    return structure
+
+
+def remove_duplicate_complex_types(metadata):
+    """从complexTypes中删除与groups重名的元素"""
+    groups = metadata.get("groups", {})
+    complex_types = metadata.get("complexTypes", {})
+
+    # 查找groups和complexTypes中重名的元素
+    duplicates = []
+    for name in complex_types.keys():
+        if name in groups:
+            duplicates.append(name)
+
+    # 从complexTypes中删除重名元素
+    for name in duplicates:
+        complex_types.pop(name)
+
+    # 打印删除信息
+    if duplicates:
+        print(f"\n已从complexTypes中删除以下{len(duplicates)}个与groups重名的元素:")
+        for elem in sorted(duplicates):
+            print(f"- {elem}")
+    else:
+        print("\n未发现complexTypes中与groups重名的元素")
+
+    # 更新metadata
+    metadata["complexTypes"] = complex_types
+    return metadata
+
+
 def merge_elements(metadata_groups, structure):
     """合并来自metadata.json和structure.json的元素"""
     merged_result = {}
@@ -87,7 +155,7 @@ def merge_elements(metadata_groups, structure):
 
 def main():
     # 定义输入和输出路径
-    input_dir = Path("input")
+    input_dir = Path("output")
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
 
@@ -100,8 +168,20 @@ def main():
         print(f"正在加载 {metadata_path}...")
         metadata = load_json_file(metadata_path)
 
+        # 从metadata的groups中删除innerClasses字段
+        print("删除groups中的innerClasses字段...")
+        metadata = remove_inner_classes_from_groups(metadata)
+
+        # 移除complexTypes中与groups重名的元素
+        print("检查并删除complexTypes中与groups重名的元素...")
+        metadata = remove_duplicate_complex_types(metadata)
+
         print(f"正在加载 {structure_path}...")
         structure = load_json_file(structure_path)
+
+        # 从structure中删除Aggregation和parents字段
+        print("删除structure中的Aggregation和parents字段...")
+        structure = remove_fields_from_structure(structure)
 
         # 提取metadata.json中的groups
         metadata_groups = metadata.get("groups", {})
@@ -119,10 +199,13 @@ def main():
         else:
             print("\nstructure.json 中的所有元素都已合并")
 
-        # 保存合并结果
-        output_data = {"groups": merged_data}
-        save_json_file(output_data, output_path)
+        # 创建最终输出数据，保留metadata中的所有元素
+        output_data = metadata.copy()
+        # 用合并后的groups更新输出数据
+        output_data["groups"] = merged_data
 
+        # 保存合并结果
+        save_json_file(output_data, output_path)
         print(f"\n合并数据已保存到 {output_path}")
     except Exception as e:
         print(f"处理过程中出错: {str(e)}")

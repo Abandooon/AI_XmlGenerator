@@ -16,6 +16,7 @@ def extractAttributeGroup(root):
         for attribute in attributeGroup.findall(".//{http://www.w3.org/2001/XMLSchema}attribute"):
             result = extract_annotation(attribute)
             description = result['description']
+            stereotypes = result['stereotypes']
             pure_maxOccurs = result['pureMM_maxOccurs']
             pure_minOccurs = result['pureMM_minOccurs']
             qualifiedName = result['qualifiedName']
@@ -32,6 +33,7 @@ def extractAttributeGroup(root):
                 'type': mapXsdTypeToJava(attrType, context='attribute_group'),
                 'annotation': attrName,
                 'description': description,
+                'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
             })

@@ -68,17 +68,17 @@ class XmiProcessor:
                                     associated_from.append(start_name)
 
         if parents:
-            class_info['parents'] = ','.join(parents)
+            class_info['parents'] = list(parents)
         if childs:
-            class_info['childs'] = ','.join(childs)
+            class_info['childs'] = list(childs)
         if aggregations:
-            class_info['Aggregation'] = ''.join(aggregations)
+            class_info['Aggregation'] = aggregations
         if dependencies:
-            class_info['Dependency'] = ''.join(dependencies)
+            class_info['Dependency'] = dependencies
         if associated_to:
-            class_info['ClassAssociatedTo'] = ','.join(associated_to)
+            class_info['ClassAssociatedTo'] = associated_to
         if associated_from:
-            class_info['ClassAssociatedFrom'] = ','.join(associated_from)
+            class_info['ClassAssociatedFrom'] = associated_from
 
     def process_generalizations(self, xml_class, class_info):
         """处理继承关系并存入class_info"""
@@ -88,7 +88,7 @@ class XmiProcessor:
             if general_id in self.id_to_class:
                 generalizations.append(self.id_to_class[general_id])
         if generalizations:
-            class_info['generalization'] = ','.join(generalizations)
+            class_info['generalization'] = generalizations
 
     def process_element(self, xml_elem, root, package_path):
         """递归处理元素并收集类信息"""
@@ -102,7 +102,7 @@ class XmiProcessor:
         elif elem_type == 'uml:Class':
             class_name = elem_name
             class_info = {
-                'Package': ','.join(package_path),
+                'Package': package_path,
                 'abstract': xml_elem.get('isAbstract', 'false').lower()
             }
             self.process_links(xml_elem, class_info, root)

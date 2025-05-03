@@ -45,6 +45,9 @@ def process_group_inner_complex_type(root, element, element_wrapper):
                             attributes.append({
                                 'type': baseTypeInfo['type'],
                                 'annotation': baseTypeInfo['annotation'],
+                                'xml_tag': None if baseTypeInfo['annotation'] == '@XmlValue' else baseName,
+                                'xml_wrapper_tag': None,
+                                'is_xml_attribute': False,
                             })
                 for attr in extension.findall("./{http://www.w3.org/2001/XMLSchema}attribute"):
                     attr_name = attr.get('name')  # 获取属性名称
@@ -52,7 +55,10 @@ def process_group_inner_complex_type(root, element, element_wrapper):
                     attributes.append({
                         'name': to_camel_case(attr_name),
                         'type': attr_type,
-                        'annotation': '@XmlAttribute(name="{}")'.format(attr_name)  # 为属性生成@XmlAttribute注解
+                        'annotation': '@XmlAttribute(name="{}")'.format(attr_name),  # 为属性生成@XmlAttribute注解
+                        'xml_tag': attr_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': True,
                     })
 
         inner_complex_types.append({

@@ -86,6 +86,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
         element_type = element.get('type')  # 获取元素类型
         result = extract_annotation(element)
         description = result['description']
+        stereotypes = result['stereotypes']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
         qualifiedName = result['qualifiedName']
@@ -100,9 +101,13 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'maxOccurs': maxOccurs,
                     'minOccurs': '0',
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })
@@ -114,9 +119,13 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'maxOccurs': maxOccurs,
                     'minOccurs': '0',
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })
@@ -135,9 +144,13 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                                 'document_name': qualifiedName,
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
+                                'xml_tag': attr.get('xml_tag'),
+                                'xml_wrapper_tag': attr.get('xml_wrapper_tag'),
+                                'is_xml_attribute': attr.get('is_xml_attribute'),
                                 'maxOccurs': attr.get('maxOccurs'),
                                 'minOccurs': '0',
                                 'description': description,
+                                'stereotypes': stereotypes,
                                 'pure_minOccurs': pure_minOccurs,
                                 'pure_maxOccurs': pure_maxOccurs,
                             })
@@ -152,9 +165,13 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                         'document_name': qualifiedName,
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
                         'maxOccurs': maxOccurs,
                         'minOccurs': '0',
                         'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -168,8 +185,12 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'document_name': qualifiedName,
                     'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'maxOccurs': maxOccurs,
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })

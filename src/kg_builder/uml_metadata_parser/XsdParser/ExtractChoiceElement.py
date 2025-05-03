@@ -18,6 +18,7 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
         from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
         result = extract_annotation(single_element)
         description = result['description']
+        stereotypes = result['stereotypes']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
 
@@ -34,7 +35,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 'type': element_type, #现在还是存在内部类中的，应该在外层提取到主类中
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName, element_name),
+                'xml_tag': element_name,
+                'xml_wrapper_tag': fatherElementName,
+                'is_xml_attribute': False,
                 'description': description,
+                'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
             })
@@ -48,7 +53,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 # 'annotation': '@XmlElement(name="{}")'.format(element_name)
                 'annotation': '@XmlElementWrapper(name="{}")\n@XmlElement(name="{}")'.format(fatherElementName,
                                                                                              element_name),
+                'xml_tag': element_name,
+                'xml_wrapper_tag': fatherElementName,
+                'is_xml_attribute': False,
                 'description': description,
+                'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
             })
@@ -71,7 +80,9 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         attributes.append({
                             'type': baseTypeInfo['type'],
                             'annotation': baseTypeInfo['annotation'],
-                            # 'annotationName': baseTypeInfo['annotationName']
+                            'xml_tag': None if baseTypeInfo['annotation'] == '@XmlValue' else baseName,
+                            'xml_wrapper_tag': None,
+                            'is_xml_attribute': False,
                         })
             for attr in extension.findall("./{http://www.w3.org/2001/XMLSchema}attribute"):
                 attr_name = attr.get('name')  # 获取属性名称
@@ -80,7 +91,10 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 attributes.append({
                     'name': to_camel_case(attr_name),
                     'type': attr_type,
-                    'annotation': '@XmlAttribute(name="{}")'.format(attr_name)  # 为属性生成@XmlAttribute注解
+                    'annotation': '@XmlAttribute(name="{}")'.format(attr_name),  # 为属性生成@XmlAttribute注解
+                    'xml_tag': attr_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': True,
                 })
             inner_complex_types.append({
                 'InnerClassName': inner_class_name,
@@ -100,6 +114,7 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
             from src.kg_builder.uml_metadata_parser.XsdParser.ExtractGroup import extract_annotation
             result = extract_annotation(element)
             description = result['description']
+            stereotypes = result['stereotypes']
             pure_maxOccurs = result['pureMM_maxOccurs']
             pure_minOccurs = result['pureMM_minOccurs']
 
@@ -112,7 +127,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': element_type,
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
                         'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -121,7 +140,12 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                     elements.append({
                         'name': to_camel_case(element_name),
                         'type': element_type,
-                        'annotation': '@XmlElement(name="{}")'.format(element_name),'description': description,
+                        'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
+                        'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -132,7 +156,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
                         'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -141,7 +169,11 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'name': to_camel_case(element_name),
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
                         'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -177,7 +209,10 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                     attributes.append({
                         'name': to_camel_case(attr_name),
                         'type': attr_type,
-                        'annotation': '@XmlAttribute(name="{}")'.format(attr_name)  # 为属性生成@XmlAttribute注解
+                        'annotation': '@XmlAttribute(name="{}")'.format(attr_name),  # 为属性生成@XmlAttribute注解
+                        'xml_tag': attr_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': True,
                     })
                 inner_complex_types.append({
                     'InnerClassName': inner_class_name,

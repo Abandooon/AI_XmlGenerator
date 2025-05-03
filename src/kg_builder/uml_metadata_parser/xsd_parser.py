@@ -65,22 +65,77 @@ if __name__ == "__main__":
     metadata_file_path = os.path.join(output_dir, 'metadata.json')
 
 
-    def serialize_element(value):
+    def improved_serialize_element(value):
+        """更智能地序列化元素，保留JSON兼容的数据结构"""
         if isinstance(value, etree._Element):
             return etree.tostring(value, encoding='unicode')
         elif isinstance(value, dict):
-            return {k: serialize_element(v) for k, v in value.items()}
+            return {k: improved_serialize_element(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [improved_serialize_element(item) for item in value]
+        elif isinstance(value, (int, float, bool, str, type(None))):
+            # 这些类型直接兼容JSON，无需转换
+            return value
         else:
+            # 不兼容JSON的类型转为字符串
             return str(value)
 
 
+    # 从对象获取特定字段值的函数
+    def get_field_value(obj, field):
+        """从对象尝试获取字段值"""
+        if isinstance(obj, dict) and field in obj:
+            return obj[field]
+        elif hasattr(obj, field):
+            return getattr(obj, field)
+        elif hasattr(obj, 'get') and callable(obj.get):
+            return obj.get(field)
+        return None
+
+
+    # 构建metadata内容
     metadata_content = {
-        "groups": {key: serialize_element(value) for key, value in groups.items()},
-        "attributeGroups": {key: serialize_element(value) for key, value in attributeGroups.items()},
-        "simpleTypes": {index: serialize_element(value) for index, value in enumerate(simpleTypes)},
-        "complexTypes": {index: serialize_element(value) for index, value in enumerate(complexTypes)},
-        "extract_inner_class":{index: serialize_element(value) for index, value in enumerate(extract_inner_class)}
+        "groups": {},
+        "attributeGroups": {key: improved_serialize_element(value) for key, value in attributeGroups.items()},
+        "simpleTypes": {},
+        "complexTypes": {},
+        "extract_inner_class": {}
     }
+
+    # 处理groups - 使用'name'作为键
+    for key, value in groups.items():
+        name = get_field_value(value, 'name') or key
+        metadata_content["groups"][name] = improved_serialize_element(value)
+
+    # 处理simpleTypes - 使用'id'作为键
+    for index, value in enumerate(simpleTypes):
+        id_value = get_field_value(value, 'id')
+        if id_value:
+            metadata_content["simpleTypes"][id_value] = improved_serialize_element(value)
+        else:
+            metadata_content["simpleTypes"][f"type_{index}"] = improved_serialize_element(value)
+
+    # 处理complexTypes - 使用'document_name'作为键
+    for index, value in enumerate(complexTypes):
+        doc_name = get_field_value(value, 'document_name')
+        if doc_name:
+            metadata_content["complexTypes"][doc_name] = improved_serialize_element(value)
+        else:
+            metadata_content["complexTypes"][f"type_{index}"] = improved_serialize_element(value)
+
+    # 处理extract_inner_class - 使用可能的标识符
+    for index, value in enumerate(extract_inner_class):
+        # 尝试使用多个可能的字段作为标识符
+        identifier = (get_field_value(value, 'name') or
+                      get_field_value(value, 'id') or
+                      get_field_value(value, 'document_name'))
+        if identifier:
+            metadata_content["extract_inner_class"][identifier] = improved_serialize_element(value)
+        else:
+            metadata_content["extract_inner_class"][f"class_{index}"] = improved_serialize_element(value)
+
+    # 保存为JSON
     with open(metadata_file_path, 'w', encoding='utf-8') as metadata_file:
         import json
+
         json.dump(metadata_content, metadata_file, ensure_ascii=False, indent=4)

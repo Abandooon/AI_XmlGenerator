@@ -25,6 +25,7 @@ def extractGroup(root, element_wrapper):
 
         result = extract_annotation(group)
         description = result['description']
+        stereotypes = result['stereotypes']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
         qualifiedName = result['qualifiedName']
@@ -89,18 +90,22 @@ def extractGroup(root, element_wrapper):
             if group.get("name") == group_name:
                 complex_types = ",".join([to_pascal_case(ct.strip()) for ct in group.get("complexTypes").replace("//", ",").lstrip(",").split(",")])
                 child = complex_types
+                subTags = [to_pascal_case(ct.strip()) for ct in
+                                 group.get("complexTypes").replace("//", ",").lstrip(",").split(",")]
                 break
 
         groups[group_name] = {
             'name': qualifiedName if qualifiedName else to_pascal_case(group_name),
             'annotation': group_name,
             'description': description,
+            'stereotypes': stereotypes,
             'pure_minOccurs': pure_minOccurs,
             'pure_maxOccurs': pure_maxOccurs,
             'child':child,
+            'subTags': subTags,
             'elements': accumulated_elements,
             'innerClasses': accumulated_inner_classes,
-            'attributeGroups': ",".join(attribute_groups)
+            'attributeGroups': attribute_groups
         }
 
     return groups
@@ -119,6 +124,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
 
         result = extract_annotation(element)
         description = result['description']
+        stereotypes = result['stereotypes']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
         qualifiedName = result['qualifiedName']
@@ -134,9 +140,13 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })
@@ -148,9 +158,13 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'document_name': qualifiedName,
                     'type': element_type,
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })
@@ -171,9 +185,13 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                                 'document_name': qualifiedName,
                                 'type': attr.get('type'),
                                 'annotation': attr.get('annotation'),
+                                'xml_tag': attr.get('xml_tag'),
+                                'xml_wrapper_tag': attr.get('xml_wrapper_tag'),
+                                'is_xml_attribute': attr.get('is_xml_attribute'),
                                 'minOccurs': minOccurs,
                                 'maxOccurs': attr.get('maxOccurs'),
                                 'description': description,
+                                'stereotypes': stereotypes,
                                 'pure_minOccurs': pure_minOccurs,
                                 'pure_maxOccurs': pure_maxOccurs,
                             })
@@ -188,9 +206,13 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         'document_name': qualifiedName,
                         'type': to_pascal_case(element_name),
                         'annotation': '@XmlElement(name="{}")'.format(element_name),
+                        'xml_tag': element_name,
+                        'xml_wrapper_tag': None,
+                        'is_xml_attribute': False,
                         'minOccurs': minOccurs,
                         'maxOccurs': maxOccurs,
                         'description': description,
+                        'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
                     })
@@ -204,9 +226,13 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'document_name': qualifiedName,
                     'type': to_pascal_case(element_name),
                     'annotation': '@XmlElement(name="{}")'.format(element_name),
+                    'xml_tag': element_name,
+                    'xml_wrapper_tag': None,
+                    'is_xml_attribute': False,
                     'minOccurs': minOccurs,
                     'maxOccurs': maxOccurs,
                     'description': description,
+                    'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
                 })
@@ -219,14 +245,15 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
 def extract_annotation(group_element):
     import re
     description = ""
-    pure_maxOccurs = ""
-    pure_minOccurs = ""
+    pure_maxOccurs = 0
+    pure_minOccurs = 0
     qualifiedName = ""
+    stereotypes = []
     annotation = group_element.find("./{http://www.w3.org/2001/XMLSchema}annotation")
     if annotation is not None:
         documentation = annotation.find("./{http://www.w3.org/2001/XMLSchema}documentation")
         if documentation is not None and documentation.text:
-            description += "note:" + documentation.text.strip() + " "
+            description += documentation.text.strip() + " "
         appinfos = annotation.findall("./{http://www.w3.org/2001/XMLSchema}appinfo")
         for appinfo in appinfos:
             source = appinfo.get("source")
@@ -234,19 +261,20 @@ def extract_annotation(group_element):
                 tag_text = appinfo.text.strip()
                 max_match = re.search(r'pureMM\.maxOccurs\s*=\s*"(-?\d+)"', tag_text)
                 if max_match:
-                    pure_maxOccurs = max_match.group(1)
+                    pure_maxOccurs = int(max_match.group(1))
                 min_match = re.search(r'pureMM\.minOccurs\s*=\s*"(\d+)"', tag_text)
                 if min_match:
-                    pure_minOccurs = min_match.group(1)
+                    pure_minOccurs = int(min_match.group(1))
                 qn_match = re.search(r'mmt\.qualifiedName\s*=\s*"([^"]+)"', tag_text)
                 if qn_match:
                     qn = qn_match.group(1)
                     qualifiedName = qn
             elif source == "stereotypes" and appinfo.text:
-                description += "stereotype:" + appinfo.text.strip() + " "
+                stereotypes = appinfo.text.strip().split(',')  # 按逗号分割为列表
     description = description.strip()
     return {
         "description": description,
+        "stereotypes" : stereotypes,
         "pureMM_maxOccurs": pure_maxOccurs,
         "pureMM_minOccurs": pure_minOccurs,
         "qualifiedName": qualifiedName,
