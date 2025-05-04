@@ -161,7 +161,7 @@ def main():
 
     metadata_path = input_dir / "metadata.json"
     structure_path = input_dir / "structure.json"
-    output_path = output_dir / "merged.json"
+    output_path = output_dir / "unified_metadata.json"
 
     try:
         # 加载JSON文件
