@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Tuple, Dict, Any, Optional
+from typing import Optional
 
 from utils import normalize_text
 
@@ -8,6 +8,8 @@ from utils import normalize_text
 class DocumentProcessor:
     def __init__(self, input_dir: str):
         self.input_dir = input_dir
+
+    # 方法保持不变，只修改类型注解
 
     def load_document(self, file_name: str) -> str:
         """加载文档文件，支持.md格式"""
@@ -20,15 +22,21 @@ class DocumentProcessor:
 
         return content
 
-    def preprocess_document(self, content: str) -> str:
-        """预处理文档内容"""
-        # 标准化文本
-        normalized = normalize_text(content)
+    def preprocess_document(self, file_path: str) -> str:
+        """预处理文档，保留特殊格式标记"""
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+            text = f.read()
 
-        # 重建段落 - 尝试识别被错误分割的段落
-        normalized = self._rebuild_paragraphs(normalized)
+        # 保留 (cid:xxx) 格式标记以用于提取
+        preserved_text = text
 
-        return normalized
+        # 规范化但保留关键格式
+        preserved_text = re.sub(r'\r\n', '\n', preserved_text)  # 统一换行符
+
+        # 保留空行以区分段落
+        preserved_text = re.sub(r'\n{3,}', '\n\n', preserved_text)  # 将3个以上换行符替换为2个
+
+        return preserved_text
 
     def _rebuild_paragraphs(self, text: str) -> str:
         """

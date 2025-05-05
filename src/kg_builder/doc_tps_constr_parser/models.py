@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Union
+from typing import Optional, Any, Union
 
 @dataclass
 class Entity:
@@ -9,7 +9,7 @@ class Entity:
     start: int
     end: int
     parent: Optional[str] = None  # 父类或所属类
-    metadata: Dict[str, Any] = field(default_factory=dict)  # 来自元数据的附加信息
+    metadata: dict[str, Any] = field(default_factory=dict)  # 来自元数据的附加信息
 
 @dataclass
 class ConstraintRaw:
@@ -41,15 +41,15 @@ class ProhibitionExpression:
 @dataclass
 class NonOverlapExpression:
     """不重叠表达式"""
-    attributes: List[Dict[str, str]]  # 不应重叠的属性列表，每项包含class和attribute
+    attributes: list[dict[str, str]]  # 不应重叠的属性列表，每项包含class和attribute
     scope: str  # 作用范围，如"within_one_ModeDeclarationGroup"
 
 @dataclass
 class PermissionExpression:
     """许可表达式"""
-    attributes: List[Dict[str, str]]  # 允许的属性列表，每项包含class和attribute
+    attributes: list[dict[str, str]]  # 允许的属性列表，每项包含class和attribute
     permission: str  # 许可类型，如"arbitrary_values"
-    conditions: List[str] = field(default_factory=list)  # 前提条件，如其他约束ID
+    conditions: list[str] = field(default_factory=list)  # 前提条件，如其他约束ID
 
 @dataclass
 class ConstraintStructured:
@@ -61,8 +61,8 @@ class ConstraintStructured:
     source_id: str  # 源约束ID
     explanation: Optional[str] = None  # 附加解释
     reference_id: Optional[str] = None  # 引用ID
-    condition: Optional[Union[ConditionExpression, List[ConditionExpression]]] = None
-    prohibition: Optional[List[ProhibitionExpression]] = None
+    condition: Optional[Union[ConditionExpression, list[ConditionExpression]]] = None
+    prohibition: Optional[list[ProhibitionExpression]] = None
     non_overlapping: Optional[NonOverlapExpression] = None
     permission: Optional[PermissionExpression] = None
-    additional_data: Dict[str, Any] = field(default_factory=dict)  # 额外数据
+    additional_data: dict[str, Any] = field(default_factory=dict)  # 额外数据

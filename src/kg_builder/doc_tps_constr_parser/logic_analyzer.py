@@ -1,6 +1,6 @@
 import re
 import spacy
-from typing import List, Dict, Any, Optional, Tuple, Union
+from typing import Optional, Any, Union
 
 from models import (
     ConstraintRaw, Entity, ConditionExpression,
@@ -11,7 +11,6 @@ from utils import (
     CONDITIONAL_PATTERNS, PROHIBITION_PATTERNS,
     SCOPE_PATTERNS, OVERLAP_PATTERNS
 )
-
 
 class LogicAnalyzer:
     def __init__(self):
@@ -24,7 +23,7 @@ class LogicAnalyzer:
         self.scope_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in SCOPE_PATTERNS]
         self.overlap_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in OVERLAP_PATTERNS]
 
-    def analyze_constraint_logic(self, constraint: ConstraintRaw, entities: List[Entity]) -> Dict[str, Any]:
+    def analyze_constraint_logic(self, constraint: ConstraintRaw, entities: list[Entity]) -> dict[str, Any]:
         """分析约束的逻辑结构"""
         result = {
             "constraint_type": self._determine_constraint_type(constraint, entities),
@@ -38,7 +37,7 @@ class LogicAnalyzer:
         # 移除空值
         return {k: v for k, v in result.items() if v}
 
-    def _determine_constraint_type(self, constraint: ConstraintRaw, entities: List[Entity]) -> str:
+    def _determine_constraint_type(self, constraint: ConstraintRaw, entities: list[Entity]) -> str:
         """确定约束类型"""
         body = constraint.body.lower()
 
@@ -65,7 +64,7 @@ class LogicAnalyzer:
 
         return "Generic"  # 默认类型
 
-    def _extract_conditions(self, constraint: ConstraintRaw, entities: List[Entity]) -> List[Dict[str, Any]]:
+    def _extract_conditions(self, constraint: ConstraintRaw, entities: list[Entity]) -> list[dict[str, Any]]:
         """提取条件表达式"""
         conditions = []
         body = constraint.body
@@ -111,7 +110,7 @@ class LogicAnalyzer:
 
         return conditions
 
-    def _extract_prohibitions(self, constraint: ConstraintRaw, entities: List[Entity]) -> List[Dict[str, Any]]:
+    def _extract_prohibitions(self, constraint: ConstraintRaw, entities: list[Entity]) -> list[dict[str, Any]]:
         """提取禁止表达式"""
         prohibitions = []
         body = constraint.body
@@ -152,7 +151,7 @@ class LogicAnalyzer:
 
         return prohibitions
 
-    def _extract_non_overlapping(self, constraint: ConstraintRaw, entities: List[Entity]) -> Optional[Dict[str, Any]]:
+    def _extract_non_overlapping(self, constraint: ConstraintRaw, entities: list[Entity]) -> Optional[dict[str, Any]]:
         """提取不重叠约束"""
         body = constraint.body
 
@@ -192,7 +191,7 @@ class LogicAnalyzer:
 
         return None
 
-    def _extract_permissions(self, constraint: ConstraintRaw, entities: List[Entity]) -> Optional[Dict[str, Any]]:
+    def _extract_permissions(self, constraint: ConstraintRaw, entities: list[Entity]) -> Optional[dict[str, Any]]:
         """提取许可表达式"""
         body = constraint.body
 
@@ -223,7 +222,7 @@ class LogicAnalyzer:
 
         return None
 
-    def _extract_scope(self, constraint: ConstraintRaw, entities: List[Entity]) -> Optional[str]:
+    def _extract_scope(self, constraint: ConstraintRaw, entities: list[Entity]) -> Optional[str]:
         """提取约束的作用范围"""
         body = constraint.body
 
@@ -237,7 +236,7 @@ class LogicAnalyzer:
 
         return None
 
-    def _find_entity_in_text(self, text: str, entities: List[Entity]) -> Optional[Entity]:
+    def _find_entity_in_text(self, text: str, entities: list[Entity]) -> Optional[Entity]:
         """在文本片段中查找实体"""
         if not text:
             return None

@@ -1,14 +1,13 @@
 import os
 import argparse
 import json
-from typing import Dict, List, Any
+from typing import Any
 
 from document_processor import DocumentProcessor
 from constraint_extractor import ConstraintExtractor
 from entity_recognizer import EntityRecognizer
 from logic_analyzer import LogicAnalyzer
 from constraint_mapper import ConstraintMapper
-from models import ConstraintRaw, ConstraintStructured
 from utils import save_json
 
 
@@ -42,6 +41,15 @@ def main():
     # 3. 提取约束
     raw_constraints = constraint_extractor.extract_constraints(processed_text)
     print(f"从文档中提取了 {len(raw_constraints)} 个约束")
+    if raw_constraints:
+        print("提取的第一个约束:")
+        print(f"ID: {raw_constraints[0].id}")
+        print(f"标题: {raw_constraints[0].title}")
+        print(f"正文: {raw_constraints[0].body[:100]}...")
+        if raw_constraints[0].explanation:
+            print(f"解释: {raw_constraints[0].explanation[:100]}...")
+    else:
+        print("未提取到约束，请检查正则表达式和文档格式")
 
     # 4. 处理每个约束
     structured_constraints = []

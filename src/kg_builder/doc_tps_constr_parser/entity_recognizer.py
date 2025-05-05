@@ -2,7 +2,7 @@ import spacy
 from spacy.matcher import PhraseMatcher, Matcher
 from spacy.tokens import Doc, Span
 import json
-from typing import List, Dict, Set, Tuple, Any, Optional
+from typing import Optional, Any
 
 from models import Entity, ConstraintRaw
 
@@ -21,7 +21,7 @@ class EntityRecognizer:
         self.phrase_matcher = self._build_phrase_matcher()
         self.pattern_matcher = self._build_pattern_matcher()
 
-    def _build_terminology(self) -> Dict[str, List[Dict[str, Any]]]:
+    def _build_terminology(self) -> dict[str, list[dict[str, Any]]]:
         """从元数据构建术语表，包括类名、属性名和枚举值"""
         terminology = {
             "CLASS": [],
@@ -113,14 +113,14 @@ class EntityRecognizer:
 
         return matcher
 
-    def _get_entity_metadata(self, entity_text: str, entity_type: str) -> Dict[str, Any]:
+    def _get_entity_metadata(self, entity_text: str, entity_type: str) -> dict[str, Any]:
         """获取实体的元数据"""
         for term in self.terminology[entity_type]:
             if term["text"].lower() == entity_text.lower():
                 return term["metadata"]
         return {}
 
-    def recognize_entities(self, constraint: ConstraintRaw) -> Tuple[ConstraintRaw, List[Entity]]:
+    def recognize_entities(self, constraint: ConstraintRaw) -> tuple[ConstraintRaw, list[Entity]]:
         """识别约束文本中的实体"""
         entities = []
 

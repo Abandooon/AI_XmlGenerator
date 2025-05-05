@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Optional
 
 from models import (
     ConstraintRaw, ConstraintStructured, Entity,
@@ -11,7 +11,7 @@ class ConstraintMapper:
     def __init__(self):
         pass
 
-    def map_to_structured(self, constraint: ConstraintRaw, logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+    def map_to_structured(self, constraint: ConstraintRaw, logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """将原始约束映射为结构化约束"""
         constraint_type = logic_analysis.get("constraint_type", "Generic")
 
@@ -41,7 +41,7 @@ class ConstraintMapper:
         return structured
 
     def _map_conditional_prohibition(self, structured: ConstraintStructured,
-                                     logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+                                     logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """映射条件禁止约束"""
         # 处理条件
         conditions = logic_analysis.get("conditions", [])
@@ -88,7 +88,7 @@ class ConstraintMapper:
         return structured
 
     def _map_non_overlap_constraint(self, structured: ConstraintStructured,
-                                    logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+                                    logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """映射非重叠约束"""
         non_overlapping = logic_analysis.get("non_overlapping")
         if non_overlapping:
@@ -99,7 +99,7 @@ class ConstraintMapper:
 
         return structured
 
-    def _map_permission(self, structured: ConstraintStructured, logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+    def _map_permission(self, structured: ConstraintStructured, logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """映射许可约束"""
         permission = logic_analysis.get("permissions")
         if permission:
@@ -112,7 +112,7 @@ class ConstraintMapper:
         return structured
 
     def _map_prohibition(self, structured: ConstraintStructured,
-                         logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+                         logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """映射一般禁止约束"""
         # 处理禁止
         prohibitions = logic_analysis.get("prohibitions", [])
@@ -132,7 +132,7 @@ class ConstraintMapper:
         return structured
 
     def _map_requirement(self, structured: ConstraintStructured,
-                         logic_analysis: Dict[str, Any]) -> ConstraintStructured:
+                         logic_analysis: dict[str, Any]) -> ConstraintStructured:
         """映射要求约束"""
         # 要求约束可能没有明确的结构，保留原始数据
         structured.additional_data = {

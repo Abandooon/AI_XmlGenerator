@@ -1,15 +1,13 @@
 import re
 import os
 import json
-from typing import Dict, List, Any, Optional
+from typing import Optional, Any
 
 # 约束ID模式
 CONSTRAINT_ID_PATTERN = r"\[(constr|TPS)_(\d+)\]"
 
-# 约束块模式 (匹配整个约束块)
-CONSTRAINT_BLOCK_PATTERN = r"\[(constr|TPS)_(\d+)\](.*?)(?:\(cid:100\)(.*?)(?:\(cid:99\)(?:\(\)|\(([A-Z0-9_]+)\))))"
-
-# 条件模式
+# 修改constraint_block_pattern以匹配文档中的实际格式
+CONSTRAINT_BLOCK_PATTERN = r"\[(constr|TPS|TPS_SWCT)_([^\]]+)\](.*?)\(cid:100\)(.*?)\(cid:99\)(?:\(\)|\(([A-Z0-9_]+)\))"# 条件模式
 CONDITIONAL_PATTERNS = [
     r"if\s+(.*?)\s+(?:is|are)\s+(?:set|equal)\s+to\s+(.*?)(?:,|\.|;)",
     r"when\s+(.*?)\s+(?:is|are)\s+(.*?)(?:,|\.|;)",
@@ -35,11 +33,10 @@ OVERLAP_PATTERNS = [
 ]
 
 
-def load_json(file_path: str) -> Dict[str, Any]:
+def load_json(file_path: str) -> dict[str, Any]:
     """加载JSON文件"""
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
 
 def save_json(data: Any, file_path: str) -> None:
     """保存数据到JSON文件"""
@@ -65,14 +62,23 @@ def normalize_text(text: str) -> str:
 
 
 def extract_reference_id(text: str) -> Optional[str]:
-    """从文本中提取参考ID"""
-    match = re.search(r"<REF_ID>([A-Z0-9_]+)</REF_ID>", text)
+    """从文本中提取引用ID"""
+    # 查找类似 (RS_SWCT_03250) 格式的引用
+    match = re.search(r'\(([A-Z0-9_]+)\)$', text)
     if match:
         return match.group(1)
     return None
 
 
 def clean_constraint_text(text: str) -> str:
-    """清理约束文本，移除标记等"""
-    text = re.sub(r"<START_RULE>|<END_RULE>|<REF_ID>.*?</REF_ID>", "", text)
+    """清理约束文本，去除特殊格式符号和多余空格"""
+    # 删除 (cid:xxx) 格式的控制字符
+    text = re.sub(r'\(cid:\d+\)', '', text)
+
+    # 规范化空白 - 将连续的空格替换为单个空格
+    text = re.sub(r'\s+', ' ', text)
+
+    # 处理断行造成的单词分割
+    text = re.sub(r'(\w)\s*-\s*\n\s*(\w)', r'\1\2', text)
+
     return text.strip()
