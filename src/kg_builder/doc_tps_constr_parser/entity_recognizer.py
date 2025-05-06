@@ -125,7 +125,7 @@ class EntityRecognizer:
         entities = []
 
         # 合并标题和正文以进行实体识别
-        combined_text = f"{constraint.title} {constraint.body}"
+        combined_text = f"{constraint.body}"
         if constraint.explanation:
             combined_text += f" {constraint.explanation}"
 

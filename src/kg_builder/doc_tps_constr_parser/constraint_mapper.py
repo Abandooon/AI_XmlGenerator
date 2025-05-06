@@ -19,7 +19,6 @@ class ConstraintMapper:
         structured = ConstraintStructured(
             id=constraint.id,
             type=constraint_type,
-            title=constraint.title,
             body=constraint.body,
             explanation=constraint.explanation,
             source_id=constraint.id,

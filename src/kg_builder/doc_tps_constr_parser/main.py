@@ -167,7 +167,8 @@ def main():
                 for i, c in enumerate(constraints):
                     f.write(f"======== 约束 #{i + 1} ========\n")
                     f.write(f"ID: {c.id}\n")
-                    f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
+                    if hasattr(c, 'title') and c.title:
+                        f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
                     f.write(f"正文: {c.body[:500]}...\n" if len(c.body) > 500 else f"正文: {c.body}\n")
                     if c.explanation:
                         f.write(f"解释: {c.explanation[:300]}...\n" if len(
@@ -186,11 +187,11 @@ def main():
         # 3. 实体识别
         logger.step("识别实体")
         constraints_with_entities = []
-        all_entities = []
+        all_entities = []  # 确保变量被初始化
+        all_doc_entities = []  # 初始化all_doc_entities变量
 
         if entity_recognition_enabled and constraints:
             try:
-                all_doc_entities = []
                 for i, constraint in enumerate(constraints):
                     logger.log(f"处理约束 {i + 1}/{len(constraints)}: {constraint.id}")
                     try:
@@ -245,9 +246,13 @@ def main():
         logger.step("分析约束逻辑")
         logic_analyses = []
 
+        # 确保all_doc_entities正确初始化
+        if 'all_doc_entities' not in locals() or not all_doc_entities:
+            all_doc_entities = [[]] * len(constraints_with_entities)
+
         try:
             for i, (constraint, entities) in enumerate(zip(constraints_with_entities,
-                                                           all_doc_entities if entity_recognition_enabled and all_doc_entities else
+                                                           all_doc_entities if entity_recognition_enabled else
                                                            [[]] * len(constraints_with_entities))):
                 logger.log(f"分析约束 {i + 1}/{len(constraints_with_entities)}: {constraint.id}")
                 try:
@@ -324,11 +329,11 @@ def main():
                     structured = ConstraintStructured(
                         id=constraint.id,
                         type="Generic",
-                        title=constraint.title,
                         body=constraint.body,
                         source_id=constraint.id,
                         explanation=constraint.explanation,
-                        reference_id=constraint.reference_id
+                        reference_id=constraint.reference_id,
+                        title=None  # 不再使用标题
                     )
                     structured_constraints.append(structured)
 
@@ -343,7 +348,8 @@ def main():
                 for i, s in enumerate(structured_constraints):
                     f.write(f"======== 约束 #{i + 1}: {s.id} ========\n")
                     f.write(f"类型: {s.type}\n")
-                    f.write(f"标题: {s.title[:200]}...\n" if len(s.title) > 200 else f"标题: {s.title}\n")
+                    if hasattr(s, 'title') and s.title:
+                        f.write(f"标题: {s.title[:200]}...\n" if len(s.title) > 200 else f"标题: {s.title}\n")
                     f.write(f"源ID: {s.source_id}\n")
 
                     if s.condition:
@@ -388,7 +394,8 @@ def main():
             for i, c in enumerate(all_results["raw_constraints"]):
                 f.write(f"======== 约束 #{i + 1} ========\n")
                 f.write(f"ID: {c.id}\n")
-                f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
+                if hasattr(c, 'title') and c.title:
+                    f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
                 f.write(f"正文: {c.body[:500]}...\n" if len(c.body) > 500 else f"正文: {c.body}\n")
                 if c.explanation:
                     f.write(

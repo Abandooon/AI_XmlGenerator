@@ -56,18 +56,17 @@ class FlexibleConstraintExtractor:
             self.logger.log(f"约束文本长度: {len(constraint_text)} 字符")
 
             self.logger.log(f"解析约束 {constraint_id} 的内容")
-            title, body, explanation, reference_id = self._parse_constraint_content(constraint_text, id_type, id_num)
+            _, body, explanation, reference_id = self._parse_constraint_content(constraint_text, id_type, id_num)
 
             # 检查是否是假阳性
-            if self._is_likely_false_positive(title, body):
-                self.logger.log(f"跳过可能的假阳性: [{constraint_id}] {title[:50]}...")
+            if self._is_likely_false_positive(body):
+                self.logger.log(f"跳过可能的假阳性: [{constraint_id}]")
                 skipped_count += 1
                 continue
 
             constraint = ConstraintRaw(
                 id=constraint_id,
                 type=id_type,
-                title=title,
                 body=body,
                 explanation=explanation,
                 reference_id=reference_id
@@ -75,8 +74,8 @@ class FlexibleConstraintExtractor:
 
             constraints.append(constraint)
 
-            title_preview = title[:50] + "..." if len(title) > 50 else title
-            self.logger.log(f"成功提取约束: {constraint_id} - {title_preview}")
+            body_preview = body[:50] + "..." if len(body) > 50 else body
+            self.logger.log(f"成功提取约束: {constraint_id} - {body_preview}")
 
         self.logger.step("约束提取完成")
         self.logger.log(f"共找到 {len(constraint_ids)} 个约束ID")
@@ -96,18 +95,11 @@ class FlexibleConstraintExtractor:
         return [(m.group(1), m.group(2), m.start()) for m in matches]
 
     def _parse_constraint_content(self, text: str, id_type: str, id_num: str) -> tuple[
-        str, str, Optional[str], Optional[str]]:
-        """解析约束内容，提取标题、正文、解释和引用ID"""
+        None, str, Optional[str], Optional[str]]:
+        """解析约束内容，将整个内容作为正文处理"""
         # 移除约束ID部分
         id_marker = f"[{id_type}_{id_num}]"
-        content = text.replace(id_marker, "", 1).strip()
-
-        # 提取标题
-        lines = content.split('\n')
-        title = lines[0].strip()
-
-        # 移除标题后的内容作为正文
-        body_text = '\n'.join(lines[1:]).strip()
+        body_text = text.replace(id_marker, "", 1).strip()
 
         # 寻找引用ID (通常在文本末尾括号内)
         reference_id = None
@@ -150,16 +142,7 @@ class FlexibleConstraintExtractor:
         if explanation:
             explanation = re.sub(r'\(cid:\d+\)', '', explanation)
 
-        # 处理特殊情况：当标题为空或太短时
-        if len(title) < 3:
-            # 尝试从body中提取第一行作为标题
-            if '\n' in body_text:
-                first_line = body_text.split('\n')[0].strip()
-                if len(first_line) > 3:
-                    title = first_line
-                    body_text = '\n'.join(body_text.split('\n')[1:]).strip()
-
-        return title, body_text, explanation, reference_id
+        return None, body_text, explanation, reference_id
 
     def _prefilter_text(self, text: str) -> str:
         """预处理文本以过滤掉XML代码块和示例代码块"""
@@ -184,20 +167,32 @@ class FlexibleConstraintExtractor:
 
         return filtered
 
-    def _is_likely_false_positive(self, title: str, body: str) -> bool:
-        """检查是否可能是假阳性识别"""
-        # 如果标题或正文为空或极短
-        if not title or len(title) < 3 or not body or len(body) < 10:
+    def _is_likely_false_positive(self, body: str) -> bool:
+        """检查是否可能是假阳性识别，主要基于正文内容和特殊标记"""
+        # 首先检查特殊标记，若存在，判定为真约束
+        if "(cid:100)" in body and "(cid:99)" in body:
+            return False
+
+        # 如果正文为空或极短
+        if not body or len(body) < 10:
             return True
 
-        # 如果标题或正文包含明显的非约束内容标记
+        # 如果正文包含明显的非约束内容标记
         non_constraint_markers = [
             "Listing", "Figure", "Table", "Example",
             "<", ">", "<?xml", "EXAMPLE", "OUTPUT"
         ]
 
         for marker in non_constraint_markers:
-            if marker in title or marker in body[:50]:
+            if marker in body[:50]:
                 return True
+
+        # 检查格式特征
+        if body.count('\n') < 1:  # 真正的约束通常是多行的
+            return True
+
+        # 检查内容是否包含明显的非约束内容
+        if re.search(r'Figure \d+\.', body) or re.search(r'Table \d+\.', body):
+            return True
 
         return False

@@ -16,7 +16,6 @@ class ConstraintRaw:
     """从文档中提取的原始约束信息"""
     id: str  # 约束ID如constr_1299
     type: str  # 约束类型如constr或TPS
-    title: str  # 约束标题
     body: str  # 约束主体文本
     explanation: Optional[str] = None  # 附加解释文本
     reference_id: Optional[str] = None  # 引用的标识符如RS_SWCT_03200
@@ -56,7 +55,6 @@ class ConstraintStructured:
     """结构化后的约束信息"""
     id: str  # 约束ID
     type: str  # 约束类型，如ConditionalProhibition
-    title: str  # 约束标题
     body: str  # 约束原文
     source_id: str  # 源约束ID
     explanation: Optional[str] = None  # 附加解释

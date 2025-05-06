@@ -38,7 +38,6 @@ class ConstraintExtractor:
             constraint = ConstraintRaw(
                 id=constraint_id,
                 type=constraint_type,
-                title=title_part,
                 body=body_part,
                 explanation=explanation,
                 reference_id=reference_id
@@ -97,7 +96,6 @@ class ConstraintExtractor:
             constraint = ConstraintRaw(
                 id=constraint_id,
                 type=constraint_type,
-                title=title_line,
                 body=body_text,
                 explanation=explanation,
                 reference_id=reference_id
