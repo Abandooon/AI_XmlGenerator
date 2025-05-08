@@ -161,20 +161,16 @@ def main():
             save_json([_to_dict(c) for c in constraints], raw_constraints_path)
             logger.log(f"已保存原始约束到: {raw_constraints_path}")
 
-            # 保存为可读文本格式
+            # 修改：更新原始约束文本处理 - 使用reference_ids
             raw_constraints_txt_path = os.path.join(debug_dir, f"{doc_base}_raw_constraints.txt")
             with open(raw_constraints_txt_path, 'w', encoding='utf-8') as f:
                 for i, c in enumerate(constraints):
                     f.write(f"======== 约束 #{i + 1} ========\n")
                     f.write(f"ID: {c.id}\n")
-                    if hasattr(c, 'title') and c.title:
-                        f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
+                    f.write(f"标题: {c.title}\n")  # 新增标题显示
                     f.write(f"正文: {c.body[:500]}...\n" if len(c.body) > 500 else f"正文: {c.body}\n")
-                    if c.explanation:
-                        f.write(f"解释: {c.explanation[:300]}...\n" if len(
-                            c.explanation) > 300 else f"解释: {c.explanation}\n")
-                    if c.reference_id:
-                        f.write(f"引用ID: {c.reference_id}\n")
+                    if hasattr(c, 'reference_ids') and c.reference_ids:
+                        f.write(f"引用ID: {', '.join(c.reference_ids)}\n")
                     f.write("\n\n")
             logger.log(f"已保存可读格式原始约束到: {raw_constraints_txt_path}")
 
@@ -325,15 +321,13 @@ def main():
                     logger.log(f"约束 {constraint.id} 成功映射为 {structured.type} 类型")
                 except Exception as e:
                     logger.log(f"约束 {constraint.id} 的结构化映射失败: {str(e)}")
-                    # 创建一个基本的结构化约束
+                    # 修改：更新结构化约束失败的错误处理
                     structured = ConstraintStructured(
                         id=constraint.id,
                         type="Generic",
+                        title=constraint.title,  # 添加标题
                         body=constraint.body,
-                        source_id=constraint.id,
-                        explanation=constraint.explanation,
-                        reference_id=constraint.reference_id,
-                        title=None  # 不再使用标题
+                        reference_ids=getattr(constraint, 'reference_ids', []),
                     )
                     structured_constraints.append(structured)
 
@@ -348,9 +342,10 @@ def main():
                 for i, s in enumerate(structured_constraints):
                     f.write(f"======== 约束 #{i + 1}: {s.id} ========\n")
                     f.write(f"类型: {s.type}\n")
-                    if hasattr(s, 'title') and s.title:
-                        f.write(f"标题: {s.title[:200]}...\n" if len(s.title) > 200 else f"标题: {s.title}\n")
-                    f.write(f"源ID: {s.source_id}\n")
+
+                    # 兼容旧模型
+                    if hasattr(s, 'source_id'):
+                        f.write(f"源ID: {s.source_id}\n")
 
                     if s.condition:
                         if isinstance(s.condition, list):
@@ -371,7 +366,10 @@ def main():
                     if s.permission:
                         f.write(f"许可表达式: {_to_dict(s.permission)}\n")
 
-                    if s.reference_id:
+                    # 兼容新旧引用字段
+                    if hasattr(s, 'reference_ids') and s.reference_ids:
+                        f.write(f"引用ID: {', '.join(s.reference_ids)}\n")
+                    elif hasattr(s, 'reference_id') and s.reference_id:
                         f.write(f"引用ID: {s.reference_id}\n")
 
                     f.write("\n\n")
@@ -394,14 +392,15 @@ def main():
             for i, c in enumerate(all_results["raw_constraints"]):
                 f.write(f"======== 约束 #{i + 1} ========\n")
                 f.write(f"ID: {c.id}\n")
-                if hasattr(c, 'title') and c.title:
-                    f.write(f"标题: {c.title[:300]}...\n" if len(c.title) > 300 else f"标题: {c.title}\n")
+                f.write(f"标题: {c.title}\n")  # 新增标题显示
                 f.write(f"正文: {c.body[:500]}...\n" if len(c.body) > 500 else f"正文: {c.body}\n")
-                if c.explanation:
-                    f.write(
-                        f"解释: {c.explanation[:300]}...\n" if len(c.explanation) > 300 else f"解释: {c.explanation}\n")
-                if c.reference_id:
+
+                # 兼容新旧引用格式
+                if hasattr(c, 'reference_ids') and c.reference_ids:
+                    f.write(f"引用ID: {', '.join(c.reference_ids)}\n")
+                elif hasattr(c, 'reference_id') and c.reference_id:
                     f.write(f"引用ID: {c.reference_id}\n")
+
                 f.write("\n\n")
     else:
         logger.log("未提取到任何约束")
@@ -411,8 +410,14 @@ def main():
         structured_output_path = os.path.join(output_dir, "structured_constraints.json")
         logger.log(f"保存 {len(all_results['structured_constraints'])} 个结构化约束到 {structured_output_path}")
 
-        # 将结构化约束转换为可序列化的字典
-        structured_dicts = [_to_dict(sc) for sc in all_results["structured_constraints"]]
+        # 将结构化约束转换为可序列化的字典，并过滤null值
+        structured_dicts = []
+        for sc in all_results["structured_constraints"]:
+            sc_dict = _to_dict(sc)
+            # 过滤空值
+            sc_dict = {k: v for k, v in sc_dict.items() if v is not None}
+            structured_dicts.append(sc_dict)
+
         save_json(structured_dicts, structured_output_path)
     else:
         logger.log("未生成任何结构化约束")

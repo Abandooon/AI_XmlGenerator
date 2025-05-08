@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, List
 
 @dataclass
 class Entity:
@@ -16,9 +16,9 @@ class ConstraintRaw:
     """从文档中提取的原始约束信息"""
     id: str  # 约束ID如constr_1299
     type: str  # 约束类型如constr或TPS
-    body: str  # 约束主体文本
-    explanation: Optional[str] = None  # 附加解释文本
-    reference_id: Optional[str] = None  # 引用的标识符如RS_SWCT_03200
+    title: str  # 约束标题 - 新增字段
+    body: str  # 约束详细内容
+    reference_ids: List[str] = field(default_factory=list)  # 引用的ID列表
 
 @dataclass
 class ConditionExpression:
@@ -55,12 +55,10 @@ class ConstraintStructured:
     """结构化后的约束信息"""
     id: str  # 约束ID
     type: str  # 约束类型，如ConditionalProhibition
-    body: str  # 约束原文
-    source_id: str  # 源约束ID
-    explanation: Optional[str] = None  # 附加解释
-    reference_id: Optional[str] = None  # 引用ID
+    title: str  # 约束标题 - 新增字段
+    body: str  # 约束详细内容
+    reference_ids: List[str] = field(default_factory=list)  # 引用的ID列表
     condition: Optional[Union[ConditionExpression, list[ConditionExpression]]] = None
     prohibition: Optional[list[ProhibitionExpression]] = None
     non_overlapping: Optional[NonOverlapExpression] = None
     permission: Optional[PermissionExpression] = None
-    additional_data: dict[str, Any] = field(default_factory=dict)  # 额外数据

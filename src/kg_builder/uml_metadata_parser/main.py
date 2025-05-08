@@ -29,19 +29,19 @@ def check_files():
     missing_files = []
 
     # 检查输入文件
-    if not os.path.exists('uml_metadata_parser/input'):
-        os.makedirs('uml_metadata_parser/input')
-        missing_files.append("uml_metadata_parser/input/AUTOSAR_4-2-2.xsd")
-        missing_files.append("uml_metadata_parser/input/AUTOSAR_XMI.xmi")
+    if not os.path.exists('input'):
+        os.makedirs('input')
+        missing_files.append("input/AUTOSAR_4-2-2.xsd")
+        missing_files.append("input/AUTOSAR_XMI.xmi")
     else:
-        if not os.path.exists('uml_metadata_parser/input/AUTOSAR_4-2-2.xsd'):
-            missing_files.append("uml_metadata_parser/input/AUTOSAR_4-2-2.xsd")
-        if not os.path.exists('uml_metadata_parser/input/AUTOSAR_XMI.xmi'):
-            missing_files.append("uml_metadata_parser/input/AUTOSAR_XMI.xmi")
+        if not os.path.exists('input/AUTOSAR_4-2-2.xsd'):
+            missing_files.append("input/AUTOSAR_4-2-2.xsd")
+        if not os.path.exists('input/AUTOSAR_XMI.xmi'):
+            missing_files.append("input/AUTOSAR_XMI.xmi")
 
     # 确保输出目录存在
-    if not os.path.exists('uml_metadata_parser/output'):
-        os.makedirs('uml_metadata_parser/output')
+    if not os.path.exists('output'):
+        os.makedirs('output')
 
     return missing_files
 

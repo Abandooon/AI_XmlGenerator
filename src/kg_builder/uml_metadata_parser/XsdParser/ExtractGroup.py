@@ -177,6 +177,16 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
             if maxOccurs == '1':
                 #-------如果wrapperElement为True，说明生成了wrapper，将内部类属性放到上层element中，将嵌套内部类提到上层内部类,属性变量名用上层element的-----
                 if wrapperElement:
+                    if description is None:
+                        found_element = element.find("./{http://www.w3.org/2001/XMLSchema}complexType/choice/element")
+                        if found_element is not None:
+                            result = extract_annotation(found_element)
+                            description = result['description']
+                            stereotypes = result['stereotypes']
+                            pure_maxOccurs = result['pureMM_maxOccurs']
+                            pure_minOccurs = result['pureMM_minOccurs']
+                            qualifiedName = result['qualifiedName']
+                            qualifiedNameParts = result['qualifiedNameParts']
                     for inner_type in inner_complex_types:
                         for attr in inner_type.get('InnerClassAttributes'):
                             elements.append({

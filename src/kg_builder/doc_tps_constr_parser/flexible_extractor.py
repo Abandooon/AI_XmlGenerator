@@ -1,198 +1,194 @@
 import re
-from typing import Optional
+from typing import List
 
 from models import ConstraintRaw
 from logging_utils import StepLogger
 
+__all__ = ["FlexibleConstraintExtractor"]
+
 
 class FlexibleConstraintExtractor:
-    """灵活的约束提取器，能够处理多种格式"""
+    """抽取遵循固定格式的约束块：[ID] 标题 (cid:100) 细则 (cid:99) (关联条目ID列表)"""
 
-    def __init__(self, debug=True, max_debug_length=200):
+    # 行首 ID
+    _ID_ANCHOR = re.compile(r"^\s*\[((?:constr|TPS(?:_SWCT)?|RS|req)_[^\]]+)\]", re.I)
+
+    # 标记
+    _CID_OPEN = "(cid:100)"
+    _CID_CLOSE = "(cid:99)"
+
+    # 引用ID - 使用新的模式匹配(cid:99)后的括号内容，允许跨行
+    _REF_ID_PATTERN = re.compile(r"\(cid:99\)\s*\((.*?)\)", re.DOTALL)
+
+    # 匹配其他位置的引用
+    _REF_ELSEWHERE = re.compile(r"\[(?:constr|TPS(?:_SWCT)?|RS|req)_[^\]]+\]")
+
+    def __init__(self, debug: bool = True, max_debug_length: int = 200, **_):
         self.debug = debug
-        self.max_debug_length = max_debug_length
+        self.max_debug_len = max_debug_length
         self.logger = StepLogger(enable=True)
 
-    def extract_constraints(self, text: str) -> list[ConstraintRaw]:
-        """主提取方法，尝试多种策略"""
-        self.logger.step("开始提取约束")
+    def extract_constraints(self, text: str):
+        self.logger.step("提取约束：开始")
+        text = self._preprocess_text(text)  # 新增：修复被分割的单词
+        purified = self._prefilter(text)
+        blocks = list(self._iter_blocks(purified))
+        cons = [self._build_constraint(b) for b in blocks]
+        self.logger.finish()
+        return cons
 
-        self.logger.log(f"输入文本长度: {len(text)} 字符")
-        if self.debug:
-            sample_text = text[:self.max_debug_length] + "..." if len(text) > self.max_debug_length else text
-            self.logger.log(f"文本样本: {sample_text}")
+    def _preprocess_text(self, text: str) -> str:
+        """预处理文本，修复被换行符分割的单词"""
+        # 处理行尾连字符
+        text = re.sub(r'(\w+)-\s*\n\s*(\w+)', r'\1\2', text)
 
-        self.logger.step("预处理文本，过滤XML和代码示例")
-        filtered_text = self._prefilter_text(text)
-        self.logger.log(f"预处理后文本长度: {len(filtered_text)} 字符")
+        # 处理无连字符但明显被分割的单词
+        text = re.sub(r'(\w{3,})\s*\n\s*(\w{2,})',
+                      lambda m: m.group(1) + m.group(2)
+                      if m.group(1)[-1].islower() and m.group(2)[0].islower()
+                      else m.group(0), text)
 
-        self.logger.step("查找所有约束ID")
-        constraint_ids = self._find_all_constraint_ids(filtered_text)
+        return text
 
-        if not constraint_ids:
-            self.logger.log("未找到任何约束ID，提取结束")
-            return []
+    def _iter_blocks(self, text: str):
+        """迭代查找所有约束块，确保完整捕获关联ID部分"""
+        lines = text.splitlines()
+        n, i = len(lines), 0
 
-        self.logger.log(f"找到 {len(constraint_ids)} 个约束ID")
-        for i, (id_type, id_num, start_pos) in enumerate(constraint_ids[:5]):
-            self.logger.log(f"ID {i + 1}: [{id_type}_{id_num}] 位置: {start_pos}")
-        if len(constraint_ids) > 5:
-            self.logger.log(f"...以及{len(constraint_ids) - 5}个更多约束ID")
-
-        self.logger.step("解析每个约束的内容")
-        constraints = []
-        skipped_count = 0
-
-        for i, (id_type, id_num, start_pos) in enumerate(constraint_ids):
-            constraint_id = f"{id_type}_{id_num}"
-            self.logger.log(f"处理约束 #{i + 1}: {constraint_id}")
-
-            # 确定约束结束位置
-            end_pos = len(filtered_text)
-            if i < len(constraint_ids) - 1:
-                end_pos = constraint_ids[i + 1][2]
-
-            constraint_text = filtered_text[start_pos:end_pos].strip()
-            self.logger.log(f"约束文本长度: {len(constraint_text)} 字符")
-
-            self.logger.log(f"解析约束 {constraint_id} 的内容")
-            _, body, explanation, reference_id = self._parse_constraint_content(constraint_text, id_type, id_num)
-
-            # 检查是否是假阳性
-            if self._is_likely_false_positive(body):
-                self.logger.log(f"跳过可能的假阳性: [{constraint_id}]")
-                skipped_count += 1
+        while i < n:
+            # 查找约束开始（ID标记）
+            if not self._ID_ANCHOR.match(lines[i]):
+                i += 1
                 continue
 
-            constraint = ConstraintRaw(
-                id=constraint_id,
-                type=id_type,
-                body=body,
-                explanation=explanation,
-                reference_id=reference_id
-            )
+            # 找到约束开始
+            start = i
+            i += 1
 
-            constraints.append(constraint)
+            # 查找约束结束和关联ID
+            found_cid_close = False
+            found_ref_open = False
+            ref_bracket_count = 0
 
-            body_preview = body[:50] + "..." if len(body) > 50 else body
-            self.logger.log(f"成功提取约束: {constraint_id} - {body_preview}")
+            while i < n:
+                line = lines[i]
 
-        self.logger.step("约束提取完成")
-        self.logger.log(f"共找到 {len(constraint_ids)} 个约束ID")
-        self.logger.log(f"成功提取 {len(constraints)} 个约束")
-        self.logger.log(f"跳过 {skipped_count} 个可能的假阳性")
+                # 处理cid:99标记
+                if not found_cid_close and self._CID_CLOSE in line:
+                    found_cid_close = True
 
-        self.logger.finish()
-        return constraints
+                    # 检查同一行中是否有左括号开始关联ID
+                    if "(" in line[line.find(self._CID_CLOSE) + len(self._CID_CLOSE):]:
+                        found_ref_open = True
+                        # 计算此行中左括号出现次数
+                        ref_part = line[line.find(self._CID_CLOSE) + len(self._CID_CLOSE):]
+                        ref_bracket_count = ref_part.count("(") - ref_part.count(")")
 
-    def _find_all_constraint_ids(self, text: str) -> list[tuple[str, str, int]]:
-        """查找所有约束ID及其位置"""
-        # 匹配 [constr_123], [TPS_456], [TPS_SWCT_789] 等格式
-        id_pattern = r'\[(constr|TPS|TPS_SWCT|req)_([^\]]+)\]'
-        matches = list(re.finditer(id_pattern, text))
+                # 如果已找到cid:99和左括号，继续寻找右括号以完成关联ID捕获
+                elif found_cid_close and found_ref_open:
+                    ref_bracket_count += line.count("(") - line.count(")")
 
-        # 返回格式：[(id_type, id_number, start_position), ...]
-        return [(m.group(1), m.group(2), m.start()) for m in matches]
-
-    def _parse_constraint_content(self, text: str, id_type: str, id_num: str) -> tuple[
-        None, str, Optional[str], Optional[str]]:
-        """解析约束内容，将整个内容作为正文处理"""
-        # 移除约束ID部分
-        id_marker = f"[{id_type}_{id_num}]"
-        body_text = text.replace(id_marker, "", 1).strip()
-
-        # 寻找引用ID (通常在文本末尾括号内)
-        reference_id = None
-        ref_match = re.search(r'\(([A-Z0-9_]+)\)$', body_text)
-        if ref_match:
-            reference_id = ref_match.group(1)
-            # 从正文中移除引用ID
-            body_text = body_text[:ref_match.start()].strip()
-
-        # 尝试从正文中分离出解释部分
-        explanation = None
-        explanation_markers = [
-            "In other words", "Nevertheless", "Note that",
-            "i.e.", "e.g.", "This means", "For example"
-        ]
-
-        # 尝试分离解释段落
-        body_parts = re.split(r'\n\s*\n', body_text)  # 使用空行分隔段落
-        if len(body_parts) > 1:
-            for i, part in enumerate(body_parts[1:], 1):
-                for marker in explanation_markers:
-                    if marker in part:
-                        explanation = '\n\n'.join(body_parts[i:])
-                        body_text = body_parts[0]
+                    # 括号匹配完成，关联ID部分结束
+                    if ref_bracket_count <= 0:
+                        i += 1  # 包含当前行
                         break
-                if explanation:
+
+                # 未找到结束但遇到新约束，作为容错处理
+                elif self._ID_ANCHOR.match(line):
                     break
 
-        # 如果没有通过段落分离找到解释，尝试直接在文本中查找标记
-        if not explanation:
-            for marker in explanation_markers:
-                exp_start = body_text.find(marker)
-                if exp_start > 20:  # 避免标记出现在太靠前的位置
-                    explanation = body_text[exp_start:].strip()
-                    body_text = body_text[:exp_start].strip()
+                i += 1
+
+                # 已经找到结束标记但没有关联ID，或者搜索太多行
+                if found_cid_close and not found_ref_open and i - start > 3:
                     break
 
-        # 清理特殊格式标记，如 (cid:100) 和 (cid:99)
-        body_text = re.sub(r'\(cid:\d+\)', '', body_text)
-        if explanation:
-            explanation = re.sub(r'\(cid:\d+\)', '', explanation)
+                # 容错：搜索超过最大限制
+                if i - start > 50:
+                    break
 
-        return None, body_text, explanation, reference_id
+            # 提取完整约束块
+            yield "\n".join(lines[start:i])
 
-    def _prefilter_text(self, text: str) -> str:
-        """预处理文本以过滤掉XML代码块和示例代码块"""
-        original_length = len(text)
+    def _build_constraint(self, block: str):
+        """从文本块构建ConstraintRaw对象，正确处理复杂关联ID并分离标题和正文"""
+        # 提取ID
+        id_match = self._ID_ANCHOR.match(block.split('\n')[0])
+        cid = id_match.group(1) if id_match else "UNKNOWN"
 
-        # 过滤XML代码块
-        filtered = re.sub(r'<[^>]+>.*?</[^>]+>', '', text, flags=re.DOTALL)
-        xml_removed_length = len(filtered)
-        self.logger.log(f"XML过滤: {original_length - xml_removed_length} 字符被移除")
+        # 提取关联ID列表 - 使用正则表达式抓取(cid:99)后的括号内容
+        reference_ids = []
+        ref_id_match = self._REF_ID_PATTERN.search(block)
 
-        # 过滤代码示例块
-        filtered = re.sub(r'Listing \d+\..*?\n\n', '\n\n', filtered)
+        if ref_id_match:
+            # 提取括号内容并按逗号分割
+            ref_content = ref_id_match.group(1)
+            # 清理和分割引用ID
+            ref_parts = [p.strip() for p in re.split(r',\s*', ref_content)]
+            # 过滤空字符串
+            reference_ids = [p for p in ref_parts if p]
 
-        # 过滤图表引用
-        filtered = re.sub(r'Figure \d+\..*?\n', '\n', filtered)
+        # 提取文本中其他位置的引用
+        other_refs = [m.group(0).strip("[]") for m in self._REF_ELSEWHERE.finditer(block)]
+        # 过滤掉当前ID
+        other_refs = [ref for ref in other_refs if ref != cid]
 
-        # 过滤表格引用
-        filtered = re.sub(r'Table \d+\..*?\n', '\n', filtered)
+        # 合并并去重所有引用
+        all_refs = reference_ids + other_refs
+        all_refs = list(dict.fromkeys(all_refs))  # 去重
 
-        final_length = len(filtered)
-        self.logger.log(f"预处理总计移除: {original_length - final_length} 字符")
+        # 修改：分离标题和正文
+        title = ""
+        body = ""
 
-        return filtered
+        if self._CID_OPEN in block and self._CID_CLOSE in block:
+            # 提取标题（在ID之后，cid:100之前）
+            before_open = block.split(self._CID_OPEN, 1)[0]
+            if id_match:
+                title = before_open[id_match.end():].strip()
 
-    def _is_likely_false_positive(self, body: str) -> bool:
-        """检查是否可能是假阳性识别，主要基于正文内容和特殊标记"""
-        # 首先检查特殊标记，若存在，判定为真约束
-        if "(cid:100)" in body and "(cid:99)" in body:
-            return False
+            # 提取详细内容（在cid:100和cid:99之间）
+            middle_parts = block.split(self._CID_OPEN, 1)[1].split(self._CID_CLOSE, 1)
+            body = middle_parts[0].strip() if middle_parts else ""
+        else:
+            # 非标准格式处理
+            body = block
+            if id_match:
+                body = body[id_match.end():].strip()
 
-        # 如果正文为空或极短
-        if not body or len(body) < 10:
-            return True
+            # 处理可能的标题 - 取第一行或首句为标题
+            if "\n" in body:
+                title, rest = body.split("\n", 1)
+                body = rest.strip()
+            elif "." in body:
+                title, rest = body.split(".", 1)
+                body = rest.strip()
+                title = title + "."
 
-        # 如果正文包含明显的非约束内容标记
-        non_constraint_markers = [
-            "Listing", "Figure", "Table", "Example",
-            "<", ">", "<?xml", "EXAMPLE", "OUTPUT"
+            # 移除可能的尾部引用
+            if ref_id_match:
+                body = body.replace(ref_id_match.group(0), "").strip()
+
+        return ConstraintRaw(
+            id=cid,
+            type=cid.split("_", 1)[0] if "_" in cid else "GENERIC",
+            title=title,
+            body=body,
+            reference_ids=all_refs,
+        )
+
+    def _prefilter(self, text: str):
+        """预处理文本，移除干扰内容"""
+        patterns = [
+            (r"\b\d+\s+of\s+\d+\b", ""),  # 页码
+            (r"Document ID \d+:.*?(?=\n|$)", ""),  # 文档ID
+            (r"note \d+:.*?(?=\n|$)", ""),  # note
+            (r"— AUTOSAR CONFIDENTIAL —", ""),  # 保密标记
+            (r"Software Component Template\s*\nAUTOSAR Release \d+\.\d+\.\d+", ""),  # 文档头
+            (r"\n{3,}", "\n\n")  # 规范化空行
         ]
 
-        for marker in non_constraint_markers:
-            if marker in body[:50]:
-                return True
+        for pattern, replacement in patterns:
+            text = re.sub(pattern, replacement, text, flags=re.I)
 
-        # 检查格式特征
-        if body.count('\n') < 1:  # 真正的约束通常是多行的
-            return True
-
-        # 检查内容是否包含明显的非约束内容
-        if re.search(r'Figure \d+\.', body) or re.search(r'Table \d+\.', body):
-            return True
-
-        return False
+        return text.strip()
