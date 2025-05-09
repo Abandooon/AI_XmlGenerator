@@ -31,8 +31,8 @@ def extractSimpleType(root):
 
         # 将简单类型的信息存储到字典中，并添加到列表中
         simpleTypes.append({
-            'id':to_pascal_case(name),
-            'name': name,
+            'name':to_pascal_case(name),
+            'annotation': name,
             'base': baseType,
             'enumerations': enumerations,  # 添加枚举值列表
             'isPrimitiveType': isPrimitiveType,

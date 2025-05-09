@@ -177,8 +177,10 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
             if maxOccurs == '1':
                 #-------如果wrapperElement为True，说明生成了wrapper，将内部类属性放到上层element中，将嵌套内部类提到上层内部类,属性变量名用上层element的-----
                 if wrapperElement:
-                    if description is None:
-                        found_element = element.find("./{http://www.w3.org/2001/XMLSchema}complexType/choice/element")
+                    if description == "" and qualifiedName == "" and pure_maxOccurs == 0:
+                        ns = "{http://www.w3.org/2001/XMLSchema}"
+                        path = f".//{ns}complexType/{ns}choice/{ns}element"
+                        found_element = element.find(path)
                         if found_element is not None:
                             result = extract_annotation(found_element)
                             description = result['description']

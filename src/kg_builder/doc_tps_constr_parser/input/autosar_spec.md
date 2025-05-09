@@ -48,14 +48,7 @@ components may be deﬁned in the form of hierarchical subsystems which in turn
 consist of software-components again. The description of such hierarchical struc
 tures is in scope of this document.
 
-19 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • A description of AtomicSwComponentType which is implemented as a piece of
 
@@ -84,14 +77,7 @@ points out, other template speciﬁcations (e.g. ECU Resource Template [10] and
 System Template [11]) also use the same modeling approach in order to deﬁne an
 overall consistent model of AUTOSAR software description.
 
-20 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The dashed arrows in the diagram describe dependencies in terms of
 import
@@ -111,11 +97,8 @@ infrastructure meta-classes and common patterns that are described
 in [12]. As these are used by all other template speciﬁcation the dependency asso
 ciations are not depicted in the diagram for the sake of clarity.
 
-21 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SWComponentTemplateSystemTemplateECUCDescriptionTemplateBswModuleTemplateECUCParameterDefTemplateGenericStructureAll other top-level packages aggregate meta-classes from "Generic Structure"CommonStructureAutosarTopLevelStructureThis package contains AUTOSAR, the root of an autosar model. It aggregates metaclasses from the template packages.StandardizationTemplateFeatureModelTemplateDiagnosticExtractEcuResourceTemplateSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -153,11 +136,8 @@ ClientServerInterface on the VFB, the behavior speciﬁes which RunnableEn
 
 SwComponentTypes have not been added to the diagram.
 
-22 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwcInternalBehaviorAtomicSwComponentTypeVirtual Functional Bus (VFB) levelRun-Time-Environment (RTE) levelImplementation levelSwcImplementation«atpVariation,atpSplitable»+internalBehavior0..1+behavior1Software Component Template
 AUTOSAR Release 4.2.2
@@ -225,14 +205,7 @@ Diagnostics over IP
 Electrical Control Unit
 Erasable Programmable Read-Only Memory
 
-23 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 EEPROM
 FID
@@ -319,14 +292,7 @@ The purpose of these constraints is to literally constrain the interpretation of
 AUTOSAR meta-model such that it is possible to detect violations of the standardized
 behavior implemented in an instance of the meta-model (i.e. on M1 level).
 
-24 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Makers of AUTOSAR tools are encouraged to add the numerical ID of a constraint that
 corresponds to an M1 modeling issue as part of the diagnostic message issued by the
@@ -414,14 +380,7 @@ guish between class attributes and owned association ends.
 
 Datatype: The datatype of an attribute of the class.
 
-25 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Mul.: The assigned multiplicity of the attribute, i.e. how many instances of the given
 data type are associated with the attribute.
@@ -444,14 +403,7 @@ in [TPS_STDT_00078], see Standardization Template, chapter Support for Traceabil
 
 
 
-34 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2 Conceptual Aspects
 
@@ -499,14 +451,7 @@ chapter 2.2.3.3)
 • sharing between all SwComponentPrototypes of the same SwComponent
 Type in its SwcInternalBehavior via an aggregation of an ParameterDat
 
-35 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 aPrototype in the role of sharedParameter or constantMemory (see chap
 ter 2.2.3.2)
@@ -554,11 +499,8 @@ Element,Referrable,SwComponentType
 Mul. Kind Note
 Datatype
 
-36 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 CurveMapAxisCurveMapAxisSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -666,14 +608,7 @@ can actually can be calibrated (cid:100) Note that a ParameterInterface is not r
 It can be used whenever there
 to parameters which can actually can be calibrated.
 
-37 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 shall be no write access to the data during normal operation of the software, i.e. only
 constant data are visible over the interface. (cid:99)()
@@ -693,14 +628,7 @@ sure the proper allocation of the ParameterDataPrototype (see Figure 2.2) while
 the calibration system has to cope with setting the parameter synchronously on the
 affected ECUs. (cid:99)()
 
-38 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 2.2: ParameterInterface
 
@@ -712,11 +640,8 @@ To share calibration parameters between several SwComponentPrototypes of the
 same SwComponentType, a ParameterDataPrototype is attached to an SwcIn
 ternalBehavior in sharedParameter role (see [TPS_SWCT_01418]).
 
-39 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ParameterInterfaceAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpPrototypeDataPrototypeDataInterfaceAbstractProvidedPortPrototypeAbstractRequiredPortPrototype«isOfType»+requiredInterface1{redefinesatpType}+/swDataDefProps0..1«isOfType»+providedInterface1{redefinesatpType}+parameter1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -756,14 +681,7 @@ rameter role.
 When the SwcInternalBehavior is attached to an AtomicSwComponentType, the
 actual calibration values are speciﬁc for each SwComponentPrototype. (cid:99)()
 
-40 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 2.3: ParameterDataPrototypes in internal behavior
 
@@ -782,11 +700,8 @@ by means of “sharing memory”1.
 language possible to use variables with external linkage (a.k.a. “global variables”, although this term is
 not ofﬁcially deﬁned by the C language) for the purpose of inter-Runnable communication.
 
-41 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ParameterDataPrototypeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarParameterRefAtpStructureElementIdentifiableParameterAccessSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementInternalBehaviorAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+constantMemory0..*+accessedParameter1+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»«instanceRef»+autosarParameter0..1+localParameter0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+parameterAccess0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -834,14 +749,7 @@ RunnableEntitys or at least for a period in time identical to the interval from 
 ﬁrst to the last usage of a concurrently accessed variable in a RunnableEntity. This
 approach could lead to seriously non-deterministic execution timing.
 
-42 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2.3.1.3 Priority Ceiling
 
@@ -879,14 +787,7 @@ It
 would, however, be possible to further optimize the process by reducing the additional
 code at the beginning and end of each task (see Figure 2.5).
 
-43 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2.3.2 Data Consistency at Runtime
 
@@ -929,14 +830,7 @@ The intrinsic meaning of the terms “explicit communication” and “implicit 
 tion” is explained in section 7.5.1.1. It would be fair to say that the distinction between
 implicit and explicit communication establishes a usage pattern in the application do
 
-44 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 main, i.e. in the world of the developer of AUTOSAR software-components and their
 implementation.
@@ -990,14 +884,7 @@ Virtual Functional Bus[3] level by varying
 
 mented by ParameterAccess
 
-45 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • the existence of Chapters of SwComponentDocumentation
 
@@ -1053,14 +940,7 @@ rameter, sharedParameter, and constantMemory
 
 (cid:99)(RS_SWCT_03149, RS_SWCT_03150, RS_SWCT_03151, RS_SWCT_03153)
 
-46 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For the same reason that applies on the existence of PortPrototype the latest
 Binding Time of these kinds of variability is preCompileTime.
@@ -1112,14 +992,7 @@ OEM might want to point out that from the OEM’s point of view sender initValue
 and receiver initValues apply for the elements of PortInterfaces used to type
 the delegation PortPrototypes.
 
-47 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The idea is that the supplier takes over the initValues attached to the delegation
 PortPrototypes and copies them to the PortPrototypes owned by SwCompo
@@ -1159,11 +1032,8 @@ pingSet in the role constantValueMapping.
 
 Figure 2.6: Speciﬁcation of data type mapping for CompositionSwComponentType
 
-48 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwComponentTypeCompositionSwComponentTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetARElementConstantSpecificationMappingSet«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -1200,11 +1070,8 @@ RPortPrototype of the same SwComponentType then the creator of the SwCom
 ponentType cannot enforce this connection as it is created on a higher level of ab
 straction in the context of a CompositionSwComponentType.
 
-49 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
   Software Component Template
 AUTOSAR Release 4.2.2
@@ -1229,11 +1096,8 @@ same large set of data. This means each ApplicationSwComponentType imple
 ments one out of many steps of a complex data processing algorithm applied to the
 same piece of data.
 
-50 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
   Software Component Template
 AUTOSAR Release 4.2.2
@@ -1265,11 +1129,8 @@ a feature to reduce energy consumption of an ECU by switching the ECU in a mode
 called Pretended Networking. In this mode the communication on communication
 networks is reduced and the ECU can go into power saving modes.
 
-51 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
   Software Component Template
 AUTOSAR Release 4.2.2
@@ -1318,14 +1179,7 @@ It is out of the scope of this document to deﬁne the particular properties of 
 cable ModeSwitchInterface. The details of this speciﬁc ModeSwitchInterface
 can be found in the speciﬁcation of the BswM [15]. (cid:99)(RS_SWCT_03110)
 
-52 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2.8 Variable-size Array Data Types
 
@@ -1376,14 +1230,7 @@ In general, the disambiguation becomes multi-faceted (but not necessarily easier
 if the deﬁnition of a corresponding ImplementationDataType is available (see
 [TPS_SWCT_01642]).
 
-53 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01642] Deﬁnition of an “old-world” dynamic-size array data type by
 means of an ImplementationDataType (cid:100) An ImplementationDataType that
@@ -1441,14 +1288,7 @@ Data Type.
 [TPS_SWCT_01644] Deﬁnition of a “new-world” variable-size array data type by
 means of an ApplicationArrayDataType (cid:100) An ApplicationArrayDataType
 
-54 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 that fulﬁlls all of the following conditions shall be considered an “new-world” dynamic
 size array data type.
@@ -1506,14 +1346,7 @@ in Figure 2.10.
 This case corresponds to the possible value VSA_SQUARE of attribute dynami
 cArraySizeProfile.
 
-55 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Rectangular The data type of the elements of the Variable-Size Array Data
 Type itself consists of Variable-Size Array Data Types data types where
@@ -1553,11 +1386,8 @@ Data Types.
 
 3If it was, the case boils down to the rectangular scenario tagged (b).
 
-56 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 (a) (b) (c) (d) Software Component Template
 AUTOSAR Release 4.2.2
@@ -1613,14 +1443,7 @@ plements the payload of the Variable-Size Array Data Type. The dimen
 sion of the array shall be deﬁned such that the intended maximum number of
 elements ﬁts in.
 
-57 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 A Size Indicator of a Variable-Size Array Data Type holds the number of
 valid elements of the array. This information is necessary for the RTE to handle the
@@ -1646,14 +1469,7 @@ The details of how ImplementationDataTypes need to be modeled for the imple
 mentation of Variable-Size Array Data Types can be found in chapter 5.2.5
 and a couple of examples is available in the appendix E.1.
 
-58 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 3 Overview: Software Components, Ports, and
 
@@ -1700,14 +1516,7 @@ icSwComponentTypes. Such AtomicSwComponentTypes encapsulate the imple
 mentation of their functionality and behavior and merely expose well-deﬁned connec
 tion points, called PortPrototypes, to the outside world.
 
-59 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.1: Graphical representation of software-components in AUTOSAR
 
@@ -1776,14 +1585,7 @@ A port group being part of this component.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-60 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swCompon
@@ -1882,11 +1684,8 @@ delegated
 PortAnnota
 tion
 
-61 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Attribute
 ioHwAbstr
@@ -1981,11 +1780,8 @@ PortPrototypes can have the following semantics:
 
 or data.
 
-62 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePRPortPrototypeAbstractRequiredPortPrototypeAbstractProvidedPortPrototypeSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -2071,14 +1867,7 @@ element (data element or operation).
 
 Table 3.4: AbstractProvidedPortPrototype
 
-63 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RPortPrototype
 M2::AUTOSARTemplates::SWComponentTemplate::Components
@@ -2171,14 +1960,7 @@ Stereotypes: isOfType
 
 Table 3.7: PRPortPrototype
 
-64 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.3: Components and Ports
 
@@ -2199,11 +1981,8 @@ allow for adding the SwcInternalBehavior in a later process step. In other words
 is possible to completely develop the VFB view of a software-component and later add
 more details like InternalBehavior. (cid:99)()
 
-65 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]PRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefinesatpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -2264,11 +2043,8 @@ ther details are mentioned in chapter 10 and 11.
 
 Figure 3.4: Overview of Component Types
 
-66 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeCompositionSwComponentTypeAtpPrototypeSwComponentPrototypeSensorActuatorSwComponentTypeParameterSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentType«atpVariation» Tags:vh.latestBindingTime =postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -2331,14 +2107,7 @@ tion parameters in the scope of a ParameterSwComponentType.
 
 For more information about this aspect please refer to section 7.5.4.
 
-67 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.5: Details of ParameterSwComponentType
 
@@ -2398,11 +2167,8 @@ the RTE generator shall
 
 take over the value of
 
-68 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwComponentTypeParameterSwComponentTypeInstantiationDataDefPropsARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSet«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+dataTypeMapping0..*«atpVariation»+instantiationDataDefProps0..*«atpSplitable»+constantMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -2433,11 +2199,8 @@ level. (cid:99)(RS_SWCT_00230)
 
 Figure 3.6: Overview of AtomicSwComponentType
 
-69 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwComponentTypeAtomicSwComponentTypeSymbolPropsSensorActuatorSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentTypeReferrableImplementationProps+ symbol  :CIdentifier«atpSplitable»+symbolProps0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -2478,11 +2241,8 @@ RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
 
 in the ECU software.
 
-70 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuildCompositionSwComponentType+component0..*«atpVariation,atpSplitable»*«isOfType»+type1{redefinesatpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -2552,14 +2312,7 @@ Tags: atp.Splitkey=shortName, variation
 Point.shortLabel
 vh.latestBindingTime=postBuild
 
-71 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 connector
@@ -2644,14 +2397,7 @@ not impacting compatibility.
 Stereotypes: atpSplitable
 Tags: atp.Splitkey=dataTypeMapping
 
-72 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 instantiatio
@@ -2704,14 +2450,7 @@ Stereotypes: isOfType
 
 Table 3.12: SwComponentPrototype
 
-73 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.8: Composition and the meta-classes aggregated
 
@@ -2733,11 +2472,8 @@ Type “DoorControl” for the right door.
 [TPS_SWCT_01080] Delegation ports (cid:100) Note that being a SwComponentType,
 a CompositionSwComponentType also exposes PortPrototypes to the out
 
-74 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeCompositionSwComponentTypeAtpStructureElementSwConnectorAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementIdentifiablePortGroup«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation»+portGroup0..*+port0..*«atpVariation,atpSplitable»+connector*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+component0..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -2797,14 +2533,7 @@ CompositionSwComponentType. (cid:99)(RS_SWCT_03130)
 tors connect from “inner” PortPrototypes to delegated “outer” PortProto
 types. (cid:99)(RS_SWCT_03130)
 
-75 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1032] DelegationSwConnector can only connect PortProto
 types of the same kind (cid:100) A DelegationSwConnector can only connect
@@ -2858,14 +2587,7 @@ The ability to use one or the other meta-class arbitrarily is considered confusi
 fore, [TPS_SWCT_01515] has been deﬁned to remove the unnecessary degree of
 freedom.
 
-76 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01515] PPortInCompositionInstanceRef shall be used for at
 taching DelegationSwConnector to an inner PRPortPrototype (cid:100) For the im
@@ -2963,14 +2685,7 @@ Datatype
 
 Mul. Kind Note
 
-77 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 innerPort
@@ -3049,11 +2764,8 @@ ref
 
 Table 3.16: PassThroughSwConnector
 
-78 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 TriggerRunA1Application SW ComponentRTOComposition SW ComponentSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -3074,11 +2786,8 @@ around inside the ECU.
 
 Figure 3.11: Use case for PassThroughSwConnector (II)
 
-79 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementSwConnectorAssemblySwConnectorDelegationSwConnectorAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePassThroughSwConnector+requiredOuterPort1+providedOuterPort1«instanceRef»+provider0..1«instanceRef»+requester0..1+outerPort1«instanceRef»+innerPort1Application SW ComponentComposition SW ComponentPortInterfaceMappingSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -3119,14 +2828,7 @@ narios. As the actual time-base of the control algorithm is derived from the sch
 implemented in the RTE it obviously facilitates the overall design if the timing can be
 deﬁned on “instance” level.
 
-80 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.12: Instantiation speciﬁc Properties of RTEEvents
 
@@ -3169,11 +2871,8 @@ contribute to the splitkey of aggregations that are
 
 Table 3.17: InstantiationRTEEventProps
 
-81 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInstantiationTimingEventProps+ period  :TimeValueTimingEvent+ period  :TimeValueCompositionSwComponentTypeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation» Tags:vh.latestBindingTime =codeGenerationTime«instanceRef»+refinedEvent1«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+event*«atpVariation,atpSplitable»+startOnEvent0..1+trigger1+waitPoint*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -3237,14 +2936,7 @@ DataInterface, and ParameterInterface is expressed by the deﬁnition of
 the abstract base class DataInterface. (cid:99)(RS_SWCT_00010, RS_SWCT_00080,
 RS_SWCT_00110, RS_SWCT_03010)
 
-82 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.13: DataInterface as an abstract base class
 
@@ -3308,11 +3000,8 @@ nature of the applied service.
 
 Table 3.18: PortInterface
 
-83 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SenderReceiverInterfaceNvDataInterfaceParameterInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]Software Component Template
 AUTOSAR Release 4.2.2
@@ -3355,14 +3044,7 @@ Of course, this aspect facilitates the creation of valid connections between sof
 components dramatically. By using a speciﬁc PortInterface for typing particular
 PortPrototypes the latter are eligible for being connected to each other by deﬁnition.
 
-84 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 3.14: PortInterfaces in the AUTOSAR meta-model
 
@@ -3382,11 +3064,8 @@ face shall not be possible. However, the creation of a connection between a Port
 Prototype typed by a SenderReceiverInterface and a PortPrototype typed
 by a ParameterInterface is supported.
 
-85 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SenderReceiverInterfaceClientServerInterfaceAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableClientServerOperationAutosarDataPrototypeArgumentDataPrototypeAtpPrototypeModeDeclarationGroupPrototypeParameterInterfaceAutosarDataPrototypeParameterDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceTriggerInterfaceAtpStructureElementIdentifiableTriggerModeSwitchInterfaceNvDataInterfaceDataInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+dataElement1..*+nvData1..*+trigger1..*+operation1..*«atpVariation»+modeGroup1+argument*{ordered}«atpVariation»+parameter1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -3430,11 +3109,8 @@ nentTypes cannot refer to AUTOSAR services (cid:100) CompositionSwComponent
 Types shall not own PortPrototypes typed by PortInterfaces where the at
 tribute isService is set to true. (cid:99)()
 
-86 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]«enumeration»ServiceProviderEnum basicSoftwareModeManager comManager cryptoServiceManager diagnosticCommunicationManager diagnosticEventManager diagnosticLogAndTrace ecuManager functionInhibitionManager nonVolatileRamManager syncBaseTimeManager watchDogManager anyStandardized vendorSpecific developmentErrorTracer operatingSystemSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -3520,14 +3196,7 @@ ServiceNeeds. (cid:99)()
 Please ﬁnd more details about the relation of PortInterfaces to AUTOSAR services
 in chapter 11.
 
-87 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 4 Details: Software Components, Ports, and
 
@@ -3580,14 +3249,7 @@ units [16]
 
 • NONE: Unsigned Integer
 
-88 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • BOOLEAN: This represents an integer to be interpreted as boolean.
 
@@ -3659,14 +3321,7 @@ aggr
 
 Table 4.1: SenderReceiverInterface
 
-89 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -3753,14 +3408,7 @@ chapter 5.4.2
 
 computing platform
 
-90 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.1: dataElements of a SenderReceiverInterface
 
@@ -3787,11 +3435,8 @@ best semantics applies. (cid:99)()
 Please note that the deﬁnition of VariableDataPrototype may possibly come very
 close to the reader’s idea of a signal. However, different kinds of signals have a speciﬁc
 
-91 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SenderReceiverInterfaceVariableDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]DataPrototypeAutosarDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementDataInterface+invalidationPolicy0..*+dataElement1..*+dataElement1Software Component Template
 AUTOSAR Release 4.2.2
@@ -3873,14 +3518,7 @@ Yes
 Table 4.5: Supported connections for PortPrototypes typed by a SenderReceiver
 Interface or NvDataInterface
 
-92 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 4.2.3 Client Server Communication
 
@@ -3956,14 +3594,7 @@ Table 4.6: ClientServerInterface
 
 2However, different connection patterns apply, see [constr_1037]
 
-93 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.2: ClientServerOperations of a ClientServerInterface
 
@@ -3984,11 +3615,8 @@ consists of 0..* ArgumentDataPrototypes. The latter may be
 
 The aggregation represents a variation point. (cid:99)(RS_SWCT_03141)
 
-94 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]ClientServerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpStructureElementIdentifiableClientServerOperationDataPrototypeAutosarDataPrototype«enumeration»ArgumentDirectionEnum in out inout«enumeration»ServerArgumentImplPolicyEnum useArgumentType useArrayBaseType useVoid«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTimeARElementAtpTypeAutosarDataType+operation1..*«atpVariation»«atpVariation»+typeBlueprint0..1+argument* {ordered}«atpVariation»«isOfType»+type1{redefines atpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -4104,14 +3732,7 @@ cases, ArgumentDataPrototype deﬁnes an attribute direction, possible values
 are in (pass to operation), out (return from operation), and inout (pass to and return
 from operation). (cid:99)()
 
-95 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 In many common programming languages (like C), an operation is yet another data
 type. This makes it for example possible to pass a reference to an operation as an
@@ -4174,14 +3795,7 @@ The argument value is passed from the callee to the caller.
 
 Table 4.9: ArgumentDirectionEnum
 
-96 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Each ClientServerOperation provides a name space for its ArgumentDataPro
 totypes and therefore has a unique identiﬁer which identiﬁes the operation within the
@@ -4258,14 +3872,7 @@ In addition, the names of the arguments represent an arbitrary choice made when 
 the invocation. In C, only the data types and ordering of the arguments constitute the signature, not the
 names of the arguments.
 
-97 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Please note that the scenario described in [TPS_SWCT_01125] is depicted in Fig
 ure 4.3.
@@ -4318,14 +3925,7 @@ type.serverArgumentImplPolicy shall not be set to useVoid for an Argument
 DataPrototype of direction in that is typed by an AutosarDataType that boils
 down to a primitive C data type (see [TPS_SWCT_01565]). (cid:99)()
 
-98 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.3: Example for [TPS_SWCT_01125]
 
@@ -4371,11 +3971,8 @@ No
 Table 4.11: Supported connections for PortPrototypes typed by a ClientServerIn
 terface, ModeSwitchInterface, or TriggerInterface
 
-99 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Server RunnableEntityn = 2n = 3n = 4{A}{B}{C}{A}{B}{C}Software Component Template
 AUTOSAR Release 4.2.2
@@ -4437,14 +4034,7 @@ not raise infrastructure errors on their own.
 Instead, AUTOSAR the basic software and the RTE will determine infrastructure faults
 and communicate the corresponding error codes to the relevant software-components.
 
-100 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.4: Application error meta-model
 
@@ -4483,11 +4073,8 @@ value 0 shall be be allowed. (cid:99)()
 By [constr_1108] it is possible to ensure that only the six least signiﬁcant bits of a return
 value shall be used for indicating an application error.
 
-101 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+operation1..*«atpVariation»+interface10..*+possibleError0..*+possibleError0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -4570,14 +4157,7 @@ The Trigger of this trigger interface.
 
 Table 4.14: TriggerInterface
 
-102 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -4656,14 +4236,7 @@ actor
 
 Table 4.16: MultidimensionalTime
 
-103 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.5: Trigger of a TriggerInterface
 
@@ -4695,11 +4268,8 @@ agement for Trigger communication.
 [TPS_SWCT_01199] Queued processing of Triggers (cid:100) It may happen that at least
 tentatively a Trigger source ﬁres Triggers faster than they can be processed on
 
-104 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]TriggerInterfaceAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]MultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :Integer+trigger1..*+triggerPeriod0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -4756,14 +4326,7 @@ Interfaces cannot be connected across ECU boundaries. (cid:99)()
 Names. (cid:100) A software component is not allowed to type multiple PortPrototypes
 with ModeSwitchInterfaces where the contained ModeDeclarationGroupPro
 
-105 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 totypes are referencing ModeDeclarationGroups with identical shortNames but
 different ModeDeclarations. (cid:99)()
@@ -4858,14 +4421,7 @@ Stereotypes: isOfType
 
 Table 4.18: ModeDeclarationGroupPrototype
 
-106 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Please note that by aggregating SwCalibrationAccessEnum in the role swCal
 ibrationAccess a ModeDeclarationGroupPrototype gains the ability to be
@@ -4926,14 +4482,7 @@ If somehow a SwComponentType would have to consider two or even more Mod
 eDeclarationGroupPrototypes it is very likely that these would be part of different
 ModeSwitchInterfaces.
 
-107 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The containment of a ModeDeclarationGroupPrototype in a ModeSwitchIn
 terface allows for explicitly deﬁning SwConnectors which communicate between
@@ -4967,11 +4516,8 @@ and for the RTE it is like a usual communication, that means the connector can a
 cross ECU boundaries and the communicated dataElements have to be based on
 AutosarDataTypes. (cid:99)(RS_SWCT_03202, RS_SWCT_03203)
 
-108 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]PortInterfaceModeSwitchInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+initialMode1+modeDeclaration1..*«atpVariation»«isOfType»+type1{redefines atpType}+modeGroup1Software Component Template
 AUTOSAR Release 4.2.2
@@ -5031,11 +4577,8 @@ nGroup
 
 ref
 
-109 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapModeInterfaceMappingAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSet«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+portInterfaceMapping1..*«atpVariation»+modeRequestTypeMap0..*+modeGroup1+implementationDataType1+secondModeGroup1+modeMapping1+firstModeGroup1«isOfType»+type1{redefinesatpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -5058,14 +4601,7 @@ The ModeRequestTypeMap shall be aggregated by a DataTypeMappingSet which
 is referenced from the SwcInternalBehavior that is owned by the Application
 SwComponentType that also owns the PortPrototype. (cid:99)()
 
-110 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.8: Big picture of mode declaration mapping
 
@@ -5075,11 +4611,8 @@ ModeRequestTypeMap shall either be of category VALUE or of category
 TYPE_REFERENCE that in turn references an ImplementationDataType of cat
 egory VALUE.
 
-111 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapAtpStructureElementInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypePPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceModeSwitchInterfaceAbstractRequiredPortPrototypeRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeGroup1«atpSplitable»+dataTypeMapping0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+implementationDataType1«isOfType»+type1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefines atpType}«isOfType»+requiredInterface1{redefines atpType}+modeRequestTypeMap0..*«isOfType»+providedInterface1{redefines atpType}+firstModeGroup1+secondModeGroup1+modeGroup1Software Component Template
 AUTOSAR Release 4.2.2
@@ -5132,14 +4665,7 @@ ShortNames of dataElements do not match).
 In order to also support scenarios where the developer of a CompositionSwCom
 ponentType needs to connect PortPrototypes that would match to each others
 
-112 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 but don’t fulﬁll formal requirements the concept of “port interface mapping” has been
 introduced.
@@ -5191,11 +4717,8 @@ typed by a SenderReceiverInterface.
 [TPS_SWCT_01159] Mapping is described separately from the SwConnector as
 reusable ARElement (cid:100) The mapping is described separately from the SwConnec
 
-113 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataPrototypeMappingIdentifiableDataTransformation+ executeDespiteDataUnavailability  :Boolean+firstToSecondDataTransformation0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -5269,14 +4792,7 @@ Time
 
 Table 4.21: PortInterfaceMappingSet
 
-114 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -5340,14 +4856,7 @@ mapped data elements. (cid:99)(RS_SWCT_03155, RS_SWCT_03210)
 PortInterface elements will not be connected by the referencing SwConnector.
 (cid:99)(RS_SWCT_03155, RS_SWCT_03210)
 
-115 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.10: Relevant meta-classes for PortInterface element mapping
 
@@ -5382,11 +4891,8 @@ ParameterDataPrototypes are restricted by the swImplPolicy attribute.
 between an element where the swImplPolicy is set to queued and an other element
 where the swImplPolicy is set differently. (cid:99)()
 
-116 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSetAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingTriggerInterfaceMappingModeInterfaceMappingClientServerInterfaceMappingVariableAndParameterInterfaceMappingAtpStructureElementSwConnector«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+mapping0..1+portInterfaceMapping1..*«atpVariation»Software Component Template
 AUTOSAR Release 4.2.2
@@ -5412,11 +4918,8 @@ described in chapter 6.2.
 Figure 4.11: Mapping of Sender Receiver Interface, Parameter Interface and Non Volatile
 Data Interface elements
 
-117 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 VariableDataPrototypeDataPrototypeAutosarDataPrototypeParameterDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceParameterInterfaceDataInterfaceNvDataInterfacePortInterfaceMappingVariableAndParameterInterfaceMappingDataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]+dataElement1..*+nvData1..*+textTableMapping0..2+secondDataPrototype1+firstDataPrototype1+dataMapping1..*+parameter1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -5531,14 +5034,7 @@ totype
 
 ref
 
-118 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 subElemen
@@ -5610,14 +5106,7 @@ owned by the mentioned ClientServerOperationMapping. (cid:99)()
 [constr_1268] ArgumentDataPrototype.direction shall be preserved in a
 ClientServerOperationMapping (cid:100) Within the context of a ClientServerOper
 
-119 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ationMapping, the value of the argument ArgumentDataPrototype.direction
 of two mapped ArgumentDataPrototype shall be identical. (cid:99)()
@@ -5634,11 +5123,8 @@ DataPrototype or secondDataPrototype. (cid:99)()
 
 Figure 4.12: Mapping of ClientServerInterface elements and mapping of arguments
 
-120 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableClientServerOperationPortInterfaceClientServerInterfacePortInterfaceMappingClientServerInterfaceMappingClientServerOperationMappingClientServerApplicationErrorMappingIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+possibleError0..*+secondApplicationError1+firstApplicationError1+secondOperation1+firstOperation1+operationMapping1..*+operation1..*«atpVariation»0..*+possibleError0..*+errorMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -5687,11 +5173,8 @@ aggr Map two different ApplicationErrors deﬁned in the
 
 Table 4.25: ClientServerInterfaceMapping
 
-121 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 TextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]ArgumentDataPrototypePortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationClientServerOperationMappingDataPrototypeMappingDataPrototypeAutosarDataPrototype«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+secondDataPrototype1+firstDataPrototype1+argumentMapping0..*+textTableMapping0..2+argument*{ordered}«atpVariation»1+operation1..*«atpVariation»+interface1+secondOperation1+firstOperation1Software Component Template
 AUTOSAR Release 4.2.2
@@ -5815,14 +5298,7 @@ Datatype
 
 Mul. Kind Note
 
-122 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 modeMapp
@@ -5904,14 +5380,7 @@ two ModeDeclarationGroups that afterwards shall be considered compatible. This
 also applies if the two ModeDeclarationGroups deviate with respect to the con
 tained modeTransitions. (cid:99)(RS_SWCT_03210)
 
-123 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.14: Mapping of ModeSwitchInterface elements
 
@@ -5939,11 +5408,8 @@ rationGroups. (cid:99)()
 [TPS_SWCT_01463] modeDeclarationMapping deﬁnes the applicable set of
 ModeDeclarationMappings (cid:100) The modeDeclarationMapping deﬁnes the ap
 
-124 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]PortInterfaceModeSwitchInterfacePortInterfaceMappingModeInterfaceMappingModeDeclarationGroupPrototypeMappingARElementAtpTypeModeDeclarationMappingSetAtpStructureElementIdentifiableModeDeclarationMappingARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+modeDeclaration1..*«atpVariation»+initialMode1+secondMode1+firstMode1..*+modeDeclarationMapping1..*«isOfType»+type1{redefines atpType}+modeGroup1+modeDeclarationMappingSet0..1+secondModeGroup1+modeMapping1+firstModeGroup1Base
 
@@ -6042,14 +5508,7 @@ ModeDeclarationMapping is entered.
 The mode that corresponds to the mapped ModeDeclaration of the mode user is
 exited when any of the modes of the Mode Manager that correspond to ModeDec
 
-125 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 larations referenced by the applicable ModeDeclarationMapping is exited if the
 new mode is not mapped to related mode of the mode user. (cid:99)(RS_SWCT_03115)
@@ -6093,14 +5552,7 @@ ECU. (cid:99)(RS_SWCT_03115)
 faceMapping deﬁnes the correlation of Triggers deﬁned in the context Trigger
 Interfaces. (cid:99)(RS_SWCT_03210)
 
-126 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -6173,11 +5625,8 @@ of category STRUCTURE or ARRAY onto each others.
 (cid:99)(RS_SWCT_03210,
 RS_SWCT_03135)
 
-127 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]TriggerMappingPortInterfaceMappingTriggerInterfaceMappingPortInterfaceTriggerInterface+trigger1..*+secondTrigger1+triggerMapping1..*+firstTrigger1Software Component Template
 AUTOSAR Release 4.2.2
@@ -6209,14 +5658,7 @@ mentMapping then the enclosing dataElement shall have an initValue if the
 NonqueuedReceiverComSpec is aggregated by an AbstractRequiredPortPro
 totype. (cid:99)()
 
-128 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.16: Mapping of elements of composite data types
 
@@ -6238,11 +5680,8 @@ i.e.
 [TPS_SWCT_01195] Mapping of composite element to primitive DataPrototype
 (cid:100) It is also possible to map an element of a composite data type on the provided side to
 
-129 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]SubElementMappingSubElementRefImplementationDataTypeSubElementRefApplicationCompositeDataTypeSubElementRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]DataPrototypeApplicationCompositeElementDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2«instanceRef»+applicationCompositeElement1+textTableMapping0..2«atpVariation»+firstElement0..1«atpVariation»+secondElement0..1«atpVariation»+subElement 0..*{ordered}+subElementMapping0..*«instanceRef»+implementationDataTypeElement1Software Component Template
 AUTOSAR Release 4.2.2
@@ -6329,14 +5768,7 @@ individual elements of a composite data type.
 
 Table 4.34: SubElementMapping
 
-130 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -6422,14 +5854,7 @@ iref
 
 Table 4.37: ApplicationCompositeDataTypeSubElementRef
 
-131 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.17: Implementation of the InstanceRef for the mapping of elements of compos
 ite application data types
@@ -6454,11 +5879,8 @@ data type used to type rootDataPrototype. And, as implied by the deﬁnition of 
 InstanceRef, the contextDataPrototypes shall enclose each others and, eventu
 ally, the targetDataPrototype.
 
-132 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationCompositeElementDataPrototypeAtpInstanceRefApplicationCompositeElementInPortInterfaceInstanceRefAutosarDataPrototypeAtpPrototypeDataPrototypeApplicationCompositeDataTypeSubElementRefPortInterfaceDataInterfaceSubElementRef«instanceRef»+applicationCompositeElement1+applicationCompositeElement1«atpDerived»+base1{subsetsatpBase}+targetDataPrototype1{subsetsatpTarget}+rootDataPrototype1{subsetsatpContextElement}+contextDataPrototype0..*{subsetsatpContextElement}Software Component Template
 AUTOSAR Release 4.2.2
@@ -6483,11 +5905,8 @@ DataTypes (cid:100) Data conversion is also applicable for composite AutosarData
 The actual conversion, however, shall be individually applied to each leaf element of a
 given composite AutosarDataType. (cid:99)(RS_SWCT_03210)
 
-133 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ArVariableInImplementationDataInstanceRefVariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]SubElementRefImplementationDataTypeSubElementRef«instanceRef»+implementationDataTypeElement1+implementationDataTypeElement1«atpVariation»+subElement0..*{ordered}«isOfType»+type1{redefinesatpType}+rootVariableDataPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1«atpVariation»+subElement 0..*{ordered}Software Component Template
 AUTOSAR Release 4.2.2
@@ -6558,14 +5977,7 @@ RAT_FUNC.
 
 refer to compatible deﬁnitions of PhysicalDimension.
 
-134 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 3. Both CompuMethods fulﬁll the following condition:
 
@@ -6624,14 +6036,7 @@ tical values inside a list. (cid:99)(RS_SWCT_03210)
 ping, a dedicated TextTableMapping for each direction can be deﬁned.
 (cid:99)(RS_SWCT_03210)
 
-135 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1303] Applicability of TextTableMapping depending on the value of
 CompuMethod.category (cid:100) If a DataPrototypeMapping aggregates a Text
@@ -6691,14 +6096,7 @@ stage for [TPS_SWCT_01583].
 [TPS_SWCT_01583] Completeness of TextTableMapping is not a requirement
 (cid:100) If a DataPrototypeMapping contains one or more TextTableMapping(s) where
 
-136 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 the DataPrototype on the sender side refers to a CompuMethod of category
 BITFIELD_TEXTTABLE it is not required that for each possible value and each possi
@@ -6756,14 +6154,7 @@ is in place) or bitfieldTextTableMaskSecond for the case of
 plies if
 [TPS_SWCT_01164].
 
-137 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -6873,14 +6264,7 @@ First
 
 Table 4.39: MappingDirectionEnum
 
-138 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -6932,11 +6316,8 @@ Table 4.40: TextTableValuePair
 Figure 4.19: Mapping of DataPrototypes that eventually refer to CompuMethods of cat
 egory TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and BITFIELD_TEXTTABLE
 
-139 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]TextTableValuePair«atpVariation»+ firstValue  :Numerical+ secondValue  :NumericalDataPrototypeAutosarDataPrototype«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2+valuePair0..*+secondDataPrototype1+firstDataPrototype1Software Component Template
 AUTOSAR Release 4.2.2
@@ -6955,22 +6336,12 @@ of the components on both sides of the connection. (cid:99)()
 [TPS_SWCT_01204] GeneralAnnotation (cid:100) Beside formally speciﬁed attributes it is
 also possible to place textual information as provided in GeneralAnnotation. (cid:99)()
 
-140 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.20: Application Level Port Annotations Overview
 
-141 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotationconstraints{"port's interface is a SenderReceiverInterface"}GeneralAnnotationIoHwAbstractionServerAnnotationconstraints{"port's interface is a client/server interface using the operations GET and SET"}GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}GeneralAnnotationDelegatedPortAnnotationconstraints{aggregating PortPrototype is a port of a CompositionSwComponentType (DelegatedPort)}GeneralAnnotationModePortAnnotationconstraints{"The corresponding port interface shall be a ModeInterface."}GeneralAnnotationNvDataPortAnnotationconstraints{"The corresponding port interface shall be a NvDataInterface."}GeneralAnnotationTriggerPortAnnotationconstraints{"The corresponding port interface shall be a TriggerInterface."}GeneralAnnotationClientServerAnnotationconstraints{"The corresponding PortInterface shall be a ClientServerInterface."}«atpVariation» Tags:vh.latestBindingTime = preCompileTime+senderReceiverAnnotation0..*+parameterPortAnnotation0..*+ioHwAbstractionServerAnnotation0..*+failureMonitoring0..1+port0..*«atpVariation,atpSplitable»+clientServerAnnotation0..*+nvDataPortAnnotation0..*+modePortAnnotation0..*+triggerPortAnnotation0..*+delegatedPortAnnotation0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7031,14 +6402,7 @@ In the meta-model this aspect is implemented by the abstract meta-class Sender
 ReceiverAnnotation which represents the base class of both SenderAnnota
 tion and ReceiverAnnotation. This relationship is depicted in Figure 4.21. (cid:99)()
 
-142 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -7161,14 +6525,7 @@ aggr
 
 Table 4.43: ReceiverAnnotation
 
-143 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Enumeration ProcessingKindEnum
 Package
@@ -7220,14 +6577,7 @@ This value might vary depending on e.g.
 Therefore, these annotations shall not be mismatched with the min and max attributes
 of CompuMethods.
 
-144 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.21: SenderReceiverAnnotation
 
@@ -7259,11 +6609,8 @@ property of the signal-quality. (cid:99)()
 Annotation shall only be aggregated by a PortPrototype typed by a Sender
 ReceiverInterface. (cid:99)()
 
-145 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotation+ computed  :Boolean+ limitKind  :DataLimitKindEnum+ processingKind  :ProcessingKindEnumconstraints{"port's interface is a SenderReceiverInterface"}SenderAnnotationReceiverAnnotation«enumeration»ProcessingKindEnum none raw filtered«enumeration»DataLimitKindEnum none min maxMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAutosarDataPrototypeVariableDataPrototype+dataElement1+senderReceiverAnnotation0..*+signalAge1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7310,11 +6657,8 @@ Figure 4.22: ClientServerAnnotation
 tation shall only be aggregated by a PortPrototype typed by a ClientServer
 Interface. (cid:99)()
 
-146 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationClientServerAnnotationAtpStructureElementIdentifiableClientServerOperation+clientServerAnnotation0..*0..*+operationSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -7335,11 +6679,8 @@ cept NvDataInterface. (cid:99)()
 
 Figure 4.23: IoHwAbstractionServerAnnotation
 
-147 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationIoHwAbstractionServerAnnotation+ bswResolution  :Float+ filteringDebouncing  :FilterDebouncingEnum+ pulseTest  :PulseTestEnum«enumeration»FilterDebouncingEnum rawData debounceData waitTimeDate«enumeration»PulseTestEnum disable enableAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceAutosarDataPrototypeArgumentDataPrototypeAtpStructureElementIdentifiableClientServerOperationMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]PortInterfaceTriggerInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+trigger1..*+triggerPeriod0..1+dataElement1..*+interface1+trigger0..1+ioHwAbstractionServerAnnotation0..*+argument0..1+failureMonitoring0..1+age0..1+dataElement0..1+argument*{ordered}«atpVariation»1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7445,14 +6786,7 @@ Component.
 
 Tags: xml.sequenceOffset=50
 
-148 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 filteringDe
@@ -7549,14 +6883,7 @@ Table 4.49: PulseTestEnum
 [TPS_SWCT_01211] Assign several annotations to ArgumentDataPrototype (cid:100)
 The ClientServerOperations provide an ArgumentDataPrototype where sev
 
-149 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 eral annotations can be assigned to. They are depicted in the IoHwAbstraction
 ServerAnnotation meta-class in Figure 4.23. (cid:99)()
@@ -7605,11 +6932,8 @@ eters inﬂuence the data on the PortPrototype.
 
 Figure 4.24: ParameterPortAnnotation
 
-150 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}AutosarDataPrototypeParameterDataPrototypeAtpBlueprintableAtpPrototypePortPrototype+parameterPortAnnotation0..*+parameter1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7661,11 +6985,8 @@ Figure 4.25: ModePortAnnotation
 [constr_4007] Context of ModePortAnnotation (cid:100) A ModePortAnnotation shall
 only be aggregated by a PortPrototype typed by a ModeSwitchInterface. (cid:99)()
 
-151 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 GeneralAnnotationModePortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+modePortAnnotation0..*+modeGroup1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7713,11 +7034,8 @@ face. (cid:99)()
 can be used to provide more information with respect to the non volatile data of the
 PortPrototype. (cid:99)()
 
-152 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 GeneralAnnotationTriggerPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]+triggerPortAnnotation0..*+trigger1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7768,11 +7086,8 @@ interface deﬁnition for sub-systems.
 The DelegatedPortAnnotation guides either the system designer in connecting
 the empty CompositionSwComponentType or the sub-system designer in applying
 
-153 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 GeneralAnnotationNvDataPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+variable1+nvDataPortAnnotation0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -7848,14 +7163,7 @@ PortPrototype is involved in a 1:n or n:1 communication pattern.
 
 (cid:99)()
 
-154 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_4010] Context of DelegatedPortAnnotation (cid:100) A DelegatedPortAn
 notation shall only be aggregated by a PortPrototype aggregated by a Compo
@@ -7932,11 +7240,8 @@ Tags: xml.sequenceOffset=20
 
 Table 4.56: GeneralAnnotation
 
-155 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 GeneralAnnotation+ annotationOrigin  :String«atpMixed»DocumentationBlockMultilanguageLongName+label0..1+annotationText1Software Component Template
 AUTOSAR Release 4.2.2
@@ -7963,11 +7268,8 @@ The derived meta-classes are explained in the following sub-chapters.
 
 Figure 4.29: Overview of communication attributes of RPortPrototype
 
-156 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 RPortComSpecRPortPrototypeClientComSpecModeSwitchReceiverComSpecNvRequireComSpecParameterRequireComSpecReceiverComSpecAbstractProvidedPortPrototypePRPortPrototypePortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -8001,11 +7303,8 @@ In other words, it is not allowed that two or more PPortComSpec exist in the con
 of a one PPortPrototype that refer to the same dataElement or clientServer
 Operation.
 
-157 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortComSpecPPortPrototypeModeSwitchSenderComSpecParameterProvideComSpecSenderComSpecAbstractRequiredPortPrototypePRPortPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -8069,14 +7368,7 @@ Mul. Kind Note
 
 Table 4.57: PPortComSpec
 
-158 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -8148,14 +7440,7 @@ sender-receiver communication at an RPortPrototype.
 PortPrototype (cid:100) If an initValue is deﬁned in a NonqueuedReceiverComSpec
 owned by a PRPortPrototype its value shall be ignored. (cid:99)(RS_SWCT_03250)
 
-159 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.31: Communication attributes of RPortPrototype with respect to sender
 receiver communication.
@@ -8168,11 +7453,8 @@ and/or QueuedReceiverComSpec shall be deﬁned.
 In all other applicable cases
 NonqueuedSenderComSpec resp. NonqueuedReceiverComSpec shall be used.
 
-160 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 RPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumQueuedReceiverComSpec+ queueLength  :PositiveIntegerValueSpecification+ shortLabel  :Identifier [0..1]DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»HandleTimeoutEnum replace noneVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacement«enumeration»HandleOutOfRangeStatusEnum silent indicateCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecPropsAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]+filter0..1+initValue0..1+networkRepresentation0..1+networkRepresentation1+compositeNetworkRepresentation0..*+transformationComSpecProps0..*+replaceWith0..1+requiredComSpec0..*«instanceRef»+leafElement1+dataElement1Software Component Template
 AUTOSAR Release 4.2.2
@@ -8313,14 +7595,7 @@ This aggregation is used to identify the
 AutosarDataPrototype to be taken for sourcing an
 external replacement in the out-of-range handling.
 
-161 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 syncCount
@@ -8435,14 +7710,7 @@ API shall exist. If the attribute does not exist or is
 set to false then the Rte_IStatus API may still exist
 in response to the existence of further conditions.
 
-162 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Datatype
 Boolean
@@ -8546,14 +7814,7 @@ TimeValue
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 Types
 
-163 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note
 
@@ -8611,14 +7872,7 @@ ueSpecification in the role initValue deﬁnes an initial value that shall be ta
 if the corresponding dataElement has not yet been received but the application soft
 ware is attempting to access its value.
 
-164 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This is the only relevant deﬁnition of an initial value for data transmission. That is, any
 initValue deﬁned in the context of VariableDataPrototype is ignored! (cid:99)()
@@ -8714,11 +7968,8 @@ UnlimitedInteger
 
 attr
 
-165 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»DataFilterTypeEnum always maskedNewEqualsX maskedNewDiffersMaskedOld maskedNewDiffersX never newIsWithin newIsOutside oneEveryNSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -8794,14 +8045,7 @@ tionDescription in the role transformationComSpecProps. (cid:99)()
 
 See chapter 4.5.6 for details.
 
-166 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.33: Communication attributes of PPortPrototype with respect to sender
 receiver communication.
@@ -8858,11 +8102,8 @@ apply to.
 This attribute controls how out-of-range values
 shall be dealt with.
 
-167 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortComSpecSenderComSpec+ handleOutOfRange  :HandleOutOfRangeEnum«atpVariation»+ usesEndToEndProtection  :BooleanQueuedSenderComSpecTransmissionAcknowledgementRequest+ timeout  :TimeValueValueSpecification+ shortLabel  :Identifier [0..1]NonqueuedSenderComSpecAutosarDataPrototypeVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacementCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractProvidedPortPrototype+networkRepresentation1«instanceRef»+leafElement1+transmissionAcknowledge0..1+compositeNetworkRepresentation0..*+dataElement1+networkRepresentation0..1+providedComSpec0..*+initValue1Software Component Template
 AUTOSAR Release 4.2.2
@@ -8993,14 +8234,7 @@ again.
 
 Table 4.70: TransmissionAcknowledgementRequest
 
-168 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Enumeration HandleOutOfRangeEnum
 Package
@@ -9065,14 +8299,7 @@ In particular, compositeNetworkRepresentation shall be used to deﬁne the net
 workRepresentation of leaf elements of ApplicationCompositeDataTypes.
 (cid:99)()
 
-169 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1196] Existence of networkRepresentation vs.
 compositeNet
@@ -9141,14 +8368,7 @@ Table 4.72: CompositeNetworkRepresentation
 The communication aspects relevant for client communication are sketched in Fig
 ure 4.34.
 
-170 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.34: Communication attributes of RPortPrototype with respect to client-server
 communication.
@@ -9196,11 +8416,8 @@ Table 4.73: ClientComSpec
 The server side looks very similar but provides an attribute for specifying the queue
 length.
 
-171 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 RPortComSpecClientComSpecAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+requiredComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -9269,11 +8486,8 @@ single RunnableEntity implement the functionality of two or more ClientServer
 Operations. For this purpose two or more OperationInvokedEvents need to
 reference this single RunnableEntity.
 
-172 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortComSpecServerComSpec+ queueLength  :PositiveIntegerAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractProvidedPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+providedComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -9309,14 +8523,7 @@ evant for a mode switch communication. On the sender side it is possible to spec
 that an acknowledgement is supposed to be returned that indicates the successful
 processing of the mode switch request.
 
-173 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.36: Communication attributes of PPortPrototype with respect to mode switch
 communication.
@@ -9329,11 +8536,8 @@ of a PRPortPrototype (cid:100) If the attribute enhancedModeApi is deﬁned in a
 eSwitchReceiverComSpec owned by a PRPortPrototype its value shall be ig
 nored. (cid:99)(RS_SWCT_03250)
 
-174 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ModeSwitchSenderComSpec+ enhancedModeApi  :Boolean [0..1]+ queueLength  :PositiveIntegerAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeSwitchedAckRequest+ timeout  :TimeValuePPortComSpecPortPrototypeAbstractProvidedPortPrototype+modeSwitchedAck0..1+modeGroup1+providedComSpec0..*RPortComSpecModeSwitchReceiverComSpec+ enhancedModeApi  :Boolean [0..1]+ supportsAsynchronousModeSwitch  :BooleanPortPrototypeAbstractRequiredPortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]Association Tags:atp.Status = shallBecomeMandatory+requiredComSpec0..*+modeGroup0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -9456,14 +8660,7 @@ mode and the next mode. If set to "true" the
 enhanced mode API is supposed to be generated.
 For more details please refer to the SWS_RTE.
 
-175 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 modeGrou
@@ -9527,14 +8724,7 @@ deﬁnition of initial values for ParameterDataPrototypes aggregated in a Parame
 terInterface. The actual modeling is sketched in Figure 4.38 for provided Parame
 terDataPrototypes and in Figure 4.39 for required ParameterDataPrototypes.
 
-176 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.38: Communication attributes of ParameterDataPrototypes with respect to
 PPortPrototype
@@ -9575,11 +8765,8 @@ ref
 
 Table 4.78: ParameterProvideComSpec
 
-177 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortComSpecValueSpecification+ shortLabel  :Identifier [0..1]ParameterProvideComSpecAutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*+initValue0..1+parameter1Software Component Template
 AUTOSAR Release 4.2.2
@@ -9635,11 +8822,8 @@ nvData still need to have reasonable value6. (cid:99)(RS_SWCT_03225)
 6Note that it is assumed that only a subset of meta-classes that inherit from AtomicSwComponent
 Type will actually apply for the deﬁnition of initial values for nvData. Most likely the Application
 
-178 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 RPortComSpecParameterRequireComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractRequiredPortPrototype+initValue0..1+parameter1+requiredComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -9693,11 +8877,8 @@ The initial value owned by the NvComSpec
 SwComponentType and the SensorActuatorSwComponentType will be candidates for using this
 feature but it will obviously not be reasonable for e.g. NvBlockSwComponentType.
 
-179 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvRequireComSpecAutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]RPortComSpecPortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*+initValue0..1+variable1Software Component Template
 AUTOSAR Release 4.2.2
@@ -9742,11 +8923,8 @@ In other words, by means of the NvProvideComSpec the author of an Applica
 tionSwComponentType can express detailed requirements on the later design of a
 corresponding NvBlockSwComponentType.
 
-180 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 PPortComSpecNvProvideComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeVariableDataPrototypePortPrototypeAbstractProvidedPortPrototype+ramBlockInitValue0..1+variable1+romBlockInitValue0..1+providedComSpec0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -9825,14 +9003,7 @@ communication. (cid:99)(RS_SWCT_03221)
 Please note that only some transformers offer PortPrototype-speciﬁc conﬁguration
 (e.g. SOME/IP transformer doesn’t have TransformationComSpecProps).
 
-181 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.42: Speciﬁcation of data transformation properties within ReceiverComSpec,
 ServerComSpec, and ClientComSpec
@@ -9883,22 +9054,16 @@ in TransformationTechnology.
 the correct user-deﬁned custom transformer
 (cid:99)(RS_SWCT_03221)
 
-182 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DescribableTransformationComSpecPropsEndToEndTransformationComSpecProps+ disableEndToEndCheck  :Boolean+ maxDeltaCounter  :PositiveInteger [0..1]+ maxErrorStateInit  :PositiveInteger [0..1]+ maxErrorStateInvalid  :PositiveInteger [0..1]+ maxErrorStateValid  :PositiveInteger+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ minOkStateInit  :PositiveInteger [0..1]+ minOkStateInvalid  :PositiveInteger [0..1]+ minOkStateValid  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]+ windowSize  :PositiveInteger [0..1]UserDefinedTransformationComSpecPropsRPortComSpecReceiverComSpecPPortComSpecServerComSpecRPortComSpecClientComSpec+transformationComSpecProps0..*+transformationComSpecProps0..*+transformationComSpecProps0..*Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 4.43: Big picture of data transformation in the AUTOSAR meta-model
 
-183 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementDataTransformationSetIdentifiableDataTransformation+ executeDespiteDataUnavailability  :BooleanIdentifiableTransformationTechnology+ needsOriginalData  :Boolean [0..1]+ protocol  :String+ transformerClass  :TransformerClassEnum+ version  :StringDescribableTransformationDescriptionBufferProperties+ headerLength  :Integer+ inPlace  :BooleanCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation» Tags:vh.latestBindingTime = codeGenerationTime«enumeration»TransformerClassEnum serializer safety security customDescribable«atpVariation»TransformationISignalProps+ csErrorReaction  :CSTransformerErrorReactionEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =postBuildFibexElementISignal+ dataTypePolicy  :DataTypePolicyEnum+ length  :Integer«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeDataPrototypeMappingFibexElementISignalGroup«atpVariation,atpSplitable»+comBasedSignalGroupTransformation0..1+transformationISignalProps0..*+iSignal0..*+firstToSecondDataTransformation0..1+transformer1+transformationISignalProps0..*+bufferComputation0..1+bufferProperties1+transformationDescription0..1«atpVariation»+transformationTechnology0..*«atpVariation,atpSplitable»+transformerChain1..*{ordered}+dataTransformation0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+dataTransformation0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -10015,14 +9180,7 @@ Version of the implemented protocol.
 
 Table 4.83: TransformationTechnology
 
-184 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Based on the user deﬁned attributes inside UserDefinedTransformationCom
 SpecProps (which are, of course, not standardized),
@@ -10127,14 +9285,7 @@ PositiveInteger
 
 0..1
 
-185 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 maxErrorS
@@ -10247,14 +9398,7 @@ tionComSpecProps shall be used for
 speciﬁc conﬁguration options for data transformers related to end-to-end protection.
 (cid:99)(RS_SWCT_03221)
 
-186 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 4.6 Port Groups within Component Types
 
@@ -10315,11 +9459,8 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 4.86: PortGroup
 
-187 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiablePortGroup«instanceRef»+innerGroup0..*«atpVariation»+outerPort0..*+port0..*«atpVariation,atpSplitable»+component«atpVariation»+portGroup0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -10374,14 +9515,7 @@ This approach is documented in chapter 4.7 of this document.
 As an alternative approach, it is possible to implement end-to-end protection using
 so-called data transformers.
 
-188 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The detailed description of how this approach can be conﬁgured is beyond the scope
 of this document. Please refer to the TPS System Template [11] where the details of
@@ -10457,11 +9591,8 @@ the value is deﬁned by the selected proﬁle.
 
 Tags: xml.sequenceOffset=-50
 
-189 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Attribute
 crcOffset
@@ -10557,14 +9688,7 @@ by [constr_1261].
 
 Tags: xml.sequenceOffset=-25
 
-190 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 dataLength PositiveInteger
@@ -10660,14 +9784,7 @@ ToEndProtectionISignalIPdu shall be deﬁned as well. (cid:99)(RS_SWCT_03240)
 
 The following features apply:
 
-191 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • [constr_1000] End-to-end protection is limited to sender/receive communi
 cation (cid:100) end-to-end protection applies for sender/receiver communication only
@@ -10716,14 +9833,7 @@ aggregates
 
 using
 
-192 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 4.45: Details of the modeling of end-to-end protection
 
@@ -10752,11 +9862,8 @@ For the time being, it shall be noted that the usage of other than the standardi
 shall not create name clashes with future standardized values. This can be achieved
 by using e.g. a company-speciﬁc preﬁx or sufﬁx to the value of category.
 
-193 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementEndToEndProtectionSetIdentifiableEndToEndProtectionEndToEndDescription+ category  :NameToken+ counterOffset  :PositiveInteger [0..1]+ crcOffset  :PositiveInteger [0..1]+ dataId  :PositiveInteger [0..*] {ordered}+ dataIdMode  :PositiveInteger [0..1]+ dataIdNibbleOffset  :PositiveInteger [0..1]+ dataLength  :PositiveInteger [0..1]+ maxDeltaCounterInit  :PositiveInteger [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpInstanceRefVariableDataPrototypeInSystemInstanceRefAutosarDataPrototypeVariableDataPrototypeEndToEndProtectionVariablePrototype+ shortLabel  :Identifier [0..1]«atpSplitable»+endToEndProfile1«atpVariation,atpSplitable»+endToEndProtectionVariablePrototype0..*+targetDataPrototype1{redefinesatpTarget}+sender0..1«instanceRef»+receiver0..*«instanceRef»+sender0..1+receiver0..*«atpVariation,atpSplitable»+endToEndProtection0..*The semantics of the categorys is:
 
@@ -10820,14 +9927,7 @@ tion.endToEndProfile.maxDeltaCounterInit shall exist. (cid:99)()
 shall be only one element in the set and the applicable range of values is
 [0 .. 65535]. (cid:99)()
 
-194 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1112] Constraints of dataIdMode in PROFILE_01 (cid:100) In PROFILE_01,
 the applicable range of values for dataIdMode is [0 .. 3]. (cid:99)()
@@ -10886,14 +9986,7 @@ to the RPort
 Prototype.requiredComSpec.dataElement and RPortPrototype.re
 quiredComSpec.syncCounterInit is deﬁned then the value of RPortPro
 
-195 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 totype.requiredComSpec.syncCounterInit shall be preferred over the
 value of EndToEndProtection.endToEndProfile.syncCounterInit.
@@ -10951,14 +10044,7 @@ VariableDataPrototype is not fulﬁlled or RPortPrototype.required
 ComSpec.maxDeltaCounterInit is not deﬁned then EndToEndProtec
 tion.endToEndProfile.maxDeltaCounterInit shall exist. (cid:99)()
 
-196 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1119] Constraints of dataLength in PROFILE_02 (cid:100) In PROFILE_02,
 the applicable range of values for dataLength is [0 .. 65535]. For the value of
@@ -11019,14 +10105,7 @@ fulﬁlled or RPortPrototype.requiredCom
 Spec.syncCounterInit is not deﬁned then EndToEndProtection.end
 ToEndProfile.syncCounterInit shall exist. (cid:99)()
 
-197 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -11112,14 +10191,7 @@ Stereotypes: atpSplitable; atpVariation
 Tags: atp.Splitkey=variationPoint.shortLabel
 vh.latestBindingTime=preCompileTime
 
-198 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 endToEnd
@@ -11216,14 +10288,7 @@ may correspond to one or more receivers.
 ToEndProtection (cid:100) All EndToEndProtectionVariablePrototypes aggre
 gated by the same EndToEndProtection shall refer to the identical sender. (cid:99)()
 
-199 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 4.8 Partial Networking
 
@@ -11277,14 +10342,7 @@ the attribute isService set to true. (cid:99)(RS_SWCT_03241)
 and releasing partial networks, the BSW can be interfaced in two alternative (i.e. either
 one or the other) ways:
 
-200 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • ComM: ClientServerInterface using the standardized ComM_UserRe
 
@@ -11345,14 +10403,7 @@ react on mode changes are in place and can be used within the application softwa
 information while the usage of the SenderReceiverInterface resembles a “push” approach if it is
 used in combination with a SwcModeSwitchEvent.
 
-201 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 To assure that the communication via PortPrototypes that belong to a partial net
 work is valid the software component shall consider the status of the partial network
@@ -11404,14 +10455,7 @@ The information (in terms of ConsistencyNeeds) can be deﬁned primarily during 
 design of an AtomicSwComponentType but it is just as well possible to specify this
 ConsistencyNeeds during the deﬁnition of CompositionSwComponentTypes.
 
-202 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For example, the existence of stable data is typically expected for the execution of
 RunnableEntitys of several AtomicSwComponentTypes.
@@ -11429,11 +10473,8 @@ able to clearly separate the aspect of stability from coherence it is possible t
 roles dpgDoesNotRequireCoherence to express that a group of VariableDat
 aPrototypes explicitly does not require consistency.
 
-203 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintAtpBlueprintableIdentifiableConsistencyNeeds«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiableRunnableEntityGroupAtpStructureElementIdentifiableDataPrototypeGroup«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceNvDataInterface+dataElement1..*+nvData1..*«instanceRef»+dataPrototypeGroup 0..*«instanceRef»+implicitDataAccess0..*«instanceRef»+runnableEntity0..*«instanceRef»+runnableEntityGroup 0..*«atpVariation,atpSplitable»+dpgDoesNotRequireCoherency0..*«atpVariation,atpSplitable»+dpgRequiresCoherency0..*«atpVariation,atpSplitable»+regDoesNotRequireStability0..*«atpVariation,atpSplitable»+regRequiresStability0..*«atpVariation,atpSplitable»+consistencyNeeds0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -11490,14 +10531,7 @@ totypeGroups which are owned by the same AtomicSwComponentType.
 Please note that pre-deﬁned values for the category of RunnableEntityGroup
 and DataPrototypeGroup are described in [1].
 
-204 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -11600,14 +10634,7 @@ vh.latestBindingTime=preCompileTime
 
 Table 4.91: ConsistencyNeeds
 
-205 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package
@@ -11714,14 +10741,7 @@ owns a DataPrototypeGroup in the role dpgRequiresCoherence for one or sev
 eral of its RunnableEntitys it is required that VariableDataPrototypes be
 longing to the same DataPrototypeGroup are produced coherently. This means
 
-206 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 the values of
 
@@ -11779,14 +10799,7 @@ RunnableEntitys for which the coherency does not apply.
 [TPS_SWCT_01625] Sending SwComponentType owns a DataPrototypeGroup
 in the role dpgRequiresCoherence and also RunnableEntityGroups (cid:100) If
 
-207 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 a sending SwComponentType owns a DataPrototypeGroup in the role dp
 gRequiresCoherence, RunnableEntityGroups in the role regDoesNotRe
@@ -11811,14 +10824,7 @@ plicitly communicated VariableDataPrototypes inside the given RunnableEn
 tityGroup become visible immediately after the producing RunnableEntity was
 terminated. (cid:99)(RS_SWCT_03065)
 
-208 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5 Data Description
 
@@ -11866,14 +10872,7 @@ interfaces. Using a uniform type system covering all these aspects is now favore
 
 1There are some aspects that affect the RTE, e.g. scaling of dataElements
 
-209 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • Calibration parameters were not completely incorporated into the data type con
 cept. Some of their attributes (especially for curves and maps) could be spec
@@ -11929,14 +10928,7 @@ cation level may deﬁne a text to be transferred to an instrument cluster as a 
 type (if the structure is not relevant for the application), whereas on the implementation
 level it could be modeled as an array of bytes. (cid:99)(RS_SWCT_03217)
 
-210 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01233] Use case for the Implementation Data Level (cid:100) There are sev
 eral use cases for this level in AUTOSAR:
@@ -11991,14 +10983,7 @@ Conversion between several data implementations of the same application data typ
 might be necessary in case of communication between components on different ECUs.
 AUTOSAR COM [21] is responsible for this.
 
-211 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 implies that
 
@@ -12068,14 +11053,7 @@ by referring to platform types.
 
 2More exactly speaking, the data shall be converted to and from a so-called SystemSignal.
 
-212 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
 
@@ -12118,14 +11096,7 @@ DataType is derived. (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
 Figure 5.1 shows a summary of the basic meta-classes used for the deﬁnition of
 AutosarDataTypes.
 
-213 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.1: Summary of AutosarDataType
 
@@ -12155,11 +11126,8 @@ The properties of this AutosarDataType.
 
 Table 5.2: AutosarDataType
 
-214 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeApplicationCompositeElementDataPrototypeApplicationCompositeDataPrototype is contained in ApplicationDataType as ApplicationArrayElement or ApplicationRecordElement.AtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetDataTypeMapModeRequestTypeMapARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup«atpVariation»SwDataDefProps+swDataDefProps0..1«isOfType»+type1{redefinesatpType}+modeGroup1+implementationDataType1+applicationDataType1+implementationDataType1+modeRequestTypeMap0..*+dataTypeMap0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -12279,14 +11247,7 @@ attr
 
 Table 5.4: ImplementationDataType
 
-215 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01073] Composite ApplicationDataType (cid:100) An Application
 DataType can be composed (in form of a record or an array) of elements which
@@ -12361,14 +11322,7 @@ lated information via “normal” sender-receiver communication. Apart from thi
 information is not handled by the usual type system but needs special meta-classes.
 This is explained in more detail in chapter 4.2.5. (cid:99)(RS_SWCT_03110)
 
-216 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note that the mapping classes instead of direct associations have been introduced for
 process reasons: It allows to maintain application and implementation types in sepa
@@ -12450,14 +11404,7 @@ is considered as project speciﬁc. However, the RTE generator needs a well de�
 DataTypeMappingSet as input in relation those artifacts which might deﬁne data
 typed as ApplicationDataTypes.
 
-217 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01192] Meta-classes that have an association to a DataTypeMap
 pingSet (cid:100) Therefore, the following meta-classes in the scope of this document have
@@ -12518,14 +11465,7 @@ not in the scope of a single atomic software component. (cid:99)()
 This improves the portability of software components which were developed in
 dependently or are ported between ECUs.
 
-218 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:99)()
 
@@ -12549,11 +11489,8 @@ mentation purposes (for details see [12]).
 DataType (cid:100) The category attribute is used to set constraints for the various proper
 ties which can be speciﬁed for an AutosarDataType. These properties are deﬁned
 
-219 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
   ApplicationDataTypeApplicationDataTypeImplementationDataTypeImplementationDataTypecompatible and connectedcompatible and mappedshall also be compatiblecompatible and mappedSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -12947,14 +11884,7 @@ x Contains an address of a function prototype (whose sig
 nature is given via SwDataDefProps.swPointerTarget
 Props.functionPointerSignature).
 
-220 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Category
 
@@ -13412,11 +12342,8 @@ referenced CURVE is used to lookup an axis index, and the index
 value is used by the controller to determine the operating point
 in the CURVE, MAP, CUBOID, CUBE_4, or CUBE_5.
 
-221 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Category
 
@@ -13840,14 +12767,7 @@ SwSystemconst (cid:100) The default value for the category of a SwSystemconst sh
 VALUE. This has to be applied if no explicit deﬁnition of the category can be found.
 (cid:99)()
 
-222 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.2.4 Application Data Type
 
@@ -13858,11 +12778,8 @@ which are further explained in the following sub-chapters. (cid:99)(RS_SWCT_0321
 
 Figure 5.3: Basic Meta-Model for ApplicationDataType
 
-223 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeApplicationCompositeDataTypeApplicationPrimitiveDataType«atpVariation»SwDataDefPropsApplicationRecordDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]+swDataDefProps0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -14312,14 +13229,7 @@ Table 5.8: Allowed Attributes vs. category for ApplicationDataTypes
 
 3This is required by [TPS_SWCT_01179].
 
-224 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ApplicationPrimitiveDataType
 
@@ -14394,14 +13304,7 @@ gories STRUCTURE and ARRAY correspond to ApplicationCompositeDataTypes
 whereas all other categorys can be applied only for ApplicationPrimitive
 DataTypes. (cid:99)()
 
-225 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.2.4.1 Application Primitive Data Types
 
@@ -14430,14 +13333,7 @@ DataConstrRule.
 The latter aggregates PhysConstrs and this meta-class ﬁnally owns two Limits in
 the roles lowerLimit and upperLimit.
 
-226 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.4: Speciﬁcation of Physical Limits
 
@@ -14446,11 +13342,8 @@ this ﬁgure shows how semantics in form of a CompuMethod and a Unit can be at
 tached. Also an initValue can be deﬁned which is used by the RTE in order to
 initialize values of DataPrototypes deﬁned locally in a software-component.
 
-227 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableDataConstrDataConstrRule+ constrLevel  :Integer [0..1]PhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+swDataDefProps0..1+dataConstrRule0..*+physConstrs0..1+dataConstr0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -14461,11 +13354,8 @@ Figure 5.6 illustrates the relationship between the data constraints for Applica
 DataType, CompuMethod, ImplementationDataType, BaseType and also the
 invalidValue.
 
-228 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeValueSpecificationARElementAtpBlueprintAtpBlueprintableCompuMethodARElementUnit+compuMethod0..1+unit0..1+invalidValue0..1+swDataDefProps0..1+unit0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -14502,11 +13392,8 @@ shall be within the bounds deﬁned by swDataDefProps.compuMethod.compu
 PhysToInternal.compuContent.compuScale.lowerLimit resp. upperLimit
 or the inverse case that is based on the bounds deﬁned by swDataDefProps.com
 
-229 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 02nBaseTypeImplementationDataTypeCompuMethodApplicationDataTypeUpper [unit]Lower [unit]Invalid ValuephysConstrs ofApplicationDataTypelimits of CompuMethodinternalConstrs of ApplicationDataTypeinternalConstrs of ImplementationDataTyperange by BaseTypeInvalidValue known to the componentInvalidValue transparent to the componentSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -14560,24 +13447,14 @@ The relevant meta-classes in the context of SwDataDefProps are sketched in Fig
 ure 5.7. This includes all meta-classes that may contribute to the deﬁnition of the
 symbol of a CompuScale in C code, see [TPS_SWCT_01431].
 
-230 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.7: Relevant meta-classes for the speciﬁcation of enumerations
 
 An example of how an enumeration looks like in ARXML is contained in section 5.5.1.3.
 
-231 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 CompuARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuContentCompuScalesCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuConst«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]CompuScaleConstantContentsCompuScaleContentsCompuConstContentCompuConstTextContent+ vt  :VerbatimString+compuMethod0..1+compuConstContentType1+compuInverseValue0..1+compuScaleContents0..1«atpVariation»+compuScale0..*{ordered}+compuInternalToPhys0..1+compuPhysToInternal0..1+compuDefaultValue0..1+compuContent1+compuConst1Software Component Template
 AUTOSAR Release 4.2.2
@@ -14619,14 +13496,7 @@ swDataDefProps.swTextProps.baseType and the only attribute of the referenced
 SwBaseType relevant for this purpose is the BaseTypeDirectDefinition.base
 TypeEncoding. (cid:99)()
 
-232 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.8: Speciﬁcation of textual strings
 
@@ -14646,11 +13516,8 @@ Mul. Kind Note
 Base
 Attribute
 
-233 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationPrimitiveDataTypeSwTextProps+ arraySizeSemantics  :ArraySizeSemanticsEnum+ swFillCharacter  :Integer [0..1]«atpVariation»+ swMaxTextSize  :Integer«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementSwRecordLayoutApplicationValueSpecification+ category  :IdentifierValueSpecification+ shortLabel  :Identifier [0..1]+swRecordLayout0..1+invalidValue0..1+swTextProps0..1+swDataDefProps0..1+baseType0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -14750,14 +13617,7 @@ xml.sequenceOffset=20
 
 Table 5.11: SwTextProps
 
-234 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01127] Byte array with variable size (cid:100) SwTextProps can be used to
 deﬁne byte arrays of variable size. (cid:99)(RS_SWCT_03182, RS_SWCT_03181)
@@ -14835,14 +13695,7 @@ tiveDataType.swDataDefProps.swTextProps indicate the width of the string and
 also deﬁne (by means of the reference to baseType) the encoding this string data type
 is supposed to utilize.
 
-235 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note further that the fact that an ApplicationDataType directly references (across
 the implementation level) to a SwBaseType represents an exception to the rule that
@@ -14907,14 +13760,7 @@ itiveDataType of category STRING
 </LONG-NAME>
 <INTRODUCTION>
 
-236 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <VERBATIM>
 
@@ -14989,14 +13835,7 @@ Listing 5.3: Example for the deﬁnition of a string ImplementationDataType
 
 <SW-DATA-DEF-PROPS-CONDITIONAL>
 
-237 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <BASE-TYPE-REF DEST="SW-BASE-TYPE">BaseTypes/uint8BaseType</
 
@@ -15085,14 +13924,7 @@ TYPE">ImplementationDataTypes/uint8</IMPLEMENTATION-DATA
 </ELEMENTS>
 </AR-PACKAGE>
 
-238 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The interesting part about this deﬁnition is the fact that on the implementation level, it
 was (driven by the deﬁnition of the SwRecordLayout) decided to implement the string
@@ -15169,14 +14001,7 @@ MyImplementationStringType</IMPLEMENTATION-DATA-TYPE-REF>
 
 </ELEMENTS>
 
-239 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 </AR-PACKAGE>
 
@@ -15214,14 +14039,7 @@ same manner a ApplicationRecordDataType could be used as the base type of
 an ApplicationArrayDataType. The creation of nested ApplicationCompos
 iteDataTypes is also possible. (cid:99)()
 
-240 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.9: Summary of ApplicationCompositeDataType
 
@@ -15240,11 +14058,8 @@ fElements-1. (cid:99)(RS_SWCT_03144)
 ApplicationArrayDataType without ApplicationArrayElement. The latter exists only so that
 it can be the target of a reference within an AUTOSAR XML ﬁle
 
-241 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationCompositeDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]ApplicationRecordDataTypeApplicationCompositeElementDataPrototypeApplicationRecordElementApplicationCompositeElementDataPrototypeApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«enumeration»ArraySizeSemanticsEnum fixedSize variableSize«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize+element1+element1..*{ordered}«atpVariation»Software Component Template
 AUTOSAR Release 4.2.2
@@ -15354,14 +14169,7 @@ maxNumberOfElements.
 For this purpose an additional attribute arraySizeSemantics is available that can
 be used to clarify the meaning of maxNumberOfElements.
 
-242 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For clariﬁcation, it might indeed happen that the actual number of elements in a speciﬁc
 ApplicationArrayDataType yields 0 simply because the respective DataProto
@@ -15427,14 +14235,7 @@ All elements of the variable size array may have different sizes.
 
 All elements of the variable size array have the same size.
 
-243 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 inheritedFrom
 ArrayElement
@@ -15493,14 +14294,7 @@ ber of valid elements (VSA_SQUARE).
 [TPS_SWCT_01623] Justiﬁcation for the existence of attributes Application
 ArrayDataType.dynamicArraySizeProfile and ApplicationArrayEle
 
-244 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ment.arraySizeHandling (cid:100) At the ﬁrst glance, the two attributes Application
 ArrayDataType.dynamicArraySizeProfile and ApplicationArrayEle
@@ -15569,14 +14363,7 @@ be deﬁned.
 
 to the value inheritedFromArrayElementTypeSize.
 
-245 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The ApplicationArrayElement shall be typed by an ApplicationArray
 
@@ -15640,14 +14427,7 @@ If
 VSA_RECTANGULAR the contained ApplicationArrayElement shall fulﬁll all of the
 following conditions:
 
-246 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The attribute ApplicationArrayElement.arraySizeSemantics shall be
 
@@ -15712,14 +14492,7 @@ DataType.
 VSA_FULLY_FLEXIBLE, the contained ApplicationArrayElement shall fulﬁll all
 of the following conditions:
 
-247 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The attribute ApplicationArrayElement.arraySizeSemantics shall be
 
@@ -15786,14 +14559,7 @@ to describe multi dimensional arrays an ApplicationArrayElement references
 again another ApplicationArrayDataType. Hereby, one ApplicationArray
 DataType per dimension is required.
 
-248 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This multiple dimensions do have a well-deﬁned correlation to the individual dimen
 sions of an ImplementationDataType of category ARRAY when the Applica
@@ -15814,14 +14580,7 @@ ApplicationArrayDataTypes relates to the sub ImplementationDataType
 Elements in the order of the ApplicationArrayElement -> ApplicationAr
 rayDataType references. (cid:99)(RS_SWCT_03216)
 
-249 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.10: Example of a three dimensional array type
 
@@ -15831,11 +14590,8 @@ tionPrimitiveDataType of category BOOLEAN. On the right hand side the im
 plementation of the three dimensional array is described with an Implementation
 DataType which contains three nested ImplementationDataTypeElements.
 
-250 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 BOOLEAN_true_false_SysConDim1_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYDim1 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim1SysConDim1 :SwSystemconstBOOLEAN_true_false_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false :ApplicationPrimitiveDataTypecategory = BOOLEANDim2 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim2Dim3 :ApplicationArrayElementcategory = BOOLEANarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim3SysConDim2 :SwSystemconstSysConDim3 :SwSystemconstboolean_NcNrDim1_NcNrDim2_NcNrDim3 :ImplementationDataTypecategory = ARRAYDim1 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim1Dim2 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim2Dim3 :ImplementationDataTypeElementcategory = TYPE_REFERENCEarraySizeSemantics = FIXED-SIZEarraySize = SysConDim3boolean :ImplementationDataTypecategory = VALUE«atpVariation»:SwDataDefPropsDefaultDataTypeMapping :DataTypeMappingSet:DataTypeMap+type+element+implementationDataType+dataTypeMap+subElement+subElement+type+element+element+applicationDataType+implementationDataType+subElement+type+swDataDefPropsSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -15900,14 +14656,7 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 5.16: ApplicationRecordDataType
 
-251 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ApplicationRecordElement
 
@@ -16253,14 +15002,7 @@ category STRUCTURE is also supported for the sake of symmetry.
 fication as the invalidValue because a string semantically is more than just a bunch of characters
 in a row.
 
-252 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Root Element
 
@@ -16579,14 +15321,7 @@ sense. (cid:99)(RS_SWCT_03217)
 complete list of the SwDataDefProps and other attributes and their multiplicities which
 are allowed for a given category is shown in table 5.18. (cid:99)()
 
-253 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This list makes use of the SwDataDefProps and other meta-model elements which
 are explained in detail in the further sections of this chapter.
@@ -16637,14 +15372,7 @@ The general structure of ImplementationDataType is sketched in Figure 5.11. If a
 speciﬁc ImplementationDataType is supposed to deﬁne a composite data type the
 ImplementationDataType aggregates ImplementationDataTypeElements.
 
-254 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.11: ImplementationDataType overview
 
@@ -16698,11 +15426,8 @@ ImplementationDataType representing a structure.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-255 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»ArraySizeSemanticsEnum fixedSize variableSizeImplementationPropsSymbolProps«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize«atpSplitable»+symbolProps0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}Software Component Template
 AUTOSAR Release 4.2.2
@@ -16776,14 +15501,7 @@ own at least one ImplementationDataTypeElement. (cid:99)()
 
 speciﬁcally been added in order to support a backwards-compatible behavior.
 
-256 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1107] Union shall have at least one element (cid:100) An Implementation
 DataType or ImplementationDataTypeElement of category UNION shall own
@@ -16889,14 +15607,7 @@ Table 5.20: ImplementationDataTypeElement
 course, it is also possible to deﬁne an ImplementationDataType that provides array
 semantics. (cid:99)(RS_SWCT_03217)
 
-257 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01006] ImplementationDataType.subElement.arraySize shall
 be used to deﬁne the size of the array (cid:100) The primitive attribute Implementation
@@ -16950,14 +15661,7 @@ created by just setting up an ImplementationDataType. (cid:99)(RS_SWCT_03181)
 Size Indicator enabled (cid:100) An ImplementationDataType with category
 STRUCTURE where the attribute ImplementationDataType.dynamicArray
 
-258 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 SizeProfile exists represents a Variable-Size Array Data Type with Size
 Indicator enabled.
@@ -17017,14 +15721,7 @@ plementationDataTypeElement that fulﬁlls all of the following conditions:
 
 shall not be deﬁned.
 
-259 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The attribute ImplementationDataTypeElement.category shall be set to
 
@@ -17096,14 +15793,7 @@ that shall fulﬁll all of the following conditions:
 
 shall be set to the value variableSize.
 
-260 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The attribute ImplementationDataTypeElement.category shall be set to
 
@@ -17178,14 +15868,7 @@ the value ARRAY.
 
 deﬁned.
 
-261 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The
 
@@ -17261,14 +15944,7 @@ set to the value VSA_FULLY_FLEXIBLE, the ImplementationDataType shall ag
 gregate a VSA Payload ImplementationDataTypeElement that fulﬁlls all of the
 following conditions:
 
-262 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • The attribute ImplementationDataTypeElement.arraySizeSemantics
 
@@ -17346,14 +16022,7 @@ set to STRUCTURE.
 
 tics shall be set to the value variableSize.
 
-263 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 – The attribute ImplementationDataTypeElement.arraySize shall be
 
@@ -17427,14 +16096,7 @@ abled. (cid:99)()
 [TPS_SWCT_01617] Structure of an ImplementationDataType that represents
 a variable-sized array data type (cid:100) The ImplementationDataType that represents
 
-264 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 a Variable-Size Array Data Type shall have the category STRUCTURE that
 has two subElements.
@@ -17487,14 +16149,7 @@ set to a value equal to the size of the according dimension of the rectangular a
 [TPS_SWCT_01620] Size Indicator for dynamicArraySizeProfile set to
 VSA_RECTANGULAR (cid:100) The elements of this Size Indicator array shall consist of
 
-265 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 integers large enough to hold the maximum number of valid elements (according to
 maxArraySize). (cid:99)(RS_SWCT_03181)
@@ -17549,14 +16204,7 @@ At the end, all the “leafs” of the complete tree formed by these references 
 in SwBaseTypes. Figures 5.12, 5.13, and Figure 5.14 illustrate more examples about
 Typedefs and references.
 
-266 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.12: Example (1) for TypeDefs
 
@@ -17573,11 +16221,8 @@ plies if the swDataDefProps owned by the SwPointerTargetProps refers to a
 SwBaseType with native type declaration void, in this case the value VALUE is also
 permitted. (cid:99)()
 
-267 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 MySimpleType :ImplementationDataTypecategory = VALUE:SwDataDefPropsuint16 :SwBaseType:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsMyPointerType :ImplementationDataTypecategory = DATA_REFERENCEtypedef  unsigned short  MySimpleType;typedef  MySimpleType*  MyPointerType;:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned shortSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -17604,11 +16249,8 @@ role swDataDefProps that aggregates SwPointerTargetProps in the role
 swPointerTargetProps that references an ImplementationDataType of
 category e.g. VALUE.
 
-268 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 uint16 :SwBaseTypeMyStructType :ImplementationDataTypecategory = STRUCTUREtypedef  struct{   unsigned short C1;   OtherStructType  C2;}  MyStructType;C1: :ImplementationDataTypeElementcategory = VALUEC2 :ImplementationDataTypeElementcategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsOtherStructType :ImplementationDataTypecategory = STRUCTURE:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned shortSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -17638,11 +16280,8 @@ library calls.
 A function pointer is deﬁned by the category FUNCTION_REFERENCE and the as
 sociation SwPointerTargetProps.functionPointerSignature that refers to a
 
-269 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 VOID :SwBaseType:SwDataDefProps:SwDataDefPropsswImplPolicy = constFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef const void * FooVOID :SwBaseType:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef void * const  Foo:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCEtypedef  bar * const  Foo:SwPointerTargetPropstargetCategory = VALUE:SwPointerTargetPropstargetCategory = VALUEbar :ImplementationDataTypecategory = DATA_REFERENCESoftware Component Template
 AUTOSAR Release 4.2.2
@@ -17721,14 +16360,7 @@ Table 5.21: SwPointerTargetProps
 The allowed existence and multiplicity of all the attributes of SwDataDefProps and
 other properties depend on the category of the ImplementationDataType.
 
-270 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.15: SwDataDefProps used in the context of ImplementationDataType
 
@@ -17750,11 +16382,8 @@ of an RTE into which a DataPrototype typed by the ImplementationDataType
 is deployed. This implies potential naming conﬂicts if ImplementationDataTypes
 that have identical shortNames are deployed into a speciﬁc RTE.
 
-271 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]SwPointerTargetProps+ targetCategory  :Identifier [0..1]ASwBitRepresentation+ bitPosition  :Integer [0..1]+ numberOfBits  :Integer [0..1]AtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableSwAddrMethodConstraint: The existence of swPointerTargetProps, baseType and implementationDataType is XOR.ARElementAtpTypeAutosarDataTypeARElementAtpBlueprintAtpBlueprintableBswModuleEntry«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+swDataDefProps0..1+functionPointerSignature0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}+swDataDefProps0..1+swDataDefProps0..1+swBitRepresentation0..1+baseType0..1+implementationDataType0..1+swAddrMethod0..1+swPointerTargetProps0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -17815,11 +16444,8 @@ preﬁx.
 
 Table 5.22: ImplementationProps
 
-272 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ReferrableImplementationProps+ symbol  :CIdentifierBswSchedulerNamePrefixSectionNamePrefixSymbolPropsSymbolicNamePropsSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -17894,14 +16520,7 @@ given context.
 
 (for example) unsigned char is also considered the symbol of an integral C data type.
 
-273 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01563] Applicable values for nativeDeclaration (cid:100) For the purpose
 of avoiding portability issues the value nativeDeclaration should only consist of
@@ -17982,14 +16601,7 @@ Table 5.25: SwBaseType
 
 is limited to ASAM members.
 
-274 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 BaseTypeDeﬁnition (abstract)
 
@@ -18092,14 +16704,7 @@ set to "0" the meaning shall be interpreted as
 
 Tags: xml.sequenceOffset=100
 
-275 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 nativeDecl
@@ -18151,11 +16756,8 @@ Figure 5.17: BaseType
 
 Some additional hints to the properties of SwBaseType:
 
-276 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementBaseTypeBaseTypeDefinitionBaseTypeDirectDefinition+ baseTypeEncoding  :BaseTypeEncodingString+ baseTypeSize  :PositiveInteger [0..1]+ byteOrder  :ByteOrderEnum [0..1]+ maxBaseTypeSize  :PositiveInteger [0..1]+ memAlignment  :PositiveInteger [0..1]+ nativeDeclaration  :NativeDeclarationString [0..1]AtpBlueprintAtpBlueprintableSwBaseType+baseTypeDefinition1Software Component Template
 AUTOSAR Release 4.2.2
@@ -18221,14 +16823,7 @@ units [16]
 
 here.
 
-277 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 – BOOLEAN: This represents an unsigned integer to be interpreted as boolean.
 The value shall be interpreted as true if the value of the unsigned integer
@@ -18283,14 +16878,7 @@ Definition.byteOrder in this case are mostSignificantByteLast then the
 SwBaseType corresponds to the deﬁnition of UTF-16LE according to the Unicode
 standard [16]. (cid:99)()
 
-278 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 A further question that needs clariﬁcation is the usage of the so-called Byte Order
 Mark which allows (at run-time) for determining the actual byte order directly from the
@@ -18340,14 +16928,7 @@ However, this may end up in lengthy and potentially inconsistent descriptions at
 ent places within AUTOSAR speciﬁcations. Therefore, this chapter provides a canoni
 cal deﬁnition of a primitive data type that can be referred to from other places.
 
-279 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01564] Non-recursive deﬁnition of a primitive data type (cid:100) An Au
 tosarDataType is considered a primitive data type if the following conditions apply:
@@ -18400,14 +16981,7 @@ STRING shall not deﬁne invalidValue. (cid:99)()
 The SenderReceiverToSignalMapping (see [11]) allows for the integral mapping
 of a piece of data to a single SystemSignal. The speciﬁcation of AUTOSAR COM
 
-280 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [21] imposes certain requirements on the characteristics of data that apply for the inte
 gral mapping.
@@ -18462,14 +17036,7 @@ the requirements of [constr_1229]
 
 (cid:99)()
 
-281 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.2.7.4 Variable-Size Array Data Type
 
@@ -18493,14 +17060,7 @@ was the distinction between AutosarDataPrototype (which can be used for the ap
 plication and implementation types as well) and ApplicationCompositeElement
 DataPrototype (which is restricted to be used within the application types).
 
-282 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.18: Data Prototypes Overview
 
@@ -18554,11 +17114,8 @@ Stereotypes: isOfType
 
 Table 5.29: AutosarDataPrototype
 
-283 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerApplicationCompositeElementDataPrototypeApplicationRecordElementAutosarDataPrototypeAtpPrototypeDataPrototypeParameterDataPrototypeVariableDataPrototypeArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«isOfType»+type1{redefines atpType}+/swDataDefProps0..1«atpVariation»+typeBlueprint0..1+swDataDefProps0..1«isOfType»+type1{redefines atpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -18774,11 +17331,8 @@ C
 Attributes of SwDataDefProps
 additionalNativeTypeQualifier
 
-284 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Root Elem.
 s
@@ -19148,14 +17702,7 @@ x
 Table 5.31: Allowed Attributes vs. category for DataPrototypes typed by Application
 Data Types
 
-285 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1289] Allowed Attributes vs. category for DataPrototypes typed by
 ApplicationDataTypes (cid:100) The allowed values of Attributes per category for Dat
@@ -19440,14 +17987,7 @@ tationDataTypes
 ImplementationDataTypes (cid:100) The allowed values per category for DataProto
 types typed by ImplementationDataTypes are documented in table 5.32. (cid:99)()
 
-286 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01266] Three non-abstract classes derived from AutosarDataPro
 totype (cid:100) There are three non-abstract classes derived from AutosarDataProto
@@ -19529,14 +18069,7 @@ Time
 
 Table 5.33: ArgumentDataPrototype
 
-287 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 VariableDataPrototype
 
@@ -19617,14 +18150,7 @@ types are ignored (cid:100) These initValues have no meaning for DataPrototypes
 within PortInterfaces because in this case a more speciﬁc deﬁnition of initial val
 ues via the so-called ComSpec is required, see chapter 4.5. (cid:99)()
 
-288 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.19: Initial value for AutosarDataPrototypes
 
@@ -19655,11 +18181,8 @@ using a composite ImplementationDataType.
 
 (cid:99)()
 
-289 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototype+initValue0..1+initValue0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -19748,14 +18271,7 @@ reference is provided for this case.
 
 Table 5.36: AutosarVariableRef
 
-290 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.20: Implementation of AutosarVariableRef
 
@@ -19844,11 +18360,8 @@ Tags: xml.sequenceOffset=40
 
 Table 5.37: ArVariableInImplementationDataInstanceRef
 
-291 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AutosarVariableRefAutosarDataPrototypeVariableDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRefArVariableInImplementationDataInstanceRef+rootVariableDataPrototype0..1+autosarVariableInImplDatatype0..1+autosarVariable0..1+localVariable0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -19886,11 +18399,8 @@ a grouped axis in a variable in order to adapt the axis during run-time of the E
 by a dedicated algorithm. Note that in all cases where [constr_1173] does not apply
 [constr_2535] shall be fulﬁlled.
 
-292 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]AtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+rootVariableDataPrototype0..1+portPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1Software Component Template
 AUTOSAR Release 4.2.2
@@ -19980,14 +18490,7 @@ eter
 
 Table 5.38: AutosarParameterRef
 
-293 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_2535] Target of an autosarParameter in AutosarParameterRef shall
 refer to a parameter (cid:100) Except for the speciﬁcally described cases where [constr_1173]
@@ -20026,14 +18529,7 @@ the only reference required. (cid:99)()
 As explained before, the implementation of AutosarParameterRef in a speciﬁc case
 is subject to [constr_1173].
 
-294 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.22: Implementation of the InstanceRef for AutosarParameterRef
 
@@ -20046,11 +18542,8 @@ If the AutosarDataType was a primitive data type the targetDataProto
 type.
 type reference is the only reference required. (cid:99)()
 
-295 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeAutosarParameterRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType+portPrototype0..1{subsetsatpContextElement}+contextDataPrototype0..*{ordered,subsetsatpContextElement}«atpDerived»+base1{redefinesatpBase}+rootParameterDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -20073,11 +18566,8 @@ nication, data used for measurement as well as for calibration.
 
 However, there are constraints for the attributes depending on the role of the data:
 
-296 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AutosarDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeVariableDataPrototypeAutosarVariableRefAtpInstanceRefVariableInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType«instanceRef»+autosarVariable0..1+autosarVariable0..1+localVariable0..1«atpDerived»+base1{subsetsatpBase}+contextDataPrototype0..*{ordered,subsetsatpContextElement}+portPrototype0..1{subsetsatpContextElement}+rootVariableDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}Software Component Template
 AUTOSAR Release 4.2.2
@@ -20709,14 +19199,7 @@ in the context of the deﬁnition of so-called blueprints. To that extent, swInt
 resents a non-binding requirement that shall later be considered for the deﬁnition of an appropriate
 CompuMethod.
 
-297 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Usage For
 
@@ -21010,14 +19493,7 @@ and matching pairs of values on application level and implementation level
 exist. In contrast, the corresponding ImplementationDataType uses (true,
 false) as the applicable literals in any of the above mentioned cases.
 
-298 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Some of the property names contain the term “variable” or “calprm”, this comes from
 historical11 reasons and can be taken as some hint where the property most likely
@@ -21091,14 +19567,7 @@ Tags: xml.sequenceOffset=235
 
 were separated and the properties were merged over the time.
 
-299 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 annotation Annotation
@@ -21219,14 +19688,7 @@ is added to or subtracted from the value of a
 DataPrototype when using up/down keys while
 calibrating.
 
-300 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swAddrMet
@@ -21355,14 +19817,7 @@ Implementation policy for this data object.
 
 Tags: xml.sequenceOffset=230
 
-301 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Datatype
 Numerical
@@ -21463,14 +19918,7 @@ specify the real refresh timing.
 
 Tags: xml.sequenceOffset=300
 
-302 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swTextPro
@@ -21565,14 +20013,7 @@ Mul. Kind Note
 Base
 Attribute
 
-303 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 bitPosition Integer
@@ -21611,14 +20052,7 @@ Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitiv
 
 Types
 
-304 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note
 
@@ -21697,14 +20131,7 @@ Mul. Kind Note
 
 –
 
-305 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 
@@ -21754,11 +20181,8 @@ Description
 The element will not be accessible via MCD tools, i.e. will not appear in the ASAP
 ﬁle.
 
-306 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 txtmotVsVSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -21824,14 +20248,7 @@ This for example, applies to the attribute swRefreshTiming which denotes a timin
 information relevant for the measurement system; this information may be set rather
 late in the process chain. (cid:99)()
 
-307 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Obviously such an override is not applicable in all cases. In particular, the properties
 covering the structure shall not be redeﬁned on DataPrototype.
@@ -21900,14 +20317,7 @@ straints. Please note that the usage of swImplPolicy is further constraint in th
 combination with the attribute value swCalibrationAccess as described in [con
 str_1017].
 
-308 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ParameterDataPrototype
 
@@ -22636,14 +21046,7 @@ type in NvDataInterface shall be standard. (cid:99)()
 Block (cid:100) The overriding swImplPolicy attribute value of a VariableDataProto
 type in the role ramBlock shall be standard. (cid:99)()
 
-309 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_2038] swImplPolicy for VariableDataPrototype in the role implic
 itInterRunnableVariable (cid:100) The overriding swImplPolicy attribute value of a
@@ -22696,14 +21099,7 @@ attribute value of a SwServiceArg shall be standard or const. (cid:99)()
 [TPS_SWCT_02000] Default value for attribute swImplPolicy (cid:100) If the attribute
 swImplPolicy is not explicitly set at any of the locations listed in "‘Place of Setting"’
 
-310 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 for SwDataDefProps mentioned in table 5.39 the default value standard applies.
 (cid:99)()
@@ -22738,11 +21134,8 @@ On the other hand it is possible that the communicating software components do
 have knowledge about the invalidValue and the invalidValue is visible for
 them.
 
-311 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «atpVariation»SwDataDefPropsValueSpecificationARElementAtpTypeAutosarDataTypeAtpPrototypeDataPrototype+/swDataDefProps0..1+invalidValue0..1+swDataDefProps0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -22800,14 +21193,7 @@ puMethod. (cid:99)()
 Figure 5.6 illustrates the relationship between ApplicationDataType, Com
 puMethod, ImplementationDataType, invalidValue, BaseType.
 
-312 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_2545] invalidValue shall ﬁt in the speciﬁed ranges (cid:100) The invalid
 Value shall be in the range of the ImplementationDataType. (cid:99)()
@@ -22863,14 +21249,7 @@ a CompuMethod of category TEXTTABLE or BITFIELD_TEXTTABLE the applicable
 ValueSpecification shall be a TextValueSpecification.
 In this case the
 
-313 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 value provided shall match to one of the applicable text values (vt, shortLabel,
 symbol) deﬁned by the applicable CompuScales. (cid:99)()
@@ -22922,14 +21301,7 @@ In this case the invalidValue owned by the SwDataDefProps that in turn is owned
 by the respective dataElement is relevant for the fulﬁllment of [constr_1140]. The
 “big picture” of this relationship is sketched in Figure 5.26.
 
-314 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1219] Invalidation depends on the value of swImplPolicy (cid:100) Invalidation
 of dataElements is only supported for dataElements where the value of swIm
@@ -22941,11 +21313,8 @@ Figure 5.26: Relationships required to consider the invalidValue
 cation or a ReferenceValueSpecification for the speciﬁcation of an in
 validValue (cid:100) The aggregation of a RuleBasedValueSpecification or a Ref
 
-315 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SenderReceiverInterfaceAutosarDataPrototypeVariableDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementRPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumValueSpecification+ shortLabel  :Identifier [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]+rPort«isOfType»+requiredInterface1{redefines atpType}+invalidValue0..1+initValue0..1+networkRepresentation0..1+dataElement1+dataElement1..*1+invalidationPolicy0..*+dataElement1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23011,14 +21380,7 @@ The following semantical and structural features from SwDataDefProps are relevan
 
 • swAddrMethod
 
-316 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01130] Measurement and calibration access to model elements is
 deﬁned by swCalibrationAccess (cid:100) The ability to be accessed by e.g. a calibration
@@ -23098,14 +21460,7 @@ A characteristic table is deﬁned by setting the category of the corresponding 
 tosarDataType or DataPrototype to CURVE respectively MAP, CUBOID, CUBE_4,
 and CUBE_5.
 
-317 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Its SwDataDefProps determine an axis description. The type of the functional values
 is given by the attached SwBaseType and the CompuMethod.
@@ -23127,11 +21482,8 @@ sedes CompuMethod, Unit, and BaseType if these are deﬁned in parallel.
 
 Figure 5.27: Overview on the Meta-Model for Axis Description
 
-318 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwCalprmAxisTypePropsSwAxisGroupedSwCalprmAxisSwAxisGenericSwAxisIndividualSwVariableRefProxyApplicationDataTypeApplicationPrimitiveDataTypeSwCalprmRefProxyARElementUnit+sharedAxisType0..1+swCalprmRef1+unit0..1+swAxisGeneric0..1+inputVariableType0..1+swVariableRef0..*+swCalprmAxisTypeProps1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23152,22 +21504,16 @@ see 5.4.5.
 tion points (cid:100) The value of attributes swMinAxisPoints and swMaxAxisPoints is
 subject to variant handling. (cid:99)(RS_SWCT_03148)
 
-319 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwGenericAxisParam«atpVariation»+ vf  :Numerical [1..*]ARElementSwAxisTypeSwAxisGenericIdentifiableSwGenericAxisParamType+swGenericAxisParamType1+swAxisType1+swGenericAxisParam0..*+swGenericAxisParamType0..*Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 5.29: Meta-Model Elements used for a Curve
 
-320 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «atpVariation»SwDataDefPropsARElementUnitARElementAtpBlueprintAtpBlueprintableCompuMethodAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableSwAddrMethodSwCalprmAxisSwCalprmAxisSetSwCalprmAxisTypePropsSwAxisIndividualSwVariableRefProxySwAxisGroupedSwCalprmRefProxyARElementSwRecordLayout+swRecordLayout0..1+baseType0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+unit0..1+swCalprmAxisTypeProps1+swCalprmAxisSet0..1+unit0..1+dataConstr0..1+unit0..1+baseType0..1+compuMethod0..1+swCalprmAxis0..*+swCalprmRef1+swAddrMethod0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23203,11 +21549,8 @@ Element=false; xml.typeWrapperElement=false
 
 Table 5.50: SwCalprmAxisSet
 
-321 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Element :ApplicationDataTypecategory = CURVEshortName = MyCurveswDataDefProps :SwDataDefPropsswCalprmAxisSet :SwCalprmAxisSetswCalprmAxis :SwCalprmAxisswCalprmAxisTypeProps :SwAxisIndividualElement :CompuMethodElement :SwAddrMethodElement :UnitElement :ApplicationPrimitiveDataTypeElement :UnitswDataDefProps :SwDataDefPropsElement :SwRecordLayoutElement :CompuMethodneed to be consistentSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -23328,14 +21671,7 @@ comAxis
 
 Tags: xml.name=COM_AXIS
 
-322 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 curveAxis
 
@@ -23428,11 +21764,8 @@ Tags: xml.sequenceOffset=30
 
 Tags: xml.sequenceOffset=80
 
-323 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Attribute
 inputVaria
@@ -23537,14 +21870,7 @@ Tags: xml.roleElement=false; xml.roleWrapper
 Element=true; xml.sequenceOffset=20; xml.type
 Element=false; xml.typeWrapperElement=false
 
-324 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 unit
@@ -23632,14 +21958,7 @@ Attribute
 sharedAxis
 Type
 
-325 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swAxisInd
@@ -23713,14 +22032,7 @@ This means that at the speciﬁcation time of an SwcInternalBehavior a list of i
 values has to be speciﬁed where the implementer of a RunnableEntity can choose
 of. The input values are DataPrototype entities either being
 
-326 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • a VariableDataPrototype in a SenderReceiverInterface or Nv
 DataInterface of a PortPrototype, of the AtomicSwComponentType
@@ -23759,14 +22071,7 @@ As shown in Figure 5.31, this approach is also used to represent a AutosarVari
 ableRef in all roles, e.g. the result of an interpolation routine applied to an axis, the
 input value determination, a list of dependent parameters, and swDataDependency.
 
-327 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.31: Extended Axis Elements and Input Variable Reference
 
@@ -23785,11 +22090,8 @@ sociation to a ParameterDataPrototype, representing a curve with an axis. When
 deﬁning the data type of a parameter the type of the shared axis is deﬁned in
 sharedAxisType.
 
-328 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «atpVariation»SwDataDefPropsSwAxisIndividualSwCalprmAxisTypePropsSwCalprmAxisSwCalprmAxisSetParameterDataPrototypeAutosarDataPrototypeSwVariableRefProxySwAxisGroupedSwCalprmRefProxyAutosarParameterRefAutosarVariableRefVariableDataPrototypeAtpPrototypeDataPrototype+swCalprmAxisSet0..1+autosarVariable0..1+swCalprmAxisTypeProps1+arParameter0..1+swVariableRef0..*+swCalprmRef1+localParameter0..1+swCalprmAxis0..*+/swDataDefProps0..1+localVariable0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23804,11 +22106,8 @@ middle the MSRSW style is shown, referencing the SwCalprm.
 
 Figure 5.32: Applying Proxy Variable Reference Mechanism
 
-329 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwVariableRefProxy«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]«atpMixed»SwDataDependencyArgsSwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSetSwDataDependency+swCalprmAxis0..*+swCalprmAxisTypeProps1+swVariableRef0..*+swVariable1+swHostVariable0..1+swCalprmAxisSet0..1+swComparisonVariable0..*+swDataDependency0..1+swDataDependencyArgs0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23838,11 +22137,8 @@ Note that the Datatype of the referenced
 ParameterDataPrototype shall be an
 ApplicationDataType of category VALUE.
 
-330 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwCalprmAxisTypePropsSwAxisGrouped+ swAxisIndex  :AxisIndexType [0..1]SwCalprmRefProxyAutosarParameterRef«atpMixed»SwDataDependencyArgsARElementIdentifiableSwVcdCriterionParameterDataPrototypeAtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeAutosarDataPrototype+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1+targetDataPrototype1{subsets atpTarget}+swCalprmRef1+arParameter0..1+swCalprmRef1Software Component Template
 AUTOSAR Release 4.2.2
@@ -23905,14 +22201,7 @@ originated from a VariableDataPrototype.
 
 Table 5.58: SwVariableRefProxy
 
-331 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.34: Proxy reference classes
 
@@ -23944,11 +22233,8 @@ aPrototype whose consistent value is automatically derived by the measurement an
 calibration system. Upon adjusting one of the parameters, the dependent parameter is
 then also automatically adjusted according to the chosen formula.
 
-332 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwVariableRefProxyAutosarVariableRefIdentifiableMcDataInstanceSwCalprmRefProxyAutosarParameterRef+arParameter0..1+mcDataInstance0..1+autosarVariable0..1+mcDataInstanceVar0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -24043,14 +22329,7 @@ DEPENDENCY-FORMULA>
 
 <AR-PARAMETER>
 
-333 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <LOCAL-PARAMETER-REF DEST="PARAMETER-DATA
 PROTOTYPE">/DataDependency/foo/bar/B</
@@ -24124,14 +22403,7 @@ LOCAL-PARAMETER-REF>
 
 </INTERNAL-BEHAVIORS>
 
-334 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 SwDataDependency
 
@@ -24230,14 +22502,7 @@ Element=false; xml.typeWrapperElement=false
 
 Table 5.60: SwDataDependencyArgs
 
-335 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.4.7 Precedence of data properties with respect to data elements, axis ele
 
@@ -24272,14 +22537,7 @@ vidual.dataConstr.
 
 (cid:99)()
 
-336 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.35: Various Attributes in the Context of SwDataDefProps
 
@@ -24295,11 +22553,8 @@ unit of value axis the following precedence rule is deﬁned:
 
 puMethod.unit
 
-337 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 TypePropertiesARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]SwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwVariableRefProxyARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ApplicationPrimitiveDataTypeSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSet«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+unit0..1+swCalprmAxis0..*+unit0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+swCalprmAxisTypeProps1+compuMethod0..1+swDataDefProps0..1+swCalprmAxisSet0..1+valueAxisDataType0..1+dataConstr0..1+unit0..1+inputVariableType0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -24363,14 +22618,7 @@ puMethod.displayFormat
 
 (cid:99)()
 
-338 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note that this deviates from the general rule since displayFormat is not an
 essential property. The last item in the list above is the consequence of the fact
@@ -24434,14 +22682,7 @@ Constr
 
 (cid:99)()
 
-339 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 that
 
@@ -24520,14 +22761,7 @@ SwCalibrationAccessEnum for outer and inner elements of a complex data
 type and the (in the column "result") indicates value of SwCalibrationAc
 cessEnum applicable for this speciﬁc combination.
 
-340 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • [TPS_SWCT_01506] Precedence of the calibration access of input axis (cid:100)
 For the usage of calibration access of input axis the following precedence rule is
@@ -24585,14 +22819,7 @@ Datatype
 
 Mul. Kind Note
 
-341 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 compuInter
@@ -24681,14 +22908,7 @@ to the result that comes out at the other end of the conversion. This is obvious
 safer than the opposite approach where a given physical/internal value would ﬁrst be
 converted to its internal/physical equivalent and then, after the conversion is ﬁnished
 
-342 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 there would be (as a second step) the obligation to check whether the result of the
 conversion is actually valid in terms of the applicable limits.
@@ -24701,11 +22921,8 @@ and a semantical representation. Some examples are given below. (cid:99)()
 
 Figure 5.36: A CompuMethod and its attributes deﬁne data semantics
 
-343 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuCompuContentCompuScalesARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+physicalDimension0..1«atpVariation»+compuScale0..*{ordered}+unit0..1+compuInternalToPhys0..1+compuPhysToInternal0..1+compuContent1Software Component Template
 AUTOSAR Release 4.2.2
@@ -24730,11 +22947,8 @@ For more complex functions (e.g. rational functions) it is usually not possible 
 pute the inverse function automatically. More seriously, the inversion yields ambiguous
 results if the function is not monotonic. To deal with such possible ambiguities in a
 
-344 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuScaleContentsCompuScaleRationalFormulaCompuRationalCoeffsCompuNominatorDenominator«atpVariation»+ v  :Numerical [0..*] {ordered}CompuScaleConstantContentsCompuConst+compuConst1+compuNumerator1+compuDenominator1+compuInverseValue0..1+compuScaleContents0..1+compuRationalCoeffs1Software Component Template
 AUTOSAR Release 4.2.2
@@ -24795,14 +23009,7 @@ conversion formula in two different ways. (cid:99)()
 [constr_1024] Stepwise deﬁnition of CompuMethods (cid:100) Within AUTOSAR only
 the stepwise deﬁnition (CompuScales) is used. (cid:99)()
 
-345 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • [TPS_SWCT_01282] Number of intervals in which a given conversion ap
 plies (cid:100)CompuScales is a number of intervals (called CompuScale) within which
@@ -24858,14 +23065,7 @@ priority) for all CompuScales with a point-range:
 
 2. Take the value of vt if it makes a valid C identiﬁer.
 
-346 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 3. Take the value of shortLabel if it exists.
 
@@ -24949,14 +23149,7 @@ Attribute
 
 Mul. Kind Note
 
-347 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 –
@@ -25072,14 +23265,7 @@ used to derive a programming language identiﬁer.
 
 Tags: xml.sequenceOffset=20
 
-348 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 symbol
@@ -25166,14 +23352,7 @@ Mul. Kind Note
 
 Table 5.67: CompuScaleContents
 
-349 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 CompuRationalCoeffs
 
@@ -25279,14 +23458,7 @@ Tags: xml.sequenceOffset=110
 
 Table 5.70: CompuScaleRationalFormula
 
-350 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 CompuScaleConstantContents
 
@@ -25366,11 +23538,8 @@ monized Data Objects [23].
 
 Table 5.73 contains a deﬁnition of possible values for the attribute category.
 
-351 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ASAM Category
 IDENTICAL
@@ -25484,11 +23653,8 @@ smallest possible value of the scale will be used as
 result of the reverse calculation.
 The values per scale are deﬁned in CompuConst.
 
-352 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ASAM Category
 BITFIELD_TEXT
@@ -25554,14 +23720,7 @@ formulated by means of a numerical value in parentheses, e.g. (1).
 
 The legend for the individual annotations can be found below Table 5.74.
 
-353 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute Existence per Category
 
@@ -25721,13 +23880,9 @@ D
 
 D(2) D(2)
 
-N/A
 
-N/A
+ D(2,3)
 
-N/A D(2,3)
-
-N/A
 
 Attributes of CompuMethod
 compuInternalToPhys
@@ -25744,14 +23899,11 @@ E
 D
 I
 
-N/A
 
-N/A
 
 Attributes of meta-classes related to CompuMethod
 compuDefaultValue
-
-N/A O(6) O(6) O(6) O(6) O(6) O(6) O(6) O(6)
+ O(6) O(6) O(6) O(6) O(6) O(6) O(6) O(6)
 
 O(6)
 
@@ -25766,50 +23918,33 @@ CompuScale.upperLimit
 CompuConst
 
 CompuRationalCoeffs
-
-N/A D/1..1 D/1..n D/1..1 D/1..n D/1..n D/1..n D/1..n D/1..n
+ D/1..1 D/1..n D/1..1 D/1..n D/1..n D/1..n D/1..n D/1..n
 
 D/1..n
 
-N/A
-
-N/A O(2) O(2) O(5) N/A O(2,5) O(2,5)
+ O(2) O(2) O(5) O(2,5) O(2,5)
 
 O(5)
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
 O
 
-N/A
 
-N/A
 
-N/A
 
 O
 
 D
 
-N/A
 
-N/A
 
-N/A
 
 D
 
@@ -25821,9 +23956,7 @@ D(4) D(4)
 
 D
 
-N/A
 
-N/A
 
 D
 
@@ -25831,42 +23964,28 @@ D
 
 D
 
-N/A
 
 D(4)
 
-N/A
+ O(7) O(7) O(7) O(7)
+ O(7) O(7) O(7) O(7)
 
-N/A O(7) O(7) O(7) O(7)
 
-N/A O(7) O(7) O(7) O(7)
 
-N/A
-
-N/A
-
-N/A
 
 D
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
-N/A
 
 D(4) D(4)
 
 D
 
-D
-N/A D/vt D/vt D/vt D/vt D/vt or vf
+D D/vt D/vt D/vt D/vt D/vt or vf
 
 D(4)
 
@@ -25886,17 +24005,11 @@ D
 
 D
 
-N/A
 
-N/A
 
-N/A
 
 D
-
-N/A
-N/A D/1v
-N/A D/2v
+ D/1v D/2v
 
 D
 
@@ -25904,22 +24017,18 @@ D
 
 D
 
-N/A
 
-N/A
 
-N/A
 
-CompuRationalCoeffs.compuDenominator N/A D/1v D/1v
-CompuRationalCoeffs.compuDenominator N/A D/2v D/2v
+CompuRationalCoeffs.compuDenominator D/1v D/1v
+CompuRationalCoeffs.compuDenominator D/2v D/2v
 
 Table 5.74: Allowed Attributes vs. category for CompuMethods
 
 The following legend applies to the cells in table 5.74:
 
 D Deﬁne the attribute.
-
-N/A Attribute is not applicable for usage in the scope of this element.
+ Attribute is not applicable for usage in the scope of this element.
 
 O Optionally deﬁne the attribute.
 
@@ -25941,14 +24050,7 @@ Const exists.
 
 (4) Limits shall be deﬁned according to [constr_1022].
 
-354 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (5) Restrictions on the structure of the CompuMethod according to [constr_1134] ap
 
@@ -26019,14 +24121,7 @@ Listing 5.8: example for linear CompuMethod
 
 <SHORT-NAME>linear</SHORT-NAME>
 
-355 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <CATEGORY>LINEAR</CATEGORY>
 <UNIT-REF DEST="UNIT">kmh</UNIT-REF>
@@ -26110,14 +24205,7 @@ Listing 5.9: example for linear and texttable CompuMethod
 
 <LOWER-LIMIT INTERVAL-TYPE="CLOSED">351</LOWER-LIMIT>
 
-356 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <UPPER-LIMIT INTERVAL-TYPE="CLOSED">351</UPPER-LIMIT>
 <COMPU-CONST>
@@ -26198,14 +24286,7 @@ front left
 
 0(0) = no, 1(1) = yes
 
-357 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Bit 1
 Bit 2
@@ -26291,14 +24372,7 @@ Listing 5.11: example for bit ﬁeld text table CompuMethod
 <MASK>0b11110000</MASK>
 <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0b00100000</LOWER-LIMIT>
 
-358 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <UPPER-LIMIT INTERVAL-TYPE="CLOSED">0b00100000</UPPER-LIMIT>
 <COMPU-CONST>
@@ -26374,14 +24448,7 @@ AUTOSAR Release 4.2.2
 <VT>no</VT>
 </COMPU-CONST>
 
-359 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 </COMPU-SCALE>
 <COMPU-SCALE>
@@ -26456,14 +24523,7 @@ AUTOSAR Release 4.2.2
 
 </COMPU-METHOD>
 
-360 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note that a constraint applies concerning the values within a CompuMethod that is sub
 ject to [constr_1146]. According to [constr_1133], it is (as exempliﬁed in the example)
@@ -26552,14 +24612,7 @@ associated with a data type is its physical dimension. Units are used to augment
 value with additional information like m/s or liter. This is necessary for a correct inter
 pretation of the physical value for input and output processes.
 
-361 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The conversion of values into other units like km/h into miles/h is also possible. There
 fore the unit involves information about its physical dimensions. (cid:99)()
@@ -26613,11 +24666,8 @@ Mul. Kind Note
 
 12For the deﬁnition of what SI units are, see http://physics.nist.gov/cuu/Units/
 
-362 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]MixedContentForUnitNames«atpMixedString»SingleLanguageUnitNamesARElementUnitGroup+unit0..*+physicalDimension0..1+displayName0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -26697,14 +24747,7 @@ for each of
 Note that quantities like "%" are not derived from SI units and therefore have no asso
 ciation to a physical dimension.
 
-363 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 PhysicalDimension
 
@@ -26816,14 +24859,7 @@ with the implication that the two mapped PhysicalDimensions shall be considered
 compatible (for more explanation please refer to [constr_1053]). PhysicalDimen
 sionMappings are aggregated in form of PhysicalDimensionMappingSets. This
 
-364 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 allows for gathering semantically related PhysicalDimensionMappings into the
 same PhysicalDimensionMappingSet.
@@ -26888,11 +24924,8 @@ Mul. Kind Note
 
 ref This represents the ﬁrst PhysicalDimension of the
 
-365 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementUnits::PhysicalDimensionMappingSetUnits::PhysicalDimensionMappingARElementUnits::PhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+secondPhysicalDimension1+firstPhysicalDimension1+physicalDimensionMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -26970,14 +25003,7 @@ Datatype
 
 Mul. Kind Note
 
-366 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 unit
@@ -27039,11 +25065,8 @@ Assume "MilesPerHour" should be converted to a European unit: Based on the phys
 icalDimension a conversion to "MeterPerSec" as well as "MilesPerHour" is possible.
 In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are
 
-367 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeARElementUnitGroup+unitGroup0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -27087,14 +25110,7 @@ Other values may exist, but the semantics is outside of the AUTOSAR scope.
 [TPS_SWCT_01287] Standard limits and extended limits in the ASAM-MCD2
 (ASAP2) speciﬁcation (cid:100) The ASAM-MCD2 (ASAP2) speciﬁcation [25] deﬁnes stan
 
-368 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 dard limits and extended limits.
 If extended limits exist, the standard limits may be
@@ -27116,11 +25132,8 @@ set to 0 changes its role), it matches the best to the deﬁnitions in ASAM-MCD2
 
 Figure 5.42: Meta-model for deﬁning Data Constraints
 
-369 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataConstrRule+ constrLevel  :Integer [0..1]ARElementAtpBlueprintAtpBlueprintableDataConstrPhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]InternalConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]ScaleConstr+ shortLabel  :Identifier [0..1]+ validity  :ScaleConstrValidityEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation»SwDataDefPropsARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]In order to maintain compliance to ASAM HDO, the AttributeValuePattern variant handling is modeled manually for Limit.+scaleConstr0..*{ordered}+unit0..1+dataConstrRule0..*+unit0..1+dataConstr0..1+physConstrs0..1+internalConstrs0..1+scaleConstr0..*{ordered}Software Component Template
 AUTOSAR Release 4.2.2
@@ -27229,14 +25242,7 @@ Mul. Kind Note
 Base
 Attribute
 
-370 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 lowerLimit
@@ -27350,14 +25356,7 @@ Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 xml.sequenceOffset=20
 
-371 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 maxDiff
@@ -27467,14 +25466,7 @@ Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 xml.sequenceOffset=40
 
-372 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 shortLabel
@@ -27575,14 +25567,7 @@ e
 
 Tags: xml.attribute=true
 
-373 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 
@@ -27651,14 +25636,7 @@ range = {x ∈ (cid:60) (cid:107) lowerLimit.value < x < upperLimit.value}
 
 (cid:99)()
 
-374 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Please note that Limit inherits from AbstractNumericalVariationPoint. This
 means it is a number which may be subject to variability. For this reason, it is not
@@ -27714,14 +25692,7 @@ Implementation the particular MemorySection is associated with the SwAd
 drMethod. This association indicates that all objects of the associated addressing
 method shall be placed in the given memory section. (cid:99)()
 
-375 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01456] Predeﬁned values for MemorySection.option and SwAd
 drMethod.option (cid:100) The following values of MemorySection.option and SwAd
@@ -27785,14 +25756,7 @@ mentioned in [TPS_SWCT_01456].
 In other words, it would not make any sense to attribute a given memory object with
 two different ASIL [26] values appearing on the same list.
 
-376 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 If these values were combined on a particular list, the intended semantics would be
 ambiguous and could not clearly be determined. Therefore, [constr_1311] applies.
@@ -27848,14 +25812,7 @@ word used for RunnableEntitys and BswSchedulableEntitys from the short
 Name of the SwAddrMethod only because the alignment deﬁned in MemorySection
 is not known at contract phase. (cid:99)()
 
-377 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_2034] SwAddrMethod referenced by RunnableEntitys or BswSchedu
 lableEntitys (cid:100) RunnableEntitys and BswSchedulableEntitys shall not ref
@@ -27956,14 +25913,7 @@ associated with this addresssing method.
 
 Table 5.93: SwAddrMethod
 
-378 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Primitive
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
@@ -28042,14 +25992,7 @@ the attribute sectionInitializationPolicy.
 
 var
 
-379 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Table 5.95: MemorySectionType
 
@@ -28098,14 +26041,7 @@ Table 5.97: AlignmentType
 
 For more information on the speciﬁcation of the MemorySection refer to [7].
 
-380 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.43: Assigning an address method to a memory section
 
@@ -28131,11 +26067,8 @@ very same serialization approach is used for multiple ApplicationDataTypes all o
 these may refer to the same SwRecordLayout even if the size of the data is different.
 (cid:99)()
 
-381 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableMemorySection+ alignment  :AlignmentType [0..1]+ memClassSymbol  :CIdentifier [0..1]+ option  :Identifier [0..*]+ size  :PositiveInteger [0..1]+ symbol  :Identifier [0..1]IdentifiableResourceConsumptionARElementImplementationARElementAtpBlueprintAtpBlueprintableSwAddrMethod+ memoryAllocationKeywordPolicy  :MemoryAllocationKeywordPolicyType [0..1]+ option  :Identifier [0..*]+ sectionInitializationPolicy  :SectionInitializationPolicyType [0..1]+ sectionType  :MemorySectionType [0..1]«atpVariation»SwDataDefPropsAtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MemorySectionType var code const calprm configData excludeFromFlash calibrationVariables«enumeration»MemoryAllocationKeywordPolicyType addrMethodShortName addrMethodShortNameAndAlignment+swAddrmethod1+swAddrMethod0..1«atpVariation,atpSplitable»+memorySection0..*+resourceConsumption1«atpSplitable»+/swDataDefProps0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -28156,22 +26089,12 @@ a map, or iterating along a string. The contents of such a record layout group
 These values refer to particular properties of the object (e.g. value, count, . . .). By
 application of this pattern, the serialization of any complex object can be speciﬁed.
 
-382 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.44: Speciﬁcation of a record layout
 
-383 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «atpMixed»SwRecordLayoutGroupContentIdentifiableSwGenericAxisParamTypeSwRecordLayoutGroup+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutComponent  :Identifier [0..1]+ swRecordLayoutGroupAxis  :AxisIndexType [0..1]+ swRecordLayoutGroupFrom  :RecordLayoutIteratorPoint [0..1]+ swRecordLayoutGroupIndex  :NameToken [0..1]+ swRecordLayoutGroupStep  :Integer [0..1]+ swRecordLayoutGroupTo  :RecordLayoutIteratorPoint [0..1]SwRecordLayoutV+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutVAxis  :AxisIndexType [0..1]+ swRecordLayoutVFixValue  :Integer [0..1]+ swRecordLayoutVIndex  :NameTokens [0..1]+ swRecordLayoutVProp  :NameToken [0..1]ARElementSwRecordLayout«primitive»AsamRecordLayoutSemanticstagsxml.xsd.customType = ASAM-RECORD-LAYOUT-SEMANTICSxml.xsd.type = NMTOKEN«primitive»RecordLayoutIteratorPointtagsxml.xsd.customType = RECORD-LAYOUT-ITERATOR-POINTxml.xsd.pattern = -?([0-9]+|MAX-TEXT-SIZE|ARRAY-SIZE)xml.xsd.type = string«primitive»AxisIndexTypetagsxml.xsd.customType = AXIS-INDEX-TYPExml.xsd.pattern = [0-9]+|STRING|ARRAYxml.xsd.type = stringAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeMultiLanguageOverviewParagraph+swRecordLayoutGroup1+baseType0..1+swGenericAxisParamType0..1+desc0..1+swRecordLayoutV1+swRecordLayoutGroup1+swRecordLayout1+desc0..1+swRecordLayoutGroupContentType0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -28275,14 +26198,7 @@ in the corresponding DataPrototype is to be used.
 
 Tags: xml.sequenceOffset=30
 
-384 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 shortLabel
@@ -28387,14 +26303,7 @@ axes than index names referenced here.
 
 Tags: xml.sequenceOffset=60
 
-385 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Datatype
 NameToken
@@ -28479,14 +26388,7 @@ layout group.
 
 Tags: xml.sequenceOffset=3
 
-386 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swGeneric
@@ -28598,14 +26500,7 @@ contained SwRecordLayoutV elements.
 
 Tags: xml.sequenceOffset=40
 
-387 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Datatype
 Integer
@@ -28709,14 +26604,7 @@ one for the y-axis. The inner iteration runs faster.
 
 Tags: xml.sequenceOffset=130
 
-388 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swRecordL
@@ -28788,14 +26676,7 @@ xml.xsd.pattern=-?([0-9]+|MAX-TEXT-SIZE|ARRAY-SIZE); xml.xsd.type=string
 
 Table 5.103: RecordLayoutIteratorPoint
 
-389 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01489] Standardized values of SwRecordLayoutV.swRecordLay
 outVProp (cid:100) SwRecordLayoutV.swRecordLayoutVProp describes the type of val
@@ -28845,11 +26726,8 @@ Figure 5.45 and Figure 5.46 illustrate most of these properties.
 
 Figure 5.45: Values for swRecordLayoutVProp for individual axis
 
-390 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 1234COUNT= 412341234COUNT= 4RIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFFRIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFF0VALUECurrent pointSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -28897,11 +26775,8 @@ sured by the author of the SwRecord Layout.
 Note that there are keywords in A2L bound to a calibration parameter which in
 MSR/AUTOSAR are represented by the SwRecordLayout (DEPOSIT etc.).
 
-391 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 OFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DISTOFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DISTSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -28980,14 +26855,7 @@ FNC_VALUES -->
 [constr_1027] Types for record layouts (cid:100) Because ParameterDataPrototypes
 have a (cid:28)isOfType(cid:29)-relation to ApplicationDataTypes or Implementation
 
-392 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DataTypes the related data types shall properly match to the details as speciﬁed in
 swDataDefProps. (cid:99)()
@@ -29023,33 +26891,24 @@ particular the fact that on the level of ApplicationDataType even complex entiti
 such as curves and maps appear as somehow primitive. The inner details of such
 entities are handled e.g. by service libraries.
 
-393 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 :ApplicationDataType:SwDataDefProps:SwRecordLayout:ImplementationDatatype:BaseTypeelement :DataTypeMapSoftware Component Template
 AUTOSAR Release 4.2.2
 
 Figure 5.48: Curve implemented as two consecutive arrays
 
-394 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPtssubElement :ImplementationDataTypeElementcategory = ARRAYshortName = outputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = valueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = inputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = value:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = inputValues:SwRecordLayoutVswRecordLayoutVAxis = 1shortLabel = value:SwRecordLayoutVswRecordLayoutVIndex = countswRecordLayoutVAxis = 1shortLabel = noOfAxisPts:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = outputValues:SwRecordLayoutVswRecordLayoutVAxis = 0shortLabel = value+baseType+baseTypeSoftware Component Template
 AUTOSAR Release 4.2.2
 
 Figure 5.49: Curve implemented as array of value pairs
 
-395 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :DataTypeMapelement :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = COUNTsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = VALUEshortName = XvaluesubElement :ImplementationDataTypeElementcategory = VALUEshortName = YvaluesubElement :ImplementationDataTypeElementcategory = STRUCTUREarraySize = swMaxAxisPointsshortName = values:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1:SwRecordLayoutVswRecordLayoutVAxis = 1:SwRecordLayoutVswRecordLayoutVIndex = count:SwRecordLayoutGroup:SwRecordLayoutVswRecordLayoutVAxis = 0Software Component Template
 AUTOSAR Release 4.2.2
@@ -29059,11 +26918,8 @@ Figure 5.50: Record layout and data type for a map
 The algorithm to generate the desired data types is illustrated in the following two
 diagrams.
 
-396 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsYsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_2subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis-1])shortName = Xvalueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_1subElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = Yvalue:SwAxisIndividualswMaxAxisPoints = 10subElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsXsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = ARRAYshortName = linesarraySize = 16 (swMaxAxisPoints[axis_1])subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis_2])shortName = valueSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -29082,11 +26938,8 @@ The algorithm shall be recursively applied applied to the newly created Implemen
 tationDataTypeElements. As the record layout groups are nested, this recursion
 yields the complete structure in the ImplementationDataType. (cid:99)()
 
-397 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 for all ApplicationDataTypes«iterative»ApplicationDataTypeTypeContentFromRecordLayoutcreate subElementCreateTypeImplementationDataTypeElementSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -29106,11 +26959,8 @@ tine.shortLabel.
 The intended interpolation method is denoted in the value of attribute SwDataDef
 Props.swInterpolationMethod. (cid:99)()
 
-398 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 process subElements of RecordLayoutGroup«iterative»RecordElementsubElementset category to STRUCTUREset category to  ARRAYset MaxNumberOfElementsget RecordLayoutGroup or RecordLayoutVImplementationDataTypeElementset category to VALUE and set dataDefPropertiescreate subElementoriginImplementationDataType Or ImplementationDataTypeElementcreate subElementImplementationDataTypeElementActivityFinal[hasSwRecordLayoutFrom][has no iterator][has exactly one value][RecordLayoutGroup][RecordLayoutValue]Software Component Template
 AUTOSAR Release 4.2.2
@@ -29152,11 +27002,8 @@ interpolationRoutines.
 
 Table 5.106: InterpolationRoutineMappingSet
 
-399 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementInterpolationRoutineMappingSetARElementSwRecordLayoutInterpolationRoutine+ isDefault  :Boolean+ shortLabel  :IdentifierARElementAtpBlueprintAtpBlueprintableBswModuleEntry+ callType  :BswCallType+ executionContext  :BswExecutionContext+ isReentrant  :Boolean+ isSynchronous  :Boolean+ role  :Identifier [0..1]+ serviceId  :PositiveInteger [0..1]+ swServiceImplPolicy  :SwServiceImplPolicyEnumInterpolationRoutineMapping+interpolationRoutine1+swRecordLayout+interpolationRoutine1..*+interpolationRoutineMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -29264,14 +27111,7 @@ Tags: xml.sequenceOffset=10
 
 Table 5.108: InterpolationRoutine
 
-400 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.6 Speciﬁcation of Constant Values
 
@@ -29359,14 +27199,7 @@ Datatype
 
 Mul. Kind Note
 
-401 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 element
@@ -29456,14 +27289,7 @@ in the associated CompuMethod.
 
 Table 5.113: TextValueSpeciﬁcation
 
-402 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 NumericalValueSpeciﬁcation
 
@@ -29550,14 +27376,7 @@ of ASAM CDF (for more information please refer to [27]).
 • reference to a DataPrototype: this can be used to describe initial values for
 pointer variables in the basic software. One use case is the exchange of data de
 
-403 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 scriptions used to access calibration data for software emulation methods (see [7]
 for details).
@@ -29588,11 +27407,8 @@ correspond to enumeration values. The constraints [constr_1225] and [constr_1284
 correspond to each other such that [constr_1225] demands the usage of TextVal
 ueSpecification for the deﬁnition of labels for enumeration values while [con
 
-404 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ValueSpecification+ shortLabel  :Identifier [0..1]TextValueSpecification+ value  :VerbatimStringRecordValueSpecificationArrayValueSpecificationConstantReferenceARElementConstantSpecificationNumericalValueSpecification«atpVariation»+ value  :NumericalReferenceValueSpecificationAtpPrototypeDataPrototypeApplicationValueSpecification+ category  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTimeNumericalRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierAbstractRuleBasedValueSpecification«atpVariation»+element1..*{ordered}+valueSpec1«atpVariation»+field1..*{ordered}+constant1+referenceValue1Software Component Template
 AUTOSAR Release 4.2.2
@@ -29648,14 +27464,7 @@ tionArrayDataType.element.arraySizeSemantics.
 tion would refer to a speciﬁc AutosarDataType it would be necessary to deﬁne a “1” for every single
 AutosarDataType this value is supposed to be used in combination with.
 
-405 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This means that the number of ArrayValueSpecification.elements shall be
 to the value of ApplicationArrayDataType.element.maxNumberO
@@ -29721,14 +27530,7 @@ Mul. Kind Note
 
 Table 5.116: AbstractRuleBasedValueSpeciﬁcation
 
-406 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 ApplicationRuleBasedValueSpeciﬁcation
@@ -29839,14 +27641,7 @@ Tags: xml.roleElement=true; xml.roleWrapper
 Element=false; xml.sequenceOffset=80; xml.type
 WrapperElement=false
 
-407 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 swArraysiz
@@ -29959,14 +27754,7 @@ Table 5.119: RuleBasedValueCont
 In case the ApplicationRuleBasedValueSpecification is applied to Com
 pound Primitive Data Types basically the same rules apply for Application
 
-408 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RuleBasedValueSpecification as deﬁned for ApplicationValueSpecifi
 cation .
@@ -30009,14 +27797,7 @@ COM_AXIS or RES_AXIS or CURVE_AXIS. (cid:99)()
 
 Hence, values of the COM_AXIS itself are described by RuleBasedValueCont.
 
-409 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.55: Deﬁnition of an ApplicationRuleBasedValueSpecification
 
@@ -30034,11 +27815,8 @@ RAY. (cid:99)(RS_SWCT_03260)
 Concerning initValues for Compound Primitive Data Types please note as
 well [TPS_SWCT_01185].
 
-410 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]AbstractRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierRuleBasedAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexTypeRuleBasedValueCont«atpMixed»DataDefProperties::ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}ARElementUnits::Unit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]NumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation»+arguments1+swArraysize0..1+ruleBasedValues1+unit0..1+swArraysize1+ruleBasedValues1+unit0..1+swValueCont0..1+swAxisCont0..* {ordered}«atpVariation»+vtf0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -30088,11 +27866,8 @@ The meaning of
 
 this value of rule is explained in [TPS_SWCT_01494] and
 
-411 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractRuleBasedValueSpecificationNumericalRuleBasedValueSpecification«atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :IdentifierNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+arguments1«atpVariation»+vtf0..1+ruleBasedValues1Software Component Template
 AUTOSAR Release 4.2.2
@@ -30159,14 +27934,7 @@ Mul. Kind Note
 Base
 Attribute
 
-412 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 arguments RuleArguments
@@ -30274,14 +28042,7 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 5.122: RuleArguments
 
-413 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5.6.3 Reference to Constant
 
@@ -30335,14 +28096,7 @@ pound Primitive Data Types (see [TPS_SWCT_01179]) where the size is sub
 ject to variation the size of the speciﬁed initValues shall match the range of the
 involved SwSystemconst. (cid:99)()
 
-414 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.57: Explanation of swMaxAxisPoints
 
@@ -30366,14 +28120,7 @@ shall always deﬁne the attribute swArraysize if the ApplicationValueSpec
 ification is of category CURVE, MAP, CUBOID, CUBE_4, CUBE_5, COM_AXIS,
 RES_AXIS, CURVE_AXIS, or VAL_BLK. (cid:99)()
 
-415 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Please note that for multidimensional Compound Primitive Types (e.g. MAP) it
 is necessary to know the dimensions in order to be able to process the SwValues.
@@ -30418,14 +28165,7 @@ Hence values of the COM_AXIS itself are described by SwValueCont.
 of one NumericalOrText, either the attribute vf or the attribute vt shall be deﬁned.
 The existence of both attributes at the same time is not permitted. (cid:99)()
 
-416 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 5.58: Deﬁnition of an ApplicationValueSpecification
 
@@ -30484,11 +28224,8 @@ SwValueCont
 
 Primitive Data Type.
 
-417 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 MultilanguageLongNameValueSpecificationApplicationValueSpecification+ category  :IdentifierSwValueContSwAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexType«atpMixed»ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}«atpMixed»SwValues+ v  :Numerical+ vt  :VerbatimString«atpVariation»+ vf  :NumericalValueGroupNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTime+swAxisCont0..*{ordered}+swValueCont0..1+swValuesPhys0..1+swArraysize0..1«atpVariation»+vtf1+vg1+swArraysize1+swValuesPhys1+vgContents0..1+label0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -30600,14 +28337,7 @@ values.
 
 Tags: xml.sequenceOffset=30
 
-418 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 unitDisplay
@@ -30690,14 +28420,7 @@ Tags: xml.sequenceOffset=30
 
 Table 5.126: SwValueCont
 
-419 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:28)atpMixed(cid:29) SwValues
 
@@ -30799,14 +28522,7 @@ subject to constraints.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-420 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 
@@ -30897,14 +28613,7 @@ WrapperElement=false
 
 Table 5.129: ValueList
 
-421 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 NumericalOrText
 
@@ -30990,14 +28699,7 @@ CURVE where the axis is a STD_AXIS</L-2>
 <VF>0</VF>
 <VF>1</VF>
 
-422 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <VF>2</VF>
 <VF>3</VF>
@@ -31072,14 +28774,7 @@ COM_AXIS</L-2>
 <V>1</V>
 <V>2</V>
 
-423 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <V>3</V>
 
@@ -31161,14 +28856,7 @@ COM_AXIS</L-2>
 <CATEGORY>COM_AXIS</CATEGORY>
 <SW-VALUE-CONT>
 
-424 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <UNIT-REF DEST="UNIT">/AUTOSAR/AISpecification/Units/Rpm</UNIT
 
@@ -31230,14 +28918,7 @@ ignored! (cid:99)()
 [TPS_SWCT_01182] Conceptual levels for the deﬁnition of initial values (cid:100) The
 following conceptual levels for the deﬁnition of initial values exist:
 
-425 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 1. It is possible to aggregate an initValue directly at the deﬁnition of any Vari
 
@@ -31300,14 +28981,7 @@ string is taken to initialize the DataPrototype.
 [TPS_SWCT_01185] initValues for Compound Primitive Data Types (cid:100) The
 deﬁnition of initValues in the numerical representation for Compound Primitive
 
-426 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Data Type (see section 5.6) is done such that the initValues have to be provided
 as a RecordValueSpecification respectively an ArrayValueSpecification
@@ -31359,14 +29033,7 @@ stantSpecificationMapping needs to be deﬁned in the application domain (ap
 plConstant) and the other referenced ConstantSpecification needs to be de
 ﬁned in the implementation domain (implConstant). (cid:99)()
 
-427 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01187] ConstantSpecificationMappingSet referenced by the
 InternalBehavior (cid:100) In most cases the meta-class ConstantSpecification
@@ -31435,11 +29102,8 @@ ref A ConstantSpeciﬁcation deﬁned in the application
 
 Table 5.131: ConstantSpeciﬁcationMapping
 
-428 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementConstantSpecificationConstantSpecificationMappingARElementConstantSpecificationMappingSet+implConstant1+applConstant1+mapping1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -31485,11 +29149,8 @@ which are instance speciﬁc, thus overriding any initial values predeﬁned by 
 eterDataPrototype, ParameterRequireComSpec or a ParameterProvide
 ComSpec.
 
-429 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementInternalBehaviorARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetSwComponentTypeParameterSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -31552,11 +29213,8 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 5.133: CalibrationParameterValueSet
 
-430 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableFlatInstanceDescriptor+ role  :Identifier [0..1]AtpPrototypeIdentifiableRootSwCompositionPrototypeValueSpecification+ shortLabel  :Identifier [0..1]ARElementCalibrationParameterValueSetCalibrationParameterValue«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+calibrationParameterValue0..*«atpSplitable»+calibrationParameterValueSet0..*+initializedParameter1+implInitValue0..1+applInitValue0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -31621,14 +29279,7 @@ arameter
 
 Table 5.134: CalibrationParameterValue
 
-431 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6 Compatibility
 
@@ -31680,14 +29331,7 @@ compatibility.
 of ApplicationPrimitiveDataType are compatible if and only if one of the follow
 ing conditions applies:
 
-432 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 1. All of the following subconditions apply:
 
@@ -31744,14 +29388,7 @@ plicationCompositeDataTypeSubElementRef exists in the other role (i.e.
 secondElement or firstElement) that in turn references an Application
 RecordElement of the provided ApplicationRecordDataType.
 
-433 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:99)()
 
@@ -31812,14 +29449,7 @@ plementationDataTypes in the role firstDataPrototype and to another
 DataPrototype typed by the other ImplementationDataType in the role
 secondDataPrototype.
 
-434 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 3. In the context of using the ImplementationDataType, a DataProto
 typeMapping exists that refers to a DataPrototype typed by the Implemen
@@ -31872,14 +29502,7 @@ Unit.
 
 them associates such a method.
 
-435 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 3. One of the following conditions apply to ValueSpecifications aggregated
 in the role invalidValue for being considered compatible (after following and
@@ -31939,14 +29562,7 @@ ing a ValueSpecification to a given AutosarDataPrototype:
 ification and the application of the CompuMethod on the side of the ApplicationValueSpeci
 fication does not yield a valid number a comparison is not possible.
 
-436 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1391] Compatibility of Units in the context of assignment using an Ap
 plicationValueSpecification (cid:100) If an ApplicationValueSpecification is
@@ -32000,14 +29616,7 @@ For clariﬁcation, there are some physical dimensions around that share the ide
 values for the exponents but still have a completely different meaning and shall there
 fore not be considered compatible. For precisely this reason [constr_1053] requires
 
-437 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 the shortNames of two PhysicalDimensions to be identical as a prerequisite for
 compatibility.
@@ -32060,14 +29669,7 @@ In other words, this is not a compatibility rule for the types but for the data 
 If the SwDataDefProps are owned by an ImplementationDataType further con
 ditions shall be met to ensure compatibility.
 
-438 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Note that depending on the category of the ImplementationDataType, at most
 one of these four constraints is actually relevant:
@@ -32121,14 +29723,7 @@ straints the possible SwBaseTypes via the compatibility rules for the mapping be
 ApplicationDataTypes and ImplementationDataType as will be explained in
 more detail in chapter 6.2.5.
 
-439 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.2.4.5 Compatibility of CompuMethods
 
@@ -32186,14 +29781,7 @@ For client-server communication, the following rules apply:
 For arguments of direction IN the CompuScales deﬁned in the CompuMethod of
 the client (i.e. on the side of the RPortPrototype) shall be a subset of the set of
 
-440 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 CompuScales deﬁned in the CompuMethod supported at the server (i.e. on the side
 of the PPortPrototype).
@@ -32268,14 +29856,7 @@ tions are compatible if and only if all attributes except
 
 • shortName
 
-441 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • desc
 
@@ -32332,14 +29913,7 @@ this shall include the possibility of mapping/connecting to an Implementation
 DataType of category TYPE_REFERENCE which refers to another Implemen
 tationDataType of category VALUE.
 
-442 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2. [constr_1059] Compatibility of data types with category VALUE (cid:100) An Ap
 plicationDataType of category VALUE can only be mapped/connected to
@@ -32401,14 +29975,7 @@ types. Note that it is not required that the data types of the single elements
 have identical ShortNames or that a DataTypeMap exists for each pair of single
 element.
 
-443 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 5. [constr_1063] Compatibility of data types with category BOOLEAN (cid:100) An Ap
 plicationDataType of category BOOLEAN can only be mapped/connected
@@ -32465,14 +30032,7 @@ tionDataType may deﬁne the computation method.
 for the values of the attribute swImplPolicy which are considered general rules
 on the level of DataPrototypes and PortInterfaces.
 
-444 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Therefore these additional rules are explained in chapter 6.3 and chapter 6.4.4.
 
@@ -32525,14 +30085,7 @@ DataPrototypes of ApplicationCompositeDataTypes or Implementation
 DataTypes of category STRUCTURE or ARRAY are compatible if one of the following
 conditions evaluates to true:
 
-445 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 1. The underlying ApplicationCompositeDataTypes or Implementation
 
@@ -32588,14 +30141,7 @@ that a receiver shall process a
 means that logical consistency is not assured (e.g.
 certain data value to correctly interpret the following values).
 
-446 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.4.1 Connection of Required and Provided Port via AssemblySwConnector
 
@@ -32648,14 +30194,7 @@ DataInterfaces are compatible if and only if
 
 1. One of the following conditions applies:
 
-447 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (a) For each VariableDataPrototype or ParameterDataPrototype de
 ﬁned in the context of the DataInterface of the required inner Port
@@ -32712,14 +30251,7 @@ other in the role secondDataPrototype.
 
 (cid:99)()
 
-448 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.4.3 Connection of Required and Provided Port via PassThroughSwConnector
 
@@ -32774,11 +30306,8 @@ Prm ParameterInterface
 
 S/R SenderReceiverInterface
 
-449 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvD NvDataInterface
 
@@ -32895,14 +30424,7 @@ DelegationSwConnector, and the context of a PassThroughSwConnector.
 Here, the compatibility of ModeSwitchInterfaces is considered for the context of
 an AssemblySwConnector.
 
-450 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1072] Compatibility of ModeSwitchInterfaces in the context of an
 AssemblySwConnector (cid:100) PortPrototypes of different ModeSwitchInterfaces
@@ -32959,14 +30481,7 @@ Group.
 
 (cid:99)()
 
-451 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.5.3 Connection of Outer and Outer Port via PassThroughSwConnector
 
@@ -33021,14 +30536,7 @@ laration on the provided side with an identical shortName.
 
 tical shortNames.
 
-452 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (d) The attribute ModeDeclarationGroup.modeUserErrorBehavior.er
 
@@ -33095,14 +30603,7 @@ mode user.
 2. Each pair of ModeTransitions in both ModeDeclarationGroups identiﬁed
 by their respective shortName have identical targets (in terms of the short
 
-453 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Name of the referenced ModeDeclaration) of the references enteredMode
 and exitedMode.
@@ -33160,14 +30661,7 @@ In partic
 
 1. They have the same number of ArgumentDataPrototypes.
 
-454 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2. The n-th arguments of both ClientServerOperations are compatible. This
 
@@ -33222,14 +30716,7 @@ firstOperation and the other in the role secondOperation.
 
 (cid:99)()
 
-455 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.11.2 Connection of Inner and Outer Port via DelegationSwConnector
 
@@ -33294,14 +30781,7 @@ terfaces are considered compatible if and only if
 the
 ClientServerInterface of the provided outer PortPrototype a compat
 
-456 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ible ClientServerOperation exists in the ClientServerInterface of the
 required outer PortPrototype.
@@ -33355,14 +30835,7 @@ the other in the role secondTrigger.
 gationSwConnector (cid:100) TriggerInterfaces are compatible if and only if all of the
 following conditions apply:
 
-457 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 1. One of the following subconditions applies:
 
@@ -33415,14 +30888,7 @@ identical.
 [constr_1083] Compatibility of Triggers (cid:100) Triggers are compatible if they have
 an identical shortName. (cid:99)()
 
-458 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.14 Entire Delegation of a Provided Port Prototype
 
@@ -33479,14 +30945,7 @@ PortInterface elements correlate with each other.
 face of the provided outer PortPrototype exactly one connection via Dele
 gationSwConnector to a provided inner PortPrototype or PassThrough
 
-459 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 SwConnector to a required outer PortPrototype with a compatible
 ClientServerOperation in the ClientServerInterface of the provided
@@ -33535,14 +30994,7 @@ However, to support this statement it is necessary to deﬁne additional compati
 rules that properly cover this case and allow for a successful validation of the ﬂattened
 ECU extract.
 
-460 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For the ﬂat ECU extract the compatibility of SenderReceiverInterfaces, Nv
 DataInterfaces, and ParameterInterfaces is considered for connecting of
@@ -33589,14 +31041,7 @@ of AssemblySwConnectors are perhaps easier to digest than the delegation case
 but nonetheless it seems appropriate to provide a set of examples that illustrate the
 compatibility issue.
 
-461 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 6.16.1.1 Legal Use
 
@@ -33622,11 +31067,8 @@ Figure 6.2: legal n:1 communication
 On possible example for an illegal conﬁguration of a sender/receiver communication is
 the scenario sketched in Figure 6.3. Although the sender software-components in total
 
-462 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A,B}{A,B}{A,B}{A,B}{B}{B}Software Component Template
 AUTOSAR Release 4.2.2
@@ -33654,11 +31096,8 @@ At a later point in time it has to be consistent or can be removed. Decorating t
 example with applicable values of DelegatedPortAnnotation should facilitate the
 understanding of the meaning of the DelegatedPortAnnotation.
 
-463 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {B}{A,B}{A}Software Component Template
 AUTOSAR Release 4.2.2
@@ -33686,11 +31125,8 @@ SwComponentPrototypes contain different subsets, i.e. {A} and {B}.
 
 Figure 6.5: Legal split of delegation connector
 
-464 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A,B}{B,C}{A,B,C,D}[nfold]{A}{B}{A,B}[single]Software Component Template
 AUTOSAR Release 4.2.2
@@ -33720,11 +31156,8 @@ The PPortPrototypes of the SwComponentPrototypes in turn contain subsets of
 dataElements, i.e. {A, B} and {B, C}. In this case the resulting communication pattern
 on the VFB for {B} would be n:1.
 
-465 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A}{A,B}[single]{B}{A,B}Software Component Template
 AUTOSAR Release 4.2.2
@@ -33747,11 +31180,8 @@ compatibility rules are fully satisﬁed with this scenario.
 The next example shows a valid delegation of SwConnectors that goes end-to-end
 via CompositionSwComponentTypes to included SwComponentPrototypes.
 
-466 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A,B}{A,B,C}[nfold]{B,C}{A,B,C}{A,B}{A,B,C}[single]{C,D}{A,B,C}Software Component Template
 AUTOSAR Release 4.2.2
@@ -33774,11 +31204,8 @@ Figure 6.10: Illegal split of delegation connector
 In the next example compatibility is also not fulﬁlled because the required dataEle
 ment {E} is not provided by the delegation RPortPrototype.
 
-467 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A,B}{B,C}{A}{B}{C}Software Component Template
 AUTOSAR Release 4.2.2
@@ -33799,22 +31226,16 @@ Similar to the example sketched in Figure 6.12, the dataElement {E} is not provi
 by one of the PPortPrototypes owned by the SwComponentPrototypes inside
 the CompositionSwComponentType.
 
-468 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 {A,B}{B,C,E}{A,B,C,D}{A,B}{A,C,E}{B,C}{A,C,E}Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 6.13: Invalid delegation of SwConnectors that goes end-to-end
 
-469 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Software Component Template
 AUTOSAR Release 4.2.2
@@ -33860,11 +31281,8 @@ Base
 
 Attribute
 
-470 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehaviorSwComponentTypeAtomicSwComponentTypeImplementationSwcImplementation«atpVariation» Tags:vh.latestBindingTime = preCompileTime+behavior1«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -33962,14 +31380,7 @@ AtomicSwComponentType may either not support
 stop and restart, or support only stop, or support
 both stop and restart.
 
-471 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 implicitInte
@@ -34077,14 +31488,7 @@ Tags: atp.Splitkey=shortName, variation
 Point.shortLabel
 vh.latestBindingTime=preCompileTime
 
-472 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 perInstanc
@@ -34156,14 +31560,7 @@ Tags: atp.Splitkey=shortName, variation
 Point.shortLabel
 vh.latestBindingTime=preCompileTime
 
-473 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 serviceDep
@@ -34265,14 +31662,7 @@ Description
 
 Literal
 
-474 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 canBeTermi
 nated
@@ -34301,11 +31691,8 @@ fragments that are provided by a software-component and are (at least indirectly
 a subject for scheduling by the underlying operating system. (cid:99)(RS_SWCT_00070,
 RS_SWCT_00090, RS_SWCT_03050)
 
-475 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventIdentifiableExclusiveAreaAtpStructureElementIdentifiablePerInstanceMemoryPortAPIOptionAutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototypeAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+perInstanceMemory*«atpVariation,atpSplitable»+runnable1..*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»+portAPIOption0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+exclusiveArea0..*«atpVariation,atpSplitable»+constantMemory0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -34320,11 +31707,8 @@ CompositionSwComponentType
 
 cannot
 
-476 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueIdentifiableWaitPoint+ timeout  :TimeValueInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableAsynchronousServerCallResultPointAutosarParameterRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcuExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]+waitPoint*+internalTriggeringPoint0..*«atpVariation»+externalTriggeringPoint0..*«atpVariation»+accessedParameter1«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+asynchronousServerCallResultPoint0..*«atpVariation»+runnable+serverCallPoint*«atpVariation»+runnableSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -34346,11 +31730,8 @@ Please note that RunnableEntitys exist in several categories that have different
 properties. Please ﬁnd more explanation about categories of RunnableEntitys in
 section 7.2.4.4.
 
-477 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeCompositionSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntity«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefines atpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -34444,11 +31825,8 @@ implementation.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-478 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Datatype
 VariableAccess
@@ -34547,14 +31925,7 @@ implementation.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-479 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 externalTri
@@ -34656,14 +32027,7 @@ implementation.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-480 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 readLocal
@@ -34755,14 +32119,7 @@ ecutableEntity.minimumStartInterval deﬁnes the time interval that the RTE
 will guarantee to not go below between scheduling two consecutive executions of the
 corresponding RunnableEntity. (cid:99)()
 
-481 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01303] symbol attribute describes the RunnableEntity’s entry
 point (cid:100) The RunnableEntity.symbol attribute is describing the RunnableEn
@@ -34814,14 +32171,7 @@ tity should run) and moving into the state running (the ﬁrst instruction of th
 RunnableEntity has been executed) depends on the scheduling strategy of the
 RTE, i.e. the mapping of RunnableEntitys on AUTOSAR OS tasks.
 
-482 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 The transition from the state running into the state suspended is in the hands of the
 RunnableEntity: the transition occurs when the RunnableEntity returns (thereby
@@ -34872,14 +32222,7 @@ concurrently in different AUTOSAR OS tasks. This implies that the state machine 
 ﬁned in [2] is not the state of the RunnableEntity any more, but can be cloned an
 arbitrary number of times.
 
-483 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01306] Software-component description itself does not put any
 bounds on the number of concurrent invocations of a RunnableEntity (cid:100) The
@@ -34932,14 +32275,7 @@ with a ﬁxed rate.
 The approach taken in the software-component description is to deﬁne so-called
 TimingEvents (please ﬁnd more details in Figure 7.5) as special kinds of RTEEvents.
 
-484 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 So far, only one kind of timing-related RTEEvent has been deﬁned: a simple periodic
 TimingEvent.
@@ -34982,11 +32318,8 @@ never be invoked concurrently from several tasks. The implemen
 tation does not need to care about reentrancy issues and can typ
 ically use static variables to store state.
 
-485 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierTimingEvent+ period  :TimeValue+startOnEvent0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -35059,14 +32392,7 @@ the referred ImplementationDataTypes shall be compatible.
 In case of data types of category STRUCTURE all by order matching Imple
 mentationDataTypeElements shall be named equally.
 
-486 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • for combinations of PortDefinedArgumentValues and ArgumentDataPro
 totypes where the serverArgumentImplPolicy is set to useArgument
@@ -35118,14 +32444,7 @@ loop is triggered whenever a WaitPoint is resolved. (cid:99)()
 
 tended tasks provide the task state WAITING.
 
-487 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.2.4.5 Arguments of a Runnable Entity
 
@@ -35169,11 +32488,8 @@ Figure 7.6: Arguments of a RunnableEntity
 
 individual arguments
 
-488 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierRunnableEntityArgument+ symbol  :CIdentifier+argument0..*{ordered}Software Component Template
 AUTOSAR Release 4.2.2
@@ -35216,14 +32532,7 @@ As a typical use case, consider a RunnableEntity that is cyclically activated (b
 means of a TimingEvent) and in addition it shall also be executed sporadically, e.g.
 in response to the reception (DataReceivedEvent) of a dataElement.
 
-489 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.7: ExecutableEntityActivationReason and RunnableEntity
 
@@ -35248,11 +32557,8 @@ bol shall be unique in the context of the enclosing RunnableEntity. (cid:99)()
 [constr_1228] RTEEvent that is referenced by a WaitPoint in the role trig
 ger shall not reference ExecutableEntityActivationReason (cid:100) An RTEEvent
 
-490 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]AtpStructureElementRTEEventExecutableEntityActivationReason+ bitPosition  :PositiveIntegerReferrableImplementationProps+ symbol  :CIdentifierIdentifiableAbstractEvent+activationReasonRepresentation0..1+startOnEvent0..1+activationReason0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -35319,14 +32625,7 @@ expected to be executed after the RTE has been fully initialized. This means res
 regarding the availability of RTE APIs during the ECU initialization are not relevant for
 RunnableEntitys triggered by an InitEvent. (cid:99)(RS_SWCT_03290)
 
-491 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1257] No WaitPoints allowed (cid:100) A RunnableEntity referenced by an
 InitEvent in the role startOnEvent shall not aggregate a WaitPoint. (cid:99)()
@@ -35378,14 +32677,7 @@ to receive.
 [TPS_SWCT_01314] RTEEvent (cid:100) The description of an RTEEvent includes two as
 pects:
 
-492 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 1. deﬁning an RTEEvent
 
@@ -35500,14 +32792,7 @@ AsynchronousServerCallResultPoint which is
 raises the RTEEvent in case of returning
 asynchronous server call.
 
-493 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 
@@ -35599,14 +32884,7 @@ iref Data element referenced by event
 
 Table 7.12: DataReceivedEvent
 
-494 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
@@ -35701,14 +32979,7 @@ attribute period of TimingEvent shall be greater than 0. (cid:99)()
 Note that it is possible to override the attribute period on the level of instantiation.
 See [TPS_SWCT_02507] for more details.
 
-495 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
@@ -35833,14 +33104,7 @@ iref Reference to the applicable Trigger.
 
 Table 7.19: ExternalTriggerOccurredEvent
 
-496 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
@@ -35948,14 +33212,7 @@ rorEvent.operation or TransformerHardErrorEvent.trigger shall exist. (cid:99)()
 In other words, the attributes operation and trigger of meta-class Transformer
 HardErrorEvent shall be used mutually exclusive.
 
-497 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01315] Interaction of RunnableEntity with RTEEvent (cid:100) As de
 scribed in the Virtual Functional Bus speciﬁcation [3], the RunnableEntitys of an
@@ -35987,22 +33244,16 @@ is used for the purpose. (cid:99)()
 
 Figure 7.8: RTEEvents used in the context of sender/receiver communication
 
-498 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventDataSendCompletedEventDataReceivedEventDataReceiveErrorEventAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]DataWriteCompletedEvent+eventSource1+eventSource1«instanceRef»+data0..1«instanceRef»+data0..1Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 7.9: RTEEvents used in the context of client/server communication
 
-499 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventOperationInvokedEventAtpStructureElementIdentifiableClientServerOperationAtpStructureElementIdentifiableAsynchronousServerCallResultPoint+eventSource1«instanceRef»+operationSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -36012,11 +33263,8 @@ Figure 7.10: RTEEvents used in the context of mode communication
 Please note that more explanation about the semantics of the meta-classes SwcMode
 ManagerErrorEvent and ModeErrorBehavior can be found in section 9.4.
 
-500 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -36036,11 +33284,8 @@ RTEEvent to a RunnableEntity in the role startOnEvent it is the responsibil
 ity of the RTE to trigger the execution of the corresponding RunnableEntity when
 the RTEEvent occurs. (cid:99)()
 
-501 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventAtpStructureElementIdentifiableClientServerOperationTransformerHardErrorEventAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]«instanceRef»+operation0..1«instanceRef»+trigger0..1AbstractEventAtpStructureElementRTEEventTimingEvent+ period  :TimeValueExternalTriggerOccurredEventInternalTriggerOccurredEventAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]BackgroundEventInitEvent+eventSource1«instanceRef»+trigger0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36092,11 +33337,8 @@ trigger WaitPoints in different RunnableEntitys. (cid:99)()
 
 points) can only exist a single time in the context of the scheduler.
 
-502 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime+runnable1..*«atpVariation,atpSplitable»+trigger1+waitPoint*+event*«atpVariation,atpSplitable»+startOnEvent0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36173,14 +33415,7 @@ for the purpose. (cid:99)(RS_SWCT_00120)
 [TPS_SWCT_01592] Communication among RunnableEntitys of different in
 stances of the same AtomicSwComponentType (cid:100) The communication among
 
-503 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RunnableEntitys of different instances of the same AtomicSwComponentType is
 only supported via PortPrototypes. (cid:99)(RS_SWCT_00120)
@@ -36245,14 +33480,7 @@ other) while executing inside the ExclusiveArea.
 
 these RunnableEntitys shall not run concurrently (preempt each
 
-504 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.14: Description of logical exclusive areas
 
@@ -36271,11 +33499,8 @@ tence of ExecutableEntity.runsInsideExclusiveArea, see chapter 7.4.1.1).
 
 Figure 7.15: Description of nested usage of ExclusiveArea
 
-505 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableExclusiveAreaSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+exclusiveArea0..*IdentifiableExclusiveAreaReferrableExclusiveAreaNestingOrderAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+exclusiveAreaNestingOrder0..*+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*«atpVariation,atpSplitable»+exclusiveArea0..*+exclusiveArea0..*{ordered}Software Component Template
 AUTOSAR Release 4.2.2
@@ -36300,11 +33525,8 @@ be used for a global ofﬂine analysis of locking behavior. (cid:99)(RS_SWCT_030
 Figure 7.16: Nested usage of ExclusiveArea and the impact on SynchronousServer
 CallPoint
 
-506 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ReferrableExclusiveAreaNestingOrderSynchronousServerCallPointAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]SwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*+exclusiveAreaNestingOrder0..*+runnable1..*«atpVariation,atpSplitable»+serverCallPoint*«atpVariation»+calledFromWithinExclusiveArea0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36377,14 +33599,7 @@ to the same task, the criterion is automatically satisﬁed. For this purpose it
 necessary to make sure that the OS can only execute a single instance of the
 task into which the RunnableEntitys are put.
 
-507 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 2. Mutual exclusion semaphores: in case ’r1’ and ’r2’ are mapped to different tasks
 is executing
@@ -36435,14 +33650,7 @@ explicitInterRunnableVariable and implicitInterRunnableVariable.
 The connection between RunnableEntity and the explicitInterRunnable
 Variable and implicitInterRunnableVariable is created if the reference Au
 
-508 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 tosarVariableRef.localVariable to the respective VariableDataPrototype
 exists. (cid:99)(RS_SWCT_00120, RS_SWCT_02090)
@@ -36469,11 +33677,8 @@ totype (which is derived from DataPrototype).
 [TPS_SWCT_01637] Initial value for a speciﬁc implicitInterRunnableVari
 able or explicitInterRunnableVariable (cid:100) It is possible (but not mandatory)
 
-509 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAutosarDataPrototypeVariableDataPrototypeAutosarVariableRefValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initValue0..1+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+writtenLocalVariable0..*+accessedVariable1+localVariable0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36532,14 +33737,7 @@ indirections
 via TYPE_REFERENCE are resolved) is either typed by or mapped to an Implemen
 tationDataType of category DATA_REFERENCE. (cid:99)()
 
-510 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.4.3 Inter Runnable Triggering
 
@@ -36568,11 +33766,8 @@ fected through the generic event-handling mechanism.
 [TPS_SWCT_01523] Internal trigger event (cid:100) A RunnableEntity that shall be ac
 tivated at the occurrence of an internal trigger event is deﬁned by means of an In
 
-511 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableInternalTriggeringPointInternalTriggerOccurredEventAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource1+runnable1..*«atpVariation,atpSplitable»+internalTriggeringPoint0..*«atpVariation»+event*«atpVariation,atpSplitable»+startOnEvent0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36658,14 +33853,7 @@ This section describes the communication properties of an AtomicSwComponent
 Type. This is done mainly from the point of view of a RunnableEntity (the concept
 of a RunnableEntity is introduced in chapter 7.2).
 
-512 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 However, the usage of a PortPrototype in a speciﬁc role within an AtomicSwCom
 ponentType also has an impact on communication behavior.
@@ -36718,14 +33906,7 @@ Point or dataReceivePointByValue in contrast to the data-access that was sup
 posed to be part of the function signature (therefore, no API was required) of a speciﬁc
 RunnableEntity.
 
-513 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Although the speciﬁcation of the RTE changed in the meantime (and the original mo
 tivation no longer applies) it turned out that the terminology based on “implicit” and
@@ -36763,22 +33944,12 @@ beyond the RunnableEntity because
 
 2. the actual write access is executed after the RunnableEntity terminates.
 
-514 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.19: DataReadAccess and DataWriteAccess
 
-515 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntitySwComponentTypeAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcu«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+accessedParameter1+swDataDefProps0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1Software Component Template
 AUTOSAR Release 4.2.2
@@ -36871,14 +34042,7 @@ scope is set to communicationInterEcu. (cid:99)(RS_SWCT_00200)
 The attribute scope of meta-class VariableAccess shall only be applied with re
 spect to the aggregation of VariableAccess in the following roles:
 
-516 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • dataReadAccess
 
@@ -36940,14 +34104,7 @@ is not allowed that
 
 it
 
-517 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Variable.portPrototype (or the respective construct for dataWriteAccess) that
 also refers to said dataElement. (cid:99)()
@@ -36994,14 +34151,7 @@ RunnableEntity attain cat. 1B.
 
 For more details, please refer to section 4.9.
 
-518 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.20: DataSendPoint
 
@@ -37026,11 +34176,8 @@ this scenario at all, hence the constraint.
 
 obviously beat the purpose of the API function.
 
-519 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorDataSendCompletedEventAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataSendPoint0..*+eventSource1+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -37054,11 +34201,8 @@ Similar to the dataReadAccess, constraints apply to the reference target of the 
 tosarVariableRef of VariableAccess in role dataReceivePointByValue or
 dataReceivePointByArgument.
 
-520 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype shall be a VariableDataPrototype.AtpPrototypeDataPrototypeAbstractRequiredPortPrototype«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataReceivePointByValue0..*+runnable1..*«atpVariation,atpSplitable»+port0..*«atpVariation,atpSplitable»«instanceRef»+autosarVariable0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1Software Component Template
 AUTOSAR Release 4.2.2
@@ -37111,14 +34255,7 @@ Prototype, as is shown in Figure 4.33.
 This will conﬁgure the RTE such that when data is sent the RTE will try to obtain the
 speciﬁed acknowledgement; possibly by waiting a certain timeout period.
 
-521 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
@@ -37195,14 +34332,7 @@ Datatype
 
 Mul. Kind Note
 
-522 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 eventSour
@@ -37228,11 +34358,8 @@ event mechanism when a VariableDataPrototype is received. As shown in Fig
 ure 7.23, the DataReceivedEvent is directly associated with the corresponding
 VariableDataPrototype. (cid:99)(RS_SWCT_00200)
 
-523 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototypeDataWriteCompletedEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataWriteAccess0..*+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»+eventSource1Software Component Template
 AUTOSAR Release 4.2.2
@@ -37272,11 +34399,8 @@ ceiveErrorEvent through the activation of its RunnableEntity which is refer
 enced by this RTEEvent. A DataReceiveErrorEvent includes a reference to
 a VariableDataPrototype and is raised by the RTE when an error concerning
 
-524 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataReceivedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by a SenderReceiverInterface.AbstractRequiredPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1+port0..*«atpVariation,atpSplitable»«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -37317,14 +34441,7 @@ swImplPolicy attribute not set to queued. (cid:99)(RS_SWCT_00200)
 
 to implement the required behavior directly in the RTE.
 
-525 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.24: DataReceiveErrorEvent references a Runnable and a VariableDataPrototype
 
@@ -37369,11 +34486,8 @@ Table 7.33: DataReceiveErrorEvent
 [TPS_SWCT_01342] Invocation of a server operation (cid:100) A RunnableEntity in
 vokes a server operation formally deﬁned as a ClientServerOperation via an
 
-526 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DataReceiveErrorEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»+dataElement1..*1«instanceRef»+data0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -37431,14 +34545,7 @@ ponentType can implement a WaitPoint that blocks the execution of the calling
 RunnableEntity until the AsynchronousServerCallReturnsEvent is recog
 nized. (cid:99)(RS_SWCT_00200)
 
-527 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.25: Model of a server call point.
 
@@ -37463,11 +34570,8 @@ the RunnableEntity ‘main’ contains an Asyn
 chronousServerCallPoint ‘invokeMyOperation’ referencing the respective
 ClientServerOperation in the PortInterface used to type the PortPro
 
-528 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierSynchronousServerCallPointAsynchronousServerCallPointAbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanSwComponentTypeAtomicSwComponentTypeAtpStructureElementIdentifiableAsynchronousServerCallResultPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime+eventSource1+serverCallPoint*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+asynchronousServerCallPoint1+asynchronousServerCallResultPoint0..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -37564,14 +34668,7 @@ usiveArea
 
 Table 7.35: SynchronousServerCallPoint
 
-529 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 AsynchronousServerCallPoint
 
@@ -37665,14 +34762,7 @@ Datatype
 
 Mul. Kind Note
 
-530 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 eventSour
@@ -37727,14 +34817,7 @@ tion inside one of the server AbstractProvidedPortPrototypes. This way a
 RunnableEntity may respond to such an invocation through the generic event han
 dling mechanisms described above (as formally expressed in Figure 7.26).
 
-531 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.26: The OperationInvokedEvent references the operation that was called by
 a client.
@@ -37769,11 +34852,8 @@ of the event.
 
 Table 7.39: OperationInvokedEvent
 
-532 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 OperationInvokedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceAbstractProvidedPortPrototypePPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+operation1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»«instanceRef»+operationSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -37849,14 +34929,7 @@ TransformerHardErrorEvent
 
 Table 7.40: TransformerHardErrorEvent
 
-533 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.5.3 RunnableEntities and External Trigger Event Communication
 
@@ -37874,11 +34947,8 @@ Point that references the particular instance of the trigger in a PPortPrototype
 
 Figure 7.27: Model structure of a trigger source.
 
-534 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ExternalTriggeringPointAtpStructureElementExecutableEntityRunnableEntityAtpBlueprintableAtpPrototypePortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypePPortPrototype+runnable1..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+port0..*«atpVariation,atpSplitable»+externalTriggeringPoint0..*«atpVariation»«instanceRef»+trigger0..1«atpVariation,atpSplitable»+internalBehavior0..1+trigger1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -37942,14 +35012,7 @@ ternalTriggerOccurredEvent that references a particular instance of the trigger
 in a RPortPrototype and additionally the RunnableEntity to be executed in re
 sponse to the event. (cid:99)(RS_SWCT_00200)
 
-535 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.28: Model structure of a trigger sink
 
@@ -37988,11 +35051,8 @@ nentTypes (cid:100) As mentioned above, if Calibration Parameters are shared amo
 eral SwComponentTypes a dedicated PortInterface in a PortPrototype will be
 used. (cid:99)(RS_SWCT_00200)
 
-536 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ExternalTriggerOccurredEventAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+port0..*«atpVariation,atpSplitable»«instanceRef»+trigger0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1«isOfType»+requiredInterface1{redefinesatpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»+trigger1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -38019,22 +35079,12 @@ The result of this interpolation routine call is provided as an ArgumentDataProt
 type with direction being either set to out or inout in a ClientServerInter
 face.
 
-537 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.29: Runnable Access to a Calibration Port
 
-538 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeSwVariableRefProxyAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeSwCalprmAxisSetSwCalprmAxisSwCalprmAxisTypePropsSwAxisIndividualAtpPrototypeDataPrototypeRPortPrototype shall be typed by a ParameterInterface. The specific DataPrototype is therefore actually a ParameterDataPrototype.+port0..*«atpVariation,atpSplitable»+localParameter0..1«instanceRef»+autosarParameter0..1«atpVariation»+parameterAccess0..*+runnable1..*«atpVariation,atpSplitable»+autosarVariable0..1+swCalprmAxisSet0..1«atpVariation,atpSplitable»+internalBehavior0..1+swDataDefProps0..1+accessedParameter1+swVariableRef0..*+swCalprmAxis0..*+swCalprmAxisTypeProps1+swComparisonVariable0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -38113,14 +35163,7 @@ level (e.g. data of a PortPrototype is stored in a PIM or a ParameterDataPro
 totype used as ROM Block and shall be typed by the same data type as NVRAM
 Block).
 
-539 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This restriction is overcome by InstantiationDataDefProps as shown in ﬁg
 ure 7.30
@@ -38129,11 +35172,8 @@ ure 7.30
 
 Figure 7.30: applying instantiation speciﬁc data deﬁnition properties
 
-540 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InstantiationDataDefProps«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarVariableRefAutosarParameterRefAtpPrototypeDataPrototypeXOR+variableInstance0..1+parameterInstance0..1+swDataDefProps1«atpVariation,atpSplitable»+instantiationDataDefProps0..*«instanceRef»+autosarVariable0..1«instanceRef»+autosarParameter0..1+localParameter0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -38215,14 +35255,7 @@ In this case, the mode is transferred via sender-receiver communication so that 
 involved RunnableEntitys just need the same type of APIs against the RTE as for
 sender-receiver communication.
 
-541 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This is possible, because ModeDeclarationGroupPrototypes can be mapped to
 an ImplementationDataTypes. This concept and the meta-classes needed for the
@@ -38248,11 +35281,8 @@ in the PortAPIOption element which is shown in Figure 7.31. (cid:99)()
 
 Figure 7.31: Port API Options.
 
-542 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehaviorPortAPIOption+ enableTakeAddress  :Boolean+ errorHandling  :DataTransformationErrorHandlingEnum [0..1]+ indirectAPI  :BooleanAtpBlueprintableAtpPrototypePortPrototypePortDefinedArgumentValueValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]«enumeration»DataTransformationErrorHandlingEnum noTransformerErrorHandling transformerErrorHandling+port1+portAPIOption0..*«atpVariation,atpSplitable»«isOfType»+valueType+portArgValue0..*{ordered}+value1Software Component Template
 AUTOSAR Release 4.2.2
@@ -38365,14 +35395,7 @@ The runnable implements the handling of transformer errors.
 
 Table 7.46: DataTransformationErrorHandlingEnum
 
-543 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.6.1 Enable to Take Address
 
@@ -38421,14 +35444,7 @@ these values are speciﬁed in the context of the provide-port only they are hid
 the client components keeping their design and code independent from the server
 component details. (cid:99)()
 
-544 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 In the example of the NVRAM manager, this allows to deﬁne the block id in the context
 of ECU integration and not by the client components.
@@ -38492,14 +35508,7 @@ Stereotypes: isOfType
 
 Table 7.47: PortDeﬁnedArgumentValue
 
-545 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.7 PerInstanceMemory
 
@@ -38516,11 +35525,8 @@ icSwComponentType can deﬁne an arbitrary number of per-instance memory blocks.
 
 Figure 7.32: PerInstanceMemory
 
-546 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataType+swDataDefProps0..1«isOfType»+type1{redefines atpType}+perInstanceMemory1+invalidValue0..1+initValue0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+swDataDefProps0..1+perInstanceMemory*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -38575,14 +35581,7 @@ Definition is non-formal (modeled by the non-speciﬁc i.e. String).
 Therefore, a speciﬁcation item has been used for the description of the respective
 semantics rather than a constraint.
 
-547 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 More details on the use of these attributes in the generation of software-component
 header-ﬁles can be found in the RTE speciﬁcation [2].
@@ -38662,14 +35661,7 @@ ing an input value of an axis (see chapter 5.4.5). (cid:99)()
 Note: Due to the use of AutosarDataType the AUTOSAR-typed PerInstanceMem
 ory can not support C++ speciﬁc types or pointer types directly.
 
-548 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.8 Static Memory and Constant Memory
 
@@ -38702,11 +35694,8 @@ This allows for more efﬁcient implementations (especially for software-compone
 vided as object code) by avoidance of the additional indirection caused by the RTE’s
 component data structure.
 
-549 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwcInternalBehaviorAtpStructureElementInternalBehaviorAutosarDataPrototypeVariableDataPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+constantMemory0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -38743,11 +35732,8 @@ identiﬁers belonging to AutosarDataTypes shall be deﬁned. (cid:99)()
 
 Figure 7.34: Included AUTOSAR Data Types
 
-550 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpTypeAutosarDataTypeIncludedDataTypeSet+ literalPrefix  :Identifier [0..1]+includedDataTypeSet0..*«atpSplitable»+dataType1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -38820,14 +35806,7 @@ ModeDeclarationGroups with the intent to express that the referenced ModeDec
 larationGroups are used in the context of the enclosing AtomicSwComponent
 Type. (cid:99)()
 
-551 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.35: Included ModeDeclarationGroups
 
@@ -38880,11 +35859,8 @@ included ModeDeclarationGroups with the intent to avoid potential name clashes.
 Rationale: If the attribute prefix is required, changes to software-component source
 code may be necessary.
 
-552 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]IncludedModeDeclarationGroupSet+ prefix  :Identifier [0..1]+modeDeclarationGroup1..*«atpSplitable»+includedModeDeclarationGroupSet0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -38965,44 +35941,28 @@ the Basic Software Module Description Template [7].
 
 The meta-classes derived from ServiceNeeds is shown in the next three ﬁgures.
 
-553 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.36: ServiceNeeds: General ServiceNeeds
 
-554 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableServiceNeedsSupervisedEntityNeeds+ activateAtStart  :Boolean+ enableDeactivation  :Boolean+ expectedAliveCycle  :TimeValue+ maxAliveCycle  :TimeValue+ minAliveCycle  :TimeValue+ toleratedFailedCycles  :PositiveIntegerComMgrUserNeeds+ maxCommMode  :MaxCommModeEnum«enumeration»MaxCommModeEnum none silent fullEcuStateMgrUserNeedsCryptoServiceNeeds+ maximumKeyLength  :PositiveInteger [0..1]DltUserNeedsSyncTimeBaseMgrUserNeedsBswMgrNeedsDoIpServiceNeedsSoftware Component Template
 AUTOSAR Release 4.2.2
 
 Figure 7.37: General diagnostic service-related ServiceNeeds
 
-555 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 «enumeration»DiagnosticAudienceEnum development manufacturing afterSales supplier aftermarket«enumeration»DiagnosticRoutineTypeEnum synchronous asynchronous«enumeration»DiagnosticValueAccessEnum readOnly readWrite writeOnlyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]DiagnosticValueNeeds+ dataLength  :PositiveInteger [0..1]+ diagnosticValueAccess  :DiagnosticValueAccessEnum [0..1]+ didNumber  :PositiveInteger [0..1]+ fixedLength  :Boolean [0..1]+ processingStyle  :DiagnosticProcessingStyleEnum [0..1]DiagnosticIoControlNeeds+ didNumber  :PositiveInteger [0..1]+ freezeCurrentStateSupported  :Boolean [0..1]+ resetToDefaultSupported  :Boolean [0..1]+ shortTermAdjustmentSupported  :Boolean [0..1]DiagnosticRoutineNeeds+ diagRoutineType  :DiagnosticRoutineTypeEnum+ ridNumber  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagnosticCommunicationManagerNeeds+ serviceRequestCallbackType  :DiagnosticServiceRequestCallbackTypeEnum [0..1]IdentifiableServiceNeedsDiagnosticOperationCycleNeeds+ operationCycle  :OperationCycleTypeEnum+ operationCycleAutomaticEnd  :Boolean+ operationCycleAutostart  :Boolean«enumeration»OperationCycleTypeEnum ignition obdDcy warmup power time otherDiagnosticsCommunicationSecurityNeeds«enumeration»DiagnosticProcessingStyleEnum processingStyleSynchronous processingStyleAsynchronous«enumeration»DiagnosticServiceRequestCallbackTypeEnum requestCallbackTypeManufacturer requestCallbackTypeSupplier+currentValue0..1+serviceNeeds1Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 7.38: General diagnostic event-handling related ServiceNeeds
 
-556 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcFunctionInhibitionNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsDiagnosticEventManagerNeedsDiagnosticEventInfoNeeds+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ udsDtcNumber  :PositiveInteger [0..1]DiagnosticEnableConditionNeeds+ initialStatus  :EventAcceptanceStatusEnum«enumeration»EventAcceptanceStatusEnum eventAcceptanceEnabled eventAcceptanceDisabledDiagnosticStorageConditionNeeds+ initialStatus  :StorageConditionStatusEnum«enumeration»StorageConditionStatusEnum eventStorageEnabled eventStorageDisabledDtcStatusChangeNotificationNeeds+ dtcFormatType  :DtcFormatTypeEnum«enumeration»DtcFormatTypeEnum obd uds j1939WarningIndicatorRequestedBitNeeds«enumeration»ReportBehaviorEnum reportAfterInit reportBeforeInit+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..1+serviceNeeds1Software Component Template
 AUTOSAR Release 4.2.2
@@ -39020,11 +35980,8 @@ In most cases they are related to certain PortPrototypes belonging to the Atom
 icSwComponentTypes because AtomicSwComponentTypes communicate with
 AUTOSAR Services via these PortPrototypes. (cid:99)(RS_SWCT_02060)
 
-557 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableServiceNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]FunctionInhibitionNeedsObdPidServiceNeeds+ dataLength  :PositiveInteger [0..1]+ parameterId  :PositiveInteger+ standard  :StringObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameTokenObdInfoServiceNeeds+ dataLength  :PositiveInteger [0..1]+ infoType  :PositiveIntegerObdMonitorServiceNeeds+ onBoardMonitorId  :PositiveInteger+ testId  :PositiveInteger+ unitAndScalingId  :PositiveIntegerObdControlServiceNeeds+ testId  :PositiveInteger«enumeration»ObdRatioConnectionKindEnum apiUse observer«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..10..1+rateBasedMonitoredEvent1+usedFid0..1+usedSecondaryFid0..*+serviceNeeds1Software Component Template
 AUTOSAR Release 4.2.2
@@ -39072,14 +36029,7 @@ Groups: While the RoleBasedPortAssignment is part of the SwcInternalBe
 havior a PortGroup is deﬁned for the SwComponentType (thus belongs to the VFB
 level) and it is linked to the PortGroups of other SwComponentTypes.
 
-558 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.40: ServiceDependency is the abstract base class of SwcServiceDependency
 
@@ -39099,22 +36049,16 @@ the category of
 
 6see [TPS_STDT_00033]
 
-559 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierBswServiceDependencyRoleBasedDataAssignment+ role  :IdentifierRoleBasedBswModuleEntryAssignment+ role  :IdentifierServiceDependencyIdentifiableServiceNeedsAtpStructureElementIdentifiablePortGroupImplementationPropsSymbolicNamePropsIdentifiableCode+symbolicNameProps0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1«atpVariation,atpSplitable»+assignedEntryRole0..*«atpVariation»+assignedData0..*+serviceNeeds1+callbackHeader0..*Software Component Template
 AUTOSAR Release 4.2.2
 
 Figure 7.41: SwcServiceDependency in the SwcInternalBehavior
 
-560 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableServiceNeedsRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableSwcServiceDependencyAtpStructureElementIdentifiablePortGroupInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRoleBasedDataTypeAssignment+ role  :IdentifierServiceDependency«atpVariation»+assignedDataType0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*«atpVariation»+outerPort0..*«atpVariation»+portGroup0..*«atpVariation,atpSplitable»+internalBehavior0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1+port0..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -39124,11 +36068,8 @@ Figure 7.42: Details of RoleBasedDataAssignment for local data
 Figure 7.43: Details of RoleBasedDataAssignment for accessing DataPrototypes in
 PortPrototypes
 
-561 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyParameterDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarParameterRefAutosarVariableRefAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+serviceDependency0..*+sharedParameter*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+localVariable0..1«atpVariation»+assignedData0..*+localParameter0..1«instanceRef»+autosarParameter0..1+perInstanceMemory*«atpVariation,atpSplitable»+usedDataElement0..1+usedPim0..1+usedParameterElement0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»RoleBasedDataAssignmentAutosarVariableRefAtpPrototypeDataPrototype«instanceRef»+autosarVariable0..1+usedDataElement0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -39177,11 +36118,8 @@ creation of symbolic name values.
 
 Table 7.52: ServiceDependency
 
-562 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedDataTypeAssignment+ role  :IdentifierAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ServiceDependency«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+assignedDataType0..1+usedImplementationDataType1Software Component Template
 AUTOSAR Release 4.2.2
@@ -39289,14 +36227,7 @@ Mul. Kind Note
 
 Table 7.54: SymbolicNameProps
 
-563 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
@@ -39368,14 +36299,7 @@ Mul. Kind Note
 Base
 Attribute
 
-564 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 role
@@ -39470,14 +36394,7 @@ NVRAM Block).
 
 Table 7.56: RoleBasedDataAssignment
 
-565 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
@@ -39584,14 +36501,7 @@ Boolean
 
 0..1
 
-566 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 nDataSets PositiveInteger
@@ -39763,14 +36673,7 @@ being replaced with the default ROM data after
 ﬁrst initialization by the software-component. false:
 No such restriction.
 
-567 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 writeVerific
@@ -39859,14 +36762,7 @@ context:
 
 • NvMNotifyInitBlock [0 .. 1]
 
-568 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • NvMAdmin [0 .. 1]
 
@@ -39893,7 +36789,6 @@ Therefore, the following roles are applicable:
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -39929,14 +36824,7 @@ RoleBasedPortAssignment
 
 This is mandatory for the described scenario. For every used ClientServer
 
-569 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Interface provided by the Nvm it is necessary to create a RoleBasedPortAs
 signment and set the value of the attribute role of the RoleBasedPortAs
@@ -39970,7 +36858,6 @@ str_1301] applies.
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -39992,14 +36879,7 @@ to [SWS_NvM_00734],
 
 [SWS_NvM_00735],
 
-570 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.1.3 Nvm Use Case: RAM Block with explicit synchronization using Mirror
 
@@ -40057,18 +36937,10 @@ applies.
 
 • temporaryRamBlock [0..1]
 
-571 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40118,22 +36990,13 @@ assignedPort to the value NvDataPort:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
-572 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For more information please refer
 [SWS_NvM_00735],
@@ -40244,14 +37107,7 @@ Scenario: an AtomicSwComponentType contains a Supervised Entity. In this case it
 is required that the Supervised Entity indicates to the Watchdog Manager that a Check
 point within the Supervised Entity has been reached. Further on the Local Supervision
 
-573 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Status of a single Supervised Entity may be signaled to the software component. In
 this case the following setup applies:
@@ -40267,11 +37123,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -40296,24 +37150,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_WdgM_00336].
 
-574 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.3 COM Manager Service Needs
 
@@ -40364,11 +37209,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40384,14 +37227,7 @@ In this case the following rules apply:
 [TPS_SWCT_01020] AtomicSwComponentType requests a ComM mode. It may
 also check later whether the requested ComM mode has become effective (cid:100)
 
-575 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RoleBasedPortAssignment valid roles:
 
@@ -40401,7 +37237,6 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
@@ -40433,11 +37268,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40450,14 +37283,7 @@ The meta-class EcuStateMgrUserNeeds is used to deﬁne the requirements to con
 ECU management: ﬂexible and ﬁxed. An SwcInternalBehavior may provide sev
 eral EcuStateMgrUserNeeds elements where each deﬁnes the requirements from
 
-576 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 one “user” of the EcuM Service (for the terms related to the AUTOSAR ECU State
 Manager see [33]).
@@ -40504,11 +37330,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40525,14 +37349,7 @@ In this case the following rules apply:
 [TPS_SWCT_01013] AtomicSwComponentType shall keep the ECU alive (ﬁxed
 variant) (cid:100)
 
-577 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 AtomicSwComponentType needs to keep the ECU alive or needs to execute opera
 tions before the ECU is shut down.
@@ -40543,11 +37360,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40569,11 +37384,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40590,22 +37403,13 @@ RoleBasedPortAssignment valid roles:
 
 • EcuM_BootTarget [1]
 
-578 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40625,11 +37429,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40648,22 +37450,13 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
-579 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.4.7 EcuM Flex Use Case: use Alarm Clock
 
@@ -40680,11 +37473,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
-N/A
 
 (cid:99)()
 
@@ -40732,14 +37523,7 @@ In this case the following rules apply:
 
 RoleBasedPortAssignment valid roles:
 
-580 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • control [0 .. 1]
 
@@ -40747,7 +37531,6 @@ AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
@@ -40782,7 +37565,6 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
@@ -40798,14 +37580,7 @@ other ApplicationSwComponentTypes (cid:100) If an Application Mode Manager inter
 with both BswM and other ApplicationSwComponentTypes the following require
 ments on the modeling of this scenario shall be taken into account:
 
-581 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Mode Request For the conﬁguration of mode requests two separate AbstractRe
 
@@ -40857,14 +37632,7 @@ A software-component that acts as a mode user exposes an RPortPrototype typed
 by a ModeSwitchInterface. By this means the software-component can be notiﬁed
 by mode switches executed at the mode manager (in this case the BswM).
 
-582 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 On the side of the BswM, an PPortPrototype typed by an ModeSwitchInterface
 used to send out notiﬁcations of mode switches will have to be established (for more
@@ -40880,7 +37648,6 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
@@ -40908,7 +37675,6 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroup
 
@@ -40921,14 +37687,7 @@ none.
 The meta-class CryptoServiceNeeds is used to deﬁne the requirements to conﬁg
 ure the CryptoServiceManager.
 
-583 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 An SwcInternalBehavior may provide several CryptoServiceNeeds elements
 where each relates to one ConﬁgID (see [34]) for details). In this context it is of special
@@ -40988,24 +37747,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00775] and [SWS_Csm_00801].
 
-584 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.2 Crypto Service Service Use Case: MAC calculation
 
@@ -41023,11 +37773,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41049,24 +37797,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00777] and [SWS_Csm_00801].
 
-585 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.4 Crypto Service Service Use Case: seeding of random generator
 
@@ -41084,11 +37823,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41110,24 +37847,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00779] and [SWS_Csm_00801].
 
-586 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.6 Crypto Service Service Use Case: symmetrical block encryption
 
@@ -41145,11 +37873,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41171,24 +37897,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00781] and [SWS_Csm_00801].
 
-587 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.8 Crypto Service Service Use Case: symmetrical encryption
 
@@ -41208,11 +37925,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41236,24 +37951,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00783] and [SWS_Csm_00801].
 
-588 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.10 Crypto Service Service Use Case: asymmetrical encryption
 
@@ -41271,11 +37977,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41297,24 +38001,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00785] and [SWS_Csm_00801].
 
-589 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.12 Crypto Service Service Use Case: signature generation
 
@@ -41332,11 +38027,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41358,24 +38051,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00787] and [SWS_Csm_00801].
 
-590 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.14 Crypto Service Service Use Case: checksum calculation
 
@@ -41393,11 +38077,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41419,24 +38101,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00789] and [SWS_Csm_00801].
 
-591 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.16 Crypto Service Service Use Case: symmetric key derivation
 
@@ -41454,11 +38127,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41482,24 +38153,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00791] and [SWS_Csm_00801].
 
-592 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.18 Crypto Service Service Use Case: key exchange protocol, secret
 
@@ -41519,11 +38181,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41547,24 +38207,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00793] and [SWS_Csm_00801].
 
-593 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.20 Crypto Service Service Use Case: symmetrical key extraction
 
@@ -41582,11 +38233,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41612,24 +38261,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00795] and [SWS_Csm_00801].
 
-594 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.22 Crypto Service Service Use Case: symmetrical key wrapping with
 
@@ -41652,11 +38292,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41680,24 +38318,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00797] and [SWS_Csm_00801].
 
-595 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.24 Crypto Service Service Use Case: asymmetrical private key extrac
 
@@ -41717,11 +38346,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41747,24 +38374,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
 For more information please refer to [SWS_Csm_00799] and [SWS_Csm_00801].
 
-596 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.6.26 Crypto Service Service Use Case: asymmetrical key wrapping with
 
@@ -41786,11 +38404,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41817,14 +38433,7 @@ The possible role attribute values and the multiplicity of the related PortProto
 are listed at the use case descriptions in the paragraph RoleBasedPortAssignment.
 (cid:99)(RS_SWCT_03190)
 
-597 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.1 Function Inhibition Needs
 
@@ -41879,11 +38488,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -41894,14 +38501,7 @@ For more information please refer to [SWS_Fim_00090].
 The meta-classes DiagnosticEventManagerNeeds is used to deﬁne requirements
 in order to conﬁgure the Diagnostic Event Manager Service.
 
-598 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 An SwcInternalBehavior may
 several DiagnosticEventMan
@@ -42005,14 +38605,7 @@ the ECU.
 
 Table 7.67: DiagnosticCapabilityElement
 
-599 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 The possible values of the intended audience for a diagnostic object.
@@ -42094,14 +38687,7 @@ OBD relevance.
 Description
 This indicates that the monitor reports a OBD-relevant malfunction.
 
-600 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This indicates that the monitor reports a non-OBD-relevant malfunction.
 
@@ -42179,14 +38765,7 @@ ref This reference contains the link to a function
 identiﬁer within the FiM which is used by the
 monitor before delivering a result.
 
-601 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 diagEvent
@@ -42313,14 +38892,7 @@ Mul. Kind Note
 Base
 Attribute
 
-602 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 –
@@ -42445,14 +39017,7 @@ indicates the "passed" counter status.
 
 Table 7.73: DiagEventDebounceCounterBased
 
-603 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DiagEventDebounceTimeBased
 
@@ -42532,14 +39097,7 @@ Attribute
 
 Table 7.75: DiagEventDebounceMonitorInternal
 
-604 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.45: Relationship of DiagnosticEventNeeds and FunctionInhibitionNeeds
 
@@ -42551,11 +39109,8 @@ With the inhibitingFid reference to an FunctionInhibitionNeeds instance on
 M1 it is declared that either the monitoring of a symptom or the reporting of detected
 faults can be inhibited by the usage of the Function Inhibition Managers.
 
-605 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 DiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsFunctionInhibitionNeedsObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameToken«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeIdentifiableDiagEventDebounceAlgorithmDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagEventDebounceCounterBased+ counterDecrementStepSize  :Integer+ counterFailedThreshold  :Integer+ counterIncrementStepSize  :Integer+ counterJumpDown  :Boolean+ counterJumpDownValue  :Integer+ counterJumpUp  :Boolean+ counterJumpUpValue  :Integer+ counterPassedThreshold  :IntegerDiagEventDebounceTimeBased+ timeFailedThreshold  :TimeValue+ timePassedThreshold  :TimeValueDiagEventDebounceMonitorInternal+rateBasedMonitoredEvent1+diagEventDebounceAlgorithm0..1+inhibitingFid0..1+inhibitingSecondaryFid0..*+deferringFid0..*+portPrototype1+usedFid0..1+serviceNeeds1«atpVariation,atpSplitable»+assignedPort0..*+usedSecondaryFid0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -42623,14 +39178,7 @@ Manger for which the DiagnosticInfo is requested.
 This attribute applies for the UDS diagnostics use
 case.
 
-606 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 obdDtcNu
@@ -42743,14 +39291,7 @@ OBD Driving cycle.
 Further operation cycle.
 Power ON / OFF cycle.
 
-607 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 time
 warmup
@@ -42848,14 +39389,7 @@ M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumeration speciﬁes the initial status for enable or disable of storage of a
 diagnostic event.
 
-608 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Literal
 eventStorage
@@ -42933,14 +39467,7 @@ RoleBasedPortAssignment valid roles:
 
 • CallbackInitMonitorForEvent [0 .. 1]
 
-609 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • CallbackEventStatusChange [0 .. 1]
 
@@ -42948,11 +39475,9 @@ AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -42987,25 +39512,16 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 Please note that for the implementation of this scenario DiagEventDebounceMoni
 torInternal algorithm should be used as diagEventDebounceAlgorithm.
 
-610 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.3 Dem Service Use Case: software-component provides information
 
@@ -43025,11 +39541,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43052,24 +39566,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dem_00602].
 
-611 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.5 Dem Service Use Case: software-component enables storage of
 
@@ -43088,11 +39593,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43115,11 +39618,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43129,14 +39630,7 @@ The relevant DTCs shall be conﬁgured in ECUC because at the time the Atomic
 SwComponentType is designed the information about which DTCs are relevant is not
 fully available.
 
-612 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.7 Dem Service Use Case: retrieve information of the lamp status
 
@@ -43154,11 +39648,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43181,24 +39673,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dem_00607].
 
-613 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.9 Dem Service Use Case: software-component suppresses the stor
 
@@ -43218,11 +39701,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43247,24 +39728,15 @@ The following roles are applicable:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dem_00612].
 
-614 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.11 Dem Service Use Case: software-component needs information
 
@@ -43285,11 +39757,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43322,20 +39792,11 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
-615 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43368,11 +39829,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 For more information please refer to [SWS_Dem_00616], [SWS_Dem_00619], and
 [SWS_Dem_00600].
@@ -43391,14 +39850,7 @@ interface compatible to GeneralDiagnosticInfo.
 It shall also specify Diagnos
 ticEventInfoNeeds. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
-616 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.2.14 Dem Service Use Case: software-component provides data for di
 
@@ -43422,11 +39874,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43453,22 +39903,13 @@ RoleBasedPortAssignment valid roles:
 
 • DcmIf [1]
 
-617 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43493,11 +39934,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -43513,14 +39952,7 @@ agerNeeds element which deﬁnes the mappings for the general diagnostic commu
 nication (for the terms related to the AUTOSAR Diagnostic Communication Manager
 see [37]).
 
-618 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DiagnosticCommunicationManagerNeeds
 
@@ -43598,14 +40030,7 @@ nosticExtract [38].
 
 7where isService shall be set to true
 
-619 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DiagnosticRoutineNeeds
 
@@ -43700,14 +40125,7 @@ Attribute
 currentVal
 ue
 
-620 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 didNumber PositiveInteger
@@ -43793,14 +40211,7 @@ serviceNeeds then the attributes
 
 shall not exist. (cid:99)()
 
-621 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For all intents and purposes, the statement made by [constr_1363] and [constr_1364]
 boils down to the fact that these attributes can only be reasonably used in the context
@@ -43903,14 +40314,7 @@ read-out diagnostic information (e.g. current values).
 Literal
 readOnly
 
-622 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 readWrite
 
@@ -43987,24 +40391,15 @@ ServiceNeeds kind DiagnosticValueNeeds
 
 RoleBasedPortAssignment valid roles:
 
-623 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • DataServices [1]
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44037,11 +40432,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44053,14 +40446,7 @@ RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00769].
 
-624 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.3.3 Dcm Service Use Case: read/write current values by Sender Re
 
@@ -44086,7 +40472,6 @@ ServiceNeeds kind DiagnosticValueNeeds
 
 RoleBasedPortAssignment
 
-N/A
 
 RoleBasedDataAssignment valid roles:
 
@@ -44094,7 +40479,6 @@ RoleBasedDataAssignment valid roles:
 
 RepresentedPortGroups
 
-N/A
 
 To read the signal the AtomicSwComponentType shall offer an AbstractProvid
 edPortPrototype, to write the signal the AtomicSwComponentType shall offer an
@@ -44118,22 +40502,13 @@ RoleBasedPortAssignment valid roles:
 
 • RoutineServices [1]
 
-625 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44162,11 +40537,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44177,14 +40550,7 @@ applicable SwcServiceDependency. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00686].
 
-626 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.3.6 Dcm Service Use Case: IO control by Sender Receiver Interface
 
@@ -44228,11 +40594,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44243,14 +40607,7 @@ of the ReadDataByIdentifer response.
 [TPS_SWCT_01655] Reference from DiagnosticIoControlNeeds to Diagnos
 ticValueNeeds (cid:100) In the scenario described by [TPS_SWCT_01654], the Diagnos
 
-627 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ticIoControlNeeds shall reference the DiagnosticValueNeeds which relates
 to the access of the current value via diagnostic services (see [TPS_SWCT_02003]).
@@ -44276,11 +40633,8 @@ perfectly valid conﬁguration.
 On the other hand, the SenderReceiverInterface used on the RPortProto
 type of the ServiceSwComponentType representing the Dcm can only have one
 
-628 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwcServiceDependency„IOx“DiagnosticIoControlNeeds„IOx“RoleBasedPortAssignmentrole: „IOControlRequest“RoleBasedPortAssignmentrole: „IOControlResponse“SwcServiceDependency„Data_IOx“DiagnosticValueNeeds„Data_IOx“currentValueRoleBasedDataAssignmentrole: „signalBasedDiagnostics“«isOfType»«isOfType»Connector«isOfType»SwComponentPrototype typed by DcmServiceSwComponentTypeSenderReceiverInterface„DataXY_IO“„IOx“„IOy“SenderReceiverInterface„IOControlResponse_IOx“«isOfType»ConnectorSenderReceiverInterface„IOControlRequest_IOx“Connector«isOfType»«isOfType»SwComponentPrototype typed by ApplicationSwComponentTypeSenderReceiverInterface„DataServices_Data_IOx“„IOx“„IOControlRequest_IOx“„IOControlResponse_IOx“Software Component Template
 AUTOSAR Release 4.2.2
@@ -44329,24 +40683,15 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00698]
 
-629 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.3.8 Dcm Service Use Case: Verify the access to security level
 
@@ -44364,11 +40709,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44397,22 +40740,13 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
-630 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 For more information please refer to [SWS_Dcm_00692]
 
@@ -44452,11 +40786,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03190)
 
@@ -44476,20 +40808,11 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
-631 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:99)(RS_SWCT_03190)
 
@@ -44593,14 +40916,7 @@ The possible values for the attribute ObdRatioServiceNeeds.iumprGroup are:
 
 • EGR
 
-632 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • SAIR
 
@@ -44677,14 +40993,7 @@ testId
 
 Table 7.96: ObdControlServiceNeeds
 
-633 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ObdPidServiceNeeds
 
@@ -44779,14 +41088,7 @@ attr The InfoType according to ISO 15031-5
 
 Table 7.98: ObdInfoServiceNeeds
 
-634 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ObdMonitorServiceNeeds
 
@@ -44848,11 +41150,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44866,14 +41166,7 @@ ObdRatioServiceNeeds is set
 RoleBasedPortAssignment with the role value IUMPRNumerator shall be de
 ﬁned.
 
-635 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 If the attribute connectionType of the contained ObdRatioServiceNeeds is set
 to ObdRatioConnectionKindEnum.observer the role value IUMPRNumerator
@@ -44899,11 +41192,9 @@ The following roles are applicable:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44928,16 +41219,8 @@ ServiceNeeds kind ObdPidServiceNeeds
 
 RoleBasedPortAssignment
 
-N/A
 
-636 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RoleBasedDataAssignment
 
@@ -44947,7 +41230,6 @@ The following roles are applicable:
 
 RepresentedPortGroups
 
-N/A
 
 To read the signal the AtomicSwComponentType shall offer an AbstractProvid
 edPortPrototype, to write the signal the AtomicSwComponentType shall offer an
@@ -44971,11 +41253,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -44994,14 +41274,7 @@ $06
 Scenario: an AtomicSwComponentType offers a server ports to read DTR value via
 OBD services.
 
-637 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_02011] AtomicSwComponentType offers a server port to read DTR
 value via OBD services (cid:100)
@@ -45014,11 +41287,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -45044,11 +41315,9 @@ The following roles are applicable:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
@@ -45060,14 +41329,7 @@ shall be taken from the shortName of the applicable SwcServiceDependency.
 
 For more information please refer to [SWS_Dcm_00691].
 
-638 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.7.4.7 Dcm Service Use Case: Response On Event via diagnostic services
 
@@ -45086,11 +41348,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 The role ROEServices is applicable for a server port of the AtomicSwComponent
 Type and the role Dcm_Roe is applicable for a client port of the AtomicSwCompo
@@ -45103,14 +41363,7 @@ For more information please refer to [SWS_Dcm_00695] and [SWS_Dcm_00699].
 This chapter describes the usage of speciﬁc meta-classes to support the speciﬁcation
 of diagnostics over IP. For more details, please refer to ISO 13400 [39].
 
-639 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 7.47: Subclasses of ServiceNeeds for implementing diagnostics over IP
 
@@ -45167,11 +41420,8 @@ Attribute
 
 Table 7.101: DoIpGidNeeds
 
-640 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableServiceNeedsDoIpPowerModeStatusNeedsDoIpGidSynchronizationNeedsDoIpGidNeedsDoIpRoutingActivationAuthenticationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpRoutingActivationConfirmationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpServiceNeedsDoIpActivationLineNeedsSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -45282,14 +41532,7 @@ Array type. Otherwise (i.e the software entity is a
 Complex Driver) this attribute needs to be ﬁlled in
 if additional information is provided.
 
-641 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 routingActi
@@ -45380,14 +41623,7 @@ representation of the integer value shall be used
 
 Table 7.105: DoIpRoutingActivationConﬁrmationNeeds
 
-642 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DoIpActivationLineNeeds
 
@@ -45437,11 +41673,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
@@ -45461,24 +41695,15 @@ ServiceNeeds kind DoIpGidNeeds
 
 RoleBasedPortAssignment valid roles:
 
-643 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • CallbackGetGID [1]
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
@@ -45503,11 +41728,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
@@ -45524,14 +41747,7 @@ plicable.
 [TPS_SWCT_01544] preﬁx used for the actual name of the used PortInterface
 for the routing activation (cid:100) The preﬁx used for the actual name of the used PortIn
 
-644 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 terface for the routing activation shall be taken from the shortName of the enclosing
 SwcServiceDependency. (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
@@ -45551,11 +41767,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03190)
 
@@ -45584,20 +41798,11 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
-645 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
@@ -45630,11 +41835,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)(RS_SWCT_03190)
 
@@ -45664,14 +41867,7 @@ Attribute
 
 Table 7.107: WarningIndicatorRequestedBitNeeds
 
-646 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.8 Diagnostic Log and Trace Dependency
 
@@ -45739,20 +41935,11 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
-647 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 RepresentedPortGroups
 
-N/A
 
 (cid:99)()
 
@@ -45815,14 +42002,7 @@ be set to the name of the used standardized ClientServerInterface.
 The possible role attribute values and the multiplicity of the related PortPrototypes
 are listed at the use case descriptions in the paragraph RoleBasedPortAssignment.
 
-648 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.11.3.9.1 StbM use Case: Application software component accesses the Syn
 
@@ -45838,11 +42018,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 In this
 (StbM_TimeBaseValue) to
@@ -45873,11 +42051,9 @@ RoleBasedPortAssignment valid roles:
 
 RoleBasedDataAssignment
 
-N/A
 
 RepresentedPortGroups
 
-N/A
 
 In this case the software-component has to provide one Receiver Port
 (StbM_TimeBase_TriggerCustomer) to receive the current value of the synchronized
@@ -45887,14 +42063,7 @@ the current state of the synchronized time-base.
 Please note that at least one of the two possible RoleBasedPortAssignments shall
 exist for this use case.
 
-649 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 7.12 Variation Point Proxy
 
@@ -45949,14 +42118,7 @@ Proxy (cid:100) AUTOSAR pre-deﬁnes two possible values for the category of Var
 PointProxy. The meaning of the values, however, depends on the particular model
 ing of individual VariationPointProxys, see [TPS_SWCT_01370].
 
-650 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 VALUE In the “pre-build” case this means that valueAccess shall yield an integer
 literal. In the “post-build” case, on the other hand, this means that postBuild
@@ -46009,14 +42171,7 @@ preprocessor directives to implement preCompileTime variability in C/C++ code.
 dentFormula (cid:100) It is in the scope of the RTE generator to evaluate the SwSystemcon
 stDependentFormula which has a higher precedence than the standard C Prepro
 
-651 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 cessor and to provide the resulting values to the software-component’s implementation.
 (cid:99)(RS_SWCT_03100)
@@ -46054,11 +42209,8 @@ Mul. Kind Note
 
 VariationPoint.
 
-652 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InternalBehaviorSwcInternalBehaviorIdentifiableVariationPointProxyAttributeValueVariationPoint+ bindingTime  :BindingTimeEnum [0..1]+ blueprintValue  :String [0..1]+ sd  :String [0..1]+ shortLabel  :PrimitiveIdentifier [0..1]ConditionByFormula+ bindingTime  :BindingTimeEnumFormulaExpressionSwSystemconstDependentFormulaARElementAtpDefinitionSwSystemconstARElementAtpDefinitionPostBuildVariantCriterionPostBuildVariantCondition«atpVariation»+ value  :IntegerAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]+syscString1+sysc1«atpSplitable»+variationPointProxy0..*+implementationDataType0..1+postBuildValueAccess0..1+postBuildVariantCondition0..*+valueAccess0..1+conditionAccess0..1+matchingCriterion1Software Component Template
 AUTOSAR Release 4.2.2
@@ -46159,14 +42311,7 @@ PostBuild
 
 Table 7.111: Supported usage of VariationPointProxy
 
-653 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 8 Implementation
 
@@ -46186,11 +42331,8 @@ ure 8.1) remains in this document.
 
 Figure 8.1: Implementation part speciﬁc to the Software Component Template
 
-654 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementImplementation+ programmingLanguage  :ProgramminglanguageEnum+ swVersion  :RevisionLabelString+ usedCodeGenerator  :String [0..1]+ vendorId  :PositiveIntegerSwcImplementation+ requiredRTEVendor  :String [0..1]InternalBehaviorSwcInternalBehaviorPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerIdentifiableCodeIdentifiableDependencyOnArtifactIdentifiableCompiler+ name  :String+ options  :String+ vendor  :String+ version  :StringIdentifiableResourceConsumption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimesize: <> Tags: vh.latestBindingTime = preCompileTime+codeDescriptor1..*+resourceConsumption1«atpSplitable»«atpVariation»+requiredGeneratorTool0..*«atpVariation»+requiredArtifact0..*«atpVariation»+generatedArtifact0..*+behavior1+perInstanceMemorySize*«atpVariation»+compiler*Software Component Template
 AUTOSAR Release 4.2.2
@@ -46299,14 +42441,7 @@ eMemory
 PerInstanceMe
 mory
 
-655 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 size
@@ -46332,14 +42467,7 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 8.2: PerInstanceMemorySize
 
-656 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 9 Mode Management
 
@@ -46396,14 +42524,7 @@ This is shown in Figure 9.1
 
 1See also AUTOSAR Glossary for “Standardized AUTOSAR Interface”.
 
-657 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 9.1: ModeDeclaration
 
@@ -46435,11 +42556,8 @@ tionGroup.category with a standardized meaning:
 
 • ALPHABETIC_ORDER
 
-658 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]«enumeration»SwCalibrationAccessEnum readOnly notAccessible readWrite«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime«enumeration»ModeErrorReactionPolicyEnum lastMode defaultMode«isOfType»+type1{redefinesatpType}+modeDeclaration1..*«atpVariation»+initialMode1Software Component Template
 AUTOSAR Release 4.2.2
@@ -46495,14 +42613,7 @@ with the applicable numerical values.
 [TPS_SWCT_01010] categorys for the deﬁnition of a ModeDeclarationGroup
 (cid:100) In order to support a clear separation between the two possible ways to inﬂuence the
 
-659 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 deﬁnition of the programmatic representation of ModeDeclarations two categorys
 shall be deﬁned for the deﬁnition of a ModeDeclarationGroup.
@@ -46582,14 +42693,7 @@ ref The initial mode of the ModeDeclarationGroup.
 This mode is active before any mode switches
 occurred.
 
-660 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 modeDecl
@@ -46682,14 +42786,7 @@ part of the enclosing ModeTransition.
 
 (cid:99)(RS_SWCT_03200)
 
-661 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 9.2: ModeTransition
 
@@ -46750,11 +42847,8 @@ Table 9.3: ModeTransition
 [TPS_SWCT_01376] Software-components need to be capable of reacting to
 state changes (cid:100) Software-components need to be capable of reacting to state
 
-662 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpStructureElementReferrableModeTransition«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+exitedMode1+enteredMode1+modeDeclaration1..*«atpVariation»+initialMode1+modeTransition0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -46777,11 +42871,8 @@ nentType can be described.
 
 Figure 9.4: Modes and events
 
-663 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«enumeration»ModeActivationKind onEntry onExit onTransition«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*+startOnEvent0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -46839,14 +42930,7 @@ sender side, a RunnableEntity shall have ModeSwitchPoints that eventually as
 sociate a RunnableEntity with the speciﬁc ModeDeclarationGroups which it
 manages, see Figure 9.5. (cid:99)(RS_SWCT_03110)
 
-664 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 9.5: ModeSwitchPoint
 
@@ -46897,11 +42981,8 @@ speciﬁc ModeSwitchPoint in the role eventSource. (cid:99)(RS_SWCT_03110)
 Point associated with a ModeSwitchedAckEvent shall be equal to the correspond
 ing ModeSwitchedAckRequest.timeout. (cid:99)()
 
-665 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]RTEEventModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource10..*«instanceRef»+modeGroup0..1+modeSwitchPoint*«atpVariation»Software Component Template
 AUTOSAR Release 4.2.2
@@ -46969,11 +43050,8 @@ larationGroupPrototype’s current mode has to deﬁne a ModeAccessPoint.
 
 Figure 9.6: ModeAccessPoint
 
-666 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntityAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeAccessPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeAccessPoint*«atpVariation»0..*«instanceRef»+modeGroup1Software Component Template
 AUTOSAR Release 4.2.2
@@ -47053,14 +43131,7 @@ AtomicSwComponentType.
 [TPS_SWCT_01384] Execution of initialization code for software-components (cid:100)
 Most AtomicSwComponentTypes will need to initialize by executing speciﬁc code;
 
-667 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 this code shall complete before any other code in the component is executed. Data
 will be initializing to speciﬁc values before the "normal" application software is running.
@@ -47112,14 +43183,7 @@ behavior in the event of a mode error:
 
 lastMode The last mode applicable before the event shall be assumed.
 
-668 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 defaultMode This represents the ability to specify a dedicated mode that shall be
 made applicable. The identiﬁed ModeDeclaration could be identical to the
@@ -47152,14 +43216,7 @@ be assumed that the ModeDeclarationGroup.initialMode becomes applicable
 in case of the mode user getting out of sync with a mode manager (because the parti
 tion of the mode manager has been terminated). (cid:99)(RS_SWCT_03110)
 
-669 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 9.7: Mode Error Behavior
 
@@ -47201,11 +43258,8 @@ an error occurs.
 
 Table 9.8: ModeErrorBehavior
 
-670 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -47283,14 +43337,7 @@ tion of mode switches needs to be coherent for all connected mode users especial
 if the individual SwConnectors are legitimized by the existence of a PortInter
 faceMapping. (cid:99)(RS_SWCT_03110)
 
-671 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01541] Preferential selection of modeUserErrorBehavior (cid:100) The
 deﬁnition of mode error behavior on the provided side of shall be considered dominant
@@ -47336,22 +43383,12 @@ To get the complete picture, it should be noted that also the concepts of PortGr
 tionship to mode management, though this is not expressed via relations in the meta
 model.
 
-672 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 9.8: Summary meta-model excerpt related to modes
 
-673 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 InterfaceModeDeclarationInternalBehavior and RunnablesComponent and PortAtpStructureElementIdentifiableModeDeclarationARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeAtpStructureElementExecutableEntityRunnableEntityPPortPrototypeRPortPrototypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractEventAtpStructureElementRTEEventSwcModeSwitchEventModeSwitchInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementReferrableModeTransitionAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototypeModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initialMode1+port0..*«atpVariation,atpSplitable»+component+modeDeclaration1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+modeGroup1«isOfType»+type1{redefines atpType}+startOnEvent0..1+event*«atpVariation,atpSplitable»«instanceRef»+disabledMode0..*0..*«instanceRef»+mode1..2{ordered}+modeTransition0..*+runnable1..*«atpVariation,atpSplitable»«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedInterface1{redefinesatpType}+enteredMode1+exitedMode1«isOfType»+providedRequiredInterface1{redefinesatpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -47379,14 +43416,7 @@ The AUTOSAR concept deﬁnes a software architecture (see Figure 10.1) and withi
 this layered architecture the interfaces between the hardware and the software are
 explicitly modeled.
 
-674 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 10.1: AUTOSAR ECU Software Architecture
 
@@ -47418,14 +43448,7 @@ different abstractions of signals at the different stages of the signal ﬂow.
 
 applies also for actuators.
 
-675 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 10.2: Interfaces between hardware and software
 
@@ -47460,11 +43483,8 @@ some communication bus, it will not be practical to separate the ECU Abstraction
 the corresponding SensorActuatorSwComponentType due to potentially high com
 munication effort.
 
-676 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SensorECUElectronicsµCPeripheralsPhysical Interface:car velocityElectrical Interface:Isensor[0..200mA]Electrical Interface:UECU[0..5V]SensorSW-CApplicationSW-Cget_v()get_I_sensor()DIO_set()Car environment123ECUAbstractionMCAL546ADC_get()Software Component Template
 AUTOSAR Release 4.2.2
@@ -47499,11 +43519,8 @@ AtomicSwComponentTypes representing the application is visible on the VFB. To de
 scribe the data that is going to be exchanged via this interface the standard AUTOSAR
 Interface description mechanisms are used (see chapter 3.4).
 
-677 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SensorECUElectronicsµCPeripheralsPhysical InterfaceElectrical InterfaceIsensor[0..200mA]Electrical InterfaceUECU[0..5V]SensorSW-CECUAbstractionµCAL(MCAL Driver)ApplicationSW-C 1get_v()get_I_ECU(velocity_sensor)DIO_get()e.g. Car velocityActuatorSW-CApplicationSW-C 2set_lamp()set_I_ECU(light_actuator)DIO_set()ActuatorECUElectronicsµCPeripheralse.g. Car lightIECU[0..2A]UµC[0..5V]HardwareSoftwareHardwareSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -47544,14 +43561,7 @@ well, there is also a reference needed from the software representation of a sen
 tuator to the actual hardware element described in the ECU Resource description.
 (cid:99)(RS_SWCT_02080, RS_SWCT_03090)
 
-678 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 10.5: Shipment of a sensor
 
@@ -47579,11 +43589,8 @@ tains the HwElement corresponding to the HwType that its SensorActuatorSwCom
 ponentType refers to in case it accesses the hardware via the I/O hardware abstrac
 tion layer. (cid:99)()
 
-679 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtomicSwComponentTypeSensorActuatorSwComponentTypeReferrableHwDescriptionEntityARElementHwType+sensorActuator1+hwType0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -47646,14 +43653,7 @@ In this case the I/O Hardware Abstraction Layer is de
 have sub-structures.
 scribed by several different EcuAbstractionSwComponentTypes on M1. (cid:99)()
 
-680 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 EcuAbstractionSwComponentType
 
@@ -47706,14 +43706,7 @@ EcuAbstractionSwComponentType and the corresponding BswModuleDescrip
 tion is provided by the class SwcBswMapping which in addition also maps the two
 corresponding InternalBehaviors. This mechanism is further explained in [7]. (cid:99)()
 
-681 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 10.7: EcuAbstractionSwComponentType
 
@@ -47734,11 +43727,8 @@ viceDriverSwComponentType (cid:100) On the VFB the Complex Driver is represented
 by the ComplexDeviceDriverSwComponentType. An ECU might have zero to
 many different ComplexDeviceDriverSwComponentTypes. (cid:99)()
 
-682 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 EcuAbstractionSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hardwareElement0..*+swcBehavior1+bswBehavior1«atpSplitable»+internalBehavior0..*+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -47794,22 +43784,12 @@ ing BswModuleDescription is provided by the class SwcBswMapping which in ad
 dition also maps the two corresponding InternalBehaviors. This mechanism is
 further explained in [7]. (cid:99)()
 
-683 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 10.8: ComplexDeviceDriverSwComponentType
 
-684 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ComplexDeviceDriverSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1«atpSplitable»+internalBehavior0..*+swcBehavior1+bswBehavior1+hardwareElement0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -47901,14 +43881,7 @@ Note that most of these steps are performed by tools and the model elements bein
 created in these steps are rather speciﬁc to Service conﬁguration and are not to be
 modeled manually within AUTOSAR authoring tools.
 
-685 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 In particular, the following requirements apply:
 
@@ -47961,14 +43934,7 @@ SwComponentTypes: An adequate number of PortPrototypes are created on
 this ServiceSwComponentType for each needed port at the AtomicSwCom
 ponentType.
 
-686 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Thereby the speciﬁed communication pattern A, B or C for a speciﬁc kind of
 ServicePort has to be considered. See also chapter 11.3 and table 11.1. (cid:99)()
@@ -48036,14 +44002,7 @@ mentation into the generated instance of SwcImplementation since the only mandat
 for the RTE conﬁguration is the reference from SwcImplementation to the selected SwcInternal
 Behavior.
 
-687 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 11.2 Extending the ECU Software Composition
 
@@ -48064,14 +44023,7 @@ Composition on the given ECU. This collection includes both the software compo
 nents mapped to the ECU and the necessary service components represented as one
 SwComponentPrototype for each AUTOSAR Service utilized on the given ECU.
 
-688 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.1: Usage of RootSwCompositionPrototype on an ECU
 
@@ -48080,11 +44032,8 @@ Figure 11.1: Usage of RootSwCompositionPrototype on an ECU
 As mentioned in [TPS_SWCT_01405], AUTOSAR Services are represented by a
 meta model class of their own, the ServiceSwComponentType. As can be seen
 
-689 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 CompositionSwComponentTypeAtpPrototypeIdentifiableRootSwCompositionPrototypeARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringServiceSwComponentTypeAtomicSwComponentTypeAtpPrototypeSwComponentPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementSwConnectorARElementEcucValueCollection«atpVariation» Tags:vh.latestBindingTime =systemDesignTime«atpVariation» Tags:vh.latestBindingTime =postBuild«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAssemblySwConnectorAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+connector*«atpVariation,atpSplitable»+ecuExtract10..*«instanceRef»+provider0..10..*«instanceRef»+requester0..1+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}+rootSoftwareComposition0..1«atpVariation,atpSplitable»«isOfType»+softwareComposition1{redefinesatpType}+port0..*«atpVariation,atpSplitable»Software Component Template
 AUTOSAR Release 4.2.2
@@ -48139,14 +44088,7 @@ This mechanism is further explained in [7].
 
 2Thereby the previously existing constraint 1127 becomes invalid.
 
-690 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.2: ServiceSwComponentType
 
@@ -48193,11 +44135,8 @@ ServiceSwComponentTypes are created. In the process the speciﬁed communica
 tion pattern A, B, or C for a speciﬁc kind of service port has to be considered, see
 table 11.1.
 
-691 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ServiceSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+internalBehavior0..*«atpVariation,atpSplitable»+internalBehavior0..1+swcBehavior1+bswBehavior1Software Component Template
 AUTOSAR Release 4.2.2
@@ -48240,14 +44179,7 @@ is used.
 For the application software and the RTE it behaves like a “normal” AtomicSwCompo
 nentType, but it is actually a proxy for an AUTOSAR Service. (cid:99)()
 
-692 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.3: Mode request over the network [3]
 
@@ -48272,11 +44204,8 @@ on each ECU, where it has to address a local ServiceSwComponentType.
 As a result of this, a ServiceProxySwComponentType can only receive but not send
 signals over the network. More details are explained in the class table below. (cid:99)()
 
-693 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 VFBRTE1BSW1ECU1VCC:VehicleClampControlVCP: VehicleClampProxyVCC:VehicleClampControlVCP: VehicleClampProxyBswMServiceRTE2BSW2ECU2VCP: VehicleClampProxyBswMServiceApp1:Application1App2:Application2App1:Application1App2:Application2Software Component Template
 AUTOSAR Release 4.2.2
@@ -48356,14 +44285,7 @@ attribute is set to true.
 
 (cid:99)()
 
-694 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_2018] Supported remote communication of a ServiceProxySwCompo
 nentType (cid:100) For remote communication, ServiceProxySwComponentType can
@@ -48414,14 +44336,7 @@ managed by the NVRAM Manager.
 the NvBlockSwComponentType are exclusively typed by NvDataInterfaces.
 (cid:99)(RS_SWCT_03225)
 
-695 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_01143] Non-volatile data represented by an NvBlockSwComponent
 Type can be read and written (cid:100) The non-volatile data represented by an NvBlock
@@ -48493,14 +44408,7 @@ vh.latestBindingTime=preCompileTime
 
 Table 11.5: NvBlockSwComponentType
 
-696 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 NvDataInterface
 
@@ -48551,11 +44459,8 @@ connect to NvBlockSwComponentTypes as well as the PortInterfaces used in
 the context of NvBlockSwComponentTypes shall always set the value of the attribute
 isService to false. (cid:99)()
 
-697 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 VariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]NvDataInterfaceDataInterface+nvData1..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -48581,14 +44486,7 @@ PortPrototypes by the deﬁnition of SwcServiceDependency(s) with NvBlock
 Needs. In this case the role attribute of the assignedPort has to be set to the value
 NvDataPort. This aspect is also explained in section 7.11.3.1.4.
 
-698 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.5: NvBlockNeeds for nv data PortPrototypes
 
@@ -48606,11 +44504,8 @@ For instance, nv data with different writingFrequency might be mapped to one
 NVRAM Block. In this case the NvBlockNeeds of the NvBlockDescriptor has to
 indicate the worst case which is the higher frequency.
 
-699 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeDataInterfaceNvDataInterfaceInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyIdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]AtomicSwComponentTypeRoleBasedPortAssignment+ role  :Identifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeShall be typed by NvDataInterface if the data is provided by an NvBlockSwComponentType. In a different context the PortPrototype shall be typed by a ClientServerInterface if the data is provided by NVRAM Manager.«atpVariation,atpSplitable»+internalBehavior0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1Software Component Template
 AUTOSAR Release 4.2.2
@@ -48740,14 +44635,7 @@ mediate writing.
 
 Table 11.7: NvBlockNeeds dependencies
 
-700 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 With respect to the completeness of table 11.7 (which intentionally doesn’t contain
 a remark regarding the value of cyclicWritingPeriod), it should be noted that
@@ -48815,14 +44703,7 @@ the conditional existence of ports.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-701 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 constantVa
@@ -48943,11 +44824,8 @@ provided by NvBlockSwComponentType.
 
 provided by NvBlockSwComponentType.
 
-702 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 Attribute
 supportDirt
@@ -48987,11 +44865,8 @@ portDirtyFlag please refer to the SWS RTE [2].
 
 Figure 11.6: NvBlockSwComponentType and NvBlockDescriptor
 
-703 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtomicSwComponentTypeNvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrectionValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»RamBlockStatusControlEnum api nvRamManager«enumeration»NvBlockNeedsWritingPriorityEnum low medium highRTEEventTimingEvent+ period  :TimeValue+initValue0..1+romBlock0..1+initValue0..1+ramBlock1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+timingEvent0..1+nvBlockNeeds1Software Component Template
 AUTOSAR Release 4.2.2
@@ -49049,14 +44924,7 @@ sufﬁcient to achieve the intended semantics.
 
 shuts down.
 
-704 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 This use case corresponds to setting the value of attribute NvBlockDescrip
 tor.nvBlockNeeds.storeAtShutdown to true.
@@ -49083,11 +44951,8 @@ approach to store data immediately after reception by an NvBlockSwComponent
 Type requires the activation of a RunnableEntity by a DataReceivedEvent.
 (cid:99)(RS_SWCT_03225)
 
-705 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]TimingEvent+ period  :TimeValueSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+timingEvent0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -49111,11 +44976,8 @@ requests).
 Please note that the behavior described in [TPS_SWCT_01587] in general is sup
 ported by AUTOSAR by requiring that NVRAM Blocks shall have to be conﬁgured
 
-706 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvBlockSwComponentTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEventDataReceivedEventAutosarDataPrototypeVariableDataPrototypeSenderReceiverInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+rPort«isOfType»+requiredInterface1{redefines atpType}+dataElement1..*+interface1+event«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -49147,11 +45009,8 @@ Figure 11.9: NvBlockNeeds
 tribute NvBlockNeeds.cyclicWritingPeriod shall exist if and only if the attribute
 NvBlockNeeds.storeCyclic exists and its value is set to true. (cid:99)()
 
-707 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 IdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrection«enumeration»NvBlockNeedsWritingPriorityEnum low medium high«enumeration»NvBlockComponent::RamBlockStatusControlEnum api nvRamManagerSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -49323,14 +45182,7 @@ shall be implicitly stored immediately during or
 after execution of the according SW-C
 RunnableEntity by the basic software.
 
-708 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 useAutoVa
@@ -49445,14 +45297,7 @@ tributes
 
 • NvBlockNeeds.cyclicWritingPeriod
 
-709 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 • NvBlockNeeds.storeEmergency
 
@@ -49501,14 +45346,7 @@ Additionally it is possible that RAM Block and ROM Block are deﬁned to be able
 to calibrate or measurable. Preceding SwDataDefProps might be deﬁned with the
 means of an InstantiationDataDefProps.
 
-710 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 11.5.4.4 NvBlockDataMapping
 
@@ -49566,14 +45404,7 @@ ImplementationDataType. This aspect is explained in chapter 5.2.2.
 [TPS_SWCT_01659] Mapping of VariableDataPrototype to a NvBlockDe
 scriptor (cid:100) There are three ways to map a VariableDataPrototype (i.e. Nv
 
-711 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 DataInterface.nvData in the context of a speciﬁc PortPrototype) to either an
 NvBlockDescriptor.ramBlock or a sub-element thereof:
@@ -49619,14 +45450,7 @@ Please note that a mixing of mutually exclusive mappings for entire sub-elements
 or leaf elements as described by [TPS_SWCT_01659] is positively supported (see
 Figure 11.10).
 
-712 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.10: Example NvBlockDataMapping to explain [TPS_SWCT_01659]
 
@@ -49656,11 +45480,8 @@ lected Nv Data of the service use case.
 Furthermore, there is the possibility to receive notiﬁcations when the writing of the
 mapped NV Block to the NvRam is ﬁnished.
 
-713 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvBlockSwComponent <<NvDataInterface>>  nvData:  a : uint8 b : uint32 g : {      - h : uint16      - j : uint8      - s : {             - u : uint32             - w : uint8      }  nvData root element: -a, b, g  leaf element: -a, b, h, j, u, w  sub-element which is not a leaf element: -s NvBlockDescriptor ramBlock: { b : uint32 s : {      - u : uint32      - w : uint8      } x : uint8 h : uint16 a : uint8 j : uint8 }  Example NvDataMapping nvData ramBlock mapping kind a a nvData root b b nvData root h h leaf element j j leaf element s s sub-element Software Component Template
 AUTOSAR Release 4.2.2
@@ -49688,14 +45509,7 @@ Figure 11.11: Visualization of the statement made by [constr_1404]
 The statement made by [constr_1404] is visualized in Figure 11.11. The context
 deﬁning model elements, i.e. SwcServiceDependency owned by the Atomic
 
-714 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 SwComponentType as well as NvBlockDescriptor owned by the NvBlockSwCom
 ponentType, are colored in light orange.
@@ -49774,14 +45588,7 @@ read access to the RAM Block.
 
 Table 11.11: NvBlockDataMapping
 
-715 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.12: NvBlockToPortMapping and InstantiationDataDefProps
 
@@ -49792,11 +45599,8 @@ clientServerPort of
 the NvBlockDescriptor describes which client/server
 PortPrototype of the NvBlockSwComponentType serves for which purpose. The
 
-716 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtomicSwComponentTypeNvBlockSwComponentTypeDataInterfaceNvDataInterfaceAtpStructureElementIdentifiableNvBlockDescriptorNvBlockDataMappingInstantiationDataDefPropsVariableDataPrototypeAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElementAtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeAutosarDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime+autosarVariable0..1+variableInstance0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+nvBlockDataMapping1..*«atpVariation»+writtenReadNvData0..1+nvData1..*+ramBlock1+instantiationDataDefProps0..*«atpVariation»+readNvData0..1+rootVariableDataPrototype0..1{subsets atpContextElement}+autosarVariableInImplDatatype0..1+nvRamBlockElement1+targetDataPrototype1+contextDataPrototype0..*{ordered}+rootVariableDataPrototype0..1«atpVariation»+subElement0..* {ordered}«isOfType»+type1{redefines atpType}+writtenNvData0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -49814,11 +45618,8 @@ individual kind of notiﬁcation deﬁned by the role.
 
 Figure 11.13: NvBlockNotiﬁcation
 
-717 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtomicSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype+port0..*«atpVariation,atpSplitable»+clientServerPort0..*«atpVariation»+portPrototype1«isOfType»+requiredInterface1{redefines atpType}«atpVariation,atpSplitable»+nvBlockDescriptor0..*+operation1..*«atpVariation»«isOfType»+providedInterface1{redefines atpType}«isOfType»+providedRequiredInterface1{redefines atpType}Software Component Template
 AUTOSAR Release 4.2.2
@@ -49872,14 +45673,7 @@ in the role disabledMode)
 
 (cid:99)(RS_SWCT_03225)
 
-718 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 11.14: NvBlockSwComponentType and SwcInternalBehavior
 
@@ -49890,11 +45684,8 @@ siveAreas, per-instance memory or inter-runnable variables, etc. (cid:99)()
 [TPS_SWCT_01151] RunnableEntitys do not have further attributes (cid:100) The same
 condition exists for the RunnableEntitys of such InternalBehavior which shall
 
-719 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityOperationInvokedEventAbstractEventAtpStructureElementRTEEventAtomicSwComponentTypePortDefinedArgumentValuePortAPIOption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRelation of PortPrototype to PortInterface is documented elsewhere.«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«instanceRef»+operation+clientServerPort0..*«atpVariation»+portPrototype1+portArgValue0..*{ordered}+portAPIOption0..*«atpVariation,atpSplitable»0..1+port1«atpVariation,atpSplitable»+internalBehavior0..1+operation1..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»+startOnEvent0..1+event*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+nvBlockDescriptor0..*+port0..*«atpVariation,atpSplitable»+componentSoftware Component Template
 AUTOSAR Release 4.2.2
@@ -49962,14 +45753,7 @@ in the role disabledMode)
 
 (cid:99)()
 
-720 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [constr_1309] Existence of NvBlockDescriptor.timingEvent (cid:100) The attribute
 NvBlockDescriptor.timingEvent shall exist if and only if the NvBlockDescrip
@@ -49990,14 +45774,7 @@ tor.nvBlockNeeds.cyclicWritingPeriod shall be ignored and the value of
 NvBlockDescriptor.timingEvent.period shall be taken to specify the effective
 writing frequency for cyclic storage. (cid:99)(RS_SWCT_03225)
 
-721 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 12 Software Component Documentation
 
@@ -50037,14 +45814,7 @@ variation points have a post-build as latest binding time, because the decision 
 or exclude a chapter as well as the decision which variant of this chapter should be
 included can be made when the component has been built.
 
-722 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 12.1: Software component documentation
 
@@ -50066,11 +45836,8 @@ Datatype
 
 Mul. Kind Note
 
-723 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 SwComponentDocumentationAARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeIdentifiablePaginateableChapter+ helpEntry  :String [0..1]«atpSplitable» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime =postBuild+swMaintenanceNotes0..1«atpVariation»+chapter0..*+swDiagnosticsNotes0..1+swTestDesc0..1+swFeatureDef0..1+swCarbDoc0..1+swFeatureDesc0..1+swCalibrationNotes0..1«atpSplitable,atpVariation»+swComponentDocumentation0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -50184,14 +45951,7 @@ software component.
 Tags: xml.roleElement=true; xml.sequence
 Offset=50; xml.typeElement=false
 
-724 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 
@@ -50201,14 +45961,7 @@ Mul. Kind Note
 
 Table 12.1: SwComponentDocumentation
 
-725 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 13 Rapid Prototyping Scenarios
 
@@ -50221,11 +45974,8 @@ structure is described in 13.2.
 
 Figure 13.1: Rapid Prototyping Scenario
 
-726 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 ARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringARElementRapidPrototypingScenarioIdentifiableRptContainerAtpInstanceRefAnyInstanceRefRptHook+ codeLabel  :CIdentifier [0..1]+ mcdIdentifier  :NameToken [0..1]Sdg+ gid  :NameToken«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+rptContainer1..*«atpSplitable»+rptSystem0..1+hostSystem1«atpVariation,atpSplitable»+rptHook0..1«atpVariation,atpSplitable»+byPassPoint1«atpVariation,atpSplitable»+rptContainer 0..*+sdg0..*+rptArHook0..1Software Component Template
 AUTOSAR Release 4.2.2
@@ -50329,14 +46079,7 @@ Stereotypes: atpSplitable; atpVariation
 Tags: atp.Splitkey=byPassPoint
 vh.latestBindingTime=preCompileTime
 
-727 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Attribute
 rptContain
@@ -50439,14 +46182,7 @@ The rptHook describes the link between the byPassPoint and the rapid prototyp
 If the rapid prototyping algorithm is described as an AUTOSAR Soft
 ing algorithm.
 
-728 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 ware Component the rptArHook reference is applicable. Otherwise the deﬁnition of
 a codeLabel and optionally mcdIdentifier shall be used. (cid:99)(RS_SWCT_03280)
@@ -50543,14 +46279,7 @@ Point by a RptContainer without further “Sub” rptContainer all RTE Interface
 of the AtomicSwComponentType shall be able to support a connection to a rptHook.
 (cid:99)(RS_SWCT_03280)
 
-729 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 [TPS_SWCT_02049] Implicit RunnableEntity selection for Rapid Prototyp
 ing Scenario (cid:100) If a RunnableEntity is referenced in the role byPassPoint
@@ -50599,14 +46328,7 @@ description, such as VariableAccess where in contrast the byPassPoints may
 only speciﬁed on higher level elements such as SwComponentPrototypes in a ﬁrst
 step.
 
-730 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 13.4 Modiﬁcations of the Meta-Model for supporting the RPT sce
 
@@ -50631,14 +46353,7 @@ implemented.
 
 1Because in this case the shortName becomes mandatory.
 
-731 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 Figure 13.2: Access Points used in the context of the Rapid Prototyping Scenario
 
@@ -50651,11 +46366,8 @@ resp. in the role ident by meta-class ExternalTriggeringPoint.
 
 2Again, this is necessary to not break the backwards compatibility
 
-732 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
 
-— AUTOSAR CONFIDENTIAL —
 
 AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableVariableAccessExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPointAtpStructureElementIdentifiableServerCallPointAtpStructureElementIdentifiableAsynchronousServerCallResultPointModeAccessPointAtpStructureElementIdentifiableModeSwitchPointAtpStructureElementIdentifiableIdentCaptionModeAccessPointIdentExternalTriggeringPointIdentAggregation Tags:atp.Status = shallBecomeMandatory«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+dataReceivePointByArgument0..*+ident0..1«atpVariation»+parameterAccess0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+dataReceivePointByValue0..*«atpVariation»+readLocalVariable0..*«atpVariation»+dataSendPoint0..*+externalTriggeringPoint0..*«atpVariation»«atpVariation»+dataWriteAccess0..*+modeSwitchPoint*«atpVariation»+modeAccessPoint*«atpVariation»+ident0..1+asynchronousServerCallResultPoint0..*«atpVariation»+serverCallPoint*«atpVariation»+internalTriggeringPoint0..*«atpVariation»«atpVariation»+dataReadAccess0..*Software Component Template
 AUTOSAR Release 4.2.2
@@ -50763,14 +46475,7 @@ Listing 13.1: Example for the deﬁnition of a RPT scenario
 <SHORT-NAME>RE</SHORT-NAME>
 <MODE-ACCESS-POINTS>
 
-733 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 
 <MODE-ACCESS-POINT>
 
@@ -50843,12 +46548,5 @@ ASCT/IB/RE/ident</TARGET-REF>
 </ELEMENTS>
 </AR-PACKAGE>
 
-734 of 905
 
-Document ID 062: AUTOSAR_TPS_SoftwareComponentTemplate
-
-— AUTOSAR CONFIDENTIAL —
-
-Software Component Template
-AUTOSAR Release 4.2.2
 

@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
         # 在生成内部类后，获取所有类的信息,全局列表
         all_classes_info = all_class_info_list
-        extract_inner_class =extract_inner_class_info_list
+        extract_inner_class = extract_inner_class_info_list
 
     # 生成objectfactory
     generate_object_factory(output_dir, package_name, element_complex_type_mappings, None)
@@ -59,7 +59,8 @@ if __name__ == "__main__":
         wrapper_class_names = collect_wrapper_class_names(all_classes_info)
 
         # 第二次遍历：正式生成 wrapper 类
-        generate_wrapper_classes(input_dir, all_classes_info, output_dir, wrapper_package_name, wrapper_class_names, package_name)
+        generate_wrapper_classes(input_dir, all_classes_info, output_dir, wrapper_package_name, wrapper_class_names,
+                                 package_name)
 
     # 将groups、attributeGroups、simpleTypes、complexTypes保存到metadata文件
     metadata_file_path = os.path.join(output_dir, 'metadata.json')

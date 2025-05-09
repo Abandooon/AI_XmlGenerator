@@ -166,14 +166,16 @@ It is possible to have several different BswImplementations referring to the sam
             </xsd:complexType>
          </xsd:element>
          <xsd:element maxOccurs="1" minOccurs="0" name="DEBUG-INFOS">
-            <xsd:annotation>
-               <xsd:documentation>Collects the debug info for this implementation.
-The upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was 1.</xsd:documentation>
-               <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.debugInfo";pureMM.maxOccurs="-1";pureMM.minOccurs="0";vh.latestBindingTime="preCompileTime"</xsd:appinfo>
-            </xsd:annotation>
+
             <xsd:complexType>
                <xsd:choice maxOccurs="unbounded" minOccurs="0">
-                  <xsd:element name="BSW-DEBUG-INFO" type="AR:BSW-DEBUG-INFO"/>
+                  <xsd:element name="BSW-DEBUG-INFO" type="AR:BSW-DEBUG-INFO">
+                    <xsd:annotation>
+                      <xsd:documentation>Collects the debug info for this implementation.
+The upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was 1.</xsd:documentation>
+                      <xsd:appinfo source="tags">mmt.qualifiedName="BswImplementation.debugInfo";pureMM.maxOccurs="-1";pureMM.minOccurs="0";vh.latestBindingTime="preCompileTime"</xsd:appinfo>
+                    </xsd:annotation>
+                  </xsd:element>
                </xsd:choice>
             </xsd:complexType>
          </xsd:element>
