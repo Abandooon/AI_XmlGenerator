@@ -1,410 +1,4 @@
-Software Component Template
-AUTOSAR Release 4.2.2
-
-1 Introduction
-
-1.1 Overview
-
-This document contains the speciﬁcation of the AUTOSAR Software-Component
-Template. Actually, it has been created as a supplement to the formal deﬁnition of
-the Software-Component Template by means of the AUTOSAR meta-model. In
-other words, this document in addition to the formal speciﬁcation provides introductory
-description and rationale for the part of the AUTOSAR meta-model relevant for the
-deﬁnition of software-components.
-
-In this context, the term software-component refers to a formally described piece of
-software existing that needs the AUTOSAR RTE [2] for execution.
-
-Please note that the general
-ideas behind the semantics of application software
-components have been described in the speciﬁcation of the Virtual Functional
-Bus [3]. The latter, however, represents conceptual work that strongly inﬂuences but
-does not totally govern the formal deﬁnition of software-components.
-
-Note further that this document does not provide any “best practice” recommendations
-of software-component modeling nor does it require or enforce a certain methodol
-ogy. Note however, that the methodology aspect is covered by the speciﬁcation of the
-AUTOSAR methodology [4].
-
-Although it is beyond any doubt reasonable to use a suitable AUTOSAR Authoring Tool
-for dealing with AUTOSAR software-components, this speciﬁcation does not make any
-assumptions nor does it give recommendations regarding the tooling. Please refer
-to [5] for more details about AUTOSAR Authoring Tools are supposed to work and
-interact.
-
-1.2 Scope
-
-As already mentioned in chapter 1.1, the Scope of this document is the description of
-AUTOSAR software-components. This work covers the following three aspects:
-
-• A general description of SwComponentTypes using PortPrototypes and
-PortInterfaces, i.e. this document deﬁnes the SwComponentType as an en
-tity which can be described through PortPrototypes which provide or require
-PortInterfaces.
-
-• A description of CompositionSwComponentTypes which are sub-systems
-consisting out of connected instances of software-components, i.e. software
-components may be deﬁned in the form of hierarchical subsystems which in turn
-consist of software-components again. The description of such hierarchical struc
-tures is in scope of this document.
-
-
-
-• A description of AtomicSwComponentType which is implemented as a piece of
-
-software that can be mapped to an AUTOSAR ECU.
-An AtomicSwComponentType therefore shows up in the ECU Software Archi
-tecture depicted in Figure 1.1.
-In this ﬁgure, the green (vertically striped) and
-blue (diagonally striped) borders show the aspects that are described by the
-Software-Component Template.
-
-Figure 1.1: Scope of this document in the ECU SW Architecture [6]
-
-Aspects of AUTOSAR Basic Software not relevant for the RTE are out of scope; these
-are covered by the Basic Software Module Description Template [7].
-
-Also, the document does not cover aspects of timing analysis with respect to the ex
-ecution of AUTOSAR software-components. This issue is explained in the Speci
-fication of Timing Extensions [8] as well as the corresponding requirements
-speciﬁcation [9].
-
-1.3 Organization of the Meta-Model
-
-Figure 1.2 sketches the overall structure of the meta-model which formally deﬁnes
-the vocabulary required to describe AUTOSAR software-components. As the diagram
-points out, other template speciﬁcations (e.g. ECU Resource Template [10] and
-System Template [11]) also use the same modeling approach in order to deﬁne an
-overall consistent model of AUTOSAR software description.
-
-
-
-The dashed arrows in the diagram describe dependencies in terms of
-import
-relationships between the packages within the meta-model. For example, the package
-SWComponentTemplate imports meta-classes deﬁned in the packages Generic
-Structure [12] and ECUResourceTemplate [10].
-
-Please note that this speciﬁcation document will (with some well-deﬁned exceptions)
-mostly discuss meta-model elements deﬁned in the package SWComponentTem
-plate.
-
-Figure 1.2: Structure of the meta-model
-
-For clariﬁcation, please note that the package GenericStructure contains some
-fundamental
-infrastructure meta-classes and common patterns that are described
-in [12]. As these are used by all other template speciﬁcation the dependency asso
-ciations are not depicted in the diagram for the sake of clarity.
-
-
-
-
-SWComponentTemplateSystemTemplateECUCDescriptionTemplateBswModuleTemplateECUCParameterDefTemplateGenericStructureAll other top-level packages aggregate meta-classes from "Generic Structure"CommonStructureAutosarTopLevelStructureThis package contains AUTOSAR, the root of an autosar model. It aggregates metaclasses from the template packages.StandardizationTemplateFeatureModelTemplateDiagnosticExtractEcuResourceTemplateSoftware Component Template
-AUTOSAR Release 4.2.2
-
-1.4 Structure of the Template
-
-AUTOSAR software components are described on three distinctive levels, as shown in
-Figure 1.3.
-
-Figure 1.3: The description of a software component is done on three levels
-
-1.4.1 Description of Software Components on VFB Level
-
-The highest (most abstract) description level is the Virtual Functional Bus [3].
-In this document SwComponentTypes are described with the means of DataTypes,
-PortInterfaces, PortPrototypes, and connections between them. At this level,
-the fundamental communication properties of components and their communication
-relationships among each other are expressed.
-
-In the diagram depicted in Figure 1.3, this aspect is expressed by means of the de
-scription of AtomicSwComponentType1.
-
-1.4.2 Description of Software Components on RTE Level
-
-The middle level allows for behavior description of a given AtomicSwCompo
-nentType.
-This so-called SwcInternalBehavior is expressed according to
-AUTOSAR RTE concepts, e.g. RTEEvents and in terms of schedulable units, so-called
-RunnableEntitys.
-
-For instance, for a ClientServerOperation deﬁned in the scope of a particular
-ClientServerInterface on the VFB, the behavior speciﬁes which RunnableEn
-
-1To avoid clutter and require additional up-front information about the meta model, Composition
-
-SwComponentTypes have not been added to the diagram.
-
-
-
-
-SwcInternalBehaviorAtomicSwComponentTypeVirtual Functional Bus (VFB) levelRun-Time-Environment (RTE) levelImplementation levelSwcImplementation«atpVariation,atpSplitable»+internalBehavior0..1+behavior1Software Component Template
-AUTOSAR Release 4.2.2
-
-tity is activated as a consequence of the invocation of the speciﬁc ClientServer
-Operation.
-
-As sketched by Figure 1.3, there may be zero or one SwcInternalBehaviors ag
-gregated by a given AtomicSwComponentType. In response to the existence of the
-stereotype (cid:28)atpSplitable(cid:29) at the aggregation it is possible to distribute the ag
-gregation over several physical ﬁles.
-
-1.4.3 Descriptions of Software Components on Implementation Level
-
-The lowest level of description speciﬁes the implementation (i.e. in terms of the
-the SwcImplementation) of a given SwcInternalBe
-AUTOSAR meta-model:
-havior description. More precisely, the RunnableEntitys of such a behavior are
-mapped to code (source code or object code).
-
-There may be different SwcImplementations that reference a speciﬁc SwcInter
-nalBehavior description, e.g. in different programming languages, or with differently
-optimized code.
-
-Please note that Implementation has been described in previous versions of this
-document. In response to the evolution of the AUTOSAR concept the description of the
-Implementation aspect has been moved to the “CommonStructure” (see Figure 1.2)
-because it is also used for creating the Basic Software Module Description
-Template [7].
-
-However, the SwcImplementation still remains in the scope of this document as it
-exclusively covers aspects of software-components rather than basic software mod
-ules.
-
-1.5 Abbreviations
-
-The following table contains a list of abbreviations used in the scope of this document
-along with the spelled-out meaning of each of the abbreviations.
-
-Abbreviation
-API
-BOM
-CAN
-CSE
-DCM
-DCY
-DEM
-DID
-DTC
-DoIp
-ECU
-EPROM
-
-meaning
-Application Programming Interface
-Byte Order Mark
-Controller Area Network
-Codes for Scaling Units
-Diagnostics Communication Manager
-Driving Cycle
-Diagnostics Event Manager
-Diagnostic Identiﬁer
-Diagnostic Trouble Code
-Diagnostics over IP
-Electrical Control Unit
-Erasable Programmable Read-Only Memory
-
-
-
-EEPROM
-FID
-GID
-ID
-IO
-IP
-IUMPR
-ISO
-MAC
-MCAL
-LIN
-MCD
-NM
-NV
-OBD
-OEM
-OS
-PDU
-PID
-PTO
-RA
-RAM
-ROM
-RPT
-RTE
-SWC
-TID
-UDS
-UML
-VFB
-WWH-OBD
-XML
-XSD
-
-Electrically Erasable Programmable Read-Only Memory
-Function Identiﬁer
-Group Identiﬁer
-Identiﬁer
-Input/Output
-Internet Protocol
-In-Use Monitor Performance Ratio
-International Standardization Organization
-Message Authentication Code
-Micro-Controller Abstraction
-Local Interconnect Network
-Measurement, Calibration, Diagnostics
-Network Management
-Non-Volatile
-On-Board Diagnostic
-Original Equipment Manufacturer
-Operating System
-Protocol Data Unit
-Parameter Identiﬁer
-Power Take Off
-Routing Activation
-Random Access Memory
-Read-Only Memory
-Rapid Prototyping
-Runtime Environment
-Software Component
-Test Identiﬁer
-Uniﬁed Diagnostic Services
-Uniﬁed Modeling Language
-Virtual Functional Bus
-World-Wide Harmonized On-Board Diagnostics
-Extensible Markup Language
-XML Schema Deﬁnition
-
-Table 1.1: Abbreviations used in the scope of this Document
-
-1.6 Document Conventions
-
-Technical terms are typeset in mono spaced font, e.g. PortPrototype. As a general
-rule, plural forms of technical terms are created by adding "s" to the singular form, e.g.
-PortPrototypes. By this means the document resembles terminology used in the
-AUTOSAR XML Schema.
-
-This document contains constraints in textual form that are distinguished from the rest
-of the text by a unique numerical constraint ID, a headline, and the actual constraint
-text starting after the (cid:100) character and terminated by the (cid:99) character.
-
-The purpose of these constraints is to literally constrain the interpretation of the
-AUTOSAR meta-model such that it is possible to detect violations of the standardized
-behavior implemented in an instance of the meta-model (i.e. on M1 level).
-
-
-
-Makers of AUTOSAR tools are encouraged to add the numerical ID of a constraint that
-corresponds to an M1 modeling issue as part of the diagnostic message issued by the
-tool.
-
-The attributes of the classes introduced in this document are listed in form of class
-tables. They have the form shown in the example of the top-level element AUTOSAR:
-
-Class
-Package
-Note
-
-AUTOSAR
-M2::AUTOSARTemplates::AutosarTopLevelStructure
-Root element of an AUTOSAR description, also the root element in corresponding
-XML documents.
-
-Base
-Attribute
-adminData
-
-Tags: xml.globalElement=true
-ARObject
-Datatype
-AdminData
-
-Mul. Kind Note
-aggr
-0..1
-
-This represents the administrative data of an
-Autosar ﬁle.
-
-arPackage
-
-ARPackage
-
-*
-
-aggr
-
-introductio
-n
-
-Documentation
-Block
-
-0..1
-
-aggr
-
-Tags: xml.sequenceOffset=10
-This is the top level package in an AUTOSAR
-model.
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortName, variation
-Point.shortLabel
-vh.latestBindingTime=blueprintDerivationTime
-xml.sequenceOffset=30
-This represents an introduction on the Autosar ﬁle.
-It is intended for example to rpresent disclaimers
-and legal notes.
-
-Tags: xml.sequenceOffset=20
-
-Table 1.2: AUTOSAR
-
-The ﬁrst rows in the table have the following meaning:
-
-Class: The name of the class as deﬁned in the UML model.
-
-Package: The UML package the class is deﬁned in. This is only listed to help locating
-the class in the overall meta model.
-
-Note: The comment the modeler gave for the class (class note). Stereotypes and UML
-tags of the class are also denoted here.
-
-Base Classes: If applicable, the list of direct base classes.
-
-The headers in the table have the following meaning:
-
-Attribute: The name of an attribute of the class. Note that AUTOSAR does not distin
-guish between class attributes and owned association ends.
-
-Datatype: The datatype of an attribute of the class.
-
-
-
-Mul.: The assigned multiplicity of the attribute, i.e. how many instances of the given
-data type are associated with the attribute.
-
-Kind: Speciﬁes, whether the attributes is aggregated in the class (aggr), an UML
-attribute in the class (attr), or just referenced by it (ref).
-Instance references are
-also indicated (iref) in this ﬁeld.
-
-Note: The comment the modeler gave for the class attribute (role note). Stereotypes
-and UML tags of the class are also denoted here.
-
-The verbal forms for the expression of obligation speciﬁed in [TPS_STDT_00053] shall
-be used to indicate requirements, see Standardization Template, chapter Support for
-Traceability ([1]).
-
-The representation of requirements in AUTOSAR documents follows the table speciﬁed
-in [TPS_STDT_00078], see Standardization Template, chapter Support for Traceability
-([1]).
-
-
-
-
-
+#@chapter-2
 2 Conceptual Aspects
 
 2.1 Introduction
@@ -502,8 +96,7 @@ Datatype
 
 
 
-CurveMapAxisCurveMapAxisSoftware Component Template
-AUTOSAR Release 4.2.2
+CurveMapAxisCurveMapAxis
 
 Attribute
 constantM
@@ -643,8 +236,7 @@ ternalBehavior in sharedParameter role (see [TPS_SWCT_01418]).
 
 
 
-ParameterInterfaceAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpPrototypeDataPrototypeDataInterfaceAbstractProvidedPortPrototypeAbstractRequiredPortPrototype«isOfType»+requiredInterface1{redefinesatpType}+/swDataDefProps0..1«isOfType»+providedInterface1{redefinesatpType}+parameter1..*Software Component Template
-AUTOSAR Release 4.2.2
+ParameterInterfaceAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpPrototypeDataPrototypeDataInterfaceAbstractProvidedPortPrototypeAbstractRequiredPortPrototype«isOfType»+requiredInterface1{redefinesatpType}+/swDataDefProps0..1«isOfType»+providedInterface1{redefinesatpType}+parameter1..*
 
 When the SwcInternalBehavior is aggregated by an AtomicSwComponentType
 the actual calibration parameters of the ParameterDataPrototype is the same for
@@ -703,8 +295,7 @@ not ofﬁcially deﬁned by the C language) for the purpose of inter-Runnable co
 
 
 
-ParameterDataPrototypeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarParameterRefAtpStructureElementIdentifiableParameterAccessSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementInternalBehaviorAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+constantMemory0..*+accessedParameter1+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»«instanceRef»+autosarParameter0..1+localParameter0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+parameterAccess0..*Software Component Template
-AUTOSAR Release 4.2.2
+ParameterDataPrototypeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarParameterRefAtpStructureElementIdentifiableParameterAccessSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementInternalBehaviorAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+constantMemory0..*+accessedParameter1+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»«instanceRef»+autosarParameter0..1+localParameter0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+parameterAccess0..*
 
 This is technically feasible because it is always guaranteed that the RunnableEn
 titys within an AtomicSwComponentType are always gathered at a speciﬁc pro
@@ -1035,8 +626,7 @@ Figure 2.6: Speciﬁcation of data type mapping for CompositionSwComponentType
 
 
 
-SwComponentTypeCompositionSwComponentTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetARElementConstantSpecificationMappingSet«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+SwComponentTypeCompositionSwComponentTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetARElementConstantSpecificationMappingSet«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*
 
 2.6 PRPortPrototype
 
@@ -1073,8 +663,7 @@ straction in the context of a CompositionSwComponentType.
 
 
 
-  Software Component Template
-AUTOSAR Release 4.2.2
+  
 
 In other words, it is impossible to fully specify the semantics of the otherwise self
 contained SwComponentType.
@@ -1099,8 +688,7 @@ same piece of data.
 
 
 
-  Software Component Template
-AUTOSAR Release 4.2.2
+  
 
 Figure 2.9: Use Case 3 for the existence of PRPortPrototype
 
@@ -1132,8 +720,7 @@ networks is reduced and the ECU can go into power saving modes.
 
 
 
-  Software Component Template
-AUTOSAR Release 4.2.2
+  
 
 When communication via communication networks is required the mode Pretended
 Networking shall be left by request of a mode change to Normal Mode. (cid:99)()
@@ -1389,8 +976,7 @@ Data Types.
 
 
 
-(a) (b) (c) (d) Software Component Template
-AUTOSAR Release 4.2.2
+(a) (b) (c) (d) 
 
 In other words, aspects of the implementation of this kind of data type is intentionally
 abstracted as much as possible in order to support the idea behind the deﬁnition of
@@ -1469,11 +1055,9 @@ The details of how ImplementationDataTypes need to be modeled for the imple
 mentation of Variable-Size Array Data Types can be found in chapter 5.2.5
 and a couple of examples is available in the appendix E.1.
 
+#@chapter-3
 
-
-3 Overview: Software Components, Ports, and
-
-Interfaces
+3 Overview: Software Components, Ports, and Interfaces
 
 3.1 Introduction
 
@@ -1723,8 +1307,7 @@ Annotation
 TriggerPortAnn
 otation
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Mul. Kind Note
 aggr
@@ -1783,8 +1366,7 @@ or data.
 
 
 
-PPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePRPortPrototypeAbstractRequiredPortPrototypeAbstractProvidedPortPrototypeSoftware Component Template
-AUTOSAR Release 4.2.2
+PPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePRPortPrototypeAbstractRequiredPortPrototypeAbstractProvidedPortPrototype
 
 • A provide-port (or PPortPrototype) on the other hand provides services or
 
@@ -1984,8 +1566,7 @@ more details like InternalBehavior. (cid:99)()
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]PRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefinesatpType}Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]PRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefinesatpType}
 
 Class
 Package
@@ -2046,8 +1627,7 @@ Figure 3.4: Overview of Component Types
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeCompositionSwComponentTypeAtpPrototypeSwComponentPrototypeSensorActuatorSwComponentTypeParameterSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentType«atpVariation» Tags:vh.latestBindingTime =postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeCompositionSwComponentTypeAtpPrototypeSwComponentPrototypeSensorActuatorSwComponentTypeParameterSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentType«atpVariation» Tags:vh.latestBindingTime =postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}
 
 The ApplicationSwComponentType is a specialization of AtomicSwComponent
 Type for representing hardware-independent application software. The Parameter
@@ -2170,8 +1750,7 @@ take over the value of
 
 
 
-SwComponentTypeParameterSwComponentTypeInstantiationDataDefPropsARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSet«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+dataTypeMapping0..*«atpVariation»+instantiationDataDefProps0..*«atpSplitable»+constantMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+SwComponentTypeParameterSwComponentTypeInstantiationDataDefPropsARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSet«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+dataTypeMapping0..*«atpVariation»+instantiationDataDefProps0..*«atpSplitable»+constantMapping0..*
 
 AtomicSwComponentType. For the generation of symbols for RunnableEntitys
 [TPS_SWCT_01001] shall be observed. (cid:99)()
@@ -2202,8 +1781,7 @@ Figure 3.6: Overview of AtomicSwComponentType
 
 
 
-SwComponentTypeAtomicSwComponentTypeSymbolPropsSensorActuatorSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentTypeReferrableImplementationProps+ symbol  :CIdentifier«atpSplitable»+symbolProps0..1Software Component Template
-AUTOSAR Release 4.2.2
+SwComponentTypeAtomicSwComponentTypeSymbolPropsSensorActuatorSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentTypeReferrableImplementationProps+ symbol  :CIdentifier«atpSplitable»+symbolProps0..1
 
 3.3 Composition
 
@@ -2244,8 +1822,7 @@ in the ECU software.
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuildCompositionSwComponentType+component0..*«atpVariation,atpSplitable»*«isOfType»+type1{redefinesatpType}Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuildCompositionSwComponentType+component0..*«atpVariation,atpSplitable»*«isOfType»+type1{redefinesatpType}
 
 3.3.2 SwComponentPrototype
 
@@ -2475,8 +2052,7 @@ a CompositionSwComponentType also exposes PortPrototypes to the out
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeCompositionSwComponentTypeAtpStructureElementSwConnectorAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementIdentifiablePortGroup«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation»+portGroup0..*+port0..*«atpVariation,atpSplitable»+connector*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+component0..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeCompositionSwComponentTypeAtpStructureElementSwConnectorAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementIdentifiablePortGroup«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation»+portGroup0..*+port0..*«atpVariation,atpSplitable»+connector*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+component0..*«atpVariation,atpSplitable»
 
 However,
 
@@ -2767,8 +2343,7 @@ Table 3.16: PassThroughSwConnector
 
 
 
-TriggerRunA1Application SW ComponentRTOComposition SW ComponentSoftware Component Template
-AUTOSAR Release 4.2.2
+TriggerRunA1Application SW ComponentRTOComposition SW Component
 
 Figure 3.10: Connectors
 
@@ -2789,8 +2364,7 @@ Figure 3.11: Use case for PassThroughSwConnector (II)
 
 
 
-AtpStructureElementSwConnectorAssemblySwConnectorDelegationSwConnectorAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePassThroughSwConnector+requiredOuterPort1+providedOuterPort1«instanceRef»+provider0..1«instanceRef»+requester0..1+outerPort1«instanceRef»+innerPort1Application SW ComponentComposition SW ComponentPortInterfaceMappingSoftware Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementSwConnectorAssemblySwConnectorDelegationSwConnectorAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePassThroughSwConnector+requiredOuterPort1+providedOuterPort1«instanceRef»+provider0..1«instanceRef»+requester0..1+outerPort1«instanceRef»+innerPort1Application SW ComponentComposition SW ComponentPortInterfaceMapping
 
 [TPS_SWCT_01507] The role of PassThroughSwConnector (cid:100) PassThrough
 SwConnector can be taken to connect PortPrototypes owned by the same Com
@@ -2874,8 +2448,7 @@ Table 3.17: InstantiationRTEEventProps
 
 
 
-AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInstantiationTimingEventProps+ period  :TimeValueTimingEvent+ period  :TimeValueCompositionSwComponentTypeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation» Tags:vh.latestBindingTime =codeGenerationTime«instanceRef»+refinedEvent1«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+event*«atpVariation,atpSplitable»+startOnEvent0..1+trigger1+waitPoint*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInstantiationTimingEventProps+ period  :TimeValueTimingEvent+ period  :TimeValueCompositionSwComponentTypeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation» Tags:vh.latestBindingTime =codeGenerationTime«instanceRef»+refinedEvent1«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+event*«atpVariation,atpSplitable»+startOnEvent0..1+trigger1+waitPoint*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1
 
 InstantiationTimingEventProps
 
@@ -3003,8 +2576,7 @@ Table 3.18: PortInterface
 
 
 
-SenderReceiverInterfaceNvDataInterfaceParameterInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]Software Component Template
-AUTOSAR Release 4.2.2
+SenderReceiverInterfaceNvDataInterfaceParameterInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]
 
 Class
 Package
@@ -3067,8 +2639,7 @@ by a ParameterInterface is supported.
 
 
 
-SenderReceiverInterfaceClientServerInterfaceAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableClientServerOperationAutosarDataPrototypeArgumentDataPrototypeAtpPrototypeModeDeclarationGroupPrototypeParameterInterfaceAutosarDataPrototypeParameterDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceTriggerInterfaceAtpStructureElementIdentifiableTriggerModeSwitchInterfaceNvDataInterfaceDataInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+dataElement1..*+nvData1..*+trigger1..*+operation1..*«atpVariation»+modeGroup1+argument*{ordered}«atpVariation»+parameter1..*Software Component Template
-AUTOSAR Release 4.2.2
+SenderReceiverInterfaceClientServerInterfaceAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableClientServerOperationAutosarDataPrototypeArgumentDataPrototypeAtpPrototypeModeDeclarationGroupPrototypeParameterInterfaceAutosarDataPrototypeParameterDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceTriggerInterfaceAtpStructureElementIdentifiableTriggerModeSwitchInterfaceNvDataInterfaceDataInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+dataElement1..*+nvData1..*+trigger1..*+operation1..*«atpVariation»+modeGroup1+argument*{ordered}«atpVariation»+parameter1..*
 
 [constr_1137] Applicability of ParameterInterface (cid:100) A PPortPrototype typed
 by a ParameterInterface can only be owned by a ParameterSwComponent
@@ -3112,8 +2683,7 @@ tribute isService is set to true. (cid:99)()
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]«enumeration»ServiceProviderEnum basicSoftwareModeManager comManager cryptoServiceManager diagnosticCommunicationManager diagnosticEventManager diagnosticLogAndTrace ecuManager functionInhibitionManager nonVolatileRamManager syncBaseTimeManager watchDogManager anyStandardized vendorSpecific developmentErrorTracer operatingSystemSoftware Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]«enumeration»ServiceProviderEnum basicSoftwareModeManager comManager cryptoServiceManager diagnosticCommunicationManager diagnosticEventManager diagnosticLogAndTrace ecuManager functionInhibitionManager nonVolatileRamManager syncBaseTimeManager watchDogManager anyStandardized vendorSpecific developmentErrorTracer operatingSystem
 
 Enumeration ServiceProviderEnum
 Package
@@ -3197,7 +2767,7 @@ Please ﬁnd more details about the relation of PortInterfaces to AUTOSAR servic
 in chapter 11.
 
 
-
+#@chapter-4
 4 Details: Software Components, Ports, and
 
 Interfaces
@@ -3438,8 +3008,7 @@ close to the reader’s idea of a signal. However, different kinds of signals ha
 
 
 
-SenderReceiverInterfaceVariableDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]DataPrototypeAutosarDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementDataInterface+invalidationPolicy0..*+dataElement1..*+dataElement1Software Component Template
-AUTOSAR Release 4.2.2
+SenderReceiverInterfaceVariableDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]DataPrototypeAutosarDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementDataInterface+invalidationPolicy0..*+dataElement1..*+dataElement1
 
 meaning in the AUTOSAR concept, especially in the context of the AUTOSAR System
 Template [11].
@@ -3618,8 +3187,7 @@ The aggregation represents a variation point. (cid:99)(RS_SWCT_03141)
 
 
 
-ArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]ClientServerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpStructureElementIdentifiableClientServerOperationDataPrototypeAutosarDataPrototype«enumeration»ArgumentDirectionEnum in out inout«enumeration»ServerArgumentImplPolicyEnum useArgumentType useArrayBaseType useVoid«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTimeARElementAtpTypeAutosarDataType+operation1..*«atpVariation»«atpVariation»+typeBlueprint0..1+argument* {ordered}«atpVariation»«isOfType»+type1{redefines atpType}Software Component Template
-AUTOSAR Release 4.2.2
+ArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]ClientServerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpStructureElementIdentifiableClientServerOperationDataPrototypeAutosarDataPrototype«enumeration»ArgumentDirectionEnum in out inout«enumeration»ServerArgumentImplPolicyEnum useArgumentType useArrayBaseType useVoid«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTimeARElementAtpTypeAutosarDataType+operation1..*«atpVariation»«atpVariation»+typeBlueprint0..1+argument* {ordered}«atpVariation»«isOfType»+type1{redefines atpType}
 
 Class
 Package
@@ -3974,8 +3542,7 @@ terface, ModeSwitchInterface, or TriggerInterface
 
 
 
-Server RunnableEntityn = 2n = 3n = 4{A}{B}{C}{A}{B}{C}Software Component Template
-AUTOSAR Release 4.2.2
+Server RunnableEntityn = 2n = 3n = 4{A}{B}{C}{A}{B}{C}
 
 [constr_1205] Supported connections by DelegationSwConnector for Port
 Prototypes typed by a ClientServerInterface, ModeSwitchInterface, or
@@ -4076,8 +3643,7 @@ value shall be used for indicating an application error.
 
 
 
-PortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+operation1..*«atpVariation»+interface10..*+possibleError0..*+possibleError0..*Software Component Template
-AUTOSAR Release 4.2.2
+PortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+operation1..*«atpVariation»+interface10..*+possibleError0..*+possibleError0..*
 
 Class
 Package
@@ -4271,8 +3837,7 @@ tentatively a Trigger source ﬁres Triggers faster than they can be processed o
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]TriggerInterfaceAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]MultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :Integer+trigger1..*+triggerPeriod0..1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]TriggerInterfaceAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]MultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :Integer+trigger1..*+triggerPeriod0..1
 
 the side of the Trigger sink. To support this use case it is possible to process trigger
 event communication in a queued manner.
@@ -4519,8 +4084,7 @@ AutosarDataTypes. (cid:99)(RS_SWCT_03202, RS_SWCT_03203)
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]PortInterfaceModeSwitchInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+initialMode1+modeDeclaration1..*«atpVariation»«isOfType»+type1{redefines atpType}+modeGroup1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]PortInterfaceModeSwitchInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+initialMode1+modeDeclaration1..*«atpVariation»«isOfType»+type1{redefines atpType}+modeGroup1
 
 However, for semantic consistency with the ﬁrst use case, a communicated mode re
 quest shall also be mapped to a corresponding ModeDeclarationGroup. This can
@@ -4580,8 +4144,7 @@ ref
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapModeInterfaceMappingAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSet«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+portInterfaceMapping1..*«atpVariation»+modeRequestTypeMap0..*+modeGroup1+implementationDataType1+secondModeGroup1+modeMapping1+firstModeGroup1«isOfType»+type1{redefinesatpType}Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapModeInterfaceMappingAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSet«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+portInterfaceMapping1..*«atpVariation»+modeRequestTypeMap0..*+modeGroup1+implementationDataType1+secondModeGroup1+modeMapping1+firstModeGroup1«isOfType»+type1{redefinesatpType}
 
 Attribute
 
@@ -4614,8 +4177,7 @@ egory VALUE.
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapAtpStructureElementInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypePPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceModeSwitchInterfaceAbstractRequiredPortPrototypeRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeGroup1«atpSplitable»+dataTypeMapping0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+implementationDataType1«isOfType»+type1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefines atpType}«isOfType»+requiredInterface1{redefines atpType}+modeRequestTypeMap0..*«isOfType»+providedInterface1{redefines atpType}+firstModeGroup1+secondModeGroup1+modeGroup1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeModeDeclarationGroupPrototypeMappingAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetModeRequestTypeMapAtpStructureElementInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypePPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceModeSwitchInterfaceAbstractRequiredPortPrototypeRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeGroup1«atpSplitable»+dataTypeMapping0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+implementationDataType1«isOfType»+type1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefines atpType}«isOfType»+requiredInterface1{redefines atpType}+modeRequestTypeMap0..*«isOfType»+providedInterface1{redefines atpType}+firstModeGroup1+secondModeGroup1+modeGroup1
 
 The baseType referenced by the ImplementationDataType shall have set the
 value of the attribute BaseTypeDirectDefinition.baseTypeEncoding to NONE.
@@ -4720,8 +4282,7 @@ reusable ARElement (cid:100) The mapping is described separately from the SwConn
 
 
 
-DataPrototypeMappingIdentifiableDataTransformation+ executeDespiteDataUnavailability  :Boolean+firstToSecondDataTransformation0..1Software Component Template
-AUTOSAR Release 4.2.2
+DataPrototypeMappingIdentifiableDataTransformation+ executeDespiteDataUnavailability  :Boolean+firstToSecondDataTransformation0..1
 
 tor as reusable ARElement. A set of PortInterfaceMappings is grouped in a
 PortInterfaceMappingSet. (cid:99)(RS_SWCT_03210)
@@ -4894,8 +4455,7 @@ where the swImplPolicy is set differently. (cid:99)()
 
 
 
-ARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSetAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingTriggerInterfaceMappingModeInterfaceMappingClientServerInterfaceMappingVariableAndParameterInterfaceMappingAtpStructureElementSwConnector«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+mapping0..1+portInterfaceMapping1..*«atpVariation»Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintablePortInterfaceMappingSetAtpBlueprintAtpBlueprintableIdentifiablePortInterfaceMappingTriggerInterfaceMappingModeInterfaceMappingClientServerInterfaceMappingVariableAndParameterInterfaceMappingAtpStructureElementSwConnector«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+mapping0..1+portInterfaceMapping1..*«atpVariation»
 
 This is required to fulﬁll the compatibility rules deﬁned in table 6.1
 
@@ -4921,8 +4481,7 @@ Data Interface elements
 
 
 
-VariableDataPrototypeDataPrototypeAutosarDataPrototypeParameterDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceParameterInterfaceDataInterfaceNvDataInterfacePortInterfaceMappingVariableAndParameterInterfaceMappingDataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]+dataElement1..*+nvData1..*+textTableMapping0..2+secondDataPrototype1+firstDataPrototype1+dataMapping1..*+parameter1..*Software Component Template
-AUTOSAR Release 4.2.2
+VariableDataPrototypeDataPrototypeAutosarDataPrototypeParameterDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceParameterInterfaceDataInterfaceNvDataInterfacePortInterfaceMappingVariableAndParameterInterfaceMappingDataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]+dataElement1..*+nvData1..*+textTableMapping0..2+secondDataPrototype1+firstDataPrototype1+dataMapping1..*+parameter1..*
 
 Class
 Package
@@ -5126,8 +4685,7 @@ Figure 4.12: Mapping of ClientServerInterface elements and mapping of arguments
 
 
 
-AtpStructureElementIdentifiableClientServerOperationPortInterfaceClientServerInterfacePortInterfaceMappingClientServerInterfaceMappingClientServerOperationMappingClientServerApplicationErrorMappingIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+possibleError0..*+secondApplicationError1+firstApplicationError1+secondOperation1+firstOperation1+operationMapping1..*+operation1..*«atpVariation»0..*+possibleError0..*+errorMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableClientServerOperationPortInterfaceClientServerInterfacePortInterfaceMappingClientServerInterfaceMappingClientServerOperationMappingClientServerApplicationErrorMappingIdentifiableApplicationError+ errorCode  :Integer«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+possibleError0..*+secondApplicationError1+firstApplicationError1+secondOperation1+firstOperation1+operationMapping1..*+operation1..*«atpVariation»0..*+possibleError0..*+errorMapping0..*
 
 Figure 4.13: Mapping of ArgumentDataPrototypes
 
@@ -5176,8 +4734,7 @@ Table 4.25: ClientServerInterfaceMapping
 
 
 
-TextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]ArgumentDataPrototypePortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationClientServerOperationMappingDataPrototypeMappingDataPrototypeAutosarDataPrototype«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+secondDataPrototype1+firstDataPrototype1+argumentMapping0..*+textTableMapping0..2+argument*{ordered}«atpVariation»1+operation1..*«atpVariation»+interface1+secondOperation1+firstOperation1Software Component Template
-AUTOSAR Release 4.2.2
+TextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]ArgumentDataPrototypePortInterfaceClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationClientServerOperationMappingDataPrototypeMappingDataPrototypeAutosarDataPrototype«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+secondDataPrototype1+firstDataPrototype1+argumentMapping0..*+textTableMapping0..2+argument*{ordered}«atpVariation»1+operation1..*«atpVariation»+interface1+secondOperation1+firstOperation1
 
 Class
 Package
@@ -5426,8 +4983,7 @@ Base
 Attribute
 firstMode
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 plicable set of ModeDeclarationMappings for the connection of ModeDeclara
 tionGroupPrototypes typed by ModeDeclarationGroups with differently named
@@ -5628,8 +5184,7 @@ RS_SWCT_03135)
 
 
 
-AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]TriggerMappingPortInterfaceMappingTriggerInterfaceMappingPortInterfaceTriggerInterface+trigger1..*+secondTrigger1+triggerMapping1..*+firstTrigger1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]TriggerMappingPortInterfaceMappingTriggerInterfaceMappingPortInterfaceTriggerInterface+trigger1..*+secondTrigger1+triggerMapping1..*+firstTrigger1
 
 This ability can be used if e.g. dataElements on the sender and receiver side are
 typed by different ApplicationRecordDataTypes.
@@ -5683,8 +5238,7 @@ i.e.
 
 
 
-DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]SubElementMappingSubElementRefImplementationDataTypeSubElementRefApplicationCompositeDataTypeSubElementRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]DataPrototypeApplicationCompositeElementDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2«instanceRef»+applicationCompositeElement1+textTableMapping0..2«atpVariation»+firstElement0..1«atpVariation»+secondElement0..1«atpVariation»+subElement 0..*{ordered}+subElementMapping0..*«instanceRef»+implementationDataTypeElement1Software Component Template
-AUTOSAR Release 4.2.2
+DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]SubElementMappingSubElementRefImplementationDataTypeSubElementRefApplicationCompositeDataTypeSubElementRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]DataPrototypeApplicationCompositeElementDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2«instanceRef»+applicationCompositeElement1+textTableMapping0..2«atpVariation»+firstElement0..1«atpVariation»+secondElement0..1«atpVariation»+subElement 0..*{ordered}+subElementMapping0..*«instanceRef»+implementationDataTypeElement1
 
 a primitive DataPrototype on the required side. For this purpose the multiplicity of
 the firstElement shall be set to 1 and the multiplicity of the secondElement shall
@@ -5882,8 +5436,7 @@ ally, the targetDataPrototype.
 
 
 
-ApplicationCompositeElementDataPrototypeAtpInstanceRefApplicationCompositeElementInPortInterfaceInstanceRefAutosarDataPrototypeAtpPrototypeDataPrototypeApplicationCompositeDataTypeSubElementRefPortInterfaceDataInterfaceSubElementRef«instanceRef»+applicationCompositeElement1+applicationCompositeElement1«atpDerived»+base1{subsetsatpBase}+targetDataPrototype1{subsetsatpTarget}+rootDataPrototype1{subsetsatpContextElement}+contextDataPrototype0..*{subsetsatpContextElement}Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationCompositeElementDataPrototypeAtpInstanceRefApplicationCompositeElementInPortInterfaceInstanceRefAutosarDataPrototypeAtpPrototypeDataPrototypeApplicationCompositeDataTypeSubElementRefPortInterfaceDataInterfaceSubElementRef«instanceRef»+applicationCompositeElement1+applicationCompositeElement1«atpDerived»+base1{subsetsatpBase}+targetDataPrototype1{subsetsatpTarget}+rootDataPrototype1{subsetsatpContextElement}+contextDataPrototype0..*{subsetsatpContextElement}
 
 Figure 4.18: Implementation of the InstanceRef for the mapping of elements of compos
 ite implementation data types
@@ -5908,8 +5461,7 @@ given composite AutosarDataType. (cid:99)(RS_SWCT_03210)
 
 
 
-IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ArVariableInImplementationDataInstanceRefVariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]SubElementRefImplementationDataTypeSubElementRef«instanceRef»+implementationDataTypeElement1+implementationDataTypeElement1«atpVariation»+subElement0..*{ordered}«isOfType»+type1{redefinesatpType}+rootVariableDataPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1«atpVariation»+subElement 0..*{ordered}Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ArVariableInImplementationDataInstanceRefVariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]SubElementRefImplementationDataTypeSubElementRef«instanceRef»+implementationDataTypeElement1+implementationDataTypeElement1«atpVariation»+subElement0..*{ordered}«isOfType»+type1{redefinesatpType}+rootVariableDataPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1«atpVariation»+subElement 0..*{ordered}
 
 4.3.2.1 Linear Data Scaling
 
@@ -6319,8 +5871,7 @@ egory TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and BITFIELD_TEXTTABLE
 
 
 
-DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]TextTableValuePair«atpVariation»+ firstValue  :Numerical+ secondValue  :NumericalDataPrototypeAutosarDataPrototype«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2+valuePair0..*+secondDataPrototype1+firstDataPrototype1Software Component Template
-AUTOSAR Release 4.2.2
+DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]TextTableValuePair«atpVariation»+ firstValue  :Numerical+ secondValue  :NumericalDataPrototypeAutosarDataPrototype«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2+valuePair0..*+secondDataPrototype1+firstDataPrototype1
 
 4.4 Port Annotation
 
@@ -6343,8 +5894,7 @@ Figure 4.20: Application Level Port Annotations Overview
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotationconstraints{"port's interface is a SenderReceiverInterface"}GeneralAnnotationIoHwAbstractionServerAnnotationconstraints{"port's interface is a client/server interface using the operations GET and SET"}GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}GeneralAnnotationDelegatedPortAnnotationconstraints{aggregating PortPrototype is a port of a CompositionSwComponentType (DelegatedPort)}GeneralAnnotationModePortAnnotationconstraints{"The corresponding port interface shall be a ModeInterface."}GeneralAnnotationNvDataPortAnnotationconstraints{"The corresponding port interface shall be a NvDataInterface."}GeneralAnnotationTriggerPortAnnotationconstraints{"The corresponding port interface shall be a TriggerInterface."}GeneralAnnotationClientServerAnnotationconstraints{"The corresponding PortInterface shall be a ClientServerInterface."}«atpVariation» Tags:vh.latestBindingTime = preCompileTime+senderReceiverAnnotation0..*+parameterPortAnnotation0..*+ioHwAbstractionServerAnnotation0..*+failureMonitoring0..1+port0..*«atpVariation,atpSplitable»+clientServerAnnotation0..*+nvDataPortAnnotation0..*+modePortAnnotation0..*+triggerPortAnnotation0..*+delegatedPortAnnotation0..1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotationconstraints{"port's interface is a SenderReceiverInterface"}GeneralAnnotationIoHwAbstractionServerAnnotationconstraints{"port's interface is a client/server interface using the operations GET and SET"}GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}GeneralAnnotationDelegatedPortAnnotationconstraints{aggregating PortPrototype is a port of a CompositionSwComponentType (DelegatedPort)}GeneralAnnotationModePortAnnotationconstraints{"The corresponding port interface shall be a ModeInterface."}GeneralAnnotationNvDataPortAnnotationconstraints{"The corresponding port interface shall be a NvDataInterface."}GeneralAnnotationTriggerPortAnnotationconstraints{"The corresponding port interface shall be a TriggerInterface."}GeneralAnnotationClientServerAnnotationconstraints{"The corresponding PortInterface shall be a ClientServerInterface."}«atpVariation» Tags:vh.latestBindingTime = preCompileTime+senderReceiverAnnotation0..*+parameterPortAnnotation0..*+ioHwAbstractionServerAnnotation0..*+failureMonitoring0..1+port0..*«atpVariation,atpSplitable»+clientServerAnnotation0..*+nvDataPortAnnotation0..*+modePortAnnotation0..*+triggerPortAnnotation0..*+delegatedPortAnnotation0..1
 
 4.4.2 SenderReceiverAnnotation
 
@@ -6612,8 +6162,7 @@ ReceiverInterface. (cid:99)()
 
 
 
-AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotation+ computed  :Boolean+ limitKind  :DataLimitKindEnum+ processingKind  :ProcessingKindEnumconstraints{"port's interface is a SenderReceiverInterface"}SenderAnnotationReceiverAnnotation«enumeration»ProcessingKindEnum none raw filtered«enumeration»DataLimitKindEnum none min maxMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAutosarDataPrototypeVariableDataPrototype+dataElement1+senderReceiverAnnotation0..*+signalAge1Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotation+ computed  :Boolean+ limitKind  :DataLimitKindEnum+ processingKind  :ProcessingKindEnumconstraints{"port's interface is a SenderReceiverInterface"}SenderAnnotationReceiverAnnotation«enumeration»ProcessingKindEnum none raw filtered«enumeration»DataLimitKindEnum none min maxMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAutosarDataPrototypeVariableDataPrototype+dataElement1+senderReceiverAnnotation0..*+signalAge1
 
 4.4.3 ClientServerAnnotation
 
@@ -6660,8 +6209,7 @@ Interface. (cid:99)()
 
 
 
-AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationClientServerAnnotationAtpStructureElementIdentifiableClientServerOperation+clientServerAnnotation0..*0..*+operationSoftware Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationClientServerAnnotationAtpStructureElementIdentifiableClientServerOperation+clientServerAnnotation0..*0..*+operation
 
 4.4.4 Annotation for the I/O Hardware Abstraction Layer
 
@@ -6682,8 +6230,7 @@ Figure 4.23: IoHwAbstractionServerAnnotation
 
 
 
-AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationIoHwAbstractionServerAnnotation+ bswResolution  :Float+ filteringDebouncing  :FilterDebouncingEnum+ pulseTest  :PulseTestEnum«enumeration»FilterDebouncingEnum rawData debounceData waitTimeDate«enumeration»PulseTestEnum disable enableAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceAutosarDataPrototypeArgumentDataPrototypeAtpStructureElementIdentifiableClientServerOperationMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]PortInterfaceTriggerInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+trigger1..*+triggerPeriod0..1+dataElement1..*+interface1+trigger0..1+ioHwAbstractionServerAnnotation0..*+argument0..1+failureMonitoring0..1+age0..1+dataElement0..1+argument*{ordered}«atpVariation»1Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationIoHwAbstractionServerAnnotation+ bswResolution  :Float+ filteringDebouncing  :FilterDebouncingEnum+ pulseTest  :PulseTestEnum«enumeration»FilterDebouncingEnum rawData debounceData waitTimeDate«enumeration»PulseTestEnum disable enableAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceAutosarDataPrototypeArgumentDataPrototypeAtpStructureElementIdentifiableClientServerOperationMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]PortInterfaceTriggerInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+trigger1..*+triggerPeriod0..1+dataElement1..*+interface1+trigger0..1+ioHwAbstractionServerAnnotation0..*+argument0..1+failureMonitoring0..1+age0..1+dataElement0..1+argument*{ordered}«atpVariation»1
 
 Class
 Package
@@ -6935,8 +6482,7 @@ Figure 4.24: ParameterPortAnnotation
 
 
 
-GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}AutosarDataPrototypeParameterDataPrototypeAtpBlueprintableAtpPrototypePortPrototype+parameterPortAnnotation0..*+parameter1Software Component Template
-AUTOSAR Release 4.2.2
+GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}AutosarDataPrototypeParameterDataPrototypeAtpBlueprintableAtpPrototypePortPrototype+parameterPortAnnotation0..*+parameter1
 
 [constr_4006] Context of ParameterPortAnnotation (cid:100) A ParameterPortAn
 notation shall only be aggregated by a PPortPrototype owned by a Parame
@@ -6988,8 +6534,7 @@ only be aggregated by a PortPrototype typed by a ModeSwitchInterface. (cid:99)()
 
 
 
-GeneralAnnotationModePortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+modePortAnnotation0..*+modeGroup1Software Component Template
-AUTOSAR Release 4.2.2
+GeneralAnnotationModePortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+modePortAnnotation0..*+modeGroup1
 
 4.4.7 Trigger Port Annotation
 
@@ -7037,8 +6582,7 @@ PortPrototype. (cid:99)()
 
 
 
-GeneralAnnotationTriggerPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]+triggerPortAnnotation0..*+trigger1Software Component Template
-AUTOSAR Release 4.2.2
+GeneralAnnotationTriggerPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]+triggerPortAnnotation0..*+trigger1
 
 Class
 Package
@@ -7089,8 +6633,7 @@ the empty CompositionSwComponentType or the sub-system designer in applying
 
 
 
-GeneralAnnotationNvDataPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+variable1+nvDataPortAnnotation0..*Software Component Template
-AUTOSAR Release 4.2.2
+GeneralAnnotationNvDataPortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+variable1+nvDataPortAnnotation0..*
 
 communication pattern (1:n, n:1, 1:1) inside of the CompositionSwComponentType.
 (cid:99)()
@@ -7243,8 +6786,7 @@ Table 4.56: GeneralAnnotation
 
 
 
-GeneralAnnotation+ annotationOrigin  :String«atpMixed»DocumentationBlockMultilanguageLongName+label0..1+annotationText1Software Component Template
-AUTOSAR Release 4.2.2
+GeneralAnnotation+ annotationOrigin  :String«atpMixed»DocumentationBlockMultilanguageLongName+label0..1+annotationText1
 
 4.5 Communication Speciﬁcation
 
@@ -7271,8 +6813,7 @@ Figure 4.29: Overview of communication attributes of RPortPrototype
 
 
 
-RPortComSpecRPortPrototypeClientComSpecModeSwitchReceiverComSpecNvRequireComSpecParameterRequireComSpecReceiverComSpecAbstractProvidedPortPrototypePRPortPrototypePortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+RPortComSpecRPortPrototypeClientComSpecModeSwitchReceiverComSpecNvRequireComSpecParameterRequireComSpecReceiverComSpecAbstractProvidedPortPrototypePRPortPrototypePortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*
 
 Figure 4.30: Overview of communication attributes of PPortPrototype
 
@@ -7306,8 +6847,7 @@ Operation.
 
 
 
-PPortComSpecPPortPrototypeModeSwitchSenderComSpecParameterProvideComSpecSenderComSpecAbstractRequiredPortPrototypePRPortPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+PPortComSpecPPortPrototypeModeSwitchSenderComSpecParameterProvideComSpecSenderComSpecAbstractRequiredPortPrototypePRPortPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*
 
 [constr_1291] Limitation on the number of RPortComSpecs in the context of one
 PPortPrototype (cid:100) Within the context of one RPortPrototype, there can only be
@@ -7456,8 +6996,7 @@ NonqueuedSenderComSpec resp. NonqueuedReceiverComSpec shall be used.
 
 
 
-RPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumQueuedReceiverComSpec+ queueLength  :PositiveIntegerValueSpecification+ shortLabel  :Identifier [0..1]DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»HandleTimeoutEnum replace noneVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacement«enumeration»HandleOutOfRangeStatusEnum silent indicateCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecPropsAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]+filter0..1+initValue0..1+networkRepresentation0..1+networkRepresentation1+compositeNetworkRepresentation0..*+transformationComSpecProps0..*+replaceWith0..1+requiredComSpec0..*«instanceRef»+leafElement1+dataElement1Software Component Template
-AUTOSAR Release 4.2.2
+RPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumQueuedReceiverComSpec+ queueLength  :PositiveIntegerValueSpecification+ shortLabel  :Identifier [0..1]DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»HandleTimeoutEnum replace noneVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacement«enumeration»HandleOutOfRangeStatusEnum silent indicateCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecPropsAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]+filter0..1+initValue0..1+networkRepresentation0..1+networkRepresentation1+compositeNetworkRepresentation0..*+transformationComSpecProps0..*+replaceWith0..1+requiredComSpec0..*«instanceRef»+leafElement1+dataElement1
 
 Thus, the constraints [constr_1129], [constr_1130], [constr_1131], and [constr_1132]
 shall apply.
@@ -7971,8 +7510,7 @@ attr
 
 
 
-DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»DataFilterTypeEnum always maskedNewEqualsX maskedNewDiffersMaskedOld maskedNewDiffersX never newIsWithin newIsOutside oneEveryNSoftware Component Template
-AUTOSAR Release 4.2.2
+DataFilter+ dataFilterType  :DataFilterTypeEnum+ mask  :UnlimitedInteger [0..1]+ max  :UnlimitedInteger [0..1]+ min  :UnlimitedInteger [0..1]+ offset  :PositiveInteger [0..1]+ period  :PositiveInteger [0..1]+ x  :UnlimitedInteger [0..1]«enumeration»DataFilterTypeEnum always maskedNewEqualsX maskedNewDiffersMaskedOld maskedNewDiffersX never newIsWithin newIsOutside oneEveryN
 
 Attribute
 
@@ -8105,8 +7643,7 @@ shall be dealt with.
 
 
 
-PPortComSpecSenderComSpec+ handleOutOfRange  :HandleOutOfRangeEnum«atpVariation»+ usesEndToEndProtection  :BooleanQueuedSenderComSpecTransmissionAcknowledgementRequest+ timeout  :TimeValueValueSpecification+ shortLabel  :Identifier [0..1]NonqueuedSenderComSpecAutosarDataPrototypeVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacementCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractProvidedPortPrototype+networkRepresentation1«instanceRef»+leafElement1+transmissionAcknowledge0..1+compositeNetworkRepresentation0..*+dataElement1+networkRepresentation0..1+providedComSpec0..*+initValue1Software Component Template
-AUTOSAR Release 4.2.2
+PPortComSpecSenderComSpec+ handleOutOfRange  :HandleOutOfRangeEnum«atpVariation»+ usesEndToEndProtection  :BooleanQueuedSenderComSpecTransmissionAcknowledgementRequest+ timeout  :TimeValueValueSpecification+ shortLabel  :Identifier [0..1]NonqueuedSenderComSpecAutosarDataPrototypeVariableDataPrototype«atpVariation»SwDataDefProps«enumeration»HandleOutOfRangeEnum none ignore saturate default invalid externalReplacementCompositeNetworkRepresentationDataPrototypeApplicationCompositeElementDataPrototypePortPrototypeAbstractProvidedPortPrototype+networkRepresentation1«instanceRef»+leafElement1+transmissionAcknowledge0..1+compositeNetworkRepresentation0..*+dataElement1+networkRepresentation0..1+providedComSpec0..*+initValue1
 
 Datatype
 SwDataDefProp
@@ -8419,8 +7956,7 @@ length.
 
 
 
-RPortComSpecClientComSpecAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+requiredComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+RPortComSpecClientComSpecAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractRequiredPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+requiredComSpec0..*
 
 Figure 4.35: Communication attributes of PPortPrototype with respect to client-server
 communication.
@@ -8489,8 +8025,7 @@ reference this single RunnableEntity.
 
 
 
-PPortComSpecServerComSpec+ queueLength  :PositiveIntegerAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractProvidedPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+providedComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+PPortComSpecServerComSpec+ queueLength  :PositiveIntegerAtpStructureElementIdentifiableClientServerOperationPortPrototypeAbstractProvidedPortPrototypeDescribableTransformationComSpecProps+transformationComSpecProps0..*+operation1+providedComSpec0..*
 
 In this case, however, it is essential that the queue length associated with each of the
 ClientServerOperations has the same value. In other words: (cid:99)()
@@ -8539,8 +8074,7 @@ nored. (cid:99)(RS_SWCT_03250)
 
 
 
-ModeSwitchSenderComSpec+ enhancedModeApi  :Boolean [0..1]+ queueLength  :PositiveIntegerAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeSwitchedAckRequest+ timeout  :TimeValuePPortComSpecPortPrototypeAbstractProvidedPortPrototype+modeSwitchedAck0..1+modeGroup1+providedComSpec0..*RPortComSpecModeSwitchReceiverComSpec+ enhancedModeApi  :Boolean [0..1]+ supportsAsynchronousModeSwitch  :BooleanPortPrototypeAbstractRequiredPortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]Association Tags:atp.Status = shallBecomeMandatory+requiredComSpec0..*+modeGroup0..1Software Component Template
-AUTOSAR Release 4.2.2
+ModeSwitchSenderComSpec+ enhancedModeApi  :Boolean [0..1]+ queueLength  :PositiveIntegerAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeSwitchedAckRequest+ timeout  :TimeValuePPortComSpecPortPrototypeAbstractProvidedPortPrototype+modeSwitchedAck0..1+modeGroup1+providedComSpec0..*RPortComSpecModeSwitchReceiverComSpec+ enhancedModeApi  :Boolean [0..1]+ supportsAsynchronousModeSwitch  :BooleanPortPrototypeAbstractRequiredPortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]Association Tags:atp.Status = shallBecomeMandatory+requiredComSpec0..*+modeGroup0..1
 
 Class
 Package
@@ -8768,8 +8302,7 @@ Table 4.78: ParameterProvideComSpec
 
 
 
-PPortComSpecValueSpecification+ shortLabel  :Identifier [0..1]ParameterProvideComSpecAutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*+initValue0..1+parameter1Software Component Template
-AUTOSAR Release 4.2.2
+PPortComSpecValueSpecification+ shortLabel  :Identifier [0..1]ParameterProvideComSpecAutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractProvidedPortPrototype+providedComSpec0..*+initValue0..1+parameter1
 
 Figure 4.39: Communication attributes of ParameterDataPrototypes with respect to
 RPortPrototype
@@ -8825,8 +8358,7 @@ Type will actually apply for the deﬁnition of initial values for nvData. Most 
 
 
 
-RPortComSpecParameterRequireComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractRequiredPortPrototype+initValue0..1+parameter1+requiredComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+RPortComSpecParameterRequireComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypePortPrototypeAbstractRequiredPortPrototype+initValue0..1+parameter1+requiredComSpec0..*
 
 [TPS_SWCT_01227] Unconnected AbstractRequiredPortPrototype typed by
 NvDataInterface (cid:100) For this purpose it is possible to let the AbstractRequired
@@ -8880,8 +8412,7 @@ feature but it will obviously not be reasonable for e.g. NvBlockSwComponentType.
 
 
 
-NvRequireComSpecAutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]RPortComSpecPortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*+initValue0..1+variable1Software Component Template
-AUTOSAR Release 4.2.2
+NvRequireComSpecAutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]RPortComSpecPortPrototypeAbstractRequiredPortPrototype+requiredComSpec0..*+initValue0..1+variable1
 
 Attribute
 variable
@@ -8926,8 +8457,7 @@ corresponding NvBlockSwComponentType.
 
 
 
-PPortComSpecNvProvideComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeVariableDataPrototypePortPrototypeAbstractProvidedPortPrototype+ramBlockInitValue0..1+variable1+romBlockInitValue0..1+providedComSpec0..*Software Component Template
-AUTOSAR Release 4.2.2
+PPortComSpecNvProvideComSpecValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeVariableDataPrototypePortPrototypeAbstractProvidedPortPrototype+ramBlockInitValue0..1+variable1+romBlockInitValue0..1+providedComSpec0..*
 
 Class
 Package
@@ -9057,16 +8587,14 @@ the correct user-deﬁned custom transformer
 
 
 
-DescribableTransformationComSpecPropsEndToEndTransformationComSpecProps+ disableEndToEndCheck  :Boolean+ maxDeltaCounter  :PositiveInteger [0..1]+ maxErrorStateInit  :PositiveInteger [0..1]+ maxErrorStateInvalid  :PositiveInteger [0..1]+ maxErrorStateValid  :PositiveInteger+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ minOkStateInit  :PositiveInteger [0..1]+ minOkStateInvalid  :PositiveInteger [0..1]+ minOkStateValid  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]+ windowSize  :PositiveInteger [0..1]UserDefinedTransformationComSpecPropsRPortComSpecReceiverComSpecPPortComSpecServerComSpecRPortComSpecClientComSpec+transformationComSpecProps0..*+transformationComSpecProps0..*+transformationComSpecProps0..*Software Component Template
-AUTOSAR Release 4.2.2
+DescribableTransformationComSpecPropsEndToEndTransformationComSpecProps+ disableEndToEndCheck  :Boolean+ maxDeltaCounter  :PositiveInteger [0..1]+ maxErrorStateInit  :PositiveInteger [0..1]+ maxErrorStateInvalid  :PositiveInteger [0..1]+ maxErrorStateValid  :PositiveInteger+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ minOkStateInit  :PositiveInteger [0..1]+ minOkStateInvalid  :PositiveInteger [0..1]+ minOkStateValid  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]+ windowSize  :PositiveInteger [0..1]UserDefinedTransformationComSpecPropsRPortComSpecReceiverComSpecPPortComSpecServerComSpecRPortComSpecClientComSpec+transformationComSpecProps0..*+transformationComSpecProps0..*+transformationComSpecProps0..*
 
 Figure 4.43: Big picture of data transformation in the AUTOSAR meta-model
 
 
 
 
-ARElementDataTransformationSetIdentifiableDataTransformation+ executeDespiteDataUnavailability  :BooleanIdentifiableTransformationTechnology+ needsOriginalData  :Boolean [0..1]+ protocol  :String+ transformerClass  :TransformerClassEnum+ version  :StringDescribableTransformationDescriptionBufferProperties+ headerLength  :Integer+ inPlace  :BooleanCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation» Tags:vh.latestBindingTime = codeGenerationTime«enumeration»TransformerClassEnum serializer safety security customDescribable«atpVariation»TransformationISignalProps+ csErrorReaction  :CSTransformerErrorReactionEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =postBuildFibexElementISignal+ dataTypePolicy  :DataTypePolicyEnum+ length  :Integer«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeDataPrototypeMappingFibexElementISignalGroup«atpVariation,atpSplitable»+comBasedSignalGroupTransformation0..1+transformationISignalProps0..*+iSignal0..*+firstToSecondDataTransformation0..1+transformer1+transformationISignalProps0..*+bufferComputation0..1+bufferProperties1+transformationDescription0..1«atpVariation»+transformationTechnology0..*«atpVariation,atpSplitable»+transformerChain1..*{ordered}+dataTransformation0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+dataTransformation0..1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementDataTransformationSetIdentifiableDataTransformation+ executeDespiteDataUnavailability  :BooleanIdentifiableTransformationTechnology+ needsOriginalData  :Boolean [0..1]+ protocol  :String+ transformerClass  :TransformerClassEnum+ version  :StringDescribableTransformationDescriptionBufferProperties+ headerLength  :Integer+ inPlace  :BooleanCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation» Tags:vh.latestBindingTime = codeGenerationTime«enumeration»TransformerClassEnum serializer safety security customDescribable«atpVariation»TransformationISignalProps+ csErrorReaction  :CSTransformerErrorReactionEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =postBuildFibexElementISignal+ dataTypePolicy  :DataTypePolicyEnum+ length  :Integer«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeDataPrototypeMappingFibexElementISignalGroup«atpVariation,atpSplitable»+comBasedSignalGroupTransformation0..1+transformationISignalProps0..*+iSignal0..*+firstToSecondDataTransformation0..1+transformer1+transformationISignalProps0..*+bufferComputation0..1+bufferProperties1+transformationDescription0..1«atpVariation»+transformationTechnology0..*«atpVariation,atpSplitable»+transformerChain1..*{ordered}+dataTransformation0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+dataTransformation0..1
 
 [constr_1400] Reference to a speciﬁc DataTransformation (cid:100) A speciﬁc Data
 Transformation shall only be referenced by either
@@ -9462,8 +8990,7 @@ Table 4.86: PortGroup
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiablePortGroup«instanceRef»+innerGroup0..*«atpVariation»+outerPort0..*+port0..*«atpVariation,atpSplitable»+component«atpVariation»+portGroup0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiablePortGroup«instanceRef»+innerGroup0..*«atpVariation»+outerPort0..*+port0..*«atpVariation,atpSplitable»+component«atpVariation»+portGroup0..*
 
 [TPS_SWCT_01064] PortGroups have to be deﬁned on the VFB level (cid:100) Though
 the declaration PortGroups is not relevant for the RTE, they have to be deﬁned on the
@@ -9600,8 +9127,7 @@ crcOffset
 Datatype
 PositiveInteger
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Mul. Kind Note
 attr
@@ -9867,8 +9393,7 @@ by using e.g. a company-speciﬁc preﬁx or sufﬁx to the value of category.
 
 ARElementEndToEndProtectionSetIdentifiableEndToEndProtectionEndToEndDescription+ category  :NameToken+ counterOffset  :PositiveInteger [0..1]+ crcOffset  :PositiveInteger [0..1]+ dataId  :PositiveInteger [0..*] {ordered}+ dataIdMode  :PositiveInteger [0..1]+ dataIdNibbleOffset  :PositiveInteger [0..1]+ dataLength  :PositiveInteger [0..1]+ maxDeltaCounterInit  :PositiveInteger [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpInstanceRefVariableDataPrototypeInSystemInstanceRefAutosarDataPrototypeVariableDataPrototypeEndToEndProtectionVariablePrototype+ shortLabel  :Identifier [0..1]«atpSplitable»+endToEndProfile1«atpVariation,atpSplitable»+endToEndProtectionVariablePrototype0..*+targetDataPrototype1{redefinesatpTarget}+sender0..1«instanceRef»+receiver0..*«instanceRef»+sender0..1+receiver0..*«atpVariation,atpSplitable»+endToEndProtection0..*The semantics of the categorys is:
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 NONE this indicates that
 
@@ -10476,8 +10001,7 @@ aPrototypes explicitly does not require consistency.
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintAtpBlueprintableIdentifiableConsistencyNeeds«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiableRunnableEntityGroupAtpStructureElementIdentifiableDataPrototypeGroup«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceNvDataInterface+dataElement1..*+nvData1..*«instanceRef»+dataPrototypeGroup 0..*«instanceRef»+implicitDataAccess0..*«instanceRef»+runnableEntity0..*«instanceRef»+runnableEntityGroup 0..*«atpVariation,atpSplitable»+dpgDoesNotRequireCoherency0..*«atpVariation,atpSplitable»+dpgRequiresCoherency0..*«atpVariation,atpSplitable»+regDoesNotRequireStability0..*«atpVariation,atpSplitable»+regRequiresStability0..*«atpVariation,atpSplitable»+consistencyNeeds0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintAtpBlueprintableIdentifiableConsistencyNeeds«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementIdentifiableRunnableEntityGroupAtpStructureElementIdentifiableDataPrototypeGroup«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceDataInterfaceNvDataInterface+dataElement1..*+nvData1..*«instanceRef»+dataPrototypeGroup 0..*«instanceRef»+implicitDataAccess0..*«instanceRef»+runnableEntity0..*«instanceRef»+runnableEntityGroup 0..*«atpVariation,atpSplitable»+dpgDoesNotRequireCoherency0..*«atpVariation,atpSplitable»+dpgRequiresCoherency0..*«atpVariation,atpSplitable»+regDoesNotRequireStability0..*«atpVariation,atpSplitable»+regRequiresStability0..*«atpVariation,atpSplitable»+consistencyNeeds0..*
 
 Likewise, regDoesNotRequireStability can be used to express that for a group
 of RunnableEntitys stability with respect to data access is not required. (cid:99)()
@@ -10825,7 +10349,7 @@ tityGroup become visible immediately after the producing RunnableEntity was
 terminated. (cid:99)(RS_SWCT_03065)
 
 
-
+#@chapter-5
 5 Data Description
 
 5.1 Introduction
@@ -11129,8 +10653,7 @@ Table 5.2: AutosarDataType
 
 
 
-AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeApplicationCompositeElementDataPrototypeApplicationCompositeDataPrototype is contained in ApplicationDataType as ApplicationArrayElement or ApplicationRecordElement.AtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetDataTypeMapModeRequestTypeMapARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup«atpVariation»SwDataDefProps+swDataDefProps0..1«isOfType»+type1{redefinesatpType}+modeGroup1+implementationDataType1+applicationDataType1+implementationDataType1+modeRequestTypeMap0..*+dataTypeMap0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeApplicationCompositeElementDataPrototypeApplicationCompositeDataPrototype is contained in ApplicationDataType as ApplicationArrayElement or ApplicationRecordElement.AtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetDataTypeMapModeRequestTypeMapARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup«atpVariation»SwDataDefProps+swDataDefProps0..1«isOfType»+type1{redefinesatpType}+modeGroup1+implementationDataType1+applicationDataType1+implementationDataType1+modeRequestTypeMap0..*+dataTypeMap0..*
 
 Class
 Package
@@ -11492,8 +11015,7 @@ ties which can be speciﬁed for an AutosarDataType. These properties are deﬁn
 
 
 
-  ApplicationDataTypeApplicationDataTypeImplementationDataTypeImplementationDataTypecompatible and connectedcompatible and mappedshall also be compatiblecompatible and mappedSoftware Component Template
-AUTOSAR Release 4.2.2
+  ApplicationDataTypeApplicationDataTypeImplementationDataTypeImplementationDataTypecompatible and connectedcompatible and mappedshall also be compatiblecompatible and mapped
 
 by aggregating the meta-class SwDataDefProps which contains several attributes
 and references, see detailed description in chapter 5.4 and 5.4. (cid:99)()
@@ -12351,8 +11873,7 @@ Applicable to ...
 
 Use Case Description
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 e
 p
@@ -12781,8 +12302,7 @@ Figure 5.3: Basic Meta-Model for ApplicationDataType
 
 
 
-AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeApplicationCompositeDataTypeApplicationPrimitiveDataType«atpVariation»SwDataDefPropsApplicationRecordDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]+swDataDefProps0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeApplicationCompositeDataTypeApplicationPrimitiveDataType«atpVariation»SwDataDefPropsApplicationRecordDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]+swDataDefProps0..1
 
 Attribute Existence per Category
 
@@ -13345,8 +12865,7 @@ initialize values of DataPrototypes deﬁned locally in a software-component.
 
 
 
-ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableDataConstrDataConstrRule+ constrLevel  :Integer [0..1]PhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+swDataDefProps0..1+dataConstrRule0..*+physConstrs0..1+dataConstr0..1Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableDataConstrDataConstrRule+ constrLevel  :Integer [0..1]PhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+swDataDefProps0..1+dataConstrRule0..*+physConstrs0..1+dataConstr0..1
 
 Figure 5.5: Some Properties of ApplicationPrimitiveDataTypes
 
@@ -13357,8 +12876,7 @@ invalidValue.
 
 
 
-ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeValueSpecificationARElementAtpBlueprintAtpBlueprintableCompuMethodARElementUnit+compuMethod0..1+unit0..1+invalidValue0..1+swDataDefProps0..1+unit0..1Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationPrimitiveDataType«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeValueSpecificationARElementAtpBlueprintAtpBlueprintableCompuMethodARElementUnit+compuMethod0..1+unit0..1+invalidValue0..1+swDataDefProps0..1+unit0..1
 
 Figure 5.6: Value ranges and invalid values
 
@@ -13395,8 +12913,7 @@ or the inverse case that is based on the bounds deﬁned by swDataDefProps.com
 
 
 
-02nBaseTypeImplementationDataTypeCompuMethodApplicationDataTypeUpper [unit]Lower [unit]Invalid ValuephysConstrs ofApplicationDataTypelimits of CompuMethodinternalConstrs of ApplicationDataTypeinternalConstrs of ImplementationDataTyperange by BaseTypeInvalidValue known to the componentInvalidValue transparent to the componentSoftware Component Template
-AUTOSAR Release 4.2.2
+02nBaseTypeImplementationDataTypeCompuMethodApplicationDataTypeUpper [unit]Lower [unit]Invalid ValuephysConstrs ofApplicationDataTypelimits of CompuMethodinternalConstrs of ApplicationDataTypeinternalConstrs of ImplementationDataTyperange by BaseTypeInvalidValue known to the componentInvalidValue transparent to the component
 
 puMethod.compuInternalToPhys.compuContent.compuScale.lowerLimit
 resp. upperLimit.
@@ -13456,8 +12973,7 @@ An example of how an enumeration looks like in ARXML is contained in section 5.5
 
 
 
-CompuARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuContentCompuScalesCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuConst«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]CompuScaleConstantContentsCompuScaleContentsCompuConstContentCompuConstTextContent+ vt  :VerbatimString+compuMethod0..1+compuConstContentType1+compuInverseValue0..1+compuScaleContents0..1«atpVariation»+compuScale0..*{ordered}+compuInternalToPhys0..1+compuPhysToInternal0..1+compuDefaultValue0..1+compuContent1+compuConst1Software Component Template
-AUTOSAR Release 4.2.2
+CompuARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuContentCompuScalesCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuConst«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]CompuScaleConstantContentsCompuScaleContentsCompuConstContentCompuConstTextContent+ vt  :VerbatimString+compuMethod0..1+compuConstContentType1+compuInverseValue0..1+compuScaleContents0..1«atpVariation»+compuScale0..*{ordered}+compuInternalToPhys0..1+compuPhysToInternal0..1+compuDefaultValue0..1+compuContent1+compuConst1
 
 5.2.4.1.3 Data Types for Calibration Parameters
 
@@ -13519,8 +13035,7 @@ Attribute
 
 
 
-ApplicationPrimitiveDataTypeSwTextProps+ arraySizeSemantics  :ArraySizeSemanticsEnum+ swFillCharacter  :Integer [0..1]«atpVariation»+ swMaxTextSize  :Integer«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementSwRecordLayoutApplicationValueSpecification+ category  :IdentifierValueSpecification+ shortLabel  :Identifier [0..1]+swRecordLayout0..1+invalidValue0..1+swTextProps0..1+swDataDefProps0..1+baseType0..1Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationPrimitiveDataTypeSwTextProps+ arraySizeSemantics  :ArraySizeSemanticsEnum+ swFillCharacter  :Integer [0..1]«atpVariation»+ swMaxTextSize  :Integer«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementSwRecordLayoutApplicationValueSpecification+ category  :IdentifierValueSpecification+ shortLabel  :Identifier [0..1]+swRecordLayout0..1+invalidValue0..1+swTextProps0..1+swDataDefProps0..1+baseType0..1
 
 Attribute
 arraySizeS
@@ -14061,8 +13576,7 @@ it can be the target of a reference within an AUTOSAR XML ﬁle
 
 
 
-ApplicationCompositeDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]ApplicationRecordDataTypeApplicationCompositeElementDataPrototypeApplicationRecordElementApplicationCompositeElementDataPrototypeApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«enumeration»ArraySizeSemanticsEnum fixedSize variableSize«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize+element1+element1..*{ordered}«atpVariation»Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationCompositeDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :String [0..1]ApplicationRecordDataTypeApplicationCompositeElementDataPrototypeApplicationRecordElementApplicationCompositeElementDataPrototypeApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«enumeration»ArraySizeSemanticsEnum fixedSize variableSize«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize+element1+element1..*{ordered}«atpVariation»
 
 ApplicationArrayDataType
 
@@ -14593,8 +14107,7 @@ DataType which contains three nested ImplementationDataTypeElements.
 
 
 
-BOOLEAN_true_false_SysConDim1_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYDim1 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim1SysConDim1 :SwSystemconstBOOLEAN_true_false_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false :ApplicationPrimitiveDataTypecategory = BOOLEANDim2 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim2Dim3 :ApplicationArrayElementcategory = BOOLEANarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim3SysConDim2 :SwSystemconstSysConDim3 :SwSystemconstboolean_NcNrDim1_NcNrDim2_NcNrDim3 :ImplementationDataTypecategory = ARRAYDim1 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim1Dim2 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim2Dim3 :ImplementationDataTypeElementcategory = TYPE_REFERENCEarraySizeSemantics = FIXED-SIZEarraySize = SysConDim3boolean :ImplementationDataTypecategory = VALUE«atpVariation»:SwDataDefPropsDefaultDataTypeMapping :DataTypeMappingSet:DataTypeMap+type+element+implementationDataType+dataTypeMap+subElement+subElement+type+element+element+applicationDataType+implementationDataType+subElement+type+swDataDefPropsSoftware Component Template
-AUTOSAR Release 4.2.2
+BOOLEAN_true_false_SysConDim1_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYDim1 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim1SysConDim1 :SwSystemconstBOOLEAN_true_false_SysConDim2_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false_SysConDim3 :ApplicationArrayDataTypecategory = ARRAYBOOLEAN_true_false :ApplicationPrimitiveDataTypecategory = BOOLEANDim2 :ApplicationArrayElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim2Dim3 :ApplicationArrayElementcategory = BOOLEANarraySizeSemantics = FIXED-SIZEmaxNumberOfElements = SysConDim3SysConDim2 :SwSystemconstSysConDim3 :SwSystemconstboolean_NcNrDim1_NcNrDim2_NcNrDim3 :ImplementationDataTypecategory = ARRAYDim1 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim1Dim2 :ImplementationDataTypeElementcategory = ARRAYarraySizeSemantics = FIXED-SIZEarraySize = SysConDim2Dim3 :ImplementationDataTypeElementcategory = TYPE_REFERENCEarraySizeSemantics = FIXED-SIZEarraySize = SysConDim3boolean :ImplementationDataTypecategory = VALUE«atpVariation»:SwDataDefPropsDefaultDataTypeMapping :DataTypeMappingSet:DataTypeMap+type+element+implementationDataType+dataTypeMap+subElement+subElement+type+element+element+applicationDataType+implementationDataType+subElement+type+swDataDefProps
 
 Matching ApplicationArrayElements and ImplementationDataTypeEle
 ments are shown on the same layer. For the sake of clarity correlating maxNumberO
@@ -15429,8 +14942,7 @@ Tags: vh.latestBindingTime=preCompileTime
 
 
 
-AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»ArraySizeSemanticsEnum fixedSize variableSizeImplementationPropsSymbolProps«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize«atpSplitable»+symbolProps0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»ArraySizeSemanticsEnum fixedSize variableSizeImplementationPropsSymbolProps«enumeration»ArraySizeHandlingEnum allIndicesSameArraySize allIndicesDifferentArraySize inheritedFromArrayElementTypeSize«atpSplitable»+symbolProps0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}
 
 Attribute
 symbolPro
@@ -16224,8 +15736,7 @@ permitted. (cid:99)()
 
 
 
-MySimpleType :ImplementationDataTypecategory = VALUE:SwDataDefPropsuint16 :SwBaseType:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsMyPointerType :ImplementationDataTypecategory = DATA_REFERENCEtypedef  unsigned short  MySimpleType;typedef  MySimpleType*  MyPointerType;:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned shortSoftware Component Template
-AUTOSAR Release 4.2.2
+MySimpleType :ImplementationDataTypecategory = VALUE:SwDataDefPropsuint16 :SwBaseType:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsMyPointerType :ImplementationDataTypecategory = DATA_REFERENCEtypedef  unsigned short  MySimpleType;typedef  MySimpleType*  MyPointerType;:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned short
 
 Figure 5.13: Example (2) for TypeDefs
 
@@ -16252,8 +15763,7 @@ category e.g. VALUE.
 
 
 
-uint16 :SwBaseTypeMyStructType :ImplementationDataTypecategory = STRUCTUREtypedef  struct{   unsigned short C1;   OtherStructType  C2;}  MyStructType;C1: :ImplementationDataTypeElementcategory = VALUEC2 :ImplementationDataTypeElementcategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsOtherStructType :ImplementationDataTypecategory = STRUCTURE:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned shortSoftware Component Template
-AUTOSAR Release 4.2.2
+uint16 :SwBaseTypeMyStructType :ImplementationDataTypecategory = STRUCTUREtypedef  struct{   unsigned short C1;   OtherStructType  C2;}  MyStructType;C1: :ImplementationDataTypeElementcategory = VALUEC2 :ImplementationDataTypeElementcategory = TYPE_REFERENCE:SwDataDefProps:SwDataDefPropsOtherStructType :ImplementationDataTypecategory = STRUCTURE:BaseTypeDirectDefinitionbaseTypeEncoding = NONEnativeDeclaration = unsigned short
 
 [constr_1254] Deﬁnition of a pointer to a pointer (cid:100) AUTOSAR does not support
 the deﬁnition of a pointer to a pointer by deﬁning an ImplementationDataType
@@ -16283,8 +15793,7 @@ sociation SwPointerTargetProps.functionPointerSignature that refers to a
 
 
 
-VOID :SwBaseType:SwDataDefProps:SwDataDefPropsswImplPolicy = constFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef const void * FooVOID :SwBaseType:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef void * const  Foo:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCEtypedef  bar * const  Foo:SwPointerTargetPropstargetCategory = VALUE:SwPointerTargetPropstargetCategory = VALUEbar :ImplementationDataTypecategory = DATA_REFERENCESoftware Component Template
-AUTOSAR Release 4.2.2
+VOID :SwBaseType:SwDataDefProps:SwDataDefPropsswImplPolicy = constFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef const void * FooVOID :SwBaseType:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCE:BaseTypeDirectDefinitionbaseTypeEncoding = VOIDnativeDeclaration = voidtypedef void * const  Foo:SwPointerTargetPropstargetCategory = TYPE_REFERENCE:SwDataDefPropsswImplPolicy = const:SwDataDefPropsFoo :ImplementationDataTypecategory = DATA_REFERENCEtypedef  bar * const  Foo:SwPointerTargetPropstargetCategory = VALUE:SwPointerTargetPropstargetCategory = VALUEbar :ImplementationDataTypecategory = DATA_REFERENCE
 
 BswModuleEntry. The latter essentially describes the signature of a function as ex
 plained in [7]. (cid:99)(RS_SWCT_03217)
@@ -16385,8 +15894,7 @@ that have identical shortNames are deployed into a speciﬁc RTE.
 
 
 
-AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]SwPointerTargetProps+ targetCategory  :Identifier [0..1]ASwBitRepresentation+ bitPosition  :Integer [0..1]+ numberOfBits  :Integer [0..1]AtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableSwAddrMethodConstraint: The existence of swPointerTargetProps, baseType and implementationDataType is XOR.ARElementAtpTypeAutosarDataTypeARElementAtpBlueprintAtpBlueprintableBswModuleEntry«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+swDataDefProps0..1+functionPointerSignature0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}+swDataDefProps0..1+swDataDefProps0..1+swBitRepresentation0..1+baseType0..1+implementationDataType0..1+swAddrMethod0..1+swPointerTargetProps0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]SwPointerTargetProps+ targetCategory  :Identifier [0..1]ASwBitRepresentation+ bitPosition  :Integer [0..1]+ numberOfBits  :Integer [0..1]AtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableSwAddrMethodConstraint: The existence of swPointerTargetProps, baseType and implementationDataType is XOR.ARElementAtpTypeAutosarDataTypeARElementAtpBlueprintAtpBlueprintableBswModuleEntry«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+swDataDefProps0..1+functionPointerSignature0..1«atpVariation»+subElement0..*{ordered}«atpVariation»+subElement 0..*{ordered}+swDataDefProps0..1+swDataDefProps0..1+swBitRepresentation0..1+baseType0..1+implementationDataType0..1+swAddrMethod0..1+swPointerTargetProps0..1
 
 [TPS_SWCT_01194] Symbolic name of an ImplementationDataType (cid:100) To mit
 igate this potential hazard it is possible to provide the ImplementationDataType
@@ -16447,8 +15955,7 @@ Table 5.22: ImplementationProps
 
 
 
-ReferrableImplementationProps+ symbol  :CIdentifierBswSchedulerNamePrefixSectionNamePrefixSymbolPropsSymbolicNamePropsSoftware Component Template
-AUTOSAR Release 4.2.2
+ReferrableImplementationProps+ symbol  :CIdentifierBswSchedulerNamePrefixSectionNamePrefixSymbolPropsSymbolicNameProps
 
 SymbolProps
 
@@ -16759,8 +16266,7 @@ Some additional hints to the properties of SwBaseType:
 
 
 
-ARElementBaseTypeBaseTypeDefinitionBaseTypeDirectDefinition+ baseTypeEncoding  :BaseTypeEncodingString+ baseTypeSize  :PositiveInteger [0..1]+ byteOrder  :ByteOrderEnum [0..1]+ maxBaseTypeSize  :PositiveInteger [0..1]+ memAlignment  :PositiveInteger [0..1]+ nativeDeclaration  :NativeDeclarationString [0..1]AtpBlueprintAtpBlueprintableSwBaseType+baseTypeDefinition1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementBaseTypeBaseTypeDefinitionBaseTypeDirectDefinition+ baseTypeEncoding  :BaseTypeEncodingString+ baseTypeSize  :PositiveInteger [0..1]+ byteOrder  :ByteOrderEnum [0..1]+ maxBaseTypeSize  :PositiveInteger [0..1]+ memAlignment  :PositiveInteger [0..1]+ nativeDeclaration  :NativeDeclarationString [0..1]AtpBlueprintAtpBlueprintableSwBaseType+baseTypeDefinition1
 
 • [constr_1011] category of SwBaseType (cid:100) For
 
@@ -17117,8 +16623,7 @@ Table 5.29: AutosarDataPrototype
 
 
 
-ApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerApplicationCompositeElementDataPrototypeApplicationRecordElementAutosarDataPrototypeAtpPrototypeDataPrototypeParameterDataPrototypeVariableDataPrototypeArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«isOfType»+type1{redefines atpType}+/swDataDefProps0..1«atpVariation»+typeBlueprint0..1+swDataDefProps0..1«isOfType»+type1{redefines atpType}Software Component Template
-AUTOSAR Release 4.2.2
+ApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ maxNumberOfElements  :PositiveIntegerApplicationCompositeElementDataPrototypeApplicationRecordElementAutosarDataPrototypeAtpPrototypeDataPrototypeParameterDataPrototypeVariableDataPrototypeArgumentDataPrototype+ direction  :ArgumentDirectionEnum+ serverArgumentImplPolicy  :ServerArgumentImplPolicyEnum [0..1]«atpVariation»SwDataDefPropsAtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«isOfType»+type1{redefines atpType}+/swDataDefProps0..1«atpVariation»+typeBlueprint0..1+swDataDefProps0..1«isOfType»+type1{redefines atpType}
 
 ApplicationCompositeElementDataPrototype (abstract)
 
@@ -17397,8 +16902,7 @@ x
 
 x
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Attribute Existence per Category
 
@@ -18184,8 +17688,7 @@ using a composite ImplementationDataType.
 
 
 
-AutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototype+initValue0..1+initValue0..1Software Component Template
-AUTOSAR Release 4.2.2
+AutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototype+initValue0..1+initValue0..1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
@@ -18363,8 +17866,7 @@ Table 5.37: ArVariableInImplementationDataInstanceRef
 
 
 
-AutosarVariableRefAutosarDataPrototypeVariableDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRefArVariableInImplementationDataInstanceRef+rootVariableDataPrototype0..1+autosarVariableInImplDatatype0..1+autosarVariable0..1+localVariable0..1Software Component Template
-AUTOSAR Release 4.2.2
+AutosarVariableRefAutosarDataPrototypeVariableDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRefArVariableInImplementationDataInstanceRef+rootVariableDataPrototype0..1+autosarVariableInImplDatatype0..1+autosarVariable0..1+localVariable0..1
 
 Figure 5.21: Implementation of ArVariableInImplementationDataInstanceRef
 
@@ -18402,8 +17904,7 @@ by a dedicated algorithm. Note that in all cases where [constr_1173] does not ap
 
 
 
-ArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]AtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+rootVariableDataPrototype0..1+portPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1Software Component Template
-AUTOSAR Release 4.2.2
+ArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]AtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+rootVariableDataPrototype0..1+portPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
@@ -18545,8 +18046,7 @@ type reference is the only reference required. (cid:99)()
 
 
 
-AtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeAutosarParameterRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType+portPrototype0..1{subsetsatpContextElement}+contextDataPrototype0..*{ordered,subsetsatpContextElement}«atpDerived»+base1{redefinesatpBase}+rootParameterDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeAutosarParameterRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType+portPrototype0..1{subsetsatpContextElement}+contextDataPrototype0..*{ordered,subsetsatpContextElement}«atpDerived»+base1{redefinesatpBase}+rootParameterDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1
 
 Figure 5.23: Implementation of the InstanceRef for AutosarVariableRef
 
@@ -18569,8 +18069,7 @@ However, there are constraints for the attributes depending on the role of the d
 
 
 
-AutosarDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeVariableDataPrototypeAutosarVariableRefAtpInstanceRefVariableInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType«instanceRef»+autosarVariable0..1+autosarVariable0..1+localVariable0..1«atpDerived»+base1{subsetsatpBase}+contextDataPrototype0..*{ordered,subsetsatpContextElement}+portPrototype0..1{subsetsatpContextElement}+rootVariableDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}Software Component Template
-AUTOSAR Release 4.2.2
+AutosarDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeApplicationCompositeElementDataPrototypeVariableDataPrototypeAutosarVariableRefAtpInstanceRefVariableInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeSwComponentTypeAtomicSwComponentType«instanceRef»+autosarVariable0..1+autosarVariable0..1+localVariable0..1«atpDerived»+base1{subsetsatpBase}+contextDataPrototype0..*{ordered,subsetsatpContextElement}+portPrototype0..1{subsetsatpContextElement}+rootVariableDataPrototype0..1{subsetsatpContextElement}+targetDataPrototype1{subsetsatpTarget}
 
 [constr_1015] Prioritization of SwDataDefProps (cid:100) The prioritization and usage of
 attributes of meta-class SwDataDefProps shall follow the restrictions given in ta
@@ -20184,8 +19683,7 @@ The element will not be accessible via MCD tools, i.e. will not appear in the AS
 
 
 
-txtmotVsVSoftware Component Template
-AUTOSAR Release 4.2.2
+txtmotVsV
 
 readOnly
 readWrite
@@ -21137,8 +20635,7 @@ them.
 
 
 
-«atpVariation»SwDataDefPropsValueSpecificationARElementAtpTypeAutosarDataTypeAtpPrototypeDataPrototype+/swDataDefProps0..1+invalidValue0..1+swDataDefProps0..1Software Component Template
-AUTOSAR Release 4.2.2
+«atpVariation»SwDataDefPropsValueSpecificationARElementAtpTypeAutosarDataTypeAtpPrototypeDataPrototype+/swDataDefProps0..1+invalidValue0..1+swDataDefProps0..1
 
 This is in particular the case if the sender and receiver are calculating a checksum
 over a larger data structure to implement an end to end communication protec
@@ -21316,8 +20813,7 @@ validValue (cid:100) The aggregation of a RuleBasedValueSpecification or a Ref
 
 
 
-SenderReceiverInterfaceAutosarDataPrototypeVariableDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementRPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumValueSpecification+ shortLabel  :Identifier [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]+rPort«isOfType»+requiredInterface1{redefines atpType}+invalidValue0..1+initValue0..1+networkRepresentation0..1+dataElement1+dataElement1..*1+invalidationPolicy0..*+dataElement1Software Component Template
-AUTOSAR Release 4.2.2
+SenderReceiverInterfaceAutosarDataPrototypeVariableDataPrototypeInvalidationPolicy+ handleInvalid  :HandleInvalidEnum [0..1]«enumeration»HandleInvalidEnum keep replace dontInvalidate externalReplacementRPortComSpecReceiverComSpec+ handleOutOfRange  :HandleOutOfRangeEnum+ handleOutOfRangeStatus  :HandleOutOfRangeStatusEnum [0..1]+ maxNoNewOrRepeatedData  :PositiveInteger [0..1]+ syncCounterInit  :PositiveInteger [0..1]«atpVariation»+ maxDeltaCounterInit  :PositiveInteger [0..1]+ usesEndToEndProtection  :BooleanNonqueuedReceiverComSpec+ aliveTimeout  :TimeValue+ enableUpdate  :Boolean+ handleDataStatus  :Boolean [0..1]+ handleNeverReceived  :Boolean+ handleTimeoutType  :HandleTimeoutEnumValueSpecification+ shortLabel  :Identifier [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]+rPort«isOfType»+requiredInterface1{redefines atpType}+invalidValue0..1+initValue0..1+networkRepresentation0..1+dataElement1+dataElement1..*1+invalidationPolicy0..*+dataElement1
 
 erenceValueSpecification for the deﬁnition of a ApplicationPrimitive
 DataType.swDataDefProps.invalidValue is not supported. (cid:99)()
@@ -21485,8 +20981,7 @@ Figure 5.27: Overview on the Meta-Model for Axis Description
 
 
 
-SwCalprmAxisTypePropsSwAxisGroupedSwCalprmAxisSwAxisGenericSwAxisIndividualSwVariableRefProxyApplicationDataTypeApplicationPrimitiveDataTypeSwCalprmRefProxyARElementUnit+sharedAxisType0..1+swCalprmRef1+unit0..1+swAxisGeneric0..1+inputVariableType0..1+swVariableRef0..*+swCalprmAxisTypeProps1Software Component Template
-AUTOSAR Release 4.2.2
+SwCalprmAxisTypePropsSwAxisGroupedSwCalprmAxisSwAxisGenericSwAxisIndividualSwVariableRefProxyApplicationDataTypeApplicationPrimitiveDataTypeSwCalprmRefProxyARElementUnit+sharedAxisType0..1+swCalprmRef1+unit0..1+swAxisGeneric0..1+inputVariableType0..1+swVariableRef0..*+swCalprmAxisTypeProps1
 
 Figure 5.28: Overview on a Generic Axis
 
@@ -21507,16 +21002,14 @@ subject to variant handling. (cid:99)(RS_SWCT_03148)
 
 
 
-SwGenericAxisParam«atpVariation»+ vf  :Numerical [1..*]ARElementSwAxisTypeSwAxisGenericIdentifiableSwGenericAxisParamType+swGenericAxisParamType1+swAxisType1+swGenericAxisParam0..*+swGenericAxisParamType0..*Software Component Template
-AUTOSAR Release 4.2.2
+SwGenericAxisParam«atpVariation»+ vf  :Numerical [1..*]ARElementSwAxisTypeSwAxisGenericIdentifiableSwGenericAxisParamType+swGenericAxisParamType1+swAxisType1+swGenericAxisParam0..*+swGenericAxisParamType0..*
 
 Figure 5.29: Meta-Model Elements used for a Curve
 
 
 
 
-«atpVariation»SwDataDefPropsARElementUnitARElementAtpBlueprintAtpBlueprintableCompuMethodAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableSwAddrMethodSwCalprmAxisSwCalprmAxisSetSwCalprmAxisTypePropsSwAxisIndividualSwVariableRefProxySwAxisGroupedSwCalprmRefProxyARElementSwRecordLayout+swRecordLayout0..1+baseType0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+unit0..1+swCalprmAxisTypeProps1+swCalprmAxisSet0..1+unit0..1+dataConstr0..1+unit0..1+baseType0..1+compuMethod0..1+swCalprmAxis0..*+swCalprmRef1+swAddrMethod0..1Software Component Template
-AUTOSAR Release 4.2.2
+«atpVariation»SwDataDefPropsARElementUnitARElementAtpBlueprintAtpBlueprintableCompuMethodAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableSwAddrMethodSwCalprmAxisSwCalprmAxisSetSwCalprmAxisTypePropsSwAxisIndividualSwVariableRefProxySwAxisGroupedSwCalprmRefProxyARElementSwRecordLayout+swRecordLayout0..1+baseType0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+unit0..1+swCalprmAxisTypeProps1+swCalprmAxisSet0..1+unit0..1+dataConstr0..1+unit0..1+baseType0..1+compuMethod0..1+swCalprmAxis0..*+swCalprmRef1+swAddrMethod0..1
 
 Figure 5.30: Illustration of a Curve in M1
 
@@ -21552,8 +21045,7 @@ Table 5.50: SwCalprmAxisSet
 
 
 
-Element :ApplicationDataTypecategory = CURVEshortName = MyCurveswDataDefProps :SwDataDefPropsswCalprmAxisSet :SwCalprmAxisSetswCalprmAxis :SwCalprmAxisswCalprmAxisTypeProps :SwAxisIndividualElement :CompuMethodElement :SwAddrMethodElement :UnitElement :ApplicationPrimitiveDataTypeElement :UnitswDataDefProps :SwDataDefPropsElement :SwRecordLayoutElement :CompuMethodneed to be consistentSoftware Component Template
-AUTOSAR Release 4.2.2
+Element :ApplicationDataTypecategory = CURVEshortName = MyCurveswDataDefProps :SwDataDefPropsswCalprmAxisSet :SwCalprmAxisSetswCalprmAxis :SwCalprmAxisswCalprmAxisTypeProps :SwAxisIndividualElement :CompuMethodElement :SwAddrMethodElement :UnitElement :ApplicationPrimitiveDataTypeElement :UnitswDataDefProps :SwDataDefPropsElement :SwRecordLayoutElement :CompuMethodneed to be consistent
 
 SwCalprmAxis
 
@@ -21782,8 +21274,7 @@ SwAxisGeneric
 
 0..1 aggr
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Mul. Kind Note
 0..1
@@ -22093,8 +21584,7 @@ sharedAxisType.
 
 
 
-«atpVariation»SwDataDefPropsSwAxisIndividualSwCalprmAxisTypePropsSwCalprmAxisSwCalprmAxisSetParameterDataPrototypeAutosarDataPrototypeSwVariableRefProxySwAxisGroupedSwCalprmRefProxyAutosarParameterRefAutosarVariableRefVariableDataPrototypeAtpPrototypeDataPrototype+swCalprmAxisSet0..1+autosarVariable0..1+swCalprmAxisTypeProps1+arParameter0..1+swVariableRef0..*+swCalprmRef1+localParameter0..1+swCalprmAxis0..*+/swDataDefProps0..1+localVariable0..1Software Component Template
-AUTOSAR Release 4.2.2
+«atpVariation»SwDataDefPropsSwAxisIndividualSwCalprmAxisTypePropsSwCalprmAxisSwCalprmAxisSetParameterDataPrototypeAutosarDataPrototypeSwVariableRefProxySwAxisGroupedSwCalprmRefProxyAutosarParameterRefAutosarVariableRefVariableDataPrototypeAtpPrototypeDataPrototype+swCalprmAxisSet0..1+autosarVariable0..1+swCalprmAxisTypeProps1+arParameter0..1+swVariableRef0..*+swCalprmRef1+localParameter0..1+swCalprmAxis0..*+/swDataDefProps0..1+localVariable0..1
 
 [constr_1020] ParameterDataPrototype needs to be of compatible data type
 as referenced in sharedAxisType (cid:100) Finally, the ParameterDataPrototype as
@@ -22109,8 +21599,7 @@ Figure 5.32: Applying Proxy Variable Reference Mechanism
 
 
 
-SwVariableRefProxy«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]«atpMixed»SwDataDependencyArgsSwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSetSwDataDependency+swCalprmAxis0..*+swCalprmAxisTypeProps1+swVariableRef0..*+swVariable1+swHostVariable0..1+swCalprmAxisSet0..1+swComparisonVariable0..*+swDataDependency0..1+swDataDependencyArgs0..1Software Component Template
-AUTOSAR Release 4.2.2
+SwVariableRefProxy«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]«atpMixed»SwDataDependencyArgsSwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSetSwDataDependency+swCalprmAxis0..*+swCalprmAxisTypeProps1+swVariableRef0..*+swVariable1+swHostVariable0..1+swCalprmAxisSet0..1+swComparisonVariable0..*+swDataDependency0..1+swDataDependencyArgs0..1
 
 Figure 5.33: Applying Proxy Parameter Reference Mechanism
 
@@ -22140,8 +21629,7 @@ ApplicationDataType of category VALUE.
 
 
 
-SwCalprmAxisTypePropsSwAxisGrouped+ swAxisIndex  :AxisIndexType [0..1]SwCalprmRefProxyAutosarParameterRef«atpMixed»SwDataDependencyArgsARElementIdentifiableSwVcdCriterionParameterDataPrototypeAtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeAutosarDataPrototype+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1+targetDataPrototype1{subsets atpTarget}+swCalprmRef1+arParameter0..1+swCalprmRef1Software Component Template
-AUTOSAR Release 4.2.2
+SwCalprmAxisTypePropsSwAxisGrouped+ swAxisIndex  :AxisIndexType [0..1]SwCalprmRefProxyAutosarParameterRef«atpMixed»SwDataDependencyArgsARElementIdentifiableSwVcdCriterionParameterDataPrototypeAtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpPrototypeDataPrototypeAutosarDataPrototype+autosarParameter0..1«instanceRef»+autosarParameter0..1+localParameter0..1+targetDataPrototype1{subsets atpTarget}+swCalprmRef1+arParameter0..1+swCalprmRef1
 
 Attribute
 mcDataIns
@@ -22236,8 +21724,7 @@ then also automatically adjusted according to the chosen formula.
 
 
 
-SwVariableRefProxyAutosarVariableRefIdentifiableMcDataInstanceSwCalprmRefProxyAutosarParameterRef+arParameter0..1+mcDataInstance0..1+autosarVariable0..1+mcDataInstanceVar0..1Software Component Template
-AUTOSAR Release 4.2.2
+SwVariableRefProxyAutosarVariableRefIdentifiableMcDataInstanceSwCalprmRefProxyAutosarParameterRef+arParameter0..1+mcDataInstance0..1+autosarVariable0..1+mcDataInstanceVar0..1
 
 Consider for example a rectangular triangle with a hypotenuse of length 1, where the
 length of the other sides are the parameter A and B. When adjusting A the parameter
@@ -22556,8 +22043,7 @@ puMethod.unit
 
 
 
-TypePropertiesARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]SwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwVariableRefProxyARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ApplicationPrimitiveDataTypeSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSet«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+unit0..1+swCalprmAxis0..*+unit0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+swCalprmAxisTypeProps1+compuMethod0..1+swDataDefProps0..1+swCalprmAxisSet0..1+valueAxisDataType0..1+dataConstr0..1+unit0..1+inputVariableType0..1Software Component Template
-AUTOSAR Release 4.2.2
+TypePropertiesARElementAtpBlueprintAtpBlueprintableDataConstrARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]SwAxisIndividual«atpVariation»+ swMaxAxisPoints  :Integer+ swMinAxisPoints  :IntegerSwVariableRefProxyARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ApplicationPrimitiveDataTypeSwCalprmAxisTypePropsSwCalprmAxis+ category  :CalprmAxisCategoryEnum [0..1]+ displayFormat  :DisplayFormatString [0..1]+ swAxisIndex  :AxisIndexType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]SwCalprmAxisSet«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]AtpBlueprintAtpBlueprintableApplicationDataTypeARElementAtpTypeAutosarDataType+unit0..1+swCalprmAxis0..*+unit0..1+compuMethod0..1+swVariableRef0..*+dataConstr0..1+swCalprmAxisTypeProps1+compuMethod0..1+swDataDefProps0..1+swCalprmAxisSet0..1+valueAxisDataType0..1+dataConstr0..1+unit0..1+inputVariableType0..1
 
 – SwDataDefProps.unit
 
@@ -22924,8 +22410,7 @@ Figure 5.36: A CompuMethod and its attributes deﬁne data semantics
 
 
 
-ARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuCompuContentCompuScalesARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+physicalDimension0..1«atpVariation»+compuScale0..*{ordered}+unit0..1+compuInternalToPhys0..1+compuPhysToInternal0..1+compuContent1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuCompuContentCompuScalesARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+physicalDimension0..1«atpVariation»+compuScale0..*{ordered}+unit0..1+compuInternalToPhys0..1+compuPhysToInternal0..1+compuContent1
 
 Figure 5.37: A CompuScale and its attributes deﬁne data semantics
 
@@ -22950,8 +22435,7 @@ results if the function is not monotonic. To deal with such possible ambiguities
 
 
 
-CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuScaleContentsCompuScaleRationalFormulaCompuRationalCoeffsCompuNominatorDenominator«atpVariation»+ v  :Numerical [0..*] {ordered}CompuScaleConstantContentsCompuConst+compuConst1+compuNumerator1+compuDenominator1+compuInverseValue0..1+compuScaleContents0..1+compuRationalCoeffs1Software Component Template
-AUTOSAR Release 4.2.2
+CompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuScaleContentsCompuScaleRationalFormulaCompuRationalCoeffsCompuNominatorDenominator«atpVariation»+ v  :Numerical [0..*] {ordered}CompuScaleConstantContentsCompuConst+compuConst1+compuNumerator1+compuDenominator1+compuInverseValue0..1+compuScaleContents0..1+compuRationalCoeffs1
 
 direct way an inverse value can be provided explicitly for the function or for each of its
 parts respectively.
@@ -23603,8 +23087,7 @@ TAB_NOINTP
 Similar to TEXTTABLE, but
 for numerical values.
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Speciﬁc properties
 Only the base elements are allowed and unit,
@@ -23664,8 +23147,7 @@ Meaning
 Similar to TEXTTABLE but
 for bit ﬁelds
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 of
 
@@ -24669,8 +24151,7 @@ Mul. Kind Note
 
 
 
-ARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]MixedContentForUnitNames«atpMixedString»SingleLanguageUnitNamesARElementUnitGroup+unit0..*+physicalDimension0..1+displayName0..1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]ARElementPhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]MixedContentForUnitNames«atpMixedString»SingleLanguageUnitNamesARElementUnitGroup+unit0..*+physicalDimension0..1+displayName0..1
 
 Attribute
 displayNa
@@ -24927,8 +24408,7 @@ ref This represents the ﬁrst PhysicalDimension of the
 
 
 
-ARElementUnits::PhysicalDimensionMappingSetUnits::PhysicalDimensionMappingARElementUnits::PhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+secondPhysicalDimension1+firstPhysicalDimension1+physicalDimensionMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementUnits::PhysicalDimensionMappingSetUnits::PhysicalDimensionMappingARElementUnits::PhysicalDimension+ currentExp  :Numerical [0..1]+ lengthExp  :Numerical [0..1]+ luminousIntensityExp  :Numerical [0..1]+ massExp  :Numerical [0..1]+ molarAmountExp  :Numerical [0..1]+ temperatureExp  :Numerical [0..1]+ timeExp  :Numerical [0..1]+secondPhysicalDimension1+firstPhysicalDimension1+physicalDimensionMapping0..*
 
 Attribute
 secondPhy
@@ -25068,8 +24548,7 @@ In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeARElementUnitGroup+unitGroup0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeARElementUnitGroup+unitGroup0..*
 
 both members of the UnitGroup named "VehicleSpeed".
 PerSec" is not considered as appropriate for "VehicleSpeed".
@@ -25135,8 +24614,7 @@ Figure 5.42: Meta-model for deﬁning Data Constraints
 
 
 
-DataConstrRule+ constrLevel  :Integer [0..1]ARElementAtpBlueprintAtpBlueprintableDataConstrPhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]InternalConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]ScaleConstr+ shortLabel  :Identifier [0..1]+ validity  :ScaleConstrValidityEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation»SwDataDefPropsARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]In order to maintain compliance to ASAM HDO, the AttributeValuePattern variant handling is modeled manually for Limit.+scaleConstr0..*{ordered}+unit0..1+dataConstrRule0..*+unit0..1+dataConstr0..1+physConstrs0..1+internalConstrs0..1+scaleConstr0..*{ordered}Software Component Template
-AUTOSAR Release 4.2.2
+DataConstrRule+ constrLevel  :Integer [0..1]ARElementAtpBlueprintAtpBlueprintableDataConstrPhysConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]InternalConstrs+ maxDiff  :Numerical [0..1]+ maxGradient  :Numerical [0..1]+ monotony  :MonotonyEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]ScaleConstr+ shortLabel  :Identifier [0..1]+ validity  :ScaleConstrValidityEnum [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]«atpVariation»SwDataDefPropsARElementUnit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]In order to maintain compliance to ASAM HDO, the AttributeValuePattern variant handling is modeled manually for Limit.+scaleConstr0..*{ordered}+unit0..1+dataConstrRule0..*+unit0..1+dataConstr0..1+physConstrs0..1+internalConstrs0..1+scaleConstr0..*{ordered}
 
 DataConstr
 
@@ -26070,8 +25548,7 @@ these may refer to the same SwRecordLayout even if the size of the data is diffe
 
 
 
-IdentifiableMemorySection+ alignment  :AlignmentType [0..1]+ memClassSymbol  :CIdentifier [0..1]+ option  :Identifier [0..*]+ size  :PositiveInteger [0..1]+ symbol  :Identifier [0..1]IdentifiableResourceConsumptionARElementImplementationARElementAtpBlueprintAtpBlueprintableSwAddrMethod+ memoryAllocationKeywordPolicy  :MemoryAllocationKeywordPolicyType [0..1]+ option  :Identifier [0..*]+ sectionInitializationPolicy  :SectionInitializationPolicyType [0..1]+ sectionType  :MemorySectionType [0..1]«atpVariation»SwDataDefPropsAtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MemorySectionType var code const calprm configData excludeFromFlash calibrationVariables«enumeration»MemoryAllocationKeywordPolicyType addrMethodShortName addrMethodShortNameAndAlignment+swAddrmethod1+swAddrMethod0..1«atpVariation,atpSplitable»+memorySection0..*+resourceConsumption1«atpSplitable»+/swDataDefProps0..1Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableMemorySection+ alignment  :AlignmentType [0..1]+ memClassSymbol  :CIdentifier [0..1]+ option  :Identifier [0..*]+ size  :PositiveInteger [0..1]+ symbol  :Identifier [0..1]IdentifiableResourceConsumptionARElementImplementationARElementAtpBlueprintAtpBlueprintableSwAddrMethod+ memoryAllocationKeywordPolicy  :MemoryAllocationKeywordPolicyType [0..1]+ option  :Identifier [0..*]+ sectionInitializationPolicy  :SectionInitializationPolicyType [0..1]+ sectionType  :MemorySectionType [0..1]«atpVariation»SwDataDefPropsAtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MemorySectionType var code const calprm configData excludeFromFlash calibrationVariables«enumeration»MemoryAllocationKeywordPolicyType addrMethodShortName addrMethodShortNameAndAlignment+swAddrmethod1+swAddrMethod0..1«atpVariation,atpSplitable»+memorySection0..*+resourceConsumption1«atpSplitable»+/swDataDefProps0..1
 
 5.5.5.1 Specifying Record Layouts
 
@@ -26096,8 +25573,7 @@ Figure 5.44: Speciﬁcation of a record layout
 
 
 
-«atpMixed»SwRecordLayoutGroupContentIdentifiableSwGenericAxisParamTypeSwRecordLayoutGroup+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutComponent  :Identifier [0..1]+ swRecordLayoutGroupAxis  :AxisIndexType [0..1]+ swRecordLayoutGroupFrom  :RecordLayoutIteratorPoint [0..1]+ swRecordLayoutGroupIndex  :NameToken [0..1]+ swRecordLayoutGroupStep  :Integer [0..1]+ swRecordLayoutGroupTo  :RecordLayoutIteratorPoint [0..1]SwRecordLayoutV+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutVAxis  :AxisIndexType [0..1]+ swRecordLayoutVFixValue  :Integer [0..1]+ swRecordLayoutVIndex  :NameTokens [0..1]+ swRecordLayoutVProp  :NameToken [0..1]ARElementSwRecordLayout«primitive»AsamRecordLayoutSemanticstagsxml.xsd.customType = ASAM-RECORD-LAYOUT-SEMANTICSxml.xsd.type = NMTOKEN«primitive»RecordLayoutIteratorPointtagsxml.xsd.customType = RECORD-LAYOUT-ITERATOR-POINTxml.xsd.pattern = -?([0-9]+|MAX-TEXT-SIZE|ARRAY-SIZE)xml.xsd.type = string«primitive»AxisIndexTypetagsxml.xsd.customType = AXIS-INDEX-TYPExml.xsd.pattern = [0-9]+|STRING|ARRAYxml.xsd.type = stringAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeMultiLanguageOverviewParagraph+swRecordLayoutGroup1+baseType0..1+swGenericAxisParamType0..1+desc0..1+swRecordLayoutV1+swRecordLayoutGroup1+swRecordLayout1+desc0..1+swRecordLayoutGroupContentType0..1Software Component Template
-AUTOSAR Release 4.2.2
+«atpMixed»SwRecordLayoutGroupContentIdentifiableSwGenericAxisParamTypeSwRecordLayoutGroup+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutComponent  :Identifier [0..1]+ swRecordLayoutGroupAxis  :AxisIndexType [0..1]+ swRecordLayoutGroupFrom  :RecordLayoutIteratorPoint [0..1]+ swRecordLayoutGroupIndex  :NameToken [0..1]+ swRecordLayoutGroupStep  :Integer [0..1]+ swRecordLayoutGroupTo  :RecordLayoutIteratorPoint [0..1]SwRecordLayoutV+ category  :AsamRecordLayoutSemantics [0..1]+ shortLabel  :Identifier+ swRecordLayoutVAxis  :AxisIndexType [0..1]+ swRecordLayoutVFixValue  :Integer [0..1]+ swRecordLayoutVIndex  :NameTokens [0..1]+ swRecordLayoutVProp  :NameToken [0..1]ARElementSwRecordLayout«primitive»AsamRecordLayoutSemanticstagsxml.xsd.customType = ASAM-RECORD-LAYOUT-SEMANTICSxml.xsd.type = NMTOKEN«primitive»RecordLayoutIteratorPointtagsxml.xsd.customType = RECORD-LAYOUT-ITERATOR-POINTxml.xsd.pattern = -?([0-9]+|MAX-TEXT-SIZE|ARRAY-SIZE)xml.xsd.type = string«primitive»AxisIndexTypetagsxml.xsd.customType = AXIS-INDEX-TYPExml.xsd.pattern = [0-9]+|STRING|ARRAYxml.xsd.type = stringAtpBlueprintAtpBlueprintableBaseTypeSwBaseTypeMultiLanguageOverviewParagraph+swRecordLayoutGroup1+baseType0..1+swGenericAxisParamType0..1+desc0..1+swRecordLayoutV1+swRecordLayoutGroup1+swRecordLayout1+desc0..1+swRecordLayoutGroupContentType0..1
 
 SwRecordLayout
 
@@ -26729,8 +26205,7 @@ Figure 5.45: Values for swRecordLayoutVProp for individual axis
 
 
 
-1234COUNT= 412341234COUNT= 4RIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFFRIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFF0VALUECurrent pointSoftware Component Template
-AUTOSAR Release 4.2.2
+1234COUNT= 412341234COUNT= 4RIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFFRIGHTDIFFLEFTDIFFFIXLEFTDIFFFIXRIGHTDIFF0VALUECurrent point
 
 Figure 5.46: Values for swRecordLayoutVProp for ﬁxed axis
 
@@ -26778,8 +26253,7 @@ MSR/AUTOSAR are represented by the SwRecordLayout (DEPOSIT etc.).
 
 
 
-OFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DISTOFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DISTSoftware Component Template
-AUTOSAR Release 4.2.2
+OFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DISTOFFSETDISTDIST2^SHIFT0Value= OFFSET+ n * 2^SHIFTValue= OFFSET+ n * DIST
 
 The following XML fragment provides an example for a SwRecordLayout for a
 curve. Note that in this case recognizing the patterns represented by the A2L
@@ -26894,24 +26368,21 @@ entities are handled e.g. by service libraries.
 
 
 
-:ApplicationDataType:SwDataDefProps:SwRecordLayout:ImplementationDatatype:BaseTypeelement :DataTypeMapSoftware Component Template
-AUTOSAR Release 4.2.2
+:ApplicationDataType:SwDataDefProps:SwRecordLayout:ImplementationDatatype:BaseTypeelement :DataTypeMap
 
 Figure 5.48: Curve implemented as two consecutive arrays
 
 
 
 
-element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPtssubElement :ImplementationDataTypeElementcategory = ARRAYshortName = outputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = valueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = inputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = value:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = inputValues:SwRecordLayoutVswRecordLayoutVAxis = 1shortLabel = value:SwRecordLayoutVswRecordLayoutVIndex = countswRecordLayoutVAxis = 1shortLabel = noOfAxisPts:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = outputValues:SwRecordLayoutVswRecordLayoutVAxis = 0shortLabel = value+baseType+baseTypeSoftware Component Template
-AUTOSAR Release 4.2.2
+element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPtssubElement :ImplementationDataTypeElementcategory = ARRAYshortName = outputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = valueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = inputValuessubElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = value:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = inputValues:SwRecordLayoutVswRecordLayoutVAxis = 1shortLabel = value:SwRecordLayoutVswRecordLayoutVIndex = countswRecordLayoutVAxis = 1shortLabel = noOfAxisPts:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1shortLabel = outputValues:SwRecordLayoutVswRecordLayoutVAxis = 0shortLabel = value+baseType+baseType
 
 Figure 5.49: Curve implemented as array of value pairs
 
 
 
 
-element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :DataTypeMapelement :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = COUNTsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = VALUEshortName = XvaluesubElement :ImplementationDataTypeElementcategory = VALUEshortName = YvaluesubElement :ImplementationDataTypeElementcategory = STRUCTUREarraySize = swMaxAxisPointsshortName = values:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1:SwRecordLayoutVswRecordLayoutVAxis = 1:SwRecordLayoutVswRecordLayoutVIndex = count:SwRecordLayoutGroup:SwRecordLayoutVswRecordLayoutVAxis = 0Software Component Template
-AUTOSAR Release 4.2.2
+element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :DataTypeMapelement :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = COUNTsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = VALUEshortName = XvaluesubElement :ImplementationDataTypeElementcategory = VALUEshortName = YvaluesubElement :ImplementationDataTypeElementcategory = STRUCTUREarraySize = swMaxAxisPointsshortName = values:SwRecordLayoutGroupswRecordLayoutGroupAxis = 1:SwRecordLayoutVswRecordLayoutVAxis = 1:SwRecordLayoutVswRecordLayoutVIndex = count:SwRecordLayoutGroup:SwRecordLayoutVswRecordLayoutVAxis = 0
 
 Figure 5.50: Record layout and data type for a map
 
@@ -26921,8 +26392,7 @@ diagrams.
 
 
 
-element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsYsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_2subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis-1])shortName = Xvalueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_1subElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = Yvalue:SwAxisIndividualswMaxAxisPoints = 10subElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsXsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = ARRAYshortName = linesarraySize = 16 (swMaxAxisPoints[axis_1])subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis_2])shortName = valueSoftware Component Template
-AUTOSAR Release 4.2.2
+element :ApplicationDataTypecategory = CURVEshortName = Curve1:SwDataDefPropselement :SwRecordLayoutshortName = RlyCurve:SwAxisIndividualswMaxAxisPoints = 16element :BaseTypeshortName = A_UINT8element :BaseTypeshortName = A_UINT16element :ImplementationDataTypecategory = STRUCTUREshortName = Curve1ImplsubElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsYsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_2subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis-1])shortName = Xvalueelement :DataTypeMapsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = pointsAxis_1subElement :ImplementationDataTypeElementcategory = VALUEarraySize = swMaxAxisPointsshortName = Yvalue:SwAxisIndividualswMaxAxisPoints = 10subElement :ImplementationDataTypeElementcategory = VALUEshortName = noOfAxisPointsXsubElement :ImplementationDataTypeElementcategory = ARRAYshortName = valuessubElement :ImplementationDataTypeElementcategory = ARRAYshortName = linesarraySize = 16 (swMaxAxisPoints[axis_1])subElement :ImplementationDataTypeElementcategory = VALUEarraySize = 16 (swMaxAxisPoints[axis_2])shortName = value
 
 We create an ImplementationDataType for each ApplicationDataType. Fig
 ure 5.51 illustrates how to map the details.
@@ -26941,8 +26411,7 @@ yields the complete structure in the ImplementationDataType. (cid:99)()
 
 
 
-for all ApplicationDataTypes«iterative»ApplicationDataTypeTypeContentFromRecordLayoutcreate subElementCreateTypeImplementationDataTypeElementSoftware Component Template
-AUTOSAR Release 4.2.2
+for all ApplicationDataTypes«iterative»ApplicationDataTypeTypeContentFromRecordLayoutcreate subElementCreateTypeImplementationDataTypeElement
 
 Figure 5.52: reﬁning subElements
 
@@ -26962,8 +26431,7 @@ Props.swInterpolationMethod. (cid:99)()
 
 
 
-process subElements of RecordLayoutGroup«iterative»RecordElementsubElementset category to STRUCTUREset category to  ARRAYset MaxNumberOfElementsget RecordLayoutGroup or RecordLayoutVImplementationDataTypeElementset category to VALUE and set dataDefPropertiescreate subElementoriginImplementationDataType Or ImplementationDataTypeElementcreate subElementImplementationDataTypeElementActivityFinal[hasSwRecordLayoutFrom][has no iterator][has exactly one value][RecordLayoutGroup][RecordLayoutValue]Software Component Template
-AUTOSAR Release 4.2.2
+process subElements of RecordLayoutGroup«iterative»RecordElementsubElementset category to STRUCTUREset category to  ARRAYset MaxNumberOfElementsget RecordLayoutGroup or RecordLayoutVImplementationDataTypeElementset category to VALUE and set dataDefPropertiescreate subElementoriginImplementationDataType Or ImplementationDataTypeElementcreate subElementImplementationDataTypeElementActivityFinal[hasSwRecordLayoutFrom][has no iterator][has exactly one value][RecordLayoutGroup][RecordLayoutValue]
 
 Figure 5.53: Mapping of Record Layouts and Interpolation Routines
 
@@ -27005,8 +26473,7 @@ Table 5.106: InterpolationRoutineMappingSet
 
 
 
-ARElementInterpolationRoutineMappingSetARElementSwRecordLayoutInterpolationRoutine+ isDefault  :Boolean+ shortLabel  :IdentifierARElementAtpBlueprintAtpBlueprintableBswModuleEntry+ callType  :BswCallType+ executionContext  :BswExecutionContext+ isReentrant  :Boolean+ isSynchronous  :Boolean+ role  :Identifier [0..1]+ serviceId  :PositiveInteger [0..1]+ swServiceImplPolicy  :SwServiceImplPolicyEnumInterpolationRoutineMapping+interpolationRoutine1+swRecordLayout+interpolationRoutine1..*+interpolationRoutineMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementInterpolationRoutineMappingSetARElementSwRecordLayoutInterpolationRoutine+ isDefault  :Boolean+ shortLabel  :IdentifierARElementAtpBlueprintAtpBlueprintableBswModuleEntry+ callType  :BswCallType+ executionContext  :BswExecutionContext+ isReentrant  :Boolean+ isSynchronous  :Boolean+ role  :Identifier [0..1]+ serviceId  :PositiveInteger [0..1]+ swServiceImplPolicy  :SwServiceImplPolicyEnumInterpolationRoutineMapping+interpolationRoutine1+swRecordLayout+interpolationRoutine1..*+interpolationRoutineMapping0..*
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
@@ -27410,8 +26877,7 @@ ueSpecification for the deﬁnition of labels for enumeration values while [con
 
 
 
-ValueSpecification+ shortLabel  :Identifier [0..1]TextValueSpecification+ value  :VerbatimStringRecordValueSpecificationArrayValueSpecificationConstantReferenceARElementConstantSpecificationNumericalValueSpecification«atpVariation»+ value  :NumericalReferenceValueSpecificationAtpPrototypeDataPrototypeApplicationValueSpecification+ category  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTimeNumericalRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierAbstractRuleBasedValueSpecification«atpVariation»+element1..*{ordered}+valueSpec1«atpVariation»+field1..*{ordered}+constant1+referenceValue1Software Component Template
-AUTOSAR Release 4.2.2
+ValueSpecification+ shortLabel  :Identifier [0..1]TextValueSpecification+ value  :VerbatimStringRecordValueSpecificationArrayValueSpecificationConstantReferenceARElementConstantSpecificationNumericalValueSpecification«atpVariation»+ value  :NumericalReferenceValueSpecificationAtpPrototypeDataPrototypeApplicationValueSpecification+ category  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTimeNumericalRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierAbstractRuleBasedValueSpecification«atpVariation»+element1..*{ordered}+valueSpec1«atpVariation»+field1..*{ordered}+constant1+referenceValue1
 
 str_1284] says that the deﬁnition of labels for enumeration values is the only use case
 for TextValueSpecification.
@@ -27818,8 +27284,7 @@ well [TPS_SWCT_01185].
 
 
 
-«atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]AbstractRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierRuleBasedAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexTypeRuleBasedValueCont«atpMixed»DataDefProperties::ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}ARElementUnits::Unit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]NumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation»+arguments1+swArraysize0..1+ruleBasedValues1+unit0..1+swArraysize1+ruleBasedValues1+unit0..1+swValueCont0..1+swAxisCont0..* {ordered}«atpVariation»+vtf0..1Software Component Template
-AUTOSAR Release 4.2.2
+«atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]AbstractRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierRuleBasedAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexTypeRuleBasedValueCont«atpMixed»DataDefProperties::ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}ARElementUnits::Unit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]NumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation»+arguments1+swArraysize0..1+ruleBasedValues1+unit0..1+swArraysize1+ruleBasedValues1+unit0..1+swValueCont0..1+swAxisCont0..* {ordered}«atpVariation»+vtf0..1
 
 Class
 NumericalRuleBasedValueSpeciﬁcation
@@ -27869,8 +27334,7 @@ this value of rule is explained in [TPS_SWCT_01494] and
 
 
 
-AbstractRuleBasedValueSpecificationNumericalRuleBasedValueSpecification«atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :IdentifierNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+arguments1«atpVariation»+vtf0..1+ruleBasedValues1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractRuleBasedValueSpecificationNumericalRuleBasedValueSpecification«atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :IdentifierNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+arguments1«atpVariation»+vtf0..1+ruleBasedValues1
 
 [TPS_SWCT_01485] The order of RuleArguments arguments shall be respected
 (cid:100) The order of arguments in RuleArguments corresponds to the order of elements
@@ -28227,8 +27691,7 @@ Primitive Data Type.
 
 
 
-MultilanguageLongNameValueSpecificationApplicationValueSpecification+ category  :IdentifierSwValueContSwAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexType«atpMixed»ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}«atpMixed»SwValues+ v  :Numerical+ vt  :VerbatimString«atpVariation»+ vf  :NumericalValueGroupNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTime+swAxisCont0..*{ordered}+swValueCont0..1+swValuesPhys0..1+swArraysize0..1«atpVariation»+vtf1+vg1+swArraysize1+swValuesPhys1+vgContents0..1+label0..1Software Component Template
-AUTOSAR Release 4.2.2
+MultilanguageLongNameValueSpecificationApplicationValueSpecification+ category  :IdentifierSwValueContSwAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexType«atpMixed»ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}«atpMixed»SwValues+ v  :Numerical+ vt  :VerbatimString«atpVariation»+ vf  :NumericalValueGroupNumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTime+swAxisCont0..*{ordered}+swValueCont0..1+swValuesPhys0..1+swArraysize0..1«atpVariation»+vtf1+vg1+swArraysize1+swValuesPhys1+vgContents0..1+label0..1
 
 Attribute
 
@@ -29105,8 +28568,7 @@ Table 5.131: ConstantSpeciﬁcationMapping
 
 
 
-ARElementConstantSpecificationConstantSpecificationMappingARElementConstantSpecificationMappingSet+implConstant1+applConstant1+mapping1..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementConstantSpecificationConstantSpecificationMappingARElementConstantSpecificationMappingSet+implConstant1+applConstant1+mapping1..*
 
 ConstantSpeciﬁcationMappingSet
 
@@ -29152,8 +28614,7 @@ ComSpec.
 
 
 
-AtpStructureElementInternalBehaviorARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetSwComponentTypeParameterSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementInternalBehaviorARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetSwComponentTypeParameterSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*«atpSplitable»+dataTypeMapping0..*
 
 This allows to create the calibration data sets through RTE-generator and compiler.
 These initial values are speciﬁed in CalibrationParameterValueSet and Cali
@@ -29216,8 +28677,7 @@ Table 5.133: CalibrationParameterValueSet
 
 
 
-IdentifiableFlatInstanceDescriptor+ role  :Identifier [0..1]AtpPrototypeIdentifiableRootSwCompositionPrototypeValueSpecification+ shortLabel  :Identifier [0..1]ARElementCalibrationParameterValueSetCalibrationParameterValue«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+calibrationParameterValue0..*«atpSplitable»+calibrationParameterValueSet0..*+initializedParameter1+implInitValue0..1+applInitValue0..1Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableFlatInstanceDescriptor+ role  :Identifier [0..1]AtpPrototypeIdentifiableRootSwCompositionPrototypeValueSpecification+ shortLabel  :Identifier [0..1]ARElementCalibrationParameterValueSetCalibrationParameterValue«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+calibrationParameterValue0..*«atpSplitable»+calibrationParameterValueSet0..*+initializedParameter1+implInitValue0..1+applInitValue0..1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
@@ -29280,7 +28740,7 @@ arameter
 Table 5.134: CalibrationParameterValue
 
 
-
+#@chapter-6
 6 Compatibility
 
 6.1 Introduction
@@ -30349,8 +29809,7 @@ no
 no
 no
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Required Port
 Required Inner Port
@@ -31070,8 +30529,7 @@ the scenario sketched in Figure 6.3. Although the sender software-components in 
 
 
 
-{A,B}{A,B}{A,B}{A,B}{B}{B}Software Component Template
-AUTOSAR Release 4.2.2
+{A,B}{A,B}{A,B}{A,B}{B}{B}
 
 provide the set of required dataElements the individual AssemblySwConnectors
 create incompatible connections between sender and receiver.
@@ -31099,8 +30557,7 @@ understanding of the meaning of the DelegatedPortAnnotation.
 
 
 
-{B}{A,B}{A}Software Component Template
-AUTOSAR Release 4.2.2
+{B}{A,B}{A}
 
 Figure 6.4: Legal split of delegation connector
 
@@ -31128,8 +30585,7 @@ Figure 6.5: Legal split of delegation connector
 
 
 
-{A,B}{B,C}{A,B,C,D}[nfold]{A}{B}{A,B}[single]Software Component Template
-AUTOSAR Release 4.2.2
+{A,B}{B,C}{A,B,C,D}[nfold]{A}{B}{A,B}[single]
 
 In this case the resulting communication pattern on the VFB would be n:1. In this case
 the value of the attribute signalFan of DelegatedPortAnnotation should be set
@@ -31159,8 +30615,7 @@ on the VFB for {B} would be n:1.
 
 
 
-{A}{A,B}[single]{B}{A,B}Software Component Template
-AUTOSAR Release 4.2.2
+{A}{A,B}[single]{B}{A,B}
 
 Figure 6.7: Legal merge of delegation connector
 
@@ -31183,8 +30638,7 @@ via CompositionSwComponentTypes to included SwComponentPrototypes.
 
 
 
-{A,B}{A,B,C}[nfold]{B,C}{A,B,C}{A,B}{A,B,C}[single]{C,D}{A,B,C}Software Component Template
-AUTOSAR Release 4.2.2
+{A,B}{A,B,C}[nfold]{B,C}{A,B,C}{A,B}{A,B,C}[single]{C,D}{A,B,C}
 
 Figure 6.9: Valid delegation of SwConnectors that goes end-to-end
 
@@ -31207,8 +30661,7 @@ ment {E} is not provided by the delegation RPortPrototype.
 
 
 
-{A,B}{B,C}{A}{B}{C}Software Component Template
-AUTOSAR Release 4.2.2
+{A,B}{B,C}{A}{B}{C}
 
 Figure 6.11: Illegal split of delegation connector
 
@@ -31229,17 +30682,15 @@ the CompositionSwComponentType.
 
 
 
-{A,B}{B,C,E}{A,B,C,D}{A,B}{A,C,E}{B,C}{A,C,E}Software Component Template
-AUTOSAR Release 4.2.2
+{A,B}{B,C,E}{A,B,C,D}{A,B}{A,C,E}{B,C}{A,C,E}
 
 Figure 6.13: Invalid delegation of SwConnectors that goes end-to-end
 
 
 
 
-Software Component Template
-AUTOSAR Release 4.2.2
 
+#@chapter-7
 7 Internal Behavior
 
 7.1 Introduction
@@ -31284,8 +30735,7 @@ Attribute
 
 
 
-InternalBehaviorSwcInternalBehaviorSwComponentTypeAtomicSwComponentTypeImplementationSwcImplementation«atpVariation» Tags:vh.latestBindingTime = preCompileTime+behavior1«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehaviorSwComponentTypeAtomicSwComponentTypeImplementationSwcImplementation«atpVariation» Tags:vh.latestBindingTime = preCompileTime+behavior1«atpVariation,atpSplitable»+internalBehavior0..1
 
 Attribute
 arTypedPe
@@ -31694,8 +31144,7 @@ RS_SWCT_00090, RS_SWCT_03050)
 
 
 
-SwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventIdentifiableExclusiveAreaAtpStructureElementIdentifiablePerInstanceMemoryPortAPIOptionAutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototypeAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+perInstanceMemory*«atpVariation,atpSplitable»+runnable1..*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»+portAPIOption0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+exclusiveArea0..*«atpVariation,atpSplitable»+constantMemory0..*Software Component Template
-AUTOSAR Release 4.2.2
+SwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventIdentifiableExclusiveAreaAtpStructureElementIdentifiablePerInstanceMemoryPortAPIOptionAutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototypeAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+perInstanceMemory*«atpVariation,atpSplitable»+runnable1..*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»+portAPIOption0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+exclusiveArea0..*«atpVariation,atpSplitable»+constantMemory0..*
 
 Figure 7.3: Details of RunnableEntity
 
@@ -31710,8 +31159,7 @@ cannot
 
 
 
-AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueIdentifiableWaitPoint+ timeout  :TimeValueInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableAsynchronousServerCallResultPointAutosarParameterRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcuExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]+waitPoint*+internalTriggeringPoint0..*«atpVariation»+externalTriggeringPoint0..*«atpVariation»+accessedParameter1«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+asynchronousServerCallResultPoint0..*«atpVariation»+runnable+serverCallPoint*«atpVariation»+runnableSoftware Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueIdentifiableWaitPoint+ timeout  :TimeValueInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableAsynchronousServerCallResultPointAutosarParameterRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcuExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]+waitPoint*+internalTriggeringPoint0..*«atpVariation»+externalTriggeringPoint0..*«atpVariation»+accessedParameter1«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+asynchronousServerCallResultPoint0..*«atpVariation»+runnable+serverCallPoint*«atpVariation»+runnable
 
 Type to deﬁne a SwcInternalBehavior. Consequently, CompositionSwCom
 ponentTypes don’t have RunnableEntitys by themselves. (cid:99)(RS_SWCT_00070,
@@ -31733,8 +31181,7 @@ section 7.2.4.4.
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeCompositionSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntity«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefines atpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeCompositionSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntity«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefines atpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»
 
 RunnableEntity
 
@@ -31836,8 +31283,7 @@ dataReceiv
 ePointByAr
 gument
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Mul. Kind Note
 
@@ -32321,8 +31767,7 @@ ically use static variables to store state.
 
 
 
-AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierTimingEvent+ period  :TimeValue+startOnEvent0..1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierTimingEvent+ period  :TimeValue+startOnEvent0..1
 
 true
 
@@ -32491,8 +31936,7 @@ individual arguments
 
 
 
-AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierRunnableEntityArgument+ symbol  :CIdentifier+argument0..*{ordered}Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierRunnableEntityArgument+ symbol  :CIdentifier+argument0..*{ordered}
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Runnable
@@ -32560,8 +32004,7 @@ ger shall not reference ExecutableEntityActivationReason (cid:100) An RTEEvent
 
 
 
-AtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]AtpStructureElementRTEEventExecutableEntityActivationReason+ bitPosition  :PositiveIntegerReferrableImplementationProps+ symbol  :CIdentifierIdentifiableAbstractEvent+activationReasonRepresentation0..1+startOnEvent0..1+activationReason0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]AtpStructureElementRTEEventExecutableEntityActivationReason+ bitPosition  :PositiveIntegerReferrableImplementationProps+ symbol  :CIdentifierIdentifiableAbstractEvent+activationReasonRepresentation0..1+startOnEvent0..1+activationReason0..*
 
 that is referenced by a WaitPoint in the role trigger shall not reference Exe
 cutableEntityActivationReason in the role activationReasonRepresen
@@ -33247,16 +32690,14 @@ Figure 7.8: RTEEvents used in the context of sender/receiver communication
 
 
 
-AbstractEventAtpStructureElementRTEEventDataSendCompletedEventDataReceivedEventDataReceiveErrorEventAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]DataWriteCompletedEvent+eventSource1+eventSource1«instanceRef»+data0..1«instanceRef»+data0..1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventDataSendCompletedEventDataReceivedEventDataReceiveErrorEventAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]DataWriteCompletedEvent+eventSource1+eventSource1«instanceRef»+data0..1«instanceRef»+data0..1
 
 Figure 7.9: RTEEvents used in the context of client/server communication
 
 
 
 
-AbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventOperationInvokedEventAtpStructureElementIdentifiableClientServerOperationAtpStructureElementIdentifiableAsynchronousServerCallResultPoint+eventSource1«instanceRef»+operationSoftware Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventOperationInvokedEventAtpStructureElementIdentifiableClientServerOperationAtpStructureElementIdentifiableAsynchronousServerCallResultPoint+eventSource1«instanceRef»+operation
 
 Figure 7.10: RTEEvents used in the context of mode communication
 
@@ -33266,8 +32707,7 @@ ManagerErrorEvent and ModeErrorBehavior can be found in section 9.4.
 
 
 
-AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*
 
 Figure 7.11: RTEEvent used in the context of data transformation
 
@@ -33287,8 +32727,7 @@ the RTEEvent occurs. (cid:99)()
 
 
 
-AbstractEventAtpStructureElementRTEEventAtpStructureElementIdentifiableClientServerOperationTransformerHardErrorEventAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]«instanceRef»+operation0..1«instanceRef»+trigger0..1AbstractEventAtpStructureElementRTEEventTimingEvent+ period  :TimeValueExternalTriggerOccurredEventInternalTriggerOccurredEventAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]BackgroundEventInitEvent+eventSource1«instanceRef»+trigger0..1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventAtpStructureElementIdentifiableClientServerOperationTransformerHardErrorEventAtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]«instanceRef»+operation0..1«instanceRef»+trigger0..1AbstractEventAtpStructureElementRTEEventTimingEvent+ period  :TimeValueExternalTriggerOccurredEventInternalTriggerOccurredEventAtpStructureElementIdentifiableInternalTriggeringPoint+ swImplPolicy  :SwImplPolicyEnum [0..1]AtpStructureElementIdentifiableTrigger+ swImplPolicy  :SwImplPolicyEnum [0..1]BackgroundEventInitEvent+eventSource1«instanceRef»+trigger0..1
 
 [TPS_SWCT_01318] RunnableEntity and WaitPoint (cid:100)
 RunnableEntity wants to block and wait
@@ -33340,8 +32779,7 @@ points) can only exist a single time in the context of the scheduler.
 
 
 
-AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime+runnable1..*«atpVariation,atpSplitable»+trigger1+waitPoint*+event*«atpVariation,atpSplitable»+startOnEvent0..1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime+runnable1..*«atpVariation,atpSplitable»+trigger1+waitPoint*+event*«atpVariation,atpSplitable»+startOnEvent0..1
 
 Concerning DataReceivedEvents consider as well [constr_2021].
 
@@ -33502,8 +32940,7 @@ Figure 7.15: Description of nested usage of ExclusiveArea
 
 
 
-IdentifiableExclusiveAreaSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+exclusiveArea0..*IdentifiableExclusiveAreaReferrableExclusiveAreaNestingOrderAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+exclusiveAreaNestingOrder0..*+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*«atpVariation,atpSplitable»+exclusiveArea0..*+exclusiveArea0..*{ordered}Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableExclusiveAreaSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+exclusiveArea0..*IdentifiableExclusiveAreaReferrableExclusiveAreaNestingOrderAtpStructureElementInternalBehaviorIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+exclusiveAreaNestingOrder0..*+canEnterExclusiveArea0..*+runsInsideExclusiveArea0..*«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*«atpVariation,atpSplitable»+exclusiveArea0..*+exclusiveArea0..*{ordered}
 
 [TPS_SWCT_01457] ExclusiveAreaNestingOrder (cid:100) The optional Exclu
 siveAreaNestingOrders shall (if used at all) describe possible nesting orders
@@ -33528,8 +32965,7 @@ CallPoint
 
 
 
-ReferrableExclusiveAreaNestingOrderSynchronousServerCallPointAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]SwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*+exclusiveAreaNestingOrder0..*+runnable1..*«atpVariation,atpSplitable»+serverCallPoint*«atpVariation»+calledFromWithinExclusiveArea0..1Software Component Template
-AUTOSAR Release 4.2.2
+ReferrableExclusiveAreaNestingOrderSynchronousServerCallPointAtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierIdentifiableExecutableEntity+ minimumStartInterval  :TimeValue+ reentrancyLevel  :ReentrancyLevelEnum [0..1]SwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+exclusiveAreaNestingOrder0..*+exclusiveAreaNestingOrder0..*+runnable1..*«atpVariation,atpSplitable»+serverCallPoint*«atpVariation»+calledFromWithinExclusiveArea0..1
 
 An ExclusiveAreaNestingOrder is aggregated by the InternalBehavior that
 in turn also owns RunnableEntity.
@@ -33680,8 +33116,7 @@ able or explicitInterRunnableVariable (cid:100) It is possible (but not mandator
 
 
 
-AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAutosarDataPrototypeVariableDataPrototypeAutosarVariableRefValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initValue0..1+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+writtenLocalVariable0..*+accessedVariable1+localVariable0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAutosarDataPrototypeVariableDataPrototypeAutosarVariableRefValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initValue0..1+explicitInterRunnableVariable*«atpVariation,atpSplitable»+implicitInterRunnableVariable*«atpVariation,atpSplitable»«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+writtenLocalVariable0..*+accessedVariable1+localVariable0..1
 
 to deﬁne an initial value for a speciﬁc implicitInterRunnableVariable or ex
 plicitInterRunnableVariable.
@@ -33769,8 +33204,7 @@ tivated at the occurrence of an internal trigger event is deﬁned by means of a
 
 
 
-InternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableInternalTriggeringPointInternalTriggerOccurredEventAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource1+runnable1..*«atpVariation,atpSplitable»+internalTriggeringPoint0..*«atpVariation»+event*«atpVariation,atpSplitable»+startOnEvent0..1Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableInternalTriggeringPointInternalTriggerOccurredEventAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource1+runnable1..*«atpVariation,atpSplitable»+internalTriggeringPoint0..*«atpVariation»+event*«atpVariation,atpSplitable»+startOnEvent0..1
 
 ternalTriggerOccurredEvent which references the particular InternalTrig
 geringPoint and additionally the to-be-activated RunnableEntity. (cid:99)()
@@ -33951,8 +33385,7 @@ Figure 7.19: DataReadAccess and DataWriteAccess
 
 
 
-AtpStructureElementExecutableEntityRunnableEntitySwComponentTypeAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcu«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+accessedParameter1+swDataDefProps0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntitySwComponentTypeAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcu«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+accessedParameter1+swDataDefProps0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
@@ -34179,8 +33612,7 @@ obviously beat the purpose of the API function.
 
 
 
-AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorDataSendCompletedEventAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataSendPoint0..*+eventSource1+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorDataSendCompletedEventAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataSendPoint0..*+eventSource1+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»
 
 Figure 7.21: Deﬁnition of an explicit request to receive data
 
@@ -34204,8 +33636,7 @@ dataReceivePointByArgument.
 
 
 
-AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype shall be a VariableDataPrototype.AtpPrototypeDataPrototypeAbstractRequiredPortPrototype«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataReceivePointByValue0..*+runnable1..*«atpVariation,atpSplitable»+port0..*«atpVariation,atpSplitable»«instanceRef»+autosarVariable0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype shall be a VariableDataPrototype.AtpPrototypeDataPrototypeAbstractRequiredPortPrototype«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataReceivePointByValue0..*+runnable1..*«atpVariation,atpSplitable»+port0..*«atpVariation,atpSplitable»«instanceRef»+autosarVariable0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1
 
 [constr_2005] Referenced VariableDataPrototype from AutosarVari
 ableRef of VariableAccess in role dataReceivePointByValue or dataRe
@@ -34361,8 +33792,7 @@ VariableDataPrototype. (cid:99)(RS_SWCT_00200)
 
 
 
-AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototypeDataWriteCompletedEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataWriteAccess0..*+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»+eventSource1Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableVariableAccessAutosarVariableRefAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimePPortPrototype shall be typed by SenderReceiverInterface. Therefore, the DataPrototype is a VariableDataPrototype.AtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAbstractProvidedPortPrototypeDataWriteCompletedEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+internalBehavior0..1«instanceRef»+autosarVariable0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataWriteAccess0..*+port0..*«atpVariation,atpSplitable»+accessedVariable1+startOnEvent0..1+event*«atpVariation,atpSplitable»+eventSource1
 
 Figure 7.23: Receiver is notiﬁed by an event when new data has arrived
 
@@ -34402,8 +33832,7 @@ a VariableDataPrototype and is raised by the RTE when an error concerning
 
 
 
-DataReceivedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by a SenderReceiverInterface.AbstractRequiredPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1+port0..*«atpVariation,atpSplitable»«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+DataReceivedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractRequiredPortPrototype shall be typed by a SenderReceiverInterface.AbstractRequiredPortPrototype«atpVariation,atpSplitable»+internalBehavior0..1+port0..*«atpVariation,atpSplitable»«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»
 
 the reception of the referenced data is detected by the COM 5 layer. The following
 cases present some situations which will cause the RTE to raise a DataReceiveEr
@@ -34489,8 +33918,7 @@ vokes a server operation formally deﬁned as a ClientServerOperation via an
 
 
 
-DataReceiveErrorEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»+dataElement1..*1«instanceRef»+data0..1Software Component Template
-AUTOSAR Release 4.2.2
+DataReceiveErrorEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityAutosarDataPrototypeVariableDataPrototypeDataInterfaceSenderReceiverInterfaceInternalBehaviorSwcInternalBehavior«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»+dataElement1..*1«instanceRef»+data0..1
 
 RPortPrototype of the enclosing SwComponentPrototype typed by a particular
 AtomicSwComponentType. (cid:99)(RS_SWCT_00200)
@@ -34573,8 +34001,7 @@ ClientServerOperation in the PortInterface used to type the PortPro
 
 
 
-AtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierSynchronousServerCallPointAsynchronousServerCallPointAbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanSwComponentTypeAtomicSwComponentTypeAtpStructureElementIdentifiableAsynchronousServerCallResultPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime+eventSource1+serverCallPoint*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+asynchronousServerCallPoint1+asynchronousServerCallResultPoint0..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierSynchronousServerCallPointAsynchronousServerCallPointAbstractEventAtpStructureElementRTEEventAsynchronousServerCallReturnsEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanSwComponentTypeAtomicSwComponentTypeAtpStructureElementIdentifiableAsynchronousServerCallResultPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = preCompileTime+eventSource1+serverCallPoint*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+asynchronousServerCallPoint1+asynchronousServerCallResultPoint0..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»
 
 totype ‘myPort’. This implies that the RunnableEntity is allowed to invoke
 this operation asynchronously.
@@ -34855,8 +34282,7 @@ Table 7.39: OperationInvokedEvent
 
 
 
-OperationInvokedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceAbstractProvidedPortPrototypePPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+operation1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»«instanceRef»+operationSoftware Component Template
-AUTOSAR Release 4.2.2
+OperationInvokedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceAbstractProvidedPortPrototypePPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+operation1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»«instanceRef»+operation
 
 7.5.2.3 Reacting on Data Transformation Errors
 
@@ -34950,8 +34376,7 @@ Figure 7.27: Model structure of a trigger source.
 
 
 
-ExternalTriggeringPointAtpStructureElementExecutableEntityRunnableEntityAtpBlueprintableAtpPrototypePortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypePPortPrototype+runnable1..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+port0..*«atpVariation,atpSplitable»+externalTriggeringPoint0..*«atpVariation»«instanceRef»+trigger0..1«atpVariation,atpSplitable»+internalBehavior0..1+trigger1..*Software Component Template
-AUTOSAR Release 4.2.2
+ExternalTriggeringPointAtpStructureElementExecutableEntityRunnableEntityAtpBlueprintableAtpPrototypePortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypePPortPrototype+runnable1..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+port0..*«atpVariation,atpSplitable»+externalTriggeringPoint0..*«atpVariation»«instanceRef»+trigger0..1«atpVariation,atpSplitable»+internalBehavior0..1+trigger1..*
 
 ExternalTriggeringPoint
 
@@ -35054,8 +34479,7 @@ used. (cid:99)(RS_SWCT_00200)
 
 
 
-ExternalTriggerOccurredEventAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+port0..*«atpVariation,atpSplitable»«instanceRef»+trigger0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1«isOfType»+requiredInterface1{redefinesatpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»+trigger1..*Software Component Template
-AUTOSAR Release 4.2.2
+ExternalTriggerOccurredEventAtpStructureElementExecutableEntityRunnableEntityAbstractEventAtpStructureElementRTEEventAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableTriggerTriggerInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+port0..*«atpVariation,atpSplitable»«instanceRef»+trigger0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1«isOfType»+requiredInterface1{redefinesatpType}«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»+trigger1..*
 
 The designer of a software-component can use this access mechanism when design
 ing a RunnableEntity using, as input value, a DataPrototype
@@ -35086,8 +34510,7 @@ Figure 7.29: Runnable Access to a Calibration Port
 
 
 
-AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeSwVariableRefProxyAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeSwCalprmAxisSetSwCalprmAxisSwCalprmAxisTypePropsSwAxisIndividualAtpPrototypeDataPrototypeRPortPrototype shall be typed by a ParameterInterface. The specific DataPrototype is therefore actually a ParameterDataPrototype.+port0..*«atpVariation,atpSplitable»+localParameter0..1«instanceRef»+autosarParameter0..1«atpVariation»+parameterAccess0..*+runnable1..*«atpVariation,atpSplitable»+autosarVariable0..1+swCalprmAxisSet0..1«atpVariation,atpSplitable»+internalBehavior0..1+swDataDefProps0..1+accessedParameter1+swVariableRef0..*+swCalprmAxis0..*+swCalprmAxisTypeProps1+swComparisonVariable0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeSwVariableRefProxyAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeSwCalprmAxisSetSwCalprmAxisSwCalprmAxisTypePropsSwAxisIndividualAtpPrototypeDataPrototypeRPortPrototype shall be typed by a ParameterInterface. The specific DataPrototype is therefore actually a ParameterDataPrototype.+port0..*«atpVariation,atpSplitable»+localParameter0..1«instanceRef»+autosarParameter0..1«atpVariation»+parameterAccess0..*+runnable1..*«atpVariation,atpSplitable»+autosarVariable0..1+swCalprmAxisSet0..1«atpVariation,atpSplitable»+internalBehavior0..1+swDataDefProps0..1+accessedParameter1+swVariableRef0..*+swCalprmAxis0..*+swCalprmAxisTypeProps1+swComparisonVariable0..*
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
@@ -35175,8 +34598,7 @@ Figure 7.30: applying instantiation speciﬁc data deﬁnition properties
 
 
 
-InstantiationDataDefProps«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarVariableRefAutosarParameterRefAtpPrototypeDataPrototypeXOR+variableInstance0..1+parameterInstance0..1+swDataDefProps1«atpVariation,atpSplitable»+instantiationDataDefProps0..*«instanceRef»+autosarVariable0..1«instanceRef»+autosarParameter0..1+localParameter0..1Software Component Template
-AUTOSAR Release 4.2.2
+InstantiationDataDefProps«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarVariableRefAutosarParameterRefAtpPrototypeDataPrototypeXOR+variableInstance0..1+parameterInstance0..1+swDataDefProps1«atpVariation,atpSplitable»+instantiationDataDefProps0..*«instanceRef»+autosarVariable0..1«instanceRef»+autosarParameter0..1+localParameter0..1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::
@@ -35284,8 +34706,7 @@ Figure 7.31: Port API Options.
 
 
 
-InternalBehaviorSwcInternalBehaviorPortAPIOption+ enableTakeAddress  :Boolean+ errorHandling  :DataTransformationErrorHandlingEnum [0..1]+ indirectAPI  :BooleanAtpBlueprintableAtpPrototypePortPrototypePortDefinedArgumentValueValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]«enumeration»DataTransformationErrorHandlingEnum noTransformerErrorHandling transformerErrorHandling+port1+portAPIOption0..*«atpVariation,atpSplitable»«isOfType»+valueType+portArgValue0..*{ordered}+value1Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehaviorPortAPIOption+ enableTakeAddress  :Boolean+ errorHandling  :DataTransformationErrorHandlingEnum [0..1]+ indirectAPI  :BooleanAtpBlueprintableAtpPrototypePortPrototypePortDefinedArgumentValueValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]«enumeration»DataTransformationErrorHandlingEnum noTransformerErrorHandling transformerErrorHandling+port1+portAPIOption0..*«atpVariation,atpSplitable»«isOfType»+valueType+portArgValue0..*{ordered}+value1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::PortAPI
@@ -35528,8 +34949,7 @@ Figure 7.32: PerInstanceMemory
 
 
 
-AtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataType+swDataDefProps0..1«isOfType»+type1{redefines atpType}+perInstanceMemory1+invalidValue0..1+initValue0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+swDataDefProps0..1+perInstanceMemory*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]DataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataType+swDataDefProps0..1«isOfType»+type1{redefines atpType}+perInstanceMemory1+invalidValue0..1+initValue0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»+swDataDefProps0..1+perInstanceMemory*«atpVariation,atpSplitable»
 
 [TPS_SWCT_01361] attribute supportsMultipleInstantiation == false (cid:100)
 AtomicSwComponentTypes that do not support multiple instantiation (attribute sup
@@ -35697,8 +35117,7 @@ component data structure.
 
 
 
-SwcInternalBehaviorAtpStructureElementInternalBehaviorAutosarDataPrototypeVariableDataPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+constantMemory0..*Software Component Template
-AUTOSAR Release 4.2.2
+SwcInternalBehaviorAtpStructureElementInternalBehaviorAutosarDataPrototypeVariableDataPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+staticMemory0..*«atpVariation,atpSplitable»+constantMemory0..*
 
 Further on, this kind of memory reduces the dependencies of the software-component
 implementation to generated RTE code which is appreciated for safety related func
@@ -35735,8 +35154,7 @@ Figure 7.34: Included AUTOSAR Data Types
 
 
 
-InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpTypeAutosarDataTypeIncludedDataTypeSet+ literalPrefix  :Identifier [0..1]+includedDataTypeSet0..*«atpSplitable»+dataType1..*Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpTypeAutosarDataTypeIncludedDataTypeSet+ literalPrefix  :Identifier [0..1]+includedDataTypeSet0..*«atpSplitable»+dataType1..*
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Included
@@ -35862,8 +35280,7 @@ code may be necessary.
 
 
 
-InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]IncludedModeDeclarationGroupSet+ prefix  :Identifier [0..1]+modeDeclarationGroup1..*«atpSplitable»+includedModeDeclarationGroupSet0..*Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]IncludedModeDeclarationGroupSet+ prefix  :Identifier [0..1]+modeDeclarationGroup1..*«atpSplitable»+includedModeDeclarationGroupSet0..*
 
 7.11 Service Needs
 
@@ -35948,24 +35365,21 @@ Figure 7.36: ServiceNeeds: General ServiceNeeds
 
 
 
-IdentifiableServiceNeedsSupervisedEntityNeeds+ activateAtStart  :Boolean+ enableDeactivation  :Boolean+ expectedAliveCycle  :TimeValue+ maxAliveCycle  :TimeValue+ minAliveCycle  :TimeValue+ toleratedFailedCycles  :PositiveIntegerComMgrUserNeeds+ maxCommMode  :MaxCommModeEnum«enumeration»MaxCommModeEnum none silent fullEcuStateMgrUserNeedsCryptoServiceNeeds+ maximumKeyLength  :PositiveInteger [0..1]DltUserNeedsSyncTimeBaseMgrUserNeedsBswMgrNeedsDoIpServiceNeedsSoftware Component Template
-AUTOSAR Release 4.2.2
+IdentifiableServiceNeedsSupervisedEntityNeeds+ activateAtStart  :Boolean+ enableDeactivation  :Boolean+ expectedAliveCycle  :TimeValue+ maxAliveCycle  :TimeValue+ minAliveCycle  :TimeValue+ toleratedFailedCycles  :PositiveIntegerComMgrUserNeeds+ maxCommMode  :MaxCommModeEnum«enumeration»MaxCommModeEnum none silent fullEcuStateMgrUserNeedsCryptoServiceNeeds+ maximumKeyLength  :PositiveInteger [0..1]DltUserNeedsSyncTimeBaseMgrUserNeedsBswMgrNeedsDoIpServiceNeeds
 
 Figure 7.37: General diagnostic service-related ServiceNeeds
 
 
 
 
-«enumeration»DiagnosticAudienceEnum development manufacturing afterSales supplier aftermarket«enumeration»DiagnosticRoutineTypeEnum synchronous asynchronous«enumeration»DiagnosticValueAccessEnum readOnly readWrite writeOnlyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]DiagnosticValueNeeds+ dataLength  :PositiveInteger [0..1]+ diagnosticValueAccess  :DiagnosticValueAccessEnum [0..1]+ didNumber  :PositiveInteger [0..1]+ fixedLength  :Boolean [0..1]+ processingStyle  :DiagnosticProcessingStyleEnum [0..1]DiagnosticIoControlNeeds+ didNumber  :PositiveInteger [0..1]+ freezeCurrentStateSupported  :Boolean [0..1]+ resetToDefaultSupported  :Boolean [0..1]+ shortTermAdjustmentSupported  :Boolean [0..1]DiagnosticRoutineNeeds+ diagRoutineType  :DiagnosticRoutineTypeEnum+ ridNumber  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagnosticCommunicationManagerNeeds+ serviceRequestCallbackType  :DiagnosticServiceRequestCallbackTypeEnum [0..1]IdentifiableServiceNeedsDiagnosticOperationCycleNeeds+ operationCycle  :OperationCycleTypeEnum+ operationCycleAutomaticEnd  :Boolean+ operationCycleAutostart  :Boolean«enumeration»OperationCycleTypeEnum ignition obdDcy warmup power time otherDiagnosticsCommunicationSecurityNeeds«enumeration»DiagnosticProcessingStyleEnum processingStyleSynchronous processingStyleAsynchronous«enumeration»DiagnosticServiceRequestCallbackTypeEnum requestCallbackTypeManufacturer requestCallbackTypeSupplier+currentValue0..1+serviceNeeds1Software Component Template
-AUTOSAR Release 4.2.2
+«enumeration»DiagnosticAudienceEnum development manufacturing afterSales supplier aftermarket«enumeration»DiagnosticRoutineTypeEnum synchronous asynchronous«enumeration»DiagnosticValueAccessEnum readOnly readWrite writeOnlyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]DiagnosticValueNeeds+ dataLength  :PositiveInteger [0..1]+ diagnosticValueAccess  :DiagnosticValueAccessEnum [0..1]+ didNumber  :PositiveInteger [0..1]+ fixedLength  :Boolean [0..1]+ processingStyle  :DiagnosticProcessingStyleEnum [0..1]DiagnosticIoControlNeeds+ didNumber  :PositiveInteger [0..1]+ freezeCurrentStateSupported  :Boolean [0..1]+ resetToDefaultSupported  :Boolean [0..1]+ shortTermAdjustmentSupported  :Boolean [0..1]DiagnosticRoutineNeeds+ diagRoutineType  :DiagnosticRoutineTypeEnum+ ridNumber  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagnosticCommunicationManagerNeeds+ serviceRequestCallbackType  :DiagnosticServiceRequestCallbackTypeEnum [0..1]IdentifiableServiceNeedsDiagnosticOperationCycleNeeds+ operationCycle  :OperationCycleTypeEnum+ operationCycleAutomaticEnd  :Boolean+ operationCycleAutostart  :Boolean«enumeration»OperationCycleTypeEnum ignition obdDcy warmup power time otherDiagnosticsCommunicationSecurityNeeds«enumeration»DiagnosticProcessingStyleEnum processingStyleSynchronous processingStyleAsynchronous«enumeration»DiagnosticServiceRequestCallbackTypeEnum requestCallbackTypeManufacturer requestCallbackTypeSupplier+currentValue0..1+serviceNeeds1
 
 Figure 7.38: General diagnostic event-handling related ServiceNeeds
 
 
 
 
-DiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcFunctionInhibitionNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsDiagnosticEventManagerNeedsDiagnosticEventInfoNeeds+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ udsDtcNumber  :PositiveInteger [0..1]DiagnosticEnableConditionNeeds+ initialStatus  :EventAcceptanceStatusEnum«enumeration»EventAcceptanceStatusEnum eventAcceptanceEnabled eventAcceptanceDisabledDiagnosticStorageConditionNeeds+ initialStatus  :StorageConditionStatusEnum«enumeration»StorageConditionStatusEnum eventStorageEnabled eventStorageDisabledDtcStatusChangeNotificationNeeds+ dtcFormatType  :DtcFormatTypeEnum«enumeration»DtcFormatTypeEnum obd uds j1939WarningIndicatorRequestedBitNeeds«enumeration»ReportBehaviorEnum reportAfterInit reportBeforeInit+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..1+serviceNeeds1Software Component Template
-AUTOSAR Release 4.2.2
+DiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]AtpStructureElementIdentifiableServiceDependencySwcServiceDependency«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcFunctionInhibitionNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsDiagnosticEventManagerNeedsDiagnosticEventInfoNeeds+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ udsDtcNumber  :PositiveInteger [0..1]DiagnosticEnableConditionNeeds+ initialStatus  :EventAcceptanceStatusEnum«enumeration»EventAcceptanceStatusEnum eventAcceptanceEnabled eventAcceptanceDisabledDiagnosticStorageConditionNeeds+ initialStatus  :StorageConditionStatusEnum«enumeration»StorageConditionStatusEnum eventStorageEnabled eventStorageDisabledDtcStatusChangeNotificationNeeds+ dtcFormatType  :DtcFormatTypeEnum«enumeration»DtcFormatTypeEnum obd uds j1939WarningIndicatorRequestedBitNeeds«enumeration»ReportBehaviorEnum reportAfterInit reportBeforeInit+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..1+serviceNeeds1
 
 Figure 7.39: ServiceNeeds: Diagnostic-related ServiceNeeds with emphasis on OBD
 
@@ -35983,8 +35397,7 @@ AUTOSAR Services via these PortPrototypes. (cid:99)(RS_SWCT_02060)
 
 
 
-IdentifiableServiceNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]FunctionInhibitionNeedsObdPidServiceNeeds+ dataLength  :PositiveInteger [0..1]+ parameterId  :PositiveInteger+ standard  :StringObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameTokenObdInfoServiceNeeds+ dataLength  :PositiveInteger [0..1]+ infoType  :PositiveIntegerObdMonitorServiceNeeds+ onBoardMonitorId  :PositiveInteger+ testId  :PositiveInteger+ unitAndScalingId  :PositiveIntegerObdControlServiceNeeds+ testId  :PositiveInteger«enumeration»ObdRatioConnectionKindEnum apiUse observer«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..10..1+rateBasedMonitoredEvent1+usedFid0..1+usedSecondaryFid0..*+serviceNeeds1Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableServiceNeedsDiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]FunctionInhibitionNeedsObdPidServiceNeeds+ dataLength  :PositiveInteger [0..1]+ parameterId  :PositiveInteger+ standard  :StringObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameTokenObdInfoServiceNeeds+ dataLength  :PositiveInteger [0..1]+ infoType  :PositiveIntegerObdMonitorServiceNeeds+ onBoardMonitorId  :PositiveInteger+ testId  :PositiveInteger+ unitAndScalingId  :PositiveIntegerObdControlServiceNeeds+ testId  :PositiveInteger«enumeration»ObdRatioConnectionKindEnum apiUse observer«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]+deferringFid0..*+inhibitingSecondaryFid0..*+inhibitingFid0..10..1+rateBasedMonitoredEvent1+usedFid0..1+usedSecondaryFid0..*+serviceNeeds1
 
 In addition, a ServiceNeeds element can also have relations to some data declared
 within the same SwcInternalBehavior, namely some use cases of the NVRAM
@@ -36052,16 +35465,14 @@ the category of
 
 
 
-AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierBswServiceDependencyRoleBasedDataAssignment+ role  :IdentifierRoleBasedBswModuleEntryAssignment+ role  :IdentifierServiceDependencyIdentifiableServiceNeedsAtpStructureElementIdentifiablePortGroupImplementationPropsSymbolicNamePropsIdentifiableCode+symbolicNameProps0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1«atpVariation,atpSplitable»+assignedEntryRole0..*«atpVariation»+assignedData0..*+serviceNeeds1+callbackHeader0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierBswServiceDependencyRoleBasedDataAssignment+ role  :IdentifierRoleBasedBswModuleEntryAssignment+ role  :IdentifierServiceDependencyIdentifiableServiceNeedsAtpStructureElementIdentifiablePortGroupImplementationPropsSymbolicNamePropsIdentifiableCode+symbolicNameProps0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1«atpVariation,atpSplitable»+assignedEntryRole0..*«atpVariation»+assignedData0..*+serviceNeeds1+callbackHeader0..*
 
 Figure 7.41: SwcServiceDependency in the SwcInternalBehavior
 
 
 
 
-IdentifiableServiceNeedsRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableSwcServiceDependencyAtpStructureElementIdentifiablePortGroupInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRoleBasedDataTypeAssignment+ role  :IdentifierServiceDependency«atpVariation»+assignedDataType0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*«atpVariation»+outerPort0..*«atpVariation»+portGroup0..*«atpVariation,atpSplitable»+internalBehavior0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1+port0..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+IdentifiableServiceNeedsRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableSwcServiceDependencyAtpStructureElementIdentifiablePortGroupInternalBehaviorSwcInternalBehaviorAtomicSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRoleBasedDataTypeAssignment+ role  :IdentifierServiceDependency«atpVariation»+assignedDataType0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*«atpVariation»+outerPort0..*«atpVariation»+portGroup0..*«atpVariation,atpSplitable»+internalBehavior0..1«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1«atpVariation»+assignedData0..*+representedPortGroup0..1+port0..*«atpVariation,atpSplitable»
 
 Figure 7.42: Details of RoleBasedDataAssignment for local data
 
@@ -36071,8 +35482,7 @@ PortPrototypes
 
 
 
-InternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyParameterDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarParameterRefAutosarVariableRefAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+serviceDependency0..*+sharedParameter*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+localVariable0..1«atpVariation»+assignedData0..*+localParameter0..1«instanceRef»+autosarParameter0..1+perInstanceMemory*«atpVariation,atpSplitable»+usedDataElement0..1+usedPim0..1+usedParameterElement0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»RoleBasedDataAssignmentAutosarVariableRefAtpPrototypeDataPrototype«instanceRef»+autosarVariable0..1+usedDataElement0..1Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiablePerInstanceMemory+ initValue  :String [0..1]+ type  :CIdentifier+ typeDefinition  :StringRoleBasedDataAssignment+ role  :IdentifierAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyParameterDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarParameterRefAutosarVariableRefAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+serviceDependency0..*+sharedParameter*«atpVariation,atpSplitable»+perInstanceParameter*«atpVariation,atpSplitable»+localVariable0..1«atpVariation»+assignedData0..*+localParameter0..1«instanceRef»+autosarParameter0..1+perInstanceMemory*«atpVariation,atpSplitable»+usedDataElement0..1+usedPim0..1+usedParameterElement0..1+arTypedPerInstanceMemory*«atpVariation,atpSplitable»RoleBasedDataAssignmentAutosarVariableRefAtpPrototypeDataPrototype«instanceRef»+autosarVariable0..1+usedDataElement0..1
 
 Figure 7.44: Details of RoleBasedDataTypeAssignment for local data
 
@@ -36121,8 +35531,7 @@ Table 7.52: ServiceDependency
 
 
 
-AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedDataTypeAssignment+ role  :IdentifierAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ServiceDependency«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+assignedDataType0..1+usedImplementationDataType1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedDataTypeAssignment+ role  :IdentifierAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ServiceDependency«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+assignedDataType0..1+usedImplementationDataType1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
@@ -39112,8 +38521,7 @@ faults can be inhibited by the usage of the Function Inhibition Managers.
 
 
 
-DiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsFunctionInhibitionNeedsObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameToken«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeIdentifiableDiagEventDebounceAlgorithmDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagEventDebounceCounterBased+ counterDecrementStepSize  :Integer+ counterFailedThreshold  :Integer+ counterIncrementStepSize  :Integer+ counterJumpDown  :Boolean+ counterJumpDownValue  :Integer+ counterJumpUp  :Boolean+ counterJumpUpValue  :Integer+ counterPassedThreshold  :IntegerDiagEventDebounceTimeBased+ timeFailedThreshold  :TimeValue+ timePassedThreshold  :TimeValueDiagEventDebounceMonitorInternal+rateBasedMonitoredEvent1+diagEventDebounceAlgorithm0..1+inhibitingFid0..1+inhibitingSecondaryFid0..*+deferringFid0..*+portPrototype1+usedFid0..1+serviceNeeds1«atpVariation,atpSplitable»+assignedPort0..*+usedSecondaryFid0..*Software Component Template
-AUTOSAR Release 4.2.2
+DiagnosticEventNeeds+ considerPtoStatus  :Boolean [0..1]+ dtcKind  :DtcKindEnum [0..1]+ obdDtcNumber  :PositiveInteger [0..1]+ reportBehavior  :ReportBehaviorEnum [0..1]+ udsDtcNumber  :PositiveInteger [0..1]IdentifiableServiceNeedsFunctionInhibitionNeedsObdRatioServiceNeeds+ connectionType  :ObdRatioConnectionKindEnum+ iumprGroup  :NameToken«enumeration»DtcKindEnum emissionRelatedDtc nonEmmissionRelatedDtcAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyRoleBasedPortAssignment+ role  :IdentifierAtpBlueprintableAtpPrototypePortPrototypeIdentifiableDiagEventDebounceAlgorithmDiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequirement  :DiagRequirementIdString [0..1]+ securityAccessLevel  :PositiveInteger [0..1]«enumeration»ObdRatioConnectionKindEnum apiUse observerDiagEventDebounceCounterBased+ counterDecrementStepSize  :Integer+ counterFailedThreshold  :Integer+ counterIncrementStepSize  :Integer+ counterJumpDown  :Boolean+ counterJumpDownValue  :Integer+ counterJumpUp  :Boolean+ counterJumpUpValue  :Integer+ counterPassedThreshold  :IntegerDiagEventDebounceTimeBased+ timeFailedThreshold  :TimeValue+ timePassedThreshold  :TimeValueDiagEventDebounceMonitorInternal+rateBasedMonitoredEvent1+diagEventDebounceAlgorithm0..1+inhibitingFid0..1+inhibitingSecondaryFid0..*+deferringFid0..*+portPrototype1+usedFid0..1+serviceNeeds1«atpVariation,atpSplitable»+assignedPort0..*+usedSecondaryFid0..*
 
 The used PortPrototype which has to be connected to the Function Inhibition Man
 agers is determined by the RoleBasedPortAssignment of the related Function
@@ -40636,8 +40044,7 @@ type of the ServiceSwComponentType representing the Dcm can only have one
 
 
 
-SwcServiceDependency„IOx“DiagnosticIoControlNeeds„IOx“RoleBasedPortAssignmentrole: „IOControlRequest“RoleBasedPortAssignmentrole: „IOControlResponse“SwcServiceDependency„Data_IOx“DiagnosticValueNeeds„Data_IOx“currentValueRoleBasedDataAssignmentrole: „signalBasedDiagnostics“«isOfType»«isOfType»Connector«isOfType»SwComponentPrototype typed by DcmServiceSwComponentTypeSenderReceiverInterface„DataXY_IO“„IOx“„IOy“SenderReceiverInterface„IOControlResponse_IOx“«isOfType»ConnectorSenderReceiverInterface„IOControlRequest_IOx“Connector«isOfType»«isOfType»SwComponentPrototype typed by ApplicationSwComponentTypeSenderReceiverInterface„DataServices_Data_IOx“„IOx“„IOControlRequest_IOx“„IOControlResponse_IOx“Software Component Template
-AUTOSAR Release 4.2.2
+SwcServiceDependency„IOx“DiagnosticIoControlNeeds„IOx“RoleBasedPortAssignmentrole: „IOControlRequest“RoleBasedPortAssignmentrole: „IOControlResponse“SwcServiceDependency„Data_IOx“DiagnosticValueNeeds„Data_IOx“currentValueRoleBasedDataAssignmentrole: „signalBasedDiagnostics“«isOfType»«isOfType»Connector«isOfType»SwComponentPrototype typed by DcmServiceSwComponentTypeSenderReceiverInterface„DataXY_IO“„IOx“„IOy“SenderReceiverInterface„IOControlResponse_IOx“«isOfType»ConnectorSenderReceiverInterface„IOControlRequest_IOx“Connector«isOfType»«isOfType»SwComponentPrototype typed by ApplicationSwComponentTypeSenderReceiverInterface„DataServices_Data_IOx“„IOx“„IOControlRequest_IOx“„IOControlResponse_IOx“
 
 dataElement. This single dataElement shall (as far as the example is concerned)
 be given the shortName “IOx”.
@@ -41423,8 +40830,7 @@ Table 7.101: DoIpGidNeeds
 
 
 
-IdentifiableServiceNeedsDoIpPowerModeStatusNeedsDoIpGidSynchronizationNeedsDoIpGidNeedsDoIpRoutingActivationAuthenticationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpRoutingActivationConfirmationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpServiceNeedsDoIpActivationLineNeedsSoftware Component Template
-AUTOSAR Release 4.2.2
+IdentifiableServiceNeedsDoIpPowerModeStatusNeedsDoIpGidSynchronizationNeedsDoIpGidNeedsDoIpRoutingActivationAuthenticationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpRoutingActivationConfirmationNeeds+ dataLengthRequest  :PositiveInteger [0..1]+ dataLengthResponse  :PositiveInteger [0..1]+ routingActivationType  :NameTokenDoIpServiceNeedsDoIpActivationLineNeeds
 
 DoIpGidSynchronizationNeeds
 
@@ -42212,8 +41618,7 @@ VariationPoint.
 
 
 
-InternalBehaviorSwcInternalBehaviorIdentifiableVariationPointProxyAttributeValueVariationPoint+ bindingTime  :BindingTimeEnum [0..1]+ blueprintValue  :String [0..1]+ sd  :String [0..1]+ shortLabel  :PrimitiveIdentifier [0..1]ConditionByFormula+ bindingTime  :BindingTimeEnumFormulaExpressionSwSystemconstDependentFormulaARElementAtpDefinitionSwSystemconstARElementAtpDefinitionPostBuildVariantCriterionPostBuildVariantCondition«atpVariation»+ value  :IntegerAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]+syscString1+sysc1«atpSplitable»+variationPointProxy0..*+implementationDataType0..1+postBuildValueAccess0..1+postBuildVariantCondition0..*+valueAccess0..1+conditionAccess0..1+matchingCriterion1Software Component Template
-AUTOSAR Release 4.2.2
+InternalBehaviorSwcInternalBehaviorIdentifiableVariationPointProxyAttributeValueVariationPoint+ bindingTime  :BindingTimeEnum [0..1]+ blueprintValue  :String [0..1]+ sd  :String [0..1]+ shortLabel  :PrimitiveIdentifier [0..1]ConditionByFormula+ bindingTime  :BindingTimeEnumFormulaExpressionSwSystemconstDependentFormulaARElementAtpDefinitionSwSystemconstARElementAtpDefinitionPostBuildVariantCriterionPostBuildVariantCondition«atpVariation»+ value  :IntegerAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]+syscString1+sysc1«atpSplitable»+variationPointProxy0..*+implementationDataType0..1+postBuildValueAccess0..1+postBuildVariantCondition0..*+valueAccess0..1+conditionAccess0..1+matchingCriterion1
 
 Attribute
 implement
@@ -42312,7 +41717,7 @@ PostBuild
 Table 7.111: Supported usage of VariationPointProxy
 
 
-
+#@chapter-8
 8 Implementation
 
 Previous versions of this document contained a comprehensive description of the
@@ -42334,8 +41739,7 @@ Figure 8.1: Implementation part speciﬁc to the Software Component Template
 
 
 
-ARElementImplementation+ programmingLanguage  :ProgramminglanguageEnum+ swVersion  :RevisionLabelString+ usedCodeGenerator  :String [0..1]+ vendorId  :PositiveIntegerSwcImplementation+ requiredRTEVendor  :String [0..1]InternalBehaviorSwcInternalBehaviorPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerIdentifiableCodeIdentifiableDependencyOnArtifactIdentifiableCompiler+ name  :String+ options  :String+ vendor  :String+ version  :StringIdentifiableResourceConsumption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimesize: <> Tags: vh.latestBindingTime = preCompileTime+codeDescriptor1..*+resourceConsumption1«atpSplitable»«atpVariation»+requiredGeneratorTool0..*«atpVariation»+requiredArtifact0..*«atpVariation»+generatedArtifact0..*+behavior1+perInstanceMemorySize*«atpVariation»+compiler*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementImplementation+ programmingLanguage  :ProgramminglanguageEnum+ swVersion  :RevisionLabelString+ usedCodeGenerator  :String [0..1]+ vendorId  :PositiveIntegerSwcImplementation+ requiredRTEVendor  :String [0..1]InternalBehaviorSwcInternalBehaviorPerInstanceMemorySize+ alignment  :PositiveInteger«atpVariation»+ size  :PositiveIntegerIdentifiableCodeIdentifiableDependencyOnArtifactIdentifiableCompiler+ name  :String+ options  :String+ vendor  :String+ version  :StringIdentifiableResourceConsumption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimesize: <> Tags: vh.latestBindingTime = preCompileTime+codeDescriptor1..*+resourceConsumption1«atpSplitable»«atpVariation»+requiredGeneratorTool0..*«atpVariation»+requiredArtifact0..*«atpVariation»+generatedArtifact0..*+behavior1+perInstanceMemorySize*«atpVariation»+compiler*
 
 SwcImplementation
 
@@ -42468,7 +41872,7 @@ Tags: vh.latestBindingTime=preCompileTime
 Table 8.2: PerInstanceMemorySize
 
 
-
+#@chapter-9
 9 Mode Management
 
 In general, the Software Component Template doesn’t deﬁne the kind of modes
@@ -42559,8 +41963,7 @@ tionGroup.category with a standardized meaning:
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]«enumeration»SwCalibrationAccessEnum readOnly notAccessible readWrite«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime«enumeration»ModeErrorReactionPolicyEnum lastMode defaultMode«isOfType»+type1{redefinesatpType}+modeDeclaration1..*«atpVariation»+initialMode1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]«enumeration»SwCalibrationAccessEnum readOnly notAccessible readWrite«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime«enumeration»ModeErrorReactionPolicyEnum lastMode defaultMode«isOfType»+type1{redefinesatpType}+modeDeclaration1..*«atpVariation»+initialMode1
 
 [TPS_SWCT_01010] deﬁnes the meaning of these values.
 
@@ -42850,8 +42253,7 @@ state changes (cid:100) Software-components need to be capable of reacting to st
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpStructureElementReferrableModeTransition«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+exitedMode1+enteredMode1+modeDeclaration1..*«atpVariation»+initialMode1+modeTransition0..*Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AtpStructureElementReferrableModeTransition«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+exitedMode1+enteredMode1+modeDeclaration1..*«atpVariation»+initialMode1+modeTransition0..*
 
 changes issued by some Mode Manager and adopt their behavior to the new situ
 ation. (cid:99)(RS_SWCT_03110)
@@ -42874,8 +42276,7 @@ Figure 9.4: Modes and events
 
 
 
-AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«enumeration»ModeActivationKind onEntry onExit onTransition«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*+startOnEvent0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«enumeration»ModeActivationKind onEntry onExit onTransition«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*+startOnEvent0..1
 
 [TPS_SWCT_01377] Two mechanisms to deﬁne how SwcInternalBehavior
 should interact with the mode management (cid:100) A AtomicSwComponentType
@@ -42984,8 +42385,7 @@ ing ModeSwitchedAckRequest.timeout. (cid:99)()
 
 
 
-AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]RTEEventModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource10..*«instanceRef»+modeGroup0..1+modeSwitchPoint*«atpVariation»Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]RTEEventModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+eventSource10..*«instanceRef»+modeGroup0..1+modeSwitchPoint*«atpVariation»
 
 ModeSwitchedAckRequest
 
@@ -43053,8 +42453,7 @@ Figure 9.6: ModeAccessPoint
 
 
 
-AtpStructureElementExecutableEntityRunnableEntityAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeAccessPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeAccessPoint*«atpVariation»0..*«instanceRef»+modeGroup1Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntityAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeAccessPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeAccessPoint*«atpVariation»0..*«instanceRef»+modeGroup1
 
 Class
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Mode
@@ -43261,8 +42660,7 @@ Table 9.8: ModeErrorBehavior
 
 
 
-AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*Software Component Template
-AUTOSAR Release 4.2.2
+AbstractEventAtpStructureElementRTEEventSwcModeSwitchEvent+ activation  :ModeActivationKindAtpStructureElementIdentifiableModeDeclaration+ value  :PositiveInteger [0..1]ModeSwitchedAckEventAtpStructureElementIdentifiableModeSwitchPointAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]SwcModeManagerErrorEvent«enumeration»ModeErrorReactionPolicyEnum lastMode defaultModeModeErrorBehavior+ errorReactionPolicy  :ModeErrorReactionPolicyEnum«atpVariation» Tags:vh.latestBindingTime = blueprintDerivationTime+defaultMode0..1«instanceRef»+modeGroup1«isOfType»+type1{redefinesatpType}«instanceRef»+modeGroup0..1+eventSource1+modeUserErrorBehavior0..1+modeManagerErrorBehavior0..1+initialMode1+modeDeclaration1..*«atpVariation»«instanceRef»+mode1..2{ordered}«instanceRef»+disabledMode0..*
 
 Enumeration ModeErrorReactionPolicyEnum
 Package
@@ -43390,9 +42788,9 @@ Figure 9.8: Summary meta-model excerpt related to modes
 
 
 
-InterfaceModeDeclarationInternalBehavior and RunnablesComponent and PortAtpStructureElementIdentifiableModeDeclarationARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeAtpStructureElementExecutableEntityRunnableEntityPPortPrototypeRPortPrototypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractEventAtpStructureElementRTEEventSwcModeSwitchEventModeSwitchInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementReferrableModeTransitionAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototypeModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initialMode1+port0..*«atpVariation,atpSplitable»+component+modeDeclaration1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+modeGroup1«isOfType»+type1{redefines atpType}+startOnEvent0..1+event*«atpVariation,atpSplitable»«instanceRef»+disabledMode0..*0..*«instanceRef»+mode1..2{ordered}+modeTransition0..*+runnable1..*«atpVariation,atpSplitable»«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedInterface1{redefinesatpType}+enteredMode1+exitedMode1«isOfType»+providedRequiredInterface1{redefinesatpType}Software Component Template
-AUTOSAR Release 4.2.2
+InterfaceModeDeclarationInternalBehavior and RunnablesComponent and PortAtpStructureElementIdentifiableModeDeclarationARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeAtpStructureElementExecutableEntityRunnableEntityPPortPrototypeRPortPrototypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractEventAtpStructureElementRTEEventSwcModeSwitchEventModeSwitchInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementReferrableModeTransitionAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototypeModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initialMode1+port0..*«atpVariation,atpSplitable»+component+modeDeclaration1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+modeGroup1«isOfType»+type1{redefines atpType}+startOnEvent0..1+event*«atpVariation,atpSplitable»«instanceRef»+disabledMode0..*0..*«instanceRef»+mode1..2{ordered}+modeTransition0..*+runnable1..*«atpVariation,atpSplitable»«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedInterface1{redefinesatpType}+enteredMode1+exitedMode1«isOfType»+providedRequiredInterface1{redefinesatpType}
 
+#@chapter-10
 10 ECU Abstraction and Complex Drivers
 
 10.1 Introduction
@@ -43486,8 +42884,7 @@ munication effort.
 
 
 
-SensorECUElectronicsµCPeripheralsPhysical Interface:car velocityElectrical Interface:Isensor[0..200mA]Electrical Interface:UECU[0..5V]SensorSW-CApplicationSW-Cget_v()get_I_sensor()DIO_set()Car environment123ECUAbstractionMCAL546ADC_get()Software Component Template
-AUTOSAR Release 4.2.2
+SensorECUElectronicsµCPeripheralsPhysical Interface:car velocityElectrical Interface:Isensor[0..200mA]Electrical Interface:UECU[0..5V]SensorSW-CApplicationSW-Cget_v()get_I_sensor()DIO_set()Car environment123ECUAbstractionMCAL546ADC_get()
 
 In Figure 10.3 a complete signal ﬂow from a sensor input to an actuator output is
 shown.
@@ -43522,8 +42919,7 @@ Interface description mechanisms are used (see chapter 3.4).
 
 
 
-SensorECUElectronicsµCPeripheralsPhysical InterfaceElectrical InterfaceIsensor[0..200mA]Electrical InterfaceUECU[0..5V]SensorSW-CECUAbstractionµCAL(MCAL Driver)ApplicationSW-C 1get_v()get_I_ECU(velocity_sensor)DIO_get()e.g. Car velocityActuatorSW-CApplicationSW-C 2set_lamp()set_I_ECU(light_actuator)DIO_set()ActuatorECUElectronicsµCPeripheralse.g. Car lightIECU[0..2A]UµC[0..5V]HardwareSoftwareHardwareSoftware Component Template
-AUTOSAR Release 4.2.2
+SensorECUElectronicsµCPeripheralsPhysical InterfaceElectrical InterfaceIsensor[0..200mA]Electrical InterfaceUECU[0..5V]SensorSW-CECUAbstractionµCAL(MCAL Driver)ApplicationSW-C 1get_v()get_I_ECU(velocity_sensor)DIO_get()e.g. Car velocityActuatorSW-CApplicationSW-C 2set_lamp()set_I_ECU(light_actuator)DIO_set()ActuatorECUElectronicsµCPeripheralse.g. Car lightIECU[0..2A]UµC[0..5V]HardwareSoftwareHardware
 
 10.3.1 ECU Abstraction and its AUTOSAR Interfaces
 
@@ -43592,8 +42988,7 @@ tion layer. (cid:99)()
 
 
 
-AtomicSwComponentTypeSensorActuatorSwComponentTypeReferrableHwDescriptionEntityARElementHwType+sensorActuator1+hwType0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtomicSwComponentTypeSensorActuatorSwComponentTypeReferrableHwDescriptionEntityARElementHwType+sensorActuator1+hwType0..1
 
 [TPS_SWCT_01048] SensorActuatorSwComponentType may use the I/O hard
 ware abstraction directly (cid:100) In contrast to an ApplicationSwComponentType, a
@@ -43730,8 +43125,7 @@ many different ComplexDeviceDriverSwComponentTypes. (cid:99)()
 
 
 
-EcuAbstractionSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hardwareElement0..*+swcBehavior1+bswBehavior1«atpSplitable»+internalBehavior0..*+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
-AUTOSAR Release 4.2.2
+EcuAbstractionSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hardwareElement0..*+swcBehavior1+bswBehavior1«atpSplitable»+internalBehavior0..*+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1
 
 ComplexDeviceDriverSwComponentType
 
@@ -43791,9 +43185,9 @@ Figure 10.8: ComplexDeviceDriverSwComponentType
 
 
 
-ComplexDeviceDriverSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1«atpSplitable»+internalBehavior0..*+swcBehavior1+bswBehavior1+hardwareElement0..*Software Component Template
-AUTOSAR Release 4.2.2
+ComplexDeviceDriverSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1«atpSplitable»+internalBehavior0..*+swcBehavior1+bswBehavior1+hardwareElement0..*
 
+#@chapter-11
 11 Services
 
 11.1 Overview: Generation of Service-related Model Elements
@@ -44035,8 +43429,7 @@ meta model class of their own, the ServiceSwComponentType. As can be seen
 
 
 
-CompositionSwComponentTypeAtpPrototypeIdentifiableRootSwCompositionPrototypeARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringServiceSwComponentTypeAtomicSwComponentTypeAtpPrototypeSwComponentPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementSwConnectorARElementEcucValueCollection«atpVariation» Tags:vh.latestBindingTime =systemDesignTime«atpVariation» Tags:vh.latestBindingTime =postBuild«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAssemblySwConnectorAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+connector*«atpVariation,atpSplitable»+ecuExtract10..*«instanceRef»+provider0..10..*«instanceRef»+requester0..1+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}+rootSoftwareComposition0..1«atpVariation,atpSplitable»«isOfType»+softwareComposition1{redefinesatpType}+port0..*«atpVariation,atpSplitable»Software Component Template
-AUTOSAR Release 4.2.2
+CompositionSwComponentTypeAtpPrototypeIdentifiableRootSwCompositionPrototypeARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringServiceSwComponentTypeAtomicSwComponentTypeAtpPrototypeSwComponentPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAtpStructureElementSwConnectorARElementEcucValueCollection«atpVariation» Tags:vh.latestBindingTime =systemDesignTime«atpVariation» Tags:vh.latestBindingTime =postBuild«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAssemblySwConnectorAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+connector*«atpVariation,atpSplitable»+ecuExtract10..*«instanceRef»+provider0..10..*«instanceRef»+requester0..1+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}+rootSoftwareComposition0..1«atpVariation,atpSplitable»«isOfType»+softwareComposition1{redefinesatpType}+port0..*«atpVariation,atpSplitable»
 
 in Figure 11.2 ServiceSwComponentType is a specialization of AtomicSwCompo
 nentType.
@@ -44138,8 +43531,7 @@ table 11.1.
 
 
 
-ServiceSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+internalBehavior0..*«atpVariation,atpSplitable»+internalBehavior0..1+swcBehavior1+bswBehavior1Software Component Template
-AUTOSAR Release 4.2.2
+ServiceSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+internalBehavior0..*«atpVariation,atpSplitable»+internalBehavior0..1+swcBehavior1+bswBehavior1
 
 In case of pattern A for each different type of service port one port on the Ser
 viceSwComponentType is created.
@@ -44207,8 +43599,7 @@ signals over the network. More details are explained in the class table below. (
 
 
 
-VFBRTE1BSW1ECU1VCC:VehicleClampControlVCP: VehicleClampProxyVCC:VehicleClampControlVCP: VehicleClampProxyBswMServiceRTE2BSW2ECU2VCP: VehicleClampProxyBswMServiceApp1:Application1App2:Application2App1:Application1App2:Application2Software Component Template
-AUTOSAR Release 4.2.2
+VFBRTE1BSW1ECU1VCC:VehicleClampControlVCP: VehicleClampProxyVCC:VehicleClampControlVCP: VehicleClampProxyBswMServiceRTE2BSW2ECU2VCP: VehicleClampProxyBswMServiceApp1:Application1App2:Application2App1:Application1App2:Application2
 
 ServiceProxySwComponentType
 
@@ -44462,8 +43853,7 @@ isService to false. (cid:99)()
 
 
 
-VariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]NvDataInterfaceDataInterface+nvData1..*Software Component Template
-AUTOSAR Release 4.2.2
+VariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]NvDataInterfaceDataInterface+nvData1..*
 
 [constr_1149] PortPrototypes used for NV data management (cid:100) A PortPro
 totype typed by a ClientServerInterface used for NV data management, i.e.
@@ -44507,8 +43897,7 @@ indicate the worst case which is the higher frequency.
 
 
 
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeDataInterfaceNvDataInterfaceInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyIdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]AtomicSwComponentTypeRoleBasedPortAssignment+ role  :Identifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeShall be typed by NvDataInterface if the data is provided by an NvBlockSwComponentType. In a different context the PortPrototype shall be typed by a ClientServerInterface if the data is provided by NVRAM Manager.«atpVariation,atpSplitable»+internalBehavior0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeDataInterfaceNvDataInterfaceInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableServiceDependencySwcServiceDependencyIdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]AtomicSwComponentTypeRoleBasedPortAssignment+ role  :Identifier«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeShall be typed by NvDataInterface if the data is provided by an NvBlockSwComponentType. In a different context the PortPrototype shall be typed by a ClientServerInterface if the data is provided by NVRAM Manager.«atpVariation,atpSplitable»+internalBehavior0..1+portPrototype1«atpVariation,atpSplitable»+serviceDependency0..*+port0..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+assignedPort0..*+serviceNeeds1
 
 The recommended relationship is shown in table 11.7. But please note that this table
 does not represent a binding constraint.
@@ -44843,8 +44232,7 @@ TimingEvent
 
 ref
 
-Software Component Template
-AUTOSAR Release 4.2.2
+
 
 Mul. Kind Note
 0..1
@@ -44868,8 +44256,7 @@ Figure 11.6: NvBlockSwComponentType and NvBlockDescriptor
 
 
 
-AtomicSwComponentTypeNvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrectionValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»RamBlockStatusControlEnum api nvRamManager«enumeration»NvBlockNeedsWritingPriorityEnum low medium highRTEEventTimingEvent+ period  :TimeValue+initValue0..1+romBlock0..1+initValue0..1+ramBlock1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+timingEvent0..1+nvBlockNeeds1Software Component Template
-AUTOSAR Release 4.2.2
+AtomicSwComponentTypeNvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrectionValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototypeAutosarDataPrototypeVariableDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»RamBlockStatusControlEnum api nvRamManager«enumeration»NvBlockNeedsWritingPriorityEnum low medium highRTEEventTimingEvent+ period  :TimeValue+initValue0..1+romBlock0..1+initValue0..1+ramBlock1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+timingEvent0..1+nvBlockNeeds1
 
 [constr_1095] Values of nDataSets vs. reliability (cid:100) If the value of nDataSets
 is greater than 0 the value of reliability shall not be set to errorCorrection.
@@ -44954,8 +44341,7 @@ Type requires the activation of a RunnableEntity by a DataReceivedEvent.
 
 
 
-NvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]TimingEvent+ period  :TimeValueSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+timingEvent0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*Software Component Template
-AUTOSAR Release 4.2.2
+NvBlockSwComponentTypeAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]TimingEvent+ period  :TimeValueSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1+timingEvent0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*
 
 This approach is depicted in Figure 11.8.
 
@@ -44979,8 +44365,7 @@ ported by AUTOSAR by requiring that NVRAM Blocks shall have to be conﬁgured
 
 
 
-NvBlockSwComponentTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEventDataReceivedEventAutosarDataPrototypeVariableDataPrototypeSenderReceiverInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+rPort«isOfType»+requiredInterface1{redefines atpType}+dataElement1..*+interface1+event«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1Software Component Template
-AUTOSAR Release 4.2.2
+NvBlockSwComponentTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAbstractEventAtpStructureElementRTEEventDataReceivedEventAutosarDataPrototypeVariableDataPrototypeSenderReceiverInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AbstractRequiredPortPrototypeRPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime+rPort«isOfType»+requiredInterface1{redefines atpType}+dataElement1..*+interface1+event«instanceRef»+data0..1+event*«atpVariation,atpSplitable»+startOnEvent0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1
 
 with “immediate priority”. The technical implications are explained in the respective
 SWS [31], e.g. in [SWS_NvM_00182] and [SWS_NvM_00300].
@@ -45012,8 +44397,7 @@ NvBlockNeeds.storeCyclic exists and its value is set to true. (cid:99)()
 
 
 
-IdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrection«enumeration»NvBlockNeedsWritingPriorityEnum low medium high«enumeration»NvBlockComponent::RamBlockStatusControlEnum api nvRamManagerSoftware Component Template
-AUTOSAR Release 4.2.2
+IdentifiableServiceNeedsNvBlockNeeds+ calcRamBlockCrc  :Boolean [0..1]+ checkStaticBlockId  :Boolean [0..1]+ cyclicWritingPeriod  :TimeValue [0..1]+ nDataSets  :PositiveInteger [0..1]+ nRomBlocks  :PositiveInteger [0..1]+ ramBlockStatusControl  :RamBlockStatusControlEnum [0..1]+ readonly  :Boolean [0..1]+ reliability  :NvBlockNeedsReliabilityEnum [0..1]+ resistantToChangedSw  :Boolean [0..1]+ restoreAtStart  :Boolean [0..1]+ storeAtShutdown  :Boolean [0..1]+ storeCyclic  :Boolean [0..1]+ storeEmergency  :Boolean [0..1]+ storeImmediate  :Boolean [0..1]+ useAutoValidationAtShutDown  :Boolean [0..1]+ useCRCCompMechanism  :Boolean [0..1]+ writeOnlyOnce  :Boolean [0..1]+ writeVerification  :Boolean [0..1]+ writingFrequency  :PositiveInteger [0..1]+ writingPriority  :NvBlockNeedsWritingPriorityEnum [0..1]«enumeration»NvBlockNeedsReliabilityEnum noProtection errorDetection errorCorrection«enumeration»NvBlockNeedsWritingPriorityEnum low medium high«enumeration»NvBlockComponent::RamBlockStatusControlEnum api nvRamManager
 
 NvBlockNeeds
 
@@ -45483,8 +44867,7 @@ mapped NV Block to the NvRam is ﬁnished.
 
 
 
-NvBlockSwComponent <<NvDataInterface>>  nvData:  a : uint8 b : uint32 g : {      - h : uint16      - j : uint8      - s : {             - u : uint32             - w : uint8      }  nvData root element: -a, b, g  leaf element: -a, b, h, j, u, w  sub-element which is not a leaf element: -s NvBlockDescriptor ramBlock: { b : uint32 s : {      - u : uint32      - w : uint8      } x : uint8 h : uint16 a : uint8 j : uint8 }  Example NvDataMapping nvData ramBlock mapping kind a a nvData root b b nvData root h h leaf element j j leaf element s s sub-element Software Component Template
-AUTOSAR Release 4.2.2
+NvBlockSwComponent <<NvDataInterface>>  nvData:  a : uint8 b : uint32 g : {      - h : uint16      - j : uint8      - s : {             - u : uint32             - w : uint8      }  nvData root element: -a, b, g  leaf element: -a, b, h, j, u, w  sub-element which is not a leaf element: -s NvBlockDescriptor ramBlock: { b : uint32 s : {      - u : uint32      - w : uint8      } x : uint8 h : uint16 a : uint8 j : uint8 }  Example NvDataMapping nvData ramBlock mapping kind a a nvData root b b nvData root h h leaf element j j leaf element s s sub-element 
 
 In order to be able to properly assign such a notiﬁcation to the content of the related
 Nv Data PortPrototypes in the scope of the same SwcServiceDependency it is
@@ -45602,8 +44985,7 @@ PortPrototype of the NvBlockSwComponentType serves for which purpose. The
 
 
 
-AtomicSwComponentTypeNvBlockSwComponentTypeDataInterfaceNvDataInterfaceAtpStructureElementIdentifiableNvBlockDescriptorNvBlockDataMappingInstantiationDataDefPropsVariableDataPrototypeAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElementAtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeAutosarDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime+autosarVariable0..1+variableInstance0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+nvBlockDataMapping1..*«atpVariation»+writtenReadNvData0..1+nvData1..*+ramBlock1+instantiationDataDefProps0..*«atpVariation»+readNvData0..1+rootVariableDataPrototype0..1{subsets atpContextElement}+autosarVariableInImplDatatype0..1+nvRamBlockElement1+targetDataPrototype1+contextDataPrototype0..*{ordered}+rootVariableDataPrototype0..1«atpVariation»+subElement0..* {ordered}«isOfType»+type1{redefines atpType}+writtenNvData0..1Software Component Template
-AUTOSAR Release 4.2.2
+AtomicSwComponentTypeNvBlockSwComponentTypeDataInterfaceNvDataInterfaceAtpStructureElementIdentifiableNvBlockDescriptorNvBlockDataMappingInstantiationDataDefPropsVariableDataPrototypeAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElementAtpBlueprintAtpBlueprintableImplementationDataTypeARElementAtpTypeAutosarDataTypeDataPrototypeAutosarDataPrototypeAtpInstanceRefVariableInAtomicSWCTypeInstanceRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime+autosarVariable0..1+variableInstance0..1«atpVariation,atpSplitable»+nvBlockDescriptor0..*+nvBlockDataMapping1..*«atpVariation»+writtenReadNvData0..1+nvData1..*+ramBlock1+instantiationDataDefProps0..*«atpVariation»+readNvData0..1+rootVariableDataPrototype0..1{subsets atpContextElement}+autosarVariableInImplDatatype0..1+nvRamBlockElement1+targetDataPrototype1+contextDataPrototype0..*{ordered}+rootVariableDataPrototype0..1«atpVariation»+subElement0..* {ordered}«isOfType»+type1{redefines atpType}+writtenNvData0..1
 
 role speciﬁes if the port serves for block-related services, administrative services or
 notiﬁcation. (cid:99)()
@@ -45621,8 +45003,7 @@ Figure 11.13: NvBlockNotiﬁcation
 
 
 
-NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtomicSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype+port0..*«atpVariation,atpSplitable»+clientServerPort0..*«atpVariation»+portPrototype1«isOfType»+requiredInterface1{redefines atpType}«atpVariation,atpSplitable»+nvBlockDescriptor0..*+operation1..*«atpVariation»«isOfType»+providedInterface1{redefines atpType}«isOfType»+providedRequiredInterface1{redefines atpType}Software Component Template
-AUTOSAR Release 4.2.2
+NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtomicSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype+port0..*«atpVariation,atpSplitable»+clientServerPort0..*«atpVariation»+portPrototype1«isOfType»+requiredInterface1{redefines atpType}«atpVariation,atpSplitable»+nvBlockDescriptor0..*+operation1..*«atpVariation»«isOfType»+providedInterface1{redefines atpType}«isOfType»+providedRequiredInterface1{redefines atpType}
 
 11.5.5 SwcInternalBehavior of an NvBlockSwComponentType
 
@@ -45687,8 +45068,7 @@ condition exists for the RunnableEntitys of such InternalBehavior which shall
 
 
 
-NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityOperationInvokedEventAbstractEventAtpStructureElementRTEEventAtomicSwComponentTypePortDefinedArgumentValuePortAPIOption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRelation of PortPrototype to PortInterface is documented elsewhere.«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«instanceRef»+operation+clientServerPort0..*«atpVariation»+portPrototype1+portArgValue0..*{ordered}+portAPIOption0..*«atpVariation,atpSplitable»0..1+port1«atpVariation,atpSplitable»+internalBehavior0..1+operation1..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»+startOnEvent0..1+event*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+nvBlockDescriptor0..*+port0..*«atpVariation,atpSplitable»+componentSoftware Component Template
-AUTOSAR Release 4.2.2
+NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperationInternalBehaviorSwcInternalBehaviorAtpStructureElementExecutableEntityRunnableEntityOperationInvokedEventAbstractEventAtpStructureElementRTEEventAtomicSwComponentTypePortDefinedArgumentValuePortAPIOption«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeRelation of PortPrototype to PortInterface is documented elsewhere.«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«instanceRef»+operation+clientServerPort0..*«atpVariation»+portPrototype1+portArgValue0..*{ordered}+portAPIOption0..*«atpVariation,atpSplitable»0..1+port1«atpVariation,atpSplitable»+internalBehavior0..1+operation1..*«atpVariation»+runnable1..*«atpVariation,atpSplitable»+startOnEvent0..1+event*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+nvBlockDescriptor0..*+port0..*«atpVariation,atpSplitable»+component
 
 not deﬁne further attributes, e.g. data access points (implemented by means of refer
 ences from SwcInternalBehavior to VariableAccess) or ServerCallPoints.
@@ -45775,7 +45155,7 @@ NvBlockDescriptor.timingEvent.period shall be taken to specify the effective
 writing frequency for cyclic storage. (cid:99)(RS_SWCT_03225)
 
 
-
+#@chapter-12
 12 Software Component Documentation
 
 AUTOSAR supports documentation of software component types by adopting the prin
@@ -45839,8 +45219,7 @@ Mul. Kind Note
 
 
 
-SwComponentDocumentationAARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeIdentifiablePaginateableChapter+ helpEntry  :String [0..1]«atpSplitable» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime =postBuild+swMaintenanceNotes0..1«atpVariation»+chapter0..*+swDiagnosticsNotes0..1+swTestDesc0..1+swFeatureDef0..1+swCarbDoc0..1+swFeatureDesc0..1+swCalibrationNotes0..1«atpSplitable,atpVariation»+swComponentDocumentation0..1Software Component Template
-AUTOSAR Release 4.2.2
+SwComponentDocumentationAARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeIdentifiablePaginateableChapter+ helpEntry  :String [0..1]«atpSplitable» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime =postBuild+swMaintenanceNotes0..1«atpVariation»+chapter0..*+swDiagnosticsNotes0..1+swTestDesc0..1+swFeatureDef0..1+swCarbDoc0..1+swFeatureDesc0..1+swCalibrationNotes0..1«atpSplitable,atpVariation»+swComponentDocumentation0..1
 
 Attribute
 chapter
@@ -45962,7 +45341,7 @@ Mul. Kind Note
 Table 12.1: SwComponentDocumentation
 
 
-
+#@chapter-13
 13 Rapid Prototyping Scenarios
 
 13.1 Deﬁnition of Rapid Prototyping Scenario
@@ -45977,8 +45356,7 @@ Figure 13.1: Rapid Prototyping Scenario
 
 
 
-ARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringARElementRapidPrototypingScenarioIdentifiableRptContainerAtpInstanceRefAnyInstanceRefRptHook+ codeLabel  :CIdentifier [0..1]+ mcdIdentifier  :NameToken [0..1]Sdg+ gid  :NameToken«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+rptContainer1..*«atpSplitable»+rptSystem0..1+hostSystem1«atpVariation,atpSplitable»+rptHook0..1«atpVariation,atpSplitable»+byPassPoint1«atpVariation,atpSplitable»+rptContainer 0..*+sdg0..*+rptArHook0..1Software Component Template
-AUTOSAR Release 4.2.2
+ARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum [0..1]+ ecuExtractVersion  :RevisionLabelString [0..1]+ pncVectorLength  :PositiveInteger [0..1]+ pncVectorOffset  :PositiveInteger [0..1]+ systemVersion  :RevisionLabelStringARElementRapidPrototypingScenarioIdentifiableRptContainerAtpInstanceRefAnyInstanceRefRptHook+ codeLabel  :CIdentifier [0..1]+ mcdIdentifier  :NameToken [0..1]Sdg+ gid  :NameToken«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation,atpSplitable»+rptContainer1..*«atpSplitable»+rptSystem0..1+hostSystem1«atpVariation,atpSplitable»+rptHook0..1«atpVariation,atpSplitable»+byPassPoint1«atpVariation,atpSplitable»+rptContainer 0..*+sdg0..*+rptArHook0..1
 
 RapidPrototypingScenario
 
@@ -46369,8 +45747,7 @@ resp. in the role ident by meta-class ExternalTriggeringPoint.
 
 
 
-AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableVariableAccessExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPointAtpStructureElementIdentifiableServerCallPointAtpStructureElementIdentifiableAsynchronousServerCallResultPointModeAccessPointAtpStructureElementIdentifiableModeSwitchPointAtpStructureElementIdentifiableIdentCaptionModeAccessPointIdentExternalTriggeringPointIdentAggregation Tags:atp.Status = shallBecomeMandatory«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+dataReceivePointByArgument0..*+ident0..1«atpVariation»+parameterAccess0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+dataReceivePointByValue0..*«atpVariation»+readLocalVariable0..*«atpVariation»+dataSendPoint0..*+externalTriggeringPoint0..*«atpVariation»«atpVariation»+dataWriteAccess0..*+modeSwitchPoint*«atpVariation»+modeAccessPoint*«atpVariation»+ident0..1+asynchronousServerCallResultPoint0..*«atpVariation»+serverCallPoint*«atpVariation»+internalTriggeringPoint0..*«atpVariation»«atpVariation»+dataReadAccess0..*Software Component Template
-AUTOSAR Release 4.2.2
+AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiableParameterAccessAtpStructureElementIdentifiableVariableAccessExternalTriggeringPointAtpStructureElementIdentifiableInternalTriggeringPointAtpStructureElementIdentifiableServerCallPointAtpStructureElementIdentifiableAsynchronousServerCallResultPointModeAccessPointAtpStructureElementIdentifiableModeSwitchPointAtpStructureElementIdentifiableIdentCaptionModeAccessPointIdentExternalTriggeringPointIdentAggregation Tags:atp.Status = shallBecomeMandatory«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+dataReceivePointByArgument0..*+ident0..1«atpVariation»+parameterAccess0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+dataReceivePointByValue0..*«atpVariation»+readLocalVariable0..*«atpVariation»+dataSendPoint0..*+externalTriggeringPoint0..*«atpVariation»«atpVariation»+dataWriteAccess0..*+modeSwitchPoint*«atpVariation»+modeAccessPoint*«atpVariation»+ident0..1+asynchronousServerCallResultPoint0..*«atpVariation»+serverCallPoint*«atpVariation»+internalTriggeringPoint0..*«atpVariation»«atpVariation»+dataReadAccess0..*
 
 IdentCaption (abstract)
 
@@ -46437,12 +45814,6 @@ ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Ident
 Caption,Identiﬁable,MultilanguageReferrable,Referrable
 Mul. Kind Note
 Datatype
-–
-–
-
-–
-
-–
 
 Base
 
@@ -46455,98 +45826,6 @@ The following (simpliﬁed) listing 13.1 sketches the usage of the meta-class Id
 Caption for the purpose of effectively allowing references to a ModeAccessPoint.
 
 Listing 13.1: Example for the deﬁnition of a RPT scenario
-
-<AR-PACKAGE>
-
-<SHORT-NAME>IC_Example</SHORT-NAME>
-<ELEMENTS>
-
-<APPLICATION-SW-COMPONENT-TYPE>
-<SHORT-NAME>ASCT</SHORT-NAME>
-<INTERNAL-BEHAVIORS>
-
-<SWC-INTERNAL-BEHAVIOR>
-
-<SHORT-NAME>IB</SHORT-NAME>
-<RUNNABLES>
-
-<RUNNABLE-ENTITY>
-
-<SHORT-NAME>RE</SHORT-NAME>
-<MODE-ACCESS-POINTS>
-
-
-
-<MODE-ACCESS-POINT>
-
-<IDENT>
-
-<SHORT-NAME>ident</SHORT-NAME>
-
-</IDENT>
-
-</MODE-ACCESS-POINT>
-
-</MODE-ACCESS-POINTS>
-
-</RUNNABLE-ENTITY>
-
-</RUNNABLES>
-
-</SWC-INTERNAL-BEHAVIOR>
-
-</INTERNAL-BEHAVIORS>
-
-</APPLICATION-SW-COMPONENT-TYPE>
-<COMPOSITION-SW-COMPONENT-TYPE>
-<SHORT-NAME>CSCT</SHORT-NAME>
-<COMPONENTS>
-
-<SW-COMPONENT-PROTOTYPE>
-
-<SHORT-NAME>SCP</SHORT-NAME>
-<TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/IC_Example
-
-/ASCT</TYPE-TREF>
-
-</SW-COMPONENT-PROTOTYPE>
-
-</COMPONENTS>
-
-</COMPOSITION-SW-COMPONENT-TYPE>
-<RAPID-PROTOTYPING-SCENARIO>
-
-<SHORT-NAME>rptScenario</SHORT-NAME>
-<RPT-CONTAINERS>
-
-<RPT-CONTAINER>
-
-<SHORT-NAME>rptContainer</SHORT-NAME>
-
-<BY-PASS-POINT-IREFS>
-
-<BY-PASS-POINT-IREF>
-
-<CONTEXT-ELEMENT-REF DEST="SW-COMPONENT-PROTOTYPE">/
-
-IC_Example/CSCT/SCP</CONTEXT-ELEMENT-REF>
-
-<TARGET-REF DEST="MODE-ACCESS-POINT-IDENT">/IC_Example/
-
-ASCT/IB/RE/ident</TARGET-REF>
-
-</BY-PASS-POINT-IREF>
-
-</BY-PASS-POINT-IREFS>
-
-</RPT-CONTAINER>
-
-</RPT-CONTAINERS>
-
-</RAPID-PROTOTYPING-SCENARIO>
-
-</ELEMENTS>
-</AR-PACKAGE>
 
 
 
