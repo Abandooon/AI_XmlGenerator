@@ -1,0 +1,126 @@
+{
+  "groups": {
+    "[GroupName]": {  // 例如 "SwcInternalBehavior"
+      "name": "string",
+      "annotation": "string",
+      "description": "string",
+      "stereotypes": [ "string", ... ],
+      "child": "string",
+      "subTags": [ "string", ... ],
+      "elements": [
+        {
+          "name": "string",
+          "qualifiedName": "string",
+          "document_name": "string",
+          "type": "string",
+          "annotation": "string",
+          "xml_tag": "string" (or null),
+          "xml_wrapper_tag": "string" (or null),
+          "is_xml_attribute": "boolean",
+          "maxOccurs": "integer" (or null or string like "*"),
+          "description": "string",
+          "stereotypes": [ "string", ... ],
+          "pure_minOccurs": "integer",
+          "pure_maxOccurs": "integer"
+        },
+        // ... more element objects
+      ],
+      "attributeGroups": [ "string", ... ],
+      "Package": [ "string", ... ],
+      "abstract": "string" (e.g., "false"),
+      "ClassAssociatedFrom": [ "string", ... ],
+      "generalization": [ "string", ... ]
+    },
+    // ... more group entries
+  },
+
+  "attributeGroups": {
+    "[AttributeGroupName]": [ // 例如 "ARObject"
+      { // 结构与 groups.[GroupName].elements[] 中的对象类似
+        "name": "string",
+        "qualifiedName": "string",
+        "document_name": "string",
+        "type": "string",
+        "annotation": "string",
+        "description": "string",
+        "stereotypes": [ "string", ... ],
+        "pure_minOccurs": "integer",
+        "pure_maxOccurs": "integer"
+      },
+      // ... more attribute definitions in this group
+    ],
+    // ... more attribute group entries
+  },
+
+  "simpleTypes": {
+    "[SimpleTypeName]": { // 例如 "AtomicSwComponentTypeSubtypesEnum"
+      "name": "string",
+      "annotation": "string",
+      "base": "string",
+      "enumerations": [ "string", ... ],
+      "isPrimitiveType": "boolean",
+      "pattern": "string" (or null)
+    },
+    // ... more simple type entries
+  },
+
+  "complexTypes": {
+    "[ComplexTypeName]": { // 例如 "CIdentifier"
+      "name": "string",           // 通常是XML标签名
+      "qualifiedName": "string",
+      "document_name": "string",   // 概念上的类型名
+      "attributes": [
+        {
+          "name": "string",
+          "type": "string",
+          "annotation": "string",
+          "pattern": "string" (or null),
+          "isPrimitiveType": "boolean",
+          "source": "string"
+        },
+        // ... more attribute objects
+      ],
+      "elements": [ // 结构与 groups.[GroupName].elements[] 中的对象类似 (如果存在)
+        {
+          "name": "string",
+          "qualifiedName": "string",
+          "document_name": "string",
+          "type": "string",
+          // ... (其他 elementItem 的字段)
+        },
+        // ... more element objects
+      ],
+      "innerClasses": [ /* (数组，具体内容结构未在片段中完全展示) */ ],
+      "extends": "string" (or null),
+      "objFactory": [ /* (数组，具体内容结构未在片段中完全展示) */ ],
+      "isAttribute": "boolean",
+      "attributeGroups": "string", // 可能是一个逗号分隔的列表字符串
+      "enumeration": [ // (如果 complexType 内部定义枚举)
+          "string" // 或 { "value": "string" }
+          // ...
+      ]
+    },
+    // ... more complex type entries
+  },
+
+  "extract_inner_class": {
+    "[InnerClassName]": { // 例如 "BlueprintPolicys"
+      "name": "string",
+      "attributes": [
+        {
+          "name": "string",
+          "type": "string",
+          "annotation": "string",
+          "xml_tag": "string" (or null),
+          "xml_wrapper_tag": "string" (or null),
+          "is_xml_attribute": "boolean",
+          "description": "string",
+          "stereotypes": [ "string", ... ]
+        },
+        // ... more attribute objects
+      ],
+      "isAttribute": "boolean"
+    },
+    // ... more extracted inner class entries
+  }
+}

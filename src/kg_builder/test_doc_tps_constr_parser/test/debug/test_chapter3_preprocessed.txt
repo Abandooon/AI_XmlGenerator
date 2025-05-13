@@ -1,0 +1,589 @@
+#@chapter-3
+3 Overview: Software Components, Ports, and Interfaces
+
+#@chapter-3.1
+3.1 Introduction
+
+The detailed introduction of all aspects of the Software Component Template in
+one move is considered too complex. This chapter therefore provides an overviewof the main conceptual aspects of software components, ports and interfaces. Theoverview will then be broken down into further details in chapter 4.
+
+One of the goals of the AUTOSAR concept is the support of re-usability on the level of
+application software. In other words: it should be possible to re-use existing artifacts to
+create further model elements instead of being forced to create every single modelingdetail from scratch. One of the consequences of this approach is the application of theso-called type-prototype pattern [12].
+
+Among other things, this concept allows for creating hierarchical structures of softwarecomponents with arbitrary complexity. However, the creation of hierarchical structuresitself does not have an impact on the run-time behavior of the overall system. Theactual behavior is completely deﬁned within the individual software-components.
+
+This conclusion is backed by the understanding that software-components are developed against the so-called Virtual Functional Bus (VFB), an abstract communicationchannel without direct dependency on ECUs and communication buses. The VFB doesnot provide any means for expressing a hierarchy of software-components.
+
+Of course, the usage of the VFB has further consequences on the design of softwarecomponents which shall not directly call the operating system or the communicationhardware. As a result, software-components can be deployed to actual ECUs at a
+rather late stage in the development process.
+
+In order to make the description more precise, the following text preferably uses accurate meta-model terms instead of the rather vague terminology of “composition” and
+“software-component”.
+#@chapter-3.2
+3.2 Software Component
+#@chapter-3.2.1
+3.2.1 Overview
+
+Application software within AUTOSAR is organized in self-contained units called AtomicSwComponentTypes. Such AtomicSwComponentTypes encapsulate the implementation of their functionality and behavior and merely expose well-deﬁned connection points, called PortPrototypes, to the outside world.
+
+Figure 3.1: Graphical representation of software-components in AUTOSAR
+
+The graphical appearance of AUTOSAR software-components according to [3] is de
+picted in Figure 3.1.
+
+Class
+Package
+Note
+Base
+
+Attributeconsistenc
+yNeeds
+
+SwComponentType (abstract)
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+Base class for AUTOSAR software components.
+ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
+Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
+Element,Referrable
+Datatype
+ConsistencyNeeds
+
+Mul. Kind Noteaggr
+
+This represents the colelction of
+ConsistencyNeeds owned by the enclosing
+SwComponentType.
+
+*
+
+port
+
+PortPrototype
+
+*
+
+aggrportGroup
+
+PortGroup
+
+*
+
+aggr
+
+Stereotypes: atpSplitable; atpVariation
+Tags: atp.Splitkey=shortName, variation
+Point.shortLabelvh.latestBindingTime=preCompileTime
+The ports through which this component cancommunicate. The aggregation of PortPrototype is
+subject to variability with the purpose to supportthe conditional existence of PortPrototypes.
+
+Stereotypes: atpSplitable; atpVariation
+Tags: atp.Splitkey=shortName, variation
+Point.shortLabelvh.latestBindingTime=preCompileTime
+A port group being part of this component.
+
+Stereotypes: atpVariation
+Tags: vh.latestBindingTime=preCompileTime
+
+Attribute
+swComponentDocum
+entation
+
+Datatype
+SwComponentD
+ocumentation
+
+Mul. Kind Noteaggr
+0..1
+
+This adds a documentation to the
+SwComponentType.
+
+unitGroup
+
+UnitGroup
+
+*
+
+ref
+
+Stereotypes: atpSplitable; atpVariation
+Tags: atp.Splitkey=swComponentDocumentation,
+variationPoint.shortLabelvh.latestBindingTime=preCompileTimexml.sequenceOffset=-10
+This allows for the speciﬁcation of which
+UnitGroups are relevant in the context of
+referencing SwComponentType.
+
+Table 3.1: SwComponentType
+#@chapter-3.2.2
+3.2.2 PortPrototype
+
+Please note that PortPrototypes of a SwComponentType are supposed to be usedfor attaching SwConnectors that establish an actual connection between SwComponentPrototypes (see chapter 3.3).
+
+[TPS_SWCT_01002] SwComponentTypes may only interact by means of their
+PortPrototypes  (cid:100)  AtomicSwComponentTypes (and also the more general
+SwComponentTypes may only interact by means of their PortPrototypes). Hiddencommunication dependencies that are not expressed by means of PortPrototypes
+ (cid:99) (RS_SWCT_00020, RS_SWCT_00030, RS_SWCT_00150,
+are strictly forbidden.
+RS_SWCT_00160, RS_SWCT_00200, RS_SWCT_00210, RS_SWCT_02010,
+RS_SWCT_02030)
+
+Therefore, software-components are in theory exchangeable as long as they implementthe same functionality and provide the same public communication interface to theremaining system.
+
+Class
+Package
+Note
+
+PortPrototype (abstract)
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+Base class for the ports of an AUTOSAR software component.
+
+The aggregation of PortPrototypes is subject to variability with the purpose to supportthe conditional existence of ports.
+ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
+Referrable,Referrable
+Datatype
+ClientServerAnnotation
+
+Annotation of this PortPrototype with respect to
+client/server communication.
+
+Mul. Kind Noteaggr
+
+*
+
+DelegatedPortA
+nnotation
+
+0..1
+
+aggr
+
+Annotations on this delegated port.
+
+Base
+
+Attribute
+clientServerAnnotatio
+n
+delegated
+PortAnnota
+tion
+
+Attribute
+ioHwAbstractionServ
+erAnnotation
+modePortA
+nnotation
+nvDataPort
+Annotation
+parameter
+PortAnnota
+tionsenderRec
+eiverAnnotation
+triggerPort
+Annotation
+
+Datatype
+IoHwAbstraction
+ServerAnnotatio
+n
+
+ModePortAnnotation
+NvDataPortAnnotation
+ParameterPortA
+nnotation
+
+SenderReceiver
+Annotation
+
+TriggerPortAnnotation
+
+Mul. Kind Noteaggr
+
+*
+
+Annotations on this IO Hardware Abstraction port.
+
+*
+
+*
+
+*
+
+*
+
+*
+
+aggr
+
+Annotations on this mode port.
+
+aggr
+
+Annotations on this non voilatile data port.
+
+aggr
+
+Annotations on this parameter port.
+
+aggr Collection of annotations of this portssender/receiver communication.
+
+aggr
+
+Annotations on this trigger port.
+
+Table 3.2: PortPrototype
+
+Figure 3.2: Overview of PortPrototype
+
+[TPS_SWCT_01111] PortPrototypes need an additional model artifact, the
+PortInterface  (cid:100)  Please note that PortPrototypes actually need an additionalmodel artifact, the PortInterface, for fully describing the details of the PortPrototype. The concept of the PortInterface as another means for establishing a
+high degree of re-usability is described in chapter 3.4.  (cid:99) (RS_SWCT_00010)
+
+[TPS_SWCT_01112] Semantics of PortPrototypes  (cid:100)  As depicted in Figure 3.2,
+PortPrototypes can have the following semantics:
+
+• A require-port (in technical terms: RPortPrototype) requires certain servicesor data.
+
+PPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePRPortPrototypeAbstractRequiredPortPrototypeAbstractProvidedPortPrototype
+
+• A provide-port (or PPortPrototype) on the other hand provides services or
+
+data.
+
+• A provide-require-port (or PRPortPrototype) combines the ability to provideand require services or data in one entity.
+
+ (cid:99) (RS_SWCT_03250)
+
+[TPS_SWCT_01573] A PRPortPrototype is never considered unconnected
+ (cid:100)  A PRPortPrototype is never considered unconnected, even if
+there are no
+SwConnectors actually referring to it.
+ (cid:99) (RS_SWCT_00010, RS_SWCT_03250,
+RS_SWCT_03130)
+
+Please note that [TPS_SWCT_01573] represents the immediate consequence of thesemantics deﬁned in [TPS_SWCT_01112].
+
+[TPS_SWCT_01113] Connecting two PortPrototypes  (cid:100)  Two SwComponentPrototypes are eventually connected by hooking up a PPortPrototype or PRPort
+Prototype of one SwComponentPrototype to a compatible RPortPrototype or
+PRPortPrototype of the other SwComponentPrototypes. Please ﬁnd more information concerning the deﬁnition of “compatibility” in section 6.  (cid:99) (RS_SWCT_03130,
+RS_SWCT_03250)
+
+Class
+Package
+Note
+Base
+
+AttributerequiredCo
+mSpec
+
+Class
+Package
+Note
+Base
+
+Attribute
+providedC
+omSpec
+
+AbstractRequiredPortPrototype (abstract)
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+This abstract class provides the ability to become a required PortPrototype.
+ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
+Referrable,PortPrototype,Referrable
+Datatype
+RPortComSpec
+
+Mul. Kind Noteaggr Required communication attributes, one for each
+
+*
+
+interface element.
+
+Table 3.3: AbstractRequiredPortPrototype
+
+AbstractProvidedPortPrototype (abstract)
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+This abstract class provides the ability to become a provided PortPrototype.
+ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
+Referrable,PortPrototype,Referrable
+Datatype
+PPortComSpec
+
+Mul. Kind Noteaggr
+
+*
+
+Provided communication attributes per interfaceelement (data element or operation).
+
+Table 3.4: AbstractProvidedPortPrototype
+
+RPortPrototype
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+Component port requiring a certain port interface.
+ARObject,AbstractRequiredPortPrototype,AtpBlueprintable,AtpFeature,Atp
+Prototype,Identiﬁable,MultilanguageReferrable,PortPrototype,Referrable
+Datatype
+PortInterface
+
+Mul. Kind Notetref
+
+1
+
+The interface that this port requires, i.e. the portdepends on another port providing the speciﬁedinterface.
+
+Stereotypes: isOfType
+
+Table 3.5: RPortPrototype
+
+PPortPrototype
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+Component port providing a certain port interface.
+ARObject,AbstractProvidedPortPrototype,AtpBlueprintable,AtpFeature,Atp
+Prototype,Identiﬁable,MultilanguageReferrable,PortPrototype,Referrable
+Datatype
+PortInterface
+
+Mul. Kind Notetref
+
+The interface that this port provides.
+
+1
+
+Stereotypes: isOfType
+
+Table 3.6: PPortPrototype
+
+PRPortPrototype
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+This kind of PortPrototype can take the role of both a required and a provided
+PortPrototype.
+ARObject,AbstractProvidedPortPrototype,AbstractRequiredPortPrototype,Atp
+Blueprintable,AtpFeature,AtpPrototype,Identiﬁable,MultilanguageReferrable,Port
+Prototype,Referrable
+Datatype
+PortInterface
+
+Mul. Kind Notetref
+
+1
+
+This represents the PortInterface used to type the
+PRPortPrototype
+
+Class
+Package
+Note
+Base
+
+AttributerequiredInt
+erface
+
+Class
+Package
+Note
+Base
+
+Attribute
+providedInterface
+
+Class
+Package
+Note
+
+Base
+
+AttributeprovidedR
+equiredInterface
+
+Stereotypes: isOfType
+
+Table 3.7: PRPortPrototype
+
+Figure 3.3: Components and Ports
+
+[TPS_SWCT_01096] PortGroup  (cid:100)  PortPrototypes can be logically grouped into
+PortGroups. This mechanism is used for implementing mode management featuresand further explained in chapter 4.6.  (cid:99) (RS_SWCT_03201)
+#@chapter-3.2.3
+3.2.3 AtomicSwComponentType
+
+[TPS_SWCT_01108] Added value of an AtomicSwComponentType  (cid:100)  As mentionedbefore, the term AtomicSwComponentType is a speciﬁc form of the general conceptof the SwComponentType. The added value of an AtomicSwComponentType is thatit can aggregate an InternalBehavior (see chapter 7).  (cid:99) (RS_SWCT_03040)
+
+[TPS_SWCT_01109] Adding the SwcInternalBehavior in a later process step
+ (cid:100)  The aggregation of SwcInternalBehavior is stereotyped (cid:28)atpSplitable(cid:29) to
+allow for adding the SwcInternalBehavior in a later process step. In other words, it
+is possible to completely develop the VFB view of a software-component and later addmore details like InternalBehavior.  (cid:99) ()
+
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]PRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefinesatpType}
+
+Class
+Package
+Note
+
+Base
+
+AttributeinternalBe
+havior
+
+AtomicSwComponentType (abstract)
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+An atomic software component is atomic in the sense that it cannot be furtherdecomposed and distributed across multiple ECUs.
+ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
+Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
+Element,Referrable,SwComponentType
+Mul. Kind Note
+Datatype
+aggr
+0..1
+SwcInternalBehavior
+
+The SwcInternalBehaviors owned by an
+AtomicSwComponentType can be located in a
+different physical ﬁle. Therefore the aggregation is
+«atpSplitable».
+
+symbolProps
+
+SymbolProps
+
+0..1
+
+aggr
+
+Stereotypes: atpSplitable; atpVariation
+Tags: atp.Splitkey=internalBehavior, variation
+Point.shortLabelvh.latestBindingTime=preCompileTime
+This represents the SymbolProps for the
+AtomicSwComponentType.
+
+Stereotypes: atpSplitable
+Tags: atp.Splitkey=shortName
+
+Table 3.8: AtomicSwComponentType
+
+There are several specialized SwComponentTypes to describe speciﬁc softwarecomponents used in the different parts of the AUTOSAR Layered Architecture [6]. Further details are mentioned in chapter 10 and 11.
+
+Figure 3.4: Overview of Component Types
+
+ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeCompositionSwComponentTypeAtpPrototypeSwComponentPrototypeSensorActuatorSwComponentTypeParameterSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentType«atpVariation» Tags:vh.latestBindingTime =postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}
+
+The ApplicationSwComponentType is a specialization of AtomicSwComponent
+Type for representing hardware-independent application software. The Parameter
+SwComponentType is a specialization of SwComponentType that can - in contrast to
+AtomicSwComponentType - not aggregate SwcInternalBehavior.
+
+the NvBlockSwComponentType is described in detailin sec
+The purpose of
+tion 11.5.2. The ServiceSwComponentType is described in section 11.3. Further on,
+the EcuAbstractionSwComponentType and the ComplexDeviceDriverSwComponentType are discussed in detail in section 10.
+
+A description of the ServiceProxySwComponentType can be found in section 11.4
+while the SensorActuatorSwComponentType is described in section 10.4.
+
+Class
+Package
+Note
+
+ApplicationSwComponentType
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+The ApplicationSwComponentType is used to represent the application software.
+
+Base
+
+Attribute
+–
+
+Tags: atp.recommendedPackage=SwComponentTypes
+ARElement,ARObject,AtomicSwComponentType,AtpBlueprint,AtpBlueprintable,Atp
+Classiﬁer,AtpType,CollectableElement,Identiﬁable,Multilanguage
+Referrable,PackageableElement,Referrable,SwComponentType
+Datatype
+–
+
+Mul. Kind Note
+–
+
+–
+
+–
+
+Table 3.9: ApplicationSwComponentType
+#@chapter-3.2.4
+3.2.4 ParameterSwComponentType
+
+[constr_1092] ParameterSwComponentType  (cid:100)  A ParameterSwComponentTypeshall never aggregate a SwcInternalBehavior and also owns exclusively PPort
+Prototypes of type ParameterInterface.  (cid:99) ()
+
+However, a ParameterSwComponentType shall have the ability to aggregate In
+stantiationDataDefProps. By this means it is possible to deﬁne role-speciﬁcdata properties of elements of composite data types used for the deﬁnition of calibration parameters in the scope of a ParameterSwComponentType.
+
+For more information about this aspect please refer to section 7.5.4.
+
+Figure 3.5: Details of ParameterSwComponentType
+#@chapter-3.2.5
+3.2.5 Symbolic Name of a Software-Component
+
+Please note that an AtomicSwComponentType manifests itself in the source code of
+an RTE into which an instance of the AtomicSwComponentType is deployed. Thisimplies potential naming conﬂicts if instances of AtomicSwComponentType that haveidentical shortNames are deployed into a speciﬁc RTE.
+
+[TPS_SWCT_01110] Symbolic name of a software-component  (cid:100)  To mitigate thispotential hazard it is possible to provide the AtomicSwComponentType along withan accompanying symbolic name that can be used for resolving the name clash. Thesymbolic name is provided by means of the attribute symbol of the meta-class SymbolProps owned by AtomicSwComponentType in the role symbolProps (for moreinformation, please refer to Figure 3.6).  (cid:99) ()
+
+Class
+Package
+Note
+
+Base
+Attribute
+–
+
+SymbolProps
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+This meta-class represents the ability to attach with the symbol attribute a symbolicname that is conform to C language requirements to another meta-class, e.g.
+AtomicSwComponentType, that is a potential subject to a name clash on the level of
+RTE source code.
+ARObject,ImplementationProps,Referrable
+Datatype
+–
+
+Mul. Kind Note
+–
+
+–
+
+–
+
+Table 3.10: SymbolProps
+
+For more detailed information about how SymbolProps can be used to mitigate nameclashes occurring during the integration of software-components on an AUTOSAR
+ECU, please refer to [4].
+
+[TPS_SWCT_01000] Usage of attribute symbol of the symbolProps  (cid:100)  In parthe attribute symbol of
+ticular,
+the symbolProps owned by a given AtomicSwComponentType.
+If and only if
+symbolProps is not deﬁned the RTE generator shall take the shortName of thethe RTE generator shalltake over the value of
+
+SwComponentTypeParameterSwComponentTypeInstantiationDataDefPropsARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSet«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+dataTypeMapping0..*«atpVariation»+instantiationDataDefProps0..*«atpSplitable»+constantMapping0..*
+
+AtomicSwComponentType. For the generation of symbols for RunnableEntitys
+[TPS_SWCT_01001] shall be observed.  (cid:99) ()
+
+[TPS_SWCT_01001] Preﬁx symbols generated for the RunnableEntity  (cid:100)  If andonly if the attribute symbol of a symbolProps owned by an AtomicSwComponent
+Type exists, its value shall also be taken for preﬁxing the symbols generated for the
+RunnableEntitys owned by the AtomicSwComponentType.  (cid:99) ()
+
+Note: if symbolProps is not deﬁned the behavior of the RTE generator is fully backwards compatible, i.e. existing implementations of RunnableEntitys do not have to
+be touched in order to conform with this version of the AUTOSAR standard.
+
+This is a further measure to mitigate the risk of potential name clashes in the RTE
+code.
+
+[TPS_SWCT_01635] Naming conventions may support the effectiveness of SymbolProps  (cid:100)  Of course, there is a residual risk that even in the presence of Symbol
+Props name clashes may occur. Therefore, the deﬁnition of naming conventions mayfacilitate the avoidance of name clashes to the further degree.
+
+However, these naming conventions can (with the support of the meta-model, e.g. by
+utilizing SymbolProps or shortNamePattern) still only be deﬁned on the modellevel.  (cid:99) (RS_SWCT_00230)
+
+Figure 3.6: Overview of AtomicSwComponentType
+
+SwComponentTypeAtomicSwComponentTypeSymbolPropsSensorActuatorSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentTypeReferrableImplementationProps+ symbol  :CIdentifier«atpSplitable»+symbolProps0..1

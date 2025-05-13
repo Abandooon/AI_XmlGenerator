@@ -1,0 +1,4915 @@
+======== 约束 #1: TPS_SWCT_01418 ========
+类型: Generic
+
+
+======== 约束 #2: TPS_SWCT_01420 ========
+类型: Generic
+
+
+======== 约束 #3: TPS_SWCT_01421 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Chapter', 'attribute': 'Note'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ClientComSpec', 'attribute': 'operation'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'PortPrototypeBlueprint', 'attribute': 'interface'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #4: TPS_SWCT_01422 ========
+类型: Generic
+
+
+======== 约束 #5: TPS_SWCT_01423 ========
+类型: Generic
+
+
+======== 约束 #6: TPS_SWCT_01424 ========
+类型: Generic
+
+
+======== 约束 #7: TPS_SWCT_01038 ========
+类型: Generic
+引用ID: RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03140, RS_SWCT_03142, RS_SWCT_03154
+
+
+======== 约束 #8: TPS_SWCT_01039 ========
+类型: Generic
+引用ID: RS_SWCT_00220
+
+
+======== 约束 #9: TPS_SWCT_01447 ========
+类型: Generic
+引用ID: RS_SWCT_00220
+
+
+======== 约束 #10: TPS_SWCT_01040 ========
+类型: Generic
+引用ID: RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03143
+
+
+======== 约束 #11: TPS_SWCT_01041 ========
+类型: Generic
+引用ID: RS_SWCT_00220, RS_SWCT_03100
+
+
+======== 约束 #12: TPS_SWCT_01085 ========
+类型: Generic
+引用ID: RS_SWCT_03149, RS_SWCT_03150, RS_SWCT_03151, RS_SWCT_03153
+
+
+======== 约束 #13: TPS_SWCT_01042 ========
+类型: Generic
+引用ID: RS_SWCT_00220, RS_SWCT_03100
+
+
+======== 约束 #14: TPS_SWCT_01088 ========
+类型: Requirement
+引用ID: RS_SWCT_03220
+
+
+======== 约束 #15: TPS_SWCT_01568 ========
+类型: Requirement
+引用ID: RS_SWCT_03220
+
+
+======== 约束 #16: TPS_SWCT_01510 ========
+类型: Requirement
+
+
+======== 约束 #17: TPS_SWCT_01511 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #18: TPS_SWCT_01512 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DiagnosticStartRoutine', 'attribute': 'request'}, {'class': 'Modification', 'attribute': 'change'}, {'class': 'EndToEndProtectionVariablePrototype', 'attribute': 'Sender'}, {'class': 'Modification', 'attribute': 'change'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'AgeConstraint', 'attribute': 'scope'}, {'class': 'SenderReceiverInterface', 'attribute': ' The'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03110', 'TPS_SWCT_01086', 'TPS']}
+引用ID: RS_SWCT_03110, TPS_SWCT_01086
+
+
+======== 约束 #19: TPS_SWCT_01513 ========
+类型: Requirement
+引用ID: RS_SWCT_03110, TPS_SWCT_01087
+
+
+======== 约束 #20: TPS_SWCT_01641 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #21: TPS_SWCT_01642 ========
+类型: Generic
+
+
+======== 约束 #22: TPS_SWCT_01642 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #23: TPS_SWCT_01644 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #24: TPS_SWCT_01645 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #25: TPS_SWCT_01636 ========
+类型: Procedure
+条件表达式: 4 个
+  条件 #1: {'class_name': None, 'attribute': 'Variable-Size', 'operation': 'apply', 'value': 'This case corresponds to the possible value VSA_LINEAR of attribute dynamicArraySizeProfile.\n\nSquare The data type of the elements of the Variable-Size Array Data Typeitself consists of Variable-Size Array Data Types where the maximumnumber of elements in all “second order” arrays is identical to the maximumnumber of elements in the “ﬁrst order” array. This case corresponds to the tag (b)\nin Figure 2.', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'Variable-Size', 'operation': 'apply', 'value': 'This case corresponds to the possible value VSA_SQUARE of attribute dynamicArraySizeProfile.\n\n\n\n\nRectangular The data type of the elements of the Variable-Size Array Data\nType itself consists of Variable-Size Array Data Types data types wherethe maximum number of elements in “second order” arrays is identical but thisvalue is typically not identical3 to the maximum number of elements in the “ﬁrstorder” array. This case corresponds to the tag (c) in Figure 2.', 'scope': None}
+  条件 #3: {'class_name': None, 'attribute': 'Variable-Size', 'operation': 'apply', 'value': 'This case corresponds to the possible value VSA_RECTANGULAR of attribute dy\nnamicArraySizeProfile.\n\nFully Flexible The data type of the elements of the Variable-Size Array Data\nType itself consists of Variable-Size Array Data Types where the maximum number of elements in “second order” arrays is not necessarily identicalwith each other and (obviously) not necessarily identical to the maximum number of elements in the “ﬁrst order” array. This case corresponds to the tag (d) in\nFigure 2.', 'scope': None}
+  条件 #4: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': 'apply', 'value': 'This case corresponds to the possible value VSA_FULLY_FLEXIBLE of attributedynamicArraySizeProfile.', 'scope': None}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #26: TPS_SWCT_01002 ========
+类型: Generic
+引用ID: RS_SWCT_00020, RS_SWCT_00030, RS_SWCT_00150, are strictly forbidden.
+RS_SWCT_00160, RS_SWCT_00200, RS_SWCT_00210, RS_SWCT_02010, RS_SWCT_02030
+
+
+======== 约束 #27: TPS_SWCT_01111 ========
+类型: Generic
+引用ID: RS_SWCT_00010
+
+
+======== 约束 #28: TPS_SWCT_01112 ========
+类型: Generic
+引用ID: RS_SWCT_03250
+
+
+======== 约束 #29: TPS_SWCT_01573 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_03250, RS_SWCT_03130
+
+
+======== 约束 #30: TPS_SWCT_01113 ========
+类型: Generic
+引用ID: RS_SWCT_03130, RS_SWCT_03250
+
+
+======== 约束 #31: TPS_SWCT_01096 ========
+类型: Generic
+引用ID: RS_SWCT_03201
+
+
+======== 约束 #32: TPS_SWCT_01108 ========
+类型: Generic
+引用ID: RS_SWCT_03040
+
+
+======== 约束 #33: TPS_SWCT_01109 ========
+类型: Generic
+
+
+======== 约束 #34: constr_1092 ========
+类型: Requirement
+
+
+======== 约束 #35: TPS_SWCT_01110 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'CompuScale', 'attribute': 'symbol'}, {'class': 'AtomicSwComponentType', 'attribute': 'SymbolProps'}, {'class': 'BuildActionIoElement', 'attribute': 'role'}, {'class': 'AtomicSwComponentType', 'attribute': 'symbolProps'}, {'class': 'Chapter', 'attribute': 'Figure'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #36: TPS_SWCT_01000 ========
+类型: Requirement
+引用ID: TPS_SWCT_01001
+
+
+======== 约束 #37: TPS_SWCT_01001 ========
+类型: Requirement
+
+
+======== 约束 #38: TPS_SWCT_01635 ========
+类型: Generic
+引用ID: RS_SWCT_00230
+
+
+======== 约束 #39: TPS_SWCT_01032 ========
+类型: Generic
+引用ID: RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #40: TPS_SWCT_01033 ========
+类型: Generic
+引用ID: RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #41: TPS_SWCT_01034 ========
+类型: Generic
+引用ID: RS_SWCT_00190, do not have any binary footprint
+RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #42: TPS_SWCT_01035 ========
+类型: Generic
+引用ID: RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #43: TPS_SWCT_01036 ========
+类型: Generic
+引用ID: RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #44: TPS_SWCT_01037 ========
+类型: Permission
+引用ID: RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000
+
+
+======== 约束 #45: TPS_SWCT_01080 ========
+类型: Generic
+引用ID: RS_SWCT_03130
+
+
+======== 约束 #46: TPS_SWCT_01081 ========
+类型: Generic
+引用ID: RS_SWCT_03130
+
+
+======== 约束 #47: constr_1035 ========
+类型: Prohibition
+
+
+======== 约束 #48: TPS_SWCT_01079 ========
+类型: Generic
+引用ID: RS_SWCT_03130
+
+
+======== 约束 #49: constr_1032 ========
+类型: Generic
+
+
+======== 约束 #50: TPS_SWCT_01084 ========
+类型: Generic
+引用ID: RS_SWCT_03130, constr_1086
+
+
+======== 约束 #51: TPS_SWCT_01638 ========
+类型: Generic
+引用ID: constr_1086
+
+
+======== 约束 #52: constr_1087 ========
+类型: Generic
+
+
+======== 约束 #53: constr_1088 ========
+类型: Generic
+
+
+======== 约束 #54: TPS_SWCT_01515 ========
+类型: Requirement
+
+
+======== 约束 #55: constr_1100 ========
+类型: Requirement
+
+
+======== 约束 #56: TPS_SWCT_01507 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PassThroughSwConnector', 'attribute': 'providedOuterPort'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #57: constr_1252 ========
+类型: Generic
+
+
+======== 约束 #58: TPS_SWCT_02507 ========
+类型: Generic
+引用ID: RS_SWCT_03046, RS_SWCT_03270
+
+
+======== 约束 #59: constr_1233 ========
+类型: Requirement
+
+
+======== 约束 #60: TPS_SWCT_01025 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010
+
+
+======== 约束 #61: TPS_SWCT_01026 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010
+
+
+======== 约束 #62: TPS_SWCT_01027 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030
+
+
+======== 约束 #63: TPS_SWCT_01069 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_03010
+
+
+======== 约束 #64: TPS_SWCT_01070 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'PortPrototype', 'attribute': ' This'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_00010', 'RS_SWCT_00080', 'RS_SWCT_00110', 'RS_SWCT_03010']}
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_03010
+
+
+======== 约束 #65: constr_1036 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'RuleBasedValueSpecification', 'attribute': 'rule'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #66: constr_1137 ========
+类型: Generic
+
+
+======== 约束 #67: TPS_SWCT_01003 ========
+类型: Requirement
+
+
+======== 约束 #68: TPS_SWCT_01004 ========
+类型: Requirement
+
+
+======== 约束 #69: constr_1174 ========
+类型: Requirement
+条件表达式: {'class_name': 'PortInterface', 'attribute': 'isService', 'operation': '==', 'value': 'true', 'scope': None}
+
+
+======== 约束 #70: TPS_SWCT_01005 ========
+类型: Requirement
+
+
+======== 约束 #71: TPS_SWCT_01516 ========
+类型: Generic
+引用ID: RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010
+
+
+======== 约束 #72: constr_1045 ========
+类型: Generic
+
+
+======== 约束 #73: constr_1046 ========
+类型: Generic
+引用ID: constr_1045
+
+
+======== 约束 #74: constr_1295 ========
+类型: Requirement
+
+
+======== 约束 #75: TPS_SWCT_01114 ========
+类型: Generic
+
+
+======== 约束 #76: TPS_SWCT_01115 ========
+类型: Requirement
+
+
+======== 约束 #77: TPS_SWCT_01116 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'queued', 'operation': '==', 'value': 'VariableDataPrototype', 'scope': None}
+
+
+======== 约束 #78: constr_1200 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'PRPortPrototype', 'operation': 'shall_not_be_set', 'scope': None}
+  禁止 #2: {'class_name': 'InternalTriggeringPoint', 'attribute': 'swImplPolicy', 'operation': 'shall_not_be_set', 'scope': None}
+
+
+======== 约束 #79: TPS_SWCT_01176 ========
+类型: Generic
+
+
+======== 约束 #80: TPS_SWCT_01117 ========
+类型: Generic
+
+
+======== 约束 #81: constr_1033 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'CanTpConnection', 'attribute': 'receiver', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #82: constr_1202 ========
+类型: Generic
+
+
+======== 约束 #83: constr_1203 ========
+类型: Generic
+
+
+======== 约束 #84: constr_1037 ========
+类型: Requirement
+
+
+======== 约束 #85: TPS_SWCT_01118 ========
+类型: Generic
+
+
+======== 约束 #86: TPS_SWCT_01106 ========
+类型: Generic
+引用ID: RS_SWCT_03141
+
+
+======== 约束 #87: TPS_SWCT_01119 ========
+类型: Generic
+
+
+======== 约束 #88: TPS_SWCT_01517 ========
+类型: Generic
+
+
+======== 约束 #89: TPS_SWCT_01120 ========
+类型: Generic
+
+
+======== 约束 #90: TPS_SWCT_01121 ========
+类型: Generic
+
+
+======== 约束 #91: TPS_SWCT_01122 ========
+类型: Generic
+
+
+======== 约束 #92: TPS_SWCT_01123 ========
+类型: Generic
+
+
+======== 约束 #93: TPS_SWCT_01124 ========
+类型: Generic
+
+
+======== 约束 #94: TPS_SWCT_01125 ========
+类型: Generic
+
+
+======== 约束 #95: constr_1286 ========
+类型: Requirement
+引用ID: TPS_SWCT_01565
+
+
+======== 约束 #96: constr_1204 ========
+类型: Generic
+
+
+======== 约束 #97: constr_1205 ========
+类型: Generic
+
+
+======== 约束 #98: TPS_SWCT_01491 ========
+类型: Generic
+
+
+======== 约束 #99: TPS_SWCT_01490 ========
+类型: Generic
+
+
+======== 约束 #100: constr_1102 ========
+类型: Generic
+
+
+======== 约束 #101: constr_1108 ========
+类型: ConditionalProhibition
+条件表达式: {'class_name': 'ClientServerInterface', 'attribute': 'possibleError', 'operation': '==', 'value': 'value', 'scope': None}
+禁止表达式: 1 个
+  禁止 #1: {'class_name': None, 'attribute': 'closed', 'operation': 'shall_not', 'scope': None}
+引用ID: constr_1038
+
+
+======== 约束 #102: TPS_SWCT_01196 ========
+类型: Generic
+
+
+======== 约束 #103: TPS_SWCT_01197 ========
+类型: Requirement
+
+
+======== 约束 #104: TPS_SWCT_01198 ========
+类型: Generic
+
+
+======== 约束 #105: constr_1104 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'TriggerInterface', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': None, 'attribute': 'TriggerInterface', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #106: constr_1104 ========
+类型: Generic
+
+
+======== 约束 #107: TPS_SWCT_01199 ========
+类型: Generic
+
+
+======== 约束 #108: constr_1169 ========
+类型: Generic
+
+
+======== 约束 #109: TPS_SWCT_01087 ========
+类型: Generic
+引用ID: RS_SWCT_03203
+
+
+======== 约束 #110: constr_4000 ========
+类型: Generic
+
+
+======== 约束 #111: constr_2049 ========
+类型: Generic
+
+
+======== 约束 #112: constr_1172 ========
+类型: Generic
+
+
+======== 约束 #113: TPS_SWCT_01566 ========
+类型: Generic
+引用ID: RS_SWCT_03203
+
+
+======== 约束 #114: TPS_SWCT_01200 ========
+类型: Generic
+引用ID: RS_SWCT_03203
+
+
+======== 约束 #115: TPS_SWCT_01201 ========
+类型: Generic
+引用ID: RS_SWCT_03202, RS_SWCT_03203
+
+
+======== 约束 #116: TPS_SWCT_01086 ========
+类型: Generic
+引用ID: RS_SWCT_03202, RS_SWCT_03203
+
+
+======== 约束 #117: constr_4002 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'IncludedModeDeclarationGroupSet', 'attribute': 'ModeDeclarationGroup', 'operation': 'shall_not', 'scope': 'DataTypeMappingSet'}
+
+
+======== 约束 #118: constr_1166 ========
+类型: Requirement
+
+
+======== 约束 #119: constr_1167 ========
+类型: Requirement
+
+
+======== 约束 #120: TPS_SWCT_01202 ========
+类型: Generic
+引用ID: RS_SWCT_03203
+
+
+======== 约束 #121: constr_1312 ========
+类型: Generic
+
+
+======== 约束 #122: TPS_SWCT_01158 ========
+类型: Procedure
+条件表达式: 4 个
+  条件 #1: {'class_name': 'shortNames', 'attribute': ' This', 'operation': 'apply', 'value': 'Two PortPrototypes shall be connected and the PortInterface elementsare compatible except the unequal shortNames. This requires a pure logicalmapping of the PortInterface elements.', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'PortInterface', 'operation': 'apply', 'value': 'PortInterface elements are logically equivalent but the range and resolutionis differently. This requires a data conversion respectively a re-scaling of theprovided data and arguments to the required data and arguments range andresolution.', 'scope': None}
+  条件 #3: {'class_name': None, 'attribute': 'PortInterface', 'operation': 'apply', 'value': 'invalidationPolicy of PortInterface elements is different. This might re\nquire the implementation of different invalidation handling strategies for the samedataElement in parallel on the same ECU.', 'scope': None}
+  条件 #4: {'class_name': None, 'attribute': 'PortInterface', 'operation': 'apply', 'value': 'Two PortPrototypes shall be connected and the PortInterface elementsshall be converted using the AUTOSAR data transformer approach.', 'scope': None}
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #123: TPS_SWCT_01159 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #124: TPS_SWCT_01543 ========
+类型: Generic
+引用ID: RS_SWCT_03210, constr_1071, constr_1268, constr_1269, constr_1270, TPS_SWCT_01195
+
+
+======== 约束 #125: TPS_SWCT_01099 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210
+
+
+======== 约束 #126: constr_1151 ========
+类型: Generic
+
+
+======== 约束 #127: TPS_SWCT_01100 ========
+类型: Requirement
+条件表达式: {'class_name': 'ConstantSpecificationMappingSet', 'attribute': 'mapping', 'operation': 'apply', 'value': '', 'scope': None}
+引用ID: RS_SWCT_03155, RS_SWCT_03210
+
+
+======== 约束 #128: TPS_SWCT_01101 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210
+
+
+======== 约束 #129: TPS_SWCT_01102 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210, RS_SWCT_03170
+
+
+======== 约束 #130: constr_1159 ========
+类型: Requirement
+
+
+======== 约束 #131: TPS_SWCT_01103 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210, RS_SWCT_03170
+
+
+======== 约束 #132: TPS_SWCT_01104 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210, RS_SWCT_03170
+
+
+======== 约束 #133: constr_1039 ========
+类型: Generic
+
+
+======== 约束 #134: constr_1040 ========
+类型: Generic
+
+
+======== 约束 #135: TPS_SWCT_01105 ========
+类型: Generic
+引用ID: RS_SWCT_03155, RS_SWCT_03210
+
+
+======== 约束 #136: constr_1041 ========
+类型: Generic
+
+
+======== 约束 #137: constr_1237 ========
+类型: Requirement
+
+
+======== 约束 #138: constr_1238 ========
+类型: Requirement
+
+
+======== 约束 #139: constr_1240 ========
+类型: Requirement
+
+
+======== 约束 #140: constr_1268 ========
+类型: Requirement
+
+
+======== 约束 #141: constr_1269 ========
+类型: Requirement
+
+
+======== 约束 #142: constr_1270 ========
+类型: Requirement
+
+
+======== 约束 #143: TPS_SWCT_01160 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #144: TPS_SWCT_01167 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #145: TPS_SWCT_01449 ========
+类型: Requirement
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #146: constr_1246 ========
+类型: Requirement
+
+
+======== 约束 #147: constr_1247 ========
+类型: Requirement
+
+
+======== 约束 #148: TPS_SWCT_01462 ========
+类型: Generic
+
+
+======== 约束 #149: TPS_SWCT_01463 ========
+类型: Generic
+
+
+======== 约束 #150: TPS_SWCT_01464 ========
+类型: Generic
+引用ID: RS_SWCT_03115
+
+
+======== 约束 #151: TPS_SWCT_01465 ========
+类型: Generic
+引用ID: RS_SWCT_03115
+
+
+======== 约束 #152: constr_1209 ========
+类型: Requirement
+
+
+======== 约束 #153: constr_1210 ========
+类型: Requirement
+
+
+======== 约束 #154: TPS_SWCT_01545 ========
+类型: Generic
+引用ID: RS_SWCT_03115
+
+
+======== 约束 #155: TPS_SWCT_01161 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #156: TPS_SWCT_01023 ========
+类型: Generic
+引用ID: RS_SWCT_03210, RS_SWCT_03135
+
+
+======== 约束 #157: TPS_SWCT_01551 ========
+类型: Generic
+引用ID: RS_SWCT_03210, RS_SWCT_03135
+
+
+======== 约束 #158: constr_1279 ========
+类型: Generic
+
+
+======== 约束 #159: constr_1280 ========
+类型: Requirement
+
+
+======== 约束 #160: TPS_SWCT_01024 ========
+类型: Generic
+引用ID: RS_SWCT_03210, RS_SWCT_03135
+
+
+======== 约束 #161: TPS_SWCT_01195 ========
+类型: Requirement
+引用ID: RS_SWCT_03136
+
+
+======== 约束 #162: constr_1190 ========
+类型: Requirement
+引用ID: TPS_SWCT_01195
+
+
+======== 约束 #163: constr_1300 ========
+类型: Generic
+
+
+======== 约束 #164: constr_1184 ========
+类型: Requirement
+条件表达式: {'class_name': 'OperationArgumentInComponentInstanceRef', 'attribute': 'base', 'operation': '==', 'value': 'a ParameterInterface', 'scope': None}
+
+
+======== 约束 #165: constr_1185 ========
+类型: Requirement
+
+
+======== 约束 #166: constr_1186 ========
+类型: Requirement
+
+
+======== 约束 #167: TPS_SWCT_01560 ========
+类型: Requirement
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #168: TPS_SWCT_01561 ========
+类型: Requirement
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #169: TPS_SWCT_01549 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': 'apply', 'value': 'Regarding the existence of CompuMethods one of the following cases shall ap\n\nply:\n\n(a) The involved AutosarDataTypes refer to CompuMethods of category\n\nIDENTICAL, LINEAR, or RAT_FUNC.\n\n(b) If one side (sender or receiver) does not refer a CompuMethod then a “de\n\nfault” CompuMethod of category IDENTICAL shall be assumed.', 'scope': None}
+  条件 #2: {'class_name': 'EndToEndProtectionVariablePrototype', 'attribute': 'sender', 'operation': 'apply', 'value': 'Regarding the existence of Units one of the following cases shall apply:\n\n(a) The CompuMethods refer either to compatible Units or to Units that in\n\nturn refer to compatible deﬁnitions of PhysicalDimension.\n\n(b) Units and PhysicalDimensions do partially not exist on one side:\n\n• If one side (sender or receiver) does not refer to a Unit, then an “imaginary” Unit with the properties deﬁned in [TPS_SWCT_01492] shall be\nassumed.\n\n• if the PhysicalDimension is only deﬁned on one side (sender or re\n\nceiver) then it shall be considered as default for the other side.', 'scope': None}
+  条件 #3: {'class_name': 'PostBuildVariantCriterion', 'attribute': 'CompuMethod', 'operation': 'use', 'value': 'Both CompuMethods fulﬁll the following condition:\n\nInt = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi\n\nD0∗phys0+D1∗phys1+D2∗phys2+...+Di∗physi with\n\n• N2=N3=...=Ni=0\n\n• D1=D2=...=Di=0\n\n• N1 (cid:54)=0\n\n• D0 (cid:54)=0\n\nThe coefﬁcient N0 represents the offset and can take any value.', 'scope': None}
+引用ID: RS_SWCT_03210, TPS_SWCT_01492
+
+
+======== 约束 #170: TPS_SWCT_01550 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': 'apply', 'value': 'The involved AutosarDataTypes referto CompuMethods of category\n\nRAT_FUNC.', 'scope': None}
+  条件 #2: {'class_name': 'Unit', 'attribute': 'PhysicalDimension', 'operation': 'apply', 'value': 'The CompuMethods refer either to compatible Units or to Units that in turnrefer to compatible deﬁnitions of PhysicalDimension.', 'scope': None}
+  条件 #3: {'class_name': 'FMFeatureMapElement', 'attribute': 'condition', 'operation': 'use', 'value': 'Both CompuMethods fulﬁll the following condition:\n\nInt = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi\n\nD0∗phys0+D1∗phys1+D2∗phys2+...+Di∗physi with\n\n• N1=N2=...=Ni=0\n\n• D2=D3=...=Di=0\n\n• N0 (cid:54)=0\n\n• D1 (cid:54)=0\n\nThe coefﬁcient D0 represents the (reciprocal) offset and can take any value.', 'scope': None}
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #171: TPS_SWCT_01168 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #172: TPS_SWCT_01162 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #173: TPS_SWCT_01162 ========
+类型: Generic
+
+
+======== 约束 #174: TPS_SWCT_01163 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #175: TPS_SWCT_01164 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #176: TPS_SWCT_01165 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #177: TPS_SWCT_01166 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DataPrototypeMapping', 'attribute': 'TextTableMapping'}, {'class': 'DataPrototypeMapping', 'attribute': 'TextTableMapping'}, {'class': 'ArgumentDataPrototype', 'attribute': 'direction'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03210']}
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #178: constr_1303 ========
+类型: Generic
+
+
+======== 约束 #179: TPS_SWCT_01583 ========
+类型: Generic
+引用ID: RS_SWCT_03210
+
+
+======== 约束 #180: constr_1313 ========
+类型: Requirement
+引用ID: TPS_SWCT_01163, TPS_SWCT_01164
+
+
+======== 约束 #181: constr_1304 ========
+类型: Requirement
+
+
+======== 约束 #182: constr_1305 ========
+类型: Requirement
+
+
+======== 约束 #183: constr_1306 ========
+类型: Requirement
+
+
+======== 约束 #184: constr_1307 ========
+类型: Requirement
+
+
+======== 约束 #185: TPS_SWCT_01163 ========
+类型: Generic
+
+
+======== 约束 #186: TPS_SWCT_01164 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ReferenceBase', 'attribute': 'Package'}, {'class': 'Chapter', 'attribute': 'Note'}, {'class': 'OperationArgumentInComponentInstanceRef', 'attribute': 'Base'}, {'class': 'DataPrototypeMapping', 'attribute': 'TextTableMapping'}, {'class': 'ConstantSpecificationMappingSet', 'attribute': 'mapping'}, {'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}, {'class': 'IncludedDataTypeSet', 'attribute': 'Datatype'}, {'class': 'Mul', 'attribute': ' Kind'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'ARPackage', 'attribute': 'element'}, {'class': 'DataPrototypeMapping', 'attribute': 'TextTableMapping'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'ARPackage', 'attribute': 'element'}, {'class': 'DataPrototypeMapping', 'attribute': 'TextTableMapping'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #187: TPS_SWCT_01203 ========
+类型: Generic
+
+
+======== 约束 #188: TPS_SWCT_01204 ========
+类型: Generic
+
+
+======== 约束 #189: TPS_SWCT_01205 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'EndToEndProtectionVariablePrototype', 'attribute': 'sender'}, {'class': 'CanTpConnection', 'attribute': 'receiver'}, {'class': 'CommonSignalPath', 'attribute': 'Signal'}, {'class': 'IoHwAbstractionServerAnnotation', 'attribute': 'Age'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'BuildActionIoElement', 'attribute': 'role'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'ECUMapping', 'attribute': 'ECU'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'DiagnosticDataIdentifier', 'attribute': 'dataElement'}, {'class': 'EcucAbstractReferenceValue', 'attribute': 'annotation'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'SenderReceiverAnnotation', 'attribute': 'Computed'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'DataFilter', 'attribute': 'Min'}, {'class': 'EcucAbstractReferenceValue', 'attribute': 'annotation'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'AgeConstraint', 'attribute': 'minimum'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'SenderReceiverAnnotation', 'attribute': 'computed'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'DataFilter', 'attribute': 'Max'}, {'class': 'EcucAbstractReferenceValue', 'attribute': 'annotation'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'AgeConstraint', 'attribute': 'maximum'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'SenderReceiverAnnotation', 'attribute': 'computed'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'EndToEndProtectionVariablePrototype', 'attribute': 'Sender'}, {'class': 'OperationArgumentInComponentInstanceRef', 'attribute': 'base'}, {'class': 'ReceiverAnnotation', 'attribute': ' This'}, {'class': 'Chapter', 'attribute': 'Figure'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #190: TPS_SWCT_01206 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DataFilter', 'attribute': 'Min'}, {'class': 'DataFilter', 'attribute': 'Max'}, {'class': 'Modification', 'attribute': 'change'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'ECUMapping', 'attribute': 'ECU'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #191: TPS_SWCT_01207 ========
+类型: Generic
+
+
+======== 约束 #192: TPS_SWCT_01208 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Chapter', 'attribute': 'Figure'}, {'class': 'EndToEndProtectionVariablePrototype', 'attribute': 'sender'}, {'class': 'CanTpConnection', 'attribute': 'receiver'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'SenderReceiverAnnotation', 'attribute': 'computed'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}, {'class': 'IoHwAbstractionServerAnnotation', 'attribute': 'age'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'CommonSignalPath', 'attribute': 'signal'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #193: constr_4004 ========
+类型: Requirement
+
+
+======== 约束 #194: TPS_SWCT_01209 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ClientIdDefinition', 'attribute': 'ClientServerOperation'}, {'class': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #195: constr_4005 ========
+类型: Requirement
+
+
+======== 约束 #196: TPS_SWCT_01524 ========
+类型: Generic
+
+
+======== 约束 #197: TPS_SWCT_01211 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Chapter', 'attribute': 'Figure'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #198: TPS_SWCT_01212 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PortPrototype', 'attribute': ' The'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #199: constr_4006 ========
+类型: Requirement
+
+
+======== 约束 #200: TPS_SWCT_01213 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #201: constr_4007 ========
+类型: Requirement
+引用ID: TPS_SWCT_01214
+
+
+======== 约束 #202: constr_4008 ========
+类型: Requirement
+
+
+======== 约束 #203: TPS_SWCT_01215 ========
+类型: Generic
+
+
+======== 约束 #204: constr_4009 ========
+类型: Requirement
+
+
+======== 约束 #205: TPS_SWCT_01216 ========
+类型: Generic
+
+
+======== 约束 #206: TPS_SWCT_01217 ========
+类型: Generic
+
+
+======== 约束 #207: constr_4010 ========
+类型: Requirement
+
+
+======== 约束 #208: TPS_SWCT_01218 ========
+类型: Requirement
+条件表达式: {'class_name': 'BswDataReceivedEvent', 'attribute': 'data', 'operation': '!=', 'value': 'notyet available', 'scope': None}
+
+
+======== 约束 #209: constr_1290 ========
+类型: Generic
+
+
+======== 约束 #210: constr_1291 ========
+类型: Generic
+
+
+======== 约束 #211: TPS_SWCT_01454 ========
+类型: Generic
+引用ID: RS_SWCT_03250
+
+
+======== 约束 #212: constr_1292 ========
+类型: Generic
+
+
+======== 约束 #213: constr_1043 ========
+类型: Generic
+
+
+======== 约束 #214: TPS_SWCT_01455 ========
+类型: Requirement
+条件表达式: {'class_name': 'DiagnosticCondition', 'attribute': 'initValue', 'operation': '==', 'value': 'PRPortPrototype', 'scope': 'within_one_PRPortPrototype'}
+引用ID: RS_SWCT_03250
+
+
+======== 约束 #215: TPS_SWCT_01219 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute', 'operation': '==', 'value': 'QueuedReceiverComSpec', 'scope': None}
+  条件 #2: {'class_name': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute', 'operation': '==', 'value': 'QueuedReceiverComSpec', 'scope': None}
+引用ID: constr_1129, constr_1130, constr_1131, constr_1132
+
+
+======== 约束 #216: constr_1103 ========
+类型: Generic
+
+
+======== 约束 #217: constr_1201 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'NonqueuedReceiverComSpec', 'operation': '==', 'value': 'RPortPrototype', 'scope': None}
+
+
+======== 约束 #218: constr_1129 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': None, 'attribute': 'queued', 'operation': 'shall_not_be_set', 'scope': None}
+引用ID: constr_1130
+
+
+======== 约束 #219: constr_1188 ========
+类型: Requirement
+条件表达式: {'class_name': 'ReceiverComSpec', 'attribute': 'handleOutOfRange', 'operation': '==', 'value': 'externalReplacement', 'scope': None}
+
+
+======== 约束 #220: constr_1131 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': None, 'attribute': 'queued', 'operation': 'shall_not_be_set', 'scope': None}
+引用ID: constr_1132
+
+
+======== 约束 #221: TPS_SWCT_01220 ========
+类型: Requirement
+条件表达式: {'class_name': 'DiagnosticDataIdentifier', 'attribute': 'dataElement', 'operation': '==', 'value': 'value', 'scope': None}
+
+
+======== 约束 #222: TPS_SWCT_01221 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ISignalPort', 'attribute': 'DataFilter'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #223: TPS_SWCT_01222 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'AdminData', 'attribute': 'language'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03221']}
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #224: constr_1044 ========
+类型: Generic
+
+
+======== 约束 #225: TPS_SWCT_01593 ========
+类型: Generic
+
+
+======== 约束 #226: constr_1323 ========
+类型: Requirement
+
+
+======== 约束 #227: TPS_SWCT_01223 ========
+类型: Generic
+
+
+======== 约束 #228: TPS_SWCT_01224 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DiagnosticDataIdentifier', 'attribute': 'dataElement'}, {'class': 'CompositeNetworkRepresentation', 'attribute': 'networkRepresentation'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #229: TPS_SWCT_01452 ========
+类型: Requirement
+
+
+======== 约束 #230: constr_1196 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ReceiverComSpec', 'attribute': 'compositeNetworkRepresentation', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #231: constr_1197 ========
+类型: Requirement
+
+
+======== 约束 #232: TPS_SWCT_01225 ========
+类型: Generic
+
+
+======== 约束 #233: constr_1128 ========
+类型: Requirement
+
+
+======== 约束 #234: TPS_SWCT_01595 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #235: TPS_SWCT_01596 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #236: TPS_SWCT_01514 ========
+类型: Requirement
+引用ID: RS_SWCT_03250
+
+
+======== 约束 #237: TPS_SWCT_01226 ========
+类型: Generic
+
+
+======== 约束 #238: TPS_SWCT_01141 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #239: TPS_SWCT_01227 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #240: TPS_SWCT_01228 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #241: TPS_SWCT_01594 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': '', 'attribute': '', 'operation': 'shall', 'value': '', 'scope': None}
+  条件 #2: {'class_name': 'BswDataReceivedEvent', 'attribute': 'data', 'operation': 'use', 'value': '', 'scope': None}
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #242: TPS_SWCT_01597 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #243: TPS_SWCT_01598 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #244: constr_1400 ========
+类型: Requirement
+
+
+======== 约束 #245: constr_1401 ========
+类型: Requirement
+
+
+======== 约束 #246: TPS_SWCT_01599 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #247: TPS_SWCT_01600 ========
+类型: Requirement
+引用ID: RS_SWCT_03221
+
+
+======== 约束 #248: TPS_SWCT_01063 ========
+类型: Generic
+引用ID: RS_SWCT_03200, RS_SWCT_03201
+
+
+======== 约束 #249: TPS_SWCT_01064 ========
+类型: Generic
+引用ID: RS_SWCT_03200, RS_SWCT_03201
+
+
+======== 约束 #250: TPS_SWCT_01065 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype'}, {'class': 'SwComponentType', 'attribute': 'PortGroup'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03200', 'RS_SWCT_03201']}
+引用ID: RS_SWCT_03200, RS_SWCT_03201
+
+
+======== 约束 #251: TPS_SWCT_01066 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswServiceDependency', 'attribute': 'ServiceNeeds'}, {'class': 'Chapter', 'attribute': 'trace'}, {'class': 'ChapterModel', 'attribute': 'chapter'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03200', 'RS_SWCT_03201']}
+引用ID: RS_SWCT_03200, RS_SWCT_03201
+
+
+======== 约束 #252: constr_1147 ========
+类型: Generic
+
+
+======== 约束 #253: TPS_SWCT_01089 ========
+类型: Generic
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #254: TPS_SWCT_01090 ========
+类型: Generic
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #255: TPS_SWCT_01091 ========
+类型: Requirement
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #256: TPS_SWCT_01092 ========
+类型: Generic
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #257: TPS_SWCT_01093 ========
+类型: Generic
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #258: constr_1110 ========
+类型: Generic
+
+
+======== 约束 #259: TPS_SWCT_01094 ========
+类型: Generic
+引用ID: RS_SWCT_03240, constr_1110
+
+
+======== 约束 #260: TPS_SWCT_01095 ========
+类型: Requirement
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #261: constr_1113 ========
+类型: Requirement
+
+
+======== 约束 #262: constr_1170 ========
+类型: Requirement
+
+
+======== 约束 #263: constr_1111 ========
+类型: Requirement
+
+
+======== 约束 #264: constr_1112 ========
+类型: Generic
+
+
+======== 约束 #265: constr_1114 ========
+类型: Generic
+
+
+======== 约束 #266: constr_1115 ========
+类型: Generic
+
+
+======== 约束 #267: constr_1116 ========
+类型: Generic
+
+
+======== 约束 #268: constr_1117 ========
+类型: Generic
+
+
+======== 约束 #269: constr_1211 ========
+类型: Generic
+
+
+======== 约束 #270: constr_1212 ========
+类型: Generic
+
+
+======== 约束 #271: constr_1215 ========
+类型: Requirement
+
+
+======== 约束 #272: constr_1216 ========
+类型: Requirement
+
+
+======== 约束 #273: constr_1261 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'EndToEndDescription', 'attribute': 'dataIdMode', 'operation': '==', 'value': 'value', 'scope': None}
+  条件 #2: {'class_name': 'EndToEndDescription', 'attribute': 'dataIdNibbleOffset', 'operation': '==', 'value': 'value', 'scope': None}
+
+
+======== 约束 #274: TPS_SWCT_01529 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'EndToEndDescription', 'attribute': 'dataIdMode', 'operation': '==', 'value': 'value', 'scope': None}
+  条件 #2: {'class_name': 'EndToEndDescription', 'attribute': 'dataIdMode', 'operation': '==', 'value': 'value', 'scope': None}
+引用ID: RS_SWCT_03240
+
+
+======== 约束 #275: constr_1118 ========
+类型: Requirement
+
+
+======== 约束 #276: constr_1171 ========
+类型: Requirement
+
+
+======== 约束 #277: constr_1119 ========
+类型: Generic
+
+
+======== 约束 #278: constr_1120 ========
+类型: Requirement
+
+
+======== 约束 #279: constr_1121 ========
+类型: Generic
+
+
+======== 约束 #280: constr_1213 ========
+类型: Generic
+
+
+======== 约束 #281: constr_1214 ========
+类型: Generic
+
+
+======== 约束 #282: constr_1217 ========
+类型: Requirement
+
+
+======== 约束 #283: constr_1218 ========
+类型: Requirement
+
+
+======== 约束 #284: constr_1183 ========
+类型: Requirement
+
+
+======== 约束 #285: TPS_SWCT_01169 ========
+类型: Generic
+引用ID: RS_SWCT_03241, RS_SWCT_03201
+
+
+======== 约束 #286: TPS_SWCT_01170 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'J1939NodeName', 'attribute': 'Function', 'operation': 'apply', 'value': 'assign PortPrototypes (non service related) of Sender Receiver or Client\n\nServer communication to Virtual Function Clusters.', 'scope': None}
+  条件 #2: {'class_name': 'J1939NodeName', 'attribute': 'Function', 'operation': 'apply', 'value': 'control the behavior of the corresponding function in terms of whether or not it is\nrequired at a given point in time. This aspect is implemented by the concept of\na control port. Software-components that implement control ports of a Virtual\nFunction Cluster conceptually become VFC Controllers.', 'scope': None}
+  条件 #3: {'class_name': 'Cluster', 'attribute': ' This', 'operation': 'apply', 'value': 'allow for the application software to retrieve the status of a given Virtual Function\n\nCluster. This aspect is implemented by the concept of a status port.', 'scope': None}
+引用ID: RS_SWCT_03241
+
+
+======== 约束 #287: TPS_SWCT_01171 ========
+类型: Generic
+引用ID: RS_SWCT_03241
+
+
+======== 约束 #288: TPS_SWCT_01172 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ComM_UserRequest', 'attribute': 'RequestComMode'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03241']}
+引用ID: RS_SWCT_03241
+
+
+======== 约束 #289: TPS_SWCT_01173 ========
+类型: Requirement
+引用ID: RS_SWCT_03241, RS_SWCT_03201
+
+
+======== 约束 #290: TPS_SWCT_01175 ========
+类型: Generic
+引用ID: RS_SWCT_03241
+
+
+======== 约束 #291: TPS_SWCT_01174 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'SwComponentType', 'attribute': 'PortGroup', 'operation': 'shall_not', 'scope': None}
+引用ID: RS_SWCT_03241, RS_SWCT_03201
+
+
+======== 约束 #292: TPS_SWCT_01509 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #293: TPS_SWCT_01481 ========
+类型: Requirement
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #294: TPS_SWCT_01482 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'Tt', 'attribute': 'term', 'operation': 'shall_not', 'scope': None}
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #295: TPS_SWCT_01480 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'RunnableEntity', 'attribute': 'canBeInvokedConcurrently'}, {'class': 'CompuScale', 'attribute': 'symbol'}, {'class': 'ConsistencyNeeds', 'attribute': 'regDoesNotRequireStability'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #296: TPS_SWCT_01479 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #297: TPS_SWCT_01466 ========
+类型: Requirement
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #298: TPS_SWCT_01470 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntityGroup'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntityGroup'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntityGroup'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntityGroup'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03065']}
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #299: TPS_SWCT_01471 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DataPrototypeGroup', 'attribute': 'DataPrototypeGroup'}, {'class': 'DataPrototypeGroup', 'attribute': 'DataPrototypeGroup'}, {'class': 'DataPrototypeGroup', 'attribute': 'DataPrototypeGroup'}, {'class': 'DataPrototypeGroup', 'attribute': 'DataPrototypeGroup'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03065']}
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #300: constr_1231 ========
+类型: Generic
+
+
+======== 约束 #301: constr_1232 ========
+类型: Generic
+
+
+======== 约束 #302: TPS_SWCT_01472 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #303: TPS_SWCT_01473 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #304: TPS_SWCT_01474 ========
+类型: Requirement
+条件表达式: {'class_name': 'RunnableEntityGroup', 'attribute': 'RunnableEntityGroup', 'operation': '==', 'value': 'DataPrototypeGroup', 'scope': None}
+
+
+======== 约束 #305: TPS_SWCT_01475 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #306: TPS_SWCT_01625 ========
+类型: Generic
+引用ID: RS_SWCT_03065
+
+
+======== 约束 #307: TPS_SWCT_01476 ========
+类型: Generic
+引用ID: RS_SWCT_03065, TPS_SWCT_01472, TPS_SWCT_01473, TPS_SWCT_01475
+
+
+======== 约束 #308: TPS_SWCT_01229 ========
+类型: Generic
+引用ID: RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #309: TPS_SWCT_01230 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #310: TPS_SWCT_01231 ========
+类型: Requirement
+引用ID: RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #311: TPS_SWCT_01232 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'AdminData', 'attribute': 'language'}, {'class': 'AdminData', 'attribute': 'language'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'PrmChar', 'attribute': 'text'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03217']}
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #312: TPS_SWCT_01233 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'StructuredReq', 'attribute': 'description'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'StructuredReq', 'attribute': 'description'}, {'class': 'SystemTiming', 'attribute': 'system'}, {'class': 'SoftwareContext', 'attribute': 'input'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ECUMapping', 'attribute': 'ECU'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03217']}
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #313: TPS_SWCT_01234 ========
+类型: Generic
+
+
+======== 约束 #314: TPS_SWCT_01235 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'OperationArgumentInComponentInstanceRef', 'attribute': 'Base'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'FlexrayClusterContent', 'attribute': 'bit'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03215', 'RS_SWCT_03216', 'AUTOSAR COM might need to convert a 16-bit integer between little-endian and bigendian representations; whereas an array of 16 bytes does not need to be swappedeven if the endianess changes. In case of intra-ECU communication byte order conversion is not necessary', 'since the software-components reside on the same machine.\n\n[TPS_SWCT_01236] Big picture of data types (cid:100', 'TPS_SWCT_01236']}
+引用ID: RS_SWCT_03215, RS_SWCT_03216, AUTOSAR COM might need to convert a 16-bit integer between little-endian and bigendian representations; whereas an array of 16 bytes does not need to be swappedeven if the endianess changes. In case of intra-ECU communication byte order conversion is not necessary, since the software-components reside on the same machine.
+
+[TPS_SWCT_01236] Big picture of data types (cid:100, TPS_SWCT_01236
+
+
+======== 约束 #315: TPS_SWCT_01237 ========
+类型: Generic
+引用ID: RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #316: TPS_SWCT_01072 ========
+类型: Generic
+引用ID: RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #317: TPS_SWCT_01073 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'IncludedDataTypeSet', 'attribute': 'DataType'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03215', 'RS_SWCT_03216']}
+引用ID: RS_SWCT_03215, RS_SWCT_03216
+
+
+======== 约束 #318: TPS_SWCT_01189 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DataTypeMappingSet', 'attribute': 'DataTypeMap'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'IncludedDataTypeSet', 'attribute': 'DataType'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03216', 'RS_SWCT_03217', 'RS_SWCT_03215']}
+引用ID: RS_SWCT_03216, RS_SWCT_03217, RS_SWCT_03215
+
+
+======== 约束 #319: TPS_SWCT_01190 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #320: TPS_SWCT_01191 ========
+类型: Requirement
+条件表达式: {'class_name': 'DataTypeMap', 'attribute': 'ApplicationDataType', 'operation': 'apply', 'value': '', 'scope': None}
+引用ID: RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #321: TPS_SWCT_01192 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'CompositionSwComponentType', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': None, 'attribute': 'PassThroughSwConnector', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #322: TPS_SWCT_01193 ========
+类型: Generic
+引用ID: constr_1004
+
+
+======== 约束 #323: constr_1005 ========
+类型: Generic
+
+
+======== 约束 #324: TPS_SWCT_01238 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'AutosarDataType', 'attribute': ' These'}, {'class': 'DataPrototype', 'attribute': 'SwDataDefProps'}, {'class': 'StructuredReq', 'attribute': 'description'}, {'class': 'ChapterModel', 'attribute': 'chapter'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #325: constr_1143 ========
+类型: Generic
+
+
+======== 约束 #326: constr_1006 ========
+类型: Generic
+
+
+======== 约束 #327: TPS_SWCT_01239 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}, {'class': 'SwSystemconstValue', 'attribute': 'SwSystemconst'}, {'class': 'VALUE', 'attribute': ' This'}, {'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #328: TPS_SWCT_01240 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #329: TPS_SWCT_01241 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #330: constr_1007 ========
+类型: Generic
+
+
+======== 约束 #331: constr_1008 ========
+类型: Generic
+
+
+======== 约束 #332: TPS_SWCT_01242 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #333: constr_2544 ========
+类型: Requirement
+条件表达式: {'class_name': 'DataTypeMap', 'attribute': 'ImplementationDataType', 'operation': '==', 'value': 'BaseType', 'scope': None}
+
+
+======== 约束 #334: constr_1281 ========
+类型: Generic
+
+
+======== 约束 #335: constr_1281 ========
+类型: Generic
+
+
+======== 约束 #336: constr_1283 ========
+类型: Requirement
+
+
+======== 约束 #337: TPS_SWCT_01243 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #338: TPS_SWCT_01562 ========
+类型: Requirement
+引用ID: constr_1225
+
+
+======== 约束 #339: TPS_SWCT_01244 ========
+类型: Generic
+
+
+======== 约束 #340: TPS_SWCT_01245 ========
+类型: Generic
+
+
+======== 约束 #341: TPS_SWCT_01488 ========
+类型: Requirement
+
+
+======== 约束 #342: TPS_SWCT_01127 ========
+类型: Generic
+引用ID: RS_SWCT_03182, RS_SWCT_03181
+
+
+======== 约束 #343: TPS_SWCT_01246 ========
+类型: Generic
+
+
+======== 约束 #344: TPS_SWCT_01128 ========
+类型: Generic
+引用ID: TPS_SWCT_01179
+
+
+======== 约束 #345: TPS_SWCT_01570 ========
+类型: Generic
+
+
+======== 约束 #346: TPS_SWCT_01247 ========
+类型: Generic
+
+
+======== 约束 #347: TPS_SWCT_01078 ========
+类型: Generic
+引用ID: RS_SWCT_03144
+
+
+======== 约束 #348: TPS_SWCT_01076 ========
+类型: Generic
+引用ID: RS_SWCT_03180, RS_SWCT_03181, RS_SWCT_03144
+
+
+======== 约束 #349: constr_1152 ========
+类型: Requirement
+
+
+======== 约束 #350: TPS_SWCT_01601 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #351: TPS_SWCT_01602 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #352: TPS_SWCT_01604 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #353: TPS_SWCT_01605 ========
+类型: Generic
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #354: TPS_SWCT_01606 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #355: TPS_SWCT_01607 ========
+类型: Generic
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #356: TPS_SWCT_01608 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ApplicationArrayDataType', 'attribute': 'dynamicArraySizeProfile'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03181']}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #357: TPS_SWCT_01623 ========
+类型: Generic
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #358: constr_1314 ========
+类型: Requirement
+
+
+======== 约束 #359: constr_1314 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'IncludedDataTypeSet', 'attribute': 'DataType'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'ApplicationArrayDataType', 'attribute': 'dynamicArraySizeProfile'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}, {'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #360: constr_1315 ========
+类型: Requirement
+
+
+======== 约束 #361: constr_1316 ========
+类型: Requirement
+
+
+======== 约束 #362: constr_1317 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'ApplicationArrayDataType', 'operation': '==', 'value': 'VSA_FULLY_FLEXIBLE', 'scope': None}
+
+
+======== 约束 #363: TPS_SWCT_01256 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #364: TPS_SWCT_01249 ========
+类型: Requirement
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #365: TPS_SWCT_01250 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #366: TPS_SWCT_01251 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #367: constr_1009 ========
+类型: Generic
+
+
+======== 约束 #368: constr_1383 ========
+类型: Generic
+
+
+======== 约束 #369: TPS_SWCT_01252 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #370: TPS_SWCT_01253 ========
+类型: Requirement
+条件表达式: 5 个
+  条件 #1: {'class_name': 'ImplementationDataType', 'attribute': 'typeEmitter', 'operation': '==', 'value': 'nativeDeclaration', 'scope': None}
+  条件 #2: {'class_name': 'ImplementationDataType', 'attribute': 'typeEmitter', 'operation': '==', 'value': 'nativeDeclaration', 'scope': None}
+  条件 #3: {'class_name': 'ImplementationDataType', 'attribute': 'typeEmitter', 'operation': '==', 'value': 'nativeDeclaration', 'scope': None}
+  条件 #4: {'class_name': 'ImplementationDataType', 'attribute': 'typeEmitter', 'operation': '==', 'value': 'nativeDeclaration', 'scope': None}
+  条件 #5: {'class_name': 'ImplementationDataType', 'attribute': 'typeEmitter', 'operation': '==', 'value': 'nativeDeclaration', 'scope': None}
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #371: TPS_SWCT_01248 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #372: constr_1106 ========
+类型: Requirement
+
+
+======== 约束 #373: constr_1107 ========
+类型: Requirement
+
+
+======== 约束 #374: TPS_SWCT_01254 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #375: TPS_SWCT_01006 ========
+类型: Requirement
+
+
+======== 约束 #376: TPS_SWCT_01007 ========
+类型: Requirement
+
+
+======== 约束 #377: constr_1105 ========
+类型: Requirement
+
+
+======== 约束 #378: TPS_SWCT_01478 ========
+类型: Generic
+
+
+======== 约束 #379: TPS_SWCT_01255 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #380: TPS_SWCT_01622 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}, {'class': 'IncludedDataTypeSet', 'attribute': 'DataType'}, {'class': 'DataTypeMappingSet', 'attribute': 'DataTypeMap'}, {'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}, {'class': 'DataTypeMap', 'attribute': 'ImplementationDataType'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03181']}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #381: TPS_SWCT_01610 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #382: TPS_SWCT_01650 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #383: TPS_SWCT_01612 ========
+类型: Generic
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #384: TPS_SWCT_01613 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #385: TPS_SWCT_01614 ========
+类型: Generic
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #386: TPS_SWCT_01615 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ApplicationArrayDataType', 'attribute': 'dynamicArraySizeProfile'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03181']}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #387: constr_1318 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #388: constr_1319 ========
+类型: Prohibition
+禁止表达式: 3 个
+  禁止 #1: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+  禁止 #3: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #389: constr_1320 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #390: constr_1321 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ImplementationDataTypeElement', 'attribute': 'arraySize', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #391: constr_1396 ========
+类型: Prohibition
+
+
+======== 约束 #392: constr_1322 ========
+类型: Requirement
+条件表达式: {'class_name': 'ImplementationDataType', 'attribute': 'dynamicArraySizeProfile', 'operation': '==', 'value': 'attribute', 'scope': None}
+
+
+======== 约束 #393: TPS_SWCT_01617 ========
+类型: Requirement
+引用ID: RS_SWCT_03181, TPS_SWCT_01618, TPS_SWCT_01619, TPS_SWCT_01620, TPS_SWCT_01621
+
+
+======== 约束 #394: TPS_SWCT_01618 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #395: TPS_SWCT_01647 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #396: TPS_SWCT_01619 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'DataTypeMap', 'attribute': 'ImplementationDataType', 'operation': '==', 'value': 'ApplicationArrayDataType', 'scope': None}
+  条件 #2: {'class_name': 'ApplicationArrayDataType', 'attribute': 'dynamicArraySizeProfile', 'operation': '==', 'value': 'value', 'scope': None}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #397: TPS_SWCT_01648 ========
+类型: Requirement
+条件表达式: {'class_name': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute', 'operation': '==', 'value': 'size', 'scope': None}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #398: TPS_SWCT_01620 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #399: TPS_SWCT_01621 ========
+类型: Requirement
+条件表达式: {'class_name': 'DataTypeMap', 'attribute': 'ImplementationDataType', 'operation': '==', 'value': 'ApplicationArrayDataType', 'scope': None}
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #400: TPS_SWCT_01649 ========
+类型: Requirement
+引用ID: RS_SWCT_03181
+
+
+======== 约束 #401: TPS_SWCT_01257 ========
+类型: Procedure
+条件表达式: 4 个
+  条件 #1: {'class_name': 'EcucDestinationUriPolicy', 'attribute': 'Reference', 'operation': '==', 'value': 'Reference to an underlying SwBaseType corresponds to category VALUE.', 'scope': None}
+  条件 #2: {'class_name': 'EcucDestinationUriPolicy', 'attribute': 'Reference', 'operation': 'apply', 'value': 'Reference to BswModuleEntry in SwPointerTargetProps corresponds to\n\ncategory FUNCTION_REFERENCE.', 'scope': None}
+  条件 #3: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': 'apply', 'value': 'SwDataDefProps in SwPointerTargetProps corresponds to category\n\nDATA_REFERENCE.', 'scope': None}
+  条件 #4: {'class_name': 'DataTypeMap', 'attribute': 'ImplementationDataType', 'operation': 'apply', 'value': 'Reference to another ImplementationDataType corresponds to category\n\nTYPE_REFERENCE.', 'scope': None}
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #402: TPS_SWCT_01258 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #403: constr_1177 ========
+类型: Generic
+
+
+======== 约束 #404: constr_1254 ========
+类型: Generic
+
+
+======== 约束 #405: TPS_SWCT_01259 ========
+类型: Generic
+引用ID: RS_SWCT_03217
+
+
+======== 约束 #406: constr_1178 ========
+类型: Generic
+
+
+======== 约束 #407: TPS_SWCT_01194 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'CompuScale', 'attribute': 'symbol'}, {'class': 'AtomicSwComponentType', 'attribute': 'SymbolProps'}, {'class': 'DataTypeMap', 'attribute': 'ImplementationDataType'}, {'class': 'BuildActionIoElement', 'attribute': 'role'}, {'class': 'AtomicSwComponentType', 'attribute': 'symbolProps'}, {'class': 'Chapter', 'attribute': 'Figure'}], 'permission': 'allowed', 'conditions': ['TPS_SWCT_01441']}
+引用ID: TPS_SWCT_01441
+
+
+======== 约束 #408: TPS_SWCT_01442 ========
+类型: Generic
+
+
+======== 约束 #409: TPS_SWCT_01443 ========
+类型: Generic
+
+
+======== 约束 #410: TPS_SWCT_01260 ========
+类型: Generic
+
+
+======== 约束 #411: TPS_SWCT_01261 ========
+类型: Generic
+
+
+======== 约束 #412: constr_1010 ========
+类型: Generic
+
+
+======== 约束 #413: TPS_SWCT_01563 ========
+类型: Generic
+
+
+======== 约束 #414: TPS_SWCT_01263 ========
+类型: Generic
+
+
+======== 约束 #415: constr_1014 ========
+类型: Requirement
+条件表达式: {'class_name': 'PostBuildVariantCriterion', 'attribute': 'CompuMethod', 'operation': 'apply', 'value': '', 'scope': None}
+
+
+======== 约束 #416: constr_1398 ========
+类型: Requirement
+
+
+======== 约束 #417: TPS_SWCT_01651 ========
+类型: Generic
+
+
+======== 约束 #418: TPS_SWCT_01652 ========
+类型: Generic
+
+
+======== 约束 #419: TPS_SWCT_01653 ========
+类型: Generic
+
+
+======== 约束 #420: TPS_SWCT_01564 ========
+类型: Generic
+
+
+======== 约束 #421: TPS_SWCT_01565 ========
+类型: Generic
+引用ID: TPS_SWCT_01564
+
+
+======== 约束 #422: TPS_SWCT_01564 ========
+类型: Generic
+
+
+======== 约束 #423: TPS_SWCT_01179 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #424: TPS_SWCT_01486 ========
+类型: Generic
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #425: constr_1241 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'SwDataDefPropsContent', 'attribute': 'invalidValue', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #426: TPS_SWCT_01477 ========
+类型: Requirement
+引用ID: RS_SWCT_03218
+
+
+======== 约束 #427: constr_1229 ========
+类型: Generic
+
+
+======== 约束 #428: constr_1230 ========
+类型: Generic
+引用ID: constr_1229
+
+
+======== 约束 #429: TPS_SWCT_01264 ========
+类型: Generic
+
+
+======== 约束 #430: TPS_SWCT_01265 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'SwDataDefProps', 'attribute': ' Thus'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'DataPrototype', 'attribute': 'SwDataDefProps'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'DataTypeMap', 'attribute': 'ImplementationDataType'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'Documentation', 'attribute': 'context'}, {'class': 'ChapterModel', 'attribute': 'Chapter'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #431: TPS_SWCT_01445 ========
+类型: Requirement
+
+
+======== 约束 #432: constr_1289 ========
+类型: Generic
+
+
+======== 约束 #433: constr_1288 ========
+类型: Generic
+
+
+======== 约束 #434: TPS_SWCT_01266 ========
+类型: Generic
+
+
+======== 约束 #435: TPS_SWCT_01267 ========
+类型: Generic
+
+
+======== 约束 #436: TPS_SWCT_01268 ========
+类型: Generic
+
+
+======== 约束 #437: TPS_SWCT_01269 ========
+类型: Generic
+
+
+======== 约束 #438: TPS_SWCT_01446 ========
+类型: Generic
+
+
+======== 约束 #439: TPS_SWCT_01270 ========
+类型: Generic
+
+
+======== 约束 #440: constr_2536 ========
+类型: Requirement
+
+
+======== 约束 #441: TPS_SWCT_01271 ========
+类型: Generic
+
+
+======== 约束 #442: constr_1173 ========
+类型: Generic
+
+
+======== 约束 #443: constr_2535 ========
+类型: Generic
+
+
+======== 约束 #444: constr_2535 ========
+类型: Requirement
+引用ID: constr_1173
+
+
+======== 约束 #445: constr_1161 ========
+类型: Generic
+
+
+======== 约束 #446: TPS_SWCT_01374 ========
+类型: Generic
+
+
+======== 约束 #447: TPS_SWCT_01375 ========
+类型: Generic
+
+
+======== 约束 #448: constr_1015 ========
+类型: Requirement
+
+
+======== 约束 #449: constr_1244 ========
+类型: Requirement
+
+
+======== 约束 #450: TPS_SWCT_01272 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Chapter', 'attribute': 'note'}, {'class': 'SystemTiming', 'attribute': 'system'}, {'class': 'SoftwareContext', 'attribute': 'input'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'DiagnosticAging', 'attribute': 'threshold'}, {'class': 'CommunicationClusterContent', 'attribute': 'speed'}, {'class': 'CommunicationClusterContent', 'attribute': 'speed'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'NvDataPortAnnotation', 'attribute': 'variable'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'parameter'}, {'class': 'System', 'attribute': ' Thepurpose'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'parameter'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'NvDataPortAnnotation', 'attribute': 'variable'}, {'class': 'NvDataPortAnnotation', 'attribute': 'variable'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #451: TPS_SWCT_01273 ========
+类型: Procedure
+条件表达式: 7 个
+  条件 #1: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on ApplicationDataType which maybe overwritten by', 'scope': None}
+  条件 #2: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on ImplementationDataType whichmay be overwritten by', 'scope': None}
+  条件 #3: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on DataPrototype which may be overwritten by', 'scope': None}
+  条件 #4: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on InstantiationDataDefPropswhich may be overwritten by', 'scope': None}
+  条件 #5: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on ParameterAccess respectively Ar\n\ngument which may be overwritten by', 'scope': None}
+  条件 #6: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on FlatInstanceDescriptor whichmay be overwritten by', 'scope': None}
+  条件 #7: {'class_name': 'DataPrototype', 'attribute': 'SwDataDefProps', 'operation': 'apply', 'value': 'attributes of SwDataDefProps deﬁned on McDataInstance', 'scope': None}
+
+
+======== 约束 #452: TPS_SWCT_01274 ========
+类型: Generic
+引用ID: TPS_SWCT_01273
+
+
+======== 约束 #453: TPS_SWCT_01275 ========
+类型: Generic
+引用ID: constr_1017
+
+
+======== 约束 #454: constr_2035 ========
+类型: Requirement
+
+
+======== 约束 #455: constr_2036 ========
+类型: Requirement
+
+
+======== 约束 #456: constr_2037 ========
+类型: Requirement
+
+
+======== 约束 #457: constr_2038 ========
+类型: Requirement
+
+
+======== 约束 #458: constr_2039 ========
+类型: Requirement
+
+
+======== 约束 #459: constr_2040 ========
+类型: Requirement
+引用ID: constr_2041
+
+
+======== 约束 #460: constr_2042 ========
+类型: Requirement
+引用ID: constr_2043
+
+
+======== 约束 #461: constr_2044 ========
+类型: Requirement
+引用ID: constr_2045
+
+
+======== 约束 #462: constr_2046 ========
+类型: Requirement
+
+
+======== 约束 #463: constr_2047 ========
+类型: Requirement
+
+
+======== 约束 #464: constr_2048 ========
+类型: Requirement
+
+
+======== 约束 #465: TPS_SWCT_02000 ========
+类型: Generic
+
+
+======== 约束 #466: TPS_SWCT_01646 ========
+类型: Requirement
+
+
+======== 约束 #467: constr_1390 ========
+类型: ConditionalProhibition
+条件表达式: 2 个
+  条件 #1: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': '==', 'value': 'value', 'scope': None}
+  条件 #2: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': '==', 'value': 'value', 'scope': None}
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'PostBuildVariantCriterion', 'attribute': 'CompuMethod', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'SwDataDefPropsContent', 'attribute': 'invalidValue', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #468: TPS_SWCT_01437 ========
+类型: Generic
+
+
+======== 约束 #469: constr_2545 ========
+类型: Requirement
+
+
+======== 约束 #470: constr_1016 ========
+类型: Generic
+引用ID: constr_1284
+
+
+======== 约束 #471: constr_1384 ========
+类型: Requirement
+
+
+======== 约束 #472: constr_1242 ========
+类型: Generic
+引用ID: constr_1241
+
+
+======== 约束 #473: TPS_SWCT_01487 ========
+类型: Requirement
+
+
+======== 约束 #474: constr_1225 ========
+类型: Requirement
+
+
+======== 约束 #475: TPS_SWCT_01467 ========
+类型: Requirement
+
+
+======== 约束 #476: constr_1302 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'VariableDataPrototypes typed by either an ApplicationPrimitive\nDataType or an ImplementationDataType of category VALUE or\nTYPE_REFERENCE that boils down to category VALUE that have deﬁned an\ninvalidValue.', 'scope': None}
+  条件 #2: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'VariableDataPrototypes typed by either an ApplicationComposite\nDataType or an ImplementationDataType of category STRUCTURE, or\nARRAY or of category TYPE_REFERENCE that boils down to category STRUC\nTURE, or ARRAY that have at least one primitive element with an invalidValue.', 'scope': None}
+  条件 #3: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'VariableDataPrototypes typed by an ImplementationDataType of category UNION or of category TYPE_REFERENCE that boils down to category\nUNION where all primitive elements deﬁne an invalidValue.', 'scope': None}
+
+
+======== 约束 #477: constr_1140 ========
+类型: Generic
+
+
+======== 约束 #478: constr_1140 ========
+类型: Generic
+引用ID: constr_1219
+
+
+======== 约束 #479: constr_1282 ========
+类型: Generic
+
+
+======== 约束 #480: TPS_SWCT_01440 ========
+类型: Generic
+
+
+======== 约束 #481: TPS_SWCT_01130 ========
+类型: Generic
+引用ID: RS_SWCT_03152
+
+
+======== 约束 #482: TPS_SWCT_01559 ========
+类型: Generic
+引用ID: constr_1017
+
+
+======== 约束 #483: constr_1018 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'RunnableEntityGroup', 'attribute': 'RunnableEntity', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'InternalTriggeringPoint', 'attribute': 'swImplPolicy', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #484: TPS_SWCT_01107 ========
+类型: Generic
+引用ID: RS_SWCT_03148
+
+
+======== 约束 #485: constr_1019 ========
+类型: Requirement
+引用ID: constr_1382
+
+
+======== 约束 #486: constr_1382 ========
+类型: Requirement
+
+
+======== 约束 #487: constr_1020 ========
+类型: Requirement
+
+
+======== 约束 #488: TPS_SWCT_01496 ========
+类型: Generic
+
+
+======== 约束 #489: constr_2550 ========
+类型: Requirement
+
+
+======== 约束 #490: constr_2548 ========
+类型: Requirement
+
+
+======== 约束 #491: constr_2549 ========
+类型: Requirement
+
+
+======== 约束 #492: constr_2549 ========
+类型: Generic
+引用ID: TPS_SWCT_01503
+
+
+======== 约束 #493: TPS_SWCT_01276 ========
+类型: Generic
+
+
+======== 约束 #494: constr_1142 ========
+类型: Generic
+
+
+======== 约束 #495: TPS_SWCT_01277 ========
+类型: Generic
+
+
+======== 约束 #496: TPS_SWCT_01548 ========
+类型: Generic
+
+
+======== 约束 #497: TPS_SWCT_01278 ========
+类型: Generic
+
+
+======== 约束 #498: TPS_SWCT_01279 ========
+类型: Generic
+
+
+======== 约束 #499: constr_1021 ========
+类型: Requirement
+
+
+======== 约束 #500: constr_1022 ========
+类型: Requirement
+
+
+======== 约束 #501: TPS_SWCT_01280 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'PostBuildVariantCriterion', 'attribute': 'CompuMethod', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #502: constr_1175 ========
+类型: Requirement
+
+
+======== 约束 #503: constr_1175 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'CompuMethod', 'attribute': 'unit'}, {'class': 'Unit', 'attribute': 'PhysicalDimension'}], 'permission': 'allowed', 'conditions': ['TPS_SWCT_01281']}
+引用ID: TPS_SWCT_01281
+
+
+======== 约束 #504: constr_1024 ========
+类型: Generic
+引用ID: TPS_SWCT_01282
+
+
+======== 约束 #505: constr_1025 ========
+类型: Prohibition
+
+
+======== 约束 #506: TPS_SWCT_01284 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Compu', 'attribute': 'CompuScale'}, {'class': 'Compu', 'attribute': 'CompuScale'}, {'class': 'CompuScale', 'attribute': 'symbol'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #507: TPS_SWCT_01569 ========
+类型: Generic
+引用ID: TPS_SWCT_01431
+
+
+======== 约束 #508: TPS_SWCT_01431 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': 'use', 'value': 'Take the value of symbol if this attribute exists.', 'scope': None}
+  条件 #2: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': 'use', 'value': 'Take the value of vt if it makes a valid C identiﬁer.', 'scope': None}
+  条件 #3: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': 'use', 'value': 'Take the value of shortLabel if it exists.\n\nFail if none of the possible options apply.', 'scope': None}
+
+
+======== 约束 #509: constr_1133 ========
+类型: Requirement
+引用ID: constr_1146
+
+
+======== 约束 #510: constr_1146 ========
+类型: Requirement
+
+
+======== 约束 #511: TPS_SWCT_01429 ========
+类型: Generic
+引用ID: constr_1135
+
+
+======== 约束 #512: constr_1134 ========
+类型: Requirement
+
+
+======== 约束 #513: constr_1135 ========
+类型: Generic
+
+
+======== 约束 #514: constr_1375 ========
+类型: Requirement
+
+
+======== 约束 #515: TPS_SWCT_01285 ========
+类型: Generic
+
+
+======== 约束 #516: TPS_SWCT_01056 ========
+类型: Generic
+引用ID: RS_SWCT_02100, TPS_SWCT_01057
+
+
+======== 约束 #517: TPS_SWCT_01058 ========
+类型: Generic
+引用ID: RS_SWCT_02100
+
+
+======== 约束 #518: TPS_SWCT_01059 ========
+类型: Generic
+引用ID: RS_SWCT_02100
+
+
+======== 约束 #519: TPS_SWCT_01060 ========
+类型: Generic
+引用ID: RS_SWCT_02100
+
+
+======== 约束 #520: constr_1026 ========
+类型: Requirement
+引用ID: constr_1052
+
+
+======== 约束 #521: constr_1255 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'value', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #522: TPS_SWCT_01068 ========
+类型: Generic
+引用ID: RS_SWCT_02100
+
+
+======== 约束 #523: TPS_SWCT_01061 ========
+类型: Requirement
+条件表达式: {'class_name': 'SwComponentType', 'attribute': 'UnitGroup', 'operation': '==', 'value': 'target', 'scope': None}
+引用ID: RS_SWCT_02100
+
+
+======== 约束 #524: TPS_SWCT_01286 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'SwAxisIndividual', 'attribute': 'DataConstr'}, {'class': 'SwDataDefPropsContent', 'attribute': 'dataConstr'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'InternalConstrs', 'attribute': 'monotony'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #525: constr_2561 ========
+类型: Requirement
+
+
+======== 约束 #526: TPS_SWCT_01287 ========
+类型: Generic
+
+
+======== 约束 #527: TPS_SWCT_01288 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'SwAxisIndividual', 'attribute': 'DataConstr'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'DataTypeMap', 'attribute': 'ImplementationDataType'}, {'class': 'IncludedDataTypeSet', 'attribute': 'DataType'}, {'class': 'DataConstrRule', 'attribute': 'PhysConstrs'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'DataConstrRule', 'attribute': 'InternalConstrs'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'PostBuildVariantCriterion', 'attribute': 'CompuMethod'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #528: TPS_SWCT_01289 ========
+类型: Generic
+
+
+======== 约束 #529: constr_1191 ========
+类型: Requirement
+
+
+======== 约束 #530: TPS_SWCT_01290 ========
+类型: Requirement
+
+
+======== 约束 #531: TPS_SWCT_01291 ========
+类型: Requirement
+
+
+======== 约束 #532: TPS_SWCT_01456 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'ClientComSpec', 'attribute': 'operation', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': None, 'attribute': 'code', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #533: constr_1311 ========
+类型: Requirement
+引用ID: TPS_SWCT_01456
+
+
+======== 约束 #534: constr_1381 ========
+类型: Requirement
+引用ID: TPS_SWCT_01456
+
+
+======== 约束 #535: TPS_SWCT_01294 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'SwDataDefPropsContent', 'attribute': 'swAddrMethod'}, {'class': 'AclObjectSet', 'attribute': 'object'}, {'class': 'FMFeature', 'attribute': 'restriction'}, {'class': 'BswImplementation', 'attribute': 'behavior'}, {'class': 'CompositionSwComponentType', 'attribute': 'component'}, {'class': 'DiagnosticStartRoutine', 'attribute': 'request'}, {'class': 'ExecutableEntity', 'attribute': 'SwAddrMethod'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #536: TPS_SWCT_01292 ========
+类型: Generic
+
+
+======== 约束 #537: TPS_SWCT_01293 ========
+类型: Generic
+
+
+======== 约束 #538: constr_2034 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'SwAddrMethod', 'attribute': 'memoryAllocationKeywordPolicy', 'operation': 'shall_not', 'scope': None}
+引用ID: constr_1402
+
+
+======== 约束 #539: TPS_SWCT_01295 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'InterpolationRoutineMapping', 'attribute': 'SwRecordLayout'}, {'class': 'ECU', 'attribute': ' This'}, {'class': 'SystemTiming', 'attribute': 'system'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ECUMapping', 'attribute': 'ECU'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'DataPrototype', 'attribute': 'SwDataDefProps'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswInternalBehavior', 'attribute': 'entity'}, {'class': 'InterpolationRoutineMapping', 'attribute': 'SwRecordLayout'}, {'class': 'MemorySection', 'attribute': 'size'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #540: TPS_SWCT_01489 ========
+类型: Generic
+
+
+======== 约束 #541: constr_1264 ========
+类型: Generic
+
+
+======== 约束 #542: TPS_SWCT_01489 ========
+类型: Generic
+
+
+======== 约束 #543: TPS_SWCT_01296 ========
+类型: Generic
+
+
+======== 约束 #544: constr_1027 ========
+类型: Requirement
+
+
+======== 约束 #545: TPS_SWCT_01297 ========
+类型: Generic
+
+
+======== 约束 #546: TPS_SWCT_01298 ========
+类型: Generic
+
+
+======== 约束 #547: TPS_SWCT_01299 ========
+类型: Requirement
+条件表达式: {'class_name': 'DataTypeMap', 'attribute': 'ImplementationDataType', 'operation': 'apply', 'value': '', 'scope': None}
+
+
+======== 约束 #548: TPS_SWCT_01300 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DiagnosticRoutineControl', 'attribute': 'routine'}, {'class': 'TDEventBswModule', 'attribute': 'BswModuleEntry'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'InterpolationRoutine', 'attribute': 'shortLabel'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #549: TPS_SWCT_01177 ========
+类型: Generic
+引用ID: RS_SWCT_03175
+
+
+======== 约束 #550: TPS_SWCT_01178 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'Chapter', 'attribute': 'Figure'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'Reference'}, {'class': 'ConstantReference', 'attribute': 'constant'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'Chapter', 'attribute': 'Note'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03175', 'TPS_SWCT_01179', 'TPS']}
+引用ID: RS_SWCT_03175, TPS_SWCT_01179
+
+
+======== 约束 #551: constr_1284 ========
+类型: Requirement
+
+
+======== 约束 #552: constr_4035 ========
+类型: Requirement
+
+
+======== 约束 #553: constr_1271 ========
+类型: Requirement
+
+
+======== 约束 #554: constr_1272 ========
+类型: Requirement
+
+
+======== 约束 #555: constr_1273 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'ConstantReference', 'attribute': 'constant'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'Xdoc', 'attribute': 'number'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #556: constr_1274 ========
+类型: Requirement
+
+
+======== 约束 #557: TPS_SWCT_01484 ========
+类型: Generic
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #558: constr_2057 ========
+类型: Requirement
+
+
+======== 约束 #559: constr_2058 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'ApplicationRuleBasedValueSpecification', 'operation': '==', 'value': 'category', 'scope': None}
+
+
+======== 约束 #560: TPS_SWCT_02053 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}, {'class': 'LGraphic', 'attribute': 'MAP'}, {'class': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'LGraphic', 'attribute': 'MAP'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #561: TPS_SWCT_01528 ========
+类型: Generic
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #562: TPS_SWCT_01495 ========
+类型: Generic
+引用ID: RS_SWCT_03260, RS_SWCT_03181, TPS_SWCT_01609
+
+
+======== 约束 #563: TPS_SWCT_01485 ========
+类型: Generic
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #564: TPS_SWCT_01493 ========
+类型: Requirement
+条件表达式: {'class_name': 'ARPackage', 'attribute': 'element', 'operation': '==', 'value': 'applied to then the RuleArguments', 'scope': None}
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #565: TPS_SWCT_01494 ========
+类型: Requirement
+条件表达式: {'class_name': 'Xdoc', 'attribute': 'number', 'operation': '==', 'value': 'element', 'scope': None}
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #566: TPS_SWCT_01609 ========
+类型: Requirement
+条件表达式: {'class_name': 'Xdoc', 'attribute': 'number', 'operation': '==', 'value': 'maxSizeToFill', 'scope': None}
+引用ID: RS_SWCT_03260
+
+
+======== 约束 #567: TPS_SWCT_01180 ========
+类型: Generic
+
+
+======== 约束 #568: TPS_SWCT_01179 ========
+类型: Requirement
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #569: constr_1160 ========
+类型: Requirement
+引用ID: TPS_SWCT_01179
+
+
+======== 约束 #570: TPS_SWCT_01181 ========
+类型: Requirement
+引用ID: RS_SWCT_03216, RS_SWCT_03148
+
+
+======== 约束 #571: constr_2050 ========
+类型: Requirement
+
+
+======== 约束 #572: constr_2051 ========
+类型: Requirement
+条件表达式: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'swValueCont', 'operation': '==', 'value': 'ApplicationValueSpecification', 'scope': None}
+
+
+======== 约束 #573: constr_2050 ========
+类型: Generic
+引用ID: constr_2051
+
+
+======== 约束 #574: constr_2052 ========
+类型: Requirement
+条件表达式: {'class_name': 'RuleBasedAxisCont', 'attribute': 'swArraysize', 'operation': '==', 'value': 'swValuesPhys', 'scope': None}
+
+
+======== 约束 #575: TPS_SWCT_02001 ========
+类型: Generic
+
+
+======== 约束 #576: constr_1243 ========
+类型: Requirement
+
+
+======== 约束 #577: TPS_SWCT_01301 ========
+类型: Generic
+
+
+======== 约束 #578: TPS_SWCT_01518 ========
+类型: Generic
+
+
+======== 约束 #579: TPS_SWCT_01182 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'DiagnosticCondition', 'attribute': 'initValue', 'operation': 'apply', 'value': 'It is possible to aggregate an initValue directly at the deﬁnition of any VariableDataPrototype/ParameterDataPrototype.', 'scope': None}
+  条件 #2: {'class_name': 'DiagnosticCondition', 'attribute': 'initValue', 'operation': 'apply', 'value': 'It is possible to aggregate an initValue at the level of a ComSpec, namely:\n\n• NonqueuedSenderComSpec\n\n• NonqueuedReceiverComSpec\n\n• ParameterProvideComSpec\n\n• ParameterRequireComSpec\n\n• NvRequireComSpec', 'scope': None}
+  条件 #3: {'class_name': 'CalibrationParameterValue', 'attribute': 'implInitValue', 'operation': 'apply', 'value': 'It is possible to aggregate a implInitValue and an appInitValue at thedeﬁnition of a CalibrationParameterValue.\n\nThe priority of one deﬁnition of an initial value over another is reﬂected by the numericalorder of the above enumeration, e.g. a deﬁnition on level 2 supersedes a deﬁnition on\nlevel 1.', 'scope': None}
+
+
+======== 约束 #580: TPS_SWCT_01183 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'ImplementationDataType', 'attribute': ' Therefore'}, {'class': 'DiagnosticCondition', 'attribute': 'initValue'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'DataTypeMap', 'attribute': 'ApplicationDataType'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype'}, {'class': 'DataTypeMap', 'attribute': 'ImplementationDataType'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03216', 'RS_SWCT_03217']}
+引用ID: RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #581: TPS_SWCT_01184 ========
+类型: Generic
+引用ID: RS_SWCT_03216, RS_SWCT_03217
+
+
+======== 约束 #582: TPS_SWCT_01185 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'Data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'Type'}, {'class': 'ImplementationDataType', 'attribute': ' The'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03216']}
+引用ID: RS_SWCT_03216
+
+
+======== 约束 #583: constr_1221 ========
+类型: Requirement
+
+
+======== 约束 #584: constr_1385 ========
+类型: Requirement
+
+
+======== 约束 #585: constr_1222 ========
+类型: Requirement
+条件表达式: {'class_name': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype', 'operation': '==', 'value': 'ApplicationValueSpecification', 'scope': None}
+
+
+======== 约束 #586: constr_1223 ========
+类型: Requirement
+条件表达式: {'class_name': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype', 'operation': '==', 'value': 'ApplicationRecordDataType', 'scope': None}
+
+
+======== 约束 #587: constr_1224 ========
+类型: Requirement
+条件表达式: {'class_name': 'PortPrototypeBlueprintInitValue', 'attribute': 'DataPrototype', 'operation': '==', 'value': 'ApplicationRuleBasedValueSpecification', 'scope': None}
+
+
+======== 约束 #588: TPS_SWCT_01186 ========
+类型: Generic
+
+
+======== 约束 #589: constr_1029 ========
+类型: Generic
+
+
+======== 约束 #590: TPS_SWCT_01187 ========
+类型: Generic
+
+
+======== 约束 #591: TPS_SWCT_01188 ========
+类型: Generic
+引用ID: RS_SWCT_03175
+
+
+======== 约束 #592: constr_1047 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': 'apply', 'value': 'All of the following subconditions apply:\n\n(a) They have the same category (see table in ﬁgure 5.8).\n\n(b) The swDataDefProps attached to the M1 data types are compatible. Themeaning of this statement is explained in section 6.2.', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'ApplicationPrimitiveDataType', 'operation': 'apply', 'value': '2. In the context of using the ApplicationPrimitiveDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by one of the\nApplicationPrimitiveDataTypes in the role firstDataPrototype andto another DataPrototype typed by the other ApplicationPrimitive\nDataType in the role secondDataPrototype.', 'scope': None}
+  条件 #3: {'class_name': None, 'attribute': 'ApplicationPrimitiveDataType', 'operation': 'apply', 'value': 'In the context of using the ApplicationPrimitiveDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by the ApplicationPrimitiveDataType in the role secondDataPrototype and to an\nother DataPrototype typed by an ApplicationCompositeDataType in therole firstDataPrototype and additionally for the side of the Application\nCompositeDataType a corresponding ApplicationCompositeDataType\nSubElementRef exists in the role firstElement that in turn references an\nApplicationCompositeElementDataPrototype.', 'scope': None}
+
+
+======== 约束 #593: constr_1048 ========
+类型: Generic
+
+
+======== 约束 #594: constr_1049 ========
+类型: Generic
+
+
+======== 约束 #595: constr_1050 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type', 'operation': 'apply', 'value': 'All of the following subconditions apply:\n\n(a) They have the same category (see table 5.18)\n\n(b) They have the identical structure (this refers to Implementation\n\nDataTypeElement and their subElements).\n\n(c) The attributes arraySize and arraySizeSemantics have (given the ex\n\nistence) identical values.\n\n(d) The swDataDefProps attached to the M1 data types are compatible. Themeaning of this statement is explained in section 6.2.', 'scope': None}
+  条件 #2: {'class_name': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type', 'operation': 'apply', 'value': '2. In the context of using the ImplementationDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by one of the Im\nplementationDataTypes in the role firstDataPrototype and to another\nDataPrototype typed by the other ImplementationDataType in the rolesecondDataPrototype.', 'scope': None}
+  条件 #3: {'class_name': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type', 'operation': 'apply', 'value': 'In the context of using the ImplementationDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by the ImplementationDataTypes in the role secondDataPrototype and to another DataPrototype typed by an ImplementationDataType with a subElement in\nthe role firstDataPrototype and additionally for the side of the ImplementationDataType with a subElement a corresponding Implementation\nDataTypeSubElementRef exists in the role firstElement that in turn references an ImplementationDataTypeElement.', 'scope': None}
+
+
+======== 约束 #596: constr_1168 ========
+类型: Requirement
+
+
+======== 约束 #597: constr_1167 ========
+类型: Requirement
+引用ID: constr_1075
+
+
+======== 约束 #598: constr_1220 ========
+类型: Generic
+
+
+======== 约束 #599: constr_1051 ========
+类型: Procedure
+条件表达式: 5 个
+  条件 #1: {'class_name': 'CompuMethod', 'attribute': 'Unit', 'operation': 'apply', 'value': 'They refer to compatible Unit deﬁnitions, or neither of them has an associated\n\nUnit.', 'scope': None}
+  条件 #2: {'class_name': 'ChapterModel', 'attribute': 'chapter', 'operation': 'apply', 'value': 'They refer to compatible conversion methods (see chapter 6.2.4.5) or neither of\n\nthem associates such a method.', 'scope': None}
+  条件 #3: {'class_name': 'BuildActionIoElement', 'attribute': 'role', 'operation': 'apply', 'value': 'One of the following conditions apply to ValueSpecifications aggregatedin the role invalidValue for being considered compatible (after following andresolving indirections created by ConstantReference):\n\n(a) both are ApplicationValueSpecifications and the values are compatible according to [TPS_GST_02501].\n\n(b) both are NumericalValueSpecifications and the values are compatible according to [TPS_GST_02501].\n\n(c) both are TextValueSpecifications and the values are identical.\n\n(d) both are ArrayValueSpecifications and the values are identical.\n\n(e) both are RecordValueSpecifications and the values are identical.\n\n(f) if one is a NumericalValueSpecification and the other one is an Ap\nplicationValueSpecification then the check for compatibility shallapply the CompuMethod on the physical value such that a comparison on\nthe implementation level becomes possible. [TPS_GST_02501] applies', 'scope': None}
+  条件 #4: {'class_name': 'BswDataReceivedEvent', 'attribute': 'data', 'operation': 'apply', 'value': '4. They refer to compatible data constraints dataConstr.', 'scope': None}
+  条件 #5: {'class_name': 'SwCalprmAxis', 'attribute': 'swCalibrationAccess', 'operation': 'apply', 'value': 'They refer to compatible swRecordLayouts\n\nAll other attributes (e.g. swCalibrationAccess do not affect compatibility).', 'scope': None}
+引用ID: TPS_GST_02501
+
+
+======== 约束 #600: constr_1052 ========
+类型: Generic
+引用ID: TPS_GST_02501
+
+
+======== 约束 #601: TPS_SWCT_01492 ========
+类型: Generic
+
+
+======== 约束 #602: constr_1391 ========
+类型: Requirement
+
+
+======== 约束 #603: constr_1392 ========
+类型: Requirement
+
+
+======== 约束 #604: constr_1393 ========
+类型: Requirement
+
+
+======== 约束 #605: constr_1053 ========
+类型: Generic
+
+
+======== 约束 #606: constr_1126 ========
+类型: Requirement
+
+
+======== 约束 #607: constr_1278 ========
+类型: Generic
+
+
+======== 约束 #608: constr_1054 ========
+类型: Generic
+
+
+======== 约束 #609: constr_1058 ========
+类型: Requirement
+
+
+======== 约束 #610: constr_1163 ========
+类型: Generic
+
+
+======== 约束 #611: constr_1153 ========
+类型: Requirement
+
+
+======== 约束 #612: constr_1154 ========
+类型: Requirement
+
+
+======== 约束 #613: constr_1155 ========
+类型: Requirement
+
+
+======== 约束 #614: constr_1156 ========
+类型: Generic
+
+
+======== 约束 #615: constr_1157 ========
+类型: Requirement
+引用ID: constr_1154, constr_1155, constr_1156
+
+
+======== 约束 #616: constr_1176 ========
+类型: Generic
+
+
+======== 约束 #617: TPS_GST_02501 ========
+类型: Generic
+
+
+======== 约束 #618: constr_1192 ========
+类型: Generic
+引用ID: constr_1176
+
+
+======== 约束 #619: constr_1162 ========
+类型: Generic
+
+
+======== 约束 #620: TPS_SWCT_01461 ========
+类型: Generic
+
+
+======== 约束 #621: constr_1068 ========
+类型: Generic
+
+
+======== 约束 #622: constr_1187 ========
+类型: Procedure
+条件表达式: 4 个
+  条件 #1: {'class_name': None, 'attribute': 'Implementation', 'operation': 'apply', 'value': 'The underlying ApplicationCompositeDataTypes or Implementation\n\nDataTypes of category STRUCTURE or ARRAY are identical', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'Implementation', 'operation': 'apply', 'value': 'The underlying ApplicationCompositeDataTypes or Implementation\nDataTypes of category STRUCTURE or ARRAY fulﬁll the following condition:\n\n• They consist of the same number of elements and\n\n• They are composed of compatible AutosarDataTypes (either ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY OR ApplicationPrimitiveDataTypes or\nImplementationDataTypes of category VALUE, BOOLEAN, or STRING)\nin the same order and\n\n• All attributes match exactly, with the exception of the shortName of the M1\n\nAutosarDataType.', 'scope': None}
+  条件 #3: {'class_name': 'Documentation', 'attribute': 'context', 'operation': 'apply', 'value': 'In the context of a DataPrototypeMapping,\n\nfor each ApplicationCompositeElementDataPrototype of the required DataPrototype a SubElementMapping exists such that a ApplicationCompositeDataType\nSubElementRef in the role firstElement or secondElement exists that references the required ApplicationCompositeElementDataPrototype and\na corresponding ApplicationCompositeDataTypeSubElementRef existsin the other role (i.e. secondElement or firstElement) that in turn references an ApplicationCompositeElementDataPrototype of the provided\nApplicationCompositeDataType.', 'scope': None}
+  条件 #4: {'class_name': None, 'attribute': 'Implementation', 'operation': 'apply', 'value': 'If and only if the DataPrototype is not typed by an ApplicationDataTypein the context of a DataProtobut by an ImplementationDataType:\ntypeMapping, for each ImplementationDataTypeElement of the required\nDataPrototype a SubElementMapping exists such that a ImplementationDataTypeSubElementRef in the role firstElement or secondElement exists that references the required ImplementationDataTypeElementand a corresponding ImplementationDataTypeSubElementRef exists in\nthe other role (i.e. secondElement or firstElement) that in turn referencesan ImplementationDataTypeElement of the provided Implementation\nDataType.', 'scope': None}
+
+
+======== 约束 #623: constr_1069 ========
+类型: Generic
+引用ID: constr_1068
+
+
+======== 约束 #624: constr_1070 ========
+类型: Generic
+
+
+======== 约束 #625: constr_1071 ========
+类型: Generic
+
+
+======== 约束 #626: constr_1071 ========
+类型: Generic
+
+
+======== 约束 #627: constr_1248 ========
+类型: Generic
+
+
+======== 约束 #628: constr_1071 ========
+类型: Requirement
+
+
+======== 约束 #629: constr_1071 ========
+类型: Generic
+
+
+======== 约束 #630: constr_1287 ========
+类型: Generic
+
+
+======== 约束 #631: TPS_SWCT_01567 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #632: constr_1072 ========
+类型: Generic
+
+
+======== 约束 #633: constr_1073 ========
+类型: Generic
+
+
+======== 约束 #634: constr_1249 ========
+类型: Generic
+
+
+======== 约束 #635: constr_1074 ========
+类型: Generic
+引用ID: constr_1210
+
+
+======== 约束 #636: constr_1075 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'Xdoc', 'attribute': 'number', 'operation': 'use', 'value': '', 'scope': None}
+  条件 #2: {'class_name': 'ModeDeclarationGroup', 'attribute': 'ModeDeclaration', 'operation': 'apply', 'value': '', 'scope': None}
+引用ID: constr_1194, constr_1245
+
+
+======== 约束 #637: constr_1245 ========
+类型: Requirement
+
+
+======== 约束 #638: constr_1194 ========
+类型: Generic
+
+
+======== 约束 #639: constr_1076 ========
+类型: Generic
+
+
+======== 约束 #640: constr_1268 ========
+类型: Generic
+
+
+======== 约束 #641: constr_1077 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'ApplicationError', 'attribute': 'errorCode', 'operation': 'apply', 'value': '', 'scope': None}
+  条件 #2: {'class_name': 'ClientServerInterfaceMapping', 'attribute': 'errorMapping', 'operation': 'apply', 'value': '', 'scope': None}
+
+
+======== 约束 #642: constr_1078 ========
+类型: Procedure
+条件表达式: 4 个
+  条件 #1: {'class_name': 'Xdoc', 'attribute': 'number', 'operation': 'apply', 'value': 'They have the same number of ArgumentDataPrototypes.', 'scope': None}
+  条件 #2: {'class_name': 'RuleBasedValueSpecification', 'attribute': 'arguments', 'operation': 'apply', 'value': 'The n-th arguments of both ClientServerOperations are compatible. Thisimplies ordering of ArgumentDataPrototypes.', 'scope': None}
+  条件 #3: {'class_name': 'ConstantSpecificationMappingSet', 'attribute': 'mapping', 'operation': 'apply', 'value': 'They have the same shortName (again allows for mapping in PortInterfaces).', 'scope': None}
+  条件 #4: {'class_name': 'ClientIdDefinition', 'attribute': 'ClientServerOperation', 'operation': 'apply', 'value': 'The required ClientServerOperation speciﬁes a compatible ApplicationError for each ApplicationError that is possibly raised by the provided ClientServerOperation, maybe more. Thereby, ClientServerOperations that refer to a possibleError that represents the value E_OK arecompatible to ClientServerOperations that do refer to possibleErrorswhere none of them represents the value E_OK.', 'scope': None}
+
+
+======== 约束 #643: constr_1079 ========
+类型: Generic
+
+
+======== 约束 #644: constr_1080 ========
+类型: Procedure
+条件表达式: 3 个
+  条件 #1: {'class_name': 'ClientIdDefinition', 'attribute': 'ClientServerOperation', 'operation': 'use', 'value': 'One of the following conditions applies:\n\n(a) For each ClientServerOperation deﬁned in the context of\n\nthe\nClientServerInterface of the required inner PortPrototype a compatible ClientServerOperation exists in the ClientServerInterface of\nThe shortNames of\nthe required outer PortPrototype.\nClientServerOperations are used to identify the pair.\n\n(b) A ClientServerInterfaceMapping.operationMapping exists forwhich the following conditions apply:\n\ni. It is referenced by the corresponding SwConnector.\n\nii. It references one of the two ClientServerOperations in the rolefirstOperation and the other in the role secondOperation.', 'scope': None}
+  条件 #2: {'class_name': 'PortPrototype', 'attribute': ' The', 'operation': 'use', 'value': 'One of the following conditions applies:\n\n(a) For at\n\nleast one ClientServerOperation deﬁned in the context of\nthe ClientServerInterface of the provided inner PortPrototype a\ncompatible ClientServerOperation exists in the ClientServerInterface of the provided outer PortPrototype. The shortNames of\nClientServerOperations are used to identify the pair.\n\n(b) A ClientServerInterfaceMapping.operationMapping exists forwhich the following conditions apply:\n\ni. It is referenced by the corresponding SwConnector.\n\nii. It references one of the two ClientServerOperations in the rolefirstOperation and the other in the role secondOperation.', 'scope': None}
+  条件 #3: {'class_name': 'PortInterface', 'attribute': 'isService', 'operation': 'apply', 'value': 'For each such pair, the values of their isService attributes are identical.', 'scope': None}
+
+
+======== 约束 #645: constr_1250 ========
+类型: Generic
+
+
+======== 约束 #646: constr_1081 ========
+类型: Generic
+
+
+======== 约束 #647: constr_1082 ========
+类型: Generic
+
+
+======== 约束 #648: constr_1251 ========
+类型: Generic
+
+
+======== 约束 #649: constr_1083 ========
+类型: Generic
+
+
+======== 约束 #650: constr_1084 ========
+类型: Procedure
+条件表达式: 5 个
+  条件 #1: {'class_name': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype', 'operation': 'use', 'value': 'For each VariableDataPrototype or ParameterDataPrototype presentin the SenderReceiverInterface, NvDataInterface, or Parameter\nInterface of\nleast one connection via DelegationSwConnector to a provided inner PortPrototypeor PassThroughSwConnector to a required outer PortPrototype with a\ncompatible VariableDataPrototype or ParameterDataPrototype in the\nSenderReceiverInterface NvDataInterface or ParameterInterfaceof the provided inner PortPrototype or required outer PortPrototype ex\nists.\n\nEither the shortNames of VariableDataPrototypes or ParameterDataPrototypes are used to identify the pair or a PortInterfaceMapping de\nﬁnes which differently named PortInterface elements correlate with eachother.\n\nTable 6.1 deﬁnes which PortInterface elements are compatible dependingon the kind of PortInterface and the swImplPolicy attributes of the Port\nInterface elements.', 'scope': None}
+  条件 #2: {'class_name': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype', 'operation': 'use', 'value': 'For each VariableDataPrototype provided by a PRPortPrototype that is\ntyped by a SenderReceiverInterface or NvDataInterface and that is referenced in the role outerPort by a DelegationSwConnector a corresponding VariableDataPrototype owned by an innerPort shall be provided by\neither a PPortPrototype or a PRPortPrototype.\n\nEither the shortNames of VariableDataPrototypes are used to identify thepair or a PortInterfaceMapping deﬁnes which differently named PortInterface elements correlate with each other.', 'scope': None}
+  条件 #3: {'class_name': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype', 'operation': 'use', 'value': 'For the ModeDeclarationGroupPrototype present in the ModeSwitch\nInterface of\nthe provided outer PortPrototype exactly one connection via DelegationSwConnector to a provided inner PortPrototype or\nPassThroughSwConnector to a required outer PortPrototype with a compatible ModeDeclarationGroupPrototype in the ModeSwitchInterfaceof the provided inner PortPrototype or required outer PortPrototype ex\nists.\n\nEither the shortNames of ModeDeclarationGroupPrototypes are used to\nidentify the pair or a PortInterfaceMapping deﬁnes which differently named\nPortInterface elements correlate with each other.', 'scope': None}
+  条件 #4: {'class_name': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype', 'operation': 'use', 'value': 'For each ClientServerOperation present in the ClientServerInterface of the provided outer PortPrototype exactly one connection via DelegationSwConnector to a provided inner PortPrototype or PassThrough\n\n\n\n\nSwConnector to a required outer PortPrototype with a compatible\nClientServerOperation in the ClientServerInterface of the providedinner PortPrototype or required outer PortPrototype exists.\n\nEither the shortNames of ClientServerOperations are used to identify thepair or a PortInterfaceMapping deﬁnes which differently named PortInterface elements correlate with each other.', 'scope': None}
+  条件 #5: {'class_name': 'ArVariableInImplementationDataInstanceRef', 'attribute': 'PortPrototype', 'operation': 'use', 'value': 'For each Trigger present in the TriggerInterface of the provided outer\nPortPrototype exactly one connection via DelegationSwConnector to a\nprovided inner PortPrototype or PassThroughSwConnector to a requiredouter PortPrototype with a compatible Trigger in the TriggerInterfaceof the provided inner PortPrototype or required outer PortPrototype ex\nists.\n\nEither the shortNames of Triggers are used to identify the pair or a PortInterfaceMapping deﬁnes which differently named PortInterface elementscorrelate with each other.', 'scope': None}
+
+
+======== 约束 #651: constr_1085 ========
+类型: Generic
+
+
+======== 约束 #652: TPS_SWCT_01075 ========
+类型: Generic
+引用ID: RS_SWCT_03040
+
+
+======== 约束 #653: TPS_SWCT_01030 ========
+类型: Generic
+引用ID: RS_SWCT_00070, RS_SWCT_00090, RS_SWCT_03050
+
+
+======== 约束 #654: TPS_SWCT_01097 ========
+类型: Generic
+引用ID: RS_SWCT_00070, RS_SWCT_00090, RS_SWCT_03050
+
+
+======== 约束 #655: TPS_SWCT_01098 ========
+类型: Generic
+引用ID: RS_SWCT_00070, RS_SWCT_00090, RS_SWCT_03050
+
+
+======== 约束 #656: TPS_SWCT_01302 ========
+类型: Generic
+
+
+======== 约束 #657: TPS_SWCT_01303 ========
+类型: Generic
+引用ID: constr_2025
+
+
+======== 约束 #658: constr_4082 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ExecutableEntity', 'attribute': 'reentrancyLevel', 'operation': 'shall_not_be_set', 'scope': None}
+
+
+======== 约束 #659: TPS_SWCT_01313 ========
+类型: Generic
+
+
+======== 约束 #660: TPS_SWCT_01304 ========
+类型: Generic
+
+
+======== 约束 #661: TPS_SWCT_01305 ========
+类型: Generic
+
+
+======== 约束 #662: TPS_SWCT_01306 ========
+类型: Generic
+
+
+======== 约束 #663: TPS_SWCT_01519 ========
+类型: Generic
+
+
+======== 约束 #664: TPS_SWCT_01307 ========
+类型: Generic
+
+
+======== 约束 #665: TPS_SWCT_01309 ========
+类型: Generic
+
+
+======== 约束 #666: constr_2000 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'ArgumentDataPrototype', 'attribute': 'serverArgumentImplPolicy', 'operation': '==', 'value': 'ImplementationDataType', 'scope': None}
+  条件 #2: {'class_name': 'ArgumentDataPrototype', 'attribute': 'serverArgumentImplPolicy', 'operation': '==', 'value': 'ImplementationDataType', 'scope': None}
+
+
+======== 约束 #667: TPS_SWCT_01520 ========
+类型: Generic
+引用ID: constr_2000
+
+
+======== 约束 #668: TPS_SWCT_01310 ========
+类型: Generic
+
+
+======== 约束 #669: TPS_SWCT_01311 ========
+类型: Generic
+
+
+======== 约束 #670: constr_1164 ========
+类型: Requirement
+
+
+======== 约束 #671: constr_1165 ========
+类型: Generic
+
+
+======== 约束 #672: TPS_SWCT_01312 ========
+类型: Requirement
+
+
+======== 约束 #673: TPS_SWCT_01469 ========
+类型: Generic
+引用ID: RS_SWCT_03045
+
+
+======== 约束 #674: constr_1226 ========
+类型: Requirement
+
+
+======== 约束 #675: constr_1227 ========
+类型: Requirement
+
+
+======== 约束 #676: constr_1228 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': None, 'attribute': 'ExecutableEntityActivationReason', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #677: TPS_SWCT_01525 ========
+类型: Generic
+引用ID: RS_SWCT_03290
+
+
+======== 约束 #678: constr_1257 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'RunnableEntity', 'attribute': 'WaitPoint', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #679: constr_1258 ========
+类型: Requirement
+
+
+======== 约束 #680: constr_1259 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'RunnableEntity', 'attribute': 'AsynchronousServerCallResultPoint', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #681: constr_1260 ========
+类型: Requirement
+
+
+======== 约束 #682: TPS_SWCT_01314 ========
+类型: Generic
+
+
+======== 约束 #683: constr_2031 ========
+类型: Requirement
+引用ID: TPS_SWCT_02507
+
+
+======== 约束 #684: constr_1397 ========
+类型: Requirement
+
+
+======== 约束 #685: TPS_SWCT_01315 ========
+类型: Generic
+
+
+======== 约束 #686: TPS_SWCT_01316 ========
+类型: Generic
+
+
+======== 约束 #687: TPS_SWCT_01317 ========
+类型: Generic
+
+
+======== 约束 #688: TPS_SWCT_01318 ========
+类型: Generic
+
+
+======== 约束 #689: constr_1090 ========
+类型: Generic
+
+
+======== 约束 #690: constr_1091 ========
+类型: Generic
+
+
+======== 约束 #691: TPS_SWCT_01319 ========
+类型: Generic
+
+
+======== 约束 #692: constr_1096 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'SwcModeSwitchEvent', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'RunnableEntityGroup', 'attribute': 'RunnableEntity', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #693: TPS_SWCT_01320 ========
+类型: Generic
+
+
+======== 约束 #694: constr_1097 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'RTEEvent', 'attribute': 'disabledMode', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'RunnableEntityGroup', 'attribute': 'RunnableEntity', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #695: TPS_SWCT_01324 ========
+类型: Generic
+
+
+======== 约束 #696: TPS_SWCT_01321 ========
+类型: Generic
+引用ID: RS_SWCT_00120
+
+
+======== 约束 #697: TPS_SWCT_01592 ========
+类型: Generic
+引用ID: RS_SWCT_00120
+
+
+======== 约束 #698: TPS_SWCT_01031 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswExclusiveAreaPolicy', 'attribute': 'ExclusiveArea'}, {'class': 'Chapter', 'attribute': 'Figure'}, {'class': 'BswExclusiveAreaPolicy', 'attribute': 'ExclusiveArea'}, {'class': 'BswExclusiveAreaPolicy', 'attribute': 'ExclusiveArea'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_00120', 'RS_SWCT_02090']}
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #699: TPS_SWCT_01049 ========
+类型: Requirement
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #700: TPS_SWCT_01457 ========
+类型: Requirement
+引用ID: RS_SWCT_03055
+
+
+======== 约束 #701: TPS_SWCT_01458 ========
+类型: Generic
+引用ID: RS_SWCT_03055
+
+
+======== 约束 #702: TPS_SWCT_01459 ========
+类型: Generic
+引用ID: RS_SWCT_03055
+
+
+======== 约束 #703: TPS_SWCT_01460 ========
+类型: Generic
+引用ID: RS_SWCT_03055
+
+
+======== 约束 #704: TPS_SWCT_01050 ========
+类型: Generic
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #705: TPS_SWCT_01051 ========
+类型: Generic
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #706: TPS_SWCT_01052 ========
+类型: Generic
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #707: TPS_SWCT_01053 ========
+类型: Requirement
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #708: TPS_SWCT_01521 ========
+类型: Requirement
+
+
+======== 约束 #709: constr_2026 ========
+类型: Generic
+
+
+======== 约束 #710: TPS_SWCT_01637 ========
+类型: Generic
+引用ID: RS_SWCT_02090
+
+
+======== 约束 #711: TPS_SWCT_01522 ========
+类型: Generic
+
+
+======== 约束 #712: TPS_SWCT_01054 ========
+类型: Generic
+引用ID: RS_SWCT_00120, RS_SWCT_02090
+
+
+======== 约束 #713: TPS_SWCT_01055 ========
+类型: Generic
+引用ID: RS_SWCT_00120, [constr_1296] DataPrototypes used as explicitInterRunnableVariableor implicitInterRunnableVariable and category DATA_REFERENCE (cid:100, constr_1296, TPS_SWCT_01523, TPS_SWCT_01022, constr_1182
+
+
+======== 约束 #714: TPS_SWCT_01322 ========
+类型: Procedure
+条件表达式: 5 个
+  条件 #1: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'Data-access in a cat. 1 RunnableEntity,', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'explicit', 'operation': 'apply', 'value': 'explicit sending,', 'scope': None}
+  条件 #3: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'the DataSendCompletedEvent: dealing with the success/failure of an explicitsend, and', 'scope': None}
+  条件 #4: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'the DataReceivedEvent: responding to the reception of data', 'scope': None}
+  条件 #5: {'class_name': 'BswDataReceivedEvent', 'attribute': 'Data', 'operation': 'apply', 'value': 'the DataReceiveErrorEvent: notifying an error concerning the reception of\n\ndata.', 'scope': None}
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #715: TPS_SWCT_01323 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #716: TPS_SWCT_01325 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #717: TPS_SWCT_01326 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #718: TPS_SWCT_01328 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #719: constr_1141 ========
+类型: Requirement
+
+
+======== 约束 #720: TPS_SWCT_01329 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #721: constr_2002 ========
+类型: Requirement
+
+
+======== 约束 #722: constr_2003 ========
+类型: Requirement
+
+
+======== 约束 #723: constr_2020 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'queued', 'operation': 'shall_not_be_set', 'scope': None}
+  禁止 #2: {'class_name': None, 'attribute': 'VariableDataPrototype', 'operation': 'shall_not_be_set', 'scope': None}
+
+
+======== 约束 #724: constr_1256 ========
+类型: Generic
+
+
+======== 约束 #725: TPS_SWCT_01330 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #726: constr_2004 ========
+类型: Requirement
+
+
+======== 约束 #727: TPS_SWCT_01331 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #728: TPS_SWCT_01332 ========
+类型: Generic
+
+
+======== 约束 #729: constr_1277 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'queued', 'operation': 'shall_not_be_set', 'scope': None}
+  禁止 #2: {'class_name': 'EcucAddInfoParamValue', 'attribute': 'Value', 'operation': 'shall_not_be_set', 'scope': None}
+
+
+======== 约束 #730: TPS_SWCT_01333 ========
+类型: Requirement
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #731: TPS_SWCT_01334 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #732: constr_2005 ========
+类型: Requirement
+
+
+======== 约束 #733: TPS_SWCT_01335 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'RunnableEntity', 'attribute': 'dataReceivePointByValue'}, {'class': 'RunnableEntity', 'attribute': 'dataReceivePointByArgument'}, {'class': 'AgeConstraint', 'attribute': 'scope'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntity'}, {'class': 'DiagnosticRoutineControl', 'attribute': 'routine'}, {'class': 'RTE', 'attribute': ' The'}, {'class': 'BswModeSwitchAckRequest', 'attribute': 'timeout'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'RunnableEntity', 'attribute': 'WaitPoint'}, {'class': 'RunnableEntity', 'attribute': 'WaitPoint'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_00200', 'constr_2021', 'constr']}
+引用ID: RS_SWCT_00200, constr_2021
+
+
+======== 约束 #734: constr_2021 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'RunnableEntity', 'attribute': 'WaitPoint'}, {'class': 'InternalTriggeringPoint', 'attribute': 'swImplPolicy'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #735: TPS_SWCT_01336 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #736: constr_2033 ========
+类型: Requirement
+
+
+======== 约束 #737: TPS_SWCT_01557 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #738: TPS_SWCT_01558 ========
+类型: Generic
+引用ID: RS_SWCT_00200, constr_1091
+
+
+======== 约束 #739: TPS_SWCT_01337 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #740: TPS_SWCT_01338 ========
+类型: Requirement
+条件表达式: {'class_name': 'CommonSignalPath', 'attribute': 'signal', 'operation': '!=', 'value': 'time', 'scope': None}
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #741: TPS_SWCT_01339 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #742: TPS_SWCT_01340 ========
+类型: Generic
+引用ID: RS_SWCT_00200, constr_1091
+
+
+======== 约束 #743: TPS_SWCT_01341 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #744: TPS_SWCT_01342 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #745: TPS_SWCT_01343 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ClientIdDefinition', 'attribute': 'ClientServerOperation'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_00200']}
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #746: constr_2022 ========
+类型: NonOverlapConstraint
+不重叠约束: {'attributes': [{'class': 'ClientIdDefinition', 'attribute': 'ClientServerOperation'}], 'scope': ''}
+
+
+======== 约束 #747: TPS_SWCT_01344 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #748: constr_2023 ========
+类型: Requirement
+
+
+======== 约束 #749: TPS_SWCT_01345 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #750: TPS_SWCT_01346 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #751: constr_2006 ========
+类型: Generic
+
+
+======== 约束 #752: TPS_SWCT_01347 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'RunnableEntityGroup', 'attribute': 'RunnableEntity', 'operation': 'shall_not', 'scope': None}
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #753: constr_2030 ========
+类型: Requirement
+
+
+======== 约束 #754: TPS_SWCT_01624 ========
+类型: Generic
+引用ID: RS_SWCT_03222
+
+
+======== 约束 #755: TPS_SWCT_01616 ========
+类型: Generic
+引用ID: RS_SWCT_03222
+
+
+======== 约束 #756: TPS_SWCT_01348 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #757: TPS_SWCT_01349 ========
+类型: Requirement
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #758: TPS_SWCT_01350 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #759: TPS_SWCT_01351 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #760: TPS_SWCT_01352 ========
+类型: Generic
+引用ID: RS_SWCT_00200
+
+
+======== 约束 #761: TPS_SWCT_01353 ========
+类型: Generic
+引用ID: RS_SWCT_00200, RS_SWCT_03202
+
+
+======== 约束 #762: TPS_SWCT_01354 ========
+类型: Generic
+
+
+======== 约束 #763: TPS_SWCT_01626 ========
+类型: Requirement
+引用ID: RS_SWCT_03222
+
+
+======== 约束 #764: TPS_SWCT_01355 ========
+类型: Generic
+
+
+======== 约束 #765: constr_2024 ========
+类型: Generic
+
+
+======== 约束 #766: TPS_SWCT_01356 ========
+类型: Generic
+
+
+======== 约束 #767: TPS_SWCT_01357 ========
+类型: Generic
+
+
+======== 约束 #768: TPS_SWCT_01358 ========
+类型: Generic
+
+
+======== 约束 #769: constr_1150 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': '==', 'value': 'VALUE', 'scope': None}
+  条件 #2: {'class_name': 'TYPE_REFERENCE', 'attribute': ' The', 'operation': '==', 'value': 'VALUE', 'scope': None}
+
+
+======== 约束 #770: constr_1386 ========
+类型: Requirement
+
+
+======== 约束 #771: TPS_SWCT_01359 ========
+类型: Generic
+
+
+======== 约束 #772: TPS_SWCT_01360 ========
+类型: Generic
+
+
+======== 约束 #773: TPS_SWCT_01361 ========
+类型: Generic
+
+
+======== 约束 #774: TPS_SWCT_01362 ========
+类型: Generic
+
+
+======== 约束 #775: TPS_SWCT_01363 ========
+类型: Requirement
+
+
+======== 约束 #776: constr_2007 ========
+类型: Requirement
+
+
+======== 约束 #777: TPS_SWCT_01364 ========
+类型: Generic
+
+
+======== 约束 #778: TPS_SWCT_01574 ========
+类型: Generic
+
+
+======== 约束 #779: TPS_SWCT_01365 ========
+类型: Generic
+
+
+======== 约束 #780: TPS_SWCT_01366 ========
+类型: Generic
+
+
+======== 约束 #781: TPS_SWCT_01367 ========
+类型: Generic
+
+
+======== 约束 #782: TPS_SWCT_01368 ========
+类型: Generic
+
+
+======== 约束 #783: TPS_SWCT_01483 ========
+类型: Requirement
+
+
+======== 约束 #784: TPS_SWCT_01369 ========
+类型: Generic
+
+
+======== 约束 #785: constr_2028 ========
+类型: Generic
+
+
+======== 约束 #786: constr_2029 ========
+类型: Generic
+
+
+======== 约束 #787: TPS_SWCT_01155 ========
+类型: Generic
+
+
+======== 约束 #788: TPS_SWCT_01156 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'AutosarDataType', 'operation': '!=', 'value': 'AutosarDataType', 'scope': None}
+
+
+======== 约束 #789: TPS_SWCT_01157 ========
+类型: Generic
+
+
+======== 约束 #790: TPS_SWCT_01153 ========
+类型: Generic
+
+
+======== 约束 #791: TPS_SWCT_01154 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'IncludedModeDeclarationGroupSet', 'attribute': 'prefix'}, {'class': 'SwcInternalBehavior', 'attribute': 'IncludedModeDeclarationGroupSet'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #792: TPS_SWCT_01043 ========
+类型: Generic
+引用ID: RS_SWCT_02060
+
+
+======== 约束 #793: TPS_SWCT_01045 ========
+类型: Requirement
+引用ID: RS_SWCT_02060
+
+
+======== 约束 #794: TPS_SWCT_01046 ========
+类型: Generic
+引用ID: RS_SWCT_02060
+
+
+======== 约束 #795: constr_2027 ========
+类型: Requirement
+
+
+======== 约束 #796: TPS_SWCT_01556 ========
+类型: Requirement
+条件表达式: {'class_name': 'ARPackage', 'attribute': 'ARPackage', 'operation': '==', 'value': 'AUTOSAR', 'scope': None}
+
+
+======== 约束 #797: TPS_SWCT_02501 ========
+类型: Requirement
+
+
+======== 约束 #798: TPS_SWCT_02502 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'PortPrototypeBlueprint', 'attribute': 'Interface'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'BuildActionIoElement', 'attribute': 'role'}, {'class': 'ClientServerInterface', 'attribute': ' The'}, {'class': 'Documentation', 'attribute': 'context'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'BuildActionIoElement', 'attribute': 'role'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucAbstractStringParamDefContent', 'attribute': 'defaultValue'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ApplicationCompositeElementDataPrototype', 'attribute': 'type'}, {'class': 'MemorySection', 'attribute': 'size'}, {'class': 'SwcServiceDependency', 'attribute': 'RepresentedPortGroup'}], 'permission': 'allowed', 'conditions': ['constr_1301', 'constr']}
+引用ID: constr_1301
+
+
+======== 约束 #799: constr_1301 ========
+类型: Generic
+
+
+======== 约束 #800: TPS_SWCT_02504 ========
+类型: Requirement
+引用ID: constr_1301
+
+
+======== 约束 #801: TPS_SWCT_02503 ========
+类型: Requirement
+
+
+======== 约束 #802: TPS_SWCT_02018 ========
+类型: Generic
+
+
+======== 约束 #803: TPS_SWCT_02019 ========
+类型: Generic
+
+
+======== 约束 #804: TPS_SWCT_01019 ========
+类型: Generic
+
+
+======== 约束 #805: TPS_SWCT_01020 ========
+类型: Generic
+
+
+======== 约束 #806: TPS_SWCT_01021 ========
+类型: Generic
+
+
+======== 约束 #807: TPS_SWCT_01012 ========
+类型: Generic
+
+
+======== 约束 #808: TPS_SWCT_01013 ========
+类型: Generic
+
+
+======== 约束 #809: TPS_SWCT_01014 ========
+类型: Generic
+
+
+======== 约束 #810: TPS_SWCT_01015 ========
+类型: Generic
+
+
+======== 约束 #811: TPS_SWCT_01016 ========
+类型: Generic
+
+
+======== 约束 #812: TPS_SWCT_01017 ========
+类型: Generic
+
+
+======== 约束 #813: TPS_SWCT_01018 ========
+类型: Generic
+
+
+======== 约束 #814: TPS_SWCT_01126 ========
+类型: Generic
+引用ID: RS_SWCT_03201
+
+
+======== 约束 #815: TPS_SWCT_01552 ========
+类型: Generic
+引用ID: RS_SWCT_03110, RS_SWCT_03200, RS_SWCT_03203
+
+
+======== 约束 #816: TPS_SWCT_01572 ========
+类型: Requirement
+引用ID: RS_SWCT_03200, RS_SWCT_03202
+
+
+======== 约束 #817: TPS_SWCT_01553 ========
+类型: Generic
+引用ID: RS_SWCT_03110, RS_SWCT_03200, RS_SWCT_03203
+
+
+======== 约束 #818: TPS_SWCT_01554 ========
+类型: Generic
+引用ID: RS_SWCT_03110, RS_SWCT_03200, RS_SWCT_03202
+
+
+======== 约束 #819: TPS_SWCT_02020 ========
+类型: Generic
+
+
+======== 约束 #820: TPS_SWCT_02021 ========
+类型: Generic
+
+
+======== 约束 #821: TPS_SWCT_02022 ========
+类型: Generic
+
+
+======== 约束 #822: TPS_SWCT_02023 ========
+类型: Generic
+
+
+======== 约束 #823: TPS_SWCT_02024 ========
+类型: Generic
+
+
+======== 约束 #824: TPS_SWCT_02025 ========
+类型: Generic
+
+
+======== 约束 #825: TPS_SWCT_02026 ========
+类型: Generic
+
+
+======== 约束 #826: TPS_SWCT_02027 ========
+类型: Generic
+
+
+======== 约束 #827: TPS_SWCT_02028 ========
+类型: Generic
+
+
+======== 约束 #828: TPS_SWCT_02029 ========
+类型: Generic
+
+
+======== 约束 #829: TPS_SWCT_02030 ========
+类型: Generic
+
+
+======== 约束 #830: TPS_SWCT_02031 ========
+类型: Generic
+
+
+======== 约束 #831: TPS_SWCT_02032 ========
+类型: Generic
+
+
+======== 约束 #832: TPS_SWCT_02033 ========
+类型: Generic
+
+
+======== 约束 #833: TPS_SWCT_02034 ========
+类型: Generic
+
+
+======== 约束 #834: TPS_SWCT_02035 ========
+类型: Generic
+
+
+======== 约束 #835: TPS_SWCT_02036 ========
+类型: Generic
+
+
+======== 约束 #836: TPS_SWCT_02037 ========
+类型: Generic
+
+
+======== 约束 #837: TPS_SWCT_02038 ========
+类型: Generic
+
+
+======== 约束 #838: TPS_SWCT_02039 ========
+类型: Generic
+
+
+======== 约束 #839: TPS_SWCT_02040 ========
+类型: Generic
+
+
+======== 约束 #840: TPS_SWCT_02041 ========
+类型: Generic
+
+
+======== 约束 #841: TPS_SWCT_02042 ========
+类型: Generic
+
+
+======== 约束 #842: TPS_SWCT_02043 ========
+类型: Generic
+
+
+======== 约束 #843: TPS_SWCT_02044 ========
+类型: Generic
+
+
+======== 约束 #844: TPS_SWCT_02045 ========
+类型: Generic
+
+
+======== 约束 #845: TPS_SWCT_01129 ========
+类型: Generic
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #846: TPS_SWCT_02505 ========
+类型: Generic
+
+
+======== 约束 #847: TPS_SWCT_01591 ========
+类型: Requirement
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #848: constr_1138 ========
+类型: Requirement
+引用ID: constr_1139
+
+
+======== 约束 #849: TPS_SWCT_01582 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #850: TPS_SWCT_01028 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #851: TPS_SWCT_01029 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #852: TPS_SWCT_01132 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #853: TPS_SWCT_01133 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #854: TPS_SWCT_01134 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #855: TPS_SWCT_01135 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #856: TPS_SWCT_01136 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #857: TPS_SWCT_01137 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #858: TPS_SWCT_01138 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #859: TPS_SWCT_01139 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #860: TPS_SWCT_01140 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #861: TPS_SWCT_01425 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #862: TPS_SWCT_01426 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #863: TPS_SWCT_01427 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #864: TPS_SWCT_01634 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #865: TPS_SWCT_01428 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #866: TPS_SWCT_01453 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #867: constr_1363 ========
+类型: Prohibition
+
+
+======== 约束 #868: constr_1364 ========
+类型: Prohibition
+
+
+======== 约束 #869: TPS_SWCT_02002 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #870: TPS_SWCT_01628 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #871: TPS_SWCT_01639 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #872: TPS_SWCT_01640 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #873: TPS_SWCT_02003 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #874: TPS_SWCT_02004 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #875: TPS_SWCT_01632 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #876: TPS_SWCT_02005 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #877: TPS_SWCT_01629 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #878: TPS_SWCT_01654 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #879: TPS_SWCT_01655 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190, TPS_SWCT_01654, TPS_SWCT_02003
+
+
+======== 约束 #880: TPS_SWCT_01656 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #881: TPS_SWCT_01657 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #882: TPS_SWCT_01658 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #883: TPS_SWCT_02013 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #884: TPS_SWCT_02015 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #885: TPS_SWCT_01627 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #886: TPS_SWCT_02016 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #887: TPS_SWCT_01577 ========
+类型: Requirement
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #888: TPS_SWCT_01578 ========
+类型: Requirement
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #889: TPS_SWCT_02007 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #890: constr_2053 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'DiagnosticEnableConditionPortMapping', 'attribute': 'SwcServiceDependency', 'operation': '==', 'value': 'connectionType', 'scope': None}
+  条件 #2: {'class_name': None, 'attribute': 'ObdRatioServiceNeeds', 'operation': '==', 'value': 'setto ObdRatioConnectionKindEnum', 'scope': None}
+
+
+======== 约束 #891: TPS_SWCT_02008 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #892: TPS_SWCT_01630 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #893: TPS_SWCT_02009 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #894: TPS_SWCT_02010 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #895: TPS_SWCT_01631 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #896: TPS_SWCT_02011 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #897: TPS_SWCT_02012 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #898: TPS_SWCT_01633 ========
+类型: Requirement
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #899: TPS_SWCT_02014 ========
+类型: Generic
+引用ID: RS_SWCT_00170, RS_SWCT_03190
+
+
+======== 约束 #900: TPS_SWCT_01537 ========
+类型: Generic
+引用ID: RS_SWCT_03310, RS_SWCT_03190
+
+
+======== 约束 #901: TPS_SWCT_01538 ========
+类型: Generic
+引用ID: RS_SWCT_03310, RS_SWCT_03190
+
+
+======== 约束 #902: TPS_SWCT_01539 ========
+类型: Generic
+引用ID: RS_SWCT_03310, RS_SWCT_03190
+
+
+======== 约束 #903: TPS_SWCT_01544 ========
+类型: Requirement
+引用ID: RS_SWCT_03310, RS_SWCT_03190
+
+
+======== 约束 #904: TPS_SWCT_01540 ========
+类型: Generic
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #905: TPS_SWCT_01546 ========
+类型: Generic
+引用ID: RS_SWCT_03310, RS_SWCT_03190
+
+
+======== 约束 #906: TPS_SWCT_01547 ========
+类型: Generic
+引用ID: RS_SWCT_03190
+
+
+======== 约束 #907: TPS_SWCT_02506 ========
+类型: Generic
+
+
+======== 约束 #908: TPS_SWCT_01370 ========
+类型: Requirement
+引用ID: RS_SWCT_03100
+
+
+======== 约束 #909: TPS_SWCT_01371 ========
+类型: Generic
+引用ID: RS_SWCT_03100
+
+
+======== 约束 #910: TPS_SWCT_01448 ========
+类型: Requirement
+引用ID: RS_SWCT_03100, TPS_SWCT_01370, constr_1388, TPS_GST_00259
+
+
+======== 约束 #911: constr_1388 ========
+类型: ConditionalProhibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': None, 'attribute': 'post-build', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #912: constr_1389 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'ApplicationRuleBasedValueSpecification', 'attribute': 'category', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': 'VariationPointProxy', 'attribute': 'implementationDataType', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #913: TPS_SWCT_01372 ========
+类型: Permission
+许可表达式: {'attributes': [], 'permission': 'allowed', 'conditions': ['RS_SWCT_03100']}
+引用ID: RS_SWCT_03100
+
+
+======== 约束 #914: TPS_SWCT_01373 ========
+类型: Generic
+引用ID: RS_SWCT_03100
+
+
+======== 约束 #915: TPS_SWCT_01373 ========
+类型: Requirement
+
+
+======== 约束 #916: constr_1253 ========
+类型: Requirement
+条件表达式: {'class_name': 'BswInternalBehavior', 'attribute': 'VariationPointProxy', 'operation': 'apply', 'value': '', 'scope': None}
+
+
+======== 约束 #917: TPS_SWCT_01581 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': None, 'attribute': 'SwConnector', 'operation': 'shall_not', 'scope': None}
+  禁止 #2: {'class_name': None, 'attribute': 'ModeSwitchInterface', 'operation': 'shall_not', 'scope': None}
+引用ID: constr_1101
+
+
+======== 约束 #918: TPS_SWCT_01071 ========
+类型: Generic
+引用ID: RS_SWCT_03200, RS_SWCT_03110
+
+
+======== 约束 #919: TPS_SWCT_01067 ========
+类型: Generic
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #920: TPS_SWCT_01008 ========
+类型: Generic
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #921: constr_1399 ========
+类型: Generic
+
+
+======== 约束 #922: TPS_SWCT_01010 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #923: constr_1298 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': 'IncludedModeDeclarationGroupSet', 'attribute': 'ModeDeclarationGroup', 'operation': '==', 'value': 'set to EXPLICIT_ORDER', 'scope': None}
+  条件 #2: {'class_name': 'IncludedModeDeclarationGroupSet', 'attribute': 'ModeDeclarationGroup', 'operation': '==', 'value': 'EXPLICIT_ORDER', 'scope': None}
+
+
+======== 约束 #924: constr_1299 ========
+类型: Prohibition
+禁止表达式: 2 个
+  禁止 #1: {'class_name': 'ModeDeclarationGroup', 'attribute': 'ModeDeclaration', 'operation': 'shall_not_be_set', 'scope': 'ModeDeclaration'}
+  禁止 #2: {'class_name': 'ModeDeclarationGroup', 'attribute': 'onTransitionValue', 'operation': 'shall_not_be_set', 'scope': 'ModeDeclaration'}
+引用ID: constr_1181
+
+
+======== 约束 #925: TPS_SWCT_01009 ========
+类型: Generic
+引用ID: RS_SWCT_03200, constr_1181, constr_1298, constr_1299
+
+
+======== 约束 #926: TPS_SWCT_01010 ========
+类型: Requirement
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #927: TPS_SWCT_01011 ========
+类型: Requirement
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #928: TPS_SWCT_01450 ========
+类型: Generic
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #929: TPS_SWCT_01451 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'ModeDeclarationGroup', 'attribute': 'ModeTransition'}, {'class': 'ModeDeclarationGroup', 'attribute': 'ModeDeclaration'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}, {'class': 'ModeTransition', 'attribute': 'enteredMode'}, {'class': 'ModeDeclarationGroup', 'attribute': 'ModeDeclaration'}, {'class': 'ModeDeclarationGroup', 'attribute': 'ModeTransition'}, {'class': 'EcucDestinationUriPolicy', 'attribute': 'reference'}, {'class': 'ModeTransition', 'attribute': 'exitedMode'}, {'class': 'ModeDeclarationGroup', 'attribute': 'ModeDeclaration'}, {'class': 'ModeDeclarationGroup', 'attribute': 'ModeTransition'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03200']}
+引用ID: RS_SWCT_03200
+
+
+======== 约束 #930: constr_1193 ========
+类型: ConditionalProhibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'ModeDeclarationGroup', 'attribute': 'initialMode', 'operation': 'shall_not', 'scope': None}
+
+
+======== 约束 #931: TPS_SWCT_01376 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #932: TPS_SWCT_01077 ========
+类型: Generic
+引用ID: RS_SWCT_03120
+
+
+======== 约束 #933: TPS_SWCT_01377 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #934: TPS_SWCT_01378 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #935: constr_4003 ========
+类型: Requirement
+条件表达式: {'class_name': 'SwcModeSwitchEvent', 'attribute': 'activation', 'operation': '==', 'value': 'ModeDeclarationGroup', 'scope': None}
+
+
+======== 约束 #936: constr_1195 ========
+类型: Requirement
+
+
+======== 约束 #937: TPS_SWCT_01379 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #938: TPS_SWCT_01380 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #939: TPS_SWCT_01383 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #940: TPS_SWCT_01555 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #941: constr_4012 ========
+类型: Requirement
+条件表达式: {'class_name': None, 'attribute': 'ModeSwitchedAckEvent', 'operation': '==', 'value': 'the corresponding ModeSwitchedAckRequest', 'scope': None}
+
+
+======== 约束 #942: TPS_SWCT_01381 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #943: TPS_SWCT_01382 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #944: constr_1098 ========
+类型: Requirement
+
+
+======== 约束 #945: TPS_SWCT_01384 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #946: TPS_SWCT_01385 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #947: TPS_SWCT_01388 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #948: TPS_SWCT_01530 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'DiagnosticRequestRoutineResults', 'attribute': 'response'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'EcuInstance', 'attribute': 'partition'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'EcuInstance', 'attribute': 'partition'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'ModeDeclarationGroup', 'attribute': 'modeUserErrorBehavior'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03110']}
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #949: TPS_SWCT_01531 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #950: TPS_SWCT_01532 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #951: constr_1263 ========
+类型: Requirement
+条件表达式: {'class_name': 'ModeErrorBehavior', 'attribute': 'errorReactionPolicy', 'operation': '==', 'value': 'defaultMode', 'scope': None}
+
+
+======== 约束 #952: TPS_SWCT_01533 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #953: TPS_SWCT_01534 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #954: TPS_SWCT_01535 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'EcuInstance', 'attribute': 'partition'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'EcuInstance', 'attribute': 'partition'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}, {'class': 'BswInternalBehavior', 'attribute': 'event'}, {'class': 'BswExternalTriggerOccurredEvent', 'attribute': 'trigger'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntity'}, {'class': 'DiagnosticRequestRoutineResults', 'attribute': 'response'}, {'class': 'BswModeSwitchEvent', 'attribute': 'mode'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03110']}
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #955: TPS_SWCT_01536 ========
+类型: Generic
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #956: TPS_SWCT_01541 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #957: TPS_SWCT_01542 ========
+类型: Requirement
+引用ID: RS_SWCT_03110
+
+
+======== 约束 #958: TPS_SWCT_01047 ========
+类型: Generic
+引用ID: RS_SWCT_02080, RS_SWCT_03090
+
+
+======== 约束 #959: constr_1144 ========
+类型: Generic
+
+
+======== 约束 #960: constr_1109 ========
+类型: Generic
+
+
+======== 约束 #961: TPS_SWCT_01048 ========
+类型: Generic
+引用ID: RS_SWCT_02080, RS_SWCT_03090
+
+
+======== 约束 #962: TPS_SWCT_01389 ========
+类型: Generic
+
+
+======== 约束 #963: TPS_SWCT_01390 ========
+类型: Generic
+
+
+======== 约束 #964: TPS_SWCT_01391 ========
+类型: Generic
+
+
+======== 约束 #965: TPS_SWCT_01392 ========
+类型: Generic
+
+
+======== 约束 #966: TPS_SWCT_01393 ========
+类型: Generic
+
+
+======== 约束 #967: TPS_SWCT_01394 ========
+类型: Generic
+
+
+======== 约束 #968: TPS_SWCT_01395 ========
+类型: Generic
+
+
+======== 约束 #969: TPS_SWCT_01396 ========
+类型: Generic
+
+
+======== 约束 #970: TPS_SWCT_01397 ========
+类型: Generic
+
+
+======== 约束 #971: TPS_SWCT_01398 ========
+类型: Generic
+
+
+======== 约束 #972: TPS_SWCT_01403 ========
+类型: Generic
+
+
+======== 约束 #973: TPS_SWCT_01400 ========
+类型: Generic
+
+
+======== 约束 #974: constr_2019 ========
+类型: Generic
+引用ID: TPS_SWCT_01572, TPS_SWCT_01579, TPS_SWCT_01580
+
+
+======== 约束 #975: TPS_SWCT_01579 ========
+类型: Generic
+引用ID: constr_2019
+
+
+======== 约束 #976: TPS_SWCT_01580 ========
+类型: Generic
+引用ID: constr_2019
+
+
+======== 约束 #977: TPS_SWCT_01411 ========
+类型: Requirement
+条件表达式: {'class_name': 'ServiceSwComponentTypes', 'attribute': ' Please', 'operation': 'apply', 'value': '', 'scope': None}
+
+
+======== 约束 #978: TPS_SWCT_01412 ========
+类型: Requirement
+条件表达式: 2 个
+  条件 #1: {'class_name': None, 'attribute': 'ServiceSwComponentType', 'operation': '==', 'value': 'created', 'scope': 'within_one_ServiceSwComponentType'}
+  条件 #2: {'class_name': None, 'attribute': 'ServiceSwComponentType', 'operation': '==', 'value': 'created', 'scope': 'within_one_ServiceSwComponentType'}
+
+
+======== 约束 #979: TPS_SWCT_02500 ========
+类型: Generic
+
+
+======== 约束 #980: TPS_SWCT_01413 ========
+类型: Generic
+
+
+======== 约束 #981: TPS_SWCT_01414 ========
+类型: Generic
+
+
+======== 约束 #982: TPS_SWCT_01415 ========
+类型: Generic
+
+
+======== 约束 #983: TPS_SWCT_01416 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'SystemTiming', 'attribute': 'system'}, {'class': 'ECUMapping', 'attribute': 'ECU'}, {'class': 'DoIpLogicAddress', 'attribute': 'address'}, {'class': 'Chapter', 'attribute': 'table'}], 'permission': 'allowed', 'conditions': []}
+
+
+======== 约束 #984: constr_2016 ========
+类型: Generic
+
+
+======== 约束 #985: constr_2017 ========
+类型: Generic
+
+
+======== 约束 #986: constr_2018 ========
+类型: Generic
+
+
+======== 约束 #987: TPS_SWCT_01142 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #988: TPS_SWCT_01143 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03225']}
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #989: constr_2009 ========
+类型: Generic
+
+
+======== 约束 #990: constr_2010 ========
+类型: Generic
+
+
+======== 约束 #991: constr_2011 ========
+类型: Generic
+
+
+======== 约束 #992: constr_1148 ========
+类型: Requirement
+
+
+======== 约束 #993: constr_1149 ========
+类型: Requirement
+引用ID: constr_1148
+
+
+======== 约束 #994: TPS_SWCT_01144 ========
+类型: Generic
+
+
+======== 约束 #995: constr_1095 ========
+类型: Prohibition
+禁止表达式: 1 个
+  禁止 #1: {'class_name': 'NvBlockNeeds', 'attribute': 'reliability', 'operation': 'shall_not_be_set', 'scope': None}
+
+
+======== 约束 #996: TPS_SWCT_01586 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'NvBlockSwComponentType', 'attribute': 'NvBlockDescriptor'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'Documentation', 'attribute': 'context'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'Chapter', 'attribute': 'Figure'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'Chapter', 'attribute': 'Figure'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ECUMapping', 'attribute': 'ECU'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'ECUMapping', 'attribute': 'ECU'}, {'class': 'EcucAddInfoParamValue', 'attribute': 'value'}, {'class': 'FMFormulaByFeaturesAndAttributes', 'attribute': 'attribute'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03225', 'constr_1310', 'constr_1308', 'constr_1309', 'TPS_SWCT_01587', 'TPS_SWCT_01588', 'TPS_SWCT_01589', 'constr', 'TPS']}
+引用ID: RS_SWCT_03225, constr_1310, constr_1308, constr_1309, TPS_SWCT_01587, TPS_SWCT_01588, TPS_SWCT_01589
+
+
+======== 约束 #997: TPS_SWCT_01587 ========
+类型: Permission
+许可表达式: {'attributes': [{'class': 'BswDataReceivedEvent', 'attribute': 'data'}, {'class': 'NvBlockDescriptor', 'attribute': 'TimingEvent'}, {'class': 'BswExternalTriggerOccurredEvent', 'attribute': 'trigger'}, {'class': 'RunnableEntityGroup', 'attribute': 'RunnableEntity'}, {'class': 'BswDataReceivedEvent', 'attribute': 'data'}], 'permission': 'allowed', 'conditions': ['RS_SWCT_03225']}
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #998: TPS_SWCT_01588 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #999: TPS_SWCT_01589 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #1000: TPS_SWCT_01590 ========
+类型: Generic
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #1001: constr_1308 ========
+类型: Requirement
+条件表达式: {'class_name': 'NvBlockNeeds', 'attribute': 'storeCyclic', 'operation': '==', 'value': 'true', 'scope': None}
+
+
+======== 约束 #1002: constr_1310 ========
+类型: Requirement
+
+
+======== 约束 #1003: TPS_SWCT_01145 ========
+类型: Generic
+
+
+======== 约束 #1004: TPS_SWCT_01146 ========
+类型: Generic
+
+
+======== 约束 #1005: TPS_SWCT_01147 ========
+类型: Generic
+
+
+======== 约束 #1006: constr_2012 ========
+类型: Requirement
+
+
+======== 约束 #1007: TPS_SWCT_01148 ========
+类型: Generic
+
+
+======== 约束 #1008: constr_2013 ========
+类型: Generic
+
+
+======== 约束 #1009: constr_1285 ========
+类型: Requirement
+
+
+======== 约束 #1010: TPS_SWCT_01659 ========
+类型: Requirement
+
+
+======== 约束 #1011: constr_1395 ========
+类型: Requirement
+引用ID: TPS_SWCT_01659
+
+
+======== 约束 #1012: constr_1403 ========
+类型: Requirement
+引用ID: TPS_SWCT_02503, constr_1404
+
+
+======== 约束 #1013: constr_1404 ========
+类型: Requirement
+
+
+======== 约束 #1014: constr_1404 ========
+类型: Requirement
+
+
+======== 约束 #1015: TPS_SWCT_01149 ========
+类型: Generic
+
+
+======== 约束 #1016: constr_2014 ========
+类型: Generic
+
+
+======== 约束 #1017: TPS_SWCT_01150 ========
+类型: Generic
+引用ID: TPS_SWCT_01584
+
+
+======== 约束 #1018: TPS_SWCT_01584 ========
+类型: Generic
+引用ID: RS_SWCT_03225, TPS_SWCT_01150
+
+
+======== 约束 #1019: TPS_SWCT_01152 ========
+类型: Generic
+
+
+======== 约束 #1020: TPS_SWCT_01151 ========
+类型: Requirement
+
+
+======== 约束 #1021: constr_1234 ========
+类型: Requirement
+
+
+======== 约束 #1022: constr_2015 ========
+类型: Generic
+
+
+======== 约束 #1023: constr_1309 ========
+类型: Requirement
+条件表达式: {'class_name': 'NvBlockDescriptor', 'attribute': 'timingEvent', 'operation': '==', 'value': 'value', 'scope': None}
+
+
+======== 约束 #1024: TPS_SWCT_01585 ========
+类型: Requirement
+引用ID: RS_SWCT_03225
+
+
+======== 约束 #1025: TPS_SWCT_01062 ========
+类型: Generic
+引用ID: RS_SWCT_02110, RS_SWCT_03230
+
+
+======== 约束 #1026: TPS_SWCT_02046 ========
+类型: Requirement
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1027: TPS_SWCT_02047 ========
+类型: Requirement
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1028: constr_2054 ========
+类型: Requirement
+
+
+======== 约束 #1029: constr_2055 ========
+类型: Generic
+
+
+======== 约束 #1030: TPS_SWCT_02048 ========
+类型: Requirement
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1031: TPS_SWCT_02049 ========
+类型: Requirement
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1032: TPS_SWCT_02050 ========
+类型: Generic
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1033: TPS_SWCT_02051 ========
+类型: Generic
+引用ID: RS_SWCT_03280
+
+
+======== 约束 #1034: constr_2056 ========
+类型: Requirement
+
+
+======== 约束 #1035: TPS_SWCT_02052 ========
+类型: Generic
+引用ID: RS_SWCT_03280
+
+
