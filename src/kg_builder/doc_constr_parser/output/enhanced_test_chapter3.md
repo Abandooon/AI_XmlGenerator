@@ -35,6 +35,7 @@ rate meta-model terms instead of the rather vague terminology of “composition�
 #@SECTION: 3.2 Software Component
 #@SECTION: 3.2.1 Overview
 #@CLASS: SwComponentType 
+<!-- LLM_CONTEXT FOR CLASS SwComponentType: Attributes=[consistencyNeeds, port, portGroup, swComponentDocumentation, unitGroup] -->
 
 Application software within AUTOSAR is organized in self-contained units called Atom
 icSwComponentTypes. Such AtomicSwComponentTypes encapsulate the imple
@@ -44,26 +45,33 @@ tion points, called PortPrototypes, to the outside world.
 #@SECTION: 3.2.2 PortPrototype
 
 #@CLASS: PortPrototype 
+<!-- LLM_CONTEXT FOR CLASS PortPrototype: Attributes=[variationPoint] -->
 Table 3.2: PortPrototype
 Figure 3.2: Overview of PortPrototype
 
 #@CLASS: AbstractRequiredPortPrototype 
+<!-- LLM_CONTEXT FOR CLASS AbstractRequiredPortPrototype: Attributes=[requiredComSpec] -->
 Table 3.3: AbstractRequiredPortPrototype
 
 #@CLASS: AbstractProvidedPortPrototype 
+<!-- LLM_CONTEXT FOR CLASS AbstractProvidedPortPrototype: Attributes=[providedComSpec] -->
 Table 3.4: AbstractProvidedPortPrototype
 
 #@CLASS: RPortPrototype
+<!-- LLM_CONTEXT FOR CLASS RPortPrototype: Attributes=[requiredInterface] -->
 Table 3.5: RPortPrototype
 
 #@CLASS: PPortPrototype
+<!-- LLM_CONTEXT FOR CLASS PPortPrototype: Attributes=[providedInterface] -->
 Table 3.6: PPortPrototype
 
 #@CLASS: PRPortPrototype
+<!-- LLM_CONTEXT FOR CLASS PRPortPrototype: Attributes=[providedRequiredInterface] -->
 Table 3.7: PRPortPrototype
 
 Figure 3.3: Components and Ports
 #@CLASS: PortGroup
+<!-- LLM_CONTEXT FOR CLASS PortGroup: Attributes=[innerGroup, outerPort, variationPoint] -->
 
 Please note that PortPrototypes of a SwComponentType are supposed to be used
 for attaching SwConnectors that establish an actual connection between SwCompo
@@ -109,10 +117,13 @@ and further explained in chapter 4.6. (cid:99)(RS_SWCT_03201)
 #@SECTION: 3.2.3 AtomicSwComponentType
 
 #@CLASS: InternalBehavior
+<!-- LLM_CONTEXT FOR CLASS InternalBehavior: Attributes=[constantMemory, constantValueMapping, dataTypeMapping, exclusiveArea, exclusiveAreaNestingOrder, staticMemory] -->
 #@CLASS: AtomicSwComponentType 
+<!-- LLM_CONTEXT FOR CLASS AtomicSwComponentType: Attributes=[internalBehavior, symbolProps] -->
 Table 3.8: AtomicSwComponentType
 Figure 3.4: Overview of Component Types
 #@CLASS: ApplicationSwComponentType
+<!-- LLM_CONTEXT FOR CLASS ApplicationSwComponentType: Attributes=[] (元数据中未找到属性或该类无直接定义的属性) -->
 Table 3.9: ApplicationSwComponentType
 
 [TPS_SWCT_01108] Added value of an AtomicSwComponentType (cid:100) As mentioned
@@ -143,7 +154,9 @@ while the SensorActuatorSwComponentType is described in section 10.4.
 
 #@SECTION: 3.2.4 ParameterSwComponentType
 #@CLASS: ParameterSwComponentType
+<!-- LLM_CONTEXT FOR CLASS ParameterSwComponentType: Attributes=[constantMapping, dataTypeMapping, instantiationDataDefProps] -->
 #@CLASS: SwcInternalBehavior
+<!-- LLM_CONTEXT FOR CLASS SwcInternalBehavior: Attributes=[arTypedPerInstanceMemory, event, explicitInterRunnableVariable, handleTerminationAndRestart, implicitInterRunnableVariable, includedDataTypeSet, includedModeDeclarationGroupSet, instantiationDataDefProps, perInstanceMemory, perInstanceParameter, portAPIOption, runnable, serviceDependency, sharedParameter, supportsMultipleInstantiation, variationPoint, variationPointProxy] -->
 Figure 3.5: Details of ParameterSwComponentType
 
 [constr_1092] ParameterSwComponentType (cid:100) A ParameterSwComponentType
@@ -157,6 +170,7 @@ For more information about this aspect please refer to section 7.5.4.
 
 #@SECTION: 3.2.5 Symbolic Name of a Software-Component
 #@CLASS: SymbolProps
+<!-- LLM_CONTEXT FOR CLASS SymbolProps: Attributes=[] (元数据中未找到属性或该类无直接定义的属性) -->
 Table 3.10: SymbolProps
 Figure 3.6: Overview of AtomicSwComponentType
 
@@ -200,7 +214,9 @@ utilizing SymbolProps or shortNamePattern) still only be deﬁned on the model l
 #@SECTION: 3.3 Composition
 #@SECTION: 3.3.1 Overview
 #@CLASS: CompositionSwComponentType
+<!-- LLM_CONTEXT FOR CLASS CompositionSwComponentType: Attributes=[component, connector, constantValueMapping, dataTypeMapping, instantiationRTEEventProps] -->
 #@CLASS: SwComponentType
+<!-- LLM_CONTEXT FOR CLASS SwComponentType: Attributes=[consistencyNeeds, port, portGroup, swComponentDocumentation, unitGroup] -->
 
 Figure 3.7: The recursive relation of software-components and compositions
 
@@ -227,12 +243,16 @@ the software-components they aggregate.
 
 #@SECTION: 3.3.2 SwComponentPrototype
 #@CLASS: CompositionSwComponentType
+<!-- LLM_CONTEXT FOR CLASS CompositionSwComponentType: Attributes=[component, connector, constantValueMapping, dataTypeMapping, instantiationRTEEventProps] -->
 Table 3.11: CompositionSwComponentType
 #@CLASS: SwComponentPrototype
+<!-- LLM_CONTEXT FOR CLASS SwComponentPrototype: Attributes=[type, variationPoint] -->
 Table 3.12: SwComponentPrototype
 Figure 3.8: Composition and the meta-classes aggregated
 #@CLASS: AtomicSwComponentType
+<!-- LLM_CONTEXT FOR CLASS AtomicSwComponentType: Attributes=[internalBehavior, symbolProps] -->
 #@CLASS: PortPrototype
+<!-- LLM_CONTEXT FOR CLASS PortPrototype: Attributes=[variationPoint] -->
 
 [TPS_SWCT_01035] CompositionSwComponentType aggregates SwComponentPrototypes (cid:100) In terms of the AUTOSAR meta-model, a composition of softwarecomponents realized by the meta-class CompositionSwComponentType aggregates SwComponentPrototypes which in turn are typed by a SwComponentType.(cid:99)(RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020,RS_SWCT_03000)
 
@@ -275,13 +295,21 @@ Prototypes in order to allow for reuse as part of another system.
 
 #@SECTION: 3.3.3 Connectors
 #@CLASS: SwConnector
+<!-- LLM_CONTEXT FOR CLASS SwConnector: Attributes=[mapping, variationPoint] -->
 #@CLASS: CompositionSwComponent
+<!-- LLM_CONTEXT FOR CLASS CompositionSwComponent: Attributes=[] (元数据中未找到属性或该类无直接定义的属性) -->
 #@CLASS: DelegationSwConnector
+<!-- LLM_CONTEXT FOR CLASS DelegationSwConnector: Attributes=[innerPort, outerPort] -->
 #@CLASS: AssemblySwConnector
+<!-- LLM_CONTEXT FOR CLASS AssemblySwConnector: Attributes=[provider, requester] -->
 #@CLASS: PassThroughSwConnector
+<!-- LLM_CONTEXT FOR CLASS PassThroughSwConnector: Attributes=[providedOuterPort, requiredOuterPort] -->
 #@CLASS: PPortInCompositionInstanceRef
+<!-- LLM_CONTEXT FOR CLASS PPortInCompositionInstanceRef: Attributes=[contextComponent, targetPPort] -->
 #@CLASS: PRPortPrototype
+<!-- LLM_CONTEXT FOR CLASS PRPortPrototype: Attributes=[providedRequiredInterface] -->
 #@CLASS: DataInterface
+<!-- LLM_CONTEXT FOR CLASS DataInterface: Attributes=[] (元数据中未找到属性或该类无直接定义的属性) -->
 Table 3.13: SwConnector
 Table 3.14: AssemblySwConnector
 Table 3.15: DelegationSwConnector
@@ -374,10 +402,15 @@ that connects the requiredOuterPort to the providedOuterPort.
 
 #@SECTION: 3.3.4 Instantiation-speciﬁc RTEEvents
 #@CLASS: RTEEvent
+<!-- LLM_CONTEXT FOR CLASS RTEEvent: Attributes=[disabledMode, startOnEvent, variationPoint] -->
 #@CLASS: InstantiationRTEEventProps
+<!-- LLM_CONTEXT FOR CLASS InstantiationRTEEventProps: Attributes=[refinedEvent, shortLabel, variationPoint] -->
 #@CLASS: ApplicationSwComponentType
+<!-- LLM_CONTEXT FOR CLASS ApplicationSwComponentType: Attributes=[] (元数据中未找到属性或该类无直接定义的属性) -->
 #@CLASS: SwcInternalBehavior
+<!-- LLM_CONTEXT FOR CLASS SwcInternalBehavior: Attributes=[arTypedPerInstanceMemory, event, explicitInterRunnableVariable, handleTerminationAndRestart, implicitInterRunnableVariable, includedDataTypeSet, includedModeDeclarationGroupSet, instantiationDataDefProps, perInstanceMemory, perInstanceParameter, portAPIOption, runnable, serviceDependency, sharedParameter, supportsMultipleInstantiation, variationPoint, variationPointProxy] -->
 #@CLASS: CompositionSwComponentType
+<!-- LLM_CONTEXT FOR CLASS CompositionSwComponentType: Attributes=[component, connector, constantValueMapping, dataTypeMapping, instantiationRTEEventProps] -->
 Figure 3.12: Instantiation speciﬁc Properties of RTEEvents
 Table 3.17: InstantiationRTEEventProps
 
@@ -394,14 +427,23 @@ InstantiationTimingEventProps shall only reference TimingEvent in the role refin
 
 #@SECTION: 3.4 Port Interface
 #@CLASS: PortPrototype
+<!-- LLM_CONTEXT FOR CLASS PortPrototype: Attributes=[variationPoint] -->
 #@CLASS: PortInterface
+<!-- LLM_CONTEXT FOR CLASS PortInterface: Attributes=[isService, serviceKind] -->
 #@CLASS: SenderReceiverInterface
+<!-- LLM_CONTEXT FOR CLASS SenderReceiverInterface: Attributes=[dataElement, invalidationPolicy] -->
 #@CLASS: NvDataInterface
+<!-- LLM_CONTEXT FOR CLASS NvDataInterface: Attributes=[nvData] -->
 #@CLASS: ParameterInterface
+<!-- LLM_CONTEXT FOR CLASS ParameterInterface: Attributes=[parameter] -->
 #@CLASS: ModeSwitchInterface
+<!-- LLM_CONTEXT FOR CLASS ModeSwitchInterface: Attributes=[modeGroup] -->
 #@CLASS: ClientServerInterface
+<!-- LLM_CONTEXT FOR CLASS ClientServerInterface: Attributes=[operation, possibleError] -->
 #@CLASS: TriggerInterface
+<!-- LLM_CONTEXT FOR CLASS TriggerInterface: Attributes=[trigger] -->
 #@ENUM: ServiceProviderEnum
+<!-- LLM_CONTEXT FOR ENUM ServiceProviderEnum: Literals=[ANY-STANDARDIZED, BASIC-SOFTWARE-MODE-MANAGER, COM-MANAGER, CRYPTO-SERVICE-MANAGER, DEVELOPMENT-ERROR-TRACER, DIAGNOSTIC-COMMUNICATION-MANAGER, DIAGNOSTIC-EVENT-MANAGER, DIAGNOSTIC-LOG-AND-TRACE, ECU-MANAGER, FUNCTION-INHIBITION-MANAGER, NON-VOLATILE-RAM-MANAGER, OPERATING-SYSTEM, SYNC-BASE-TIME-MANAGER, VENDOR-SPECIFIC, WATCH-DOG-MANAGER, anyStandardized, basicSoftwareModeManager, comManager, cryptoServiceManager, developmentErrorTracer, diagnosticCommunicationManager, diagnosticEventManager, diagnosticLogAndTrace, ecuManager, functionInhibitionManager, nonVolatileRamManager, operatingSystem, syncBaseTimeManager, vendorSpecific, watchDogManager] -->
 
 Figure 3.13: DataInterface as an abstract base class
 Table 3.18: PortInterface

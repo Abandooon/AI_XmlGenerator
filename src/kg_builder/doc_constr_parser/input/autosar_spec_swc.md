@@ -1,7 +1,7 @@
-#@chapter-2
-2 Conceptual Aspects
 
-2.1 Introduction
+#@SECTION: 2 Conceptual Aspects
+
+#@SECTION: 2.1 Introduction
 
 For the sake of a compact description of relevant meta-model elements the discussion
 and explanation of conceptual aspects has been concentrated in this chapter.
@@ -12,9 +12,9 @@ in various other chapters of this document.
 
 The actual explanation of the concept of a software-component starts in chapter 3.
 
-2.2 Measurement and Calibration
+#@SECTION: 2.2 Measurement and Calibration
 
-2.2.1 Basic Approach of Measurement and Calibration
+#@SECTION: 2.2.1 Basic Approach of Measurement and Calibration
 
 While performing the calibration process using a MCD tool (Measurement, Calibration,
 and Diagnostic) the calibration engineer needs to have a speciﬁc insight to the data
@@ -27,7 +27,7 @@ For more details, please refer to [TPS_SWCT_01418]
 The description of measurement variables and calibration parameters is basically the
 same. In AUTOSAR both appear ﬁnally as DataPrototypes.
 
-2.2.2 Calibration Parameters Overview
+#@SECTION: 2.2.2 Calibration Parameters Overview
 
 A Calibration Parameter is a parameter which characterizes the dynamics of a control
 algorithm. From a software implementation point of view, it is a variable with only
@@ -60,12 +60,12 @@ Figure 2.1: Some Categories of calibration parameters
 
 Note: the structure of various calibration objects is visualized in [14].
 
-2.2.3 Using Calibration Parameters
+#@SECTION: 2.2.3 Using Calibration Parameters
 
 As mentioned above, a ParameterDataPrototype can be used in the context of
 SwcInternalBehavior as well as in the context of PortPrototypes.
 
-2.2.3.1 Sharing Calibration Parameters within Compositions
+#@SECTION: 2.2.3.1 Sharing Calibration Parameters within Compositions
 
 To provide calibration parameters for being visible in other SwComponentTypes, a
 dedicated ParameterSwComponentType (see Figure 3.4) that inherits from SwCom
@@ -76,7 +76,7 @@ Class
 Package
 Note
 
-ParameterSwComponentType
+#@CLASS: ParameterSwComponentType
 M2::AUTOSARTemplates::SWComponentTemplate::Components
 The ParameterSwComponentType deﬁnes parameters and characteristic values
 accessible via provided Ports. The provided values are the same for all connected
@@ -169,7 +169,7 @@ Class
 Package
 Note
 
-ParameterInterface
+#@CLASS: ParameterInterface
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 A parameter interface declares a number of parameter and characteristic values to be
 exchanged between parameter components and software components.
@@ -225,7 +225,7 @@ affected ECUs. (cid:99)()
 
 Figure 2.2: ParameterInterface
 
-2.2.3.2 Sharing Calibration Parameters between SwComponentPrototypes of
+#@SECTION: 2.2.3.2 Sharing Calibration Parameters between SwComponentPrototypes of
 
 the Same SwComponentType
 
@@ -263,7 +263,7 @@ A typical example for this kind of sharing code between instances is dealing wit
 lambda sensors in multiple cylinder-bank engines, where (at least) two SwComponent
 Prototypes for each lambda sensor will use the very same Calibration Parameters.
 
-2.2.3.3 Providing Instance Individual Characteristic Data
+#@SECTION: 2.2.3.3 Providing Instance Individual Characteristic Data
 
 [TPS_SWCT_01424] ParameterDataPrototype aggregated in the role perIn
 stanceParameter (cid:100) To provide instance individual calibration parameters a Param
@@ -277,9 +277,9 @@ actual calibration values are speciﬁc for each SwComponentPrototype. (cid:99)(
 
 Figure 2.3: ParameterDataPrototypes in internal behavior
 
-2.3 Runtime and Data Consistency Aspects
+#@SECTION: 2.3 Runtime and Data Consistency Aspects
 
-2.3.1 Background: the Issues
+#@SECTION: 2.3.1 Background: the Issues
 
 This section gives some background information and lists possible strategies concern
 ing the implementation of the RunnableEntitys and the RTE with respect to efﬁcient
@@ -322,7 +322,7 @@ The following paragraphs describe some common strategies that can be used to en
 sure the required data-consistency. We do not attempt to describe the pros or cons of
 these approaches.
 
-2.3.1.1 Mutual Exclusion with Semaphores
+#@SECTION: 2.3.1.1 Mutual Exclusion with Semaphores
 
 Multi-threaded operating systems provide mutexes (mutual exclusion semaphores) that
 protect access to an exclusive resource that is used from within several tasks.
@@ -332,7 +332,7 @@ titys sharing a memory-space would never run concurrently. The RTE would make
 sure the task running the RunnableEntity has taken an appropriate mutex before
 accessing the memory shared between the RunnableEntitys.
 
-2.3.1.2 Interrupt Disabling
+#@SECTION: 2.3.1.2 Interrupt Disabling
 
 Another alternative would be the disabling of
 interrupts during the run-time of
@@ -342,7 +342,7 @@ approach could lead to seriously non-deterministic execution timing.
 
 
 
-2.3.1.3 Priority Ceiling
+#@SECTION: 2.3.1.3 Priority Ceiling
 
 Priority ceiling allows for a non-blocking protection of shared resources. Provided that
 the priority scheme is static, the AUTOSAR OS is capable of temporarily raising the
@@ -352,7 +352,7 @@ tasks that would ever attempt to access the resource.
 By this means is technically impossible that a task in temporary possession of a re
 source is ever preempted by a task that attempts to access the resource as well.
 
-2.3.1.4 Implicit Communication by Means of Variable Copies
+#@SECTION: 2.3.1.4 Implicit Communication by Means of Variable Copies
 
 Another alternative is the usage of copies of concurrently accessed variables with state
 message semantics. Note that this approach directly corresponds to the semantics of
@@ -380,7 +380,7 @@ code at the beginning and end of each task (see Figure 2.5).
 
 
 
-2.3.2 Data Consistency at Runtime
+#@SECTION: 2.3.2 Data Consistency at Runtime
 
 In addition, copy routines will only be inserted where appropriate, e.g. a copy routine
 for writing the value of a copy back to the concurrently accessed variable will only be
@@ -415,7 +415,7 @@ variables in question can be identiﬁed. In other words: the description of an 
 SwComponentType has to expose all concurrently accessed variables to the outside
 world.
 
-2.3.3 Modeling Aspects of Data Consistency
+#@SECTION: 2.3.3 Modeling Aspects of Data Consistency
 
 The intrinsic meaning of the terms “explicit communication” and “implicit communica
 tion” is explained in section 7.5.1.1. It would be fair to say that the distinction between
@@ -456,7 +456,7 @@ On the other hand, access to internal communication never requires the usage of 
 InstanceRef and therefore the abstraction might be considered unnecessary over
 head that blows up the M1 model.
 
-2.4 Variant Handling in the Software Component Template
+#@SECTION: 2.4 Variant Handling in the Software Component Template
 
 The Software Component Template supports the creation of Variants in a subset
 of its model elements. The full list of model elements that support variation can be
@@ -560,7 +560,7 @@ elements and the consequences for other model elements are explained in class ta
 in the following chapters. More details about the AUTOSAR Variant Handling Concept
 can be found in the AUTOSAR Generic Structure Template [12].
 
-2.5 Communication Speciﬁcation of Composition Component
+#@SECTION: 2.5 Communication Speciﬁcation of Composition Component
 
 Types
 
@@ -568,7 +568,7 @@ Types
 shall be possible to attach ComSpecs to PortPrototypes owned by Composition
 SwComponentTypes. (cid:99)(RS_SWCT_03220)
 
-2.5.1 Rationale
+#@SECTION: 2.5.1 Rationale
 
 ComSpecs attached to a PortPrototype owned by an AtomicSwComponentType
 have a direct impact on the generation of the RTE. The RTE Generator, on the other
@@ -628,7 +628,7 @@ Figure 2.6: Speciﬁcation of data type mapping for CompositionSwComponentType
 
 SwComponentTypeCompositionSwComponentTypeARElementAtpBlueprintAtpBlueprintableDataTypeMappingSetARElementConstantSpecificationMappingSet«atpSplitable»+dataTypeMapping0..*«atpSplitable»+constantValueMapping0..*
 
-2.6 PRPortPrototype
+#@SECTION: 2.6 PRPortPrototype
 
 In some cases SwComponentTypes need to read and write the same piece of data.
 One of the most prominent examples for this use case is the NvBlockSwComponent
@@ -638,7 +638,7 @@ Without the ability to combine read and write semantics in a kind of PortPrototy
 that supports both read and write semantics work-arounds have to be implemented
 that come with a certain footprint on memory and processing time.
 
-2.6.1 Use Case 1
+#@SECTION: 2.6.1 Use Case 1
 
 Without the ability to deﬁne a combined read and write semantics the deﬁnition of an
 RPortPrototype and a PPortPrototype is required for reading and writing the
@@ -652,7 +652,7 @@ an NvBlockSwComponentType and ApplicationSwComponentType as well as a
 consistent mapping of the corresponding RPortPrototype and a PPortPrototype
 of of the NvBlockSwComponentType and the related element of the ramBlock.
 
-2.6.2 Use Case 2
+#@SECTION: 2.6.2 Use Case 2
 
 It may happen that a SwComponentType need to consume the same data that it pro
 duces. If the only way to achieve this was the connection of a PPortPrototype to an
@@ -678,7 +678,7 @@ As an alternative, the ApplicationSwComponentType could utilize inter-runnable
 variables but unfortunately this inhibits any optimization in the RTE and will consume
 additional RAM. In contrast to the previous approach at least two buffers are needed.
 
-2.6.3 Use Case 3
+#@SECTION: 2.6.3 Use Case 3
 
 In this scenario, several ApplicationSwComponentTypes are iterating over the
 same large set of data. This means each ApplicationSwComponentType imple
@@ -700,7 +700,7 @@ plement the individual connections between the ApplicationSwComponentTypes.
 In most cases, the processing has to be executed at a certain point in time in a dedi
 cated order.
 
-2.6.4 Solution
+#@SECTION: 2.6.4 Solution
 
 The solution to the above-mentioned use cases is the ability to deﬁne a PortProto
 type that can read and write the same piece of data. This solves both the described
@@ -710,7 +710,7 @@ PortPrototypes as outlets for same piece of data item.
 The technical details of the deﬁnition of PRPortPrototype are explained in chap
 ters 3.1 and 4.1.
 
-2.7 Pretended Networking
+#@SECTION: 2.7 Pretended Networking
 
 [TPS_SWCT_01510] The role of pretended networking (cid:100) Pretended networking is
 a feature to reduce energy consumption of an ECU by switching the ECU in a mode
@@ -768,9 +768,9 @@ can be found in the speciﬁcation of the BswM [15]. (cid:99)(RS_SWCT_03110)
 
 
 
-2.8 Variable-size Array Data Types
+#@SECTION: 2.8 Variable-size Array Data Types
 
-2.8.1 Overview and Use cases
+#@SECTION: 2.8.1 Overview and Use cases
 
 AUTOSAR supports the deﬁnition of array data types where the size of the actual
 payload varies at run-time. As far as the conﬁguration is concerned, it is possible to
@@ -780,7 +780,7 @@ In order to properly understand the approach, it is necessary to understand that
 support for Variable-Size Array Data Types has been introduced in two waves
 that each had a different motivation.
 
-2.8.1.1 “Old-world” dynamic-size Arrays
+#@SECTION: 2.8.1.1 “Old-world” dynamic-size Arrays
 
 In the ﬁrst wave, the support for Variable-Size Array Data Types was limited
 to data types that basically boil down to an array where the base type is an unsigned
@@ -859,7 +859,7 @@ transmission by means of a data transformer. The only supported kind of Variable
 Size Array Data Type that can be transmitted using a data transformer is the
 “new-world” variable-size arrays.
 
-2.8.1.2 “New-world” variable-size Arrays
+#@SECTION: 2.8.1.2 “New-world” variable-size Arrays
 
 In contrast to this, the second wave of support for Variable-Size Array Data
 Types was motivated by the application software layer itself.
@@ -965,7 +965,7 @@ dimension Variable-Size Array Data Types.
 The “terminal” elements can be recognized as such in that they don’t establish further
 Variable-Size Array Data Types.
 
-2.8.2 Modeling Aspects regarding Application Data Types
+#@SECTION: 2.8.2 Modeling Aspects regarding Application Data Types
 
 In the context of the AUTOSAR layered data type concept, the level of Application
 DataTypes is not concerned about the structure of how the Variable-Size Array
@@ -995,7 +995,7 @@ ImplementationDataType.
 The contrary is not applicable, i.e. it is possible to deﬁne a Variable-Size Array
 Data Type with only an ImplementationDataType, see [TPS_SWCT_01622].
 
-2.8.3 Modeling Aspects regarding Implementation Data Types
+#@SECTION: 2.8.3 Modeling Aspects regarding Implementation Data Types
 
 On the other hand, the data type used for the actual hosting of the Variable
 Size Array Data Type corresponds directly to the level of the Implementation
@@ -1020,11 +1020,11 @@ for the purpose of creating Variable-Size Array Data Types shall be deﬁned
 such that the ImplementationDataType shall be of category STRUCTURE with
 the following sub-elements:
 
-1. A numerical value that determines the actual size. This element shall be called
+#@SECTION: 1. A numerical value that determines the actual size. This element shall be called
 
 the Size Indicator throughout this document.
 
-2. An array of the base-type of the Variable-Size Array Data Type that im
+#@SECTION: 2. An array of the base-type of the Variable-Size Array Data Type that im
 plements the payload of the Variable-Size Array Data Type. The dimen
 sion of the array shall be deﬁned such that the intended maximum number of
 elements ﬁts in.
@@ -1055,11 +1055,11 @@ The details of how ImplementationDataTypes need to be modeled for the imple
 mentation of Variable-Size Array Data Types can be found in chapter 5.2.5
 and a couple of examples is available in the appendix E.1.
 
-#@chapter-3
 
-3 Overview: Software Components, Ports, and Interfaces
 
-3.1 Introduction
+#@SECTION: 3 Overview: Software Components, Ports, and Interfaces
+
+#@SECTION: 3.1 Introduction
 
 The detailed introduction of all aspects of the Software Component Template in
 one move is considered too complex. This chapter therefore provides an overview
@@ -1091,122 +1091,38 @@ In order to make the description more precise, the following text preferably use
 rate meta-model terms instead of the rather vague terminology of “composition” and
 “software-component”.
 
-3.2 Software Component
-
-3.2.1 Overview
+#@SECTION: 3.2 Software Component
+#@SECTION: 3.2.1 Overview
+#@CLASS: SwComponentType 
 
 Application software within AUTOSAR is organized in self-contained units called Atom
 icSwComponentTypes. Such AtomicSwComponentTypes encapsulate the imple
 mentation of their functionality and behavior and merely expose well-deﬁned connec
 tion points, called PortPrototypes, to the outside world.
 
+#@SECTION: 3.2.2 PortPrototype
 
+#@CLASS: PortPrototype 
+Table 3.2: PortPrototype
+Figure 3.2: Overview of PortPrototype
 
-Figure 3.1: Graphical representation of software-components in AUTOSAR
+#@CLASS: AbstractRequiredPortPrototype 
+Table 3.3: AbstractRequiredPortPrototype
 
-The graphical appearance of AUTOSAR software-components according to [3] is de
-picted in Figure 3.1.
+#@CLASS: AbstractProvidedPortPrototype 
+Table 3.4: AbstractProvidedPortPrototype
 
-Class
-Package
-Note
-Base
+#@CLASS: RPortPrototype
+Table 3.5: RPortPrototype
 
-Attribute
-consistenc
-yNeeds
+#@CLASS: PPortPrototype
+Table 3.6: PPortPrototype
 
-SwComponentType (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-Base class for AUTOSAR software components.
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,Referrable
-Datatype
-ConsistencyNee
-ds
+#@CLASS: PRPortPrototype
+Table 3.7: PRPortPrototype
 
-Mul. Kind Note
-aggr
-
-This represents the colelction of
-ConsistencyNeeds owned by the enclosing
-SwComponentType.
-
-*
-
-port
-
-PortPrototype
-
-*
-
-aggr
-
-portGroup
-
-PortGroup
-
-*
-
-aggr
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortName, variation
-Point.shortLabel
-vh.latestBindingTime=preCompileTime
-The ports through which this component can
-communicate. The aggregation of PortPrototype is
-subject to variability with the purpose to support
-the conditional existence of PortPrototypes.
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortName, variation
-Point.shortLabel
-vh.latestBindingTime=preCompileTime
-A port group being part of this component.
-
-Stereotypes: atpVariation
-Tags: vh.latestBindingTime=preCompileTime
-
-
-
-Attribute
-swCompon
-entDocum
-entation
-
-Datatype
-SwComponentD
-ocumentation
-
-Mul. Kind Note
-aggr
-0..1
-
-This adds a documentation to the
-SwComponentType.
-
-unitGroup
-
-UnitGroup
-
-*
-
-ref
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=swComponentDocumentation,
-variationPoint.shortLabel
-vh.latestBindingTime=preCompileTime
-xml.sequenceOffset=-10
-This allows for the speciﬁcation of which
-UnitGroups are relevant in the context of
-referencing SwComponentType.
-
-Table 3.1: SwComponentType
-
-3.2.2 PortPrototype
+Figure 3.3: Components and Ports
+#@CLASS: PortGroup
 
 Please note that PortPrototypes of a SwComponentType are supposed to be used
 for attaching SwConnectors that establish an actual connection between SwCompo
@@ -1215,140 +1131,12 @@ nentPrototypes (see chapter 3.3).
 [TPS_SWCT_01002] SwComponentTypes may only interact by means of their
 PortPrototypes (cid:100) AtomicSwComponentTypes (and also the more general
 SwComponentTypes may only interact by means of their PortPrototypes). Hidden
-communication dependencies that are not expressed by means of PortPrototypes
-(cid:99)(RS_SWCT_00020, RS_SWCT_00030, RS_SWCT_00150,
-are strictly forbidden.
-RS_SWCT_00160, RS_SWCT_00200, RS_SWCT_00210, RS_SWCT_02010,
-RS_SWCT_02030)
+communication dependencies that are not expressed by means of PortPrototypes are strictly forbidden.
+(cid:99)(RS_SWCT_00020, RS_SWCT_00030, RS_SWCT_00150,RS_SWCT_00160, RS_SWCT_00200, RS_SWCT_00210, RS_SWCT_02010,RS_SWCT_02030)
 
 Therefore, software-components are in theory exchangeable as long as they implement
 the same functionality and provide the same public communication interface to the
 remaining system.
-
-Class
-Package
-Note
-
-PortPrototype (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-Base class for the ports of an AUTOSAR software component.
-
-The aggregation of PortPrototypes is subject to variability with the purpose to support
-the conditional existence of ports.
-ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
-Referrable,Referrable
-Datatype
-ClientServerAnn
-otation
-
-Annotation of this PortPrototype with respect to
-client/server communication.
-
-Mul. Kind Note
-aggr
-
-*
-
-DelegatedPortA
-nnotation
-
-0..1
-
-aggr
-
-Annotations on this delegated port.
-
-Base
-
-Attribute
-clientServe
-rAnnotatio
-n
-delegated
-PortAnnota
-tion
-
-
-
-
-Attribute
-ioHwAbstr
-actionServ
-erAnnotati
-on
-modePortA
-nnotation
-nvDataPort
-Annotation
-parameter
-PortAnnota
-tion
-senderRec
-eiverAnnot
-ation
-triggerPort
-Annotation
-
-Datatype
-IoHwAbstraction
-ServerAnnotatio
-n
-
-ModePortAnnot
-ation
-NvDataPortAnn
-otation
-ParameterPortA
-nnotation
-
-SenderReceiver
-Annotation
-
-TriggerPortAnn
-otation
-
-
-
-Mul. Kind Note
-aggr
-
-*
-
-Annotations on this IO Hardware Abstraction port.
-
-*
-
-*
-
-*
-
-*
-
-*
-
-aggr
-
-Annotations on this mode port.
-
-aggr
-
-Annotations on this non voilatile data port.
-
-aggr
-
-Annotations on this parameter port.
-
-aggr Collection of annotations of this ports
-
-sender/receiver communication.
-
-aggr
-
-Annotations on this trigger port.
-
-Table 3.2: PortPrototype
-
-Figure 3.2: Overview of PortPrototype
 
 [TPS_SWCT_01111] PortPrototypes need an additional model artifact, the
 PortInterface (cid:100) Please note that PortPrototypes actually need an additional
@@ -1358,199 +1146,33 @@ high degree of re-usability is described in chapter 3.4. (cid:99)(RS_SWCT_00010)
 
 [TPS_SWCT_01112] Semantics of PortPrototypes (cid:100) As depicted in Figure 3.2,
 PortPrototypes can have the following semantics:
-
-• A require-port (in technical terms: RPortPrototype) requires certain services
-
-or data.
-
-
-
-
-PPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePRPortPrototypeAbstractRequiredPortPrototypeAbstractProvidedPortPrototype
-
-• A provide-port (or PPortPrototype) on the other hand provides services or
-
-data.
-
-• A provide-require-port (or PRPortPrototype) combines the ability to provide
-
-and require services or data in one entity.
-
-(cid:99)(RS_SWCT_03250)
+• A require-port (in technical terms: RPortPrototype) requires certain services or data.
+• A provide-port (or PPortPrototype) on the other hand provides services or data.
+• A provide-require-port (or PRPortPrototype) combines the ability to provide and require services or data in one entity. (cid:99)(RS_SWCT_03250)
 
 [TPS_SWCT_01573] A PRPortPrototype is never considered unconnected
 (cid:100) A PRPortPrototype is never considered unconnected, even if
-there are no
-SwConnectors actually referring to it.
-(cid:99)(RS_SWCT_00010, RS_SWCT_03250,
-RS_SWCT_03130)
+there are no SwConnectors actually referring to it.
+(cid:99)(RS_SWCT_00010, RS_SWCT_03250,RS_SWCT_03130)
 
 Please note that [TPS_SWCT_01573] represents the immediate consequence of the
 semantics deﬁned in [TPS_SWCT_01112].
 
-[TPS_SWCT_01113] Connecting two PortPrototypes (cid:100) Two SwComponentPro
-totypes are eventually connected by hooking up a PPortPrototype or PRPort
-Prototype of one SwComponentPrototype to a compatible RPortPrototype or
-PRPortPrototype of the other SwComponentPrototypes. Please ﬁnd more infor
-mation concerning the deﬁnition of “compatibility” in section 6. (cid:99)(RS_SWCT_03130,
-RS_SWCT_03250)
+[TPS_SWCT_01113] Connecting two PortPrototypes (cid:100) Two SwComponentPrototypes are eventually connected by hooking up a PPortPrototype or PRPortPrototype of one SwComponentPrototype to a compatible RPortPrototype or PRPortPrototype of the other SwComponentPrototypes. Please ﬁnd more information concerning the deﬁnition of “compatibility” in section 6. (cid:99)(RS_SWCT_03130,RS_SWCT_03250)
 
-Class
-Package
-Note
-Base
-
-Attribute
-requiredCo
-mSpec
-
-Class
-Package
-Note
-Base
-
-Attribute
-providedC
-omSpec
-
-AbstractRequiredPortPrototype (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-This abstract class provides the ability to become a required PortPrototype.
-ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
-Referrable,PortPrototype,Referrable
-Datatype
-RPortComSpec
-
-Mul. Kind Note
-
-aggr Required communication attributes, one for each
-
-*
-
-interface element.
-
-Table 3.3: AbstractRequiredPortPrototype
-
-AbstractProvidedPortPrototype (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-This abstract class provides the ability to become a provided PortPrototype.
-ARObject,AtpBlueprintable,AtpFeature,AtpPrototype,Identiﬁable,Multilanguage
-Referrable,PortPrototype,Referrable
-Datatype
-PPortComSpec
-
-Mul. Kind Note
-aggr
-
-*
-
-Provided communication attributes per interface
-element (data element or operation).
-
-Table 3.4: AbstractProvidedPortPrototype
-
-
-
-RPortPrototype
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-Component port requiring a certain port interface.
-ARObject,AbstractRequiredPortPrototype,AtpBlueprintable,AtpFeature,Atp
-Prototype,Identiﬁable,MultilanguageReferrable,PortPrototype,Referrable
-Datatype
-PortInterface
-
-Mul. Kind Note
-tref
-
-1
-
-The interface that this port requires, i.e. the port
-depends on another port providing the speciﬁed
-interface.
-
-Stereotypes: isOfType
-
-Table 3.5: RPortPrototype
-
-PPortPrototype
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-Component port providing a certain port interface.
-ARObject,AbstractProvidedPortPrototype,AtpBlueprintable,AtpFeature,Atp
-Prototype,Identiﬁable,MultilanguageReferrable,PortPrototype,Referrable
-Datatype
-PortInterface
-
-Mul. Kind Note
-tref
-
-The interface that this port provides.
-
-1
-
-Stereotypes: isOfType
-
-Table 3.6: PPortPrototype
-
-PRPortPrototype
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-This kind of PortPrototype can take the role of both a required and a provided
-PortPrototype.
-ARObject,AbstractProvidedPortPrototype,AbstractRequiredPortPrototype,Atp
-Blueprintable,AtpFeature,AtpPrototype,Identiﬁable,MultilanguageReferrable,Port
-Prototype,Referrable
-Datatype
-PortInterface
-
-Mul. Kind Note
-tref
-
-1
-
-This represents the PortInterface used to type the
-PRPortPrototype
-
-Class
-Package
-Note
-Base
-
-Attribute
-requiredInt
-erface
-
-Class
-Package
-Note
-Base
-
-Attribute
-providedInt
-erface
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-providedR
-equiredInte
-rface
-
-Stereotypes: isOfType
-
-Table 3.7: PRPortPrototype
-
-
-
-Figure 3.3: Components and Ports
 
 [TPS_SWCT_01096] PortGroup (cid:100) PortPrototypes can be logically grouped into
 PortGroups. This mechanism is used for implementing mode management features
 and further explained in chapter 4.6. (cid:99)(RS_SWCT_03201)
 
-3.2.3 AtomicSwComponentType
+#@SECTION: 3.2.3 AtomicSwComponentType
+
+#@CLASS: InternalBehavior
+#@CLASS: AtomicSwComponentType 
+Table 3.8: AtomicSwComponentType
+Figure 3.4: Overview of Component Types
+#@CLASS: ApplicationSwComponentType
+Table 3.9: ApplicationSwComponentType
 
 [TPS_SWCT_01108] Added value of an AtomicSwComponentType (cid:100) As mentioned
 before, the term AtomicSwComponentType is a speciﬁc form of the general concept
@@ -1558,140 +1180,44 @@ of the SwComponentType. The added value of an AtomicSwComponentType is that
 it can aggregate an InternalBehavior (see chapter 7). (cid:99)(RS_SWCT_03040)
 
 [TPS_SWCT_01109] Adding the SwcInternalBehavior in a later process step
-(cid:100) The aggregation of SwcInternalBehavior is stereotyped (cid:28)atpSplitable(cid:29) to
-allow for adding the SwcInternalBehavior in a later process step. In other words, it
+(cid:100) The aggregation of SwcInternalBehavior is stereotyped (cid:28)atpSplitable(cid:29) to allow for adding the SwcInternalBehavior in a later process step. In other words, it
 is possible to completely develop the VFB view of a software-component and later add
 more details like InternalBehavior. (cid:99)()
-
-
-
-
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeRPortPrototypePPortPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]PRPortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototype+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedRequiredInterface1{redefinesatpType}
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-internalBe
-havior
-
-AtomicSwComponentType (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-An atomic software component is atomic in the sense that it cannot be further
-decomposed and distributed across multiple ECUs.
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,Referrable,SwComponentType
-Mul. Kind Note
-Datatype
-aggr
-0..1
-SwcInternalBeh
-avior
-
-The SwcInternalBehaviors owned by an
-AtomicSwComponentType can be located in a
-different physical ﬁle. Therefore the aggregation is
-«atpSplitable».
-
-symbolPro
-ps
-
-SymbolProps
-
-0..1
-
-aggr
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=internalBehavior, variation
-Point.shortLabel
-vh.latestBindingTime=preCompileTime
-This represents the SymbolProps for the
-AtomicSwComponentType.
-
-Stereotypes: atpSplitable
-Tags: atp.Splitkey=shortName
-
-Table 3.8: AtomicSwComponentType
 
 There are several specialized SwComponentTypes to describe speciﬁc software
 components used in the different parts of the AUTOSAR Layered Architecture [6]. Fur
 ther details are mentioned in chapter 10 and 11.
-
-Figure 3.4: Overview of Component Types
-
-
-
-
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeCompositionSwComponentTypeAtpPrototypeSwComponentPrototypeSensorActuatorSwComponentTypeParameterSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentType«atpVariation» Tags:vh.latestBindingTime =postBuild+component0..*«atpVariation,atpSplitable»«isOfType»+type1{redefinesatpType}
 
 The ApplicationSwComponentType is a specialization of AtomicSwComponent
 Type for representing hardware-independent application software. The Parameter
 SwComponentType is a specialization of SwComponentType that can - in contrast to
 AtomicSwComponentType - not aggregate SwcInternalBehavior.
 
-the NvBlockSwComponentType is described in detail
-
-in sec
-The purpose of
-tion 11.5.2. The ServiceSwComponentType is described in section 11.3. Further on,
-the EcuAbstractionSwComponentType and the ComplexDeviceDriverSwCom
-ponentType are discussed in detail in section 10.
+The purpose of the NvBlockSwComponentType is described in detail in section 11.5.2. The ServiceSwComponentType is described in section 11.3. Further on,the EcuAbstractionSwComponentType and the ComplexDeviceDriverSwComponentType are discussed in detail in section 10.
 
 A description of the ServiceProxySwComponentType can be found in section 11.4
 while the SensorActuatorSwComponentType is described in section 10.4.
 
-Class
-Package
-Note
 
-ApplicationSwComponentType
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-The ApplicationSwComponentType is used to represent the application software.
 
-Base
-
-Attribute
-–
-
-Tags: atp.recommendedPackage=SwComponentTypes
-ARElement,ARObject,AtomicSwComponentType,AtpBlueprint,AtpBlueprintable,Atp
-Classiﬁer,AtpType,CollectableElement,Identiﬁable,Multilanguage
-Referrable,PackageableElement,Referrable,SwComponentType
-Datatype
-–
-
-Mul. Kind Note
-–
-
-–
-
-–
-
-Table 3.9: ApplicationSwComponentType
-
-3.2.4 ParameterSwComponentType
+#@SECTION: 3.2.4 ParameterSwComponentType
+#@CLASS: ParameterSwComponentType
+#@CLASS: SwcInternalBehavior
+Figure 3.5: Details of ParameterSwComponentType
 
 [constr_1092] ParameterSwComponentType (cid:100) A ParameterSwComponentType
 shall never aggregate a SwcInternalBehavior and also owns exclusively PPort
 Prototypes of type ParameterInterface. (cid:99)()
 
 However, a ParameterSwComponentType shall have the ability to aggregate In
-stantiationDataDefProps. By this means it is possible to deﬁne role-speciﬁc
-data properties of elements of composite data types used for the deﬁnition of calibra
-tion parameters in the scope of a ParameterSwComponentType.
+stantiationDataDefProps. By this means it is possible to deﬁne role-speciﬁcdata properties of elements of composite data types used for the deﬁnition of calibration parameters in the scope of a ParameterSwComponentType.
 
 For more information about this aspect please refer to section 7.5.4.
 
-
-
-Figure 3.5: Details of ParameterSwComponentType
-
-3.2.5 Symbolic Name of a Software-Component
+#@SECTION: 3.2.5 Symbolic Name of a Software-Component
+#@CLASS: SymbolProps
+Table 3.10: SymbolProps
+Figure 3.6: Overview of AtomicSwComponentType
 
 Please note that an AtomicSwComponentType manifests itself in the source code of
 an RTE into which an instance of the AtomicSwComponentType is deployed. This
@@ -1705,55 +1231,12 @@ symbolic name is provided by means of the attribute symbol of the meta-class Sym
 bolProps owned by AtomicSwComponentType in the role symbolProps (for more
 information, please refer to Figure 3.6). (cid:99)()
 
-Class
-Package
-Note
-
-Base
-Attribute
-–
-
-SymbolProps
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-This meta-class represents the ability to attach with the symbol attribute a symbolic
-name that is conform to C language requirements to another meta-class, e.g.
-AtomicSwComponentType, that is a potential subject to a name clash on the level of
-RTE source code.
-ARObject,ImplementationProps,Referrable
-Datatype
-–
-
-Mul. Kind Note
-–
-
-–
-
-–
-
-Table 3.10: SymbolProps
-
 For more detailed information about how SymbolProps can be used to mitigate name
 clashes occurring during the integration of software-components on an AUTOSAR
 ECU, please refer to [4].
 
-[TPS_SWCT_01000] Usage of attribute symbol of the symbolProps (cid:100) In par
-the attribute symbol of
-ticular,
-the symbolProps owned by a given AtomicSwComponentType.
-If and only if
-symbolProps is not deﬁned the RTE generator shall take the shortName of the
-
-the RTE generator shall
-
-take over the value of
-
-
-
-
-SwComponentTypeParameterSwComponentTypeInstantiationDataDefPropsARElementConstantSpecificationMappingSetARElementAtpBlueprintAtpBlueprintableDataTypeMappingSet«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpSplitable»+dataTypeMapping0..*«atpVariation»+instantiationDataDefProps0..*«atpSplitable»+constantMapping0..*
-
-AtomicSwComponentType. For the generation of symbols for RunnableEntitys
-[TPS_SWCT_01001] shall be observed. (cid:99)()
+[TPS_SWCT_01000] Usage of attribute symbol of the symbolProps (cid:100) In particular,
+the RTE generator shall take over the value of the attribute symbol of the symbolProps owned by a given AtomicSwComponentType.If and only if symbolProps is not deﬁned the RTE generator shall take the shortName of the AtomicSwComponentType. For the generation of symbols for RunnableEntitys [TPS_SWCT_01001] shall be observed. (cid:99)()
 
 [TPS_SWCT_01001] Preﬁx symbols generated for the RunnableEntity (cid:100) If and
 only if the attribute symbol of a symbolProps owned by an AtomicSwComponent
@@ -1767,35 +1250,24 @@ be touched in order to conform with this version of the AUTOSAR standard.
 This is a further measure to mitigate the risk of potential name clashes in the RTE
 code.
 
-[TPS_SWCT_01635] Naming conventions may support the effectiveness of Sym
-bolProps (cid:100) Of course, there is a residual risk that even in the presence of Symbol
-Props name clashes may occur. Therefore, the deﬁnition of naming conventions may
-facilitate the avoidance of name clashes to the further degree.
-
+[TPS_SWCT_01635] Naming conventions may support the effectiveness of SymbolProps (cid:100) Of course, there is a residual risk that even in the presence of SymbolProps name clashes may occur. Therefore, the deﬁnition of naming conventions may facilitate the avoidance of name clashes to the further degree.
 However, these naming conventions can (with the support of the meta-model, e.g. by
-utilizing SymbolProps or shortNamePattern) still only be deﬁned on the model
-level. (cid:99)(RS_SWCT_00230)
-
-Figure 3.6: Overview of AtomicSwComponentType
+utilizing SymbolProps or shortNamePattern) still only be deﬁned on the model level. (cid:99)(RS_SWCT_00230)
 
 
 
+#@SECTION: 3.3 Composition
+#@SECTION: 3.3.1 Overview
+#@CLASS: CompositionSwComponentType
+#@CLASS: SwComponentType
 
-SwComponentTypeAtomicSwComponentTypeSymbolPropsSensorActuatorSwComponentTypeApplicationSwComponentTypeEcuAbstractionSwComponentTypeComplexDeviceDriverSwComponentTypeNvBlockSwComponentTypeServiceProxySwComponentTypeServiceSwComponentTypeReferrableImplementationProps+ symbol  :CIdentifier«atpSplitable»+symbolProps0..1
+Figure 3.7: The recursive relation of software-components and compositions
 
-3.3 Composition
-
-3.3.1 Overview
-
-[TPS_SWCT_01032] CompositionSwComponentType (cid:100) The purpose of an
-AUTOSAR CompositionSwComponentType is to allow the encapsulation of spe
-ciﬁc functionality by aggregating existing software-components. (cid:99)(RS_SWCT_00190,
-RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
+[TPS_SWCT_01032] CompositionSwComponentType (cid:100) The purpose of an AUTOSAR CompositionSwComponentType is to allow the encapsulation of speciﬁc functionality by aggregating existing software-components. (cid:99)(RS_SWCT_00190,RS_SWCT_02000,RS_SWCT_02020, RS_SWCT_03000)
 
 [TPS_SWCT_01033] Nested deﬁnition of CompositionSwComponentTypes (cid:100)
 Since a CompositionSwComponentType is also a SwComponentType, it again may
-be aggregated in further CompositionSwComponentTypes. (cid:99)(RS_SWCT_00190,
-RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
+be aggregated in further CompositionSwComponentTypes. (cid:99)(RS_SWCT_00190,RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
 
 This recursive relation is formally expressed in Figure 3.7.
 
@@ -1804,242 +1276,33 @@ tion, they are solely an architectural element for the implementation of model s
 ity. They simply group existing software-components and thereby take away complexity
 when viewing or designing logical software architecture.
 
-Figure 3.7: The recursive relation of software-components and compositions
-
 Therefore, the deﬁnition of CompositionSwComponentTypes has no effect on how
 software-components interact with the Virtual Functional Bus (VFB). Composition
 SwComponentTypes do not add any new functionality to what is already provided by
 the software-components they aggregate.
 
-[TPS_SWCT_01034] CompositionSwComponentTypes do not have any bi
-nary footprint (cid:100) As the main consequence, CompositionSwComponentTypes
-(cid:99)(RS_SWCT_00190,
-do not have any binary footprint
-RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
-
-in the ECU software.
+[TPS_SWCT_01034] CompositionSwComponentTypes do not have any binary footprint (cid:100) As the main consequence, CompositionSwComponentTypes do not have any binary footprint in the ECU software.(cid:99)(RS_SWCT_00190,RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
 
 
+#@SECTION: 3.3.2 SwComponentPrototype
+#@CLASS: CompositionSwComponentType
+Table 3.11: CompositionSwComponentType
+#@CLASS: SwComponentPrototype
+Table 3.12: SwComponentPrototype
+Figure 3.8: Composition and the meta-classes aggregated
+#@CLASS: AtomicSwComponentType
+#@CLASS: PortPrototype
 
-
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuildCompositionSwComponentType+component0..*«atpVariation,atpSplitable»*«isOfType»+type1{redefinesatpType}
-
-3.3.2 SwComponentPrototype
-
-[TPS_SWCT_01035] CompositionSwComponentType aggregates SwCompo
-nentPrototypes (cid:100) In terms of the AUTOSAR meta-model, a composition of software
-components realized by the meta-class CompositionSwComponentType aggre
-gates SwComponentPrototypes which in turn are typed by a SwComponentType.
-(cid:99)(RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020, RS_SWCT_03000)
+[TPS_SWCT_01035] CompositionSwComponentType aggregates SwComponentPrototypes (cid:100) In terms of the AUTOSAR meta-model, a composition of softwarecomponents realized by the meta-class CompositionSwComponentType aggregates SwComponentPrototypes which in turn are typed by a SwComponentType.(cid:99)(RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020,RS_SWCT_03000)
 
 Please note that a CompositionSwComponentType is also a SwComponentType.
-
-CompositionSwComponentType
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-A CompositionSwComponentType aggregates SwComponentPrototypes (that in turn
-are typed by SwComponentTypes) as well as SwConnectors for primarily connecting
-SwComponentPrototypes among each others and towards the surface of the
-CompositionSwComponentType. By this means hierarchical structures of
-software-components can be created.
-
-Tags: atp.recommendedPackage=SwComponentTypes
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,Referrable,SwComponentType
-Mul. Kind Note
-Datatype
-aggr
-
-*
-
-Attribute
-component SwComponentP
-
-rototype
-
-Class
-Package
-Note
-
-Base
-
-The instantiated components that are part of this
-composition. The aggregation of
-SwComponentPrototype is subject to variability
-with the purpose to support the conditional
-existence of a SwComponentPrototype. Please be
-aware: if the conditional existence of
-SwComponentPrototypes is resolved post-build
-the deselected SwComponentPrototypes are still
-contained in the ECUs build but the instances are
-inactive in in that they are not scheduled by the
-RTE.
-
-The aggregation is marked as atpSplitable in order
-to allow the addition of service components to the
-ECU extract during the ECU integration.
-
-The use case for having 0 components owned by
-the CompositionSwComponentType could be to
-deliver an empty CompositionSwComponentType
-to e.g. a supplier for ﬁlling the internal structure.
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortName, variation
-Point.shortLabel
-vh.latestBindingTime=postBuild
-
-
-
-Attribute
-connector
-
-Datatype
-SwConnector
-
-Mul. Kind Note
-aggr
-
-*
-
-SwConnectors have the principal ability to
-establish a connection among PortPrototypes.
-They can have many roles in the context of a
-CompositionSwComponentType. Details are
-reﬁned by subclasses.
-
-constantVa
-lueMappin
-g
-
-ConstantSpecifi
-cationMappingS
-et
-
-dataTypeM
-apping
-
-DataTypeMappi
-ngSet
-
-*
-
-*
-
-ref
-
-ref
-
-The aggregation of SwConnectors is subject to
-variability with the purpose to support variant data
-ﬂow.
-
-The aggregation is marked as atpSplitable in order
-to allow the extension of the ECU extract with
-AssemblySwConnectors between
-ApplicationSwComponentTypes and
-ServiceSwComponentTypes during the ECU
-integration.
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortName, variation
-Point.shortLabel
-vh.latestBindingTime=postBuild
-Reference to the ConstantSpeciﬁcationMapping to
-be applied for initValues of PPortComSpecs and
-RPortComSpec.
-
-Stereotypes: atpSplitable
-Tags: atp.Splitkey=constantValueMapping
-Reference to the DataTypeMapping to be applied
-for the used ApplicationDataTypes in
-PortInterfaces.
-
-Background: when developing subsystems it may
-happen that ApplicationDataTypes are used on
-the surface of CompositionSwComponentTypes.
-In this case it would be reasonable to be able to
-also provide the intended mapping to the
-ImplementationDataTypes. However, this mapping
-shall be informal and not technically binding for
-the implementers mainly because the RTE
-generator is not concerned about the
-CompositionSwComponentTypes.
-
-Rationale: if the mapping of ApplicationDataTypes
-on the delegated and inner PortPrototype matches
-then the mapping to ImplementationDataTypes is
-not impacting compatibility.
-
-Stereotypes: atpSplitable
-Tags: atp.Splitkey=dataTypeMapping
-
-
-
-Attribute
-instantiatio
-nRTEEven
-tProps
-
-Datatype
-InstantiationRT
-EEventProps
-
-Mul. Kind Note
-aggr
-
-*
-
-This allows to deﬁne instantiation speciﬁc
-properties for RTE Events, in particular for
-instance speciﬁc scheduling.
-
-Stereotypes: atpSplitable; atpVariation
-Tags: atp.Splitkey=shortLabel, variation
-Point.shortLabel
-vh.latestBindingTime=codeGenerationTime
-
-Table 3.11: CompositionSwComponentType
-
-Class
-Package
-Note
-Base
-Attribute
-type
-
-SwComponentPrototype
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-Role of a software component within a composition.
-ARObject,AtpFeature,AtpPrototype,Identiﬁable,MultilanguageReferrable,Referrable
-Datatype
-SwComponentT
-ype
-
-Mul. Kind Note
-tref
-
-Type of the instance.
-
-1
-
-Stereotypes: isOfType
-
-Table 3.12: SwComponentPrototype
-
-
-
-Figure 3.8: Composition and the meta-classes aggregated
 
 [TPS_SWCT_01036] SwComponentPrototype implements a speciﬁc role (cid:100)
 Therefore, a SwComponentPrototype implements the usage of a SwComponent
 Type in a speciﬁc role. (cid:99)(RS_SWCT_00190, RS_SWCT_02000, RS_SWCT_02020,
 RS_SWCT_03000)
 
-[TPS_SWCT_01037] arbitrary numbers of SwComponentPrototypes can be cre
-ated (cid:100) In general, arbitrary numbers of SwComponentPrototypes that refer to spe
-ciﬁc SwComponentTypes can be created. (cid:99)(RS_SWCT_00190, RS_SWCT_02000,
-RS_SWCT_02020, RS_SWCT_03000)
+[TPS_SWCT_01037] arbitrary numbers of SwComponentPrototypes can be created (cid:100) In general, arbitrary numbers of SwComponentPrototypes that refer to speciﬁc SwComponentTypes can be created. (cid:99)(RS_SWCT_00190, RS_SWCT_02000,RS_SWCT_02020, RS_SWCT_03000)
 
 Example: a SwComponentPrototype “LeftDoorControl” fulﬁlls the role of implement
 ing the SwComponentType “DoorControl” for the left door of a vehicle while the
@@ -2047,32 +1310,13 @@ SwComponentPrototype “RightDoorControl” fulﬁlls the role of the SwComponen
 Type “DoorControl” for the right door.
 
 [TPS_SWCT_01080] Delegation ports (cid:100) Note that being a SwComponentType,
-a CompositionSwComponentType also exposes PortPrototypes to the out
-
-
-
-
-ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeCompositionSwComponentTypeAtpStructureElementSwConnectorAtpPrototypeSwComponentPrototype«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = postBuild«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementIdentifiablePortGroup«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation» Tags:vh.latestBindingTime = codeGenerationTimeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation»+portGroup0..*+port0..*«atpVariation,atpSplitable»+connector*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+component0..*«atpVariation,atpSplitable»
-
-However,
-
-the PortPrototypes are only delegated and do not
-side world.
-play the same role as PortPrototypes attached to AtomicSwComponentTypes.
-(cid:99)(RS_SWCT_03130)
+a CompositionSwComponentType also exposes PortPrototypes to the out side world.
+However,the PortPrototypes are only delegated and do not play the same role as PortPrototypes attached to AtomicSwComponentTypes.(cid:99)(RS_SWCT_03130)
 
 [TPS_SWCT_01081] Implications of being a delegation port (cid:100) Being a PortPro
-totype attached to a CompositionSwComponentType has the following implica
-tions:
-
+totype attached to a CompositionSwComponentType has the following implications:
 • The delegation has to follow the rules deﬁned in chapter 6.
-
-• By creating PortPrototypes on the surface of a speciﬁc Composition
-SwComponentType it is explicitly decided whether or not the contents of an “in
-ner” port contained in the CompositionSwComponentType is exposed to the
-outside world.
-
-(cid:99)(RS_SWCT_03130)
+• By creating PortPrototypes on the surface of a speciﬁc CompositionSwComponentType it is explicitly decided whether or not the contents of an “inner” port contained in the CompositionSwComponentType is exposed to the outside world.(cid:99)(RS_SWCT_03130)
 
 Please note that the semantics of the delegation of PortPrototypes are similar to en
 capsulation mechanisms like public and private members in object-oriented program
@@ -2086,41 +1330,39 @@ context of the AUTOSAR System Template [11].
 However, please note that a top-level composition might have (unconnected) Port
 Prototypes in order to allow for reuse as part of another system.
 
-[constr_1035] Recursive deﬁnition of CompositionSwComponentType (cid:100) The re
-cursive deﬁnition of a CompositionSwComponentType that eventually contains
-a SwComponentPrototype typed by the same CompositionSwComponentType
-shall not be feasible. (cid:99)()
+[constr_1035] Recursive deﬁnition of CompositionSwComponentType (cid:100) The recursive deﬁnition of a CompositionSwComponentType that eventually contains a SwComponentPrototype typed by the same CompositionSwComponentType shall not be feasible. (cid:99)()
 
-3.3.3 Connectors
+#@SECTION: 3.3.3 Connectors
+#@CLASS: SwConnector
+#@CLASS: CompositionSwComponent
+#@CLASS: DelegationSwConnector
+#@CLASS: AssemblySwConnector
+#@CLASS: PassThroughSwConnector
+#@CLASS: PPortInCompositionInstanceRef
+#@CLASS: PRPortPrototype
+#@CLASS: DataInterface
+Table 3.13: SwConnector
+Table 3.14: AssemblySwConnector
+Table 3.15: DelegationSwConnector
+Figure 3.9: Use case for PassThroughSwConnector (I)
+Table 3.16: PassThroughSwConnector
+Figure 3.10: Connectors
+Figure 3.11: Use case for PassThroughSwConnector (II)
 
 [TPS_SWCT_01079] SwConnector (cid:100) Note that CompositionSwComponent
 Type also aggregates the abstract meta-class SwConnector for connecting
-the SwComponentPrototypes contained among each other
-(see Figure 3.8).
-(cid:99)(RS_SWCT_03130)
+the SwComponentPrototypes contained among each other(see Figure 3.8).(cid:99)(RS_SWCT_03130)
 
 CompositionSwComponentTypes contain two kinds of SwConnectors:
-
+#@Hierarchical
 • [TPS_SWCT_01082] AssemblySwConnector (cid:100) AssemblySwConnectors in
-terconnect PortPrototypes of SwComponentPrototypes that are part of the
-CompositionSwComponentType. (cid:99)(RS_SWCT_03130)
+terconnect PortPrototypes of SwComponentPrototypes that are part of the CompositionSwComponentType. (cid:99)(RS_SWCT_03130)
+• [TPS_SWCT_01083] DelegationSwConnector (cid:100) DelegationSwConnectors connect from “inner” PortPrototypes to delegated “outer” PortPrototypes. (cid:99)(RS_SWCT_03130)
 
-• [TPS_SWCT_01083] DelegationSwConnector (cid:100) DelegationSwConnec
-tors connect from “inner” PortPrototypes to delegated “outer” PortProto
-types. (cid:99)(RS_SWCT_03130)
+[constr_1032] DelegationSwConnector can only connect PortPrototypes of the same kind (cid:100) A DelegationSwConnector can only connect PortPrototypes of the same kind, i.e. PPortPrototype to PPortPrototype and RPortPrototype to RPortPrototype. (cid:99)()
 
-
-
-[constr_1032] DelegationSwConnector can only connect PortProto
-types of the same kind (cid:100) A DelegationSwConnector can only connect
-PortPrototypes of the same kind, i.e. PPortPrototype to PPortProto
-type and RPortPrototype to RPortPrototype. (cid:99)()
-
-[TPS_SWCT_01084] Outer PortPrototype is referenced by multiple Del
-egationSwConnectors (cid:100) In the case that an outer PortPrototype is ref
-erenced by multiple DelegationSwConnectors the semantic is the multi
-plication of the AssemblySwConnectors referencing the outer PortProto
-types.(cid:99)(RS_SWCT_03130)
+[TPS_SWCT_01084] Outer PortPrototype is referenced by multiple DelegationSwConnectors (cid:100) In the case that an outer PortPrototype is referenced by multiple DelegationSwConnectors the semantic is the multiplication of the AssemblySwConnectors referencing the outer PortPrototypes.(cid:99)(RS_SWCT_03130)
+/#@Hierarchical
 
 [constr_1086] SwConnector between two speciﬁc PortPrototypes (cid:100) Each pair
 of PortPrototypes can only be connected by one and only one SwConnector. (cid:99)()
@@ -2128,31 +1370,20 @@ of PortPrototypes can only be connected by one and only one SwConnector. (cid:99
 In other words, it is not supported to create two different SwConnectors that connect
 the same pair of PortPrototypes.
 
-[TPS_SWCT_01638] Existence of SwConnector between two PRPortProto
-types (cid:100) [constr_1086] applies also in the case that two PRPortPrototypes are con
-nected with each other. In particular, the roles
-
+[TPS_SWCT_01638] Existence of SwConnector between two PRPortPrototypes (cid:100) [constr_1086] applies also in the case that two PRPortPrototypes are connected with each other. In particular, the roles
 • AssemblySwConnector.requester
-
 • AssemblySwConnector.provider
-
 • PassThroughSwConnector.providedOuterPort
-
 • PassThroughSwConnector.requiredOuterPort
-
 do not establish a direction in this case. (cid:99)()
 
 For clariﬁcation, [TPS_SWCT_01638] means that the SwConnector represents the
 ability for bi-directional communication between the two PRPortPrototypes.
 
 [constr_1087] AssemblySwConnector inside CompositionSwComponentType (cid:100)
-An AssemblySwConnector can only connect PortPrototypes of SwComponent
-Prototypes that are owned by the same CompositionSwComponentType (cid:99)()
+An AssemblySwConnector can only connect PortPrototypes of SwComponentPrototypes that are owned by the same CompositionSwComponentType (cid:99)()
 
-[constr_1088] DelegationSwConnector inside CompositionSwComponent
-Type (cid:100) A DelegationSwConnector can only connect a PortPrototype of a
-SwComponentPrototype that is owned by the same CompositionSwComponent
-Type that also owns the connected delegation PortPrototype. (cid:99)()
+[constr_1088] DelegationSwConnector inside CompositionSwComponentType (cid:100) A DelegationSwConnector can only connect a PortPrototype of a SwComponentPrototype that is owned by the same CompositionSwComponentType that also owns the connected delegationPortPrototype. (cid:99)()
 
 In the context of attaching a DelegationSwConnector to an inner PRPortProto
 type there is some ambiguity to be considered. In particular, from the formal point of
@@ -2160,211 +1391,28 @@ view it would be feasible to use either a PPortInCompositionInstanceRef or a
 RPortInCompositionInstanceRef.
 
 The ability to use one or the other meta-class arbitrarily is considered confusing. There
-fore, [TPS_SWCT_01515] has been deﬁned to remove the unnecessary degree of
-freedom.
+fore, [TPS_SWCT_01515] has been deﬁned to remove the unnecessary degree of freedom.
 
-
-
-[TPS_SWCT_01515] PPortInCompositionInstanceRef shall be used for at
-taching DelegationSwConnector to an inner PRPortPrototype (cid:100) For the im
-plementation of the attachment of a DelegationSwConnector to an inner PRPort
-Prototype the meta-class PPortInCompositionInstanceRef shall be used. (cid:99)()
+[TPS_SWCT_01515] PPortInCompositionInstanceRef shall be used for attaching DelegationSwConnector to an inner PRPortPrototype (cid:100) For the implementation of the attachment of a DelegationSwConnector to an inner PRPortPrototype the meta-class PPortInCompositionInstanceRef shall be used. (cid:99)()
 
 [constr_1100] Unconnected RPortPrototype typed by a DataInterface (cid:100) For
 any element in an unconnected RPortPrototype typed by a DataInterface there
 shall be a requiredComSpec that deﬁnes an initValue. (cid:99)()
 
-Class
-Package
-Note
-
-Base
-
-Attribute
-mapping
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-provider
-
-requester
-
-SwConnector (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-The base class for connectors between ports. Connectors have to be identiﬁable to
-allow references from the system constraint template.
-ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
-Referrable,Referrable
-Datatype
-PortInterfaceMa
-pping
-
-Mul. Kind Note
-ref
-0..1
-
-Reference to a PortInterfaceMapping specifying
-the mapping of unequal named PortInterface
-elements of the two different PortInterfaces typing
-the two PortPrototypes which are referenced by
-the ConnectorPrototype.
-
-Table 3.13: SwConnector
-
-AssemblySwConnector
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-AssemblySwConnectors are exclusively used to connect SwComponentPrototypes in
-the context of a CompositionSwComponentType.
-ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
-Referrable,Referrable,SwConnector
-Datatype
-AbstractProvide
-dPortPrototype
-AbstractRequire
-dPortPrototype
-
-Mul. Kind Note
-iref
-0..1
-
-Instance of providing port.
-
-Instance of requiring port.
-
-0..1
-
-iref
-
-Table 3.14: AssemblySwConnector
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-
-DelegationSwConnector
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-A delegation connector delegates one inner PortPrototype (a port of a component
-that is used inside the composition) to a outer PortPrototype of compatible type that
-belongs directly to the composition (a port that is owned by the composition).
-ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
-Referrable,Referrable,SwConnector
-Datatype
-
-Mul. Kind Note
-
-
-
-Attribute
-innerPort
-
-Datatype
-PortPrototype
-
-Mul. Kind Note
-iref
-
-1
-
-The port that belongs to the ComponentPrototype
-in the composition
-
-outerPort
-
-PortPrototype
-
-1
-
-ref
-
-Tags: xml.typeElement=true
-The port that is located on the outside of the
-CompositionType
-
-Table 3.15: DelegationSwConnector
-
 One speciﬁc use case for the application of SwConnectors is exempliﬁed by the ﬁg
 ures 3.9 and 3.11. A speciﬁc CompositionSwComponentType exists in two variants
-where one (more complex) variant foresees the existence of a SwComponentPro
-totype inside the CompositionSwComponentType (depicted by 3.9) and the other
-(because it is implementing a simpler semantics) does not need the SwComponent
-Prototype.
-
-Figure 3.9: Use case for PassThroughSwConnector (I)
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-providedO
-uterPort
-requiredOu
-terPort
-
-PassThroughSwConnector
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-This kind of SwConnector can be used inside a CompositionSwComponentType to
-connect two delegation PortPrototypes.
-ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
-Referrable,Referrable,SwConnector
-Datatype
-AbstractProvide
-dPortPrototype
-AbstractRequire
-dPortPrototype
-
-This represents the provided outer delegation
-PortPrototype of the PassThroughSwConnector.
-This represents the required outer delegation
-PortPrototype of the PassThroughSwConnector.
-
-Mul. Kind Note
-ref
-
-ref
-
-1
-
-1
-
-Table 3.16: PassThroughSwConnector
-
-
-
-
-TriggerRunA1Application SW ComponentRTOComposition SW Component
-
-Figure 3.10: Connectors
+where one (more complex) variant foresees the existence of a SwComponentPrototype inside the CompositionSwComponentType (depicted by 3.9) and the other(because it is implementing a simpler semantics) does not need the SwComponentPrototype.
 
 Without the ability to deﬁne a PassThroughSwConnector the second variant could
 only be implemented by deﬁning a dummy SwComponentPrototype inside the
 CompositionSwComponentType. However, the dummy SwComponentPrototype
 would need to deﬁne RunnableEntitys that are created for the sole purpose of being
-able to shovel the data from (e.g. for sender-receiver communication) RPortProto
-types to PPortPrototypes.
+able to shovel the data from (e.g. for sender-receiver communication) RPortPrototypes to PPortPrototypes.
 
 This would not only be cumbersome it would also obviously require additional re
 sources (memory and code) at run-time. Plus, the existence of addition RunnableEn
 titys also unnecessarily increases the propagation delay of information ﬂowing
 around inside the ECU.
-
-Figure 3.11: Use case for PassThroughSwConnector (II)
-
-
-
-
-AtpStructureElementSwConnectorAssemblySwConnectorDelegationSwConnectorAtpBlueprintableAtpPrototypePortPrototypeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePassThroughSwConnector+requiredOuterPort1+providedOuterPort1«instanceRef»+provider0..1«instanceRef»+requester0..1+outerPort1«instanceRef»+innerPort1Application SW ComponentComposition SW ComponentPortInterfaceMapping
 
 [TPS_SWCT_01507] The role of PassThroughSwConnector (cid:100) PassThrough
 SwConnector can be taken to connect PortPrototypes owned by the same Com
@@ -2383,101 +1431,48 @@ In other words, according to [constr_1252] it is not allowed to create a “in�
 means of a PassThroughSwConnector and at least one AssemblySwConnector
 that connects the requiredOuterPort to the providedOuterPort.
 
-3.3.4 Instantiation-speciﬁc RTEEvents
+#@SECTION: 3.3.4 Instantiation-speciﬁc RTEEvents
+#@CLASS: RTEEvent
+#@CLASS: InstantiationRTEEventProps
+#@CLASS: ApplicationSwComponentType
+#@CLASS: SwcInternalBehavior
+#@CLASS: CompositionSwComponentType
+Figure 3.12: Instantiation speciﬁc Properties of RTEEvents
+Table 3.17: InstantiationRTEEventProps
 
 [TPS_SWCT_02507] Instantiation-speciﬁc RTEEvents (cid:100) It is possible to specify
-instantiation speciﬁc properties of an RTEEvent by applying InstantiationR
-TEEventProps in the role instantiationRteEventProps.
-
-This allows to use the same ApplicationSwComponentType in different timing sce
-narios. Even if the scheduling is an issue of the SwcInternalBehavior, the instance
-speciﬁc deﬁnition of timing needs to be speciﬁed on the level of a Composition
-SwComponentType. (cid:99)(RS_SWCT_03046, RS_SWCT_03270)
+instantiation speciﬁc properties of an RTEEvent by applying InstantiationRTEEventProps in the role instantiationRteEventProps.This allows to use the same ApplicationSwComponentType in different timing scenarios. Even if the scheduling is an issue of the SwcInternalBehavior, the instancespeciﬁc deﬁnition of timing needs to be speciﬁed on the level of a CompositionSwComponentType. (cid:99)(RS_SWCT_03046, RS_SWCT_03270)
 
 As an example for [TPS_SWCT_02507], please consider a software-component that
 implements a closed-loop control algorithm.
 
-This software-component can potentially be deployed to “slow” and “fast” control sce
-narios. As the actual time-base of the control algorithm is derived from the scheduling
-implemented in the RTE it obviously facilitates the overall design if the timing can be
-deﬁned on “instance” level.
+This software-component can potentially be deployed to “slow” and “fast” control scenarios. As the actual time-base of the control algorithm is derived from the scheduling implemented in the RTE it obviously facilitates the overall design if the timing can bedeﬁned on“instance” level.
 
+[constr_1233] InstantiationTimingEventProps shall only reference TimingEvent (cid:100) An 
+InstantiationTimingEventProps shall only reference TimingEvent in the role refinedEvent. A reference to other kinds of RTEEvents is not supported. (cid:99)()
 
+#@SECTION: 3.4 Port Interface
+#@CLASS: PortPrototype
+#@CLASS: PortInterface
+#@CLASS: SenderReceiverInterface
+#@CLASS: NvDataInterface
+#@CLASS: ParameterInterface
+#@CLASS: ModeSwitchInterface
+#@CLASS: ClientServerInterface
+#@CLASS: TriggerInterface
+#@ENUM: ServiceProviderEnum
 
-Figure 3.12: Instantiation speciﬁc Properties of RTEEvents
+Figure 3.13: DataInterface as an abstract base class
+Table 3.18: PortInterface
+Table 3.19: DataInterface
+Figure 3.14: PortInterfaces in the AUTOSAR meta-model
+Figure 3.15: PortInterfaces and AUTOSAR services
+Table 3.20: ServiceProviderEnum
 
-Class
-Package
-Note
-
-Base
-Attribute
-refinedEve
-nt
-
-InstantiationRTEEventProps (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::Composition
-This meta class represents the ability to reﬁne the properties of RTEEvents for
-particular instances of a software component.
-ARObject
-Datatype
-RTEEvent
-
-Mul. Kind Note
-iref
-
-1
-
-shortLabel
-
-Identifier
-
-1
-
-ref
-
-This instance ref denotes the Timing Event for
-which the period shall be reﬁned on an instance
-level.
-The main purpose of the shortLabel is to
-contribute to the splitkey of aggregations that are
-«atpSplitable».
-
-Table 3.17: InstantiationRTEEventProps
-
-
-
-
-AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanIdentifiableWaitPoint+ timeout  :TimeValueAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifier«atpVariation» Tags:vh.latestBindingTime =preCompileTimeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInstantiationTimingEventProps+ period  :TimeValueTimingEvent+ period  :TimeValueCompositionSwComponentTypeInstantiationRTEEventProps+ shortLabel  :Identifier«atpVariation» Tags:vh.latestBindingTime =codeGenerationTime«instanceRef»+refinedEvent1«atpVariation,atpSplitable»+instantiationRTEEventProps0..*+event*«atpVariation,atpSplitable»+startOnEvent0..1+trigger1+waitPoint*+runnable1..*«atpVariation,atpSplitable»«atpVariation,atpSplitable»+internalBehavior0..1
-
-InstantiationTimingEventProps
-
-[constr_1233]
-reference
-TimingEvent (cid:100) An InstantiationTimingEventProps shall only reference
-TimingEvent in the role refinedEvent. A reference to other kinds of RTEEvents
-is not supported. (cid:99)()
-
-shall
-
-only
-
-3.4 Port Interface
-
-[TPS_SWCT_01025] The role of PortPrototypes in the AUTOSAR architecture
-(cid:100) A PortPrototype mainly contributes the functionality of being a connection point
-to the AUTOSAR concept.
-
-The details, i.e. with respect to what kind of information is actually transported between
-two PortPrototypes is deﬁned by the PortInterface.
-(cid:99)(RS_SWCT_00010,
+[TPS_SWCT_01025] The role of PortPrototypes in the AUTOSAR architecture (cid:100) A PortPrototype mainly contributes the functionality of being a connection point to the AUTOSAR concept.The details, i.e. with respect to what kind of information is actually transported between two PortPrototypes is deﬁned by the PortInterface.(cid:99)(RS_SWCT_00010,
 RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010)
 
-[TPS_SWCT_01026] The role of PortInterfaces in the AUTOSAR architecture
-(cid:100) PortInterfaces (see Figure 3.14) are used to support a design-by-contract work
-ﬂow, i.e. a PortInterface provides means to formally verify structural and dynamic
-compatibility between software-components. (cid:99)(RS_SWCT_00010, RS_SWCT_00080,
-RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010)
+[TPS_SWCT_01026] The role of PortInterfaces in the AUTOSAR architecture (cid:100) PortInterfaces (see Figure 3.14) are used to support a design-by-contract workﬂow, i.e. a PortInterface provides means to formally verify structural and dynamic compatibility between software-components. (cid:99)(RS_SWCT_00010, RS_SWCT_00080,RS_SWCT_00110, RS_SWCT_02030,RS_SWCT_03010)
 
 In other words: PortInterfaces represent a pivotal point in the AUTOSAR concept.
 
@@ -2488,170 +1483,43 @@ of the AUTOSAR concept directly supports re-usability.
 
 [TPS_SWCT_01027] Different ﬂavors of PortInterfaces (cid:100) Within the AUTOSAR
 concept, different ﬂavors of PortInterfaces are deﬁned:
-
 • SenderReceiverInterface
-
 • NvDataInterface
-
 • ParameterInterface
-
 • ModeSwitchInterface
-
 • ClientServerInterface
-
 • TriggerInterface
-
 (cid:99)(RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030)
 
 [TPS_SWCT_01069] DataInterface is deﬁned as abstract base class (cid:100)
-Please note that the conceptual relationship of SenderReceiverInterface, Nv
-DataInterface, and ParameterInterface is expressed by the deﬁnition of
-the abstract base class DataInterface. (cid:99)(RS_SWCT_00010, RS_SWCT_00080,
-RS_SWCT_00110, RS_SWCT_03010)
-
-
-
-Figure 3.13: DataInterface as an abstract base class
+Please note that the conceptual relationship of SenderReceiverInterface, NvDataInterface, and ParameterInterface is expressed by the deﬁnition of the abstract base class DataInterface. (cid:99)(RS_SWCT_00010, RS_SWCT_00080,RS_SWCT_00110, RS_SWCT_03010)
 
 Please ﬁnd more details about the specialization of the PortInterface concept in
 chapter 4.2.3 and 4.2.2.
 
-Class
-Package
-Note
-
-Base
-
-Attribute
-isService
-
-PortInterface (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
-Abstract base class for an interface that is either provided or required by a port of a
-software component.
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,Referrable
-Datatype
-Boolean
-
-Mul. Kind Note
-attr
-
-1
-
-This ﬂag is set if the PortInterface is to be used for
-communication between an
-
-• ApplicationSwComponentType or
-
-• ServiceProxySwComponentType or
-
-• SensorActuatorSwComponentType or
-
-• ComplexDeviceDriverSwComponentType
-
-• ServiceSwComponentType
-
-• EcuAbstractionSwComponentType
-
-serviceKin
-d
-
-ServiceProvider
-Enum
-
-0..1
-
-attr
-
-and a ServiceSwComponentType (namely an
-AUTOSAR Service) located on the same ECU.
-Otherwise the ﬂag is not set.
-This attribute provides further details about the
-nature of the applied service.
-
-Table 3.18: PortInterface
-
-
-
-
-SenderReceiverInterfaceNvDataInterfaceParameterInterfaceDataInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]
-
-Class
-Package
-Note
-
-Base
-
-Attribute
-–
-
-DataInterface (abstract)
-M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
-The purpose of this meta-class is to act as an abstract base class for subclasses that
-share the semantics of being concerned about data (as opposed to e.g. operations).
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,PortInterface,Referrable
-Datatype
-–
-
-Mul. Kind Note
-–
-
-–
-
-–
-
-Table 3.19: DataInterface
-
 [TPS_SWCT_01070] PortInterface acts as a type for a PortPrototype (cid:100) From
-an abstract point of view, a PortInterface acts as a type for a PortProto
-type. This means in particular that several PortPrototypes can be typed by the
-same PortInterface. (cid:99)(RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110,
-RS_SWCT_03010)
+an abstract point of view, a PortInterface acts as a type for a PortPrototype. This means in particular that several PortPrototypes can be typed by the same PortInterface. (cid:99)(RS_SWCT_00010, RS_SWCT_00080, RS_SWCT_00110,RS_SWCT_03010)
 
 Of course, this aspect facilitates the creation of valid connections between software
 components dramatically. By using a speciﬁc PortInterface for typing particular
 PortPrototypes the latter are eligible for being connected to each other by deﬁnition.
-
-
-
-Figure 3.14: PortInterfaces in the AUTOSAR meta-model
 
 However, the creation of a valid connection does not need to be based on the usage of
 identical PortInterfaces. It is also possible to use different, but compatible Port
 Interfaces. The details about compatibility of PortInterfaces are described in
 chapter 6.
 
-[constr_1036] Connect kinds of PortInterfaces (cid:100) It shall not be possible to con
-nect PortPrototypes typed by PortInterfaces of different kinds. Subclasses of
-DataInterface make an exception from this rule and can be used for creating con
-nections to each other. (cid:99)()
+[constr_1036] Connect kinds of PortInterfaces (cid:100) It shall not be possible to connect PortPrototypes typed by PortInterfaces of different kinds. Subclasses of DataInterface make an exception from this rule and can be used for creating connections to each other. (cid:99)()
 
-For clariﬁcation, a connection between a PortPrototype typed by a Sender
-ReceiverInterface and a PortPrototype typed by a ClientServerInter
-face shall not be possible. However, the creation of a connection between a Port
-Prototype typed by a SenderReceiverInterface and a PortPrototype typed
-by a ParameterInterface is supported.
-
-
-
-
-SenderReceiverInterfaceClientServerInterfaceAutosarDataPrototypeVariableDataPrototypeAtpStructureElementIdentifiableClientServerOperationAutosarDataPrototypeArgumentDataPrototypeAtpPrototypeModeDeclarationGroupPrototypeParameterInterfaceAutosarDataPrototypeParameterDataPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceTriggerInterfaceAtpStructureElementIdentifiableTriggerModeSwitchInterfaceNvDataInterfaceDataInterface«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+dataElement1..*+nvData1..*+trigger1..*+operation1..*«atpVariation»+modeGroup1+argument*{ordered}«atpVariation»+parameter1..*
+For clariﬁcation, a connection between a PortPrototype typed by a SenderReceiverInterface and a PortPrototype typed by a ClientServerInterface shall not be possible. However, the creation of a connection between a PortPrototype typed by a SenderReceiverInterface and a PortPrototype typed by a ParameterInterface is supported.
 
 [constr_1137] Applicability of ParameterInterface (cid:100) A PPortPrototype typed
-by a ParameterInterface can only be owned by a ParameterSwComponent
-Type. (cid:99)()
+by a ParameterInterface can only be owned by a ParameterSwComponentType. (cid:99)()
 
-Please note that PortInterfaces also play an important role in the context of deﬁn
-ing so-called AUTOSAR services. In particular, by means of the attribute isService
+Please note that PortInterfaces also play an important role in the context of deﬁning so-called AUTOSAR services. In particular, by means of the attribute isService
 a PortInterface can deﬁne whether or not it is supposed to be used in the context
 of an AUTOSAR service and in addition to this it may deﬁne (by means of the attribute
 serviceKind) what kind of service is intended.
-
-Figure 3.15: PortInterfaces and AUTOSAR services
 
 The information contained in serviceKind can be used in various ways. The primary
 intent is to distinguish between the usage of standardized AUTOSAR services from
@@ -2666,113 +1534,21 @@ of the corresponding PortInterface.
 
 [TPS_SWCT_01003] Inconsistencies regarding the value of serviceKind and
 the actual implementation of the PortInterface (cid:100) In case of inconsistencies
-between the value of serviceKind and the actual implementation of the PortIn
-terface the implementation of the PortInterface wins over the value of attribute
-PortInterface.serviceKind (which, for the intended purpose shall be considered
-an annotation rather than a semantically binding information). (cid:99)()
+between the value of serviceKind and the actual implementation of the PortInterface the implementation of the PortInterface wins over the value of attribute PortInterface.serviceKind (which, for the intended purpose shall be considered an annotation rather than a semantically binding information). (cid:99)()
 
 [TPS_SWCT_01004] Default value if serviceKind is not deﬁned (cid:100) if the attribute
 serviceKind is not deﬁned in the context of a speciﬁc PortInterface the default
 value anyStandardized shall be assumed. (cid:99)()
 
-[constr_1174] PortInterfaces used in the context of CompositionSwCompo
-nentTypes cannot refer to AUTOSAR services (cid:100) CompositionSwComponent
-Types shall not own PortPrototypes typed by PortInterfaces where the at
-tribute isService is set to true. (cid:99)()
+[constr_1174] PortInterfaces used in the context of CompositionSwComponentTypes cannot refer to AUTOSAR services (cid:100) CompositionSwComponentTypes shall not own PortPrototypes typed by PortInterfaces where the attribute isService is set to true. (cid:99)()
 
-
-
-
-ARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]«enumeration»ServiceProviderEnum basicSoftwareModeManager comManager cryptoServiceManager diagnosticCommunicationManager diagnosticEventManager diagnosticLogAndTrace ecuManager functionInhibitionManager nonVolatileRamManager syncBaseTimeManager watchDogManager anyStandardized vendorSpecific developmentErrorTracer operatingSystem
-
-Enumeration ServiceProviderEnum
-Package
-Note
-Literal
-anyStandard
-ized
-
-M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
-This represents a list of possible service providers
-Description
-This value means that the speciﬁc nature is either unknown or it is not important for
-the given purpose. This is also the default value for any attribute of type
-ServiceProviderEnum
-The service relates to the Basic Software Mode Manager (BswM)
-
-basicSoft
-wareMode
-Manager
-comManager
-cryptoService
-Manager
-development
-ErrorTracer
-diagnostic
-Communica
-tionManager
-diagnostic
-EventMan
-ager
-diagnostic
-LogAndTrace
-ecuManager
-function
-Inhibition
-Manager
-nonVolatile
-RamManager
-operating
-System
-syncBase
-TimeMan
-ager
-vendorSpe
-ciﬁc
-watchDog
-Manager
-
-The service relates to the COM Manager (ComM).
-The service relates to the Crypto Service Manager (CsM).
-
-The service relates to the Development Error Tracer (DET).
-
-The service relates to the Diagnostic Communication Manager (DCM).
-
-The service relates to the Diagnostic Event Manager (DEM).
-
-The service relates to the Diagnostic Log and Trace (DLT).
-
-The service relates to the ECU Manager (EcuM).
-The service relates to the Function Inhibition Manager (FIM).
-
-The service relates to the Non-Volatile RAM Manager (NvM).
-
-The service relates to the Operating System (OS).
-
-The service relates to the Sync Time Base Manager (StbM).
-
-This value denotes a vendor-speciﬁc service.
-
-The service relates to the Watchdog Manager (WdgM).
-
-Table 3.20: ServiceProviderEnum
-
-[TPS_SWCT_01005] Usage of SwcServiceDependencys for vendor-speciﬁc ser
-vices (cid:100) SwcServiceDependencys can also be used for vendor-speciﬁc services.
-In this case the SwcServiceDependency shall not contain any of the standardized
-ServiceNeeds. (cid:99)()
+[TPS_SWCT_01005] Usage of SwcServiceDependencys for vendor-speciﬁc services (cid:100) SwcServiceDependencys can also be used for vendor-speciﬁc services.In this case the SwcServiceDependency shall not contain any of the standardized ServiceNeeds. (cid:99)()
 
 Please ﬁnd more details about the relation of PortInterfaces to AUTOSAR services
 in chapter 11.
 
-
-#@chapter-4
-4 Details: Software Components, Ports, and
-
-Interfaces
-
-4.1 Introduction
+#@SECTION: 4 Details: Software Components, Ports, and Interfaces
+#@SECTION: 4.1 Introduction
 
 The speciﬁcation of the Virtual Functional Bus (VFB) [3] explains the main commu
 nication paradigms for communication among software-components: client/server for
@@ -2788,9 +1564,9 @@ ture of the exchanged information; the dynamic attributes (please refer to chapt
 relevant for communication are attached to PortPrototypes. (cid:99)(RS_SWCT_00010,
 RS_SWCT_00080, RS_SWCT_00110, RS_SWCT_02030, RS_SWCT_03010)
 
-4.2 Port Interface Details
+#@SECTION: 4.2 Port Interface Details
 
-4.2.1 Introduction
+#@SECTION: 4.2.1 Introduction
 
 The usage of value encodings (for more information please refer to section 5.2.6) is
 limited within the context of PortInterfaces.
@@ -2840,7 +1616,7 @@ ponentType. (cid:99)()
 
 Note: [constr_1295] corresponds to [SWS_RTE_07670].
 
-4.2.2 Sender Receiver Communication
+#@SECTION: 4.2.2 Sender Receiver Communication
 
 [TPS_SWCT_01114] SenderReceiverInterface (cid:100) SenderReceiverInter
 faces allow for the speciﬁcation of the typically asynchronous communication pattern
@@ -2854,7 +1630,7 @@ Class
 Package
 Note
 
-SenderReceiverInterface
+#@CLASS: SenderReceiverInterface
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 A sender/receiver interface declares a number of data elements to be sent and
 received.
@@ -2897,7 +1673,7 @@ Class
 Package
 Note
 
-InvalidationPolicy
+#@CLASS: InvalidationPolicy
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Speciﬁes whether the component can actively invalidate a particular dataElement.
 
@@ -2918,7 +1694,7 @@ to the dataElement.
 Mul. Kind Note
 ref
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -2944,7 +1720,7 @@ Replacement
 keep
 
 replace
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Strategies of handling the reception of invalidValue.
 Description
@@ -3089,7 +1865,7 @@ Interface or NvDataInterface
 
 
 
-4.2.3 Client Server Communication
+#@SECTION: 4.2.3 Client Server Communication
 
 The underlying semantics of a client/server communication is that a client may initiate
 the execution of an operation by a server that supports the operation.
@@ -3102,7 +1878,7 @@ operation by itself (asynchronous operation call).
 be connected to multiple servers such that an operation call would be handled by more
 than one server. (cid:99)()
 
-4.2.3.1 Client Server Interface
+#@SECTION: 4.2.3.1 Client Server Interface
 
 A ClientServerInterface,
 ReceiverInterface2.
@@ -3120,7 +1896,7 @@ Class
 Package
 Note
 
-ClientServerInterface
+#@CLASS: ClientServerInterface
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 A client/server interface declares a number of operations that can be invoked on a
 server by a client.
@@ -3198,7 +1974,7 @@ Attribute
 argument
 (ordered)
 
-ClientServerOperation
+#@CLASS: ClientServerOperation
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 An operation declared within the scope of a client/server interface.
 ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
@@ -3244,7 +2020,7 @@ serverArgu
 mentImplP
 olicy
 
-ArgumentDataPrototype
+#@CLASS: ArgumentDataPrototype
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 An argument of an operation, much like a data element, but also carries direction
 information and is owned by a particular ClientServerOperation.
@@ -3264,7 +2040,7 @@ RunnableEntity is implemented.
 Mul. Kind Note
 attr
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -3276,7 +2052,7 @@ nt
 AutosarDataTyp
 e
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -3333,7 +2109,7 @@ each ArgumentDataPrototype that is of direction out or inout. (cid:99)()
 
 Enumeration ArgumentDirectionEnum
 Package
-
+#@CLASS: 
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 Types
 Use cases:
@@ -3398,7 +2174,7 @@ useArgument
 Type
 useArray
 BaseType
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This deﬁnes how the argument type of the servers RunnableEntity is implemented.
 Description
@@ -3427,7 +2203,7 @@ However, this ordering has nothing to do with the order in which the ClientServe
 
 listed in the deﬁnition of a ClientServerInterface
 
-4 Giving the ArgumentDataPrototypes of a ClientServerOperation both an ordering and a
+#@SECTION: 4 Giving the ArgumentDataPrototypes of a ClientServerOperation both an ordering and a
 
 unique identiﬁer might seem redundant.
 
@@ -3576,7 +2352,7 @@ No
 Table 4.12: Supported connections for PortPrototypes typed by a ClientServerIn
 terface, ModeSwitchInterface, or TriggerInterface
 
-4.2.3.2 Error Handling in Client/Server Communication
+#@SECTION: 4.2.3.2 Error Handling in Client/Server Communication
 
 This section describes the handling of errors occurring either within an application
 software-component or during the communication across the VFB [3]. Errors that are
@@ -3653,7 +2429,7 @@ Base
 Attribute
 errorCode
 
-ApplicationError
+#@CLASS: ApplicationError
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This is a user-deﬁned error that is associated with an element of an AUTOSAR
 interface. It is speciﬁc for the particular functionality or service provided by the
@@ -3682,7 +2458,7 @@ ClientServerInterface.
 by a ClientServerOperation shall be owned by the ClientServerInterface
 that also owns the ClientServerOperation. (cid:99)()
 
-4.2.4 External Trigger Event Communication
+#@SECTION: 4.2.4 External Trigger Event Communication
 
 [TPS_SWCT_01196] Semantics of an external trigger event communication (cid:100) The
 underlying semantics of an external trigger event communication is that a trigger source
@@ -3699,7 +2475,7 @@ Class
 Package
 Note
 
-TriggerInterface
+#@CLASS: TriggerInterface
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 A trigger interface declares a number of triggers that can be sent by an trigger source.
 
@@ -3737,7 +2513,7 @@ cy
 triggerPeri
 od
 
-Trigger
+#@CLASS: Trigger
 M2::AUTOSARTemplates::CommonStructure::TriggerDeclaration
 A trigger which is provided (i.e. released) or required (i.e. used to activate something)
 in the given context.
@@ -3755,11 +2531,11 @@ aggr Optional deﬁnition of a period in case of a
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 periodically (time or angle) driven external trigger.
 
-0..1
+#@SECTION: 0..1
 
 Table 4.15: Trigger
 
@@ -3768,7 +2544,7 @@ Package
 
 Note
 
-MultidimensionalTime
+#@CLASS: MultidimensionalTime
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::
 MultidimensionalTime
 This is used to specify a multidimensional time value based on ASAM CSE codes. It
@@ -3859,15 +2635,15 @@ For more information regarding the ability to connect different kinds of PortPro
 types typed by a TriggerInterface to each others please refer to [constr_1204]
 and [constr_1205].
 
-4.2.5 Communication of Modes
+#@SECTION: 4.2.5 Communication of Modes
 
 There are two distinctive use cases for the communication of modes via ports:
 
-1. An actual mode transition can be communicated from a mode manager compo
+#@SECTION: 1. An actual mode transition can be communicated from a mode manager compo
 
 nent to its client components to enforce a mode switch.
 
-2. A request for a mode transition can be communicated from any component to a
+#@SECTION: 2. A request for a mode transition can be communicated from any component to a
 
 mode manager.
 
@@ -3914,7 +2690,7 @@ Class
 Package
 Note
 
-ModeSwitchInterface
+#@CLASS: ModeSwitchInterface
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 A mode switch interface declares a ModeDeclarationGroupPrototype to be sent and
 received.
@@ -3955,7 +2731,7 @@ interface.
 
 Table 4.17: ModeSwitchInterface
 
-ModeDeclarationGroupPrototype
+#@CLASS: ModeDeclarationGroupPrototype
 M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 The ModeDeclarationGroupPrototype speciﬁes a set of Modes
 (ModeDeclarationGroup) which is provided or required in the given context.
@@ -3966,7 +2742,7 @@ ccessEnum
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 This allows for specifying whether or not the
 enclosing ModeDeclarationGroupPrototype can
@@ -4005,7 +2781,7 @@ notAccessi
 ble
 readOnly
 readWrite
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Determines the access rights to a data object w.r.t. measurement and calibration.
 Description
@@ -4110,7 +2886,7 @@ implement
 ationDataT
 ype
 
-ModeRequestTypeMap
+#@CLASS: ModeRequestTypeMap
 M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Speciﬁes a mapping between a ModeDeclarationGroup and an
 ImplementationDataType. This ImplementationDataType shall be used to implement
@@ -4201,7 +2977,7 @@ For more information regarding the ability to connect different kinds of PortPro
 types typed by a ModeSwitchInterface to each other please refer to [constr_1204]
 and [constr_1205].
 
-4.2.6 Parameter Communication
+#@SECTION: 4.2.6 Parameter Communication
 
 Of course, the “communication” of ParameterDataPrototypes as part of a Param
 eterInterface does not establish an actual transmission of data.
@@ -4217,7 +2993,7 @@ totypes typed by a ParameterInterface can either be PPortPrototypes or
 RPortPrototypes. The usage of PRPortPrototypes that are typed by a Parame
 terInterface is not supported. (cid:99)()
 
-4.3 PortInterface Mapping and Data Scaling
+#@SECTION: 4.3 PortInterface Mapping and Data Scaling
 
 In former versions of this speciﬁcation, the requirements on PortInterfaces to
 match each other could lead to situations where PortInterfaces that were “prac
@@ -4235,20 +3011,20 @@ introduced.
 [TPS_SWCT_01158] Three cases for PortInterfaceMapping (cid:100) In general there
 are three different cases, where a PortInterfaceMapping is suitable.
 
-1. Two PortPrototypes shall be connected and the PortInterface elements
+#@SECTION: 1. Two PortPrototypes shall be connected and the PortInterface elements
 are compatible except the unequal shortNames. This requires a pure logical
 mapping of the PortInterface elements.
 
-2. PortInterface elements are logically equivalent but the range and resolution
+#@SECTION: 2. PortInterface elements are logically equivalent but the range and resolution
 is differently. This requires a data conversion respectively a re-scaling of the
 provided data and arguments to the required data and arguments range and
 resolution.
 
-3. invalidationPolicy of PortInterface elements is different. This might re
+#@SECTION: 3. invalidationPolicy of PortInterface elements is different. This might re
 quire the implementation of different invalidation handling strategies for the same
 dataElement in parallel on the same ECU.
 
-4. Two PortPrototypes shall be connected and the PortInterface elements
+#@SECTION: 4. Two PortPrototypes shall be connected and the PortInterface elements
 
 shall be converted using the AUTOSAR data transformer approach.
 
@@ -4320,7 +3096,7 @@ Class
 Package
 Note
 
-PortInterfaceMappingSet
+#@CLASS: PortInterfaceMappingSet
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Speciﬁes a set of (one or more) PortInterfaceMappings.
 
@@ -4364,7 +3140,7 @@ Base
 Attribute
 –
 
-PortInterfaceMapping (abstract)
+#@CLASS: PortInterfaceMapping (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Speciﬁes one PortInterfaceMapping to support the connection of Ports typed by two
 different PortInterfaces with PortInterface elements having unequal names and/or
@@ -4383,7 +3159,7 @@ Mul. Kind Note
 
 Table 4.22: PortInterfaceMapping
 
-4.3.1 PortInterface Mapping
+#@SECTION: 4.3.1 PortInterface Mapping
 
 By default, the shortNames of PortInterface elements are used to identify the
 matching element pairs of connected PortPrototypes.
@@ -4421,7 +3197,7 @@ PortInterface elements will not be connected by the referencing SwConnector.
 
 Figure 4.10: Relevant meta-classes for PortInterface element mapping
 
-4.3.1.1 Mapping of Sender Receiver Interface, Parameter Interface and Non
+#@SECTION: 4.3.1.1 Mapping of Sender Receiver Interface, Parameter Interface and Non
 
 Volatile Data Interface Elements
 
@@ -4493,7 +3269,7 @@ Attribute
 dataMappi
 ng
 
-VariableAndParameterInterfaceMapping
+#@CLASS: VariableAndParameterInterfaceMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of VariableDataPrototypes or ParameterDataPrototypes in
 context of two different SenderReceiverInterfaces, NvDataInterfaces or
@@ -4521,7 +3297,7 @@ Class
 Package
 Note
 
-DataPrototypeMapping
+#@CLASS: DataPrototypeMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of two particular VariableDataPrototypes,
 ParameterDataPrototypes or ArgumentDataPrototypes with unequal names and/or
@@ -4561,7 +3337,7 @@ ref
 DataTransforma
 tion
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -4614,7 +3390,7 @@ aggr
 
 This represents the owned SubelementMapping.
 
-0..2
+#@SECTION: 0..2
 
 aggr
 
@@ -4622,7 +3398,7 @@ Applied TextTableMapping(s)
 
 Table 4.24: DataPrototypeMapping
 
-4.3.1.2 Mapping of Client Server Interface Elements
+#@SECTION: 4.3.1.2 Mapping of Client Server Interface Elements
 
 [TPS_SWCT_01105] ClientServerInterfaceMapping (cid:100) The ClientServer
 InterfaceMapping deﬁnes the correlation of ClientServerOperations de
@@ -4702,7 +3478,7 @@ ng
 operationM
 apping
 
-ClientServerInterfaceMapping
+#@CLASS: ClientServerInterfaceMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of ClientServerOperations in context of two different
 ClientServerInterfaces.
@@ -4745,7 +3521,7 @@ Attribute
 argument
 Mapping
 
-ClientServerOperationMapping
+#@CLASS: ClientServerOperationMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of two particular ClientServerOperations in context of two
 different ClientServerInterfaces.
@@ -4800,7 +3576,7 @@ secondApp
 licationErro
 r
 
-ClientServerApplicationErrorMapping
+#@CLASS: ClientServerApplicationErrorMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class represents the ability to map ApplicationErrors onto each other.
 ARObject
@@ -4827,7 +3603,7 @@ ref
 
 Table 4.27: ClientServerApplicationErrorMapping
 
-4.3.1.3 Mapping of Mode Interface Elements
+#@SECTION: 4.3.1.3 Mapping of Mode Interface Elements
 
 [TPS_SWCT_01160] ModeInterfaceMapping (cid:100) The ModeInterfaceMapping
 deﬁnes the correlation of ModeDeclarationGroupPrototypes deﬁned in the con
@@ -4845,7 +3621,7 @@ Base
 
 Attribute
 
-ModeInterfaceMapping
+#@CLASS: ModeInterfaceMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of ModeDeclarationGroupPrototypes in context of two different
 ModeInterfaces.
@@ -4891,7 +3667,7 @@ pingSet
 secondMo
 deGroup
 
-ModeDeclarationGroupPrototypeMapping
+#@CLASS: ModeDeclarationGroupPrototypeMapping
 M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Deﬁnes the mapping of two particular ModeDeclarationGroupPrototypes (in the given
 context) that are unequally named and/or require a reference to a
@@ -4915,7 +3691,7 @@ ModeDeclarations in the context ot this
 ModeDeclarationGroupPrototype.
 ModeDeclarationGroupPrototype to be mapped.
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -4993,7 +3769,7 @@ Class
 Package
 Note
 
-ModeDeclarationMappingSet
+#@CLASS: ModeDeclarationMappingSet
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class implements a container for ModeDeclarationGroupMappings
 
@@ -5014,7 +3790,7 @@ enclosing ModeDeclarationMappingSet.
 
 Table 4.30: ModeDeclarationMappingSet
 
-ModeDeclarationMapping
+#@CLASS: ModeDeclarationMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class implements a concrete mapping of two ModeDeclarations.
 ARObject,AtpClassiﬁer,AtpFeature,AtpStructureElement,Identiﬁable,Multilanguage
@@ -5102,7 +3878,7 @@ model.
 In this case the related mode is never entered nor exit during runtime of the
 ECU. (cid:99)(RS_SWCT_03115)
 
-4.3.1.4 Mapping of Trigger Interface Elements
+#@SECTION: 4.3.1.4 Mapping of Trigger Interface Elements
 
 [TPS_SWCT_01161] TriggerInterfaceMapping (cid:100) The TriggerInter
 faceMapping deﬁnes the correlation of Triggers deﬁned in the context Trigger
@@ -5129,7 +3905,7 @@ firstTrigger
 secondTrig
 ger
 
-TriggerInterfaceMapping
+#@CLASS: TriggerInterfaceMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of unequal named Triggers in context of two different
 TriggerInterfaces.
@@ -5147,7 +3923,7 @@ TriggerInterface
 
 Table 4.32: TriggerInterfaceMapping
 
-TriggerMapping
+#@CLASS: TriggerMapping
 M2::AUTOSARTemplates::CommonStructure::TriggerDeclaration
 Deﬁnes the mapping of two particular unequally named Triggers in the given context.
 ARObject
@@ -5169,7 +3945,7 @@ Table 4.33: TriggerMapping
 
 Figure 4.15: Mapping of TriggerInterface elements
 
-4.3.1.5 Mapping of Elements of a composite Data Type
+#@SECTION: 4.3.1.5 Mapping of Elements of a composite Data Type
 
 The mapping of elements of PortInterfaces is not limited to mapping entire Dat
 aPrototypes onto each others.
@@ -5276,7 +4052,7 @@ Attribute
 firstElemen
 t
 
-SubElementMapping
+#@CLASS: SubElementMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class allows for the deﬁnition of mappings of elements of a composite data
 type.
@@ -5286,7 +4062,7 @@ SubElementRef
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 This represents the ﬁrst element referenced in the
 scope of the mapping.
@@ -5296,7 +4072,7 @@ ment
 
 SubElementRef
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -5306,7 +4082,7 @@ apping
 TextTableMappi
 ng
 
-0..2
+#@SECTION: 0..2
 
 aggr
 
@@ -5352,7 +4128,7 @@ application
 Composite
 Element
 
-SubElementRef (abstract)
+#@CLASS: SubElementRef (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class provides the ability to reference elements of composite data type.
 ARObject
@@ -5368,7 +4144,7 @@ Mul. Kind Note
 
 Table 4.35: SubElementRef
 
-ImplementationDataTypeSubElementRef
+#@CLASS: ImplementationDataTypeSubElementRef
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class represents the specialization of SubElementMapping with respect to
 ImplementationDataTypes.
@@ -5388,7 +4164,7 @@ aggr
 
 Table 4.36: ImplementationDataTypeSubElementRef
 
-ApplicationCompositeDataTypeSubElementRef
+#@CLASS: ApplicationCompositeDataTypeSubElementRef
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 This meta-class represents the specialization of SubElementMapping with respect to
 ApplicationCompositeDataTypes.
@@ -5446,7 +4222,7 @@ mentationDataInstanceRef (cid:100) The deﬁnition of attributes contextDataProt
 type and targetDataPrototype shall be enclosed in the context of the deﬁnition
 of the data type used to type rootDataPrototype. (cid:99)()
 
-4.3.2 Data Conversion
+#@SECTION: 4.3.2 Data Conversion
 
 [TPS_SWCT_01560] Supported categorys of CompuMethods for data conver
 sion (cid:100) Data conversion shall be supported for AutosarDataTypes that refer to Com
@@ -5463,14 +4239,14 @@ given composite AutosarDataType. (cid:99)(RS_SWCT_03210)
 
 IdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]ArVariableInImplementationDataInstanceRefVariableDataPrototypeDataPrototypeAutosarDataPrototypeARElementAtpTypeAutosarDataTypeAtpBlueprintAtpBlueprintableImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]SubElementRefImplementationDataTypeSubElementRef«instanceRef»+implementationDataTypeElement1+implementationDataTypeElement1«atpVariation»+subElement0..*{ordered}«isOfType»+type1{redefinesatpType}+rootVariableDataPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1«atpVariation»+subElement 0..*{ordered}
 
-4.3.2.1 Linear Data Scaling
+#@SECTION: 4.3.2.1 Linear Data Scaling
 
 A Linear Data Scaling can be deﬁned under following preconditions:
 
 [TPS_SWCT_01549] Deﬁnition of linear data scaling (cid:100) The term Linear Scaling
 is deﬁned as follows:
 
-1. Regarding the existence of CompuMethods one of the following cases shall ap
+#@SECTION: 1. Regarding the existence of CompuMethods one of the following cases shall ap
 
 ply:
 
@@ -5482,7 +4258,7 @@ IDENTICAL, LINEAR, or RAT_FUNC.
 
 fault” CompuMethod of category IDENTICAL shall be assumed.
 
-2. Regarding the existence of Units one of the following cases shall apply:
+#@SECTION: 2. Regarding the existence of Units one of the following cases shall apply:
 
 (a) The CompuMethods refer either to compatible Units or to Units that in
 
@@ -5498,7 +4274,7 @@ assumed.
 
 ceiver) then it shall be considered as default for the other side.
 
-3. Both CompuMethods fulﬁll the following condition:
+#@SECTION: 3. Both CompuMethods fulﬁll the following condition:
 
 Int = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi
 
@@ -5519,19 +4295,19 @@ The coefﬁcient N0 represents the offset and can take any value.
 [TPS_SWCT_01550] Deﬁnition of reciprocal linear data scaling (cid:100) The term Re
 ciprocal Linear Scaling is deﬁned as follows:
 
-1. The involved AutosarDataTypes refer
+#@SECTION: 1. The involved AutosarDataTypes refer
 
 to CompuMethods of category
 
 RAT_FUNC.
 
-2. The CompuMethods refer either to compatible Units or to Units that in turn
+#@SECTION: 2. The CompuMethods refer either to compatible Units or to Units that in turn
 
 refer to compatible deﬁnitions of PhysicalDimension.
 
 
 
-3. Both CompuMethods fulﬁll the following condition:
+#@SECTION: 3. Both CompuMethods fulﬁll the following condition:
 
 Int = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi
 
@@ -5555,7 +4331,7 @@ setSiToUnit attributes of the referred Units and the CompuRationalCoeffs of
 a compuInternalToPhys/compuPhysToInternal of the referred CompuMethods.
 (cid:99)(RS_SWCT_03210)
 
-4.3.2.2 Table Conversion
+#@SECTION: 4.3.2.2 Table Conversion
 
 [TPS_SWCT_01162] Existence of TextTableMapping (cid:100) A TextTableMapping
 to CompuMethods of cate
@@ -5696,7 +4472,7 @@ pending on the given value of TextTableMapping.mappingDirection - the rele
 vant bit mask is applied. (cid:99)()
 
 Example for [constr_1307]: For a bit mask 0b00001000 only the corresponding values
-8 and 0 are allowed.
+#@SECTION: 8 and 0 are allowed.
 
 5Depending on the applicable case this means either bitfieldTextTableMaskFirst (ap
 is in place) or bitfieldTextTableMaskSecond for the case of
@@ -5722,7 +4498,7 @@ bitfieldText
 TableMask
 Second
 
-TextTableMapping
+#@CLASS: TextTableMapping
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes the mapping of two DataPrototypes typed by AutosarDataTypes that refer to
 CompuMethods of category TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE or
@@ -5733,7 +4509,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 This attribute can be used to support the mapping
 of bit ﬁeld to bit ﬁeld, boolean values to bit ﬁelds,
@@ -5742,7 +4518,7 @@ for the ﬁrst element of the TextTableMapping.
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -5797,7 +4573,7 @@ Note
 Literal
 bidirectional
 ﬁrstToSecond
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Speciﬁes the conversion direction for which the mapping is applicable.
 Description
@@ -5825,7 +4601,7 @@ Base
 Attribute
 firstValue
 
-TextTableValuePair
+#@CLASS: TextTableValuePair
 M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Deﬁnes a pair of text values which are translated into each other.
 ARObject
@@ -5873,9 +4649,9 @@ egory TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and BITFIELD_TEXTTABLE
 
 DataPrototypeMappingTextTableMapping+ identicalMapping  :Boolean+ mappingDirection  :MappingDirectionEnum«atpVariation»+ bitfieldTextTableMaskFirst  :PositiveInteger [0..1]+ bitfieldTextTableMaskSecond  :PositiveInteger [0..1]TextTableValuePair«atpVariation»+ firstValue  :Numerical+ secondValue  :NumericalDataPrototypeAutosarDataPrototype«enumeration»MappingDirectionEnum bidirectional firstToSecond secondToFirst+textTableMapping0..2+valuePair0..*+secondDataPrototype1+firstDataPrototype1
 
-4.4 Port Annotation
+#@SECTION: 4.4 Port Annotation
 
-4.4.1 Introduction
+#@SECTION: 4.4.1 Introduction
 
 [TPS_SWCT_01203] PortPrototype may own port annotations (cid:100) In addition to
 the formal speciﬁcation required to implement the communication via ports, a Port
@@ -5896,7 +4672,7 @@ Figure 4.20: Application Level Port Annotations Overview
 
 ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotationconstraints{"port's interface is a SenderReceiverInterface"}GeneralAnnotationIoHwAbstractionServerAnnotationconstraints{"port's interface is a client/server interface using the operations GET and SET"}GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port interface shall be a ParameterInterface."}GeneralAnnotationDelegatedPortAnnotationconstraints{aggregating PortPrototype is a port of a CompositionSwComponentType (DelegatedPort)}GeneralAnnotationModePortAnnotationconstraints{"The corresponding port interface shall be a ModeInterface."}GeneralAnnotationNvDataPortAnnotationconstraints{"The corresponding port interface shall be a NvDataInterface."}GeneralAnnotationTriggerPortAnnotationconstraints{"The corresponding port interface shall be a TriggerInterface."}GeneralAnnotationClientServerAnnotationconstraints{"The corresponding PortInterface shall be a ClientServerInterface."}«atpVariation» Tags:vh.latestBindingTime = preCompileTime+senderReceiverAnnotation0..*+parameterPortAnnotation0..*+ioHwAbstractionServerAnnotation0..*+failureMonitoring0..1+port0..*«atpVariation,atpSplitable»+clientServerAnnotation0..*+nvDataPortAnnotation0..*+modePortAnnotation0..*+triggerPortAnnotation0..*+delegatedPortAnnotation0..1
 
-4.4.2 SenderReceiverAnnotation
+#@SECTION: 4.4.2 SenderReceiverAnnotation
 
 Embedded automotive software is used to implement open-loop and closed-loop
 control-algorithms. Therefore, a software-component description has to accommodate
@@ -5961,7 +4737,7 @@ Base
 Attribute
 computed
 
-SenderReceiverAnnotation (abstract)
+#@CLASS: SenderReceiverAnnotation (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation of the data elements in a port that realizes a sender/receiver interface.
 ARObject,GeneralAnnotation
@@ -6037,7 +4813,7 @@ Base
 Attribute
 signalAge
 
-SenderAnnotation
+#@CLASS: SenderAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation of a sender port, specifying properties of data elements that don’t affect
 communication or generation of the RTE.
@@ -6054,7 +4830,7 @@ Mul. Kind Note
 
 Table 4.42: SenderAnnotation
 
-ReceiverAnnotation
+#@CLASS: ReceiverAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation of a receiver port, specifying properties of data elements that don’t affect
 communication or generation of the RTE. The given attributes are requirements on
@@ -6082,7 +4858,7 @@ Package
 Note
 Literal
 ﬁltered
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Kind of processing which has been applied to a data element.
 Description
@@ -6101,7 +4877,7 @@ Table 4.44: ProcessingKindEnum
 Enumeration DataLimitKindEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Indicates whether the data element carries a minimum or maximum value, thereby
 limiting the current range of another value.
@@ -6164,7 +4940,7 @@ ReceiverInterface. (cid:99)()
 
 AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationSenderReceiverAnnotation+ computed  :Boolean+ limitKind  :DataLimitKindEnum+ processingKind  :ProcessingKindEnumconstraints{"port's interface is a SenderReceiverInterface"}SenderAnnotationReceiverAnnotation«enumeration»ProcessingKindEnum none raw filtered«enumeration»DataLimitKindEnum none min maxMultidimensionalTime+ cseCode  :CseCodeType+ cseCodeFactor  :IntegerAutosarDataPrototypeVariableDataPrototype+dataElement1+senderReceiverAnnotation0..*+signalAge1
 
-4.4.3 ClientServerAnnotation
+#@SECTION: 4.4.3 ClientServerAnnotation
 
 [TPS_SWCT_01209] ClientServerAnnotation (cid:100) The ClientServerAnnota
 tion can be used to provide more information with respect to the ClientServerOp
@@ -6177,7 +4953,7 @@ Base
 Attribute
 operation
 
-ClientServerAnnotation
+#@CLASS: ClientServerAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a port regarding a certain Operation.
 ARObject,GeneralAnnotation
@@ -6211,7 +4987,7 @@ Interface. (cid:99)()
 
 AtpBlueprintableAtpPrototypePortPrototypeGeneralAnnotationClientServerAnnotationAtpStructureElementIdentifiableClientServerOperation+clientServerAnnotation0..*0..*+operation
 
-4.4.4 Annotation for the I/O Hardware Abstraction Layer
+#@SECTION: 4.4.4 Annotation for the I/O Hardware Abstraction Layer
 
 Within the ECU-Abstraction Layer there are ECU-signals deﬁned. These signals rep
 resent the electrical signals as they arrive in the micro-controller peripheral and are
@@ -6236,7 +5012,7 @@ Class
 Package
 Note
 
-IoHwAbstractionServerAnnotation
+#@CLASS: IoHwAbstractionServerAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 The IoHwAbstractionServerAnnotation will only be used from a sensor- or an actuator
 component while interacting with the IoHwAbstraction layer.
@@ -6254,7 +5030,7 @@ lTime
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 In case of a SET operation, the age will be
 interpreted as Delay while in a GET operation
@@ -6266,7 +5042,7 @@ argument
 ArgumentDataP
 rototype
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -6297,7 +5073,7 @@ nt
 VariableDataPr
 ototype
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -6310,7 +5086,7 @@ toring
 
 PortPrototype
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -6383,7 +5159,7 @@ trigger
 
 Trigger
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -6398,7 +5174,7 @@ Data
 rawData
 waitTimeDate
 
-FilterDebouncingEnum
+#@CLASS: FilterDebouncingEnum
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 This enumeration deﬁnes possible values for the ﬁlter debouncing strategy.
 Description
@@ -6412,7 +5188,7 @@ Table 4.48: FilterDebouncingEnum
 Enumeration PulseTestEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 This element indicates to the connected Actuator Software component whether the
 data-element can be used to generate pulse test sequences using the
@@ -6441,7 +5217,7 @@ meaning in this particular interface with respect to a register whereas the sign
 the SenderReceiverAnnotation is more generic. Especially, there is no relation
 ship with the micro-controller peripherals.
 
-4.4.5 Parameter Port Annotation
+#@SECTION: 4.4.5 Parameter Port Annotation
 
 [TPS_SWCT_01212] ParameterPortAnnotation (cid:100) The ParameterPortAnno
 tation can be used to provide more information with respect to calibration parameter
@@ -6456,7 +5232,7 @@ Base
 Attribute
 parameter
 
-ParameterPortAnnotation
+#@CLASS: ParameterPortAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a port used for calibration regarding a certain ParameterDataPrototype.
 ARObject,GeneralAnnotation
@@ -6488,7 +5264,7 @@ GeneralAnnotationParameterPortAnnotationconstraints{"The corresponding port inte
 notation shall only be aggregated by a PPortPrototype owned by a Parame
 terSwComponentType. (cid:99)()
 
-4.4.6 Mode Port Annotation
+#@SECTION: 4.4.6 Mode Port Annotation
 
 [TPS_SWCT_01213] ModePortAnnotation (cid:100) The ModePortAnnotation can be
 used to provide more information with respect to the mode declaration group prototype
@@ -6503,7 +5279,7 @@ Attribute
 modeGrou
 p
 
-ModePortAnnotation
+#@CLASS: ModePortAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a port used for calibration regarding a certain
 ModeDeclarationGroupPrototype.
@@ -6536,7 +5312,7 @@ only be aggregated by a PortPrototype typed by a ModeSwitchInterface. (cid:99)()
 
 GeneralAnnotationModePortAnnotationAtpBlueprintableAtpPrototypePortPrototypeAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+modePortAnnotation0..*+modeGroup1
 
-4.4.7 Trigger Port Annotation
+#@SECTION: 4.4.7 Trigger Port Annotation
 
 [TPS_SWCT_01214] TriggerPortAnnotation (cid:100) The TriggerPortAnnotation
 can be used to provide more information with respect to the trigger of the PortPro
@@ -6549,7 +5325,7 @@ Base
 Attribute
 trigger
 
-TriggerPortAnnotation
+#@CLASS: TriggerPortAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a port used for calibration regarding a certain Trigger.
 ARObject,GeneralAnnotation
@@ -6573,7 +5349,7 @@ Figure 4.26: TriggerPortAnnotation
 tion shall only be aggregated by a PortPrototype typed by a TriggerInter
 face. (cid:99)()
 
-4.4.8 Non Volatile Data Port Annotation
+#@SECTION: 4.4.8 Non Volatile Data Port Annotation
 
 [TPS_SWCT_01215] NvDataPortAnnotation (cid:100) The NvDataPortAnnotation
 can be used to provide more information with respect to the non volatile data of the
@@ -6591,7 +5367,7 @@ Base
 Attribute
 variable
 
-NvDataPortAnnotation
+#@CLASS: NvDataPortAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a port regarding a certain VariableDataPrototype.
 ARObject,GeneralAnnotation
@@ -6617,7 +5393,7 @@ Figure 4.27: NvDataPortAnnotation
 tion shall only be aggregated by a PortPrototype typed by an NvDataInter
 face. (cid:99)()
 
-4.4.9 Delegated Port Annotations
+#@SECTION: 4.4.9 Delegated Port Annotations
 
 [TPS_SWCT_01216] DelegatedPortAnnotation (cid:100) The DelegatedPortAnno
 tation is used to deﬁne the Signal Fan In or Signal Fan Out inside the Composi
@@ -6646,7 +5422,7 @@ Base
 Attribute
 signalFan
 
-DelegatedPortAnnotation
+#@CLASS: DelegatedPortAnnotation
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Annotation to a "delegated port" to specify the Signal Fan In or Signal Fan Out inside
 the CompositionSwComponentType.
@@ -6656,7 +5432,7 @@ SignalFanEnum
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 Speciﬁes the Signal Fan In or Signal Fan Out
 inside the Composition Type.
@@ -6668,7 +5444,7 @@ Package
 Note
 Literal
 nfold
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::ApplicationAttributes
 Signal Fan inside the Composition Component Type.
 Description
@@ -6712,7 +5488,7 @@ PortPrototype is involved in a 1:n or n:1 communication pattern.
 notation shall only be aggregated by a PortPrototype aggregated by a Compo
 sitionSwComponentType. (cid:99)()
 
-4.4.10 General Annotation
+#@SECTION: 4.4.10 General Annotation
 
 Besides formally speciﬁed attributes it is also possible to place textual information as
 provided in the abstract GeneralAnnotation (see Figure 4.28 for an overview).
@@ -6724,7 +5500,7 @@ Package
 
 Note
 
-GeneralAnnotation (abstract)
+#@CLASS: GeneralAnnotation (abstract)
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::General
 Annotation
 This class represents textual comments (called annotations) which relate to the object
@@ -6772,7 +5548,7 @@ label
 MultilanguageL
 ongName
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -6788,7 +5564,7 @@ Table 4.56: GeneralAnnotation
 
 GeneralAnnotation+ annotationOrigin  :String«atpMixed»DocumentationBlockMultilanguageLongName+label0..1+annotationText1
 
-4.5 Communication Speciﬁcation
+#@SECTION: 4.5 Communication Speciﬁcation
 
 [TPS_SWCT_01218] Big picture of ComSpec (cid:100) The highest level of description of
 information exchanged between components in an AUTOSAR system is the Port
@@ -6890,7 +5666,7 @@ Base
 Attribute
 –
 
-PPortComSpec (abstract)
+#@CLASS: PPortComSpec (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of a provided PortPrototype. This class will contain
 attributes that are valid for all kinds of provide ports, independent of client-server or
@@ -6918,7 +5694,7 @@ Base
 Attribute
 –
 
-RPortComSpec (abstract)
+#@CLASS: RPortComSpec (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of a required PortPrototype. This class will contain
 attributes that are valid for all kinds of require-ports, independent of client-server or
@@ -6970,7 +5746,7 @@ If consistency would be required this constraint might be a major obstacle for i
 existing AtomicSwComponentTypes into a CompositionSwComponentType that
 has PortPrototypes with ComSpecs.
 
-4.5.1 Communication Speciﬁcation for Sender-Receiver Communication
+#@SECTION: 4.5.1 Communication Speciﬁcation for Sender-Receiver Communication
 
 Communication speciﬁcation applies in different ways to speciﬁc kinds of communi
 cation. Figure 4.31 shows the meta-model of the communication attributes relevant
@@ -7016,7 +5792,7 @@ NetworkRe
 presentatio
 n
 
-ReceiverComSpec (abstract)
+#@CLASS: ReceiverComSpec (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Receiver-speciﬁc communication attributes (RPortPrototype typed by
 SenderReceiverInterface).
@@ -7058,13 +5834,13 @@ ounterInit
 HandleOutOfRa
 ngeStatusEnum
 
-0..1
+#@SECTION: 0..1
 
 attr
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -7079,20 +5855,20 @@ h
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
 SwDataDefProp
 s
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
 VariableAccess
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -7114,7 +5890,7 @@ Initial maximum allowed gap between two counter
 values of two consecutively received valid Data,
 i.e. how many subsequent lost data is accepted.
 For example, if the receiver gets Data with counter
-1 and MaxDeltaCounterInit is 1, then at the next
+#@SECTION: 1 and MaxDeltaCounterInit is 1, then at the next
 reception the receiver can accept Counters with
 values 2 and 3, but not 4.
 
@@ -7145,7 +5921,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 Transformation
 ComSpecProps
@@ -7192,7 +5968,7 @@ Attribute
 aliveTimeo
 ut
 
-NonqueuedReceiverComSpec
+#@CLASS: NonqueuedReceiverComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes speciﬁc to non-queued receiving.
 ARObject,RPortComSpec,ReceiverComSpec
@@ -7223,7 +5999,7 @@ filter
 
 DataFilter
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -7232,7 +6008,7 @@ aStatus
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -7286,7 +6062,7 @@ on
 
 attr
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -7315,7 +6091,7 @@ Attribute
 queueLeng
 th
 
-QueuedReceiverComSpec
+#@CLASS: QueuedReceiverComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes speciﬁc to queued receiving.
 ARObject,RPortComSpec,ReceiverComSpec
@@ -7337,7 +6113,7 @@ Note
 Literal
 none
 replace
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Strategies of handling a reception timeout violation.
 Description
@@ -7349,7 +6125,7 @@ Table 4.63: HandleTimeoutEnum
 Primitive
 Package
 
-TimeValue
+#@CLASS: TimeValue
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 Types
 
@@ -7452,7 +6228,7 @@ max
 min
 offset
 
-DataFilter
+#@CLASS: DataFilter
 M2::AUTOSARTemplates::CommonStructure::Filter
 Base class for data ﬁlters. The type of the ﬁlter is speciﬁed in attribute dataFilterType.
 Some of the ﬁlter types require additional arguments which are speciﬁed as attributes
@@ -7476,10 +6252,10 @@ attr
 
 This attribute speciﬁes the type of the ﬁlter.
 
-0..1
-0..1
-0..1
-0..1
+#@SECTION: 0..1
+#@SECTION: 0..1
+#@SECTION: 0..1
+#@SECTION: 0..1
 
 Value to specify the upper boundary
 Value to specify the lower boundary
@@ -7495,7 +6271,7 @@ period
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -7503,7 +6279,7 @@ x
 
 UnlimitedInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -7528,7 +6304,7 @@ always
 masked
 NewDiffers
 MaskedOld
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::Filter
 This enum speciﬁes the supported DataFilterTypes.
 Description
@@ -7567,7 +6343,7 @@ min <= new_value <= max
 Pass a message once every N message occurrences. Algorithm: occurrence %
 period == offset Start: occurrence = 0. Each time the message is received or
 transmitted, occurrence is incremented by 1 after ﬁltering. Length of occurrence is
-8 bit (minimum).
+#@SECTION: 8 bit (minimum).
 
 Table 4.66: DataFilterTypeEnum
 
@@ -7603,7 +6379,7 @@ nt
 handleOut
 OfRange
 
-SenderComSpec (abstract)
+#@CLASS: SenderComSpec (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes for a sender port (PPortPrototype typed by
 SenderReceiverInterface).
@@ -7667,13 +6443,13 @@ ction
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 A networkRepresentation is used to deﬁne how
 the dataElement is mapped to a communication
 bus.
 
-0..1
+#@SECTION: 0..1
 
 aggr Requested transmission acknowledgement for
 
@@ -7716,7 +6492,7 @@ Base
 Attribute
 timeout
 
-QueuedSenderComSpec
+#@CLASS: QueuedSenderComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes speciﬁc to distribution of events (PPortPrototype,
 SenderReceiverInterface and dataElement carries an "event").
@@ -7733,7 +6509,7 @@ Mul. Kind Note
 
 Table 4.68: QueuedSenderComSpec
 
-NonqueuedSenderComSpec
+#@CLASS: NonqueuedSenderComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes for non-queued sender/receiver communication (sender
 side)
@@ -7752,7 +6528,7 @@ aggr
 
 Table 4.69: NonqueuedSenderComSpec
 
-TransmissionAcknowledgementRequest
+#@CLASS: TransmissionAcknowledgementRequest
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Requests transmission acknowledgement that data has been sent successfully.
 Success/failure is reported via a SendPoint of a RunnableEntity.
@@ -7776,7 +6552,7 @@ Table 4.70: TransmissionAcknowledgementRequest
 Enumeration HandleOutOfRangeEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 A value of this type is taken for controlling the range checking behavior of the
 AUTOSAR RTE.
@@ -7869,7 +6645,7 @@ networkRe
 presentatio
 n
 
-CompositeNetworkRepresentation
+#@CLASS: CompositeNetworkRepresentation
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 This meta-class is used to deﬁne the network representation of leaf elements of
 composite application data types.
@@ -7900,7 +6676,7 @@ aggr
 
 Table 4.72: CompositeNetworkRepresentation
 
-4.5.2 Communication Speciﬁcation for Client-Server Communication
+#@SECTION: 4.5.2 Communication Speciﬁcation for Client-Server Communication
 
 The communication aspects relevant for client communication are sketched in Fig
 ure 4.34.
@@ -7922,7 +6698,7 @@ transforma
 tionComSp
 ecProps
 
-ClientComSpec
+#@CLASS: ClientComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Client-speciﬁc communication attributes (RPortPrototype typed by
 ClientServerInterface).
@@ -7972,7 +6748,7 @@ operation
 queueLeng
 th
 
-ServerComSpec
+#@CLASS: ServerComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes for a server port (PPortPrototype and
 ClientServerInterface).
@@ -8051,7 +6827,7 @@ request. (cid:99)(RS_SWCT_03221)
 
 See chapter 4.5.6 for details.
 
-4.5.3 Communication Speciﬁcation for Mode Switch Communication
+#@SECTION: 4.5.3 Communication Speciﬁcation for Mode Switch Communication
 
 In analogy to the previous section, Figure 4.36 shows the meta-model elements rel
 evant for a mode switch communication. On the sender side it is possible to specify
@@ -8084,7 +6860,7 @@ Attribute
 enhanced
 ModeApi
 
-ModeSwitchSenderComSpec
+#@CLASS: ModeSwitchSenderComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of PPortPrototypes with respect to mode communication
 ARObject,PPortComSpec
@@ -8093,7 +6869,7 @@ Boolean
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 modeGrou
 p
@@ -8111,7 +6887,7 @@ ckRequest
 
 ref
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -8159,7 +6935,7 @@ Attribute
 enhanced
 ModeApi
 
-ModeSwitchedAckRequest
+#@CLASS: ModeSwitchedAckRequest
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Requests acknowledgements that a mode switch has been proceeded successfully
 ARObject
@@ -8177,7 +6953,7 @@ again.
 
 Table 4.76: ModeSwitchedAckRequest
 
-ModeSwitchReceiverComSpec
+#@CLASS: ModeSwitchReceiverComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of RPortPrototypes with respect to mode communication
 ARObject,RPortComSpec
@@ -8186,7 +6962,7 @@ Boolean
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 This controls the creation of the enhanced mode
 API that returns information about the previous
@@ -8207,7 +6983,7 @@ e
 
 Mul. Kind Note
 ref
-0..1
+#@SECTION: 0..1
 
 ModeDeclarationGroupPrototype (of the same
 PortInterface) to which these communication
@@ -8234,7 +7010,7 @@ asynchronous mode switch request.
 
 Table 4.77: ModeSwitchReceiverComSpec
 
-4.5.4 Communication Speciﬁcation for Parameters
+#@SECTION: 4.5.4 Communication Speciﬁcation for Parameters
 
 Granted, the deﬁnition of a ComSpec for ParameterDataPrototypes looks strange
 on ﬁrst sight. A ParameterDataPrototype owned by a PPortPrototype typed by
@@ -8273,7 +7049,7 @@ initValue
 
 parameter
 
-ParameterProvideComSpec
+#@CLASS: ParameterProvideComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 "Communication" speciﬁcation that applies to parameters on the provided side of a
 connection.
@@ -8291,7 +7067,7 @@ ParameterComSpec applies.
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -8317,7 +7093,7 @@ initValue
 
 parameter
 
-ParameterRequireComSpec
+#@CLASS: ParameterRequireComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 "Communication" speciﬁcation that applies to parameters on the required side of a
 connection.
@@ -8335,7 +7111,7 @@ ParameterRequireComSpec applies.
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -8343,7 +7119,7 @@ ref
 
 Table 4.79: ParameterRequireComSpec
 
-4.5.5 Communication Speciﬁcation for NV Data
+#@SECTION: 4.5.5 Communication Speciﬁcation for NV Data
 
 [TPS_SWCT_01141] AtomicSwComponentType may have AbstractRequired
 PortPrototypes typed by an NvDataInterface (cid:100) An AtomicSwComponent
@@ -8391,7 +7167,7 @@ Base
 Attribute
 initValue
 
-NvRequireComSpec
+#@CLASS: NvRequireComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of RPortPrototypes with respect to Nv data communication
 on the required side.
@@ -8402,7 +7178,7 @@ on
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 The initial value owned by the NvComSpec
 
@@ -8471,7 +7247,7 @@ romBlockIn
 itValue
 variable
 
-NvProvideComSpec
+#@CLASS: NvProvideComSpec
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Communication attributes of PPortPrototypes with respect to Nv data communication
 on the provided side.
@@ -8493,11 +7269,11 @@ ComSpec is speciﬁed.
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 aggr
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -8505,7 +7281,7 @@ ref
 
 Table 4.81: NvProvideComSpec
 
-4.5.6 Conﬁguration of Data Transformation
+#@SECTION: 4.5.6 Conﬁguration of Data Transformation
 
 Using the TransformationComSpecProps it is possible to deﬁne conﬁguration op
 tions for speciﬁc transformers of inter-ecu communication which is subject to data trans
@@ -8515,9 +7291,9 @@ formation.
 tion of a TransformationComSpecProps can always be provided in the SWC de
 scription but the conﬁguration shall only have an effect if
 
-1. the actual communication involves at least two EcuInstances
+#@SECTION: 1. the actual communication involves at least two EcuInstances
 
-2. the respective data transformer (given by the used TransformationCom
+#@SECTION: 2. the respective data transformer (given by the used TransformationCom
 SpecProps) is used during data transformation (see DataTransformation)
 
 (cid:99)(RS_SWCT_03221)
@@ -8546,7 +7322,7 @@ Base
 Attribute
 –
 
-TransformationComSpecProps (abstract)
+#@CLASS: TransformationComSpecProps (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 TransformationComSpecProps holds all the attributes for transformers that are port
 speciﬁc.
@@ -8629,7 +7405,7 @@ Class
 Package
 Note
 
-TransformationTechnology
+#@CLASS: TransformationTechnology
 M2::AUTOSARTemplates::SystemTemplate::Transformer
 A TransformationTechnology is a transformer inside a transformer chain.
 
@@ -8659,7 +7435,7 @@ Aggregation of the mandatory BufferProperties.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -8672,7 +7448,7 @@ attr
 Transformation
 Description
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
@@ -8724,7 +7500,7 @@ Base
 Attribute
 –
 
-UserDeﬁnedTransformationComSpecProps
+#@CLASS: UserDeﬁnedTransformationComSpecProps
 M2::AUTOSARTemplates::SWComponentTemplate::Communication
 The UserDeﬁnedTransformationComSpecProps is used to specify port speciﬁc
 conﬁguration properties for custom transformers.
@@ -8763,7 +7539,7 @@ ounter
 maxErrorS
 tateInit
 
-EndToEndTransformationComSpecProps
+#@CLASS: EndToEndTransformationComSpecProps
 M2::AUTOSARTemplates::SystemTemplate::Transformer
 The class EndToEndTransformationIComSpecProps speciﬁes port speciﬁc
 conﬁguration properties for EndToEnd transformer attributes.
@@ -8782,13 +7558,13 @@ setting of this attribute.
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr Maximum allowed gap between two counter
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 values of two consecutive checks.
 
@@ -8811,7 +7587,7 @@ tateInvalid
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 
 
@@ -8833,7 +7609,7 @@ E2E_SM_VALID.
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -8844,7 +7620,7 @@ same value for all E2E transformers.
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 maxNoNe
 wOrRepea
@@ -8857,14 +7633,14 @@ eInvalid
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 minOkStat
 eValid
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr Minimal number of checks in which ProﬁleStatus
 equal to E2E_P_OK was determined, within the
@@ -8893,13 +7669,13 @@ e
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -8928,7 +7704,7 @@ speciﬁc conﬁguration options for data transformers related to end-to-end pro
 
 
 
-4.6 Port Groups within Component Types
+#@SECTION: 4.6 Port Groups within Component Types
 
 [TPS_SWCT_01063] PortGroup (cid:100) A SwComponentType can declare that some of
 its PortPrototypes belong to a PortGroup.
@@ -8944,7 +7720,7 @@ Class
 Package
 Note
 
-PortGroup
+#@CLASS: PortGroup
 M2::AUTOSARTemplates::SWComponentTemplate::Components
 Group of ports which share a common functionality, e.g. need speciﬁc network
 resources. This information shall be available on the VFB level in order to delegate it
@@ -9008,7 +7784,7 @@ PortGroups can be locally deﬁned but still traced down the component hierarchy
 [TPS_SWCT_01066] PortGroups can be associated with certain ServiceNeeds
 (cid:100) PortGroups can be associated with certain ServiceNeeds in order to trace the
 information down to the conﬁguration of the basic software, for details see chapter
-7.11.2. (cid:99)(RS_SWCT_03200, RS_SWCT_03201)
+#@SECTION: 7.11.2. (cid:99)(RS_SWCT_03200, RS_SWCT_03201)
 
 [constr_1147] Standardized values for the attribute category of meta-class
 PortGroup (cid:100)
@@ -9026,7 +7802,7 @@ purpose of partial networking
 
 (cid:99)()
 
-4.7 End to End Protection
+#@SECTION: 4.7 End to End Protection
 
 The aspect of end-to-end protection has seen different support by the AUTOSAR meta
 model.
@@ -9077,7 +7853,7 @@ Base
 Attribute
 category
 
-EndToEndDescription
+#@CLASS: EndToEndDescription
 M2::AUTOSARTemplates::SWComponentTemplate::EndToEndProtection
 This meta-class contains information about end-to-end protection. The set of
 applicable attributes depends on the actual value of the category attribute of
@@ -9101,7 +7877,7 @@ set
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -9131,7 +7907,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 Bit offset of CRC from the beginning of the Array
 representation of the Signal
@@ -9167,7 +7943,7 @@ e
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -9203,7 +7979,7 @@ leOffset
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -9223,7 +7999,7 @@ Datatype
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 This attribute represents the length of the Array
 representation of the Signal
@@ -9235,7 +8011,7 @@ ounterInit
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -9248,13 +8024,13 @@ erInit
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -9263,7 +8039,7 @@ Initial maximum allowed gap between two counter
 values of two consecutively received valid Data,
 i.e. how many subsequent lost data is accepted.
 For example, if the receiver gets Data with counter
-1 and MaxDeltaCounterInit is 1, then at the next
+#@SECTION: 1 and MaxDeltaCounterInit is 1, then at the next
 reception the receiver can accept Counters with
 values 2 and 3, but not 4.
 
@@ -9636,7 +8412,7 @@ Class
 Package
 Note
 
-EndToEndProtectionSet
+#@CLASS: EndToEndProtectionSet
 M2::AUTOSARTemplates::SWComponentTemplate::EndToEndProtection
 This represents a container for collection EndToEndProtectionInformation.
 
@@ -9675,7 +8451,7 @@ vh.latestBindingTime=preCompileTime
 
 Table 4.88: EndToEndProtectionSet
 
-EndToEndProtection
+#@CLASS: EndToEndProtection
 M2::AUTOSARTemplates::SWComponentTemplate::EndToEndProtection
 This meta-class represents the ability to describe a particular end to end protection.
 ARObject,Identiﬁable,MultilanguageReferrable,Referrable
@@ -9763,7 +8539,7 @@ receiver
 
 sender
 
-EndToEndProtectionVariablePrototype
+#@CLASS: EndToEndProtectionVariablePrototype
 M2::AUTOSARTemplates::SWComponentTemplate::EndToEndProtection
 It is possible to protect the data exchanged between software components. For this
 purpose, for each communication to be protected, the user deﬁnes a separate
@@ -9784,7 +8560,7 @@ This represents the sender.
 Mul. Kind Note
 iref
 
-0..1
+#@SECTION: 0..1
 
 iref
 
@@ -9794,7 +8570,7 @@ shortLabel
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -9815,7 +8591,7 @@ gated by the same EndToEndProtection shall refer to the identical sender. (cid:9
 
 
 
-4.8 Partial Networking
+#@SECTION: 4.8 Partial Networking
 
 [TPS_SWCT_01169] Support for partial networking (cid:100) On the level of the Software
 Component Template, partial networking is supported by means of the concept of a
@@ -9832,16 +8608,16 @@ overlapping PortGroups.
 [TPS_SWCT_01170] Purpose of Virtual Function Cluster (cid:100) The purpose of Virtual
 Function Cluster within the Software Component Template mainly has three aspects:
 
-1. assign PortPrototypes (non service related) of Sender Receiver or Client
+#@SECTION: 1. assign PortPrototypes (non service related) of Sender Receiver or Client
 
 Server communication to Virtual Function Clusters.
 
-2. control the behavior of the corresponding function in terms of whether or not it is
+#@SECTION: 2. control the behavior of the corresponding function in terms of whether or not it is
 required at a given point in time. This aspect is implemented by the concept of
 a control port. Software-components that implement control ports of a Virtual
 Function Cluster conceptually become VFC Controllers.
 
-3. allow for the application software to retrieve the status of a given Virtual Function
+#@SECTION: 3. allow for the application software to retrieve the status of a given Virtual Function
 
 Cluster. This aspect is implemented by the concept of a status port.
 
@@ -9851,7 +8627,7 @@ The usage of the generic concept of PortGroups for the purpose of partial networ
 shall be indicated by setting the value of the attribute category of PortGroup to
 PARTIAL_NETWORKING.
 
-4.8.1 VFC Control Ports
+#@SECTION: 4.8.1 VFC Control Ports
 
 [TPS_SWCT_01171] Purpose of a control port (cid:100) The purpose of a control port is
 to request or release a VFC. Requesting means that the VFC is actively using com
@@ -9887,7 +8663,7 @@ The relationship is implemented by means of a speciﬁc SwcServiceDepen
 dency that owns a RoleBasedPortAssignment to the intended control port.
 (cid:99)(RS_SWCT_03241, RS_SWCT_03201)
 
-4.8.2 VFC Status Ports
+#@SECTION: 4.8.2 VFC Status Ports
 
 [TPS_SWCT_01175] Actively query the status of a partial network (cid:100) Very much like
 mode management, the concept of partial networking supports the ability to actively
@@ -9942,7 +8718,7 @@ The relationship is implemented by means of a speciﬁc SwcServiceDepen
 dency that owns a RoleBasedPortAssignment to the intended status port.
 (cid:99)(RS_SWCT_03241, RS_SWCT_03201)
 
-4.9 Formal Deﬁnition of implicit Communication Behavior
+#@SECTION: 4.9 Formal Deﬁnition of implicit Communication Behavior
 
 [TPS_SWCT_01509] Implicit communication behavior (cid:100) The purpose of the formal
 deﬁnition of the behavior of a SwComponentType with respect to the implicit commu
@@ -10068,7 +8844,7 @@ dpgDoesN
 otRequire
 Coherency
 
-ConsistencyNeeds
+#@CLASS: ConsistencyNeeds
 M2::AUTOSARTemplates::SWComponentTemplate::ImplicitCommunicationBehavior
 This meta-class represents the ability to deﬁne requirements on the implicit
 communication behavior.
@@ -10170,7 +8946,7 @@ Attribute
 runnableE
 ntity
 
-RunnableEntityGroup
+#@CLASS: RunnableEntityGroup
 M2::AUTOSARTemplates::SWComponentTemplate::ImplicitCommunicationBehavior
 This meta-class represents the ability to deﬁne a collection of RunnableEntities. The
 collection can be nested.
@@ -10217,7 +8993,7 @@ Attribute
 dataProtot
 ypeGroup
 
-DataPrototypeGroup
+#@CLASS: DataPrototypeGroup
 M2::AUTOSARTemplates::SWComponentTemplate::ImplicitCommunicationBehavior
 This meta-class represents the ability to deﬁne a collection of DataPrototypes that are
 subject to the formal deﬁnition of implicit communication behavior. The deﬁnition of
@@ -10257,7 +9033,7 @@ Tags: vh.latestBindingTime=preCompileTime
 
 Table 4.93: DataPrototypeGroup
 
-4.9.1 Consistency Needs on Receiver Side
+#@SECTION: 4.9.1 Consistency Needs on Receiver Side
 
 [TPS_SWCT_01472] Receiving SwComponentType owns a DataPrototype
 Group in the role dpgRequiresCoherence (cid:100) If a receiving SwComponentType
@@ -10295,7 +9071,7 @@ This means that the values of the VariableDataPrototypes shall be of the same
 age and are kept stable over the execution of all RunnableEntitys belonging to the
 givenRunnableEntityGroup. (cid:99)()
 
-4.9.2 Consistency Needs on Sender Side
+#@SECTION: 4.9.2 Consistency Needs on Sender Side
 
 [TPS_SWCT_01475] Sending SwComponentType owns a DataPrototypeGroup
 in the role dpgRequiresCoherence (cid:100) If a sending SwComponentType owns a
@@ -10333,7 +9109,7 @@ Read accesses from RunnableEntitys in those RunnableEntityGroups will not
 read the coherent values but the intermediary values written by RunnableEntitys of
 the same group. (cid:99)(RS_SWCT_03065)
 
-4.9.3 Consistency Needs for Senders and receivers of the same Data inside on
+#@SECTION: 4.9.3 Consistency Needs for Senders and receivers of the same Data inside on
 
 RunnableEntityGroup
 
@@ -10349,10 +9125,10 @@ tityGroup become visible immediately after the producing RunnableEntity was
 terminated. (cid:99)(RS_SWCT_03065)
 
 
-#@chapter-5
-5 Data Description
 
-5.1 Introduction
+#@SECTION: 5 Data Description
+
+#@SECTION: 5.1 Introduction
 
 [TPS_SWCT_01229] Three different levels of abstraction regarding the deﬁnition
 of data types (cid:100) In the context of deﬁning data types and prototypes, the AUTOSAR
@@ -10604,9 +9380,9 @@ summarized in table 5.32.
 
 • Applicability of SwDataDefProps is summarized in table 5.39.
 
-5.2 Data Types
+#@SECTION: 5.2 Data Types
 
-5.2.1 Overview
+#@SECTION: 5.2.1 Overview
 
 As explained in section 5.1 it is possible to describe data provided by a software
 component from the application as well as from the implementation point of view.
@@ -10633,7 +9409,7 @@ Attribute
 swDataDef
 Props
 
-AutosarDataType (abstract)
+#@CLASS: AutosarDataType (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 Abstract base class for user deﬁned AUTOSAR data types for ECU software.
 ARElement,ARObject,AtpClassiﬁer,AtpType,Collectable
@@ -10644,7 +9420,7 @@ s
 
 Mul. Kind Note
 aggr
-0..1
+#@SECTION: 0..1
 
 The properties of this AutosarDataType.
 
@@ -10659,7 +9435,7 @@ Class
 Package
 Note
 
-ApplicationDataType (abstract)
+#@CLASS: ApplicationDataType (abstract)
 M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 ApplicationDataType deﬁnes a data type from the application point of view. Especially
 it should be used whenever something "physical" is at stake.
@@ -10694,7 +9470,7 @@ Class
 Package
 Note
 
-ImplementationDataType
+#@CLASS: ImplementationDataType
 M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes
 Describes a reusable data type on the implementation level. This will typically
 correspond to a typedef in C-code.
@@ -10723,7 +9499,7 @@ String
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 Speciﬁes the proﬁle which the array will follow in
 case this data type is a variable size array.
@@ -10758,13 +9534,13 @@ type deﬁnitions.
 
 SymbolProps
 
-0..1
+#@SECTION: 0..1
 
 aggr
 
 NameToken
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -10783,7 +9559,7 @@ tionDataType can also be composed of elements but in this case no type/prototype
 concept (see [12]) has been applied. Both concepts will be explained in the following
 chapters in more detail. (cid:99)(RS_SWCT_03215, RS_SWCT_03217)
 
-5.2.2 Data Type Mapping
+#@SECTION: 5.2.2 Data Type Mapping
 
 As explained above, the concept of application data types as well as that of implemen
 tation data types can be used to instantiate a data prototype in an M1 model. However
@@ -10808,7 +9584,7 @@ implement
 ationDataT
 ype
 
-DataTypeMap
+#@CLASS: DataTypeMap
 M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 This class represents the relationship between ApplicationDataType and its
 implementing ImplementationDataType.
@@ -10871,7 +9647,7 @@ Class
 Package
 Note
 
-DataTypeMappingSet
+#@CLASS: DataTypeMappingSet
 M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 This class represents a list of mappings between ApplicationDataTypes and
 ImplementationDataTypes. In addition, it can contain mappings between
@@ -11002,7 +9778,7 @@ This constraint is visualized in ﬁgure 5.2.
 
 Figure 5.2: Compatibility of Data Types
 
-5.2.3 Data Categories
+#@SECTION: 5.2.3 Data Categories
 
 An AutosarDataType is derived from Identifiable, thus having a longName, a
 shortName, a category, and several further attributes for administrative and docu
@@ -12290,7 +11066,7 @@ VALUE. This has to be applied if no explicit deﬁnition of the category can be 
 
 
 
-5.2.4 Application Data Type
+#@SECTION: 5.2.4 Application Data Type
 
 [TPS_SWCT_01240] Subclasses of ApplicationDataType (cid:100) As ﬁgure 5.3 ex
 plains, the abstract meta-class ApplicationDataType is further derived into an
@@ -12544,13 +11320,11 @@ x
 
 *
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1
-
-x
+#@SECTION: 0..1 0..1
 
 x
 
@@ -12558,35 +11332,35 @@ x
 
 x
 
-0..1 0..1
+x
 
-0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1
+#@SECTION: 0..1
+
+#@SECTION: 0..1 0..1
 
 x
 
 x
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 1
-
-1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 1
 
 1
 
@@ -12612,32 +11386,30 @@ x
 
 1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
 x
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..13
-0..1 0..1
-
-1
-
-0..1 0..1
-
-0..1
-
-0..1
+#@SECTION: 0..1 0..13
+#@SECTION: 0..1 0..1
 
 1
 
-1
+#@SECTION: 0..1 0..1
+
+#@SECTION: 0..1
+
+#@SECTION: 0..1
 
 1
 
@@ -12649,15 +11421,19 @@ x
 
 1
 
-0..1 0..1
+1
 
 1
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1
+1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
@@ -12671,7 +11447,7 @@ x
 
 1
 
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -12753,7 +11529,7 @@ Table 5.8: Allowed Attributes vs. category for ApplicationDataTypes
 
 ApplicationPrimitiveDataType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 Note
 
@@ -12782,7 +11558,7 @@ Table 5.9: ApplicationPrimitiveDataType
 
 ApplicationCompositeDataType (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 Note
 Base
@@ -12826,9 +11602,9 @@ DataTypes. (cid:99)()
 
 
 
-5.2.4.1 Application Primitive Data Types
+#@SECTION: 5.2.4.1 Application Primitive Data Types
 
-5.2.4.1.1 Data Types for Single Values
+#@SECTION: 5.2.4.1.1 Data Types for Single Values
 
 In contrast to prior versions (R3.x) of the AUTOSAR standard, the primitive application
 data types on M2 level are no longer speciﬁed. Instead of this, the meta-class Appli
@@ -12930,7 +11706,7 @@ gory STRING is deﬁned by [constr_1242].
 For a more detailed description of the properties that can be deﬁned for data types
 (and data prototypes as well) see sections 5.4 and 5.4.2.
 
-5.2.4.1.2 About Enumerations
+#@SECTION: 5.2.4.1.2 About Enumerations
 
 [TPS_SWCT_01243] Deﬁnition of enumeration types (cid:100) In the AUTOSAR meta
 model, an enumeration is not implemented by means of an ApplicationCompos
@@ -12975,7 +11751,7 @@ An example of how an enumeration looks like in ARXML is contained in section 5.5
 
 CompuARElementAtpBlueprintAtpBlueprintableCompuMethod+ displayFormat  :DisplayFormatString [0..1]CompuContentCompuScalesCompuScale+ mask  :PositiveInteger [0..1]+ shortLabel  :Identifier [0..1]+ symbol  :CIdentifier [0..1]«atpVariation»+ lowerLimit  :Limit [0..1]+ upperLimit  :Limit [0..1]CompuConst«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]CompuScaleConstantContentsCompuScaleContentsCompuConstContentCompuConstTextContent+ vt  :VerbatimString+compuMethod0..1+compuConstContentType1+compuInverseValue0..1+compuScaleContents0..1«atpVariation»+compuScale0..*{ordered}+compuInternalToPhys0..1+compuPhysToInternal0..1+compuDefaultValue0..1+compuContent1+compuConst1
 
-5.2.4.1.3 Data Types for Calibration Parameters
+#@SECTION: 5.2.4.1.3 Data Types for Calibration Parameters
 
 [TPS_SWCT_01244] Data types for calibration parameters are also described as
 primitive types (cid:100) Data types for calibration parameters are from the application per
@@ -12998,7 +11774,7 @@ means it is possible to deﬁne on the level of DataPrototypes or other artifact
 the SwDataDefProps come into play. For details on these part of the SwDataDef
 Props see chapters 5.4.4 and 5.5.5. (cid:99)()
 
-5.2.4.1.4 Data Types for Textual Strings
+#@SECTION: 5.2.4.1.4 Data Types for Textual Strings
 
 textual strings (cid:100) An ApplicationPrimitive[
 constr_1093] Deﬁnition of
@@ -13018,7 +11794,7 @@ Figure 5.8: Speciﬁcation of textual strings
 
 SwTextProps
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 
@@ -13082,7 +11858,7 @@ VariableSize with ﬁllcharacter
 
 baseType SwBaseType
 
-0..1
+#@SECTION: 0..1
 
 ref This is the base type of one character in the string.
 
@@ -13097,7 +11873,7 @@ acter
 
 Integer
 
-0..1
+#@SECTION: 0..1
 
 attr Filler character for text parameter to pad up to the
 
@@ -13234,11 +12010,11 @@ In this speciﬁc example the deﬁnition of the SwRecordLayout foresees the App
 tionPrimitiveDataType of category STRING to be implemented as a structured
 data type that consists of:
 
-1. the size of an instance of the string data type in terms of the number of characters
+#@SECTION: 1. the size of an instance of the string data type in terms of the number of characters
 
 plus
 
-2. an array that can be used to store the individual characters contained in an in
+#@SECTION: 2. an array that can be used to store the individual characters contained in an in
 
 stance of the string data type.
 
@@ -13535,7 +12311,7 @@ One motivation for the existence of [TPS_SWCT_01570] is that the integrator of a
 AUTOSAR ECU may rightfully decide to take a different ImplementationDataType
 other than the one that has been generated on the basis of the SwRecordLayout.
 
-5.2.4.2 Application Composite Data Types
+#@SECTION: 5.2.4.2 Application Composite Data Types
 
 [TPS_SWCT_01247] ApplicationArrayDataType and ApplicationRecord
 DataType (cid:100) The meta-classes ApplicationArrayDataType and Application
@@ -13558,7 +12334,7 @@ iteDataTypes is also possible. (cid:99)()
 
 Figure 5.9: Summary of ApplicationCompositeDataType
 
-5.2.4.2.1 ApplicationArrayDataType
+#@SECTION: 5.2.4.2.1 ApplicationArrayDataType
 
 [TPS_SWCT_01078] Conﬁgurable array size (cid:100) An ApplicationArrayDataType
 may4 contain maxNumberOfElements ApplicationArrayElements.
@@ -13580,7 +12356,7 @@ ApplicationCompositeDataTypeApplicationArrayDataType+ dynamicArraySizeProfile  :
 
 ApplicationArrayDataType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 Note
 
@@ -13605,7 +12381,7 @@ String
 attr Speciﬁes the proﬁle which the array will follow if it
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 is a variable size array.
 
@@ -13624,7 +12400,7 @@ Table 5.12: ApplicationArrayDataType
 
 ApplicationArrayElement
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 Base
@@ -13640,7 +12416,7 @@ nticsEnum
 PositiveInteger
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 the array size shall be interpreted.
 
@@ -13650,7 +12426,7 @@ attr This attribute controls how the information about
 
 attr The maximum number of elements that the array
 
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -13699,7 +12475,7 @@ Literal
 ﬁxedSize
 
 variableSize
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes
 This type controls how the information about the number of elements in an
 ApplicationArrayDataType is to be interpreted.
@@ -13741,7 +12517,7 @@ Size
 allIndices
 SameArray
 Size
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 This enumeration deﬁnes different ways to handle the sizes of variable size arrays.
 Description
@@ -14122,7 +12898,7 @@ is set to BOOLEAN. This ApplicationPrimitiveDataType “BOOLEAN” correlates
 to the ImplementationDataType “boolean” of category VALUE which is typically
 the boolean type of the AUTOSAR Platform Types. Please note here [constr_1063].
 
-5.2.4.2.2 ApplicationRecordDataType
+#@SECTION: 5.2.4.2.2 ApplicationRecordDataType
 
 [TPS_SWCT_01249] ApplicationRecordDataType (cid:100) A declaration of Applica
 tionRecordDataType describes a non-empty set of objects, each of which has
@@ -14133,7 +12909,7 @@ unique. (cid:99)(RS_SWCT_03216)
 
 ApplicationRecordDataType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
 Note
 
@@ -14173,7 +12949,7 @@ Table 5.16: ApplicationRecordDataType
 
 ApplicationRecordElement
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 Base
@@ -14196,7 +12972,7 @@ Attribute
 
 Table 5.17: ApplicationRecordElement
 
-5.2.5 Implementation Data Type
+#@SECTION: 5.2.5 Implementation Data Type
 
 [TPS_SWCT_01250] ImplementationDataType has been introduced to opti
 mize the formal support for data type handling on the implementation level (cid:100)
@@ -14444,7 +13220,7 @@ R
 R
 A
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 *
 
@@ -14458,32 +13234,32 @@ A
 
 *
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1
 
 1
-0..1 0..15
+#@SECTION: 0..1 0..15
 
-0..16
+#@SECTION: 0..16
 
 *
 
 1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 Attributes of SwDataDefProps
 
@@ -14721,19 +13497,19 @@ R
 R
 A
 
-0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1
 
-0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1
-
-x
+#@SECTION: 0..1 0..1 0..1
 
 x
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+x
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
@@ -14759,15 +13535,15 @@ x
 
 x
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1
 
 1..* 1..*
 
 1
 
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -14891,7 +13667,7 @@ Figure 5.11: ImplementationDataType overview
 
 ImplementationDataType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes
 Note
 
@@ -14915,7 +13691,7 @@ Datatype
 String
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Speciﬁes the proﬁle which the array will follow in
 case this data type is a variable size array.
@@ -14952,7 +13728,7 @@ Datatype
 SymbolProps
 
 Mul. Kind Note
-0..1 aggr This represents the SymbolProps for the
+#@SECTION: 0..1 aggr This represents the SymbolProps for the
 
 ImplementationDataType.
 
@@ -14964,7 +13740,7 @@ r
 
 NameToken
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute is used to control which part of the
 AUTOSAR toolchain is supposed to trigger data
@@ -15021,7 +13797,7 @@ at least one ImplementationDataTypeElement. (cid:99)()
 
 ImplementationDataTypeElement
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes
 Note
 
@@ -15051,7 +13827,7 @@ Datatype
 PositiveInteger
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr The existence of this attributes (if bigger than 0)
 
@@ -15077,13 +13853,13 @@ type of each single array element.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-0..1
+#@SECTION: 0..1
 
 attr The way how the size of the array is handled in
 
 case of a variable size array.
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute controls the meaning of the value of
 
@@ -15109,7 +13885,7 @@ Props
 SwDataDefProp
 s
 
-0..1 aggr The properties of this
+#@SECTION: 0..1 aggr The properties of this
 
 ImplementationDataTypeElementt.
 
@@ -15696,17 +14472,17 @@ ments do not form closed sets but refer to further type deﬁnitions in one of f
 tive ways, depending on whether the type is implemented via a base type, a data or
 function pointer, or a reference to another implementation data type:
 
-1. Reference to an underlying SwBaseType corresponds to category VALUE.
+#@SECTION: 1. Reference to an underlying SwBaseType corresponds to category VALUE.
 
-2. Reference to BswModuleEntry in SwPointerTargetProps corresponds to
+#@SECTION: 2. Reference to BswModuleEntry in SwPointerTargetProps corresponds to
 
 category FUNCTION_REFERENCE.
 
-3. SwDataDefProps in SwPointerTargetProps corresponds to category
+#@SECTION: 3. SwDataDefProps in SwPointerTargetProps corresponds to category
 
 DATA_REFERENCE.
 
-4. Reference to another ImplementationDataType corresponds to category
+#@SECTION: 4. Reference to another ImplementationDataType corresponds to category
 
 TYPE_REFERENCE.
 
@@ -15743,14 +14519,14 @@ Figure 5.13: Example (2) for TypeDefs
 As far as the AUTOSAR meta-model is concerned, a pointer to a pointer could in
 principle be implemented in two ways:
 
-1. by deﬁning an ImplementationDataType of category DATA_REFERENCE
+#@SECTION: 1. by deﬁning an ImplementationDataType of category DATA_REFERENCE
 that aggregates SwDataDefProps in the role swDataDefProps that in turn
 aggregate SwPointerTargetProps in the role swPointerTargetProps
 with attribute targetCategory set to TYPE_REFERENCE that aggregates Sw
 DataDefProps in the role swDataDefProps that references an Implementa
 tionDataType of category DATA_REFERENCE.
 
-2. by deﬁning an ImplementationDataType of category DATA_REFERENCE
+#@SECTION: 2. by deﬁning an ImplementationDataType of category DATA_REFERENCE
 that aggregates SwDataDefProps in the role swDataDefProps that in turn ag
 gregate SwPointerTargetProps in the role swPointerTargetProps with
 attribute targetCategory set
@@ -15800,7 +14576,7 @@ plained in [7]. (cid:99)(RS_SWCT_03217)
 
 SwPointerTargetProps
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 
@@ -15824,7 +14600,7 @@ y
 ref The referenced BswModuleEntry serves as the
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 signature of a function pointer deﬁnition. Primary
 use case: function pointer passed as argument to
@@ -15838,14 +14614,14 @@ s
 
 Tags: xml.sequenceOffset=40
 
-0..1 aggr The properties of the target data type.
+#@SECTION: 0..1 aggr The properties of the target data type.
 
 targetCate
 gory
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the category of the target:
 
@@ -15927,7 +14703,7 @@ Figure 5.16: ImplementationProps and its subclasses
 
 ImplementationProps (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Implementation
 Note
 
@@ -15959,7 +14735,7 @@ ReferrableImplementationProps+ symbol  :CIdentifierBswSchedulerNamePrefixSection
 
 SymbolProps
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -15984,7 +14760,7 @@ Attribute
 
 Table 5.23: SymbolProps
 
-5.2.6 Base Type
+#@SECTION: 5.2.6 Base Type
 
 [TPS_SWCT_01260] SwBaseType (cid:100) BaseType is used to specify the basic level men
 In AUTOSAR, we use the meta-class SwBaseType which is
@@ -16046,7 +14822,7 @@ nized Data Objects.9
 
 BaseType (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::BaseTypes
 Note
 
@@ -16078,7 +14854,7 @@ Table 5.24: BaseType
 
 SwBaseType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::BaseTypes
 Note
 
@@ -16112,7 +14888,7 @@ is limited to ASAM members.
 
 BaseTypeDeﬁnition (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::BaseTypes
 Note
 Base
@@ -16135,7 +14911,7 @@ Table 5.26: BaseTypeDeﬁnition
 
 BaseTypeDirectDeﬁnition
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::BaseTypes
 Note
 Base
@@ -16163,7 +14939,7 @@ Size
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr Describes the length of the data type speciﬁed in
 
@@ -16189,7 +14965,7 @@ Tags: xml.sequenceOffset=110
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr Describes the maximum length of the BaseType in
 
@@ -16199,7 +14975,7 @@ Tags: xml.sequenceOffset=80
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute describes the alignment of the
 
@@ -16222,7 +14998,7 @@ NativeDeclarati
 onString
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute describes the declaration of such a
 
@@ -16363,7 +15139,7 @@ attribute BaseTypeDirectDefinition.baseTypeEncoding:
 
 [constr_1398] Existence of attributes of BaseTypeDirectDefinition (cid:100) If the
 value of attribute BaseTypeDirectDefinition.baseTypeEncoding is set to UTF
-16 then the attribute BaseTypeDirectDefinition.byteOrder shall exist.
+#@SECTION: 16 then the attribute BaseTypeDirectDefinition.byteOrder shall exist.
 
 The only allowed values of BaseTypeDirectDefinition.byteOrder in this case
 are mostSignificantByteFirst and mostSignificantByteLast (cid:99)()
@@ -16412,7 +15188,7 @@ straint although it is formulated as such.
 However, an AUTOSAR tool would not be able to properly check the condition at con
 ﬁguration time and therefore this rule is published as a speciﬁcation item.
 
-5.2.7 Data Type Terminology
+#@SECTION: 5.2.7 Data Type Terminology
 
 There are uses of data types that on the one hand need a handy term (because this
 kind of data type is used a lot) but on the other hand cannot easily be expressed in
@@ -16423,7 +15199,7 @@ types precisely every time one of these is used. A deﬁnition of terminology is
 to associate the mentioned kinds of data types with the term under which their use shall
 be paraphrased.
 
-5.2.7.1 Primitive Type
+#@SECTION: 5.2.7.1 Primitive Type
 
 In some cases it is necessary to constrain that applicability of data types to primitive C
 data types. It would be possible to describe the characteristics of eligible Autosar
@@ -16456,7 +15232,7 @@ references have been resolved, boils down an AutosarDataType according to
 
 (cid:99)()
 
-5.2.7.2 Compound Primitive Data Type
+#@SECTION: 5.2.7.2 Compound Primitive Data Type
 
 [TPS_SWCT_01179] Compound Primitive Data Type (cid:100) For clariﬁcation, a “com
 pound primitive data type” is an ApplicationPrimitiveDataType of cate
@@ -16482,7 +15258,7 @@ DataType of category STRING. (cid:99)(RS_SWCT_03216)
 pound Primitive Data Types that have set the value of of category other than
 STRING shall not deﬁne invalidValue. (cid:99)()
 
-5.2.7.3 Integral Primitive Type
+#@SECTION: 5.2.7.3 Integral Primitive Type
 
 The SenderReceiverToSignalMapping (see [11]) allows for the integral mapping
 of a piece of data to a single SystemSignal. The speciﬁcation of AUTOSAR COM
@@ -16544,14 +15320,14 @@ the requirements of [constr_1229]
 
 
 
-5.2.7.4 Variable-Size Array Data Type
+#@SECTION: 5.2.7.4 Variable-Size Array Data Type
 
 The deﬁnition of and further explanation regarding the term Variable-Size Array
 Data Type can be found in chapter 2.8.
 
-5.3 Data Prototypes
+#@SECTION: 5.3 Data Prototypes
 
-5.3.1 Overview
+#@SECTION: 5.3.1 Overview
 
 [TPS_SWCT_01264] Data prototypes implement a role of a data type (cid:100) Generally
 speaking, a data prototype represents the implementation of a role of a data type within
@@ -16572,7 +15348,7 @@ Figure 5.18: Data Prototypes Overview
 
 DataPrototype (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 Base
@@ -16587,7 +15363,7 @@ SwDataDefProp
 s
 
 Mul. Kind Note
-0..1 aggr This property allows to specify data deﬁnition
+#@SECTION: 0..1 aggr This property allows to specify data deﬁnition
 
 properties which apply on data prototype level.
 
@@ -16595,7 +15371,7 @@ Table 5.28: DataPrototype
 
 AutosarDataPrototype (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 Base
@@ -16627,7 +15403,7 @@ ApplicationArrayElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ array
 
 ApplicationCompositeElementDataPrototype (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 This class represents a data prototype which is aggregated within a composite
 Note
@@ -17026,67 +15802,67 @@ C
 
 *
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1
+#@SECTION: 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1
-
-x
-
-0..1 0..1
-
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
 x
 
-x
+#@SECTION: 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
 x
 
-0..1 0..1 0..1 0..1 0..1
+x
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+x
 
-0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+#@SECTION: 0..1
 
 0..* 0..* 0..* 0..* 0..*
 
-0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1
-
-x
+#@SECTION: 0..1 0..1 0..1 0..1 0..1
 
 x
 
-0..1 0..1
+x
 
-0..1 0..1
+#@SECTION: 0..1 0..1
+
+#@SECTION: 0..1 0..1
 
 Attributes of SwDataDefProps
 annotation
@@ -17394,35 +16170,35 @@ x
 
 *
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1 0..1 0..1 0..1
+#@SECTION: 0..1 0..1 0..1 0..1
 
-0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-x
+#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
-0..1
+x
 
-0..1 0..1 0..1 0..1
+#@SECTION: 0..1
+
+#@SECTION: 0..1 0..1 0..1 0..1
 
 Attributes of SwDataDefProps
 
@@ -17511,7 +16287,7 @@ bration access) from the application point of view.
 
 ArgumentDataPrototype
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Note
 
@@ -17535,7 +16311,7 @@ argument prototype.
 
 Mul. Kind Note
 
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -17560,7 +16336,7 @@ nt
 AutosarDataTyp
 e
 
-0..1
+#@SECTION: 0..1
 
 ref This allows to denote the intended type within
 
@@ -17577,7 +16353,7 @@ Table 5.33: ArgumentDataPrototype
 
 VariableDataPrototype
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 
@@ -17600,7 +16376,7 @@ ValueSpecificati
 on
 
 Mul. Kind Note
-0..1 aggr Speciﬁes initial value(s) of the
+#@SECTION: 0..1 aggr Speciﬁes initial value(s) of the
 
 VariableDataPrototype
 
@@ -17608,7 +16384,7 @@ Table 5.34: VariableDataPrototype
 
 ParameterDataPrototype
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
 Note
 
@@ -17622,7 +16398,7 @@ ValueSpecificati
 on
 
 Mul. Kind Note
-0..1 aggr Speciﬁes initial value(s) of the
+#@SECTION: 0..1 aggr Speciﬁes initial value(s) of the
 
 ParameterDataPrototype
 
@@ -17660,7 +16436,7 @@ Figure 5.19: Initial value for AutosarDataPrototypes
 
 Find more information about the interpretation of initValue in section 5.7.
 
-5.3.2 Reference to Data Prototypes
+#@SECTION: 5.3.2 Reference to Data Prototypes
 
 This chapter explains the various patterns for referencing DataPrototypes.
 
@@ -17690,7 +16466,7 @@ using a composite ImplementationDataType.
 
 AutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel  :Identifier [0..1]AutosarDataPrototypeParameterDataPrototype+initValue0..1+initValue0..1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 
 AutosarVariableRef
@@ -17749,18 +16525,18 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref This references a variable which is provided by a
 
 port and/or which is part of a CompositeDataType.
 
-0..1 aggr This is used if the target variable is inside of
+#@SECTION: 0..1 aggr This is used if the target variable is inside of
 
 variableDataPrototype typed by an
 ImplementationDataType.
 
-0..1
+#@SECTION: 0..1
 
 ref This reference is used if the variable is local to the
 
@@ -17778,7 +16554,7 @@ Table 5.36: AutosarVariableRef
 
 Figure 5.20: Implementation of AutosarVariableRef
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 
 ArVariableInImplementationDataInstanceRef
@@ -17820,7 +16596,7 @@ Mul. Kind Note
 
 PortPrototype
 
-0..1
+#@SECTION: 0..1
 
 ref This is the port providing/receiving the root of the
 
@@ -17837,7 +16613,7 @@ otype
 VariableDataPr
 ototype
 
-0..1
+#@SECTION: 0..1
 
 ref This refers to the variableDataPrototype which is
 
@@ -17906,7 +16682,7 @@ by a dedicated algorithm. Note that in all cases where [constr_1173] does not ap
 
 ArVariableInImplementationDataInstanceRefIdentifiableImplementationDataTypeElement+ arraySizeHandling  :ArraySizeHandlingEnum [0..1]+ arraySizeSemantics  :ArraySizeSemanticsEnum [0..1]«atpVariation»+ arraySize  :PositiveInteger [0..1]AtpBlueprintableAtpPrototypePortPrototypeAutosarDataPrototypeVariableDataPrototype+rootVariableDataPrototype0..1+portPrototype0..1+contextDataPrototype0..*{ordered}+targetDataPrototype1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 
 AutosarParameterRef
@@ -17950,13 +16726,13 @@ Datatype
 DataPrototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref This instance reference is used if the callibration
 
 DataPrototype
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -18050,9 +16826,9 @@ AtpInstanceRefParameterInAtomicSWCTypeInstanceRefAtpBlueprintableAtpPrototypePor
 
 Figure 5.23: Implementation of the InstanceRef for AutosarVariableRef
 
-5.4 Properties of Data Deﬁnitions
+#@SECTION: 5.4 Properties of Data Deﬁnitions
 
-5.4.1 Overview
+#@SECTION: 5.4.1 Overview
 
 As it has already been shown in the previous chapters, various properties and asso
 ciations can be attached to the deﬁnition of data types as well as prototypes. These
@@ -19000,7 +17776,7 @@ applies to.
 
 (cid:28)atpVariation(cid:29) SwDataDefProps
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 
@@ -19048,7 +17824,7 @@ NativeDeclarati
 onString
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute is used to declare native qualiﬁers of
 
@@ -19082,7 +17858,7 @@ pads ...) related to the current data object.
 
 baseType SwBaseType
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.roleElement=true; xml.roleWrapper
 Element=true; xml.sequenceOffset=20; xml.type
@@ -19096,7 +17872,7 @@ hod
 
 CompuMethod
 
-0..1
+#@SECTION: 0..1
 
 ref Computation method associated with the
 
@@ -19106,7 +17882,7 @@ Tags: xml.sequenceOffset=50
 
 dataConstr DataConstr
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.sequenceOffset=180
 ref Data constraint for this data object.
@@ -19117,7 +17893,7 @@ mat
 DisplayFormatS
 tring
 
-0..1
+#@SECTION: 0..1
 
 attr This property describes how a number is to be
 
@@ -19135,7 +17911,7 @@ DataType
 
 Tags: xml.sequenceOffset=210
 
-0..1
+#@SECTION: 0..1
 
 ref This association denotes the
 
@@ -19170,7 +17946,7 @@ on
 
 Tags: xml.sequenceOffset=215
 
-0..1 aggr Optional value to express invalidity of the actual
+#@SECTION: 0..1 aggr Optional value to express invalidity of the actual
 
 data element.
 
@@ -19178,7 +17954,7 @@ stepSize
 
 Float
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.sequenceOffset=255
 
@@ -19197,7 +17973,7 @@ Datatype
 SwAddrMethod
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref Addressing method related to this data object. Via
 an association to the same SwAddrMethod it can
@@ -19210,7 +17986,7 @@ nt
 
 AlignmentType
 
-0..1
+#@SECTION: 0..1
 
 attr The attribute describes the intended alignment of
 
@@ -19229,7 +18005,7 @@ ation
 
 Tags: xml.sequenceOffset=33
 
-0..1 aggr Description of the binary representation in case of
+#@SECTION: 0..1 aggr Description of the binary representation in case of
 
 a bit variable.
 
@@ -19241,7 +18017,7 @@ onAccess
 SwCalibrationA
 ccessEnum
 
-0..1
+#@SECTION: 0..1
 
 attr Speciﬁes the read or write access by MCD tools
 
@@ -19253,7 +18029,7 @@ AxisSet
 SwCalprmAxisS
 et
 
-0..1 aggr This speciﬁes the properties of the axes in case of
+#@SECTION: 0..1 aggr This speciﬁes the properties of the axes in case of
 
 a curve or map etc. This is mainly applicable to
 calibration parameters.
@@ -19282,7 +18058,7 @@ aggr Variables used for comparison in an MCD process.
 Tags: xml.sequenceOffset=170; xml.type
 Element=false
 
-0..1 aggr Describes how the value of the data object has to
+#@SECTION: 0..1 aggr Describes how the value of the data object has to
 
 be calculated from the value of another data
 object (by the MCD system).
@@ -19293,7 +18069,7 @@ iable
 SwVariableRefP
 roxy
 
-0..1 aggr Contains a reference to a variable which serves as
+#@SECTION: 0..1 aggr Contains a reference to a variable which serves as
 
 a host-variable for a bit variable. Only applicable
 to bit objects.
@@ -19306,7 +18082,7 @@ cy
 SwImplPolicyEn
 um
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -19327,7 +18103,7 @@ dResolutio
 n
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr The purpose of this element is to describe the
 
@@ -19365,7 +18141,7 @@ swDataDependency .
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 swInterpol
 ationMetho
@@ -19373,7 +18149,7 @@ d
 
 swIsVirtual Boolean
 
-0..1
+#@SECTION: 0..1
 
 swPointerT
 argetProps
@@ -19382,7 +18158,7 @@ SwPointerTarge
 tProps
 
 Tags: xml.sequenceOffset=260
-0..1 aggr Speciﬁes that the containing data object is a
+#@SECTION: 0..1 aggr Speciﬁes that the containing data object is a
 pointer to another data object.
 
 swRecordL
@@ -19399,13 +18175,13 @@ lTime
 
 Tags: xml.sequenceOffset=280
 
-0..1
+#@SECTION: 0..1
 
 ref Record layout for this data object.
 
 Tags: xml.sequenceOffset=290
 
-0..1 aggr This element speciﬁes the frequency in which the
+#@SECTION: 0..1 aggr This element speciﬁes the frequency in which the
 object involved shall be or is called or calculated.
 This timing can be collected from the task in which
 write access processes to the variable run. But
@@ -19427,14 +18203,14 @@ Datatype
 SwTextProps
 
 Mul. Kind Note
-0..1 aggr
+#@SECTION: 0..1 aggr
 
 the speciﬁc properties if the data object is a text
 object.
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr This represents the size of a Value Block
 
@@ -19451,7 +18227,7 @@ unit
 
 Unit
 
-0..1
+#@SECTION: 0..1
 
 ref Physical unit associated with the semantics of this
 
@@ -19468,7 +18244,7 @@ tiveDataType
 
 Tags: xml.sequenceOffset=350
 
-0..1
+#@SECTION: 0..1
 
 ref The referenced ApplicationPrimitiveDataType
 
@@ -19480,7 +18256,7 @@ Tags: xml.sequenceOffset=355
 
 Table 5.40: SwDataDefProps
 
-Primitive NativeDeclarationString
+Primitiv#@CLASS: e NativeDeclarationString
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 
 Note
@@ -19496,7 +18272,7 @@ Table 5.41: NativeDeclarationString
 
 SwBitRepresentation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 
@@ -19521,7 +18297,7 @@ Datatype
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 If the "bit data object" is hosted within another
 data object (e.g. if the memory can be accessed
@@ -19534,7 +18310,7 @@ Bits
 
 Integer
 
-0..1
+#@SECTION: 0..1
 
 attr Number of bits allocated by a "bit data object"
 
@@ -19546,7 +18322,7 @@ Tags: xml.sequenceOffset=30
 
 Table 5.42: SwBitRepresentation
 
-Primitive DisplayFormatString
+Primitiv#@CLASS: e DisplayFormatString
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 
 Types
@@ -19607,7 +18383,7 @@ Tags: xml.xsd.customType=DISPLAY-FORMAT-STRING; xml.xsd.pattern=%[
 
 Table 5.43: DisplayFormatString
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::
 
 Annotation
@@ -19673,7 +18449,7 @@ Note
 Literal
 notAccessi
 ble
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Determines the access rights to a data object w.r.t. measurement and calibration.
 Description
@@ -19700,31 +18476,31 @@ properties speciﬁed on prototype level override the ones speciﬁed on type le
 
 More formally, the precedence of such properties is:
 
-1. attributes of SwDataDefProps deﬁned on ApplicationDataType which may
+#@SECTION: 1. attributes of SwDataDefProps deﬁned on ApplicationDataType which may
 
 be overwritten by
 
-2. attributes of SwDataDefProps deﬁned on ImplementationDataType which
+#@SECTION: 2. attributes of SwDataDefProps deﬁned on ImplementationDataType which
 
 may be overwritten by
 
-3. attributes of SwDataDefProps deﬁned on DataPrototype which may be over
+#@SECTION: 3. attributes of SwDataDefProps deﬁned on DataPrototype which may be over
 
 written by
 
-4. attributes of SwDataDefProps deﬁned on InstantiationDataDefProps
+#@SECTION: 4. attributes of SwDataDefProps deﬁned on InstantiationDataDefProps
 
 which may be overwritten by
 
-5. attributes of SwDataDefProps deﬁned on ParameterAccess respectively Ar
+#@SECTION: 5. attributes of SwDataDefProps deﬁned on ParameterAccess respectively Ar
 
 gument which may be overwritten by
 
-6. attributes of SwDataDefProps deﬁned on FlatInstanceDescriptor which
+#@SECTION: 6. attributes of SwDataDefProps deﬁned on FlatInstanceDescriptor which
 
 may be overwritten by
 
-7. attributes of SwDataDefProps deﬁned on McDataInstance
+#@SECTION: 7. attributes of SwDataDefProps deﬁned on McDataInstance
 
 (cid:99)()
 
@@ -19780,7 +18556,7 @@ Point
 queued
 
 standard
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Speciﬁes the implementation strategy with respect to consistency mechanisms of
 variables.
@@ -20602,7 +19378,7 @@ swImplPolicy is not explicitly set at any of the locations listed in "‘Place o
 for SwDataDefProps mentioned in table 5.39 the default value standard applies.
 (cid:99)()
 
-5.4.2 Invalid Value
+#@SECTION: 5.4.2 Invalid Value
 
 The diagram 5.5 shows that in addition to the semantics deﬁned through the com
 puMethod (explained below in chapter 5.5.1), also an invalidValue can be spec
@@ -20759,17 +19535,17 @@ cording to the string encoding. (cid:99)()
 [constr_1302] Restriction of data invalidation (cid:100) Data invalidation is only applicable
 for one of the following cases applicable on the receiving side:
 
-1. VariableDataPrototypes typed by either an ApplicationPrimitive
+#@SECTION: 1. VariableDataPrototypes typed by either an ApplicationPrimitive
 DataType or an ImplementationDataType of category VALUE or
 TYPE_REFERENCE that boils down to category VALUE that have deﬁned an
 invalidValue.
 
-2. VariableDataPrototypes typed by either an ApplicationComposite
+#@SECTION: 2. VariableDataPrototypes typed by either an ApplicationComposite
 DataType or an ImplementationDataType of category STRUCTURE, or
 ARRAY or of category TYPE_REFERENCE that boils down to category STRUC
 TURE, or ARRAY that have at least one primitive element with an invalidValue.
 
-3. VariableDataPrototypes typed by an ImplementationDataType of cat
+#@SECTION: 3. VariableDataPrototypes typed by an ImplementationDataType of cat
 egory UNION or of category TYPE_REFERENCE that boils down to category
 UNION where all primitive elements deﬁne an invalidValue.
 
@@ -20818,7 +19594,7 @@ SenderReceiverInterfaceAutosarDataPrototypeVariableDataPrototypeInvalidationPoli
 erenceValueSpecification for the deﬁnition of a ApplicationPrimitive
 DataType.swDataDefProps.invalidValue is not supported. (cid:99)()
 
-5.4.3 Properties for Measurement
+#@SECTION: 5.4.3 Properties for Measurement
 
 In embedded automotive software design, measurement means access to memory
 locations in an ECU and transferring its contents to the measurement & calibration
@@ -20892,7 +19668,7 @@ notAccessi
 ble
 readOnly
 readWrite
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Determines the access rights to a data object w.r.t. measurement and calibration.
 Description
@@ -20950,7 +19726,7 @@ nature of data elements characterized by setting the swImplPolicy to measure
 mentPoint, such data elements shall not be referenced by a VariableAccess
 aggregated by RunnableEntity in the role dataReadAccess. (cid:99)()
 
-5.4.4 Properties of Curves and Maps
+#@SECTION: 5.4.4 Properties of Curves and Maps
 
 A characteristic table is deﬁned by setting the category of the corresponding Au
 tosarDataType or DataPrototype to CURVE respectively MAP, CUBOID, CUBE_4,
@@ -21015,7 +19791,7 @@ Figure 5.30: Illustration of a Curve in M1
 
 SwCalprmAxisSet
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter
 Note
 
@@ -21049,7 +19825,7 @@ Element :ApplicationDataTypecategory = CURVEshortName = MyCurveswDataDefProps :S
 
 SwCalprmAxis
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter
 This element speciﬁes an individual input parameter axis (abscissa).
 Note
@@ -21062,7 +19838,7 @@ category
 goryEnum
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 axis.
 
@@ -21070,7 +19846,7 @@ attr This property speciﬁes the category of a particular
 
 baseType SwBaseType
 
-0..1
+#@SECTION: 0..1
 
 ref The SwBaseType to be used for the axis. Note
 
@@ -21088,7 +19864,7 @@ ApplicationDataTypes. The value shall be ignored.
 Tags: atp.Status=removed
 xml.sequenceOffset=110
 
-0..1
+#@SECTION: 0..1
 
 attr This property speciﬁes how the axis values shall
 
@@ -21102,7 +19878,7 @@ ex
 
 AxisIndexType
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute speciﬁes which axis is speciﬁed by
 
@@ -21119,7 +19895,7 @@ ccessEnum
 
 Tags: xml.sequenceOffset=20
 
-0..1
+#@SECTION: 0..1
 
 attr Describes the applicability of parameters and
 
@@ -21149,7 +19925,7 @@ Table 5.51: SwCalprmAxis
 Enumeration CalprmAxisCategoryEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::CalibrationParameter
 This enum speciﬁes the possible values of the category property within
 SwCalprmAxis.
@@ -21197,7 +19973,7 @@ Table 5.52: CalprmAxisCategoryEnum
 
 SwCalprmAxisTypeProps (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter
 Note
 
@@ -21223,7 +19999,7 @@ Table 5.53: SwCalprmAxisTypeProps
 
 SwAxisIndividual
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Axis
 Note
 
@@ -21234,7 +20010,7 @@ class SwAxisGrouped).
 ARObject,SwCalprmAxisTypeProps
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 CompuMethod
 
 ref This is the compuMethod which is expected for the
@@ -21248,7 +20024,7 @@ hod
 
 dataConstr DataConstr
 
-0..1
+#@SECTION: 0..1
 
 ref Refers to constraints, e.g. for plausibility checks.
 
@@ -21272,12 +20048,12 @@ eric
 
 SwAxisGeneric
 
-0..1 aggr
+#@SECTION: 0..1 aggr
 
 
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This is the datatype of the input value for the axis.
 
@@ -21370,7 +20146,7 @@ Datatype
 Unit
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This represents the physical unit of the input value
 
@@ -21383,7 +20159,7 @@ Table 5.54: SwAxisIndividual
 
 SwAxisGeneric
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Axis
 Note
 
@@ -21427,7 +20203,7 @@ Table 5.55: SwAxisGeneric
 
 SwAxisGrouped
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Axis
 Note
 
@@ -21436,7 +20212,7 @@ parameters.
 ARObject,SwCalprmAxisTypeProps
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 ApplicationPrimi
 tiveDataType
 
@@ -21459,7 +20235,7 @@ Datatype
 AxisIndexType
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Describes which axis of the referenced calibration
 parameter provides the values for the group axis.
@@ -21502,7 +20278,7 @@ Element=false; xml.typeWrapperElement=false
 
 Table 5.56: SwAxisGrouped
 
-5.4.5 Setting an Axis Input Value
+#@SECTION: 5.4.5 Setting an Axis Input Value
 
 When an interpolation routine is called, an input value has to be provided to ﬁnd the ap
 propriate axis entry in the implementation of a RunnableEntity. However, this input
@@ -21605,7 +20381,7 @@ Figure 5.33: Applying Proxy Parameter Reference Mechanism
 
 SwCalprmRefProxy
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DatadictionaryProxies
 Note
 Base
@@ -21620,7 +20396,7 @@ AutosarParamet
 erRef
 
 Mul. Kind Note
-0..1 aggr This represents a Parameter within AUTOSAR.
+#@SECTION: 0..1 aggr This represents a Parameter within AUTOSAR.
 
 Note that the Datatype of the referenced
 ParameterDataPrototype shall be an
@@ -21653,7 +20429,7 @@ Table 5.57: SwCalprmRefProxy
 
 SwVariableRefProxy
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DatadictionaryProxies
 Proxy class for several kinds of references to a variable.
 Note
@@ -21667,7 +20443,7 @@ Ref
 iable
 
 Mul. Kind Note
-0..1 aggr This represents the reference to a Variable in an
+#@SECTION: 0..1 aggr This represents the reference to a Variable in an
 
 Autosar system. Note that the target of the
 reference within AutosarVariableRef shall be typed
@@ -21713,7 +20489,7 @@ of InstantiationDataDefProps which have been deﬁned to facilitate this kind of
 re-use (for more information please refer to section 7.5.4). This ability is also docu
 mented in Table 5.39.
 
-5.4.6 Specifying Data Dependencies
+#@SECTION: 5.4.6 Specifying Data Dependencies
 
 SwDataDependency allows dependent data elements to be speciﬁed. For exam
 ple, other ParameterDataPrototypes can be combined into one ParameterDat
@@ -21894,7 +20670,7 @@ LOCAL-PARAMETER-REF>
 
 SwDataDependency
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 
@@ -21924,7 +20700,7 @@ SwDataDepend
 encyArgs
 
 Mul. Kind Note
-0..1 aggr Speciﬁes the arguments used in the data
+#@SECTION: 0..1 aggr Speciﬁes the arguments used in the data
 
 dependency. Note that this is 0..1 since the
 aggregated class is a container (atpMixed).
@@ -21936,7 +20712,7 @@ ormula
 CompuGeneric
 Math
 
-0..1 aggr This element describes the formula with which the
+#@SECTION: 0..1 aggr This element describes the formula with which the
 
 dependencies between the participating objects
 are deﬁned.
@@ -21949,7 +20725,7 @@ Table 5.59: SwDataDependency
 
 (cid:28)atpMixed(cid:29) SwDataDependencyArgs
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 Base
@@ -21991,7 +20767,7 @@ Table 5.60: SwDataDependencyArgs
 
 
 
-5.4.7 Precedence of data properties with respect to data elements, axis ele
+#@SECTION: 5.4.7 Precedence of data properties with respect to data elements, axis ele
 
 ments, computation methods, units
 
@@ -22267,12 +21043,12 @@ calibration diagnostic system (MCD-System), the axis can also not be accessed.
 On the other hand it might be that access is granted for the value axis only but
 not for the axis points.
 
-5.5 Elements used in Properties of Data Deﬁnitions
+#@SECTION: 5.5 Elements used in Properties of Data Deﬁnitions
 
 This section describes further elements which are attached to SwDataDefProps via
 associations.
 
-5.5.1 Computation Methods
+#@SECTION: 5.5.1 Computation Methods
 
 [TPS_SWCT_01276] Computation methods (cid:100) An important part of semantics is the
 speciﬁcation of a so-called computation method which speciﬁes the conversion be
@@ -22285,7 +21061,7 @@ contained elements, i.e. the ApplicationPrimitiveDataTypes.
 
 CompuMethod
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This meta-class represents the ability to express the relationship between a physical
 Note
@@ -22315,7 +21091,7 @@ Datatype
 Compu
 
 Mul. Kind Note
-0..1 aggr This speciﬁes the computation from internal
+#@SECTION: 0..1 aggr This speciﬁes the computation from internal
 
 values to physical values.
 
@@ -22324,7 +21100,7 @@ sToInternal
 
 Compu
 
-0..1 aggr This represents the computation from physical
+#@SECTION: 0..1 aggr This represents the computation from physical
 
 Tags: xml.sequenceOffset=80
 
@@ -22338,7 +21114,7 @@ mat
 DisplayFormatS
 tring
 
-0..1
+#@SECTION: 0..1
 
 attr This property speciﬁes, how the physical value
 shall be displayed e.g. in documents or
@@ -22348,7 +21124,7 @@ unit
 
 Unit
 
-0..1
+#@SECTION: 0..1
 
 ref This is the physical unit of the Physical values for
 
@@ -22545,13 +21321,13 @@ shortLabel can be taken as a the source for naming the symbol that represents th
 CompuScale in the C code. The following rule applies (lower values indicate higher
 priority) for all CompuScales with a point-range:
 
-1. Take the value of symbol if this attribute exists.
+#@SECTION: 1. Take the value of symbol if this attribute exists.
 
-2. Take the value of vt if it makes a valid C identiﬁer.
+#@SECTION: 2. Take the value of vt if it makes a valid C identiﬁer.
 
 
 
-3. Take the value of shortLabel if it exists.
+#@SECTION: 3. Take the value of shortLabel if it exists.
 
 Fail if none of the possible options apply.
 
@@ -22578,7 +21354,7 @@ enclosing CompuMethod is one of the following:
 
 Compu
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 Base
@@ -22605,7 +21381,7 @@ CompuConst
 Tags: xml.roleElement=false; xml.roleWrapper
 Element=false; xml.sequenceOffset=20; xml.type
 Element=false; xml.typeWrapperElement=false
-0..1 aggr This property can be used to specify an output
+#@SECTION: 0..1 aggr This property can be used to specify an output
 
 value for a conversion formula, if the value to be
 converted lies outside the plausibility limit.
@@ -22619,7 +21395,7 @@ Table 5.63: Compu
 
 CompuContent (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 
@@ -22652,7 +21428,7 @@ Table 5.64: CompuContent
 
 CompuScale
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 
@@ -22672,13 +21448,13 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-0..1 aggr <desc> represents a general but brief description
+#@SECTION: 0..1 aggr <desc> represents a general but brief description
 
 of the object in question.
 
 CompuConst
 
-0..1 aggr This is the inverse value of the constraint. This
+#@SECTION: 0..1 aggr This is the inverse value of the constraint. This
 
 Tags: xml.sequenceOffset=30
 
@@ -22693,7 +21469,7 @@ ntents
 
 Tags: xml.sequenceOffset=60
 
-0..1 aggr This represents the computation details of the
+#@SECTION: 0..1 aggr This represents the computation details of the
 
 scale.
 
@@ -22701,7 +21477,7 @@ lowerLimit
 
 Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the lower limit of the scale.
 
@@ -22713,7 +21489,7 @@ mask
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -22740,7 +21516,7 @@ shortLabel
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref This element speciﬁes a short name for the
 
@@ -22758,7 +21534,7 @@ Datatype
 CIdentifier
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref The symbol, if provided, is used by code
 
@@ -22771,7 +21547,7 @@ Tags: xml.sequenceOffset=25
 
 upperLimit Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the upper limit of a of the scale.
 
@@ -22783,7 +21559,7 @@ Table 5.65: CompuScale
 
 CompuScales
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 Base
@@ -22816,7 +21592,7 @@ Table 5.66: CompuScales
 
 CompuScaleContents (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This abstract meta-class represents the content of one particular scale.
 Note
@@ -22840,7 +21616,7 @@ Table 5.67: CompuScaleContents
 
 CompuRationalCoeffs
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This meta-class represents the ability to express a rational function by specifying the
 Note
@@ -22879,7 +21655,7 @@ Table 5.68: CompuRationalCoeffs
 
 CompuConst
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This meta-class represents the fact that the value of a computation method scale is
 Note
@@ -22915,7 +21691,7 @@ deﬁnition of vt in the context of an ApplicationValueSpecification. (cid:99)()
 
 CompuScaleRationalFormula
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This meta-class represents the fact that the computation in this scale is represented
 Note
@@ -22946,7 +21722,7 @@ Table 5.70: CompuScaleRationalFormula
 
 CompuScaleConstantContents
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 
@@ -22978,7 +21754,7 @@ Table 5.71: CompuScaleConstantContents
 
 CompuNominatorDenominator
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 
@@ -23015,7 +21791,7 @@ appearance of coefﬁcients in CompuNominatorDenominator.v, i.e. the ﬁrst valu
 the ordered list of CompuNominatorDenominator.v represents the exponent 0, the
 second CompuNominatorDenominator.v represents the exponent 1, and so on.
 
-5.5.1.1 Category Values in the context of a CompuMethod
+#@SECTION: 5.5.1.1 Category Values in the context of a CompuMethod
 
 For a detailed description of CompuMethods, please refer to the ASAM MCD 2 Har
 monized Data Objects [23].
@@ -23181,7 +21957,7 @@ puScale elements.
 
 Table 5.73: ASAM compuMethod
 
-5.5.1.2 Applicability of Attributes in the context of a CompuMethod
+#@SECTION: 5.5.1.2 Applicability of Attributes in the context of a CompuMethod
 
 This section summarizes the applicability of CompuMethod in terms of which attributes
 of CompuMethod and related meta-classes (e.g. CompuScale,CompuConst) shall be
@@ -23546,7 +22322,7 @@ of Compu).
 
 (8) Mandatory for CompuConst; enforced for CompuRationalCoeffs.
 
-5.5.1.3 Example for Enumeration
+#@SECTION: 5.5.1.3 Example for Enumeration
 
 The following example illustrates how an enumeration is speciﬁed using Com
 puMethod.
@@ -23590,7 +22366,7 @@ Listing 5.7: example for enumeration
 
 </COMPU-METHOD>
 
-5.5.1.4 Example for Linear Conversion
+#@SECTION: 5.5.1.4 Example for Linear Conversion
 
 The following examples illustrates how a linear conversion is speciﬁed using Com
 puMethod.
@@ -23636,7 +22412,7 @@ Listing 5.8: example for linear CompuMethod
 
 </COMPU-METHOD>
 
-5.5.1.5 Example for Linear Conversion with texttable
+#@SECTION: 5.5.1.5 Example for Linear Conversion with texttable
 
 The following example illustrates how a linear conversion with a texttable is speciﬁed
 using CompuMethod.
@@ -23704,12 +22480,12 @@ Listing 5.9: example for linear and texttable CompuMethod
 
 </COMPU-METHOD>
 
-5.5.1.6 Example for conversion speciﬁed by a rational function
+#@SECTION: 5.5.1.6 Example for conversion speciﬁed by a rational function
 
 The semantics of rational function is:
 Internal = v0∗phys0+v1∗phys1+v2∗phys2+...
 v0∗phys0+v∗
-1 phys1+v2∗phys2+...
+#@SECTION: 1 phys1+v2∗phys2+...
 
 The following example illustrates a reciprocal conversion.
 
@@ -23756,7 +22532,7 @@ Listing 5.10: example for rational CompuMethod
 
 </COMPU-METHOD>
 
-5.5.1.7 Example for BITFIELD_TEXTTABLE
+#@SECTION: 5.5.1.7 Example for BITFIELD_TEXTTABLE
 
 The following example shows how a CompuMethod of category BIT
 FIELD_TEXTTABLE can be used to assign a special meaning to each bit of an Au
@@ -23791,7 +22567,7 @@ error
 01(16) = low pressure
 10(32) = unbalanced
 11(48) = unknown
-11111111 = invalid value
+#@SECTION: 11111111 = invalid value
 
 Table 5.75: Example Bitﬁeld
 
@@ -23800,8 +22576,8 @@ part of the mask. By this the error can safely be masked out.
 
 Internal: 28
 
-28 = 0b0001_1100
-7654 3210
+#@SECTION: 28 = 0b0001_1100
+#@SECTION: 7654 3210
 Bit
 
 Physical:
@@ -24016,7 +22792,7 @@ Limit shall also be identical for all affected CompuScales.
 
 CompuScaleContents (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 This abstract meta-class represents the content of one particular scale.
 Note
@@ -24038,7 +22814,7 @@ Table 5.76: CompuScaleContents
 
 CompuConstTextContent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 Base
@@ -24062,7 +22838,7 @@ Table 5.77: CompuConstTextContent
 
 CompuConstNumericContent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
 Note
 
@@ -24087,7 +22863,7 @@ Tags: xml.sequenceOffset=50
 
 Table 5.78: CompuConstNumericContent
 
-5.5.2 Physical Units, Physical Dimensions and Unit Groups
+#@SECTION: 5.5.2 Physical Units, Physical Dimensions and Unit Groups
 
 [TPS_SWCT_01285] Physical dimension (cid:100) Another important part of the semantics
 associated with a data type is its physical dimension. Units are used to augment the
@@ -24119,7 +22895,7 @@ are already predeﬁned for AUTOSAR in form of a description ﬁle.
 
 Unit
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units
 Note
 
@@ -24162,7 +22938,7 @@ SingleLanguage
 UnitNames
 
 Mul. Kind Note
-0..1 aggr This speciﬁes how the unit shall be displayed in
+#@SECTION: 0..1 aggr This speciﬁes how the unit shall be displayed in
 
 documents or in user interfaces of tools.The
 displayName corresponds to the Unit.Display in an
@@ -24186,7 +22962,7 @@ ion
 
 Tags: xml.sequenceOffset=20
 
-0..1
+#@SECTION: 0..1
 
 attr This is the factor for the conversion from and to
 
@@ -24194,7 +22970,7 @@ siUnits.
 
 Tags: xml.sequenceOffset=30
 
-0..1
+#@SECTION: 0..1
 
 attr This is the offset for the conversion from and to
 
@@ -24202,7 +22978,7 @@ siUnits.
 
 Tags: xml.sequenceOffset=40
 
-0..1
+#@SECTION: 0..1
 
 ref This association represents the physical
 
@@ -24232,7 +23008,7 @@ ciation to a physical dimension.
 
 PhysicalDimension
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units
 Note
 
@@ -24259,14 +23035,14 @@ Datatype
 currentExp Numerical
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute represents the exponent of the
 physical dimension "electric current".
 
 lengthExp Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension "length".
 
@@ -24277,7 +23053,7 @@ tensityExp
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension "luminous
 
@@ -24291,7 +23067,7 @@ massExp
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension "mass".
 
@@ -24303,7 +23079,7 @@ eExp
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension "quantity
 
@@ -24315,7 +23091,7 @@ Tags: xml.sequenceOffset=70
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension
 
@@ -24327,7 +23103,7 @@ timeExp
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr The exponent of the physical dimension "time".
 
@@ -24349,7 +23125,7 @@ Figure 5.39: Modeling of PhysicalDimensionMapping
 
 PhysicalDimensionMappingSet
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units
 Note
 
@@ -24382,7 +23158,7 @@ Table 5.81: PhysicalDimensionMappingSet
 
 PhysicalDimensionMapping
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units
 Note
 Base
@@ -24452,7 +23228,7 @@ enced physicalDimension shall not deﬁne any exponent value other than 0. (cid:
 
 UnitGroup
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units
 Note
 
@@ -24557,7 +23333,7 @@ In contrast to this "Meter
 
 Figure 5.41: Example for units and unit groups
 
-5.5.3 Data Constraints
+#@SECTION: 5.5.3 Data Constraints
 
 Section 5.2.4.1 already shows an example on how to deﬁne constraints for the physical
 range of a data type, see Figure 5.4.
@@ -24618,7 +23394,7 @@ DataConstrRule+ constrLevel  :Integer [0..1]ARElementAtpBlueprintAtpBlueprintabl
 
 DataConstr
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 Note
 
@@ -24652,7 +23428,7 @@ Table 5.84: DataConstr
 
 DataConstrRule
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 Note
 Base
@@ -24668,7 +23444,7 @@ Integer
 attr This attribute describes the category of a
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 constraint. One of its functions is in the area of
 constraint violation, where it can be used from a
@@ -24685,7 +23461,7 @@ nstrs
 
 InternalConstrs
 
-0..1 aggr Describes the limitations applicable on the internal
+#@SECTION: 0..1 aggr Describes the limitations applicable on the internal
 
 domain (as opposed to the physical domain).
 
@@ -24695,7 +23471,7 @@ rs
 PhysConstrs
 
 Tags: xml.sequenceOffset=40
-0..1 aggr Describes the limitations applicable on the
+#@SECTION: 0..1 aggr Describes the limitations applicable on the
 
 physical domain (as opposed to the internal
 domain).
@@ -24706,7 +23482,7 @@ Table 5.85: DataConstrRule
 
 PhysConstrs
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 Note
 
@@ -24729,7 +23505,7 @@ Datatype
 Limit
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the lower limit of the constraint.
 
@@ -24741,7 +23517,7 @@ maxDiff
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr Maximum difference that is permitted between two
 
@@ -24753,7 +23529,7 @@ nt
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr This element speciﬁes the maximum slope that
 
@@ -24787,7 +23563,7 @@ unit
 
 Unit
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.roleElement=true; xml.roleWrapper
 Element=true; xml.sequenceOffset=40; xml.type
@@ -24799,7 +23575,7 @@ speciﬁed limits.
 
 upperLimit Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the upper limit of the constraint.
 
@@ -24813,7 +23589,7 @@ Table 5.86: PhysConstrs
 
 InternalConstrs
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 Note
 Base
@@ -24826,7 +23602,7 @@ Datatype
 Limit
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the lower limit of the constraint.
 
@@ -24843,7 +23619,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Maximum difference that is permitted between two
 
@@ -24857,7 +23633,7 @@ nt
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr This element speciﬁes the maximum slope that
 
@@ -24895,7 +23671,7 @@ Element=false; xml.typeWrapperElement=false
 
 upperLimit Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the upper limit deﬁned by the
 
@@ -24909,7 +23685,7 @@ Table 5.87: InternalConstrs
 
 ScaleConstr
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 Note
 
@@ -24926,7 +23702,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-0..1 aggr <desc> represents a general but brief description
+#@SECTION: 0..1 aggr <desc> represents a general but brief description
 
 of the object in question.
 
@@ -24934,7 +23710,7 @@ lowerLimit
 
 Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the lower limit of the scale.
 
@@ -24953,7 +23729,7 @@ Datatype
 Identifier
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This element speciﬁes a short name for the
 
@@ -24967,7 +23743,7 @@ Tags: xml.sequenceOffset=20
 
 upperLimit Limit
 
-0..1
+#@SECTION: 0..1
 
 ref This speciﬁes the upper limit of a the scale.
 
@@ -24976,7 +23752,7 @@ validity
 ScaleConstrVali
 dityEnum
 
-0..1
+#@SECTION: 0..1
 
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
@@ -24989,7 +23765,7 @@ then the default value is "VALID".
 Tags: xml.attribute=true
 
 Table 5.88: ScaleConstr
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::GlobalConstraints
 This enumerator speciﬁes the possible values of a scale.
 Description
@@ -25013,7 +23789,7 @@ notDeﬁned
 
 Table 5.89: ScaleConstrValidityEnum
 
-Primitive
+Primitiv#@CLASS: e
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 
 Limit
@@ -25034,7 +23810,7 @@ m
 attr This speciﬁes the type of the interval. If the
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attribute is missing the interval shall be considered
 as "CLOSED".
@@ -25071,7 +23847,7 @@ strictlyDe
 creasing
 strictlyIn
 creasing
-
+#@CLASS: 
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 Types
 This enumerator denotes the values for speciﬁcation of monotony for e.g. curves.
@@ -25130,7 +23906,7 @@ given contexts.
 
 Enumeration IntervalTypeEnum
 Package
-
+#@CLASS: 
 M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 Types
 This enumerator speciﬁes the type of an interval.
@@ -25145,7 +23921,7 @@ open
 
 Table 5.92: IntervalTypeEnum
 
-5.5.4 Addressing Methods
+#@SECTION: 5.5.4 Addressing Methods
 
 In an ECU there might be various methods to access a particular object (e.g mea
 surement or calibration parameter) according to a given address. This variety might
@@ -25309,7 +24085,7 @@ reduce the amount of memory gaps due to allocation restrictions.
 
 SwAddrMethod
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects
 Note
 
@@ -25338,7 +24114,7 @@ attr Enumeration to specify the name pattern of the
 ref This attribute introduces the ability to specify
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Memory Allocation Keyword.
 
@@ -25361,7 +24137,7 @@ In the Memory Mapping conﬁguration, this option
 list is used to determine an appropriate
 MemMapAddressingModeSet.
 
-0..1
+#@SECTION: 0..1
 
 attr Speciﬁes the expected initialization of the
 
@@ -25383,7 +24159,7 @@ e
 MemorySection
 Type
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes the type of memory sections which can be
 
@@ -25393,7 +24169,7 @@ Table 5.93: SwAddrMethod
 
 
 
-Primitive
+Primitiv#@CLASS: e
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 
 SectionInitializationPolicyType
@@ -25444,7 +24220,7 @@ conﬁgData
 const
 excludeFrom
 Flash
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects
 Enumeration to specify the essential nature of the data which can be allocated in a
 common memory class by the means of the AUTOSAR Memory Mapping.
@@ -25480,7 +24256,7 @@ Note
 Literal
 addrMethod
 ShortName
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects
 Enumeration to specify the name pattern of the Memory Allocation Keyword.
 Description
@@ -25501,7 +24277,7 @@ the related MemorySection.
 
 Table 5.96: MemoryAllocationKeywordPolicyType
 
-Primitive AlignmentType
+Primitiv#@CLASS: e AlignmentType
 Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive
 
 Note
@@ -25523,7 +24299,7 @@ For more information on the speciﬁcation of the MemorySection refer to [7].
 
 Figure 5.43: Assigning an address method to a memory section
 
-5.5.5 Record Layouts
+#@SECTION: 5.5.5 Record Layouts
 
 [TPS_SWCT_01295] SwRecordLayout (cid:100) The SwRecordLayout describes how
 data is serialized in the memory of an ECU. This information is important with respect
@@ -25550,7 +24326,7 @@ these may refer to the same SwRecordLayout even if the size of the data is diffe
 
 IdentifiableMemorySection+ alignment  :AlignmentType [0..1]+ memClassSymbol  :CIdentifier [0..1]+ option  :Identifier [0..*]+ size  :PositiveInteger [0..1]+ symbol  :Identifier [0..1]IdentifiableResourceConsumptionARElementImplementationARElementAtpBlueprintAtpBlueprintableSwAddrMethod+ memoryAllocationKeywordPolicy  :MemoryAllocationKeywordPolicyType [0..1]+ option  :Identifier [0..*]+ sectionInitializationPolicy  :SectionInitializationPolicyType [0..1]+ sectionType  :MemorySectionType [0..1]«atpVariation»SwDataDefPropsAtpPrototypeDataPrototype«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»MemorySectionType var code const calprm configData excludeFromFlash calibrationVariables«enumeration»MemoryAllocationKeywordPolicyType addrMethodShortName addrMethodShortNameAndAlignment+swAddrmethod1+swAddrMethod0..1«atpVariation,atpSplitable»+memorySection0..*+resourceConsumption1«atpSplitable»+/swDataDefProps0..1
 
-5.5.5.1 Specifying Record Layouts
+#@SECTION: 5.5.5.1 Specifying Record Layouts
 
 As mentioned above, the purpose of record layout is to specify how an object (e.g. a
 calibration parameter) is serialized in memory of an ECU. The canonical approach for
@@ -25577,7 +24353,7 @@ Figure 5.44: Speciﬁcation of a record layout
 
 SwRecordLayout
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -25614,7 +24390,7 @@ Table 5.98: SwRecordLayout
 
 SwRecordLayoutV
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -25631,7 +24407,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-0..1 aggr This aggregation allows for a brief description
+#@SECTION: 0..1 aggr This aggregation allows for a brief description
 
 about the particular record layout value which can
 help to identify the entry. In-depth documentation
@@ -25647,11 +24423,11 @@ category
 AsamRecordLa
 youtSemantics
 
-0..1
+#@SECTION: 0..1
 
 baseType SwBaseType
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.sequenceOffset=20
 
@@ -25699,7 +24475,7 @@ layout value.
 
 Tags: xml.sequenceOffset=3
 
-0..1
+#@SECTION: 0..1
 
 ref This association supports the case that a value
 
@@ -25720,7 +24496,7 @@ ex
 
 AxisIndexType
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute gives the index of the axis of which
 
@@ -25747,7 +24523,7 @@ ApplicationDataType.
 
 Integer
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute speciﬁes the ﬁller character for the
 
@@ -25759,7 +24535,7 @@ FIXRIGHTDIFF.
 
 NameTokens
 
-0..1
+#@SECTION: 0..1
 
 attr The symbolic value for iteration, or the symbolic
 
@@ -25790,7 +24566,7 @@ ayoutVPro
 p
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute describes the kind of values to be
 
@@ -25804,7 +24580,7 @@ Table 5.99: SwRecordLayoutV
 
 SwRecordLayoutGroup
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -25819,7 +24595,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-0..1 aggr This aggregation allows a brief description about
+#@SECTION: 0..1 aggr This aggregation allows a brief description about
 the particular record layout group which can help
 to identify the entry. In-depth documentation
 should be added to the introduction of the
@@ -25834,7 +24610,7 @@ category
 AsamRecordLa
 youtSemantics
 
-0..1
+#@SECTION: 0..1
 
 shortLabel
 
@@ -25876,7 +24652,7 @@ SwGenericAxis
 ParamType
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This association allows to specify record layout
 
@@ -25891,7 +24667,7 @@ aggregated.
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref This attribute is used to denote the component to
 
@@ -25923,7 +24699,7 @@ ype
 
 AxisIndexType
 
-0..1
+#@SECTION: 0..1
 
 swRecordL
 ayoutGrou
@@ -25932,7 +24708,7 @@ pAxis
 SwRecordLayo
 utGroupContent
 
-0..1 aggr This is the contents of the recordLayout which is
+#@SECTION: 0..1 aggr This is the contents of the recordLayout which is
 produced for every step of iteration.
 
 Tags: xml.sequenceOffset=30
@@ -25944,7 +24720,7 @@ pFrom
 RecordLayoutIt
 eratorPoint
 
-0..1
+#@SECTION: 0..1
 
 Tags: xml.roleElement=false; xml.roleWrapper
 Element=false; xml.sequenceOffset=100; xml.type
@@ -25964,7 +24740,7 @@ pIndex
 
 NameToken
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute attributes a symbolic name to the
 
@@ -25987,7 +24763,7 @@ ayoutGrou
 pStep
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute speciﬁes the step width for the
 
@@ -26008,7 +24784,7 @@ is "1".
 
 Tags: xml.sequenceOffset=80
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute speciﬁes the end point for the
 
@@ -26027,7 +24803,7 @@ Table 5.100: SwRecordLayoutGroup
 
 (cid:28)atpMixed(cid:29) SwRecordLayoutGroupContent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -26108,7 +24884,7 @@ value of SwRecordLayoutV.category other than VALUE and VAL_BLK. (cid:99)()
 
 For CURVE, MAP, etc. the iteration shall be performed along the input axis.
 
-Primitive AxisIndexType
+Primitiv#@CLASS: e AxisIndexType
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -26139,7 +24915,7 @@ RAY; xml.xsd.type=string
 
 Table 5.102: AxisIndexType
 
-Primitive RecordLayoutIteratorPoint
+Primitiv#@CLASS: e RecordLayoutIteratorPoint
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 This meta-class denotes a start / endpoint for the iteration of a
 Note
@@ -26218,7 +24994,7 @@ It may happen that this generic approach cannot always be safely mapped to the A
 keywords. Therefore SwRecordLayoutV.category as well as SwRecordLayout
 Group.category can assist the conversion to the current A2L format. (cid:99)()
 
-Primitive AsamRecordLayoutSemantics
+Primitiv#@CLASS: e AsamRecordLayoutSemantics
 Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
 Note
 
@@ -26324,7 +25100,7 @@ FNC_VALUES -->
 
 </SW-RECORD-LAYOUT>
 
-5.5.5.2 RecordLayouts and DataTypes
+#@SECTION: 5.5.5.2 RecordLayouts and DataTypes
 
 [constr_1027] Types for record layouts (cid:100) Because ParameterDataPrototypes
 have a (cid:28)isOfType(cid:29)-relation to ApplicationDataTypes or Implementation
@@ -26415,7 +25191,7 @@ for all ApplicationDataTypes«iterative»ApplicationDataTypeTypeContentFromRecor
 
 Figure 5.52: reﬁning subElements
 
-5.5.5.3 Record Layouts and Interpolation Routines
+#@SECTION: 5.5.5.3 Record Layouts and Interpolation Routines
 
 [TPS_SWCT_01300] Relationship between record layouts and interpolation rou
 tines (cid:100) The relationship between record layouts and interpolation routines can be spec
@@ -26435,7 +25211,7 @@ process subElements of RecordLayoutGroup«iterative»RecordElementsubElementset 
 
 Figure 5.53: Mapping of Record Layouts and Interpolation Routines
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
 
 InterpolationRoutineMappingSet
@@ -26475,7 +25251,7 @@ Table 5.106: InterpolationRoutineMappingSet
 
 ARElementInterpolationRoutineMappingSetARElementSwRecordLayoutInterpolationRoutine+ isDefault  :Boolean+ shortLabel  :IdentifierARElementAtpBlueprintAtpBlueprintableBswModuleEntry+ callType  :BswCallType+ executionContext  :BswExecutionContext+ isReentrant  :Boolean+ isSynchronous  :Boolean+ role  :Identifier [0..1]+ serviceId  :PositiveInteger [0..1]+ swServiceImplPolicy  :SwServiceImplPolicyEnumInterpolationRoutineMapping+interpolationRoutine1+swRecordLayout+interpolationRoutine1..*+interpolationRoutineMapping0..*
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
 
 InterpolationRoutineMapping
@@ -26520,7 +25296,7 @@ ayout
 
 Table 5.107: InterpolationRoutineMapping
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
 
 InterpolationRoutine
@@ -26580,25 +25356,25 @@ Table 5.108: InterpolationRoutine
 
 
 
-5.6 Speciﬁcation of Constant Values
+#@SECTION: 5.6 Speciﬁcation of Constant Values
 
-5.6.1 Overview
+#@SECTION: 5.6.1 Overview
 
 [TPS_SWCT_01177] Assignment of constant values (cid:100) Constant values can be as
 signed to a meta-class by aggregating the meta-class ValueSpecification. This
 aggregation can be used in two ways:
 
-1. by referencing to a reusable ConstantSpecification which contains another
+#@SECTION: 1. by referencing to a reusable ConstantSpecification which contains another
 
 ValueSpecification
 
-2. or through an inline aggregation of a value speciﬁcation of various kind.
+#@SECTION: 2. or through an inline aggregation of a value speciﬁcation of various kind.
 
 (cid:99)(RS_SWCT_03175)
 
 ConstantSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -26628,7 +25404,7 @@ Table 5.109: ConstantSpeciﬁcation
 
 ValueSpeciﬁcation (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -26641,7 +25417,7 @@ Identifier
 ref This can be used to identify particular value
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 Attribute
@@ -26654,7 +25430,7 @@ Table 5.110: ValueSpeciﬁcation
 
 ArrayValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 Base
@@ -26691,7 +25467,7 @@ Table 5.111: ArrayValueSpeciﬁcation
 
 RecordValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 Base
@@ -26728,7 +25504,7 @@ Table 5.112: RecordValueSpeciﬁcation
 
 TextValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -26760,7 +25536,7 @@ Table 5.113: TextValueSpeciﬁcation
 
 NumericalValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -26787,7 +25563,7 @@ Table 5.114: NumericalValueSpeciﬁcation
 
 ReferenceValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -26957,7 +25733,7 @@ ated in response to the existence of a Compound Primitive Data Type) [con
 str_1271], [constr_1272], and [constr_1273] shall be applied recursively according to
 the nature of the given nesting levels. For the “leaf” elements [constr_4035] applies.
 
-5.6.2 Speciﬁcation of Values based on Rules
+#@SECTION: 5.6.2 Speciﬁcation of Values based on Rules
 
 [TPS_SWCT_01484] Meaning of ApplicationRuleBasedValueSpecification
 (cid:100) The purpose of the ApplicationRuleBasedValueSpecification is to provide
@@ -26975,7 +25751,7 @@ value (e.g. 0) and only the ﬁrst few elements differ in terms of initializatio
 
 AbstractRuleBasedValueSpeciﬁcation (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 Base
@@ -26999,7 +25775,7 @@ Table 5.116: AbstractRuleBasedValueSpeciﬁcation
 
 
 Class
-ApplicationRuleBasedValueSpeciﬁcation
+Applicat#@CLASS: ionRuleBasedValueSpeciﬁcation
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27046,7 +25822,7 @@ ont
 RuleBasedValu
 eCont
 
-0..1 aggr This represents the values of an array or
+#@SECTION: 0..1 aggr This represents the values of an array or
 
 Compound Primitive Data Type.
 
@@ -27054,7 +25830,7 @@ Table 5.117: ApplicationRuleBasedValueSpeciﬁcation
 
 RuleBasedAxisCont
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27147,7 +25923,7 @@ unit
 
 Unit
 
-0..1
+#@SECTION: 0..1
 
 ref This represents the physical unit of the provided
 
@@ -27159,7 +25935,7 @@ Table 5.118: RuleBasedAxisCont
 
 RuleBasedValueCont
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27192,7 +25968,7 @@ Tags: xml.roleElement=true; xml.roleWrapper
 Element=false; xml.sequenceOffset=80; xml.type
 WrapperElement=false
 
-0..1 aggr This attribute deﬁnes the size of each dimension
+#@SECTION: 0..1 aggr This attribute deﬁnes the size of each dimension
 for compound primitivies CURVE, MAP, CUBOID,
 CUBE_4, CUBE_5, COM_AXIS, RES_AXIS,
 CURVE_AXIS, VAL_BLK, STRING.
@@ -27207,7 +25983,7 @@ unit
 
 Unit
 
-0..1
+#@SECTION: 0..1
 
 ref This represents the physical unit of the provided
 
@@ -27287,7 +26063,7 @@ well [TPS_SWCT_01185].
 «atpMixed»RuleArguments+ v  :Numerical [0..1]+ vt  :VerbatimString [0..1]«atpVariation»+ vf  :Numerical [0..1]AbstractRuleBasedValueSpecificationApplicationRuleBasedValueSpecification+ category  :IdentifierRuleBasedAxisCont+ category  :CalprmAxisCategoryEnum+ swAxisIndex  :AxisIndexTypeRuleBasedValueCont«atpMixed»DataDefProperties::ValueList+ v  :Numerical«atpVariation»+ vf  :Numerical [0..*] {ordered}ARElementUnits::Unit+ factorSiToUnit  :Float [0..1]+ offsetSiToUnit  :Float [0..1]NumericalOrText+ vt  :String [0..1]«atpVariation»+ vf  :Numerical [0..1]RuleBasedValueSpecification+ maxSizeToFill  :Integer [0..1]+ rule  :Identifier«atpVariation» Tags:vh.latestBindingTime = preCompileTime«atpVariation»+arguments1+swArraysize0..1+ruleBasedValues1+unit0..1+swArraysize1+ruleBasedValues1+unit0..1+swValueCont0..1+swAxisCont0..* {ordered}«atpVariation»+vtf0..1
 
 Class
-NumericalRuleBasedValueSpeciﬁcation
+Numerica#@CLASS: lRuleBasedValueSpeciﬁcation
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27382,7 +26158,7 @@ that the ﬁrst maxSizeToFill elements of the array are ﬁlled. (cid:99)(RS_SWC
 
 RuleBasedValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27417,7 +26193,7 @@ Fill
 
 Integer
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -27448,7 +26224,7 @@ Table 5.121: RuleBasedValueSpeciﬁcation
 
 (cid:28)atpMixed(cid:29) RuleArguments
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 Base
@@ -27461,7 +26237,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This represents a numerical value for the
 
@@ -27469,7 +26245,7 @@ vf
 
 Numerical
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a numerical value for the
 
@@ -27488,7 +26264,7 @@ vtf
 
 VerbatimString
 
-0..1
+#@SECTION: 0..1
 
 ref This represents a textual value for the
 RuleBasedValueSpeciﬁcation.
@@ -27496,7 +26272,7 @@ RuleBasedValueSpeciﬁcation.
 NumericalOrTex
 t
 
-0..1 aggr This aggregation represents the ability to provide
+#@SECTION: 0..1 aggr This aggregation represents the ability to provide
 
 a value that is either numerical or text which
 existence is subject to variability.
@@ -27508,7 +26284,7 @@ Table 5.122: RuleArguments
 
 
 
-5.6.3 Reference to Constant
+#@SECTION: 5.6.3 Reference to Constant
 
 Note the speciﬁc meaning of ConstantReference:
 it passes the deﬁnition of the
@@ -27517,7 +26293,7 @@ ARPackage.
 
 ConstantReference
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 Base
@@ -27538,7 +26314,7 @@ Mul. Kind Note
 
 Table 5.123: ConstantReference
 
-5.6.4 Values for Compound Primitive Data Types
+#@SECTION: 5.6.4 Values for Compound Primitive Data Types
 
 if
 
@@ -27635,7 +26411,7 @@ Figure 5.58: Deﬁnition of an ApplicationValueSpecification
 
 ApplicationValueSpeciﬁcation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -27684,7 +26460,7 @@ ont
 
 SwValueCont
 
-0..1 aggr This represents the values of a Compound
+#@SECTION: 0..1 aggr This represents the values of a Compound
 
 Primitive Data Type.
 
@@ -27703,7 +26479,7 @@ Table 5.124: ApplicationValueSpeciﬁcation
 
 SwAxisCont
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue
 Note
 
@@ -27811,7 +26587,7 @@ SingleLanguage
 UnitNames
 
 Mul. Kind Note
-0..1 aggr This represents the display name which is used for
+#@SECTION: 0..1 aggr This represents the display name which is used for
 
 the physical unit of the axis.
 
@@ -27821,7 +26597,7 @@ Table 5.125: SwAxisCont
 
 SwValueCont
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue
 Note
 Base
@@ -27835,7 +26611,7 @@ Datatype
 ValueList
 
 Mul. Kind Note
-0..1 aggr This attribute deﬁnes the size of each dimension
+#@SECTION: 0..1 aggr This attribute deﬁnes the size of each dimension
 for compound primitivies CURVE, MAP, CUBOID,
 CUB_4, CUBE_5, COM_AXIS, RES_AXIS,
 CURVE_AXIS, VAL_BLK, STRING.
@@ -27850,7 +26626,7 @@ hys
 SwValues
 
 Tags: xml.sequenceOffset=40
-0..1 aggr swValuesPhys represents the values in the
+#@SECTION: 0..1 aggr swValuesPhys represents the values in the
 
 physical domain.
 
@@ -27874,7 +26650,7 @@ Name
 SingleLanguage
 UnitNames
 
-0..1 aggr This speciﬁes how the physical units of the current
+#@SECTION: 0..1 aggr This speciﬁes how the physical units of the current
 
 value set shall be displayed in documents or in
 user interfaces of tools.
@@ -27887,7 +26663,7 @@ Table 5.126: SwValueCont
 
 (cid:28)atpMixed(cid:29) SwValues
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue
 Note
 
@@ -28004,7 +26780,7 @@ s
 
 ValueGroup
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue
 Note
 
@@ -28016,14 +26792,14 @@ MultilanguageL
 ongName
 
 Mul. Kind Note
-0..1 aggr This label allows to give the valueGroup a
+#@SECTION: 0..1 aggr This label allows to give the valueGroup a
 
 partiluclar name. It can be usel if the Values are
 rendered as a table.
 
 SwValues
 
-0..1 aggr This represents the contents of the value group.
+#@SECTION: 0..1 aggr This represents the contents of the value group.
 
 Tags: xml.sequenceOffset=20
 
@@ -28035,7 +26811,7 @@ Table 5.128: ValueGroup
 
 (cid:28)atpMixed(cid:29) ValueList
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
 Note
 Base
@@ -28080,7 +26856,7 @@ Table 5.129: ValueList
 
 NumericalOrText
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -28093,7 +26869,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This attribute represents the ability to provide a
 numerical value. The latest binding time of the
@@ -28107,7 +26883,7 @@ vt
 
 String
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute represents the ability to provide a
 
@@ -28121,9 +26897,9 @@ Tags: xml.sequenceOffset=20
 
 Table 5.130: NumericalOrText
 
-5.6.5 Examples
+#@SECTION: 5.6.5 Examples
 
-5.6.5.1 Example for Constant Speciﬁcation for CURVE
+#@SECTION: 5.6.5.1 Example for Constant Speciﬁcation for CURVE
 
 The following example illustrates how a ConstantSpecification is speciﬁed for a
 CURVE. Please note, that in this example the vf attribute is used for the swArraysize
@@ -28196,7 +26972,7 @@ UNIT-REF>
 
 </CONSTANT-SPECIFICATION>
 
-5.6.5.2 Example for Constant Speciﬁcation for MAP
+#@SECTION: 5.6.5.2 Example for Constant Speciﬁcation for MAP
 
 The following example illustrates how an ConstantSpecification is speciﬁed for
 a MAP. In this case one axis of the MAP is a STD_AXIS and the second one is a
@@ -28295,7 +27071,7 @@ UNIT-REF>
 
 </CONSTANT-SPECIFICATION>
 
-5.6.5.3 Example for Constant Speciﬁcation for COM_AXIS
+#@SECTION: 5.6.5.3 Example for Constant Speciﬁcation for COM_AXIS
 
 The following example illustrates how an ConstantSpecification is speciﬁed for a
 COM_AXIS.
@@ -28349,9 +27125,9 @@ REF>
 
 </CONSTANT-SPECIFICATION>
 
-5.7 Initial Values
+#@SECTION: 5.7 Initial Values
 
-5.7.1 Overview
+#@SECTION: 5.7.1 Overview
 
 [TPS_SWCT_01301] Importance of initial values (cid:100) If the value of a VariableDat
 aPrototype/ParameterDataPrototype has not properly been set by a piece of
@@ -28383,11 +27159,11 @@ following conceptual levels for the deﬁnition of initial values exist:
 
 
 
-1. It is possible to aggregate an initValue directly at the deﬁnition of any Vari
+#@SECTION: 1. It is possible to aggregate an initValue directly at the deﬁnition of any Vari
 
 ableDataPrototype/ParameterDataPrototype.
 
-2. It is possible to aggregate an initValue at the level of a ComSpec, namely:
+#@SECTION: 2. It is possible to aggregate an initValue at the level of a ComSpec, namely:
 
 • NonqueuedSenderComSpec
 
@@ -28399,7 +27175,7 @@ ableDataPrototype/ParameterDataPrototype.
 
 • NvRequireComSpec
 
-3. It is possible to aggregate a implInitValue and an appInitValue at the
+#@SECTION: 3. It is possible to aggregate a implInitValue and an appInitValue at the
 
 deﬁnition of a CalibrationParameterValue.
 
@@ -28407,7 +27183,7 @@ The priority of one deﬁnition of an initial value over another is reﬂected b
 order of the above enumeration, e.g. a deﬁnition on level 2 supersedes a deﬁnition on
 level 1. (cid:99)()
 
-5.7.2 Initial Value Representation
+#@SECTION: 5.7.2 Initial Value Representation
 
 [TPS_SWCT_01183] Actual value of an initValue shall be interpreted according
 to the AutosarDataType (cid:100) A DataPrototype can be typed by either an Applica
@@ -28477,7 +27253,7 @@ a DataPrototype is typed by an ApplicationArrayDataType the correspond
 ing initValue shall be provided by an ArrayValueSpecification or Applica
 tionRuleBasedValueSpecification. (cid:99)()
 
-5.7.3 Constant Speciﬁcation Mapping
+#@SECTION: 5.7.3 Constant Speciﬁcation Mapping
 
 [TPS_SWCT_01186] ConstantSpecificationMapping (cid:100) The ConstantSpeci
 ficationMapping is used to associate ValueSpecifications deﬁned in the im
@@ -28522,7 +27298,7 @@ Figure 5.59: Constant Mapping
 
 ConstantSpeciﬁcationMapping
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -28572,7 +27348,7 @@ ARElementConstantSpecificationConstantSpecificationMappingARElementConstantSpeci
 
 ConstantSpeciﬁcationMappingSet
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::Constants
 Note
 
@@ -28603,7 +27379,7 @@ Table 5.132: ConstantSpeciﬁcationMappingSet
 
 Figure 5.60: Aggregation of ConstantSpecificationMappingSet
 
-5.7.4 Initial Values For CalibrationParameters
+#@SECTION: 5.7.4 Initial Values For CalibrationParameters
 
 [TPS_SWCT_01188] Deﬁnition of calibration data sets through RTE-generator
 and compiler (cid:100) It is possible to provide sets of initial values for calibration parameters
@@ -28635,7 +27411,7 @@ Anyhow, these initial values can be imported from e.g. an ASAM CDF ﬁle.
 
 Figure 5.61: Calibration Parameter Values
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
 
 CalibrationParameterValueSet
@@ -28679,7 +27455,7 @@ Table 5.133: CalibrationParameterValueSet
 
 IdentifiableFlatInstanceDescriptor+ role  :Identifier [0..1]AtpPrototypeIdentifiableRootSwCompositionPrototypeValueSpecification+ shortLabel  :Identifier [0..1]ARElementCalibrationParameterValueSetCalibrationParameterValue«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+calibrationParameterValue0..*«atpSplitable»+calibrationParameterValueSet0..*+initializedParameter1+implInitValue0..1+applInitValue0..1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::
 
 CalibrationParameterValue
@@ -28714,9 +27490,9 @@ FlatInstanceDes
 criptor
 
 Mul. Kind Note
-0..1 aggr This is the initial value speciﬁcation structured
+#@SECTION: 0..1 aggr This is the initial value speciﬁcation structured
 
-0..1 aggr This is the initial value speciﬁcation structured
+#@SECTION: 0..1 aggr This is the initial value speciﬁcation structured
 
 ref This represents the parameter that is initialized by
 
@@ -28740,10 +27516,10 @@ arameter
 Table 5.134: CalibrationParameterValue
 
 
-#@chapter-6
-6 Compatibility
 
-6.1 Introduction
+#@SECTION: 6 Compatibility
+
+#@SECTION: 6.1 Introduction
 
 In order to connect PortPrototypes of SwComponentTypes, the compatibility of
 PortPrototypes needs to be veriﬁed. This section deﬁnes the basic rules for formal
@@ -28759,15 +27535,15 @@ other.
 
 For the compatibility of PortInterfaces basically two options apply:
 
-1. ﬁnding of matching pairs of elements of PortInterfaces is based on matching
+#@SECTION: 1. ﬁnding of matching pairs of elements of PortInterfaces is based on matching
 
 shortName plus the application of compatibility rules for their attributes.
 
-2. a PortInterfaceMapping can be taken to declare two elements of PortPro
+#@SECTION: 2. a PortInterfaceMapping can be taken to declare two elements of PortPro
 
 totypes as compatible without applying further formal checks.
 
-6.2 Compatibility of Data Types
+#@SECTION: 6.2 Compatibility of Data Types
 
 The AUTOSAR meta model deﬁnes a number of meta-classes (e.g. Application
 PrimitiveDataType) that eventually refer to a set of attributes (e.g. a lower bound
@@ -28783,9 +27559,9 @@ of sub-classes of AutosarDataType need to be considered. For this purpose the
 relevant part of the AUTOSAR meta-model need to be fully explored with respect to
 compatibility.
 
-6.2.1 ApplicationDataType
+#@SECTION: 6.2.1 ApplicationDataType
 
-6.2.1.1 ApplicationPrimitiveDataType
+#@SECTION: 6.2.1.1 ApplicationPrimitiveDataType
 
 [constr_1047] Compatibility of ApplicationPrimitiveDataTypes (cid:100) Instances
 of ApplicationPrimitiveDataType are compatible if and only if one of the follow
@@ -28793,7 +27569,7 @@ ing conditions applies:
 
 
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) They have the same category (see table in ﬁgure 5.8).
 
@@ -28801,13 +27577,13 @@ ing conditions applies:
 
 meaning of this statement is explained in section 6.2.4.
 
-2. In the context of using the ApplicationPrimitiveDataType, a DataPro
+#@SECTION: 2. In the context of using the ApplicationPrimitiveDataType, a DataPro
 totypeMapping exists that refers to a DataPrototype typed by one of the
 ApplicationPrimitiveDataTypes in the role firstDataPrototype and
 to another DataPrototype typed by the other ApplicationPrimitive
 DataType in the role secondDataPrototype.
 
-3. In the context of using the ApplicationPrimitiveDataType, a DataPro
+#@SECTION: 3. In the context of using the ApplicationPrimitiveDataType, a DataPro
 totypeMapping exists that refers to a DataPrototype typed by the Appli
 cationPrimitiveDataType in the role secondDataPrototype and to an
 other DataPrototype typed by an ApplicationCompositeDataType in the
@@ -28821,7 +27597,7 @@ ApplicationCompositeElementDataPrototype.
 Please note that it is not required that the shortNames of two data types shall be
 identical in order to consider the two data types as compatible.
 
-6.2.1.2 ApplicationCompositeDataType
+#@SECTION: 6.2.1.2 ApplicationCompositeDataType
 
 An instance of an ApplicationRecordDataType is never compatible to an instance
 of an ApplicationArrayDataType unless a PortInterfaceMapping exists that
@@ -28831,13 +27607,13 @@ details the terms of compatibility (see [TPS_SWCT_01543]).
 ApplicationRecordDataTypes are compatible if and only if one of the following
 conditions applies:
 
-1. All elements at
+#@SECTION: 1. All elements at
 
 the same record position are of compatible Autosar
 DataTypes either ApplicationCompositeDataTypes or Application
 PrimitiveDataTypes).
 
-2. In the context of a DataPrototypeMapping,
+#@SECTION: 2. In the context of a DataPrototypeMapping,
 
 for each Application
 RecordElement of the required ApplicationRecordDataType a SubEle
@@ -28856,7 +27632,7 @@ RecordElement of the provided ApplicationRecordDataType.
 plicationArrayDataType are compatible if and only if one of the following condi
 tions applies:
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) Their elements are of a compatible AutosarDataTypes (either Ap
 ApplicationPrimitive
@@ -28870,7 +27646,7 @@ DataTypes).
 
 (given the existence) have identical values.
 
-2. In the context of a DataPrototypeMapping, for the ApplicationArrayEle
+#@SECTION: 2. In the context of a DataPrototypeMapping, for the ApplicationArrayEle
 ment of the required ApplicationArrayDataType a SubElementMapping
 exists such that a ApplicationCompositeDataTypeSubElementRef in the
 role firstElement or secondElement exists that references the required Ap
@@ -28881,13 +27657,13 @@ provided ApplicationArrayDataType.
 
 (cid:99)()
 
-6.2.2 ImplementationDataType
+#@SECTION: 6.2.2 ImplementationDataType
 
 [constr_1050] Compatibility of ImplementationDataTypes (cid:100) Instances of Im
 plementationDataType are compatible if and only if after all type-references are
 resolved one of the following rules apply:
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) They have the same category (see table 5.18)
 
@@ -28903,7 +27679,7 @@ istence) identical values.
 
 meaning of this statement is explained in section 6.2.4.
 
-2. In the context of using the ImplementationDataType, a DataProto
+#@SECTION: 2. In the context of using the ImplementationDataType, a DataProto
 typeMapping exists that refers to a DataPrototype typed by one of the Im
 plementationDataTypes in the role firstDataPrototype and to another
 DataPrototype typed by the other ImplementationDataType in the role
@@ -28911,7 +27687,7 @@ secondDataPrototype.
 
 
 
-3. In the context of using the ImplementationDataType, a DataProto
+#@SECTION: 3. In the context of using the ImplementationDataType, a DataProto
 typeMapping exists that refers to a DataPrototype typed by the Implemen
 tationDataTypes in the role secondDataPrototype and to another Dat
 aPrototype typed by an ImplementationDataType with a subElement in
@@ -28942,29 +27718,29 @@ on the side of the mode manager shall match the supported range of the Imple
 mentationDataType used for representing ModeDeclarations on the side of the
 mode user (see [constr_1075]). (cid:99)()
 
-6.2.3 Compatibility of SwBaseType
+#@SECTION: 6.2.3 Compatibility of SwBaseType
 
 [constr_1220] Compatibility of SwBaseType (cid:100) Two SwBaseTypes are compatible if
 and only if attributes baseTypeSize respectively maxBaseTypeSize, byteOrder,
 memAlignment, baseTypeEncoding, and nativeDeclaration have identical val
 ues. (cid:99)()
 
-6.2.4 Compatibility of SwDataDefProps
+#@SECTION: 6.2.4 Compatibility of SwDataDefProps
 
 [constr_1051] Compatibility of SwDataDefProps (cid:100) SwDataDefProps are compat
 ible if and only if:
 
-1. They refer to compatible Unit deﬁnitions, or neither of them has an associated
+#@SECTION: 1. They refer to compatible Unit deﬁnitions, or neither of them has an associated
 
 Unit.
 
-2. They refer to compatible conversion methods (see chapter 6.2.4.5) or neither of
+#@SECTION: 2. They refer to compatible conversion methods (see chapter 6.2.4.5) or neither of
 
 them associates such a method.
 
 
 
-3. One of the following conditions apply to ValueSpecifications aggregated
+#@SECTION: 3. One of the following conditions apply to ValueSpecifications aggregated
 in the role invalidValue for being considered compatible (after following and
 resolving indirections created by ConstantReference):
 
@@ -28987,22 +27763,22 @@ plicationValueSpecification then the check for compatibility shall
 apply the CompuMethod on the physical value such that a comparison on
 the implementation level becomes possible. [TPS_GST_02501] applies1.
 
-4. They refer to compatible data constraints dataConstr.
+#@SECTION: 4. They refer to compatible data constraints dataConstr.
 
-5. They refer to compatible swRecordLayouts
+#@SECTION: 5. They refer to compatible swRecordLayouts
 
 All other attributes (e.g. swCalibrationAccess do not affect compatibility). (cid:99)()
 
-6.2.4.1 Compatibility of Units
+#@SECTION: 6.2.4.1 Compatibility of Units
 
 [constr_1052] Compatibility of Units (cid:100) Two Unit deﬁnitions are compatible if and
 only if:
 
-1. They have compatible (see [TPS_GST_02501]) values of attributes factorSi
+#@SECTION: 1. They have compatible (see [TPS_GST_02501]) values of attributes factorSi
 
 ToUnit and offsetSiToUnit.
 
-2. They either refer to identical deﬁnitions of PhysicalDimension or neither of
+#@SECTION: 2. They either refer to identical deﬁnitions of PhysicalDimension or neither of
 
 them associates a PhysicalDimension.
 
@@ -29048,7 +27824,7 @@ This inconsistency cannot be resolved by increasing the lower multiplicity of Ru
 BasedValueCont.unit because this would create an incompatible XML Schema.
 However, the creation of [constr_1393] effectively yields the same result.
 
-6.2.4.2 Compatibility of PhysicalDimensions
+#@SECTION: 6.2.4.2 Compatibility of PhysicalDimensions
 
 [constr_1053] Compatibility of PhysicalDimensions (cid:100) Two PhysicalDimen
 sion deﬁnitions are compatible if and only if the values of
@@ -29102,7 +27878,7 @@ meter and it can be used for torque just as well as for energy. Obviously, two U
 shall never be considered compatible if one refers to torque and the other one refers to
 energy.
 
-6.2.4.3 Compatibility of Data Constraints
+#@SECTION: 6.2.4.3 Compatibility of Data Constraints
 
 The compatibility of two DataConstrs depends on the context in which the owning
 data elements are connected:
@@ -29124,7 +27900,7 @@ constraints it is only compatible with a receiver which also deﬁnes no constra
 
 In other words, this is not a compatibility rule for the types but for the data prototypes.
 
-6.2.4.4 Compatibility in case of ImplementationDataType
+#@SECTION: 6.2.4.4 Compatibility in case of ImplementationDataType
 
 If the SwDataDefProps are owned by an ImplementationDataType further con
 ditions shall be met to ensure compatibility.
@@ -29134,23 +27910,23 @@ ditions shall be met to ensure compatibility.
 Note that depending on the category of the ImplementationDataType, at most
 one of these four constraints is actually relevant:
 
-1. category [constr_1055] ImplementationDataType has category VALUE
+#@SECTION: 1. category [constr_1055] ImplementationDataType has category VALUE
 (cid:100) The attributes baseType shall refer to a compatible SwBaseType (cid:99)() (see ex
 planation in the following rule). The rules regarding the compatibility of SwBase
 Types are covered by [constr_1220].
 
-2. category TYPE_REFERENCE: [constr_1056] ImplementationDataType
+#@SECTION: 2. category TYPE_REFERENCE: [constr_1056] ImplementationDataType
 has category TYPE_REFERENCE (cid:100) The ImplementationDataTypes refer
 enced by the attributes SwDataDefProps.implementationDataType shall
 be compatible . (cid:99)()
 
-3. category DATA_REFERENCE: [constr_1057] ImplementationDataType
+#@SECTION: 3. category DATA_REFERENCE: [constr_1057] ImplementationDataType
 has category DATA_REFERENCE (cid:100) The attributes SwDataDefProps.sw
 PointerTargetProps shall have identical targetCategory and shall refer
 to SwDataDefProps where all attributes are identical (cid:99)() (in other words, the
 target types of the pointers shall be identical, not only compatible).
 
-4. category FUNCTION_REFERENCE:
+#@SECTION: 4. category FUNCTION_REFERENCE:
 
 [constr_1058] Implementation
 DataType has category FUNCTION_REFERENCE (cid:100) The attributes Sw
@@ -29185,7 +27961,7 @@ more detail in chapter 6.2.5.
 
 
 
-6.2.4.5 Compatibility of CompuMethods
+#@SECTION: 6.2.4.5 Compatibility of CompuMethods
 
 [constr_1163] Compatibility of CompuMethods (cid:100) Two CompuMethod deﬁnitions are
 compatible if and only if all attributes except
@@ -29309,7 +28085,7 @@ This is the case for
 
 N0 ∼ 0 && D0 ∼ 1 && N1 ∼ 1 && D1 ∼ 0 && Ni ∼ Di ∼ 0 ∀i > 1.
 
-6.2.4.6 Compatibility of Record Layouts
+#@SECTION: 6.2.4.6 Compatibility of Record Layouts
 
 [constr_1162] Compatibility of SwRecordLayouts (cid:100) Two SwRecordLayout deﬁni
 tions are compatible if and only if all attributes except
@@ -29330,7 +28106,7 @@ tions are compatible if and only if all attributes except
 
 are identical. (cid:99)()
 
-6.2.5 Compatibility of ApplicationDataType and ImplementationDataType
+#@SECTION: 6.2.5 Compatibility of ApplicationDataType and ImplementationDataType
 
 The usage of ApplicationDataTypes implies that also a corresponding Imple
 mentationDataType exists at a certain point in time. The Implementation
@@ -29360,7 +28136,7 @@ Several rules depend on the category of the data types:
 
 rule,
 
-1. As a general
+#@SECTION: 1. As a general
 
 if an ImplementationDataType of category
 TYPE_REFERENCE is targeted by a type mapping or port connection all the rules
@@ -29375,7 +28151,7 @@ tationDataType of category VALUE.
 
 
 
-2. [constr_1059] Compatibility of data types with category VALUE (cid:100) An Ap
+#@SECTION: 2. [constr_1059] Compatibility of data types with category VALUE (cid:100) An Ap
 plicationDataType of category VALUE can only be mapped/connected to
 an ImplementationDataType which also has category VALUE. (cid:99)()
 
@@ -29399,7 +28175,7 @@ to another ImplementationDataType at the data element itself but via the
 networkRepresentation of the ComSpec (for further explanation of this as
 pect see section 4.5.1).
 
-3. [constr_1060] Compatibility of data types with category ARRAY, VAL_BLK
+#@SECTION: 3. [constr_1060] Compatibility of data types with category ARRAY, VAL_BLK
 (cid:100) An ApplicationDataType of category ARRAY, VAL_BLK can only be
 mapped/connected to
 
@@ -29426,7 +28202,7 @@ respective ShortNames are identical.
 
 is not
 
-4. [constr_1061] Compatibility of data types with category STRUCTURE (cid:100) An
+#@SECTION: 4. [constr_1061] Compatibility of data types with category STRUCTURE (cid:100) An
 ApplicationDataType of category STRUCTURE can only be mapped/con
 nected to an ImplementationDataType of category STRUCTURE. (cid:99)()
 
@@ -29437,11 +28213,11 @@ element.
 
 
 
-5. [constr_1063] Compatibility of data types with category BOOLEAN (cid:100) An Ap
+#@SECTION: 5. [constr_1063] Compatibility of data types with category BOOLEAN (cid:100) An Ap
 plicationDataType of category BOOLEAN can only be mapped/connected
 to an ImplementationDataType of category VALUE. (cid:99)()
 
-6. [constr_1064] Compatibility of data types with category COM_AXIS,
+#@SECTION: 6. [constr_1064] Compatibility of data types with category COM_AXIS,
 RES_AXIS, CURVE, MAP, CUBOID, CUBE_4, or CUBE_5 (cid:100) An Application
 DataType of category COM_AXIS, RES_AXIS, CURVE, MAP, CUBOID, CUBE_4,
 or CUBE_5 can only be mapped/connected to an ImplementationDataType
@@ -29458,7 +28234,7 @@ RecordLayout.
 It is not required, to deﬁne DataTypeMaps for the sub-elements or both repre
 sentations.
 
-7. [constr_1066] Forbidden mappings to ImplementationDataType (cid:100) An
+#@SECTION: 7. [constr_1066] Forbidden mappings to ImplementationDataType (cid:100) An
 ApplicationDataType shall never be mapped to an Implementa
 tionDataType of of category UNION, DATA_REFERENCE, or FUNC
 TION_REFERENCE. (cid:99)()
@@ -29467,19 +28243,19 @@ Concerning the SwDataDefProps of an ApplicationDataType instance resp. an
 ImplementationDataType instance which shall be mapped/connected on M1, we
 refer to the table shown in ﬁgure 5.39. The following rules apply:
 
-1. The cases where the ImplementationDataType is not allowed to set a prop
+#@SECTION: 1. The cases where the ImplementationDataType is not allowed to set a prop
 erty but only “inherits” it from the ApplicationDataType are not relevant for
 compatibility. These attributes are simply not allowed in the Implementation
 DataType.
 
-2. In case that only the ImplementationDataType may “deﬁne” the property this
+#@SECTION: 2. In case that only the ImplementationDataType may “deﬁne” the property this
 deﬁnition shall ﬁt into the semantical requirements given by the Application
 DataType in order to make the two types compatible.
 
 This is namely important for the attribute baseType and is explained above in
 the rule for types of category VALUE.
 
-3. In case the ImplementationDataType may “add” a property it may only add
+#@SECTION: 3. In case the ImplementationDataType may “add” a property it may only add
 but not change a property deﬁned by the ApplicationDataType (namely
 note, displayFormat, and swImplPolicy) in order to be compatible.
 
@@ -29488,7 +28264,7 @@ In all other cases, only the Applica
 of the types in order to be compatible.
 tionDataType may deﬁne the computation method.
 
-4. For the compatibility with respect to connectors there are some additional rules
+#@SECTION: 4. For the compatibility with respect to connectors there are some additional rules
 for the values of the attribute swImplPolicy which are considered general rules
 on the level of DataPrototypes and PortInterfaces.
 
@@ -29496,18 +28272,18 @@ on the level of DataPrototypes and PortInterfaces.
 
 Therefore these additional rules are explained in chapter 6.3 and chapter 6.4.4.
 
-5. The case that an ImplementationDataType may “redeﬁne” a property which
+#@SECTION: 5. The case that an ImplementationDataType may “redeﬁne” a property which
 is already set by the ApplicationDataType is not considered as relevant for
 the compatibility with respect to mapping of the types in general but of course
 for
 there may be project speciﬁc rules as to which redeﬁnition is allowed (e.g.
 swAddrMethod or dataConstr). See also 5.5.3 about data constraints.
 
-6. For the compatibility with respect to connectors the attribute dataConstr shall
+#@SECTION: 6. For the compatibility with respect to connectors the attribute dataConstr shall
 be treated in the same way as for compatibility of data types in general, for more
 details please refer to 6.2.4.
 
-6.3 Compatibility of Variable Data Prototypes and Parameter Data
+#@SECTION: 6.3 Compatibility of Variable Data Prototypes and Parameter Data
 
 Prototypes
 
@@ -29517,7 +28293,7 @@ ParameterDataPrototypes of ApplicationPrimitiveDataTypes or Imple
 mentationDataTypes of category VALUE, BOOLEAN, or STRING are compatible if
 and only if one of the following conditions applies:
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) They are typed by (read “refer to”) compatible AutosarDataTypes
 
@@ -29530,7 +28306,7 @@ and ParameterInterfaces.
 
 VariableDataPrototypes.
 
-2. In the context of a DataPrototypeMapping, one of the applicable Variable
+#@SECTION: 2. In the context of a DataPrototypeMapping, one of the applicable Variable
 DataPrototypes or ParameterDataPrototypes is referenced by the Dat
 aPrototypeMapping in the role firstDataPrototype and the other Vari
 ableDataPrototypes or ParameterDataPrototypes is referenced by the
@@ -29547,11 +28323,11 @@ conditions evaluates to true:
 
 
 
-1. The underlying ApplicationCompositeDataTypes or Implementation
+#@SECTION: 1. The underlying ApplicationCompositeDataTypes or Implementation
 
 DataTypes of category STRUCTURE or ARRAY are identical
 
-2. The underlying ApplicationCompositeDataTypes or Implementation
+#@SECTION: 2. The underlying ApplicationCompositeDataTypes or Implementation
 DataTypes of category STRUCTURE or ARRAY fulﬁll the following condition:
 
 • They consist of the same number of elements and
@@ -29566,7 +28342,7 @@ in the same order and
 
 AutosarDataType.
 
-3. In the context of a DataPrototypeMapping,
+#@SECTION: 3. In the context of a DataPrototypeMapping,
 
 for each ApplicationCom
 positeElementDataPrototype of the required DataPrototype a SubEle
@@ -29578,7 +28354,7 @@ in the other role (i.e. secondElement or firstElement) that in turn refer
 ences an ApplicationCompositeElementDataPrototype of the provided
 ApplicationCompositeDataType.
 
-4. If and only if the DataPrototype is not typed by an ApplicationDataType
+#@SECTION: 4. If and only if the DataPrototype is not typed by an ApplicationDataType
 in the context of a DataProto
 but by an ImplementationDataType:
 typeMapping, for each ImplementationDataTypeElement of the required
@@ -29592,7 +28368,7 @@ DataType.
 
 (cid:99)()
 
-6.4 Compatibility of Sender Receiver Interfaces, Parameter Inter
+#@SECTION: 6.4 Compatibility of Sender Receiver Interfaces, Parameter Inter
 
 faces and Non Volatile Data Interfaces
 
@@ -29603,7 +28379,7 @@ certain data value to correctly interpret the following values).
 
 
 
-6.4.1 Connection of Required and Provided Port via AssemblySwConnector
+#@SECTION: 6.4.1 Connection of Required and Provided Port via AssemblySwConnector
 
 The compatibility of SenderReceiverInterfaces, NvDataInterfaces and Pa
 rameterInterfaces are considered for connecting of PortPrototypes with an
@@ -29613,7 +28389,7 @@ AssemblySwConnector.
 the context of AssemblySwConnectors (cid:100) PortPrototypes of different DataIn
 terfaces are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For each VariableDataPrototype or ParameterDataPrototype de
 ﬁned in the context of the DataInterface of the required PortProto
@@ -29634,7 +28410,7 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -29642,7 +28418,7 @@ The table 6.1 deﬁnes which PortInterface elements are compatible depending on
 the PortInterface type and the swImplPolicy attributes of the PortInterface
 elements.
 
-6.4.2 Connection of Inner and Outer Port via DelegationSwConnector
+#@SECTION: 6.4.2 Connection of Inner and Outer Port via DelegationSwConnector
 
 The compatibility of SenderReceiverInterfaces, NvDataInterfaces and Pa
 rameterInterfaces is considered for connecting of PortPrototypes with a Del
@@ -29652,7 +28428,7 @@ egationSwConnector.
 in the context of DelegationSwConnectors (cid:100) PortPrototypes of different
 DataInterfaces are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 
 
@@ -29679,7 +28455,7 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-2. One of the following conditions applies:
+#@SECTION: 2. One of the following conditions applies:
 
 (a) For at least one VariableDataPrototype or ParameterDataProto
 type deﬁned in the context of the SenderReceiverInterface, Nv
@@ -29707,19 +28483,19 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-3. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 3. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
 
 
-6.4.3 Connection of Required and Provided Port via PassThroughSwConnector
+#@SECTION: 6.4.3 Connection of Required and Provided Port via PassThroughSwConnector
 
 [constr_1248] Compatibility of PortPrototypes of different DataInterfaces
 in the context of a PassThroughSwConnector (cid:100) PortPrototypes of different
 DataInterfaces are considered compatible if and only if
 
-1. For at least one VariableDataPrototype or ParameterDataPrototype
+#@SECTION: 1. For at least one VariableDataPrototype or ParameterDataPrototype
 deﬁned in the context of the DataInterface of the required outer PortPro
 totype a compatible VariableDataPrototype or ParameterDataProto
 type exists in the DataInterface of the provided outer PortPrototype.
@@ -29733,13 +28509,13 @@ aPrototypes are used to identify the pair or a PortInterfaceMapping ex
 ists that deﬁnes which differently named elements of PortInterfaces correlate
 with each other.
 
-2. For each such pair, the values of the PortInterface.isService attributes are
+#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
 (cid:99)()
 
-6.4.4 Compatibility of ParameterDataPrototype and VariableDataPrototype de
+#@SECTION: 6.4.4 Compatibility of ParameterDataPrototype and VariableDataPrototype de
 
 pending on PortInterface Type
 
@@ -29867,7 +28643,7 @@ DataPrototypes and ParameterDataPrototypes in the context of NvDataIn
 terface respectively ParameterInterface, the invalidationPolicy is treated
 like “Invalidation is switched off” (dontInvalidate). (cid:99)(RS_SWCT_00200)
 
-6.5 Compatibility of Mode Switch Interfaces
+#@SECTION: 6.5 Compatibility of Mode Switch Interfaces
 
 Please note that this compatibility requirement only satisﬁes static correctness which
 means that logical consistency is not assured (e.g.
@@ -29878,7 +28654,7 @@ Note that concerning the compatibility of ModeSwitchInterfaces it is necessary
 to distinguish between the context of an AssemblySwConnector, the context of an
 DelegationSwConnector, and the context of a PassThroughSwConnector.
 
-6.5.1 Connection of Required and Provided Port via AssemblySwConnector
+#@SECTION: 6.5.1 Connection of Required and Provided Port via AssemblySwConnector
 
 Here, the compatibility of ModeSwitchInterfaces is considered for the context of
 an AssemblySwConnector.
@@ -29889,7 +28665,7 @@ an AssemblySwConnector.
 AssemblySwConnector (cid:100) PortPrototypes of different ModeSwitchInterfaces
 are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For the ModeDeclarationGroupPrototype deﬁned in the context of the
 ModeSwitchInterface of the required PortPrototype a compatible
@@ -29906,11 +28682,11 @@ ii. It references one of the two ModeDeclarationGroupPrototypes in
 the role firstModeGroup and the other in the role secondMode
 Group.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
-6.5.2 Connection of Inner and Outer Port via DelegationSwConnector
+#@SECTION: 6.5.2 Connection of Inner and Outer Port via DelegationSwConnector
 
 Here, the compatibility of ModeSwitchInterfaces is considered for the context of a
 DelegationSwConnector.
@@ -29919,7 +28695,7 @@ DelegationSwConnector.
 DelegationSwConnector (cid:100) PortPrototypes of different ModeSwitchInter
 faces are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For the ModeDeclarationGroupPrototype deﬁned in the context of the
 ModeSwitchInterface of the inner PortPrototype a compatible Mod
@@ -29936,19 +28712,19 @@ ii. It references one of the two ModeDeclarationGroupPrototypes in
 the role firstModeGroup and the other in the role secondMode
 Group.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
 
 
-6.5.3 Connection of Outer and Outer Port via PassThroughSwConnector
+#@SECTION: 6.5.3 Connection of Outer and Outer Port via PassThroughSwConnector
 
 [constr_1249] Compatibility of ModeSwitchInterfaces in the context of a
 PassThroughSwConnector (cid:100) PortPrototypes of different ModeSwitchInter
 faces are considered compatible if and only if
 
-1. For the ModeDeclarationGroupPrototype deﬁned in the context of the Mod
+#@SECTION: 1. For the ModeDeclarationGroupPrototype deﬁned in the context of the Mod
 eSwitchInterface of the required outer PortPrototype a compatible Mod
 eDeclarationGroupPrototype exists in the ModeSwitchInterface of the
 provided outer PortPrototype.
@@ -29957,33 +28733,33 @@ Either the shortNames of the ModeDeclarationGroupPrototypes are used
 to identify the pair or a ModeInterfaceMapping exists that maps the corre
 sponding ModeDeclarationGroupPrototypes.
 
-2. For each such pair, the values of the PortInterface.isService attributes are
+#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
 (cid:99)()
 
-6.6 Compatibility of Mode Declaration Group Prototypes
+#@SECTION: 6.6 Compatibility of Mode Declaration Group Prototypes
 
 [constr_1074] Compatibility of ModeDeclarationGroupPrototypes (cid:100)
 
 ModeDeclarationGroupPrototypes are compatible if and only if one of the follow
 ing conditions applies:
 
-1. They are typed by (read “refer to”) compatible ModeDeclarationGroups.
+#@SECTION: 1. They are typed by (read “refer to”) compatible ModeDeclarationGroups.
 
-2. A ModeDeclarationGroupPrototypeMapping exists that identiﬁes the dif
+#@SECTION: 2. A ModeDeclarationGroupPrototypeMapping exists that identiﬁes the dif
 ferently named ModeDeclarationGroupPrototypes that correlate with each
 other. [constr_1210] applies.
 
 (cid:99)()
 
-6.7 Compatibility of Mode Declaration Groups
+#@SECTION: 6.7 Compatibility of Mode Declaration Groups
 
 [constr_1075] Compatibility of ModeDeclarationGroups (cid:100) ModeDeclara
 tionGroups are compatible if and only if one of the following conditions applies:
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) They deﬁne an identical number of ModeDeclarations.
 
@@ -30033,7 +28809,7 @@ tical values of the attributes ModeDeclaration.value and also the
 value of ModeDeclarationGroup.onTransitionValue matches on
 both sides.
 
-2. A ModeDeclarationMapping is applied which identiﬁes the corresponding
+#@SECTION: 2. A ModeDeclarationMapping is applied which identiﬁes the corresponding
 
 ModeDeclarations.
 
@@ -30055,11 +28831,11 @@ ModeDeclarationMapping mapping is applied.
 [constr_1194] Identical ModeTransitions (cid:100) Two ModeDeclarationGroups con
 tain identical modeTransitions if and only if
 
-1. For each ModeTransition deﬁned in the context of the mode provider one
+#@SECTION: 1. For each ModeTransition deﬁned in the context of the mode provider one
 ModeTransition with the same shortName is deﬁned in the context of the
 mode user.
 
-2. Each pair of ModeTransitions in both ModeDeclarationGroups identiﬁed
+#@SECTION: 2. Each pair of ModeTransitions in both ModeDeclarationGroups identiﬁed
 by their respective shortName have identical targets (in terms of the short
 
 
@@ -30069,28 +28845,28 @@ and exitedMode.
 
 (cid:99)()
 
-6.8 Compatibility of Argument Prototypes
+#@SECTION: 6.8 Compatibility of Argument Prototypes
 
 [constr_1076] Compatibility of ArgumentDataPrototypes (cid:100) Two ArgumentDat
 aPrototypes are compatible if and only if
 
-1. They are typed by compatible AutosarDataTypes or a ClientServerOper
+#@SECTION: 1. They are typed by compatible AutosarDataTypes or a ClientServerOper
 ationMapping.argumentMapping exists that references one ArgumentDat
 aPrototype in the role firstDataPrototype and the other ArgumentDat
 aPrototype in the role secondDataPrototype.
 
-2. They have the same value of the argument direction (in, out or inout), i.e.
+#@SECTION: 2. They have the same value of the argument direction (in, out or inout), i.e.
 
 [constr_1268] applies.
 
 (cid:99)()
 
-6.9 Compatibility of Application Errors
+#@SECTION: 6.9 Compatibility of Application Errors
 
 [constr_1077] Compatibility of ApplicationErrors (cid:100) Two ApplicationErrors
 are compatible if and only if one of the following conditions applies:
 
-1. All of the following subconditions apply:
+#@SECTION: 1. All of the following subconditions apply:
 
 (a) They have the same shortName.
 
@@ -30098,13 +28874,13 @@ are compatible if and only if one of the following conditions applies:
 
 in both ApplicationErrors.
 
-2. A ClientServerInterfaceMapping.errorMapping exists that references
+#@SECTION: 2. A ClientServerInterfaceMapping.errorMapping exists that references
 one of the ApplicationErrors in the role firstApplicationError and
 the other ApplicationErrors in the role secondApplicationError.
 
 (cid:99)()
 
-6.10 Compatibility of Client/Server Operations
+#@SECTION: 6.10 Compatibility of Client/Server Operations
 
 ClientServerOperations
 [constr_1078]
@@ -30118,19 +28894,19 @@ Compatibility
 Two
 In partic
 
-1. They have the same number of ArgumentDataPrototypes.
+#@SECTION: 1. They have the same number of ArgumentDataPrototypes.
 
 
 
-2. The n-th arguments of both ClientServerOperations are compatible. This
+#@SECTION: 2. The n-th arguments of both ClientServerOperations are compatible. This
 
 implies ordering of ArgumentDataPrototypes.
 
-3. They have the same shortName (again allows for mapping in PortInter
+#@SECTION: 3. They have the same shortName (again allows for mapping in PortInter
 
 faces).
 
-4. The required ClientServerOperation speciﬁes a compatible Applica
+#@SECTION: 4. The required ClientServerOperation speciﬁes a compatible Applica
 tionError for each ApplicationError that is possibly raised by the pro
 vided ClientServerOperation, maybe more. Thereby, ClientServerOp
 erations that refer to a possibleError that represents the value E_OK are
@@ -30139,19 +28915,19 @@ where none of them represents the value E_OK.
 
 (cid:99)()
 
-6.11 Compatibility of Client Server Interfaces
+#@SECTION: 6.11 Compatibility of Client Server Interfaces
 
 Please note that this compatibility requirement only satisﬁes static correctness which
 that a client shall call a certain
 means that logical consistency is not assured (e.g.
 operation to allow the server to work correctly).
 
-6.11.1 Connection of Required and Provided Port via AssemblySwConnector
+#@SECTION: 6.11.1 Connection of Required and Provided Port via AssemblySwConnector
 
 [constr_1079] Compatibility of ClientServerInterfaces in the context of an
 AssemblySwConnector (cid:100) ClientServerInterfaces are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For each ClientServerOperation deﬁned in the context of
 
@@ -30171,19 +28947,19 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
 
 
-6.11.2 Connection of Inner and Outer Port via DelegationSwConnector
+#@SECTION: 6.11.2 Connection of Inner and Outer Port via DelegationSwConnector
 
 [constr_1080] Compatibility of ClientServerInterfaces in the context of an
 DelegationSwConnector (cid:100) ClientServerInterfaces are compatible if and only
 if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For each ClientServerOperation deﬁned in the context of
 
@@ -30205,7 +28981,7 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-2. One of the following conditions applies:
+#@SECTION: 2. One of the following conditions applies:
 
 (a) For at
 
@@ -30225,17 +29001,17 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-3. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 3. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
-6.11.3 Connection of Outer and Outer Port via PassThroughSwConnector
+#@SECTION: 6.11.3 Connection of Outer and Outer Port via PassThroughSwConnector
 
 [constr_1250] Compatibility of ClientServerInterfaces in the context of a
 PassThroughSwConnector (cid:100) PortPrototypes of different ClientServerIn
 terfaces are considered compatible if and only if
 
-1. For at least one ClientServerOperation deﬁned in the context of
+#@SECTION: 1. For at least one ClientServerOperation deﬁned in the context of
 
 the
 ClientServerInterface of the provided outer PortPrototype a compat
@@ -30249,25 +29025,25 @@ Either the shortNames of the ClientServerOperations are used to identify
 the pair or a ClientServerInterfaceMapping exists that maps the corre
 sponding ClientServerOperations.
 
-2. For each such pair, the values of the PortInterface.isService attributes are
+#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
 (cid:99)()
 
-6.12 Compatibility of Trigger Interfaces
+#@SECTION: 6.12 Compatibility of Trigger Interfaces
 
 Please note that this compatibility requirement only satisﬁes static correctness which
 that a client shall call a certain
 means that logical consistency is not assured (e.g.
 operation to allow the server to work correctly).
 
-6.12.1 Connection of Required and Provided Port via AssemblySwConnector
+#@SECTION: 6.12.1 Connection of Required and Provided Port via AssemblySwConnector
 
 [constr_1081] Compatibility of TriggerInterfaces in the context of an Assem
 blySwConnector (cid:100) TriggerInterfaces are compatible if and only if
 
-1. One of the following conditions applies:
+#@SECTION: 1. One of the following conditions applies:
 
 (a) For each Trigger deﬁned in the context of the TriggerInterface of the
 required PortPrototype a compatible Trigger exists in the Trigger
@@ -30284,11 +29060,11 @@ ii. It references one of the two Triggers in the role firstTrigger and
 
 the other in the role secondTrigger.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
-6.12.2 Connection of Inner and Outer Port via DelegationSwConnector
+#@SECTION: 6.12.2 Connection of Inner and Outer Port via DelegationSwConnector
 
 [constr_1082] Compatibility of TriggerInterfaces in the context of an Dele
 gationSwConnector (cid:100) TriggerInterfaces are compatible if and only if all of the
@@ -30296,7 +29072,7 @@ following conditions apply:
 
 
 
-1. One of the following subconditions applies:
+#@SECTION: 1. One of the following subconditions applies:
 
 (a) For each Trigger deﬁned in the context of the TriggerInterface of the
 required inner PortPrototype a compatible Trigger exists in the Trig
@@ -30318,17 +29094,17 @@ ii. It references one of the two Triggers in the role firstTrigger and
 
 the other in the role secondTrigger.
 
-2. For each such pair, the values of their isService attributes are identical.
+#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
-6.12.3 Connection of Outer and Outer Port via PassThroughSwConnector
+#@SECTION: 6.12.3 Connection of Outer and Outer Port via PassThroughSwConnector
 
 [constr_1251] Compatibility of PortPrototypes of TriggerInterfaces in the
 context of a PassThroughSwConnector (cid:100) PortPrototypes of different Trigger
 Interfaces are considered compatible if and only if
 
-1. For at least one Trigger deﬁned in the context of the TriggerInterface of
+#@SECTION: 1. For at least one Trigger deﬁned in the context of the TriggerInterface of
 the required outer PortPrototype a compatible Trigger exists in the Trig
 gerInterface of the provided outer PortPrototype.
 
@@ -30336,20 +29112,20 @@ Either the shortName of Triggers are used to identify the pair or a Trigger
 InterfaceMapping exists that that refers to one of the Triggers in the role
 firstTrigger and to the other in the role secondTrigger.
 
-2. For each such pair, the values of the PortInterface.isService attributes are
+#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
 (cid:99)()
 
-6.13 Compatibility of Trigger
+#@SECTION: 6.13 Compatibility of Trigger
 
 [constr_1083] Compatibility of Triggers (cid:100) Triggers are compatible if they have
 an identical shortName. (cid:99)()
 
 
 
-6.14 Entire Delegation of a Provided Port Prototype
+#@SECTION: 6.14 Entire Delegation of a Provided Port Prototype
 
 [constr_1084] delegation of a provided outer PortPrototype (cid:100) The delegation
 of a provided outer PortPrototype is properly deﬁned if the following criteria are
@@ -30357,7 +29133,7 @@ fulﬁlled:
 
 the provided outer PortPrototype at
 
-1. For each VariableDataPrototype or ParameterDataPrototype present
+#@SECTION: 1. For each VariableDataPrototype or ParameterDataPrototype present
 in the SenderReceiverInterface, NvDataInterface, or Parameter
 Interface of
 least one connec
@@ -30377,7 +29153,7 @@ Table 6.1 deﬁnes which PortInterface elements are compatible depending
 on the kind of PortInterface and the swImplPolicy attributes of the Port
 Interface elements.
 
-2. For each VariableDataPrototype provided by a PRPortPrototype that is
+#@SECTION: 2. For each VariableDataPrototype provided by a PRPortPrototype that is
 typed by a SenderReceiverInterface or NvDataInterface and that is ref
 erenced in the role outerPort by a DelegationSwConnector a correspond
 ing VariableDataPrototype owned by an innerPort shall be provided by
@@ -30387,7 +29163,7 @@ Either the shortNames of VariableDataPrototypes are used to identify the
 pair or a PortInterfaceMapping deﬁnes which differently named PortIn
 terface elements correlate with each other.
 
-3. For the ModeDeclarationGroupPrototype present in the ModeSwitch
+#@SECTION: 3. For the ModeDeclarationGroupPrototype present in the ModeSwitch
 Interface of
 the provided outer PortPrototype exactly one connec
 tion via DelegationSwConnector to a provided inner PortPrototype or
@@ -30400,7 +29176,7 @@ Either the shortNames of ModeDeclarationGroupPrototypes are used to
 identify the pair or a PortInterfaceMapping deﬁnes which differently named
 PortInterface elements correlate with each other.
 
-4. For each ClientServerOperation present in the ClientServerInter
+#@SECTION: 4. For each ClientServerOperation present in the ClientServerInter
 face of the provided outer PortPrototype exactly one connection via Dele
 gationSwConnector to a provided inner PortPrototype or PassThrough
 
@@ -30414,7 +29190,7 @@ Either the shortNames of ClientServerOperations are used to identify the
 pair or a PortInterfaceMapping deﬁnes which differently named PortIn
 terface elements correlate with each other.
 
-5. For each Trigger present in the TriggerInterface of the provided outer
+#@SECTION: 5. For each Trigger present in the TriggerInterface of the provided outer
 PortPrototype exactly one connection via DelegationSwConnector to a
 provided inner PortPrototype or PassThroughSwConnector to a required
 outer PortPrototype with a compatible Trigger in the TriggerInterface
@@ -30427,7 +29203,7 @@ correlate with each other.
 
 (cid:99)()
 
-6.14.1 Split and Merge of PortInterface Elements
+#@SECTION: 6.14.1 Split and Merge of PortInterface Elements
 
 With the deﬁnition of compatibility rules in chapter 6.4, 6.11, and 6.12 it is possible
 to split and distribute elements of a PortPrototype of type of a PortInterface
@@ -30436,7 +29212,7 @@ PortInterfaces containing subsets of PortInterface elements.
 
 Please ﬁnd examples that explain the usage of splitting and merging in section 6.16.2.
 
-6.15 Compatibility in Case of a Flat ECU Extract
+#@SECTION: 6.15 Compatibility in Case of a Flat ECU Extract
 
 Please note that in the case of a ﬂat ECU extract of software-components speciﬁc com
 patibility rules apply. To some extent, these rules contradict the rules existing for the
@@ -30488,12 +29264,12 @@ scope of different PPortPrototypes.
 In other words, in the ﬂat ECU extract it is
 possible to merge dataElements from different providers.
 
-6.16 Compatibility Examples
+#@SECTION: 6.16 Compatibility Examples
 
 This section provides some examples that may explain the compatibility of PortPro
 totypes.
 
-6.16.1 Compatibility on Assembly Level
+#@SECTION: 6.16.1 Compatibility on Assembly Level
 
 The rules for compatibility with respect to the connection of dataElements by means
 of AssemblySwConnectors are perhaps easier to digest than the delegation case
@@ -30502,7 +29278,7 @@ compatibility issue.
 
 
 
-6.16.1.1 Legal Use
+#@SECTION: 6.16.1.1 Legal Use
 
 One of the less trivial examples of this kind is the case of sender/receiver n:1 commu
 nication. Figure 6.1 sketches a case where both sender software-components provide
@@ -30521,7 +29297,7 @@ dataElement a compatible dataElement is provided.
 
 Figure 6.2: legal n:1 communication
 
-6.16.1.2 Illegal Use
+#@SECTION: 6.16.1.2 Illegal Use
 
 On possible example for an illegal conﬁguration of a sender/receiver communication is
 the scenario sketched in Figure 6.3. Although the sender software-components in total
@@ -30536,14 +29312,14 @@ create incompatible connections between sender and receiver.
 
 Figure 6.3: illegal n:1 communication
 
-6.16.2 Compatibility on Delegation Level
+#@SECTION: 6.16.2 Compatibility on Delegation Level
 
 The rules for compatibility with respect to the delegation of dataElements perhaps
 require some explanation in terms of examples. The ﬁrst example 6.4 describes a legal
 situation where two DelegationSwConnectors split the dataElements contained
 in the RPortPrototype owned by a CompositionSwComponentType.
 
-6.16.2.1 Legal Use
+#@SECTION: 6.16.2.1 Legal Use
 
 The examples explain the usage of DelegationSwConnectors in different conﬁgu
 rations and different values of DelegatedPortAnnotation. Please note that the
@@ -30642,7 +29418,7 @@ via CompositionSwComponentTypes to included SwComponentPrototypes.
 
 Figure 6.9: Valid delegation of SwConnectors that goes end-to-end
 
-6.16.2.2 Illegal Use
+#@SECTION: 6.16.2.2 Illegal Use
 
 The ﬁrst example for an illegal use of splitting of dataElements suffers from the
 fact that not all dataElements owned by the RPortPrototypes of the SwCompo
@@ -30690,10 +29466,10 @@ Figure 6.13: Invalid delegation of SwConnectors that goes end-to-end
 
 
 
-#@chapter-7
-7 Internal Behavior
 
-7.1 Introduction
+#@SECTION: 7 Internal Behavior
+
+#@SECTION: 7.1 Introduction
 
 [TPS_SWCT_01075] SwcInternalBehavior (cid:100) SwcInternalBehavior provides
 formally deﬁning the behavior of an AtomicSwComponentType.
@@ -30715,7 +29491,7 @@ Figure 7.1: The “big picture” of SwcInternalBehavior
 
 SwcInternalBehavior
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior
 Note
 
@@ -31104,7 +29880,7 @@ Table 7.1: SwcInternalBehavior
 Enumeration HandleTerminationAndRestartEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior
 Controls the behavior of an AtomicSwComponentType with respect to stop and
 restart.
@@ -31131,7 +29907,7 @@ Table 7.2: HandleTerminationAndRestartEnum
 
 Figure 7.2: SwcInternalBehavior
 
-7.2 Runnable Entity
+#@SECTION: 7.2 Runnable Entity
 
 The concept of RunnableEntity (more details can be found in Figure 7.3) is deﬁned
 in the speciﬁcation of the Virtual Function Bus [3].
@@ -31185,7 +29961,7 @@ ARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeCompositionSwComponen
 
 RunnableEntity
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior
 Note
 
@@ -31592,7 +30368,7 @@ However, the formal deﬁnition requires some background discussion that can’t
 pletely left out of this document. Otherwise the meaning of speciﬁc model elements
 could not be understood properly.
 
-7.2.1 Concurrency and Reentrancy of a RunnableEntity that cannot be Invoked
+#@SECTION: 7.2.1 Concurrency and Reentrancy of a RunnableEntity that cannot be Invoked
 
 Concurrently
 
@@ -31656,7 +30432,7 @@ ning it is not allowed that the RTE runs the RunnableEntity again in a second ta
 Rather, the RTE has to wait (and maybe queue the second incoming request) until the
 RunnableEntity has returned and has moved to the suspended state.
 
-7.2.2 Concurrency and Reentrancy of a RunnableEntity that can be Invoked
+#@SECTION: 7.2.2 Concurrency and Reentrancy of a RunnableEntity that can be Invoked
 
 Concurrently
 
@@ -31710,7 +30486,7 @@ nentType invoking the service.
 This is a very efﬁcient and direct coupling between the client and the server: the con
 nector between the client and the server is reduced to a local function-call.
 
-7.2.3 Timed Activation of Runnable Entities
+#@SECTION: 7.2.3 Timed Activation of Runnable Entities
 
 In many cases, RunnableEntitys need to be activated in response to timing events
 rather than related to communication (e.g.
@@ -31736,9 +30512,9 @@ TimingEvent with the desired period.
 This TimingEvent then contains a reference to the Runnable that needs to be exe
 cuted with this period. (cid:99)()
 
-7.2.4 Additional Remarks and Clariﬁcations
+#@SECTION: 7.2.4 Additional Remarks and Clariﬁcations
 
-7.2.4.1 Reentrancy and Multiple Instantiation
+#@SECTION: 7.2.4.1 Reentrancy and Multiple Instantiation
 
 This chapter is emphasizing on the speciﬁc meanings of combinations of the attributes
 SwcInternalBehavior.supportsMultipleInstantiation and RunnableEn
@@ -31797,14 +30573,14 @@ RunnableEntitys to the same symbol there are reentrancy problems to be sorted
 out. However, this scenario is not supported by RTE [2] anyway and shall therefore be
 avoided.
 
-7.2.4.2 Reentrancy and “Library Functions”
+#@SECTION: 7.2.4.2 Reentrancy and “Library Functions”
 
 Note that all code that is called by different RunnableEntitys (like e.g. library rou
 tines, etc.) shall obviously be reentrant. A ﬁlter algorithm implemented in C, for exam
 ple, is not allowed to store values from previous runs by means of static variables or
 variables with external binding.
 
-7.2.4.3 Compatibility
+#@SECTION: 7.2.4.3 Compatibility
 
 of ClientServerOperations
 
@@ -31867,7 +30643,7 @@ with a ClientServerOperation that deﬁnes no possibleError at all because
 this conﬁguration leads to different data type of the return value of the C function that
 implements the applicable RunnableEntity. (cid:99)()
 
-7.2.4.4 Categories of Runnable Entities
+#@SECTION: 7.2.4.4 Categories of Runnable Entities
 
 [TPS_SWCT_01310] Categories of RunnableEntitys (cid:100) RunnableEntitys are
 subdivided into the following categories:
@@ -31891,7 +30667,7 @@ tended tasks provide the task state WAITING.
 
 
 
-7.2.4.5 Arguments of a Runnable Entity
+#@SECTION: 7.2.4.5 Arguments of a Runnable Entity
 
 In many cases an RTE generator will be able to ﬁgure out not only the number and
 data type of arguments to a RunnableEntity but also the name of the arguments.
@@ -31938,7 +30714,7 @@ individual arguments
 
 AtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierRunnableEntityArgument+ symbol  :CIdentifier+argument0..*{ordered}
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Runnable
 
 RunnableEntityArgument
@@ -31966,7 +30742,7 @@ programming language.
 
 Table 7.5: RunnableEntityArgument
 
-7.2.5 Activation Reason of a Runnable Entity
+#@SECTION: 7.2.5 Activation Reason of a Runnable Entity
 
 It is feasible to activate a given RunnableEntity by means of several RTEEvents.
 In many cases, it is therefore necessary to retrieve the information about the activating
@@ -32017,7 +30793,7 @@ RunnableEntity.
 
 ExecutableEntityActivationReason
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::InternalBehavior
 Note
 
@@ -32044,7 +30820,7 @@ Please note that the attribute ExecutableEntityActivationReason.symbol is
 needed for the generation of a unique identiﬁer that represents the speciﬁc activation
 reason in the RTE code.
 
-7.2.6 Runnable Entity for Initialization Purpose
+#@SECTION: 7.2.6 Runnable Entity for Initialization Purpose
 
 One way to make sure that certain initializations are applied before a software
 component enters its state of normal operation is to use the AUTOSAR mode
@@ -32110,7 +30886,7 @@ Rationale: the concept of RunnableEntity triggered by an InitEvent is (as men
 tioned before) orthogonal to the mode concept and therefore shall be implemented
 independent of modes.
 
-7.3 RTEEvent
+#@SECTION: 7.3 RTEEvent
 
 During execution, several RTEEvents will occur, such as the reception of a remote
 invocation of a ClientServerOperation on a PPortPrototype or a timeout on
@@ -32122,15 +30898,15 @@ pects:
 
 
 
-1. deﬁning an RTEEvent
+#@SECTION: 1. deﬁning an RTEEvent
 
-2. deﬁning how the RTE should deal with the RTEEvent when it occurs.
+#@SECTION: 2. deﬁning how the RTE should deal with the RTEEvent when it occurs.
 
 (cid:99)()
 
 AbstractEvent (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::InternalBehavior
 Note
 
@@ -32150,7 +30926,7 @@ on
 
 Mul. Kind Note
 ref
-0..1
+#@SECTION: 0..1
 
 If the activationReasonRepresentation is
 referenced from the enclosing AbstractEvent this
@@ -32161,7 +30937,7 @@ ExecutableEntityActivationReason.
 
 Table 7.7: AbstractEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 RTEEvent (abstract)
@@ -32196,7 +30972,7 @@ Declaration
 
 RunnableEntity
 
-0..1
+#@SECTION: 0..1
 
 ref RunnableEntity starts when the corresponding
 
@@ -32204,7 +30980,7 @@ RTEEvent occurs.
 
 Table 7.8: RTEEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 AsynchronousServerCallReturnsEvent
@@ -32245,7 +31021,7 @@ Mul. Kind Note
 
 Table 7.9: AsynchronousServerCallReturnsEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataSendCompletedEvent
@@ -32274,7 +31050,7 @@ ce
 
 Table 7.10: DataSendCompletedEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataWriteCompletedEvent
@@ -32301,7 +31077,7 @@ ce
 
 Table 7.11: DataWriteCompletedEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataReceivedEvent
@@ -32321,7 +31097,7 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Data element referenced by event
 
@@ -32329,7 +31105,7 @@ Table 7.12: DataReceivedEvent
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataReceiveErrorEvent
@@ -32351,13 +31127,13 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Data element referenced by event
 
 Table 7.13: DataReceiveErrorEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 OperationInvokedEvent
@@ -32381,13 +31157,13 @@ eration
 iref The operation to be executed as the consequence
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 of the event.
 
 Table 7.14: OperationInvokedEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 TimingEvent
@@ -32424,7 +31200,7 @@ See [TPS_SWCT_02507] for more details.
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 BackgroundEvent
@@ -32453,7 +31229,7 @@ Mul. Kind Note
 
 Table 7.16: BackgroundEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 SwcModeSwitchEvent
@@ -32484,7 +31260,7 @@ attr Speciﬁes if the event is activated on entering or
 
 exiting the referenced Mode.
 
-1..2
+#@SECTION: 1..2
 
 iref Reference to one or two Modes that initiate the
 
@@ -32492,7 +31268,7 @@ SwcModeSwitchEvent.
 
 Table 7.17: SwcModeSwitchEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 ModeSwitchedAckEvent
@@ -32522,7 +31298,7 @@ Mul. Kind Note
 
 Table 7.18: ModeSwitchedAckEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 ExternalTriggerOccurredEvent
@@ -32541,7 +31317,7 @@ Datatype
 Trigger
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Reference to the applicable Trigger.
 
@@ -32549,7 +31325,7 @@ Table 7.19: ExternalTriggerOccurredEvent
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 InternalTriggerOccurredEvent
@@ -32578,7 +31354,7 @@ Internal Triggering Point that triggers the event.
 
 Table 7.20: InternalTriggerOccurredEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 InitEvent
@@ -32609,7 +31385,7 @@ Mul. Kind Note
 
 Table 7.21: InitEvent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 TransformerHardErrorEvent
@@ -32640,9 +31416,9 @@ iref Trigger for which the transformer can trigger this
 iref This represents the ClientServerOperation to
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
 TransformerHardErrorEvent
 
@@ -32672,7 +31448,7 @@ an RTEEvent in a set of RTEEvents occurs.
 
 (cid:99)()
 
-7.3.1 Deﬁning an Event
+#@SECTION: 7.3.1 Deﬁning an Event
 
 the SwcInternalBehavior includes a description of all
 The description of
@@ -32716,7 +31492,7 @@ Figure 7.12: RTEEvents for purposes other than communication
 The details of the various kinds of concrete RTEEvents (such as the TimingEvent,
 DataSendCompletedEvent, etc.), is described in chapters 7.5.1, 7.5.2 and 7.2.3.
 
-7.3.2 Deﬁning how to Respond to an Event
+#@SECTION: 7.3.2 Deﬁning how to Respond to an Event
 
 [TPS_SWCT_01317] RTE triggers RunnableEntity in response to occurring
 RTEEvent (cid:100) If the software-component description contains a reference from an
@@ -32783,7 +31559,7 @@ AbstractEventAtpStructureElementRTEEventInternalBehaviorSwcInternalBehavior+ han
 
 Concerning DataReceivedEvents consider as well [constr_2021].
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 WaitPoint
@@ -32838,7 +31614,7 @@ In addition to this, the RunnableEntity with a WaitPoint that would be affected 
 a mode disabling would typically already run when the mode disabling applies. It could
 not be terminated at this point in time.
 
-7.4 Communication among Runnable Entities
+#@SECTION: 7.4 Communication among Runnable Entities
 
 It is taken for granted that particular RunnableEntitys within a speciﬁc Atomic
 SwComponentType will need to communicate among each other.
@@ -32874,7 +31650,7 @@ siveArea
 
 • Specifying the data exchanged between the RunnableEntitys
 
-7.4.1 Description Possibility 1: Exclusive Area
+#@SECTION: 7.4.1 Description Possibility 1: Exclusive Area
 
 This section describes how the concept of ExclusiveAreas can be used in the de
 scription of the SwcInternalBehavior of an AtomicSwComponentType. Please
@@ -32884,7 +31660,7 @@ ciﬁc implementation (e.g. with mutual-exclusion semaphores).
 
 ExclusiveArea
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::InternalBehavior
 Note
 Base
@@ -32982,7 +31758,7 @@ plete call trees.
 
 ExclusiveAreaNestingOrder
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::InternalBehavior
 Note
 
@@ -33010,7 +31786,7 @@ nesting order.
 
 Table 7.25: ExclusiveAreaNestingOrder
 
-7.4.1.1 Entire Runnable Runs in the Exclusive Area
+#@SECTION: 7.4.1.1 Entire Runnable Runs in the Exclusive Area
 
 [TPS_SWCT_01050] RunnableEntity always runs inside an ExclusiveArea (cid:100)
 In the ﬁrst approach, the formal description speciﬁes that certain RunnableEntitys
@@ -33030,14 +31806,14 @@ RunnableEntitys are never running concurrently.
 This requirement could be implemented by several of the implementation strategies
 described above. For example:
 
-1. Scheduling strategy: if, for example, RunnableEntitys ’r1’ and ’r2’ are mapped
+#@SECTION: 1. Scheduling strategy: if, for example, RunnableEntitys ’r1’ and ’r2’ are mapped
 to the same task, the criterion is automatically satisﬁed. For this purpose it is
 necessary to make sure that the OS can only execute a single instance of the
 task into which the RunnableEntitys are put.
 
 
 
-2. Mutual exclusion semaphores: in case ’r1’ and ’r2’ are mapped to different tasks
+#@SECTION: 2. Mutual exclusion semaphores: in case ’r1’ and ’r2’ are mapped to different tasks
 is executing
 (’T1’, respectively ’T2’), the OS shall make sure that while ’T1’
 ’r1’, ’T2’ running ’r2’ can never preempt it and vice-versa. This could be im
@@ -33045,7 +31821,7 @@ plemented by taking a mutual-exclusion semaphore before executing ’r1’ (resp
 ’r2’) in the context of ’t1’ (resp. ’t2’) and returning the semaphore on exiting the
 RunnableEntity.
 
-7.4.1.2 Runnable would Dynamically Enter and Leave the Exclusive Area
+#@SECTION: 7.4.1.2 Runnable would Dynamically Enter and Leave the Exclusive Area
 
 [TPS_SWCT_01051] RunnableEntity explicitly enters and leaves a speciﬁc Ex
 clusiveArea (cid:100) In the second approach, the RunnableEntity would explicitly make
@@ -33059,7 +31835,7 @@ Additionally it is possible to deﬁne the execution time the RunnableEntity wil
 in this ExclusiveArea segment. Please note that although this aspect is described
 in [7] the concept can be applied to software-components as well.
 
-7.4.2 Description Possibility 2: Inter-Runnable Variable
+#@SECTION: 7.4.2 Description Possibility 2: Inter-Runnable Variable
 
 For certain cases the ExclusiveArea concept does not provide enough information
 to conﬁgure the RTE correctly. In these cases it may be advised to opt for a different
@@ -33174,7 +31950,7 @@ tationDataType of category DATA_REFERENCE. (cid:99)()
 
 
 
-7.4.3 Inter Runnable Triggering
+#@SECTION: 7.4.3 Inter Runnable Triggering
 
 The concept of inter-runnable triggering allows one RunnableEntity to trigger an
 other RunnableEntity within an AtomicSwComponentType. This approach con
@@ -33222,7 +31998,7 @@ triggering positively uses a queue). (cid:99)()
 
 InternalTriggeringPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Trigger
 Note
 
@@ -33237,7 +32013,7 @@ um
 attr This attribute, when set to value queued, allows
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 for a queued processing of Triggers.
 
@@ -33249,7 +32025,7 @@ cy
 
 Table 7.26: InternalTriggeringPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 InternalTriggerOccurredEvent
@@ -33281,7 +32057,7 @@ Table 7.27: InternalTriggerOccurredEvent
 The description of the corresponding external trigger communication is contained in
 chapter 7.5.3.
 
-7.5 Data Access of RunnableEntities
+#@SECTION: 7.5 Data Access of RunnableEntities
 
 This section describes the communication properties of an AtomicSwComponent
 Type. This is done mainly from the point of view of a RunnableEntity (the concept
@@ -33292,7 +32068,7 @@ of a RunnableEntity is introduced in chapter 7.2).
 However, the usage of a PortPrototype in a speciﬁc role within an AtomicSwCom
 ponentType also has an impact on communication behavior.
 
-7.5.1 RunnableEntities and Sender Receiver Communication
+#@SECTION: 7.5.1 RunnableEntities and Sender Receiver Communication
 
 This section describes aspects relevant for the sender-receiver communication of a
 software-component. These mainly inﬂuence the behavior and API of the AUTOSAR
@@ -33302,23 +32078,23 @@ RTE.
 receiver paradigm (cid:100) The possible interaction patterns for the application of the sender
 receiver paradigm are explained, namely:
 
-1. Data-access in a cat. 1 RunnableEntity,
+#@SECTION: 1. Data-access in a cat. 1 RunnableEntity,
 
-2. explicit sending,
+#@SECTION: 2. explicit sending,
 
-3. the DataSendCompletedEvent: dealing with the success/failure of an explicit
+#@SECTION: 3. the DataSendCompletedEvent: dealing with the success/failure of an explicit
 
 send, and
 
-4. the DataReceivedEvent: responding to the reception of data
+#@SECTION: 4. the DataReceivedEvent: responding to the reception of data
 
-5. the DataReceiveErrorEvent: notifying an error concerning the reception of
+#@SECTION: 5. the DataReceiveErrorEvent: notifying an error concerning the reception of
 
 data.
 
 (cid:99)(RS_SWCT_00200)
 
-7.5.1.1 Terminology
+#@SECTION: 7.5.1.1 Terminology
 
 The AUTOSAR meta-model foresees two different approaches for sender-receiver
 communication. These are described in detail in chapters 7.5.1.2 and 7.5.1.3. How
@@ -33349,7 +32125,7 @@ tivation no longer applies) it turned out that the terminology based on “impli
 As no consensus could be reached over alternative proposals this terminology ap
 proach is taken over by this document as well.
 
-7.5.1.2 Data Access
+#@SECTION: 7.5.1.2 Data Access
 
 [TPS_SWCT_01323] Read and write access to a dataElement (cid:100) The SwcInter
 nalBehavior may specify that a RunnableEntity needs read-access (respec
@@ -33374,9 +32150,9 @@ On the other hand, the RunnableEntity might use its dataWriteAccess to per
 form a write access on the dataElement but the actual value might never make it
 beyond the RunnableEntity because
 
-1. the latter is not required to terminate ever and
+#@SECTION: 1. the latter is not required to terminate ever and
 
-2. the actual write access is executed after the RunnableEntity terminates.
+#@SECTION: 2. the actual write access is executed after the RunnableEntity terminates.
 
 
 
@@ -33387,7 +32163,7 @@ Figure 7.19: DataReadAccess and DataWriteAccess
 
 AtpStructureElementExecutableEntityRunnableEntitySwComponentTypeAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefAtpStructureElementIdentifiableVariableAccess+ scope  :VariableAccessScopeEnum [0..1]AutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«enumeration»VariableAccessScopeEnum communicationInterEcu communicationIntraPartition interPartitionIntraEcu«atpVariation»+dataReceivePointByArgument0..*«atpVariation»+dataWriteAccess0..*«atpVariation»+dataReadAccess0..*«atpVariation»+dataSendPoint0..*«atpVariation»+readLocalVariable0..*+runnable1..*«atpVariation,atpSplitable»«atpVariation»+dataReceivePointByValue0..*«atpVariation»+writtenLocalVariable0..*«atpVariation»+parameterAccess0..*+accessedParameter1+swDataDefProps0..1«atpVariation,atpSplitable»+internalBehavior0..1+accessedVariable1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 
 VariableAccess
@@ -33420,7 +32196,7 @@ aggr This denotes the accessed variable.
 
 Mul. Kind Note
 
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -33434,7 +32210,7 @@ Table 7.28: VariableAccess
 
 Enumeration VariableAccessScopeEnum
 Package
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 Elements
 This enumeration deﬁnes scopes for communication.
@@ -33548,7 +32324,7 @@ RunnableEntity actually write to the respective dataElement before the “ﬁrst
 knowledgement is received. In this case it will never be possible to determine exactly
 which transmission has been acknowledged.
 
-7.5.1.3 Explicit Sending and Receiving
+#@SECTION: 7.5.1.3 Explicit Sending and Receiving
 
 [TPS_SWCT_01330] RunnableEntity can also have dataSendPoints (cid:100) A
 RunnableEntity can also have dataSendPoints (i.e. aggregate VariableAc
@@ -33667,7 +32443,7 @@ type referenced by this DataReceivedEvent is set to queued. (cid:99)()
 Please note however, that in this case (in response to the presence of a WaitPoint)
 the RunnableEntity becomes category 2.
 
-7.5.1.4 DataSendCompletedEvent
+#@SECTION: 7.5.1.4 DataSendCompletedEvent
 
 [TPS_SWCT_01336] dataSendPoint also allows for
 the deﬁnition of a
@@ -33688,7 +32464,7 @@ speciﬁed acknowledgement; possibly by waiting a certain timeout period.
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataSendCompletedEvent
@@ -33722,7 +32498,7 @@ of a WaitPoint associated with a DataSendCompletedEvent shall have the
 same value as the corresponding value of TransmissionAcknowledgementRe
 quest.timeout. (cid:99)()
 
-7.5.1.5 DataWriteCompletedEvent
+#@SECTION: 7.5.1.5 DataWriteCompletedEvent
 
 [TPS_SWCT_01557] dataWriteAccess also allows for the deﬁnition of a
 DataWriteCompletedEvent (cid:100) The dataWriteAccess also allows for the deﬁni
@@ -33745,7 +32521,7 @@ However, it is possible to conﬁgure the RTE such that when data is sent, the R
 try to obtain the speciﬁed acknowledgement; possibly by waiting a certain timeout
 period.
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataWriteCompletedEvent
@@ -33782,7 +32558,7 @@ Table 7.31: DataWriteCompletedEvent
 
 Figure 7.22: dataWriteAccess
 
-7.5.1.6 DataReceivedEvent
+#@SECTION: 7.5.1.6 DataReceivedEvent
 
 [TPS_SWCT_01337] DataReceivedEvent (cid:100) A receiver is notiﬁed through the same
 event mechanism when a VariableDataPrototype is received. As shown in Fig
@@ -33796,7 +32572,7 @@ AbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunna
 
 Figure 7.23: Receiver is notiﬁed by an event when new data has arrived
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataReceivedEvent
@@ -33816,13 +32592,13 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Data element referenced by event
 
 Table 7.32: DataReceivedEvent
 
-7.5.1.7 DataReceiveErrorEvent
+#@SECTION: 7.5.1.7 DataReceiveErrorEvent
 
 [TPS_SWCT_01338] DataReceiveErrorEvent (cid:100) A receiver is notiﬁed of DataRe
 ceiveErrorEvent through the activation of its RunnableEntity which is refer
@@ -33880,7 +32656,7 @@ ceiveErrorEvent is directly associated with the corresponding VariableDat
 aPrototype and references the RunnableEntity that is activated due to the oc
 currence of this RTEEvent. (cid:99)(RS_SWCT_00200)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 DataReceiveErrorEvent
@@ -33902,15 +32678,15 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Data element referenced by event
 
 Table 7.33: DataReceiveErrorEvent
 
-7.5.2 RunnableEntities and Client Server Communication
+#@SECTION: 7.5.2 RunnableEntities and Client Server Communication
 
-7.5.2.1 Invoking an Operation
+#@SECTION: 7.5.2.1 Invoking an Operation
 
 [TPS_SWCT_01342] Invocation of a server operation (cid:100) A RunnableEntity in
 vokes a server operation formally deﬁned as a ClientServerOperation via an
@@ -33982,17 +32758,17 @@ where the RTE is supposed to trigger a speciﬁc RunnableEntity when the opera
 tion completes. The description of the corresponding AtomicSwComponentType would
 typically contain the following elements:
 
-1. The AtomicSwComponentType contains an RPortPrototype ‘myPort’ typed
+#@SECTION: 1. The AtomicSwComponentType contains an RPortPrototype ‘myPort’ typed
 by a PortInterface that in turn contains the deﬁnition of an ClientServer
 Operation ‘remoteOperation’.
 
-2. The AtomicSwComponentType’s SwcInternalBehavior contains at least
+#@SECTION: 2. The AtomicSwComponentType’s SwcInternalBehavior contains at least
 two RunnableEntitys:
 the RunnableEntity ‘main’ is supposed to invoke
 the operation; the RunnableEntity ‘callback’ is the one that should be called
 when the operation completes.
 
-3. The description of
+#@SECTION: 3. The description of
 
 the RunnableEntity ‘main’ contains an Asyn
 chronousServerCallPoint ‘invokeMyOperation’ referencing the respective
@@ -34006,7 +32782,7 @@ AtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureE
 totype ‘myPort’. This implies that the RunnableEntity is allowed to invoke
 this operation asynchronously.
 
-4. The description of
+#@SECTION: 4. The description of
 
 the RunnableEntity ‘callback’ contains an Asyn
 chronousServerCallResultPoint ‘fetchMyOperationResults’
@@ -34015,21 +32791,21 @@ the respective AsynchronousServerCallPoint ‘invokeMyOperation’ This im
 plies that the RunnableEntity is allowed to fetch the results of the asyn
 chronously invoked operation.
 
-5. The description of
+#@SECTION: 5. The description of
 
 the SwcInternalBehavior includes an Asyn
 chronousServerCallReturnsEvent ‘myOperationReturns’ which refer
 ences the previously deﬁned AsynchronousServerCallResultPoint
 ‘fetchMyOperationResults’
 
-6. The description of the AsynchronousServerCallReturnsEvent ‘myOper
+#@SECTION: 6. The description of the AsynchronousServerCallReturnsEvent ‘myOper
 ationReturns’ references the RunnableEntity ‘callback’, indicating that the
 RTE should trigger the execution of this Runnable when ‘myOperationReturns’
 is raised.
 
 ServerCallPoint (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::ServerCall
 Note
 
@@ -34048,7 +32824,7 @@ attr Time in seconds before the server call times out
 iref The operation that is called by this runnable.
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 1
 
@@ -34067,7 +32843,7 @@ Table 7.34: ServerCallPoint
 
 SynchronousServerCallPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::ServerCall
 Note
 
@@ -34084,7 +32860,7 @@ deepest level inside one or more ExclusiveAreas
 that are nested in the given order.
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 
@@ -34099,7 +32875,7 @@ Table 7.35: SynchronousServerCallPoint
 
 AsynchronousServerCallPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::ServerCall
 An AsynchronousServerCallPoint is used for asynchronous invocation of a
 Note
@@ -34128,7 +32904,7 @@ Table 7.36: AsynchronousServerCallPoint
 
 AsynchronousServerCallResultPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::ServerCall
 Note
 
@@ -34171,7 +32947,7 @@ invocation of this particular AsynchronousServerCallPoint. (cid:99)()
 This information might be used by the RTE generator to optimize the data consistency
 mechanisms.
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 AsynchronousServerCallReturnsEvent
@@ -34237,7 +33013,7 @@ referenced by
 
 combined
 
-7.5.2.2 Providing an Implementation of an Operation
+#@SECTION: 7.5.2.2 Providing an Implementation of an Operation
 
 A software-component can deﬁne an OperationInvokedEvent for each opera
 tion inside one of the server AbstractProvidedPortPrototypes. This way a
@@ -34249,7 +33025,7 @@ dling mechanisms described above (as formally expressed in Figure 7.26).
 Figure 7.26: The OperationInvokedEvent references the operation that was called by
 a client.
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 OperationInvokedEvent
@@ -34273,7 +33049,7 @@ eration
 iref The operation to be executed as the consequence
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 of the event.
 
@@ -34284,7 +33060,7 @@ Table 7.39: OperationInvokedEvent
 
 OperationInvokedEventAbstractEventAtpStructureElementRTEEventAtpStructureElementExecutableEntityRunnableEntityARElementAtpBlueprintAtpBlueprintableAtpTypePortInterfaceAbstractProvidedPortPrototypePPortPrototypeAtpBlueprintableAtpPrototypePortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =blueprintDerivationTime+event*«atpVariation,atpSplitable»+startOnEvent0..1+port0..*«atpVariation,atpSplitable»«isOfType»+providedInterface1{redefinesatpType}+operation1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+runnable1..*«atpVariation,atpSplitable»«instanceRef»+operation
 
-7.5.2.3 Reacting on Data Transformation Errors
+#@SECTION: 7.5.2.3 Reacting on Data Transformation Errors
 
 [TPS_SWCT_01624] Hard error occurs during the execution of a transformer
 chain (cid:100) If a hard error occurs during the execution of a transformer chain which is
@@ -34316,7 +33092,7 @@ Interface).
 This way, a given RunnableEntity may deﬁne its response to a transformer error.
 (cid:99)(RS_SWCT_03222)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 TransformerHardErrorEvent
@@ -34347,9 +33123,9 @@ iref Trigger for which the transformer can trigger this
 iref This represents the ClientServerOperation to
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
 TransformerHardErrorEvent
 
@@ -34357,9 +33133,9 @@ Table 7.40: TransformerHardErrorEvent
 
 
 
-7.5.3 RunnableEntities and External Trigger Event Communication
+#@SECTION: 7.5.3 RunnableEntities and External Trigger Event Communication
 
-7.5.3.1 Trigger Source
+#@SECTION: 7.5.3.1 Trigger Source
 
 [TPS_SWCT_01348] Trigger source (cid:100) A RunnableEntity of
 the triggering
@@ -34380,7 +33156,7 @@ ExternalTriggeringPointAtpStructureElementExecutableEntityRunnableEntityAtpBluep
 
 ExternalTriggeringPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Trigger
 Note
 
@@ -34392,7 +33168,7 @@ ExternalTriggeri
 ngPointIdent
 
 Mul. Kind Note
-0..1 aggr The aggregation in the role ident provides the
+#@SECTION: 0..1 aggr The aggregation in the role ident provides the
 
 ability to make the ExternalTriggeringPoint
 identiﬁable.
@@ -34415,7 +33191,7 @@ trigger
 
 Trigger
 
-0..1
+#@SECTION: 0..1
 
 iref The trigger taken for the ExternalTriggeringPoint.
 
@@ -34426,7 +33202,7 @@ Element=false
 
 Table 7.41: ExternalTriggeringPoint
 
-7.5.3.2 Trigger Sink
+#@SECTION: 7.5.3.2 Trigger Sink
 
 The activation of RunnableEntitys in the trigger sink is effected through the generic
 event handling mechanism.
@@ -34441,7 +33217,7 @@ sponse to the event. (cid:99)(RS_SWCT_00200)
 
 Figure 7.28: Model structure of a trigger sink
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 ExternalTriggerOccurredEvent
@@ -34460,13 +33236,13 @@ Datatype
 Trigger
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 iref Reference to the applicable Trigger.
 
 Table 7.42: ExternalTriggerOccurredEvent
 
-7.5.4 RunnableEntities and Parameter Access
+#@SECTION: 7.5.4 RunnableEntities and Parameter Access
 
 There are several ways a Calibration Parameter is provided within a software compo
 nent.
@@ -34512,7 +33288,7 @@ Figure 7.29: Runnable Access to a Calibration Port
 
 AtpStructureElementExecutableEntityRunnableEntityAtomicSwComponentType«atpVariation»SwDataDefPropsInternalBehaviorSwcInternalBehaviorAtpStructureElementIdentifiableParameterAccessAutosarParameterRefARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractRequiredPortPrototypeRPortPrototypeSwVariableRefProxyAutosarVariableRef«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation» Tags:vh.latestBindingTime =preCompileTimeSwCalprmAxisSetSwCalprmAxisSwCalprmAxisTypePropsSwAxisIndividualAtpPrototypeDataPrototypeRPortPrototype shall be typed by a ParameterInterface. The specific DataPrototype is therefore actually a ParameterDataPrototype.+port0..*«atpVariation,atpSplitable»+localParameter0..1«instanceRef»+autosarParameter0..1«atpVariation»+parameterAccess0..*+runnable1..*«atpVariation,atpSplitable»+autosarVariable0..1+swCalprmAxisSet0..1«atpVariation,atpSplitable»+internalBehavior0..1+swDataDefProps0..1+accessedParameter1+swVariableRef0..*+swCalprmAxis0..*+swCalprmAxisTypeProps1+swComparisonVariable0..*
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Data
 
 ParameterAccess
@@ -34538,7 +33314,7 @@ erRef
 SwDataDefProp
 s
 
-0..1 aggr This allows denote instance and access speciﬁc
+#@SECTION: 0..1 aggr This allows denote instance and access speciﬁc
 
 aggr Refernce to the accessed calibration parameter.
 
@@ -34568,7 +33344,7 @@ Note: A ParameterDataPrototype in the roles constantMemory is not provided
 by the RTE and therefore the ParameterAccess association is not required to control
 the RTE API generation.
 
-7.5.4.1 InstantiationDataDefProps
+#@SECTION: 7.5.4.1 InstantiationDataDefProps
 
 Typically, the accessibility and further information like alias names for a particular piece
 of data is modeled on the level of DataPrototypes (especially VariableDataPro
@@ -34600,7 +33376,7 @@ Figure 7.30: applying instantiation speciﬁc data deﬁnition properties
 
 InstantiationDataDefProps«atpVariation»SwDataDefProps+ additionalNativeTypeQualifier  :NativeDeclarationString [0..1]+ displayFormat  :DisplayFormatString [0..1]+ stepSize  :Float [0..1]+ swAlignment  :AlignmentType [0..1]+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]+ swImplPolicy  :SwImplPolicyEnum [0..1]+ swIntendedResolution  :Numerical [0..1]+ swInterpolationMethod  :Identifier [0..1]+ swIsVirtual  :Boolean [0..1]«atpVariation»+ swValueBlockSize  :Numerical [0..1]InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAutosarVariableRefAutosarParameterRefAtpPrototypeDataPrototypeXOR+variableInstance0..1+parameterInstance0..1+swDataDefProps1«atpVariation,atpSplitable»+instantiationDataDefProps0..*«instanceRef»+autosarVariable0..1«instanceRef»+autosarParameter0..1+localParameter0..1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::
 
 InstantiationDataDefProps
@@ -34648,18 +33424,18 @@ which shall be applied
 1
 
 Mul. Kind Note
-0..1 aggr This is the particular ParameterDataPrototypes on
+#@SECTION: 0..1 aggr This is the particular ParameterDataPrototypes on
 
 which the swDataDefProps shall be applied.
 aggr These are the particular data deﬁnition properties
 
-0..1 aggr This is the particular VariableDataPrototypes on
+#@SECTION: 0..1 aggr This is the particular VariableDataPrototypes on
 
 which the swDataDefProps shall be applied.
 
 Table 7.44: InstantiationDataDefProps
 
-7.5.5 RunnableEntities and Mode Communication
+#@SECTION: 7.5.5 RunnableEntities and Mode Communication
 
 For the communication of modes between RunnableEntitys we have to distinguish
 between two use cases.
@@ -34695,7 +33471,7 @@ components on the same ECU. For further explanation of the general concept refer
 chapter 4.2.5 and for the details of the meta-model for mode switches refer to chapter 9.
 (cid:99)(RS_SWCT_00200, RS_SWCT_03202)
 
-7.6 Port API Options
+#@SECTION: 7.6 Port API Options
 
 [TPS_SWCT_01354] PortAPIOption (cid:100) The RTE Generator needs additional options
 per PortPrototype to choose the proper generation schema. These are subsumed
@@ -34708,7 +33484,7 @@ Figure 7.31: Port API Options.
 
 InternalBehaviorSwcInternalBehaviorPortAPIOption+ enableTakeAddress  :Boolean+ errorHandling  :DataTransformationErrorHandlingEnum [0..1]+ indirectAPI  :BooleanAtpBlueprintableAtpPrototypePortPrototypePortDefinedArgumentValueValueSpecification+ shortLabel  :Identifier [0..1]«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]«enumeration»DataTransformationErrorHandlingEnum noTransformerErrorHandling transformerErrorHandling+port1+portAPIOption0..*«atpVariation,atpSplitable»«isOfType»+valueType+portArgValue0..*{ordered}+value1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::PortAPI
 
 PortAPIOption
@@ -34737,7 +33513,7 @@ If set to true, the software-component is able to
 use the API reference for deriving a pointer to an
 object.
 
-0..1
+#@SECTION: 0..1
 
 attr This speciﬁes whether the RunnableEntitys which
 
@@ -34794,7 +33570,7 @@ the extended transformer error notiﬁcation. (cid:99)(RS_SWCT_03222)
 
 Enumeration DataTransformationErrorHandlingEnum
 Package
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::PortAPI
 Options
 This enumeration deﬁnes different ways how runnables shall handle transformer
@@ -34818,7 +33594,7 @@ Table 7.46: DataTransformationErrorHandlingEnum
 
 
 
-7.6.1 Enable to Take Address
+#@SECTION: 7.6.1 Enable to Take Address
 
 [TPS_SWCT_01355] enableTakeAddress = true (cid:100) If
 the attribute enable
@@ -34834,14 +33610,14 @@ inition of a PortAPIOption with enableTakeAddress set to true is only permit
 ted for software-components where the attribute SwcInternalBehavior.support
 sMultipleInstantiation is set to false. (cid:99)()
 
-7.6.2 Indirect API Generation
+#@SECTION: 7.6.2 Indirect API Generation
 
 [TPS_SWCT_01356] indirectAPI option switches the generation of the RTE’s
 indirect API functionality (cid:100) The indirectAPI option switches the generation of the
 RTE’s indirect API functionality for a certain PortPrototype. The generated indirect
 API does allow to iterate over ports within the SW-Component. (cid:99)()
 
-7.6.3 Port Deﬁned Argument Value
+#@SECTION: 7.6.3 Port Deﬁned Argument Value
 
 [TPS_SWCT_01357] Deﬁnition of implicit values that are passed by the RTE to
 the server’s entry point (cid:100) In addition to the formal parameters of a client/server invo
@@ -34890,7 +33666,7 @@ role port. (cid:99)()
 To be clear, this means that PortDefinedArgumentValues may not be used to
 gether with RPortPrototypes.
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::PortAPI
 
 PortDeﬁnedArgumentValue
@@ -34931,7 +33707,7 @@ Table 7.47: PortDeﬁnedArgumentValue
 
 
 
-7.7 PerInstanceMemory
+#@SECTION: 7.7 PerInstanceMemory
 
 [TPS_SWCT_01359] Private memory per instance (cid:100) AtomicSwComponentTypes
 that support multiple instantiation (attribute supportsMultipleInstantiation ==
@@ -34965,7 +33741,7 @@ stanceMemory is not initialized by the RTE if no initValue is deﬁned. In this 
 is the responsibility of the AtomicSwComponentType to initialize the PerInstance
 Memory. (cid:99)()
 
-7.7.1 PerInstanceMemory typed by “C” Data Types
+#@SECTION: 7.7.1 PerInstanceMemory typed by “C” Data Types
 
 [TPS_SWCT_01363] PerInstanceMemory typed by “C” Data Types (cid:100) For each
 such memory block, the software-component description shall provide the name of the
@@ -35006,7 +33782,7 @@ semantics rather than a constraint.
 More details on the use of these attributes in the generation of software-component
 header-ﬁles can be found in the RTE speciﬁcation [2].
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Per
 
 PerInstanceMemory
@@ -35032,8 +33808,8 @@ SwDataDefProp
 s
 
 Mul. Kind Note
-0..1
-0..1 aggr This represents the ability to to allocate RAM at
+#@SECTION: 0..1
+#@SECTION: 0..1 aggr This represents the ability to to allocate RAM at
 
 attr Speciﬁes initial value(s) of the PerInstanceMemory
 
@@ -35057,7 +33833,7 @@ attr A deﬁnition of the type with the syntax of a ’C’
 
 Table 7.48: PerInstanceMemory
 
-7.7.2 PerInstanceMemory typed by AUTOSAR Data Types
+#@SECTION: 7.7.2 PerInstanceMemory typed by AUTOSAR Data Types
 
 [TPS_SWCT_01365] PerInstanceMemory typed by AUTOSAR Data Types (cid:100) A
 PerInstanceMemory typed with AUTOSAR data types is deﬁned by a Variable
@@ -35083,7 +33859,7 @@ ory can not support C++ speciﬁc types or pointer types directly.
 
 
 
-7.8 Static Memory and Constant Memory
+#@SECTION: 7.8 Static Memory and Constant Memory
 
 [TPS_SWCT_01368] Describe static and constant memory (cid:100) Static memory (for
 malized by means of InternalBehavior.staticMemory) and constant memory
@@ -35138,7 +33914,7 @@ Name of a VariableDataPrototype in role staticMemory or a ParameterDat
 aPrototype in role constantMemory has to be equal with the ’C’ identiﬁer of the
 described variable resp. constant. (cid:99)()
 
-7.9 Included AUTOSAR Data Types
+#@SECTION: 7.9 Included AUTOSAR Data Types
 
 [TPS_SWCT_01155] IncludedDataTypeSet (cid:100) An IncludedDataTypeSet de
 clares that a set of AutosarDataTypes are used for the C / C++ implementation
@@ -35156,7 +33932,7 @@ Figure 7.34: Included AUTOSAR Data Types
 
 InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpTypeAutosarDataTypeIncludedDataTypeSet+ literalPrefix  :Identifier [0..1]+includedDataTypeSet0..*«atpSplitable»+dataType1..*
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Included
 
 IncludedDataTypeSet
@@ -35190,7 +33966,7 @@ ref AutosarDataType belonging to the
 
 literalPrefix Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref
 
@@ -35215,7 +33991,7 @@ addition the literalPrefix might be used to separate the namespace of C lan
 guage identiﬁers belonging to equally named AutosarDataTypes used for the same
 software component C implementation. (cid:99)()
 
-7.10 Included Mode Declaration Groups
+#@SECTION: 7.10 Included Mode Declaration Groups
 
 [TPS_SWCT_01153] IncludedModeDeclarationGroupSet (cid:100) Similar to the con
 sideration of data types using IncludedDataTypeSet, SwcInternalBehavior ag
@@ -35228,7 +34004,7 @@ Type. (cid:99)()
 
 Figure 7.35: Included ModeDeclarationGroups
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Mode
 
 IncludedModeDeclarationGroupSet
@@ -35259,7 +34035,7 @@ Mul. Kind Note
 
 Identifier
 
-0..1
+#@SECTION: 0..1
 
 ref The preﬁx shall be used by the RTE generator as
 a preﬁx for the creation of symbols related to the
@@ -35282,9 +34058,9 @@ code may be necessary.
 
 InternalBehaviorSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :BooleanARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroup+ onTransitionValue  :PositiveInteger [0..1]IncludedModeDeclarationGroupSet+ prefix  :Identifier [0..1]+modeDeclarationGroup1..*«atpSplitable»+includedModeDeclarationGroupSet0..*
 
-7.11 Service Needs
+#@SECTION: 7.11 Service Needs
 
-7.11.1 Overview
+#@SECTION: 7.11.1 Overview
 
 [TPS_SWCT_01043] ApplicationSwComponentTypes are independent from ac
 tual ECU Hardware (cid:100) ApplicationSwComponentTypes are designed to be inde
@@ -35327,7 +34103,7 @@ conﬁguration parameters see [29].
 
 ServiceNeeds (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -35383,7 +34159,7 @@ DiagnosticCapabilityElement+ audience  :DiagnosticAudienceEnum [0..*]+ diagRequi
 
 Figure 7.39: ServiceNeeds: Diagnostic-related ServiceNeeds with emphasis on OBD
 
-7.11.2 Assignment of Service Needs to Ports and Data
+#@SECTION: 7.11.2 Assignment of Service Needs to Ports and Data
 
 [TPS_SWCT_01046] ServiceNeeds are deﬁned in the scope of the SwcInter
 nalBehavior (cid:100) ServiceNeeds speciﬁed by AtomicSwComponentTypes are de
@@ -35488,7 +34264,7 @@ Figure 7.44: Details of RoleBasedDataTypeAssignment for local data
 
 ServiceDependency (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -35511,7 +34287,7 @@ TypeAssignmen
 t
 
 Mul. Kind Note
-0..1 aggr This is the role of the assignment data type in the
+#@SECTION: 0..1 aggr This is the role of the assignment data type in the
 
 given context.
 
@@ -35523,7 +34299,7 @@ Props
 
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
-0..1 aggr This attribute can be taken to contribute to the
+#@SECTION: 0..1 aggr This attribute can be taken to contribute to the
 creation of symbolic name values.
 
 Table 7.52: ServiceDependency
@@ -35533,7 +34309,7 @@ Table 7.52: ServiceDependency
 
 AtpStructureElementIdentifiableSwcServiceDependencyRoleBasedDataTypeAssignment+ role  :IdentifierAtpBlueprintAtpBlueprintableAutosarDataTypeImplementationDataType+ dynamicArraySizeProfile  :String [0..1]+ typeEmitter  :NameToken [0..1]ServiceDependency«atpVariation» Tags:vh.latestBindingTime =preCompileTime«atpVariation»+assignedDataType0..1+usedImplementationDataType1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
 
 SwcServiceDependency
@@ -35589,7 +34365,7 @@ vh.latestBindingTime=preCompileTime
 
 PortGroup
 
-0..1
+#@SECTION: 0..1
 
 ref This reference speciﬁes an association between
 
@@ -35615,7 +34391,7 @@ Table 7.53: SwcServiceDependency
 
 SymbolicNameProps
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 Base
@@ -35638,7 +34414,7 @@ Table 7.54: SymbolicNameProps
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
 
 RoleBasedPortAssignment
@@ -35690,7 +34466,7 @@ Table 7.55: RoleBasedPortAssignment
 
 RoleBasedDataAssignment
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -35763,7 +34539,7 @@ ent
 AutosarParamet
 erRef
 
-0..1 aggr The VariableDataPrototype used in this role, e.g.
+#@SECTION: 0..1 aggr The VariableDataPrototype used in this role, e.g.
 
 • Permanent RAM Block of an NVRAM Block
 
@@ -35777,7 +34553,7 @@ refer to a VariableDataPrototype in a
 SenderReceiverInterface or a
 NvDataInterface.
 
-0..1 aggr The ParameterDataPrototype used in this role,
+#@SECTION: 0..1 aggr The ParameterDataPrototype used in this role,
 
 e.g.
 
@@ -35795,7 +34571,7 @@ usedPim
 PerInstanceMe
 mory
 
-0..1
+#@SECTION: 0..1
 
 ref The (untyped) PerInstanceMemory used in this
 role (e.g. as a Permanent RAM Block for an
@@ -35805,7 +34581,7 @@ Table 7.56: RoleBasedDataAssignment
 
 
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Service
 
 RoleBasedDataTypeAssignment
@@ -35849,9 +34625,9 @@ given context.
 
 Table 7.57: RoleBasedDataTypeAssignment
 
-7.11.3 Speciﬁc Service Dependencies
+#@SECTION: 7.11.3 Speciﬁc Service Dependencies
 
-7.11.3.1 NvM Service Dependencies
+#@SECTION: 7.11.3.1 NvM Service Dependencies
 
 This chapter describes the usage of the speciﬁc meta-classes derived from Service
 Needs within an AtomicSwComponentType.
@@ -35875,7 +34651,7 @@ ARObject,Identiﬁable,MultilanguageReferrable,Referrable,ServiceNeeds
 Datatype
 Boolean
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 Base
@@ -35892,7 +34668,7 @@ attr Deﬁnes if the Static Block Id check shall be
 NvData to store the associated RAM Block.
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This represents the period for cyclic writing of
 
@@ -35906,9 +34682,9 @@ enabled.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
 
 
@@ -35918,7 +34694,7 @@ nDataSets PositiveInteger
 Datatype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Number of data sets to be provided by the
 
@@ -35927,7 +34703,7 @@ ks
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 NVRAM manager for this block. This is the total
 number of ROM Blocks and RAM Blocks.
@@ -35940,7 +34716,7 @@ contiguous area.
 RamBlockStatu
 sControlEnum
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute deﬁnes how the management of the
 
@@ -35948,7 +34724,7 @@ RAM Block status is controlled.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr True: data of this NVRAM Block are write
 
@@ -35956,16 +34732,16 @@ NvBlockNeedsR
 eliabilityEnum
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 protected for normal operation (but protection can
 be disabled) false: no restriction
 
-0..1
+#@SECTION: 0..1
 
 attr Reliability against data loss on the non-volatile
 
@@ -36000,7 +34776,7 @@ tdown
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -36009,7 +34785,7 @@ basic software.
 
 storeCyclic Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -36037,18 +34813,18 @@ gency
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 storeImme
 diate
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 useAutoVa
 lidationAtS
@@ -36059,7 +34835,7 @@ nism
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -36074,7 +34850,7 @@ nce
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes write protection after ﬁrst write: true: This
 block is prevented from being changed/erased or
@@ -36094,13 +34870,13 @@ Datatype
 Boolean
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes if Write Veriﬁcation shall be enabled for
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 this NVRAM Block.
 
@@ -36115,7 +34891,7 @@ NvBlockNeeds
 WritingPriorityE
 num
 
-0..1
+#@SECTION: 0..1
 
 attr Requires the priority of writing this block in case of
 
@@ -36126,7 +34902,7 @@ Table 7.58: NvBlockNeeds
 Enumeration RamBlockStatusControlEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::SWComponentTemplate::NvBlockComponent
 This enumeration type deﬁnes options for how the management of the ramBlock
 status is controlled.
@@ -36143,7 +34919,7 @@ ager
 
 Table 7.59: RamBlockStatusControlEnum
 
-7.11.3.1.1 Nvm Use Case: Permanent RAM Block
+#@SECTION: 7.11.3.1.1 Nvm Use Case: Permanent RAM Block
 
 Scenario: a AtomicSwComponentType is using an an NVRAM Block with a Per
 manent RAM Block implemented by a PerInstanceMemory section or a Vari
@@ -36217,7 +34993,7 @@ It is the responsibility of the NVRAM Manager to provide the content of the NVRA
 Block in this Permanent RAM Block during startup or on explicit request and to
 write back the content to the storage medium during shut-down or on explicit request.
 
-7.11.3.1.2 Nvm Use Case: Temporary RAM Block
+#@SECTION: 7.11.3.1.2 Nvm Use Case: Temporary RAM Block
 
 Scenario: an AtomicSwComponentType is using some NVRAM Block with a Tem
 porary RAM Block.
@@ -36290,7 +35066,7 @@ to [SWS_NvM_00734],
 
 
 
-7.11.3.1.3 Nvm Use Case: RAM Block with explicit synchronization using Mirror
+#@SECTION: 7.11.3.1.3 Nvm Use Case: RAM Block with explicit synchronization using Mirror
 
 Interfaces
 
@@ -36360,7 +35136,7 @@ to [SWS_NvM_00734],
 
 [SWS_NvM_00735],
 
-7.11.3.1.4 NVM Use Case: Software-Components using Nv Data provided by
+#@SECTION: 7.11.3.1.4 NVM Use Case: Software-Components using Nv Data provided by
 
 NvBlockSwComponentType (not ServiceSwComponent of NvM)
 
@@ -36414,17 +35190,17 @@ in Chapter 11.5.4) is not in the scope of this use case.
 
 to [SWS_NvM_00734],
 
-7.11.3.2 Watchdog Service Dependencies
+#@SECTION: 7.11.3.2 Watchdog Service Dependencies
 
 The meta-class SupervisedEntityNeeds is used to deﬁne requirements to conﬁg
 ure the Watchdog Service. For the terms related to the AUTOSAR Watchdog Manager
 see [32].
 
-7.11.3.2.1 Watchdog Service use Case: Supervision
+#@SECTION: 7.11.3.2.1 Watchdog Service use Case: Supervision
 
 SupervisedEntityNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -36544,7 +35320,7 @@ Please note that an SwcInternalBehavior may provide several SupervisedEn
 tityNeeds elements where each deﬁnes the requirements in relation to one super
 vised entity.
 
-7.11.3.2.2 Watchdog Service use Case: Global Supervision Status notiﬁcation
+#@SECTION: 7.11.3.2.2 Watchdog Service use Case: Global Supervision Status notiﬁcation
 
 Scenario: an AtomicSwComponentType requires to receive the Global Supervision
 Status that is combined from all individual Supervised Entities. In this case the follow
@@ -36569,7 +35345,7 @@ For more information please refer to [SWS_WdgM_00336].
 
 
 
-7.11.3.3 COM Manager Service Needs
+#@SECTION: 7.11.3.3 COM Manager Service Needs
 
 The meta-class ComMgrUserNeeds is used to deﬁne requirements to conﬁgure the
 ComM Service. An SwcInternalBehavior may provide several ComMgrUserNeeds
@@ -36578,7 +35354,7 @@ Especially, it deﬁnes which PortGroup is associated with this “user”.
 
 ComMgrUserNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -36604,7 +35380,7 @@ Mode
 
 Table 7.61: ComMgrUserNeeds
 
-7.11.3.3.1 ComM Use Case: read current ComM Mode
+#@SECTION: 7.11.3.3.1 ComM Use Case: read current ComM Mode
 
 Scenario: a AtomicSwComponentType reads the current ComM mode.
 
@@ -36626,7 +35402,7 @@ RepresentedPortGroup
 
 For more information please refer to [SWS_ComM_00847].
 
-7.11.3.3.2 ComM Use Case: request ComM Mode
+#@SECTION: 7.11.3.3.2 ComM Use Case: request ComM Mode
 
 Scenario: a AtomicSwComponentType requests a ComM mode. It may also check
 later whether the requested ComM mode has become effective.
@@ -36655,7 +35431,7 @@ Reference to the applicable PortGroup [0..1]
 
 For more information please refer to [SWS_ComM_00848].
 
-7.11.3.3.3 ComM Use Case: Software-Component acts as a Mode Manager that
+#@SECTION: 7.11.3.3.3 ComM Use Case: Software-Component acts as a Mode Manager that
 
 inﬂuences the ECU State
 
@@ -36685,7 +35461,7 @@ RepresentedPortGroup
 
 For more information please refer to [SWS_ComM_00741].
 
-7.11.3.4 ECU State Manager Service Needs
+#@SECTION: 7.11.3.4 ECU State Manager Service Needs
 
 The meta-class EcuStateMgrUserNeeds is used to deﬁne the requirements to con
 ﬁgure the ECU State Manager Service. There are actually two variants of AUTOSAR
@@ -36699,7 +35475,7 @@ Manager see [33]).
 
 EcuStateMgrUserNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -36724,7 +35500,7 @@ Attribute
 
 Table 7.62: EcuStateMgrUserNeeds
 
-7.11.3.4.1 EcuM Fixed Use Case: read current ECU Mode
+#@SECTION: 7.11.3.4.1 EcuM Fixed Use Case: read current ECU Mode
 
 Scenario: a AtomicSwComponentType reads the current ECU mode.
 
@@ -36747,7 +35523,7 @@ RepresentedPortGroup
 
 For more information please refer to [SWS_EcuM_02762] and [SWS_EcuM_02749].
 
-7.11.3.4.2 EcuM Fixed Use Case: request a certain ECU state
+#@SECTION: 7.11.3.4.2 EcuM Fixed Use Case: request a certain ECU state
 
 Scenario: a AtomicSwComponentType needs to keep the ECU alive or needs to ex
 ecute operations before the ECU is shut down. For this purpose the AtomicSwCom
@@ -36777,7 +35553,7 @@ RepresentedPortGroup
 
 For more information please refer to [SWS_EcuM_02762].
 
-7.11.3.4.3 EcuM Fixed Use Case: select Shutdown Target
+#@SECTION: 7.11.3.4.3 EcuM Fixed Use Case: select Shutdown Target
 
 Scenario: a AtomicSwComponentType wants to select a shutdown target. This cor
 responds to the “select shutdown target” use case of the ﬂex EcuM.
@@ -36799,7 +35575,7 @@ RepresentedPortGroup
 
 (cid:99)()
 
-7.11.3.4.4 EcuM Fixed Use Case: select Boot Target
+#@SECTION: 7.11.3.4.4 EcuM Fixed Use Case: select Boot Target
 
 Scenario: a AtomicSwComponentType wants to select a boot target.
 
@@ -36822,7 +35598,7 @@ RepresentedPortGroup
 
 (cid:99)()
 
-7.11.3.4.5 EcuM Flex Use Case: select Shutdown Target
+#@SECTION: 7.11.3.4.5 EcuM Flex Use Case: select Shutdown Target
 
 Scenario: a AtomicSwComponentType wants to select a shutdown target. This cor
 responds to the “select shutdown target” use case of the ﬁx EcuM.
@@ -36844,7 +35620,7 @@ RepresentedPortGroup
 
 (cid:99)()
 
-7.11.3.4.6 EcuM Flex Use Case: select Boot Target
+#@SECTION: 7.11.3.4.6 EcuM Flex Use Case: select Boot Target
 
 Scenario: a AtomicSwComponentType wants to select a boot target.
 
@@ -36867,7 +35643,7 @@ RepresentedPortGroup
 
 
 
-7.11.3.4.7 EcuM Flex Use Case: use Alarm Clock
+#@SECTION: 7.11.3.4.7 EcuM Flex Use Case: use Alarm Clock
 
 Scenario: a AtomicSwComponentType wants to use an alarm clock.
 
@@ -36888,7 +35664,7 @@ RepresentedPortGroup
 
 (cid:99)()
 
-7.11.3.5 BswM
+#@SECTION: 7.11.3.5 BswM
 
 All use cases for interaction of an application software-component with the BswM re
 quire the aggregation in the role serviceNeeds of BswMgrNeeds, a subclass of Ser
@@ -36896,7 +35672,7 @@ viceNeeds, at SwcServiceDependency.
 
 BswMgrNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -36919,7 +35695,7 @@ Attribute
 
 Table 7.63: BswMgrNeeds
 
-7.11.3.5.1 Partial Networking
+#@SECTION: 7.11.3.5.1 Partial Networking
 
 One speciﬁc use case for the existence of a SwcServiceDependency with respect
 to the interaction with the BswM is the support for partial networking, in particular the
@@ -36954,7 +35730,7 @@ VFC control port. Also, it may have a VFC status port. Technically, there could 
 eral VFC status ports per software-component but most likely there is only one VFC
 status port.
 
-7.11.3.5.2 Mode Manager
+#@SECTION: 7.11.3.5.2 Mode Manager
 
 A software-component that acts as a mode manager exposes a PPortPrototype
 typed by a ModeSwitchInterface. By this means the mode manager communi
@@ -37035,7 +35811,7 @@ has no stakes in further standardizing this aspect.
 Therefore, there is no motivation for a further exception with respect to the value of
 isService.
 
-7.11.3.5.3 Mode User
+#@SECTION: 7.11.3.5.3 Mode User
 
 A software-component that acts as a mode user exposes an RPortPrototype typed
 by a ModeSwitchInterface. By this means the software-component can be notiﬁed
@@ -37064,7 +35840,7 @@ none.
 
 (cid:99)(RS_SWCT_03110, RS_SWCT_03200, RS_SWCT_03203)
 
-7.11.3.5.4 Mode Requester
+#@SECTION: 7.11.3.5.4 Mode Requester
 
 A software-component that acts as a mode requester exposes an PPortPrototype
 typed by a SenderReceiverInterface. By this means the software-component
@@ -37091,7 +35867,7 @@ none.
 
 (cid:99)(RS_SWCT_03110, RS_SWCT_03200, RS_SWCT_03202)
 
-7.11.3.6 Crypto Service Dependencies
+#@SECTION: 7.11.3.6 Crypto Service Dependencies
 
 The meta-class CryptoServiceNeeds is used to deﬁne the requirements to conﬁg
 ure the CryptoServiceManager.
@@ -37105,7 +35881,7 @@ to properly generate the callbacks.
 
 CryptoServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -37119,7 +35895,7 @@ PositiveInteger
 attr The maximum length of a cryptographic key, that
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 Attribute
@@ -37140,7 +35916,7 @@ Interface. The possible role attribute values and the multiplicity of the relate
 Prototypes are listed at the use case descriptions in the paragraph RoleBasedPor
 tAssignment.
 
-7.11.3.6.1 Crypto Service Service Use Case: Hash calculation
+#@SECTION: 7.11.3.6.1 Crypto Service Service Use Case: Hash calculation
 
 Scenario: a AtomicSwComponentType uses the hash calculation of the Crypto Ser
 vice. In this case the following setup apply:
@@ -37166,7 +35942,7 @@ For more information please refer to [SWS_Csm_00775] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.2 Crypto Service Service Use Case: MAC calculation
+#@SECTION: 7.11.3.6.2 Crypto Service Service Use Case: MAC calculation
 
 Scenario: a AtomicSwComponentType uses the message authentication code
 (MAC) calculation of the Crypto Service. In this case the following setup apply:
@@ -37190,7 +35966,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00776] and [SWS_Csm_00801].
 
-7.11.3.6.3 Crypto Service Service Use Case: MAC veriﬁcation
+#@SECTION: 7.11.3.6.3 Crypto Service Service Use Case: MAC veriﬁcation
 
 Scenario: a AtomicSwComponentType uses the message authentication code
 (MAC) veriﬁcation of the Crypto Service. In this case the following setup apply:
@@ -37216,7 +35992,7 @@ For more information please refer to [SWS_Csm_00777] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.4 Crypto Service Service Use Case: seeding of random generator
+#@SECTION: 7.11.3.6.4 Crypto Service Service Use Case: seeding of random generator
 
 Scenario: a AtomicSwComponentType uses the generation of random numbers of
 the Crypto Service. In this case the following setup apply:
@@ -37240,7 +36016,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00778] and [SWS_Csm_00801].
 
-7.11.3.6.5 Crypto Service Service Use Case: generation of random numbers
+#@SECTION: 7.11.3.6.5 Crypto Service Service Use Case: generation of random numbers
 
 Scenario: a AtomicSwComponentType uses the generation of random numbers of
 the Crypto Service. In this case the following setup apply:
@@ -37266,7 +36042,7 @@ For more information please refer to [SWS_Csm_00779] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.6 Crypto Service Service Use Case: symmetrical block encryption
+#@SECTION: 7.11.3.6.6 Crypto Service Service Use Case: symmetrical block encryption
 
 Scenario: a AtomicSwComponentType uses the symmetrical block encryption of the
 Crypto Service. In this case the following setup apply:
@@ -37290,7 +36066,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00780] and [SWS_Csm_00801].
 
-7.11.3.6.7 Crypto Service Service Use Case: symmetrical block decryption
+#@SECTION: 7.11.3.6.7 Crypto Service Service Use Case: symmetrical block decryption
 
 Scenario: a AtomicSwComponentType uses the symmetrical block decryption of the
 Crypto Service. In this case the following setup apply:
@@ -37316,7 +36092,7 @@ For more information please refer to [SWS_Csm_00781] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.8 Crypto Service Service Use Case: symmetrical encryption
+#@SECTION: 7.11.3.6.8 Crypto Service Service Use Case: symmetrical encryption
 
 Scenario: a AtomicSwComponentType uses the symmetrical encryption of
 Crypto Service. In this case the following setup apply:
@@ -37342,7 +36118,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00782] and [SWS_Csm_00801].
 
-7.11.3.6.9 Crypto Service Service Use Case: symmetrical decryption
+#@SECTION: 7.11.3.6.9 Crypto Service Service Use Case: symmetrical decryption
 
 Scenario: a AtomicSwComponentType uses the symmetrical decryption of
 Crypto Service. In this case the following setup apply:
@@ -37370,7 +36146,7 @@ For more information please refer to [SWS_Csm_00783] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.10 Crypto Service Service Use Case: asymmetrical encryption
+#@SECTION: 7.11.3.6.10 Crypto Service Service Use Case: asymmetrical encryption
 
 Scenario: a AtomicSwComponentType uses the asymmetrical encryption of the
 Crypto Service. In this case the following setup apply:
@@ -37394,7 +36170,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00784] and [SWS_Csm_00801].
 
-7.11.3.6.11 Crypto Service Service Use Case: asymmetrical decryption
+#@SECTION: 7.11.3.6.11 Crypto Service Service Use Case: asymmetrical decryption
 
 Scenario: a AtomicSwComponentType uses the asymmetrical decryption of the
 Crypto Service. In this case the following setup apply:
@@ -37420,7 +36196,7 @@ For more information please refer to [SWS_Csm_00785] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.12 Crypto Service Service Use Case: signature generation
+#@SECTION: 7.11.3.6.12 Crypto Service Service Use Case: signature generation
 
 Scenario: a AtomicSwComponentType uses the signature generation of the Crypto
 Service. In this case the following setup apply:
@@ -37444,7 +36220,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00786] and [SWS_Csm_00801].
 
-7.11.3.6.13 Crypto Service Service Use Case: signature veriﬁcation
+#@SECTION: 7.11.3.6.13 Crypto Service Service Use Case: signature veriﬁcation
 
 Scenario: a AtomicSwComponentType uses the signature veriﬁcation of the Crypto
 Service. In this case the following setup apply:
@@ -37470,7 +36246,7 @@ For more information please refer to [SWS_Csm_00787] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.14 Crypto Service Service Use Case: checksum calculation
+#@SECTION: 7.11.3.6.14 Crypto Service Service Use Case: checksum calculation
 
 Scenario: a AtomicSwComponentType uses the checksum calculation of the Crypto
 Service. In this case the following setup apply:
@@ -37494,7 +36270,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00788] and [SWS_Csm_00801].
 
-7.11.3.6.15 Crypto Service Service Use Case: key derivation
+#@SECTION: 7.11.3.6.15 Crypto Service Service Use Case: key derivation
 
 Scenario: a AtomicSwComponentType uses the key derivation of the Crypto Service.
 In this case the following setup apply:
@@ -37520,7 +36296,7 @@ For more information please refer to [SWS_Csm_00789] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.16 Crypto Service Service Use Case: symmetric key derivation
+#@SECTION: 7.11.3.6.16 Crypto Service Service Use Case: symmetric key derivation
 
 Scenario: a AtomicSwComponentType uses the symmetric key derivation of the
 Crypto Service. In this case the following setup apply:
@@ -37544,7 +36320,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00790] and [SWS_Csm_00801].
 
-7.11.3.6.17 Crypto Service Service Use Case: key exchange protocol, public
+#@SECTION: 7.11.3.6.17 Crypto Service Service Use Case: key exchange protocol, public
 
 value calculation
 
@@ -37572,7 +36348,7 @@ For more information please refer to [SWS_Csm_00791] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.18 Crypto Service Service Use Case: key exchange protocol, secret
+#@SECTION: 7.11.3.6.18 Crypto Service Service Use Case: key exchange protocol, secret
 
 value calculation
 
@@ -37598,7 +36374,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00792] and [SWS_Csm_00801].
 
-7.11.3.6.19 Crypto Service Service Use Case: key exchange protocol, calculate
+#@SECTION: 7.11.3.6.19 Crypto Service Service Use Case: key exchange protocol, calculate
 
 symmetric key
 
@@ -37626,7 +36402,7 @@ For more information please refer to [SWS_Csm_00793] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.20 Crypto Service Service Use Case: symmetrical key extraction
+#@SECTION: 7.11.3.6.20 Crypto Service Service Use Case: symmetrical key extraction
 
 Scenario: a AtomicSwComponentType uses the symmetrical key extraction of the
 Crypto Service. In this case the following setup apply:
@@ -37650,7 +36426,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00794] and [SWS_Csm_00801].
 
-7.11.3.6.21 Crypto Service Service Use Case: symmetrical key wrapping with
+#@SECTION: 7.11.3.6.21 Crypto Service Service Use Case: symmetrical key wrapping with
 
 symmetrical wrapping key
 
@@ -37680,7 +36456,7 @@ For more information please refer to [SWS_Csm_00795] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.22 Crypto Service Service Use Case: symmetrical key wrapping with
+#@SECTION: 7.11.3.6.22 Crypto Service Service Use Case: symmetrical key wrapping with
 
 asymmetrical wrapping key
 
@@ -37709,7 +36485,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00796] and [SWS_Csm_00801].
 
-7.11.3.6.23 Crypto Service Service Use Case: asymmetrical public key extrac
+#@SECTION: 7.11.3.6.23 Crypto Service Service Use Case: asymmetrical public key extrac
 
 tion
 
@@ -37737,7 +36513,7 @@ For more information please refer to [SWS_Csm_00797] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.24 Crypto Service Service Use Case: asymmetrical private key extrac
+#@SECTION: 7.11.3.6.24 Crypto Service Service Use Case: asymmetrical private key extrac
 
 tion
 
@@ -37763,7 +36539,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00798] and [SWS_Csm_00801].
 
-7.11.3.6.25 Crypto Service Service Use Case: asymmetrical key wrapping with
+#@SECTION: 7.11.3.6.25 Crypto Service Service Use Case: asymmetrical key wrapping with
 
 symmetrical wrapping key
 
@@ -37793,7 +36569,7 @@ For more information please refer to [SWS_Csm_00799] and [SWS_Csm_00801].
 
 
 
-7.11.3.6.26 Crypto Service Service Use Case: asymmetrical key wrapping with
+#@SECTION: 7.11.3.6.26 Crypto Service Service Use Case: asymmetrical key wrapping with
 
 asymmetrical wrapping key
 
@@ -37821,7 +36597,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Csm_00800] and [SWS_Csm_00801].
 
-7.11.3.7 Diagnostic Service Dependency
+#@SECTION: 7.11.3.7 Diagnostic Service Dependency
 
 This chapter describes the usage of the speciﬁc diagnostic meta-classes derived from
 ServiceNeeds within an atomic software-component. An overview of common diag
@@ -37844,7 +36620,7 @@ are listed at the use case descriptions in the paragraph RoleBasedPortAssignment
 
 
 
-7.11.3.7.1 Function Inhibition Needs
+#@SECTION: 7.11.3.7.1 Function Inhibition Needs
 
 The meta-class FunctionInhibitionNeeds is used to deﬁne requirements in order
 to conﬁgure the Diagnostic Event Manager Service.
@@ -37855,7 +36631,7 @@ terms related to the AUTOSAR Function Inhibition Manager, see [35]).
 
 FunctionInhibitionNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -37880,7 +36656,7 @@ Attribute
 
 Table 7.65: FunctionInhibitionNeeds
 
-7.11.3.7.1.1 Function Inhibition Manager Service use Case: read function per
+#@SECTION: 7.11.3.7.1.1 Function Inhibition Manager Service use Case: read function per
 
 mission
 
@@ -37905,7 +36681,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Fim_00090].
 
-7.11.3.7.2 Diagnostic Event Needs
+#@SECTION: 7.11.3.7.2 Diagnostic Event Needs
 
 The meta-classes DiagnosticEventManagerNeeds is used to deﬁne requirements
 in order to conﬁgure the Diagnostic Event Manager Service.
@@ -37921,7 +36697,7 @@ see [36]).
 
 DiagnosticEventManagerNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -37956,7 +36732,7 @@ pabilityElement express the following intentions:
 
 DiagnosticCapabilityElement (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -37987,7 +36763,7 @@ ement
 DiagRequireme
 ntIdString
 
-0..1
+#@SECTION: 0..1
 
 attr This denotes the requirement identiﬁer to which
 
@@ -38002,7 +36778,7 @@ become obsolete.
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute denotes the level of security which is
 
@@ -38015,7 +36791,7 @@ the ECU.
 Table 7.67: DiagnosticCapabilityElement
 
 
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 The possible values of the intended audience for a diagnostic object.
 Description
@@ -38058,7 +36834,7 @@ can never report errors to the Dem before the Dem is fully initialized.
 
 DiagnosticEventManagerNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38089,7 +36865,7 @@ Note
 Literal
 emission
 RelatedDtc
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumeration deﬁnes the possible kinds of diagnostic monitors regarding the
 OBD relevance.
@@ -38129,7 +36905,7 @@ tionCounterPort. (cid:99)()
 
 DiagnosticEventNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38150,7 +36926,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 Boolean
 
 attr PTO (Power Take Off) has an impact on the
@@ -38187,14 +36963,14 @@ DiagEventDebo
 unceAlgorithm
 
 Mul. Kind Note
-0..1 aggr Speciﬁes the abstract need on the Debounce
+#@SECTION: 0..1 aggr Speciﬁes the abstract need on the Debounce
 
 Algorithm applied by the Diagnostic Event
 Manager.
 
 DtcKindEnum
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute indicates the kind of the diagnostic
 monitor according to the SWS Diagnostic Event
@@ -38218,7 +36994,7 @@ nNeeds
 This attribute applies for the UDS diagnostics use
 case.
 
-0..1
+#@SECTION: 0..1
 
 ref This represents the primary Function Inhibition
 
@@ -38238,7 +37014,7 @@ mber
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -38260,14 +37036,14 @@ vior
 ReportBehavior
 Enum
 
-0..1
+#@SECTION: 0..1
 
 udsDtcNu
 mber
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -38283,7 +37059,7 @@ Table 7.71: DiagnosticEventNeeds
 
 DiagEventDebounceAlgorithm (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38320,7 +37096,7 @@ Table 7.72: DiagEventDebounceAlgorithm
 
 DiagEventDebounceCounterBased
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38430,7 +37206,7 @@ Table 7.73: DiagEventDebounceCounterBased
 
 DiagEventDebounceTimeBased
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38472,7 +37248,7 @@ Table 7.74: DiagEventDebounceTimeBased
 
 DiagEventDebounceMonitorInternal
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38560,7 +37336,7 @@ to DiagnosticEventNeeds,
 
 DiagnosticEventInfoNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38570,7 +37346,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 DtcKindEnum
 
 attr This attribute indicates the kind of the diagnostic
@@ -38596,7 +37372,7 @@ Datatype
 PositiveInteger
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -38615,7 +37391,7 @@ mber
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -38633,7 +37409,7 @@ Table 7.76: DiagnosticEventInfoNeeds
 
 DiagnosticOperationCycleNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38690,7 +37466,7 @@ ignition
 obdDcy
 other
 power
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 The possible values of the operation cycles types for the Dem.
 Description
@@ -38711,7 +37487,7 @@ Table 7.78: OperationCycleTypeEnum
 
 DiagnosticEnableConditionNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38741,7 +37517,7 @@ Table 7.79: DiagnosticEnableConditionNeeds
 Enumeration EventAcceptanceStatusEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumerator speciﬁes the initial status for enable or disable of acceptance of
 event reports of a diagnostic event.
@@ -38762,7 +37538,7 @@ Table 7.80: EventAcceptanceStatusEnum
 
 DiagnosticStorageConditionNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38792,7 +37568,7 @@ Table 7.81: DiagnosticStorageConditionNeeds
 Enumeration StorageConditionStatusEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumeration speciﬁes the initial status for enable or disable of storage of a
 diagnostic event.
@@ -38814,7 +37590,7 @@ Table 7.82: StorageConditionStatusEnum
 
 DtcStatusChangeNotiﬁcationNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -38846,7 +37622,7 @@ Literal
 j1939
 obd
 uds
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumeration speciﬁes the DTC format.
 Description
@@ -38856,7 +37632,7 @@ Deﬁnes the UDS DTC format.
 
 Table 7.84: DtcFormatTypeEnum
 
-7.11.3.7.2.1 Dem Service Use Case: diagnostic monitor, debouncing by Dem
+#@SECTION: 7.11.3.7.2.1 Dem Service Use Case: diagnostic monitor, debouncing by Dem
 
 Scenario: an AtomicSwComponentType implements a Diagnostic Monitor. The de
 bouncing of the failure condition shall be conﬁgured and processed by the Dem. In this
@@ -38893,7 +37669,7 @@ Please note that for the implementation of this scenario DiagEventDebounceCoun
 terBased or DiagEventDebounceTimeBased algorithm should be used as di
 agEventDebounceAlgorithm.
 
-7.11.3.7.2.2 Dem Service Use Case: diagnostic monitor, debouncing by SWC
+#@SECTION: 7.11.3.7.2.2 Dem Service Use Case: diagnostic monitor, debouncing by SWC
 
 Scenario: an AtomicSwComponentType implements a Diagnostic Monitor. The de
 bouncing of the failure condition shall be processed by the software component. In this
@@ -38931,7 +37707,7 @@ torInternal algorithm should be used as diagEventDebounceAlgorithm.
 
 
 
-7.11.3.7.2.3 Dem Service Use Case: software-component provides information
+#@SECTION: 7.11.3.7.2.3 Dem Service Use Case: software-component provides information
 
 about operation cycles
 
@@ -38957,7 +37733,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00601] and [ECUC_Dem_00703].
 
-7.11.3.7.2.4 Dem Service Use Case: software-component provides information
+#@SECTION: 7.11.3.7.2.4 Dem Service Use Case: software-component provides information
 
 about aging cycles
 
@@ -38984,7 +37760,7 @@ For more information please refer to [SWS_Dem_00602].
 
 
 
-7.11.3.7.2.5 Dem Service Use Case: software-component enables storage of
+#@SECTION: 7.11.3.7.2.5 Dem Service Use Case: software-component enables storage of
 
 DTCs in general
 
@@ -39009,7 +37785,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00604] and [ECUC_Dem_00656].
 
-7.11.3.7.2.6 Dem Service Use Case: software-component enables storage of
+#@SECTION: 7.11.3.7.2.6 Dem Service Use Case: software-component enables storage of
 
 subsequent DTCs
 
@@ -39040,7 +37816,7 @@ fully available.
 
 
 
-7.11.3.7.2.7 Dem Service Use Case: retrieve information of the lamp status
+#@SECTION: 7.11.3.7.2.7 Dem Service Use Case: retrieve information of the lamp status
 
 Please note that for this speciﬁc use case the application of a concrete ServiceNeeds
 is not yet clariﬁed.
@@ -39064,7 +37840,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00606].
 
-7.11.3.7.2.8 Dem Service Use Case: DEM provides information that the fault
+#@SECTION: 7.11.3.7.2.8 Dem Service Use Case: DEM provides information that the fault
 
 storage overﬂows
 
@@ -39091,7 +37867,7 @@ For more information please refer to [SWS_Dem_00607].
 
 
 
-7.11.3.7.2.9 Dem Service Use Case: software-component suppresses the stor
+#@SECTION: 7.11.3.7.2.9 Dem Service Use Case: software-component suppresses the stor
 
 age of DTCs
 
@@ -39117,7 +37893,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00608].
 
-7.11.3.7.2.10 Dem Service Use Case: software-component informs that the PTO
+#@SECTION: 7.11.3.7.2.10 Dem Service Use Case: software-component informs that the PTO
 
 is active
 
@@ -39146,7 +37922,7 @@ For more information please refer to [SWS_Dem_00612].
 
 
 
-7.11.3.7.2.11 Dem Service Use Case: software-component needs information
+#@SECTION: 7.11.3.7.2.11 Dem Service Use Case: software-component needs information
 
 about any DTC status change
 
@@ -39177,7 +37953,7 @@ In the case the software-component needs notiﬁcations about different kinds of
 DTC status change (formalized by DtcFormatTypeEnum) it is applicable to create a
 SwcServiceDependency for each kind of status change.
 
-7.11.3.7.2.12 Dem Service Use Case: call operation if the data of a given diag
+#@SECTION: 7.11.3.7.2.12 Dem Service Use Case: call operation if the data of a given diag
 
 nostic event changes (I)
 
@@ -39210,7 +37986,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00618].
 
-7.11.3.7.2.13 Dem Service Use Case: call operation if the data or status of any
+#@SECTION: 7.11.3.7.2.13 Dem Service Use Case: call operation if the data or status of any
 
 diagnostic event changes (II)
 
@@ -39260,7 +38036,7 @@ ticEventInfoNeeds. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 
 
-7.11.3.7.2.14 Dem Service Use Case: software-component provides data for di
+#@SECTION: 7.11.3.7.2.14 Dem Service Use Case: software-component provides data for di
 
 agnostic purposes
 
@@ -39295,7 +38071,7 @@ applicable SwcServiceDependency. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dem_00621].
 
-7.11.3.7.2.15 Dem Service Use Case: interface to DCM
+#@SECTION: 7.11.3.7.2.15 Dem Service Use Case: interface to DCM
 
 Please note that for this speciﬁc use case the application of a concrete ServiceNeeds
 is not yet clariﬁed.
@@ -39323,7 +38099,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00609].
 
-7.11.3.7.2.16 Dem Service Use Case: software-component gets information
+#@SECTION: 7.11.3.7.2.16 Dem Service Use Case: software-component gets information
 
 about a speciﬁc DTC
 
@@ -39350,7 +38126,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dem_00609].
 
-7.11.3.7.3 Diagnostic Communication Needs
+#@SECTION: 7.11.3.7.3 Diagnostic Communication Needs
 
 The meta-class DiagnosticCommunicationManagerNeeds is used to deﬁne re
 quirements in order to conﬁgure the Diagnostic Communication Manager Service.
@@ -39364,7 +38140,7 @@ see [37]).
 
 DiagnosticCommunicationManagerNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -39376,7 +38152,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 DiagnosticServi
 ceRequestCallb
 ackTypeEnum
@@ -39399,7 +38175,7 @@ Table 7.85: DiagnosticCommunicationManagerNeeds
 Enumeration DiagnosticServiceRequestCallbackTypeEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This represents the ability to deﬁne whether a Service Request Notiﬁcation was
 used in the role of a manufacturer or a supplier.
@@ -39442,7 +38218,7 @@ nosticExtract [38].
 
 DiagnosticRoutineNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -39469,7 +38245,7 @@ diagRoutin
 eType
 ridNumber PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a routine identiﬁer for the
 
@@ -39485,7 +38261,7 @@ Package
 Note
 Literal
 asynchronous This indicates that the diagnostic server is not blocked while the diagnostic routine
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 This enumerator speciﬁes the different types of diagnostic routines.
 Description
@@ -39506,7 +38282,7 @@ ing the ClientServerOperations mentioned before.
 
 DiagnosticIoControlNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -39518,7 +38294,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 DiagnosticValue
 Needs
 
@@ -39541,7 +38317,7 @@ didNumber PositiveInteger
 Datatype
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This represents a Data identiﬁer for the diagnostic
 value. This allows to predeﬁne the DID number if
@@ -39561,14 +38337,14 @@ Supported
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute determines, if the referenced port
 supports temporary freezing of I/O value.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr This represents a ﬂag for the existence of the
 
@@ -39576,7 +38352,7 @@ ResetToDefault operation in the service interface.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute determines, if the referenced port
 
@@ -39627,7 +38403,7 @@ of a BswServiceDependency.
 
 DiagnosticValueNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -39647,7 +38423,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 
 attr This attribute is applicable only if the ServiceNeed
 is aggregated within BswModuleDependency.
@@ -39665,9 +38441,9 @@ ValueAcce
 ss
 didNumber PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
 This attribute represents the length of data (in
 bytes) provided for this particular PID signal.
@@ -39689,14 +38465,14 @@ Style
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute controls whether the data length of
 
 DiagnosticProce
 ssingStyleEnum
 
-0..1
+#@SECTION: 0..1
 
 the data is ﬁxed.
 
@@ -39711,7 +38487,7 @@ Table 7.90: DiagnosticValueNeeds
 Enumeration DiagnosticValueAccessEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Deﬁnes the access of the conﬁgured diagnostic current values which will be used
 by the DEM or DCM module.
@@ -39735,7 +38511,7 @@ where the Dcm just writes data to the application software without the intention
 read it back,
 
 Table 7.91: DiagnosticValueAccessEnum
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 
 Enumeration DiagnosticProcessingStyleEnum
@@ -39759,7 +38535,7 @@ Table 7.92: DiagnosticProcessingStyleEnum
 
 DiagnosticsCommunicationSecurityNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -39783,7 +38559,7 @@ Attribute
 
 Table 7.93: DiagnosticsCommunicationSecurityNeeds
 
-7.11.3.7.3.1 Dcm Service Use Case: read/write current values by Client Server
+#@SECTION: 7.11.3.7.3.1 Dcm Service Use Case: read/write current values by Client Server
 
 Interface
 
@@ -39818,7 +38594,7 @@ applicable SwcServiceDependency. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00686].
 
-7.11.3.7.3.2 Dcm Service Use Case: read/write current values of speciﬁc DID by
+#@SECTION: 7.11.3.7.3.2 Dcm Service Use Case: read/write current values of speciﬁc DID by
 
 Client Server Interface
 
@@ -39856,7 +38632,7 @@ For more information please refer to [SWS_Dcm_00769].
 
 
 
-7.11.3.7.3.3 Dcm Service Use Case: read/write current values by Sender Re
+#@SECTION: 7.11.3.7.3.3 Dcm Service Use Case: read/write current values by Sender Re
 
 ceiver Interface
 
@@ -39894,7 +38670,7 @@ AbstractRequiredPortPrototype. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00687].
 
-7.11.3.7.3.4 Dcm Service Use Case: start/stop or request routine results
+#@SECTION: 7.11.3.7.3.4 Dcm Service Use Case: start/stop or request routine results
 
 Scenario: an AtomicSwComponentType offers a PortPrototype typed by a
 ClientServerInterface to start/stop or request routine results of diagnostic rou
@@ -39928,7 +38704,7 @@ RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00690].
 
-7.11.3.7.3.5 Dcm Service Use Case: IO control by Client Server Interface
+#@SECTION: 7.11.3.7.3.5 Dcm Service Use Case: IO control by Client Server Interface
 
 Scenario: an AtomicSwComponentType offers a PortPrototype typed by a
 ClientServerInterface to adjust the IO signal via diagnostic services.
@@ -39960,7 +38736,7 @@ For more information please refer to [SWS_Dcm_00686].
 
 
 
-7.11.3.7.3.6 Dcm Service Use Case: IO control by Sender Receiver Interface
+#@SECTION: 7.11.3.7.3.6 Dcm Service Use Case: IO control by Sender Receiver Interface
 
 This use case represents an alternative to the the use case described in chap
 for the same purpose it is also possible to utilize a Sender
@@ -40071,7 +38847,7 @@ RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_01308] and [SWS_Dcm_01309].
 
-7.11.3.7.3.7 Dcm Service Use Case: Access to protocol, session and security
+#@SECTION: 7.11.3.7.3.7 Dcm Service Use Case: Access to protocol, session and security
 
 information
 
@@ -40100,7 +38876,7 @@ For more information please refer to [SWS_Dcm_00698]
 
 
 
-7.11.3.7.3.8 Dcm Service Use Case: Verify the access to security level
+#@SECTION: 7.11.3.7.3.8 Dcm Service Use Case: Verify the access to security level
 
 Scenario: an AtomicSwComponentType provides a server port to verify the access
 to security level via diagnostic services.
@@ -40130,7 +38906,7 @@ RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00685]
 
-7.11.3.7.3.9 Dcm Service Use Case: multiple testers access one ECU
+#@SECTION: 7.11.3.7.3.9 Dcm Service Use Case: multiple testers access one ECU
 
 Scenario: an AtomicSwComponentType provides a server port to get information on
 the status of the protocol communication. Further on the AtomicSwComponentType
@@ -40157,7 +38933,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dcm_00692]
 
-7.11.3.7.3.10 Dcm Service Use Case: Service Request Notiﬁcation
+#@SECTION: 7.11.3.7.3.10 Dcm Service Use Case: Service Request Notiﬁcation
 
 Scenario: an AtomicSwComponentType provides a server port to get notiﬁed about
 a Service Request via diagnostic services. This indicates the successful reception of
@@ -40225,7 +39001,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dcm_00694]
 
-7.11.3.7.4 OBD related Needs
+#@SECTION: 7.11.3.7.4 OBD related Needs
 
 The ObdRatioServiceNeeds describes further properties of the implementation of
 the Rate Based Monitoring (e.g. connectionType) as well as the logical dependen
@@ -40233,7 +39009,7 @@ cies relevant for the ECU conﬁguration (e.g. iumprGroup)
 
 ObdRatioServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40297,7 +39073,7 @@ nNeeds
 
 ref The rate based monitored Diagnostic Event.
 
-0..1
+#@SECTION: 0..1
 
 ref This represents the primary Function Inhibition
 
@@ -40352,7 +39128,7 @@ The possible values for the attribute ObdRatioServiceNeeds.iumprGroup are:
 Enumeration ObdRatioConnectionKindEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Deﬁnes the way how the IUMPR service connection between the DEM and the
 client component or module is handled (for details see the DEM Speciﬁcation).
@@ -40376,7 +39152,7 @@ is used for the Diagnostic Event Manager as well.
 
 ObdControlServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40404,7 +39180,7 @@ Table 7.96: ObdControlServiceNeeds
 
 ObdPidServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40420,7 +39196,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 
 attr This attribute is applicable only if the
 
@@ -40460,7 +39236,7 @@ Table 7.97: ObdPidServiceNeeds
 
 ObdInfoServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40471,7 +39247,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-0..1
+#@SECTION: 0..1
 
 attr This attribute is applicable only if the
 
@@ -40499,7 +39275,7 @@ Table 7.98: ObdInfoServiceNeeds
 
 ObdMonitorServiceNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40536,7 +39312,7 @@ testId
 unitAndSc
 alingId
 
-7.11.3.7.4.1 Dem Service Use Case: In-Use-Monitor Performance Ratio calcula
+#@SECTION: 7.11.3.7.4.1 Dem Service Use Case: In-Use-Monitor Performance Ratio calcula
 
 tion
 
@@ -40579,7 +39355,7 @@ If the attribute connectionType of the contained ObdRatioServiceNeeds is set
 to ObdRatioConnectionKindEnum.observer the role value IUMPRNumerator
 is not applicable. (cid:99)()
 
-7.11.3.7.4.2 Dcm Service Use Case: read parameter identiﬁer via diagnostic
+#@SECTION: 7.11.3.7.4.2 Dcm Service Use Case: read parameter identiﬁer via diagnostic
 
 services by Client Server Interface
 
@@ -40612,7 +39388,7 @@ applicable SwcServiceDependency. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00686].
 
-7.11.3.7.4.3 Dcm Service Use Case: read parameter identiﬁer via diagnostic
+#@SECTION: 7.11.3.7.4.3 Dcm Service Use Case: read parameter identiﬁer via diagnostic
 
 services by Sender Receiver Interface
 
@@ -40644,7 +39420,7 @@ AbstractRequiredPortPrototype. (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00687].
 
-7.11.3.7.4.4 Dcm Service Use Case: Request vehicle information
+#@SECTION: 7.11.3.7.4.4 Dcm Service Use Case: Request vehicle information
 
 Scenario: an AtomicSwComponentType offers a server port to read vehicle informa
 tion values via OBD services.
@@ -40674,7 +39450,7 @@ RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00688].
 
-7.11.3.7.4.5 Dem Service Use Case: Read DTR data from SW-C for OBD Service
+#@SECTION: 7.11.3.7.4.5 Dem Service Use Case: Read DTR data from SW-C for OBD Service
 
 $06
 
@@ -40702,7 +39478,7 @@ RepresentedPortGroups
 
 For more information please refer to [SWS_Dcm_00689].
 
-7.11.3.7.4.6 Dcm Service Use Case: request control of on-board system, test or
+#@SECTION: 7.11.3.7.4.6 Dcm Service Use Case: request control of on-board system, test or
 
 component
 
@@ -40738,7 +39514,7 @@ For more information please refer to [SWS_Dcm_00691].
 
 
 
-7.11.3.7.4.7 Dcm Service Use Case: Response On Event via diagnostic services
+#@SECTION: 7.11.3.7.4.7 Dcm Service Use Case: Response On Event via diagnostic services
 
 Please note that for this speciﬁc use case the application of a concrete ServiceNeeds
 is not yet clariﬁed.
@@ -40765,7 +39541,7 @@ nentTypes (cid:99)(RS_SWCT_00170, RS_SWCT_03190)
 
 For more information please refer to [SWS_Dcm_00695] and [SWS_Dcm_00699].
 
-7.11.3.7.5 Diagnostics over IP
+#@SECTION: 7.11.3.7.5 Diagnostics over IP
 
 This chapter describes the usage of speciﬁc meta-classes to support the speciﬁcation
 of diagnostics over IP. For more details, please refer to ISO 13400 [39].
@@ -40776,7 +39552,7 @@ Figure 7.47: Subclasses of ServiceNeeds for implementing diagnostics over IP
 
 DoIpServiceNeeds (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 Base
@@ -40799,7 +39575,7 @@ Table 7.100: DoIpServiceNeeds
 
 DoIpGidNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40834,7 +39610,7 @@ IdentifiableServiceNeedsDoIpPowerModeStatusNeedsDoIpGidSynchronizationNeedsDoIpG
 
 DoIpGidSynchronizationNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40864,7 +39640,7 @@ Table 7.102: DoIpGidSynchronizationNeeds
 
 DoIpPowerModeStatusNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40891,7 +39667,7 @@ Attribute
 Table 7.103: DoIpPowerModeStatusNeeds
 
 DoIpRoutingActivationAuthenticationNeeds
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40906,7 +39682,7 @@ PositiveInteger
 attr Describes the length in byte of the additional
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 
@@ -40919,7 +39695,7 @@ Response
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 information for RA authentication that is needed
 by the software entity. If the software entity is a
@@ -40964,7 +39740,7 @@ Table 7.104: DoIpRoutingActivationAuthenticationNeeds
 
 DoIpRoutingActivationConﬁrmationNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -40979,7 +39755,7 @@ PositiveInteger
 attr Describes the length in byte of the additional
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 
@@ -40992,7 +39768,7 @@ Response
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 routingActi
 vationType
@@ -41033,7 +39809,7 @@ Table 7.105: DoIpRoutingActivationConﬁrmationNeeds
 
 DoIpActivationLineNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -41060,7 +39836,7 @@ Attribute
 
 Table 7.106: DoIpActivationLineNeeds
 
-7.11.3.7.5.1 DoIP Service Use Case: GID synchronization can be necessary if
+#@SECTION: 7.11.3.7.5.1 DoIP Service Use Case: GID synchronization can be necessary if
 
 the ECU is DoIP Gid synchronization master
 
@@ -41085,7 +39861,7 @@ RepresentedPortGroups
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
-7.11.3.7.5.2 DoIP Service Use Case: Vehicle information is broadcast or can be
+#@SECTION: 7.11.3.7.5.2 DoIP Service Use Case: Vehicle information is broadcast or can be
 
 requested by the tester
 
@@ -41113,7 +39889,7 @@ RepresentedPortGroups
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
-7.11.3.7.5.3 DoIP Service Use Case: Tester could also request the power status
+#@SECTION: 7.11.3.7.5.3 DoIP Service Use Case: Tester could also request the power status
 
 with respect to diagnostics
 
@@ -41140,7 +39916,7 @@ RepresentedPortGroups
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
-7.11.3.7.5.4 DoIP Service Use Case: Routing activation mechanism is used
+#@SECTION: 7.11.3.7.5.4 DoIP Service Use Case: Routing activation mechanism is used
 which can lead to additional impact regarding authentication or
 conﬁrmation
 
@@ -41179,7 +39955,7 @@ RepresentedPortGroups
 
 (cid:99)(RS_SWCT_03190)
 
-7.11.3.7.5.5 DoIP Service Use Case: a DoIP entity needs to be informed when
+#@SECTION: 7.11.3.7.5.5 DoIP Service Use Case: a DoIP entity needs to be informed when
 
 an external tester is attached or activated.
 
@@ -41212,7 +39988,7 @@ RepresentedPortGroups
 
 (cid:99)(RS_SWCT_03310, RS_SWCT_03190)
 
-7.11.3.7.5.6 Service Use Case: Set and reset Warning Indicator Request bit
+#@SECTION: 7.11.3.7.5.6 Service Use Case: Set and reset Warning Indicator Request bit
 
 Scenario: In some cases (e.g. controlling a failsafe reaction in application) the “Warn
 ing Indicator Request”-bit of a corresponding event in Dem shall be set/reset by a
@@ -41249,7 +40025,7 @@ RepresentedPortGroups
 
 WarningIndicatorRequestedBitNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -41275,7 +40051,7 @@ Table 7.107: WarningIndicatorRequestedBitNeeds
 
 
 
-7.11.3.8 Diagnostic Log and Trace Dependency
+#@SECTION: 7.11.3.8 Diagnostic Log and Trace Dependency
 
 The meta-class DltUserNeeds is used together with the SwcServiceDependency
 to deﬁne requirements in order to conﬁgure the Diagnostic Log and Trace module (for
@@ -41283,7 +40059,7 @@ the terms related to the AUTOSAR Speciﬁcation of Module DLT see [40]).
 
 DltUserNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -41319,7 +40095,7 @@ be set to the name of the used standardized ClientServerInterface.
 The possible role attribute values and the multiplicity of the related PortPrototypes
 are listed at the use case descriptions in the paragraph RoleBasedPortAssignment.
 
-7.11.3.8.1 Dlt use Case: Application software component accesses the Syn
+#@SECTION: 7.11.3.8.1 Dlt use Case: Application software component accesses the Syn
 
 chronized Time-Base Manager
 
@@ -41363,7 +40139,7 @@ Further on the component has to provide a Server Port (LogTraceSessionControl) t
 receive the current log level and trace status. Server Ports for VerboseModeControl
 and InjectionCallback are optional.
 
-7.11.3.9 Synchronized Time-Base Manager Dependency
+#@SECTION: 7.11.3.9 Synchronized Time-Base Manager Dependency
 
 The meta-class SyncTimeBaseMgrUserNeeds is used together with the SwcSer
 viceDependency to deﬁne requirements in order to conﬁgure the Synchronized
@@ -41372,7 +40148,7 @@ Module StbM see [41]).
 
 SyncTimeBaseMgrUserNeeds
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -41410,7 +40186,7 @@ are listed at the use case descriptions in the paragraph RoleBasedPortAssignment
 
 
 
-7.11.3.9.1 StbM use Case: Application software component accesses the Syn
+#@SECTION: 7.11.3.9.1 StbM use Case: Application software component accesses the Syn
 
 chronized Time-Base Manager
 
@@ -41441,7 +40217,7 @@ to provide one Client Port
 
 • access the current deﬁnition of tickDuration
 
-7.11.3.9.2 StbM use Case: Synchronized Time-Base Manager notiﬁes applica
+#@SECTION: 7.11.3.9.2 StbM use Case: Synchronized Time-Base Manager notiﬁes applica
 
 tion software component
 
@@ -41471,7 +40247,7 @@ exist for this use case.
 
 
 
-7.12 Variation Point Proxy
+#@SECTION: 7.12 Variation Point Proxy
 
 [TPS_SWCT_01370] VariationPointProxy (cid:100) Variability inside a software
 component may exist in two different levels of abstraction:
@@ -41589,7 +40365,7 @@ on the RTE please refer to [2].
 
 Figure 7.48: VariationPointProxy
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Variant
 
 VariationPointProxy
@@ -41611,7 +40387,7 @@ ConditionByFor
 mula
 
 Mul. Kind Note
-0..1 aggr This condition acts as Binding Function for the
+#@SECTION: 0..1 aggr This condition acts as Binding Function for the
 
 VariationPoint.
 
@@ -41636,14 +40412,14 @@ PostBuildVarian
 tCriterion
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 ref This association to ImplementationDataType shall
 
 be taken as an implementation hint by the RTE
 generator.
 
-0..1
+#@SECTION: 0..1
 
 ref This represents the applicable
 
@@ -41667,7 +40443,7 @@ tCondition
 AttributeValueV
 ariationPoint
 
-0..1 aggr This value acts as Binding Function for the
+#@SECTION: 0..1 aggr This value acts as Binding Function for the
 
 VariationPoint.
 
@@ -41717,8 +40493,8 @@ PostBuild
 Table 7.111: Supported usage of VariationPointProxy
 
 
-#@chapter-8
-8 Implementation
+
+#@SECTION: 8 Implementation
 
 Previous versions of this document contained a comprehensive description of the
 meta-class Implementation. This meta-class still exists but the description of most
@@ -41743,7 +40519,7 @@ ARElementImplementation+ programmingLanguage  :ProgramminglanguageEnum+ swVersio
 
 SwcImplementation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcImplementation
 Note
 
@@ -41792,7 +40568,7 @@ EVendor
 
 String
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -41812,7 +40588,7 @@ Table 8.1: SwcImplementation
 
 PerInstanceMemorySize
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcImplementation
 Note
 
@@ -41872,8 +40648,8 @@ Tags: vh.latestBindingTime=preCompileTime
 Table 8.2: PerInstanceMemorySize
 
 
-#@chapter-9
-9 Mode Management
+
+#@SECTION: 9 Mode Management
 
 In general, the Software Component Template doesn’t deﬁne the kind of modes
 that shall be supported by State Managers or software-components explicitly. How
@@ -41909,7 +40685,7 @@ As a consequence of [TPS_SWCT_01581], [constr_1101] is formulated.
 [constr_1101] Mode-related communication (cid:100) An RPortPrototype typed by Mod
 eSwitchInterface shall not be referenced by more than one SwConnector. (cid:99)()
 
-9.1 Declaration of Modes
+#@SECTION: 9.1 Declaration of Modes
 
 The SW-Component Template provides some simple means to deﬁne collections of
 modes.
@@ -42042,7 +40818,7 @@ of
 
 ModeDeclaration
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Note
 
@@ -42056,7 +40832,7 @@ PositiveInteger
 attr The RTE shall take the value of this attribute for
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 Base
 
@@ -42070,7 +40846,7 @@ Table 9.1: ModeDeclaration
 
 ModeDeclarationGroup
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Note
 
@@ -42133,7 +40909,7 @@ nValue
 ModeErrorBeha
 vior
 
-0..1 aggr This represents the ability to deﬁne the error
+#@SECTION: 0..1 aggr This represents the ability to deﬁne the error
 
 behavior expected by the mode manager in case
 of errors on the mode user side (e.g. terminated
@@ -42150,7 +40926,7 @@ vior
 
 the ModeDeclarationGroup
 
-0..1 aggr This represents the deﬁnition of the error behavior
+#@SECTION: 0..1 aggr This represents the deﬁnition of the error behavior
 
 expected by the mode user in case of errors on
 the mode manager side (e.g. terminated mode
@@ -42158,7 +40934,7 @@ manager).
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 attr The value of this attribute shall be taken into
 
@@ -42207,7 +40983,7 @@ once.
 
 ModeTransition
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Note
 
@@ -42245,7 +41021,7 @@ e
 
 Table 9.3: ModeTransition
 
-9.2 Modes and Events
+#@SECTION: 9.2 Modes and Events
 
 [TPS_SWCT_01376] Software-components need to be capable of reacting to
 state changes (cid:100) Software-components need to be capable of reacting to state
@@ -42335,7 +41111,7 @@ manages, see Figure 9.5. (cid:99)(RS_SWCT_03110)
 
 Figure 9.5: ModeSwitchPoint
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Mode
 
 ModeSwitchPoint
@@ -42361,7 +41137,7 @@ e
 iref The mode declaration group that is switched by
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 this runnable.
 
@@ -42389,7 +41165,7 @@ AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiable
 
 ModeSwitchedAckRequest
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Communication
 Note
 Base
@@ -42412,7 +41188,7 @@ again.
 
 Table 9.5: ModeSwitchedAckRequest
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 ModeSwitchedAckEvent
@@ -42455,7 +41231,7 @@ Figure 9.6: ModeAccessPoint
 
 AtpStructureElementExecutableEntityRunnableEntityAtpPrototypeModeDeclarationGroupPrototype+ swCalibrationAccess  :SwCalibrationAccessEnum [0..1]ModeAccessPoint«atpVariation» Tags:vh.latestBindingTime = preCompileTime+modeAccessPoint*«atpVariation»0..*«instanceRef»+modeGroup1
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::Mode
 
 ModeAccessPoint
@@ -42476,7 +41252,7 @@ ModeAccessPoi
 ntIdent
 
 Mul. Kind Note
-0..1 aggr The aggregation in the role ident provides the
+#@SECTION: 0..1 aggr The aggregation in the role ident provides the
 
 ability to make the ModeAccessPoint identiﬁable.
 
@@ -42490,7 +41266,7 @@ from Identiﬁable).
 Tags: atp.Status=shallBecomeMandatory
 xml.sequenceOffset=-100
 
-0..1
+#@SECTION: 0..1
 
 iref The mode declaration group that is accessed by
 
@@ -42522,7 +41298,7 @@ If [constr_1098] would not apply it might happen that a RunnableEntity would be
 triggered by a SwcModeSwitchEvent and on the same time it would be suppressed
 by the mode disabling.
 
-9.3 Initialization / Finalization
+#@SECTION: 9.3 Initialization / Finalization
 
 The AUTOSAR standard shall support the execution of initialization code for every
 AtomicSwComponentType.
@@ -42549,7 +41325,7 @@ bility of the RTE to activate all initial modes on a certain ECU. (cid:99)(RS_SW
 
 For more details please refer to the speciﬁcation of the SWS RTE [2].
 
-9.4 Mode Error Behavior
+#@SECTION: 9.4 Mode Error Behavior
 
 With the advent of partitions in the AUTOSAR standard, it is important to consider the
 behavior of mode management with respect to the following scenarios:
@@ -42621,7 +41397,7 @@ Figure 9.7: Mode Error Behavior
 
 ModeErrorBehavior
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 Note
 Base
@@ -42638,7 +41414,7 @@ n
 ref This represents the ModeDeclaration that is
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 considered the error mode in the context of the
 enclosing ModeDeclarationGroup.
@@ -42668,7 +41444,7 @@ Note
 Literal
 defaultMode
 lastMode
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ModeDeclaration
 This represents the ability to specify the reaction on a mode error.
 Description
@@ -42686,7 +41462,7 @@ For this purpose the formal SwcModeManagerErrorEvent is deﬁned that can be
 taken to e.g. trigger the execution of a RunnableEntity in response to an error with
 respect to mode switch communication. (cid:99)(RS_SWCT_03110)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SwcInternalBehavior::RTE
 
 SwcModeManagerErrorEvent
@@ -42771,7 +41547,7 @@ partition of the mode user has been terminated) or vice versa (because the parti
 of the mode manager has been terminated) as well as the applicable RTE APIs are
 explained in [2].
 
-9.5 Summary Meta-Model Excerpt Related to Modes
+#@SECTION: 9.5 Summary Meta-Model Excerpt Related to Modes
 
 Figure 9.8 provides an overview of all meta-model elements that have a direct relation
 ship to the meta-classes involved in the modelling of mode switches.
@@ -42790,10 +41566,10 @@ Figure 9.8: Summary meta-model excerpt related to modes
 
 InterfaceModeDeclarationInternalBehavior and RunnablesComponent and PortAtpStructureElementIdentifiableModeDeclarationARElementAtpBlueprintAtpBlueprintableAtpTypeModeDeclarationGroupAtpPrototypeModeDeclarationGroupPrototypeAtpStructureElementExecutableEntityRunnableEntityPPortPrototypeRPortPrototypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypeAbstractEventAtpStructureElementRTEEventSwcModeSwitchEventModeSwitchInterfaceARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface«atpVariation» Tags:vh.latestBindingTime = preCompileTimeAtpStructureElementReferrableModeTransitionAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototypeModeSwitchedAckEvent«atpVariation» Tags:vh.latestBindingTime =preCompileTime+initialMode1+port0..*«atpVariation,atpSplitable»+component+modeDeclaration1..*«atpVariation»«atpVariation,atpSplitable»+internalBehavior0..1+modeGroup1«isOfType»+type1{redefines atpType}+startOnEvent0..1+event*«atpVariation,atpSplitable»«instanceRef»+disabledMode0..*0..*«instanceRef»+mode1..2{ordered}+modeTransition0..*+runnable1..*«atpVariation,atpSplitable»«isOfType»+requiredInterface1{redefinesatpType}«isOfType»+providedInterface1{redefinesatpType}+enteredMode1+exitedMode1«isOfType»+providedRequiredInterface1{redefinesatpType}
 
-#@chapter-10
-10 ECU Abstraction and Complex Drivers
 
-10.1 Introduction
+#@SECTION: 10 ECU Abstraction and Complex Drivers
+
+#@SECTION: 10.1 Introduction
 
 During the design of embedded systems there is one crucial point where the hard
 ware and software have to be related. In AUTOSAR the ECU Resource Template
@@ -42808,7 +41584,7 @@ tion time section of [7]. In this chapter the overall system view of the interfa
 sensors/actuators and software is described and the consequences for the Software
 Component Template are derived.
 
-10.2 High Level Hardware and Software Architecture
+#@SECTION: 10.2 High Level Hardware and Software Architecture
 
 The AUTOSAR concept deﬁnes a software architecture (see Figure 10.1) and within
 this layered architecture the interfaces between the hardware and the software are
@@ -42894,7 +41670,7 @@ Figure 10.3: Sensor and Actuator Signal Flow
 In the next section the interfaces between the involved software modules are dis
 cussed.
 
-10.3 Interfaces and APIs
+#@SECTION: 10.3 Interfaces and APIs
 
 Two fundamentally different interfaces are involved when converting from sensors/ac
 tuators to software components, see markers “4” and “5” in Figure 10.2.
@@ -42921,7 +41697,7 @@ Interface description mechanisms are used (see chapter 3.4).
 
 SensorECUElectronicsµCPeripheralsPhysical InterfaceElectrical InterfaceIsensor[0..200mA]Electrical InterfaceUECU[0..5V]SensorSW-CECUAbstractionµCAL(MCAL Driver)ApplicationSW-C 1get_v()get_I_ECU(velocity_sensor)DIO_get()e.g. Car velocityActuatorSW-CApplicationSW-C 2set_lamp()set_I_ECU(light_actuator)DIO_set()ActuatorECUElectronicsµCPeripheralse.g. Car lightIECU[0..2A]UµC[0..5V]HardwareSoftwareHardware
 
-10.3.1 ECU Abstraction and its AUTOSAR Interfaces
+#@SECTION: 10.3.1 ECU Abstraction and its AUTOSAR Interfaces
 
 Since the AUTOSAR standard is designed with the focus on the integration of software
 components coming from different contractors, the interfaces between the different
@@ -42945,7 +41721,7 @@ Types where it provides the actual physical value to the rest of AUTOSAR on the 
 In addition, the Interfaces between the ECU Abstraction and the SensorActuator
 SwComponentType have to be compatible like deﬁned in chapter 6.
 
-10.4 Sensors/Actuators
+#@SECTION: 10.4 Sensors/Actuators
 
 In the layered software architecture described in [6] each hardware sensor/actuator is
 coupled to a SensorActuatorSwComponentType (see Figure 10.5).
@@ -43001,7 +41777,7 @@ via the IO hardware abstraction layer).
 
 SensorActuatorSwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43034,7 +41810,7 @@ hardware.
 
 Table 10.1: SensorActuatorSwComponentType
 
-10.5 I/O Hardware Abstraction
+#@SECTION: 10.5 I/O Hardware Abstraction
 
 [TPS_SWCT_01389] I/O Hardware Abstraction interfaces MCAL drivers (cid:100)
 The I/O Hardware Abstraction interfaces on one side the MCAL drivers via
@@ -43052,7 +41828,7 @@ scribed by several different EcuAbstractionSwComponentTypes on M1. (cid:99)()
 
 EcuAbstractionSwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43105,7 +41881,7 @@ corresponding InternalBehaviors. This mechanism is further explained in [7]. (ci
 
 Figure 10.7: EcuAbstractionSwComponentType
 
-10.6 Complex Driver
+#@SECTION: 10.6 Complex Driver
 
 [TPS_SWCT_01393] Complex Driver (cid:100) A Complex Driver implements complex
 sensor evaluation and actuator control with direct access to the Microcontroller using
@@ -43129,7 +41905,7 @@ EcuAbstractionSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponen
 
 ComplexDeviceDriverSwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43187,10 +41963,10 @@ Figure 10.8: ComplexDeviceDriverSwComponentType
 
 ComplexDeviceDriverSwComponentTypeARElementAtpStructureElementSwcBswMappingSwComponentTypeAtomicSwComponentTypeInternalBehaviorSwcInternalBehaviorInternalBehaviorBswInternalBehaviorARElementAtpBlueprintAtpBlueprintableAtpStructureElementBswModuleDescription+ moduleId  :PositiveInteger [0..1]«atpVariation» Tags:vh.latestBindingTime =preCompileTimeReferrableHwDescriptionEntityARElementHwType+hwType0..1«atpVariation,atpSplitable»+internalBehavior0..1«atpSplitable»+internalBehavior0..*+swcBehavior1+bswBehavior1+hardwareElement0..*
 
-#@chapter-11
-11 Services
 
-11.1 Overview: Generation of Service-related Model Elements
+#@SECTION: 11 Services
+
+#@SECTION: 11.1 Overview: Generation of Service-related Model Elements
 
 This chapter covers the description and handling of AUTOSAR Service conﬁguration.
 
@@ -43366,7 +42142,7 @@ ated in a previous step. (cid:99)()
 
 ServiceNeeds (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 
@@ -43398,7 +42174,7 @@ Behavior.
 
 
 
-11.2 Extending the ECU Software Composition
+#@SECTION: 11.2 Extending the ECU Software Composition
 
 As explained in chapter 11.1, Service Configuration takes place in ECU Conﬁg
 uration phase. In the ECU extract of the System, the Software Components and their
@@ -43421,7 +42197,7 @@ SwComponentPrototype for each AUTOSAR Service utilized on the given ECU.
 
 Figure 11.1: Usage of RootSwCompositionPrototype on an ECU
 
-11.3 Service Software Component Type
+#@SECTION: 11.3 Service Software Component Type
 
 As mentioned in [TPS_SWCT_01405], AUTOSAR Services are represented by a
 meta model class of their own, the ServiceSwComponentType. As can be seen
@@ -43487,7 +42263,7 @@ Figure 11.2: ServiceSwComponentType
 
 ServiceSwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43552,7 +42328,7 @@ nent and the Service Component side obviously need to match. For example an
 RPortPrototype attached to an application AtomicSwComponentType matches
 a PPortPrototype attached to a ServiceSwComponentType. (cid:99)()
 
-11.4 Service Proxy Component Type
+#@SECTION: 11.4 Service Proxy Component Type
 
 [TPS_SWCT_01413] Local communication with services (cid:100) Application software
 components may communicate with an instance of a ServiceSwComponentType
@@ -43603,7 +42379,7 @@ VFBRTE1BSW1ECU1VCC:VehicleClampControlVCP: VehicleClampProxyVCC:VehicleClampCont
 
 ServiceProxySwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43683,9 +42459,9 @@ nentType (cid:100) For remote communication, ServiceProxySwComponentType can
 have only RPortPrototypes typed by SenderReceiverInterfaces in a 1:n com
 munication scenario. (cid:99)()
 
-11.5 Non Volatile Memory
+#@SECTION: 11.5 Non Volatile Memory
 
-11.5.1 Introduction
+#@SECTION: 11.5.1 Introduction
 
 The AUTOSAR Architecture deﬁnes two alternatives how a software component can
 access non volatile memory.
@@ -43715,7 +42491,7 @@ Type is typed with AutosarDataTypes.
 More details regarding particular scenarios of interacting with the NvM [31] can be
 found in section 7.11.3.1.
 
-11.5.2 NvBlockComponent
+#@SECTION: 11.5.2 NvBlockComponent
 
 [TPS_SWCT_01142] non-volatile data are provided by a specialized Atomic
 SwComponentType (cid:100) On the VFB [3], the non-volatile data are provided by a spe
@@ -43762,7 +42538,7 @@ refer
 
 NvBlockSwComponentType
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
 
@@ -43803,7 +42579,7 @@ Table 11.5: NvBlockSwComponentType
 
 NvDataInterface
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
 Note
 
@@ -43834,7 +42610,7 @@ Table 11.6: NvDataInterface
 
 Figure 11.4: NvDataInterface
 
-11.5.3 Software-Components using NVRAM data of NvBlockComponents
+#@SECTION: 11.5.3 Software-Components using NVRAM data of NvBlockComponents
 
 [constr_2011] Connections between SwComponentPrototypes typed by
 NvBlockSwComponentType and SwComponentPrototypes typed by other
@@ -44042,7 +42818,7 @@ shall be set to the lowest requested time value of the mapped nv data PortProto
 types (implemented by SwcServiceDependency.serviceNeeds.cyclicWrit
 ingPeriod).
 
-11.5.4 NvBlockDescriptor
+#@SECTION: 11.5.4 NvBlockDescriptor
 
 [TPS_SWCT_01144] NvBlockDescriptor speciﬁes the properties of exactly one
 NVRAM Block (cid:100) A NvBlockDescriptor speciﬁes the properties of exactly one
@@ -44056,7 +42832,7 @@ of the clientServerPorts expressed in terms of RoleBasedPortAssignment.
 
 NvBlockDescriptor
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::NvBlockComponent
 Note
 Base
@@ -44209,7 +42985,7 @@ aggr Deﬁnes the RAM Block of the NVRAM Block
 
 provided by NvBlockSwComponentType.
 
-0..1 aggr Deﬁnes the ROM Block of the NVRAM Block
+#@SECTION: 0..1 aggr Deﬁnes the ROM Block of the NVRAM Block
 
 provided by NvBlockSwComponentType.
 
@@ -44228,14 +43004,14 @@ t
 
 TimingEvent
 
-0..1
+#@SECTION: 0..1
 
 ref
 
 
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr Speciﬁes whether calling of NvM functions for
 
@@ -44268,7 +43044,7 @@ support error correction for NV data sets.
 If the value of nDataSets is equal to 0 the value of reliability can take any value
 out of NvBlockNeedsReliabilityEnum.
 
-11.5.4.1 Writing Strategies
+#@SECTION: 11.5.4.1 Writing Strategies
 
 [TPS_SWCT_01586] Writing strategies for nv data (cid:100) By setting certain attributes in
 the meta-class NvBlockDescriptor it is possible to conﬁgure different writing strate
@@ -44379,7 +43155,7 @@ ple) both NvBlockDescriptor.storeImmediate as well as NvBlockDescrip
 tor.storeCyclic may exist and set to true in the context of the same NvBlock
 Needs.
 
-11.5.4.2 NvBlockNeeds
+#@SECTION: 11.5.4.2 NvBlockNeeds
 
 The requested NVRAM Block conﬁguration of the NVRAM Manager is described by
 the NvBlockNeeds of the NvBlockDescriptor.
@@ -44406,7 +43182,7 @@ ARObject,Identiﬁable,MultilanguageReferrable,Referrable,ServiceNeeds
 Datatype
 Boolean
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 Base
@@ -44426,7 +43202,7 @@ attr Number of data sets to be provided by the
 NvData to store the associated RAM Block.
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 attr This represents the period for cyclic writing of
 
@@ -44440,18 +43216,18 @@ Boolean
 
 attr Deﬁnes if CRC (re)calculation for the permanent
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
-0..1
+#@SECTION: 0..1
 
 nRomBloc
 ks
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 NVRAM manager for this block. This is the total
 number of ROM Blocks and RAM Blocks.
@@ -44481,7 +43257,7 @@ tdown
 RamBlockStatu
 sControlEnum
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute deﬁnes how the management of the
 
@@ -44489,7 +43265,7 @@ RAM Block status is controlled.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr True: data of this NVRAM Block are write
 
@@ -44497,16 +43273,16 @@ NvBlockNeedsR
 eliabilityEnum
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 protected for normal operation (but protection can
 be disabled) false: no restriction
 
-0..1
+#@SECTION: 0..1
 
 attr Reliability against data loss on the non-volatile
 
@@ -44524,7 +43300,7 @@ software.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -44533,7 +43309,7 @@ basic software.
 
 storeCyclic Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -44542,14 +43318,14 @@ gency
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 storeImme
 diate
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 shall be implicitly stored periodically by the basic
 software.
@@ -44581,14 +43357,14 @@ Boolean
 
 Mul. Kind Note
 attr
-0..1
+#@SECTION: 0..1
 
 If set to true the RAM Block shall be auto validated
 during shutdown phase.
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr
 
@@ -44603,7 +43379,7 @@ nce
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes write protection after ﬁrst write: true: This
 block is prevented from being changed/erased or
@@ -44618,13 +43394,13 @@ uency
 
 Boolean
 
-0..1
+#@SECTION: 0..1
 
 attr Deﬁnes if Write Veriﬁcation shall be enabled for
 
 PositiveInteger
 
-0..1
+#@SECTION: 0..1
 
 this NVRAM Block.
 
@@ -44639,7 +43415,7 @@ NvBlockNeeds
 WritingPriorityE
 num
 
-0..1
+#@SECTION: 0..1
 
 attr Requires the priority of writing this block in case of
 
@@ -44650,7 +43426,7 @@ Table 11.9: NvBlockNeeds
 Enumeration NvBlockNeedsReliabilityEnum
 Package
 Note
-
+#@CLASS: 
 M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Reliability against data loss on the non-volatile medium. These requirements give
 only a relative indication, for example on the required degree of redundancy for
@@ -44691,7 +43467,7 @@ shall only exist if in the context of the same SwcServiceDependency a SwcSer
 viceDependency.assignedPort exists that has the attribute role set to the value
 NvDataPort. (cid:99)()
 
-11.5.4.3 RAM Block and ROM Block
+#@SECTION: 11.5.4.3 RAM Block and ROM Block
 
 [TPS_SWCT_01145] ramBlock and the romBlock are described by a Vari
 ableDataPrototype and a ParameterDataPrototype (cid:100) The ramBlock and the
@@ -44732,7 +43508,7 @@ means of an InstantiationDataDefProps.
 
 
 
-11.5.4.4 NvBlockDataMapping
+#@SECTION: 11.5.4.4 NvBlockDataMapping
 
 [TPS_SWCT_01148] NvBlockDataMapping (cid:100) The meta-class NvBlockDataMap
 ping speciﬁes the mapping of VariableDataPrototypes of the NvBlockSwCom
@@ -44907,7 +43683,7 @@ ure 11.11 has been simpliﬁed for the sake of clarity.
 
 NvBlockDataMapping
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::NvBlockComponent
 Note
 
@@ -44935,7 +43711,7 @@ Ref
 
 aggr Reference to a VariableDataPrototype of a RAM
 
-0..1 aggr Reference to a VariableDataPrototype of a pPort
+#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a pPort
 of the NvBlockComponent providing read access
 to the RAM Block.If there is no PortPrototype
 providing read access (write-only) the reference
@@ -44957,13 +43733,13 @@ dNvData
 AutosarVariable
 Ref
 
-0..1 aggr Reference to a VariableDataPrototype of a rPort of
+#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a rPort of
 
 the NvBlockComponent providing write access to
 the RAM Block. If there is no port providing write
 access (read-only) the reference can be omitted.
 
-0..1 aggr Reference to a VariableDataPrototype of a
+#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a
 
 PRPortPrototype of the
 NvBlockSwComponentType providing write and
@@ -44975,7 +43751,7 @@ Table 11.11: NvBlockDataMapping
 
 Figure 11.12: NvBlockToPortMapping and InstantiationDataDefProps
 
-11.5.4.5 Client Server Ports
+#@SECTION: 11.5.4.5 Client Server Ports
 
 [TPS_SWCT_01149] RoleBasedPortAssignment of NvBlockDescriptor (cid:100) The
 clientServerPort of
@@ -45005,7 +43781,7 @@ Figure 11.13: NvBlockNotiﬁcation
 
 NvBlockSwComponentTypeARElementAtpBlueprintAtpBlueprintableAtpTypeSwComponentTypeAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]RoleBasedPortAssignment+ role  :IdentifierAtpStructureElementIdentifiableNvBlockDescriptor+ supportDirtyFlag  :Boolean [0..1]ClientServerInterfaceAtpStructureElementIdentifiableClientServerOperation«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtomicSwComponentType«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAbstractProvidedPortPrototypeAbstractRequiredPortPrototypePRPortPrototype+port0..*«atpVariation,atpSplitable»+clientServerPort0..*«atpVariation»+portPrototype1«isOfType»+requiredInterface1{redefines atpType}«atpVariation,atpSplitable»+nvBlockDescriptor0..*+operation1..*«atpVariation»«isOfType»+providedInterface1{redefines atpType}«isOfType»+providedRequiredInterface1{redefines atpType}
 
-11.5.5 SwcInternalBehavior of an NvBlockSwComponentType
+#@SECTION: 11.5.5 SwcInternalBehavior of an NvBlockSwComponentType
 
 [TPS_SWCT_01150] InternalBehavior of a NvBlockSwComponentType to en
 able access to the NVRAM Block management API (cid:100) In general, the InternalBe
@@ -45155,8 +43931,8 @@ NvBlockDescriptor.timingEvent.period shall be taken to specify the effective
 writing frequency for cyclic storage. (cid:99)(RS_SWCT_03225)
 
 
-#@chapter-12
-12 Software Component Documentation
+
+#@SECTION: 12 Software Component Documentation
 
 AUTOSAR supports documentation of software component types by adopting the prin
 ciples of ASAM-FSX [43] Standard to AUTOSAR. With AUTOSAR Release 4.0 the
@@ -45198,7 +43974,7 @@ included can be made when the component has been built.
 
 Figure 12.1: Software component documentation
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::SoftwareComponent
 
 SwComponentDocumentation
@@ -45254,7 +44030,7 @@ c
 
 Chapter
 
-0..1 aggr This element contains calibration instructions and
+#@SECTION: 0..1 aggr This element contains calibration instructions and
 
 hints for a calibration engineer.
 
@@ -45263,7 +44039,7 @@ Offset=60; xml.typeElement=false
 
 Chapter
 
-0..1 aggr This element records the documentation
+#@SECTION: 0..1 aggr This element records the documentation
 
 requested by CARB.
 
@@ -45274,7 +44050,7 @@ Chapter
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=80; xml.typeElement=false
-0..1 aggr This element contains general information about
+#@SECTION: 0..1 aggr This element contains general information about
 
 diagnostics issues within the component.
 
@@ -45283,7 +44059,7 @@ Def
 
 Chapter
 
-0..1 aggr This element contains the deﬁnition of the physical
+#@SECTION: 0..1 aggr This element contains the deﬁnition of the physical
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=75; xml.typeElement=false
@@ -45309,20 +44085,20 @@ Chapter
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=20; xml.typeElement=false
-0..1 aggr This element contains the textual description of
+#@SECTION: 0..1 aggr This element contains the textual description of
 
 the software functionality of this software
 component. Expert should write this description.
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=30; xml.typeElement=false
-0..1 aggr This element contains information regarding the
+#@SECTION: 0..1 aggr This element contains information regarding the
 
 software maintenance of the component.
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=70; xml.typeElement=false
-0..1 aggr This element contains suggestions and hints for
+#@SECTION: 0..1 aggr This element contains suggestions and hints for
 
 the test of the software functionality of this
 software component.
@@ -45341,10 +44117,10 @@ Mul. Kind Note
 Table 12.1: SwComponentDocumentation
 
 
-#@chapter-13
-13 Rapid Prototyping Scenarios
 
-13.1 Deﬁnition of Rapid Prototyping Scenario
+#@SECTION: 13 Rapid Prototyping Scenarios
+
+#@SECTION: 13.1 Deﬁnition of Rapid Prototyping Scenario
 
 A Rapid Prototyping Scenario consist out of two main aspects: The description of
 the byPassPoints and the relation to a rptHook. A Rapid Prototyping Scenario
@@ -45360,7 +44136,7 @@ ARElementAtpStructureElementSystem+ containerIPduHeaderByteOrder  :ByteOrderEnum
 
 RapidPrototypingScenario
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
@@ -45400,7 +44176,7 @@ of the host ECU.
 
 rptSystem System
 
-0..1
+#@SECTION: 0..1
 
 Stereotypes: atpSplitable; atpVariation
 Tags: atp.Splitkey=shortName, variation
@@ -45417,7 +44193,7 @@ Table 13.1: RapidPrototypingScenario
 
 RptContainer
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
@@ -45483,7 +44259,7 @@ rptHook
 
 RptHook
 
-0..1 aggr The rptHook describes the link between a
+#@SECTION: 0..1 aggr The rptHook describes the link between a
 
 byPassPoint and the rapid prototyping algorithm.
 
@@ -45496,7 +44272,7 @@ Table 13.2: RptContainer
 
 RptHook
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
@@ -45512,7 +44288,7 @@ codeLabel CIdentifier
 ref This attribute provides a code label which is used
 
 Mul. Kind Note
-0..1
+#@SECTION: 0..1
 
 in the implementation of the hook. For example
 this can be an C function name or the name of
@@ -45524,13 +44300,13 @@ mcdIdentifi
 er
 rptArHook AtpFeature
 
-0..1
+#@SECTION: 0..1
 
 attr This attribute provides an identiﬁer which shall be
 
 used in a MCD System to display the Rpt Hook.
 
-0..1
+#@SECTION: 0..1
 
 iref This describes the hook with the means of another
 
@@ -45571,7 +44347,7 @@ the category RPT_SYSTEM shall be deﬁned.
 [constr_2054] Valid targets of rptSystem (cid:100) The System referenced in the role rpt
 System shall be of category RPT_SYSTEM. (cid:99)()
 
-13.2 Usage of RptContainers on M1
+#@SECTION: 13.2 Usage of RptContainers on M1
 
 The RptContainer structure on M1 shall follow the M1 structure of the Software
 Component Descriptions. The category attribute denotes which level of the Software
@@ -45689,7 +44465,7 @@ nario all rptSystem references shall point to instances in one and only one Syst
 and if existent all rptArHook shall point to instances in one other and only one other
 System. (cid:99)()
 
-13.3 Usage of atpSplitable for RptContainers on M1
+#@SECTION: 13.3 Usage of atpSplitable for RptContainers on M1
 
 In order to support the later deﬁnition of the RptHooks, which may require as well
 the detailed speciﬁcation byPassPoints, the aggregation of RptContainer and
@@ -45708,7 +44484,7 @@ step.
 
 
 
-13.4 Modiﬁcations of the Meta-Model for supporting the RPT sce
+#@SECTION: 13.4 Modiﬁcations of the Meta-Model for supporting the RPT sce
 
 nario
 
@@ -45751,7 +44527,7 @@ AtpStructureElementExecutableEntityRunnableEntityAtpStructureElementIdentifiable
 
 IdentCaption (abstract)
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
@@ -45778,7 +44554,7 @@ Table 13.5: IdentCaption
 
 ModeAccessPointIdent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
@@ -45804,7 +44580,7 @@ Table 13.6: ModeAccessPointIdent
 
 ExternalTriggeringPointIdent
 
-Class
+Class#@CLASS: 
 Package M2::AUTOSARTemplates::SWComponentTemplate::RPTScenario
 Note
 
