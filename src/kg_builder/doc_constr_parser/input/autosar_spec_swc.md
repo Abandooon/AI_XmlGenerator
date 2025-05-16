@@ -1,63 +1,46 @@
-
 #@SECTION: 2 Conceptual Aspects
-
 #@SECTION: 2.1 Introduction
 
 For the sake of a compact description of relevant meta-model elements the discussion
 and explanation of conceptual aspects has been concentrated in this chapter.
-
 Reading this chapter is not a pre-requisite for understanding the subsequent chapters.
 It just provides a central place for the detailed description of conceptual aspects used
 in various other chapters of this document.
-
 The actual explanation of the concept of a software-component starts in chapter 3.
 
 #@SECTION: 2.2 Measurement and Calibration
+#@CLASS: DataPrototype
+#@CLASS: SwComponentPrototype
+#@CLASS: SwcInternalBehavior
+#@CLASS: SwComponentType
+#@CLASS: ParameterDataPrototype
+#@CLASS: ParameterInterface
+#@CLASS: PortPrototype
+#@CLASS: CompositionSwComponentType
+#@CLASS: SwConnector
+#@CLASS: RPortPrototype
+#@CLASS: AssemblySwConnectors
+#@CLASS: DelegationSwConnectors
+#@CLASS: AtomicSwComponentType
 
 #@SECTION: 2.2.1 Basic Approach of Measurement and Calibration
 
 While performing the calibration process using a MCD tool (Measurement, Calibration,
-and Diagnostic) the calibration engineer needs to have a speciﬁc insight to the data
-within the CPU at runtime.
-
-This insight is provided by access to ECU internal variables (also called measure
-ments) as well as calibration parameters (sometimes also called characteristic value).
+and Diagnostic) the calibration engineer needs to have a speciﬁc insight to the data within the CPU at runtime.
+This insight is provided by access to ECU internal variables (also called measurements) as well as calibration parameters (sometimes also called characteristic value).
 For more details, please refer to [TPS_SWCT_01418]
-
-The description of measurement variables and calibration parameters is basically the
-same. In AUTOSAR both appear ﬁnally as DataPrototypes.
+The description of measurement variables and calibration parameters is basically the same. In AUTOSAR both appear ﬁnally as DataPrototypes.
 
 #@SECTION: 2.2.2 Calibration Parameters Overview
 
-A Calibration Parameter is a parameter which characterizes the dynamics of a control
-algorithm. From a software implementation point of view, it is a variable with only
-read-access during the normal operation of an ECU. Characteristics are specialized
-DataPrototype entities in terms of its associated type but are used in a similar way.
-
-[TPS_SWCT_01418] Ways to deﬁne a calibration parameter (cid:100) This means that Cal
-ibration Parameters can be deﬁned
-
-• individually for a SwComponentPrototype in the SwcInternalBehavior of
-a SwComponentType via an aggregation of an ParameterDataPrototype in
-the role of perInstanceParameter (similar to PerInstanceMemory) (see
-chapter 2.2.3.3)
-
-• sharing between all SwComponentPrototypes of the same SwComponent
-Type in its SwcInternalBehavior via an aggregation of an ParameterDat
-
-
-
-aPrototype in the role of sharedParameter or constantMemory (see chap
-ter 2.2.3.2)
-
-• for several SwComponentPrototypes (using the port-/interface-concept with
-
-ParameterInterfaces) (see chapter 2.2.3.1).
-
+A Calibration Parameter is a parameter which characterizes the dynamics of a control algorithm. From a software implementation point of view, it is a variable with only read-access during the normal operation of an ECU. Characteristics are specialized DataPrototype entities in terms of its associated type but are used in a similar way.
+[TPS_SWCT_01418] Ways to deﬁne a calibration parameter (cid:100) This means that Calibration Parameters can be deﬁned
+• individually for a SwComponentPrototype in the SwcInternalBehavior of a SwComponentType via an aggregation of an ParameterDataPrototype in the role of perInstanceParameter (similar to PerInstanceMemory) (see chapter 2.2.3.3)
+• sharing between all SwComponentPrototypes of the same SwComponentType in its SwcInternalBehavior via an aggregation of an ParameterDataPrototype in the role of sharedParameter or constantMemory (see chapter 2.2.3.2)
+• for several SwComponentPrototypes (using the port-/interface-concept with ParameterInterfaces) (see chapter 2.2.3.1).
 (cid:99)()
 
 Figure 2.1: Some Categories of calibration parameters
-
 Note: the structure of various calibration objects is visualized in [14].
 
 #@SECTION: 2.2.3 Using Calibration Parameters
@@ -67,94 +50,7 @@ SwcInternalBehavior as well as in the context of PortPrototypes.
 
 #@SECTION: 2.2.3.1 Sharing Calibration Parameters within Compositions
 
-To provide calibration parameters for being visible in other SwComponentTypes, a
-dedicated ParameterSwComponentType (see Figure 3.4) that inherits from SwCom
-ponentType has to be used as a SwComponentPrototype within a Composition
-SwComponentType.
-
-Class
-Package
-Note
-
-#@CLASS: ParameterSwComponentType
-M2::AUTOSARTemplates::SWComponentTemplate::Components
-The ParameterSwComponentType deﬁnes parameters and characteristic values
-accessible via provided Ports. The provided values are the same for all connected
-SwComponentPrototypes
-
-Base
-
-Attribute
-
-Tags: atp.recommendedPackage=SwComponentTypes
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,Identiﬁable,MultilanguageReferrable,Packageable
-Element,Referrable,SwComponentType
-Mul. Kind Note
-Datatype
-
-
-
-
-CurveMapAxisCurveMapAxis
-
-Attribute
-constantM
-apping
-
-Datatype
-ConstantSpecifi
-cationMappingS
-et
-
-Mul. Kind Note
-ref
-
-*
-
-Reference to the ConstanSpeciﬁcationMapping to
-be applied for the particular
-ParameterSwComponentType
-
-dataTypeM
-apping
-
-DataTypeMappi
-ngSet
-
-instantiatio
-nDataDefP
-rops
-
-InstantiationDat
-aDefProps
-
-*
-
-*
-
-ref
-
-aggr
-
-Stereotypes: atpSplitable
-Tags: atp.Splitkey=constantMapping
-Reference to the DataTypeMapping to be applied
-for the particular ParameterSwComponentType
-
-Stereotypes: atpSplitable
-Tags: atp.Splitkey=dataTypeMapping
-The purpose of this is that within the context of a
-given SwComponentType some data def
-properties of individual instantiations can be
-modiﬁed.
-
-The aggregation of InstantiationDataDefProps is
-subject to variability with the purpose to support
-the conditional existence of PortPrototypes
-
-Stereotypes: atpVariation
-Tags: vh.latestBindingTime=preCompileTime
+To provide calibration parameters for being visible in other SwComponentTypes, a dedicated ParameterSwComponentType (see Figure 3.4) that inherits from SwComponentType has to be used as a SwComponentPrototype within a CompositionSwComponentType.
 
 Table 2.1: ParameterSwComponentType
 
@@ -162,242 +58,114 @@ Table 2.1: ParameterSwComponentType
 parameters needs RPortPrototype typed by a ParameterInterface (cid:100) Every
 SwComponentType requiring access to shared calibration parameters will have an
 RPortPrototype typed by a ParameterInterface. The deﬁnition of this shared
-calibration access in the context of a CompositionSwComponentType will be deﬁned
-by creating a SwConnector between the relevant SwComponentPrototypes. (cid:99)()
-
-Class
-Package
-Note
-
-#@CLASS: ParameterInterface
-M2::AUTOSARTemplates::SWComponentTemplate::PortInterface
-A parameter interface declares a number of parameter and characteristic values to be
-exchanged between parameter components and software components.
-
-Base
-
-Attribute
-parameter
-
-Tags: atp.recommendedPackage=PortInterfaces
-ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,Atp
-Type,CollectableElement,DataInterface,Identiﬁable,Multilanguage
-Referrable,PackageableElement,PortInterface,Referrable
-Datatype
-ParameterData
-Prototype
-
-The ParameterDataPrototype of this
-ParameterInterface.
-
-Mul. Kind Note
-aggr
-1..*
+calibration access in the context of a CompositionSwComponentType will be deﬁned by creating a SwConnector between the relevant SwComponentPrototypes. (cid:99)()
 
 Table 2.2: ParameterInterface
 
 [TPS_SWCT_01421] ParameterInterface is not restricted to parameters which
-can actually can be calibrated (cid:100) Note that a ParameterInterface is not restricted
-It can be used whenever there
-to parameters which can actually can be calibrated.
+can actually can be calibrated (cid:100) Note that a ParameterInterface is not restricted to parameters which can actually can be calibrated. It can be used whenever there shall be no write access to the data during normal operation of the software, i.e. only constant data are visible over the interface. (cid:99)()
 
+The compatibility rules for ParameterInterfaces are described in chapter 6.4; the compatibility rules for ParameterDataPrototypes are described in chapter 6.4.4.
 
-
-shall be no write access to the data during normal operation of the software, i.e. only
-constant data are visible over the interface. (cid:99)()
-
-The compatibility rules for ParameterInterfaces are described in chapter 6.4; the
-compatibility rules for ParameterDataPrototypes are described in chapter 6.4.4.
-
-[TPS_SWCT_01422] Delegation of PortPrototypes typed by a Parameter
-Interface (cid:100) Access to shared calibration parameters can be provided and re
-quired even over CompositionSwComponentTypes using DelegationSwConnec
-tors and AssemblySwConnectors.
-
-This means that each access to calibration parameters between SwComponentPro
-totypes is explicitly visible. If a SwConnector spans after the mapping of SwCompo
-nentPrototypes over two different ECUs the system generation process has to en
-sure the proper allocation of the ParameterDataPrototype (see Figure 2.2) while
-the calibration system has to cope with setting the parameter synchronously on the
-affected ECUs. (cid:99)()
-
-
+[TPS_SWCT_01422] Delegation of PortPrototypes typed by a ParameterInterface (cid:100) Access to shared calibration parameters can be provided and required even over CompositionSwComponentTypes using DelegationSwConnectors and AssemblySwConnectors.
+This means that each access to calibration parameters between SwComponentPrototypes is explicitly visible. If a SwConnector spans after the mapping of SwComponentPrototypes over two different ECUs the system generation process has to ensure the proper allocation of the ParameterDataPrototype (see Figure 2.2) while the calibration system has to cope with setting the parameter synchronously on the affected ECUs. (cid:99)()
 
 Figure 2.2: ParameterInterface
 
-#@SECTION: 2.2.3.2 Sharing Calibration Parameters between SwComponentPrototypes of
-
-the Same SwComponentType
+#@SECTION: 2.2.3.2 Sharing Calibration Parameters between SwComponentPrototypes of the Same SwComponentType
 
 To share calibration parameters between several SwComponentPrototypes of the
-same SwComponentType, a ParameterDataPrototype is attached to an SwcIn
-ternalBehavior in sharedParameter role (see [TPS_SWCT_01418]).
-
-
-
-
-ParameterInterfaceAtpBlueprintableAtpPrototypePortPrototypePPortPrototypeRPortPrototypeAutosarDataPrototypeParameterDataPrototype«atpVariation»SwDataDefPropsARElementAtpBlueprintAtpBlueprintableAtpTypePortInterface+ isService  :Boolean+ serviceKind  :ServiceProviderEnum [0..1]AtpPrototypeDataPrototypeDataInterfaceAbstractProvidedPortPrototypeAbstractRequiredPortPrototype«isOfType»+requiredInterface1{redefinesatpType}+/swDataDefProps0..1«isOfType»+providedInterface1{redefinesatpType}+parameter1..*
+same SwComponentType, a ParameterDataPrototype is attached to an SwcInternalBehavior in sharedParameter role (see [TPS_SWCT_01418]).
 
 When the SwcInternalBehavior is aggregated by an AtomicSwComponentType
-the actual calibration parameters of the ParameterDataPrototype is the same for
-all SwComponentPrototypes.
+the actual calibration parameters of the ParameterDataPrototype is the same for all SwComponentPrototypes.
 
-[TPS_SWCT_01423] ParameterDataPrototype aggregated in the role con
-stantMemory (cid:100) Additionally, it is possible to describe the implementation of shared
-characteristic values via a ParameterDataPrototype which is attached to an
-SwcInternalBehavior in the role constantMemory.
-
+[TPS_SWCT_01423] ParameterDataPrototype aggregated in the role constantMemory (cid:100) Additionally, it is possible to describe the implementation of shared characteristic values via a ParameterDataPrototype which is attached to an SwcInternalBehavior in the role constantMemory.
 In contrast to the ParameterDataPrototype in sharedParameter role this kind
-of memory is not instantiated by the RTE. This supports more efﬁcient implementa
-tions (especially for software components provided as object code) by avoidance of
-the additional indirection caused by the RTE’s component data structure. (cid:99)()
+of memory is not instantiated by the RTE. This supports more efﬁcient implementations (especially for software components provided as object code) by avoidance of the additional indirection caused by the RTE’s component data structure. (cid:99)()
 
-Further on this kind of memory reduces the dependencies of the software-component’s
-implementation to generated RTE code which is appreciated for safety related function
-alities.
+Further on this kind of memory reduces the dependencies of the software-component’s implementation to generated RTE code which is appreciated for safety related functionalities.
 
-Nevertheless the information about these characteristic values has to be taken into
-account for the A2L ﬁle generation.
+Nevertheless the information about these characteristic values has to be taken into account for the A2L ﬁle generation.
 
-A typical example for this kind of sharing code between instances is dealing with two
-lambda sensors in multiple cylinder-bank engines, where (at least) two SwComponent
-Prototypes for each lambda sensor will use the very same Calibration Parameters.
+A typical example for this kind of sharing code between instances is dealing with two lambda sensors in multiple cylinder-bank engines, where (at least) two SwComponentPrototypes for each lambda sensor will use the very same Calibration Parameters.
 
 #@SECTION: 2.2.3.3 Providing Instance Individual Characteristic Data
 
-[TPS_SWCT_01424] ParameterDataPrototype aggregated in the role perIn
-stanceParameter (cid:100) To provide instance individual calibration parameters a Param
-eterDataPrototype is owned by a SwcInternalBehavior in perInstancePa
-rameter role.
-
+[TPS_SWCT_01424] ParameterDataPrototype aggregated in the role perInstanceParameter (cid:100) To provide instance individual calibration parameters a ParameterDataPrototype is owned by a SwcInternalBehavior in perInstanceParameter role.
 When the SwcInternalBehavior is attached to an AtomicSwComponentType, the
 actual calibration values are speciﬁc for each SwComponentPrototype. (cid:99)()
-
-
 
 Figure 2.3: ParameterDataPrototypes in internal behavior
 
 #@SECTION: 2.3 Runtime and Data Consistency Aspects
+#@CLASS: RunnableEntity
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
+#@CLASS: 
 
 #@SECTION: 2.3.1 Background: the Issues
 
-This section gives some background information and lists possible strategies concern
-ing the implementation of the RunnableEntitys and the RTE with respect to efﬁcient
-communication between the RunnableEntitys.
-
+This section gives some background information and lists possible strategies concerning the implementation of the RunnableEntitys and the RTE with respect to efﬁcient communication between the RunnableEntitys.
 The communication among RunnableEntitys can very efﬁciently be implemented
-by means of “sharing memory”1.
+by means of “sharing memory”.
+Please note that the term “sharing memory” can be interpreted on different levels. It is e.g. in the C language possible to use variables with external linkage (a.k.a. “global variables”, although this term is not ofﬁcially deﬁned by the C language) for the purpose of inter-Runnable communication.
 
-1Please note that the term “sharing memory” can be interpreted on different levels. It is e.g. in the C
-language possible to use variables with external linkage (a.k.a. “global variables”, although this term is
-not ofﬁcially deﬁned by the C language) for the purpose of inter-Runnable communication.
+This is technically feasible because it is always guaranteed that the RunnableEntitys within an AtomicSwComponentType are always gathered at a speciﬁc processing unit (in other words: distribution is not an option).
 
+Note that the purpose of communication among the RunnableEntitys is to establish a data ﬂow scheme. The latter is a very popular pattern in the application of controltheory to automotive embedded systems. So if “global variables” are used for establishing internal communication among RunnableEntitys they acquire the semantics of so called state-messages.
 
+Nevertheless, directly sharing memory between RunnableEntitys requires a serious problem to be solved: the guarantee of data consistency among communicating RunnableEntitys. The RunnableEntitys will indeed be mapped to tasks so that one RunnableEntity of an AtomicSwComponentType may be preempted by a different RunnableEntity of the same AtomicSwComponentType.
 
+Please note that a purist approach to achieving data consistency not only applies to single accesses of concurrently accessed variables. Rather, it would not be permitted that the value of a concurrently accessed variable (with state-message semantics) is unintentionally changed during the run-time of a RunnableEntity.
 
-ParameterDataPrototypeAtpStructureElementExecutableEntityRunnableEntity+ canBeInvokedConcurrently  :Boolean+ symbol  :CIdentifierAutosarParameterRefAtpStructureElementIdentifiableParameterAccessSwcInternalBehavior+ handleTerminationAndRestart  :HandleTerminationAndRestartEnum+ supportsMultipleInstantiation  :Boolean«atpVariation» Tags:vh.latestBindingTime =preCompileTimeAtpStructureElementInternalBehaviorAtpPrototypeDataPrototypeAutosarDataPrototype«atpVariation,atpSplitable»+constantMemory0..*+accessedParameter1+perInstanceParameter*«atpVariation,atpSplitable»+sharedParameter*«atpVariation,atpSplitable»«instanceRef»+autosarParameter0..1+localParameter0..1+runnable1..*«atpVariation,atpSplitable»«atpVariation»+parameterAccess0..*
-
-This is technically feasible because it is always guaranteed that the RunnableEn
-titys within an AtomicSwComponentType are always gathered at a speciﬁc pro
-cessing unit (in other words: distribution is not an option).
-
-Note that the purpose of communication among the RunnableEntitys is to establish
-a data ﬂow scheme. The latter is a very popular pattern in the application of control
-theory to automotive embedded systems. So if “global variables” are used for estab
-lishing internal communication among RunnableEntitys they acquire the semantics
-of so called state-messages.
-
-Nevertheless, directly sharing memory between RunnableEntitys requires a seri
-ous problem to be solved: the guarantee of data consistency among communicating
-RunnableEntitys. The RunnableEntitys will indeed be mapped to tasks so that
-one RunnableEntity of an AtomicSwComponentType may be preempted by a dif
-ferent RunnableEntity of the same AtomicSwComponentType.
-
-Please note that a purist approach to achieving data consistency not only applies to
-single accesses of concurrently accessed variables. Rather, it would not be permitted
-that the value of a concurrently accessed variable (with state-message semantics) is
-unintentionally changed during the run-time of a RunnableEntity.
-
-The following paragraphs describe some common strategies that can be used to en
-sure the required data-consistency. We do not attempt to describe the pros or cons of
-these approaches.
+The following paragraphs describe some common strategies that can be used to ensure the required data-consistency. We do not attempt to describe the pros or cons of these approaches.
 
 #@SECTION: 2.3.1.1 Mutual Exclusion with Semaphores
 
-Multi-threaded operating systems provide mutexes (mutual exclusion semaphores) that
-protect access to an exclusive resource that is used from within several tasks.
-
-The RTE could use these OS-provided mutexes to make sure that the RunnableEn
-titys sharing a memory-space would never run concurrently. The RTE would make
-sure the task running the RunnableEntity has taken an appropriate mutex before
-accessing the memory shared between the RunnableEntitys.
+Multi-threaded operating systems provide mutexes (mutual exclusion semaphores) that protect access to an exclusive resource that is used from within several tasks.
+The RTE could use these OS-provided mutexes to make sure that the RunnableEntitys sharing a memory-space would never run concurrently. The RTE would make sure the task running the RunnableEntity has taken an appropriate mutex before accessing the memory shared between the RunnableEntitys.
 
 #@SECTION: 2.3.1.2 Interrupt Disabling
 
-Another alternative would be the disabling of
-interrupts during the run-time of
-RunnableEntitys or at least for a period in time identical to the interval from the
-ﬁrst to the last usage of a concurrently accessed variable in a RunnableEntity. This
-approach could lead to seriously non-deterministic execution timing.
-
-
+Another alternative would be the disabling of interrupts during the run-time of RunnableEntitys or at least for a period in time identical to the interval from the ﬁrst to the last usage of a concurrently accessed variable in a RunnableEntity. This approach could lead to seriously non-deterministic execution timing.
 
 #@SECTION: 2.3.1.3 Priority Ceiling
 
-Priority ceiling allows for a non-blocking protection of shared resources. Provided that
-the priority scheme is static, the AUTOSAR OS is capable of temporarily raising the
-priority of a task that attempts to access a shared resource to the highest priority of all
-tasks that would ever attempt to access the resource.
-
-By this means is technically impossible that a task in temporary possession of a re
-source is ever preempted by a task that attempts to access the resource as well.
+Priority ceiling allows for a non-blocking protection of shared resources. Provided that the priority scheme is static, the AUTOSAR OS is capable of temporarily raising the priority of a task that attempts to access a shared resource to the highest priority of all tasks that would ever attempt to access the resource.
+By this means is technically impossible that a task in temporary possession of a resource is ever preempted by a task that attempts to access the resource as well.
 
 #@SECTION: 2.3.1.4 Implicit Communication by Means of Variable Copies
 
-Another alternative is the usage of copies of concurrently accessed variables with state
-message semantics. Note that this approach directly corresponds to the semantics of
-“implicit” sender-receiver communication (see 7.5.1.2).
-
-This means in particular that for a concurrently used variable a copy is created on
-which a RunnableEntity entity can work without any danger of data inconsistency.
-
-This concept requires additional code to write the value of the concurrently accessed
-variable to the copy before the RunnableEntity that accesses the variable is exe
-cuted. The value of the copy shall be written back to the concurrently accessed variable
-after the RunnableEntity has been terminated.
-
-This concept is sketched in Figure 2.4. Since it would be too expensive and error-prone
-to manually care about the copy routines it would be a good idea to leave the creation
-of the additional code to a suitable code generator.
+Another alternative is the usage of copies of concurrently accessed variables with state message semantics. Note that this approach directly corresponds to the semantics of “implicit” sender-receiver communication (see 7.5.1.2).
+This means in particular that for a concurrently used variable a copy is created on which a RunnableEntity entity can work without any danger of data inconsistency.
+This concept requires additional code to write the value of the concurrently accessed variable to the copy before the RunnableEntity that accesses the variable is executed. The value of the copy shall be written back to the concurrently accessed variable after the RunnableEntity has been terminated.
+This concept is sketched in Figure 2.4. Since it would be too expensive and error-prone to manually care about the copy routines it would be a good idea to leave the creation of the additional code to a suitable code generator.
 
 Figure 2.4: Generation of copy routines around RunnableEntitys
 
-The additional copy routines as sketched in Figure 2.4 already protect the particular
-RunnableEntitys from unintended changes of concurrently accessed variables.
-It
-would, however, be possible to further optimize the process by reducing the additional
-code at the beginning and end of each task (see Figure 2.5).
-
-
+The additional copy routines as sketched in Figure 2.4 already protect the particular RunnableEntitys from unintended changes of concurrently accessed variables.It would, however, be possible to further optimize the process by reducing the additional code at the beginning and end of each task (see Figure 2.5).
 
 #@SECTION: 2.3.2 Data Consistency at Runtime
 
 In addition, copy routines will only be inserted where appropriate, e.g. a copy routine
 for writing the value of a copy back to the concurrently accessed variable will only be
 inserted if the RunnableEntity has write access to the concurrently used variable.
-
 Please note that the copy routines have to temporarily make sure that the copy process
 is not interrupted in order to be capable of consistently copying the values from and to
 the concurrently accessed variable.
-
 These periods, however, are supposed to be very short compared with the overall
 run-time consumption of the RunnableEntity and thus would not have a signiﬁcant
 impact on the runtime behavior.
 
 Figure 2.5: Optimized insertion of copy routines
 
-it would be perfectly safe
-Further optimization criteria can be applied, for example:
+Further optimization criteria can be applied, for example:it would be perfectly safe
 to avoid the creation of copies for RunnableEntitys that are scheduled in the task
 with the highest priority of all tasks that (via contained RunnableEntitys) access a
 certain concurrently accessed variable.
@@ -416,153 +184,62 @@ SwComponentType has to expose all concurrently accessed variables to the outside
 world.
 
 #@SECTION: 2.3.3 Modeling Aspects of Data Consistency
-
-The intrinsic meaning of the terms “explicit communication” and “implicit communica
-tion” is explained in section 7.5.1.1. It would be fair to say that the distinction between
-implicit and explicit communication establishes a usage pattern in the application do
-
-
-
-main, i.e. in the world of the developer of AUTOSAR software-components and their
-implementation.
-
-There is another facet to this subject, however, namely the question how this pattern is
-implemented in the meta-model. With respect to the application of the pattern for port
-based communication the details can be found in section 7.5.1.2, more speciﬁcally in
-section 7.5.1.3. The consideration of the internal communication based on so-called
-“inter-runnable variables” is described in section 7.4.2.
-
-By reading the respective text sections it becomes apparent that the two applications
-of the pattern are modeled differently. The port-based communication uses the Vari
-ableAccess to formalize different roles of accessing communication elements. Some
-of the roles used for this purpose imply explicit communication (e.g. dataSendPoint)
-and some represent implicit communication (e.g. dataWriteAccess).
-
-The important thing about using the VariableAccess, however, is that the modeling
-of communication roles is abstracted from the actual communication elements and
-represents a uniform (meaning:
-it can refer to the target directly or by a so-called
-InstanceRef) modeling approach that is applied for all use cases2.
-
-Admittedly, this is handled in a different way for the internal communication. Here,
-the additional layer of abstraction is not used (although it would have been techni
-cally feasible to do so) with respect to the clear separation of “inter-runnable variables
-with implicit behavior” and “inter-runnable variables with explicit behavior” in the RTE.
-The implementation of different communication roles (i.e. implicit vs. explicit) is done
-by directly aggregating VariableDataPrototype in the roles explicitInter
-RunnableVariable and implicitInterRunnableVariable.
-
-On the other hand, access to internal communication never requires the usage of an
-InstanceRef and therefore the abstraction might be considered unnecessary over
-head that blows up the M1 model.
+#@CLASS: ParameterAccess
+#@CLASS: VariableAccess
+#@CLASS: VariableDataPrototype
+The intrinsic meaning of the terms “explicit communication” and “implicit communication” is explained in section 7.5.1.1. 
+It would be fair to say that the distinction between implicit and explicit communication establishes a usage pattern in the application domain, i.e. in the world of the developer of AUTOSAR software-components and their implementation.
+There is another facet to this subject, however, namely the question how this pattern is implemented in the meta-model. With respect to the application of the pattern for portbased communication the details can be found in section 7.5.1.2, more speciﬁcally in section 7.5.1.3. The consideration of the internal communication based on so-called “inter-runnable variables” is described in section 7.4.2.
+By reading the respective text sections it becomes apparent that the two applications of the pattern are modeled differently. The portbased communication uses the VariableAccess to formalize different roles of accessing communication elements. Some of the roles used for this purpose imply explicit communication (e.g. dataSendPoint) and some represent implicit communication (e.g. dataWriteAccess).
+The important thing about using the VariableAccess, however, is that the modeling of communication roles is abstracted from the actual communication elements and represents a uniform (meaning: it can refer to the target directly or by a so-called InstanceRef) modeling approach that is applied for all use cases2.
+Admittedly, this is handled in a different way for the internal communication. Here, the additional layer of abstraction is not used (although it would have been technically feasible to do so) with respect to the clear separation of “inter-runnable variables with implicit behavior” and “inter-runnable variables with explicit behavior” in the RTE. The implementation of different communication roles (i.e. implicit vs. explicit) is done by directly aggregating VariableDataPrototype in the roles explicitInterRunnableVariable and implicitInterRunnableVariable.
+On the other hand, access to internal communication never requires the usage of an InstanceRef and therefore the abstraction might be considered unnecessary over head that blows up the M1 model.
+2 On a related note, even for non-communication related data access the same pattern applies implemented by ParameterAccess
 
 #@SECTION: 2.4 Variant Handling in the Software Component Template
-
-The Software Component Template supports the creation of Variants in a subset
-of its model elements. The full list of model elements that support variation can be
-found in the appendix.
-
-[TPS_SWCT_01038] Support for Variant Handling in the in Software Com
-ponent Template (cid:100) The Variant Handling support in the in Software Com
-ponent Template is mainly driven by the purpose to describe a variable system on
-Virtual Functional Bus[3] level by varying
-
+#@CLASS: ParameterDataPrototype
+#@CLASS: PortPrototype
+#@CLASS: RTEEvent
+#@CLASS: RunnableEntity
+#@CLASS: SwComponentDocumentation
+#@CLASS: SwComponentPrototype
+#@CLASS: SwConnector
+#@CLASS: VariableDataPrototype
+The Software Component Template supports the creation of Variants in a subset of its model elements. The full list of model elements that support variation can be found in the appendix.
+[TPS_SWCT_01038] Support for Variant Handling in the in Software Component Template (cid:100) The Variant Handling support in the in Software Component Template is mainly driven by the purpose to describe a variable system on Virtual Functional Bus[3] level by varying
 • the existence of SwComponentPrototypes
-
 • the existence of SwConnectors
-
-2On a related note, even for non-communication related data access the same pattern applies imple
-
-mented by ParameterAccess
-
-
-
 • the existence of Chapters of SwComponentDocumentation
-
 • the existence of PortPrototypes
-
-(cid:99)(RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03140, RS_SWCT_03142,
-RS_SWCT_03154)
-
-[TPS_SWCT_01039] Purpose of variant handling (cid:100) This supports adjusting the num
-ber and kind of software-component instances as well as their interconnection in a
-particular system variant. (cid:99)(RS_SWCT_00220)
-
-[TPS_SWCT_01447] Applicable binding times for model elements in the scope of
-the Software Component Template (cid:100) The ﬁrst three cases are supporting Post
-Build binding. For the existence of PortPrototypes only preCompileTime is sup
-ported as latest Binding Time. (cid:99)(RS_SWCT_00220)
-
-[TPS_SWCT_01040] SwConnector exists depending on a PostBuild condition
-(cid:100) A SwConnector which exists depending on a PostBuild condition has an impact
-on the behavior of API function calls that apply on a PortPrototype to which the
-SwConnector is attached. If the SwConnector does not exist the behavior of the RTE
-API functions need to take this into account. This means that the RTE implementation
-of this PortPrototype resembles the behavior of an unconnected PortPrototype.
+(cid:99)(RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03140, RS_SWCT_03142, RS_SWCT_03154)
+[TPS_SWCT_01039] Purpose of variant handling (cid:100) This supports adjusting the number and kind of software-component instances as well as their interconnection in a particular system variant. (cid:99)(RS_SWCT_00220)
+[TPS_SWCT_01447] Applicable binding times for model elements in the scope of the Software Component Template (cid:100) The ﬁrst three cases are supporting PostBuild binding. For the existence of PortPrototypes only preCompileTime is supported as latest Binding Time. (cid:99)(RS_SWCT_00220)
+[TPS_SWCT_01040] SwConnector exists depending on a PostBuild condition (cid:100) 
+A SwConnector which exists depending on a PostBuild condition has an impact 
+on the behavior of API function calls that apply on a PortPrototype to which the SwConnector is attached. 
+If the SwConnector does not exist the behavior of the RTE API functions need to take this into account. 
+This means that the RTE implementation of this PortPrototype resembles the behavior of an unconnected PortPrototype. 
 (cid:99)(RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03143)
-
 Please ﬁnd more details in the speciﬁcation of the RTE [2].
-
-[TPS_SWCT_01041] API functions of not existing SwConnector are still part of
-the software-component’s implementation (cid:100) If SwConnectors do not exist the cor
-responding API functions are still part of the software-component’s implementation.
-It is not possible to remove the API functions in a PostBuild step. Therefore the lat
-est reasonable Binding Time for the conditional existence of a PortPrototype is
-preCompileTime. (cid:99)(RS_SWCT_00220, RS_SWCT_03100)
-
-[TPS_SWCT_01085] Variation on the behavior level (cid:100) In addition to variation of the
-VFB-related model elements, the description of variant software-component implemen
-tations is supported. Please note that this requires a broad support of variability in the
-Internal Behavior.
-
+[TPS_SWCT_01041] API functions of not existing SwConnector are still part of the software-component’s implementation (cid:100) If SwConnectors do not exist the corresponding API functions are still part of the software-component’s implementation. It is not possible to remove the API functions in a PostBuild step. Therefore the latest reasonable Binding Time for the conditional existence of a PortPrototype is preCompileTime. (cid:99)(RS_SWCT_00220, RS_SWCT_03100)
+[TPS_SWCT_01085] Variation on the behavior level (cid:100) In addition to variation of the VFB-related model elements, the description of variant software-component implementations is supported. Please note that this requires a broad support of variability in the Internal Behavior.
 The identiﬁed main use case are
-
 • the existence of RunnableEntitys
-
 • the existence of RTEEvents
-
-• the existence of VariableDataPrototypes in the roles implicitInter
-
-RunnableVariable and explicitInterRunnableVariable
-
-• the existence of ParameterDataPrototypes in the roles perInstancePa
-
-rameter, sharedParameter, and constantMemory
-
+• the existence of VariableDataPrototypes in the roles implicitInterRunnableVariable and explicitInterRunnableVariable
+• the existence of ParameterDataPrototypes in the roles perInstanceParameter, sharedParameter, and constantMemory
 (cid:99)(RS_SWCT_03149, RS_SWCT_03150, RS_SWCT_03151, RS_SWCT_03153)
-
-
-
-For the same reason that applies on the existence of PortPrototype the latest
-Binding Time of these kinds of variability is preCompileTime.
-
-In the meta-model, all locations that may exhibit variability are marked with the stereo
-type (cid:28)atpVariation(cid:29). This allows the deﬁnition of possible variation points.
-Tagged Values are used to specify additional information, for example the latest binding
-time.
-
-[TPS_SWCT_01042] Four types of locations in the meta-model which may exhibit
-variability (cid:100) There are four types of locations in the meta-model which may exhibit
-variability:
-
+For the same reason that applies on the existence of PortPrototype the latest Binding Time of these kinds of variability is preCompileTime.
+In the meta-model, all locations that may exhibit variability are marked with the stereotype (cid:28)atpVariation(cid:29). This allows the deﬁnition of possible variation points. Tagged Values are used to specify additional information, for example the latest binding time.
+[TPS_SWCT_01042] Four types of locations in the meta-model which may exhibit variability (cid:100) There are four types of locations in the meta-model which may exhibit variability:
 • Aggregations
-
 • Associations
-
 • Attribute Values
-
 • Classes providing property sets
-
 (cid:99)(RS_SWCT_00220, RS_SWCT_03100)
-
-The reasons for the attachment of the stereotype (cid:28)atpVariation(cid:29) to certain model
-elements and the consequences for other model elements are explained in class tables
-in the following chapters. More details about the AUTOSAR Variant Handling Concept
-can be found in the AUTOSAR Generic Structure Template [12].
-
-#@SECTION: 2.5 Communication Speciﬁcation of Composition Component
-
-Types
+The reasons for the attachment of the stereotype (cid:28)atpVariation(cid:29) to certain model elements and the consequences for other model elements are explained in class tables in the following chapters. More details about the AUTOSAR Variant Handling Concept can be found in the AUTOSAR Generic Structure Template [12].
+---------------------------------------------------------------------
+#@SECTION: 2.5 Communication Speciﬁcation of Composition Component Types
 
 [TPS_SWCT_01088] ComSpecs deﬁned by CompositionSwComponentTypes (cid:100) It
 shall be possible to attach ComSpecs to PortPrototypes owned by Composition
@@ -1020,11 +697,11 @@ for the purpose of creating Variable-Size Array Data Types shall be deﬁned
 such that the ImplementationDataType shall be of category STRUCTURE with
 the following sub-elements:
 
-#@SECTION: 1. A numerical value that determines the actual size. This element shall be called
+1. A numerical value that determines the actual size. This element shall be called
 
 the Size Indicator throughout this document.
 
-#@SECTION: 2. An array of the base-type of the Variable-Size Array Data Type that im
+2. An array of the base-type of the Variable-Size Array Data Type that im
 plements the payload of the Variable-Size Array Data Type. The dimen
 sion of the array shall be deﬁned such that the intended maximum number of
 elements ﬁts in.
@@ -1693,8 +1370,7 @@ to the dataElement.
 
 Mul. Kind Note
 ref
-
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -2040,7 +1716,7 @@ RunnableEntity is implemented.
 Mul. Kind Note
 attr
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -2052,7 +1728,7 @@ nt
 AutosarDataTyp
 e
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -2203,7 +1879,7 @@ However, this ordering has nothing to do with the order in which the ClientServe
 
 listed in the deﬁnition of a ClientServerInterface
 
-#@SECTION: 4 Giving the ArgumentDataPrototypes of a ClientServerOperation both an ordering and a
+4 Giving the ArgumentDataPrototypes of a ClientServerOperation both an ordering and a
 
 unique identiﬁer might seem redundant.
 
@@ -2531,11 +2207,11 @@ aggr Optional deﬁnition of a period in case of a
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 periodically (time or angle) driven external trigger.
 
-#@SECTION: 0..1
+0..1
 
 Table 4.15: Trigger
 
@@ -2639,11 +2315,11 @@ and [constr_1205].
 
 There are two distinctive use cases for the communication of modes via ports:
 
-#@SECTION: 1. An actual mode transition can be communicated from a mode manager compo
+ 1. An actual mode transition can be communicated from a mode manager compo
 
 nent to its client components to enforce a mode switch.
 
-#@SECTION: 2. A request for a mode transition can be communicated from any component to a
+ 2. A request for a mode transition can be communicated from any component to a
 
 mode manager.
 
@@ -2742,7 +2418,7 @@ ccessEnum
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 This allows for specifying whether or not the
 enclosing ModeDeclarationGroupPrototype can
@@ -3011,20 +2687,20 @@ introduced.
 [TPS_SWCT_01158] Three cases for PortInterfaceMapping (cid:100) In general there
 are three different cases, where a PortInterfaceMapping is suitable.
 
-#@SECTION: 1. Two PortPrototypes shall be connected and the PortInterface elements
+ 1. Two PortPrototypes shall be connected and the PortInterface elements
 are compatible except the unequal shortNames. This requires a pure logical
 mapping of the PortInterface elements.
 
-#@SECTION: 2. PortInterface elements are logically equivalent but the range and resolution
+ 2. PortInterface elements are logically equivalent but the range and resolution
 is differently. This requires a data conversion respectively a re-scaling of the
 provided data and arguments to the required data and arguments range and
 resolution.
 
-#@SECTION: 3. invalidationPolicy of PortInterface elements is different. This might re
+ 3. invalidationPolicy of PortInterface elements is different. This might re
 quire the implementation of different invalidation handling strategies for the same
 dataElement in parallel on the same ECU.
 
-#@SECTION: 4. Two PortPrototypes shall be connected and the PortInterface elements
+ 4. Two PortPrototypes shall be connected and the PortInterface elements
 
 shall be converted using the AUTOSAR data transformer approach.
 
@@ -3337,7 +3013,7 @@ ref
 DataTransforma
 tion
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -3390,7 +3066,7 @@ aggr
 
 This represents the owned SubelementMapping.
 
-#@SECTION: 0..2
+ 0..2
 
 aggr
 
@@ -3691,7 +3367,7 @@ ModeDeclarations in the context ot this
 ModeDeclarationGroupPrototype.
 ModeDeclarationGroupPrototype to be mapped.
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -4062,7 +3738,7 @@ SubElementRef
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 This represents the ﬁrst element referenced in the
 scope of the mapping.
@@ -4072,7 +3748,7 @@ ment
 
 SubElementRef
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -4082,7 +3758,7 @@ apping
 TextTableMappi
 ng
 
-#@SECTION: 0..2
+ 0..2
 
 aggr
 
@@ -4246,7 +3922,7 @@ A Linear Data Scaling can be deﬁned under following preconditions:
 [TPS_SWCT_01549] Deﬁnition of linear data scaling (cid:100) The term Linear Scaling
 is deﬁned as follows:
 
-#@SECTION: 1. Regarding the existence of CompuMethods one of the following cases shall ap
+ 1. Regarding the existence of CompuMethods one of the following cases shall ap
 
 ply:
 
@@ -4258,7 +3934,7 @@ IDENTICAL, LINEAR, or RAT_FUNC.
 
 fault” CompuMethod of category IDENTICAL shall be assumed.
 
-#@SECTION: 2. Regarding the existence of Units one of the following cases shall apply:
+ 2. Regarding the existence of Units one of the following cases shall apply:
 
 (a) The CompuMethods refer either to compatible Units or to Units that in
 
@@ -4274,7 +3950,7 @@ assumed.
 
 ceiver) then it shall be considered as default for the other side.
 
-#@SECTION: 3. Both CompuMethods fulﬁll the following condition:
+3. Both CompuMethods fulﬁll the following condition:
 
 Int = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi
 
@@ -4295,19 +3971,19 @@ The coefﬁcient N0 represents the offset and can take any value.
 [TPS_SWCT_01550] Deﬁnition of reciprocal linear data scaling (cid:100) The term Re
 ciprocal Linear Scaling is deﬁned as follows:
 
-#@SECTION: 1. The involved AutosarDataTypes refer
+ 1. The involved AutosarDataTypes refer
 
 to CompuMethods of category
 
 RAT_FUNC.
 
-#@SECTION: 2. The CompuMethods refer either to compatible Units or to Units that in turn
+ 2. The CompuMethods refer either to compatible Units or to Units that in turn
 
 refer to compatible deﬁnitions of PhysicalDimension.
 
 
 
-#@SECTION: 3. Both CompuMethods fulﬁll the following condition:
+3. Both CompuMethods fulﬁll the following condition:
 
 Int = N0∗phys0+N1∗phys1+N2∗phys2+...+Ni∗physi
 
@@ -4472,7 +4148,7 @@ pending on the given value of TextTableMapping.mappingDirection - the rele
 vant bit mask is applied. (cid:99)()
 
 Example for [constr_1307]: For a bit mask 0b00001000 only the corresponding values
-#@SECTION: 8 and 0 are allowed.
+8 and 0 are allowed.
 
 5Depending on the applicable case this means either bitfieldTextTableMaskFirst (ap
 is in place) or bitfieldTextTableMaskSecond for the case of
@@ -4509,7 +4185,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 This attribute can be used to support the mapping
 of bit ﬁeld to bit ﬁeld, boolean values to bit ﬁelds,
@@ -4518,7 +4194,7 @@ for the ﬁrst element of the TextTableMapping.
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -5030,7 +4706,7 @@ lTime
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 In case of a SET operation, the age will be
 interpreted as Delay while in a GET operation
@@ -5042,7 +4718,7 @@ argument
 ArgumentDataP
 rototype
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -5073,7 +4749,7 @@ nt
 VariableDataPr
 ototype
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -5086,7 +4762,7 @@ toring
 
 PortPrototype
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -5159,7 +4835,7 @@ trigger
 
 Trigger
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -5432,7 +5108,7 @@ SignalFanEnum
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 Speciﬁes the Signal Fan In or Signal Fan Out
 inside the Composition Type.
@@ -5548,7 +5224,7 @@ label
 MultilanguageL
 ongName
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -5834,13 +5510,13 @@ ounterInit
 HandleOutOfRa
 ngeStatusEnum
 
-#@SECTION: 0..1
+0..1
 
 attr
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -5855,20 +5531,20 @@ h
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
 SwDataDefProp
 s
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
 VariableAccess
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -5890,7 +5566,7 @@ Initial maximum allowed gap between two counter
 values of two consecutively received valid Data,
 i.e. how many subsequent lost data is accepted.
 For example, if the receiver gets Data with counter
-#@SECTION: 1 and MaxDeltaCounterInit is 1, then at the next
+1 and MaxDeltaCounterInit is 1, then at the next
 reception the receiver can accept Counters with
 values 2 and 3, but not 4.
 
@@ -5921,7 +5597,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 Transformation
 ComSpecProps
@@ -5999,7 +5675,7 @@ filter
 
 DataFilter
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -6008,7 +5684,7 @@ aStatus
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -6062,7 +5738,7 @@ on
 
 attr
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -6252,10 +5928,10 @@ attr
 
 This attribute speciﬁes the type of the ﬁlter.
 
-#@SECTION: 0..1
-#@SECTION: 0..1
-#@SECTION: 0..1
-#@SECTION: 0..1
+0..1
+0..1
+0..1
+0..1
 
 Value to specify the upper boundary
 Value to specify the lower boundary
@@ -6271,7 +5947,7 @@ period
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -6279,7 +5955,7 @@ x
 
 UnlimitedInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -6343,7 +6019,7 @@ min <= new_value <= max
 Pass a message once every N message occurrences. Algorithm: occurrence %
 period == offset Start: occurrence = 0. Each time the message is received or
 transmitted, occurrence is incremented by 1 after ﬁltering. Length of occurrence is
-#@SECTION: 8 bit (minimum).
+8 bit (minimum).
 
 Table 4.66: DataFilterTypeEnum
 
@@ -6443,13 +6119,13 @@ ction
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 A networkRepresentation is used to deﬁne how
 the dataElement is mapped to a communication
 bus.
 
-#@SECTION: 0..1
+0..1
 
 aggr Requested transmission acknowledgement for
 
@@ -6869,7 +6545,7 @@ Boolean
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 modeGrou
 p
@@ -6887,7 +6563,7 @@ ckRequest
 
 ref
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -6962,7 +6638,7 @@ Boolean
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 This controls the creation of the enhanced mode
 API that returns information about the previous
@@ -6983,7 +6659,7 @@ e
 
 Mul. Kind Note
 ref
-#@SECTION: 0..1
+0..1
 
 ModeDeclarationGroupPrototype (of the same
 PortInterface) to which these communication
@@ -7067,7 +6743,7 @@ ParameterComSpec applies.
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -7111,7 +6787,7 @@ ParameterRequireComSpec applies.
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -7178,7 +6854,7 @@ on
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 The initial value owned by the NvComSpec
 
@@ -7269,11 +6945,11 @@ ComSpec is speciﬁed.
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 aggr
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -7291,9 +6967,9 @@ formation.
 tion of a TransformationComSpecProps can always be provided in the SWC de
 scription but the conﬁguration shall only have an effect if
 
-#@SECTION: 1. the actual communication involves at least two EcuInstances
+ 1. the actual communication involves at least two EcuInstances
 
-#@SECTION: 2. the respective data transformer (given by the used TransformationCom
+ 2. the respective data transformer (given by the used TransformationCom
 SpecProps) is used during data transformation (see DataTransformation)
 
 (cid:99)(RS_SWCT_03221)
@@ -7435,7 +7111,7 @@ Aggregation of the mandatory BufferProperties.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7448,7 +7124,7 @@ attr
 Transformation
 Description
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
@@ -7558,13 +7234,13 @@ setting of this attribute.
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr Maximum allowed gap between two counter
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 values of two consecutive checks.
 
@@ -7587,7 +7263,7 @@ tateInvalid
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 
 
@@ -7609,7 +7285,7 @@ E2E_SM_VALID.
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7620,7 +7296,7 @@ same value for all E2E transformers.
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 maxNoNe
 wOrRepea
@@ -7633,14 +7309,14 @@ eInvalid
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 minOkStat
 eValid
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr Minimal number of checks in which ProﬁleStatus
 equal to E2E_P_OK was determined, within the
@@ -7669,13 +7345,13 @@ e
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7784,7 +7460,7 @@ PortGroups can be locally deﬁned but still traced down the component hierarchy
 [TPS_SWCT_01066] PortGroups can be associated with certain ServiceNeeds
 (cid:100) PortGroups can be associated with certain ServiceNeeds in order to trace the
 information down to the conﬁguration of the basic software, for details see chapter
-#@SECTION: 7.11.2. (cid:99)(RS_SWCT_03200, RS_SWCT_03201)
+ 7.11.2. (cid:99)(RS_SWCT_03200, RS_SWCT_03201)
 
 [constr_1147] Standardized values for the attribute category of meta-class
 PortGroup (cid:100)
@@ -7877,7 +7553,7 @@ set
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7907,7 +7583,7 @@ PositiveInteger
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 Bit offset of CRC from the beginning of the Array
 representation of the Signal
@@ -7943,7 +7619,7 @@ e
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7979,7 +7655,7 @@ leOffset
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -7999,7 +7675,7 @@ Datatype
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 This attribute represents the length of the Array
 representation of the Signal
@@ -8011,7 +7687,7 @@ ounterInit
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -8024,13 +7700,13 @@ erInit
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -8039,7 +7715,7 @@ Initial maximum allowed gap between two counter
 values of two consecutively received valid Data,
 i.e. how many subsequent lost data is accepted.
 For example, if the receiver gets Data with counter
-#@SECTION: 1 and MaxDeltaCounterInit is 1, then at the next
+1 and MaxDeltaCounterInit is 1, then at the next
 reception the receiver can accept Counters with
 values 2 and 3, but not 4.
 
@@ -8560,7 +8236,7 @@ This represents the sender.
 Mul. Kind Note
 iref
 
-#@SECTION: 0..1
+0..1
 
 iref
 
@@ -8570,7 +8246,7 @@ shortLabel
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -8608,16 +8284,16 @@ overlapping PortGroups.
 [TPS_SWCT_01170] Purpose of Virtual Function Cluster (cid:100) The purpose of Virtual
 Function Cluster within the Software Component Template mainly has three aspects:
 
-#@SECTION: 1. assign PortPrototypes (non service related) of Sender Receiver or Client
+ 1. assign PortPrototypes (non service related) of Sender Receiver or Client
 
 Server communication to Virtual Function Clusters.
 
-#@SECTION: 2. control the behavior of the corresponding function in terms of whether or not it is
+ 2. control the behavior of the corresponding function in terms of whether or not it is
 required at a given point in time. This aspect is implemented by the concept of
 a control port. Software-components that implement control ports of a Virtual
 Function Cluster conceptually become VFC Controllers.
 
-#@SECTION: 3. allow for the application software to retrieve the status of a given Virtual Function
+3. allow for the application software to retrieve the status of a given Virtual Function
 
 Cluster. This aspect is implemented by the concept of a status port.
 
@@ -9420,7 +9096,7 @@ s
 
 Mul. Kind Note
 aggr
-#@SECTION: 0..1
+0..1
 
 The properties of this AutosarDataType.
 
@@ -9499,7 +9175,7 @@ String
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 Speciﬁes the proﬁle which the array will follow in
 case this data type is a variable size array.
@@ -9534,13 +9210,13 @@ type deﬁnitions.
 
 SymbolProps
 
-#@SECTION: 0..1
+0..1
 
 aggr
 
 NameToken
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -11320,13 +10996,11 @@ x
 
 *
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1
-
-x
+0..1 0..1
 
 x
 
@@ -11334,35 +11008,35 @@ x
 
 x
 
-#@SECTION: 0..1 0..1
+x
 
-#@SECTION: 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1
+0..1
+
+0..1 0..1
 
 x
 
 x
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 1
-
-1
+0..1 0..1 0..1 0..1 0..1 0..1 1
 
 1
 
@@ -11388,32 +11062,30 @@ x
 
 1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
 x
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..13
-#@SECTION: 0..1 0..1
-
-1
-
-#@SECTION: 0..1 0..1
-
-#@SECTION: 0..1
-
-#@SECTION: 0..1
+0..1 0..13
+0..1 0..1
 
 1
 
-1
+0..1 0..1
+
+0..1
+
+0..1
 
 1
 
@@ -11425,15 +11097,19 @@ x
 
 1
 
-#@SECTION: 0..1 0..1
+1
 
 1
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
@@ -11447,7 +11123,7 @@ x
 
 1
 
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -11858,7 +11534,7 @@ VariableSize with ﬁllcharacter
 
 baseType SwBaseType
 
-#@SECTION: 0..1
+0..1
 
 ref This is the base type of one character in the string.
 
@@ -11873,7 +11549,7 @@ acter
 
 Integer
 
-#@SECTION: 0..1
+0..1
 
 attr Filler character for text parameter to pad up to the
 
@@ -12010,11 +11686,11 @@ In this speciﬁc example the deﬁnition of the SwRecordLayout foresees the App
 tionPrimitiveDataType of category STRING to be implemented as a structured
 data type that consists of:
 
-#@SECTION: 1. the size of an instance of the string data type in terms of the number of characters
+ 1. the size of an instance of the string data type in terms of the number of characters
 
 plus
 
-#@SECTION: 2. an array that can be used to store the individual characters contained in an in
+ 2. an array that can be used to store the individual characters contained in an in
 
 stance of the string data type.
 
@@ -12381,7 +12057,7 @@ String
 attr Speciﬁes the proﬁle which the array will follow if it
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 is a variable size array.
 
@@ -12416,7 +12092,7 @@ nticsEnum
 PositiveInteger
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 the array size shall be interpreted.
 
@@ -12426,7 +12102,7 @@ attr This attribute controls how the information about
 
 attr The maximum number of elements that the array
 
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -13220,7 +12896,7 @@ R
 R
 A
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 *
 
@@ -13234,32 +12910,32 @@ A
 
 *
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1
+0..1 0..1 0..1
 
 1
-#@SECTION: 0..1 0..15
+0..1 0..15
 
-#@SECTION: 0..16
+0..16
 
 *
 
 1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 Attributes of SwDataDefProps
 
@@ -13497,19 +13173,19 @@ R
 R
 A
 
-#@SECTION: 0..1 0..1 0..1
+0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1
+0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1
-
-x
+0..1 0..1 0..1
 
 x
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+x
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
@@ -13535,15 +13211,15 @@ x
 
 x
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1
+0..1 0..1 0..1
 
 1..* 1..*
 
 1
 
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -13691,7 +13367,7 @@ Datatype
 String
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Speciﬁes the proﬁle which the array will follow in
 case this data type is a variable size array.
@@ -13728,7 +13404,7 @@ Datatype
 SymbolProps
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This represents the SymbolProps for the
+0..1 aggr This represents the SymbolProps for the
 
 ImplementationDataType.
 
@@ -13740,7 +13416,7 @@ r
 
 NameToken
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute is used to control which part of the
 AUTOSAR toolchain is supposed to trigger data
@@ -13827,7 +13503,7 @@ Datatype
 PositiveInteger
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr The existence of this attributes (if bigger than 0)
 
@@ -13853,13 +13529,13 @@ type of each single array element.
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
 
-#@SECTION: 0..1
+0..1
 
 attr The way how the size of the array is handled in
 
 case of a variable size array.
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute controls the meaning of the value of
 
@@ -13885,7 +13561,7 @@ Props
 SwDataDefProp
 s
 
-#@SECTION: 0..1 aggr The properties of this
+0..1 aggr The properties of this
 
 ImplementationDataTypeElementt.
 
@@ -14472,17 +14148,17 @@ ments do not form closed sets but refer to further type deﬁnitions in one of f
 tive ways, depending on whether the type is implemented via a base type, a data or
 function pointer, or a reference to another implementation data type:
 
-#@SECTION: 1. Reference to an underlying SwBaseType corresponds to category VALUE.
+ 1. Reference to an underlying SwBaseType corresponds to category VALUE.
 
-#@SECTION: 2. Reference to BswModuleEntry in SwPointerTargetProps corresponds to
+ 2. Reference to BswModuleEntry in SwPointerTargetProps corresponds to
 
 category FUNCTION_REFERENCE.
 
-#@SECTION: 3. SwDataDefProps in SwPointerTargetProps corresponds to category
+3. SwDataDefProps in SwPointerTargetProps corresponds to category
 
 DATA_REFERENCE.
 
-#@SECTION: 4. Reference to another ImplementationDataType corresponds to category
+4. Reference to another ImplementationDataType corresponds to category
 
 TYPE_REFERENCE.
 
@@ -14519,14 +14195,14 @@ Figure 5.13: Example (2) for TypeDefs
 As far as the AUTOSAR meta-model is concerned, a pointer to a pointer could in
 principle be implemented in two ways:
 
-#@SECTION: 1. by deﬁning an ImplementationDataType of category DATA_REFERENCE
+ 1. by deﬁning an ImplementationDataType of category DATA_REFERENCE
 that aggregates SwDataDefProps in the role swDataDefProps that in turn
 aggregate SwPointerTargetProps in the role swPointerTargetProps
 with attribute targetCategory set to TYPE_REFERENCE that aggregates Sw
 DataDefProps in the role swDataDefProps that references an Implementa
 tionDataType of category DATA_REFERENCE.
 
-#@SECTION: 2. by deﬁning an ImplementationDataType of category DATA_REFERENCE
+ 2. by deﬁning an ImplementationDataType of category DATA_REFERENCE
 that aggregates SwDataDefProps in the role swDataDefProps that in turn ag
 gregate SwPointerTargetProps in the role swPointerTargetProps with
 attribute targetCategory set
@@ -14600,7 +14276,7 @@ y
 ref The referenced BswModuleEntry serves as the
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 signature of a function pointer deﬁnition. Primary
 use case: function pointer passed as argument to
@@ -14614,14 +14290,14 @@ s
 
 Tags: xml.sequenceOffset=40
 
-#@SECTION: 0..1 aggr The properties of the target data type.
+0..1 aggr The properties of the target data type.
 
 targetCate
 gory
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the category of the target:
 
@@ -14939,7 +14615,7 @@ Size
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr Describes the length of the data type speciﬁed in
 
@@ -14965,7 +14641,7 @@ Tags: xml.sequenceOffset=110
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr Describes the maximum length of the BaseType in
 
@@ -14975,7 +14651,7 @@ Tags: xml.sequenceOffset=80
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute describes the alignment of the
 
@@ -14998,7 +14674,7 @@ NativeDeclarati
 onString
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute describes the declaration of such a
 
@@ -15139,7 +14815,7 @@ attribute BaseTypeDirectDefinition.baseTypeEncoding:
 
 [constr_1398] Existence of attributes of BaseTypeDirectDefinition (cid:100) If the
 value of attribute BaseTypeDirectDefinition.baseTypeEncoding is set to UTF
-#@SECTION: 16 then the attribute BaseTypeDirectDefinition.byteOrder shall exist.
+16 then the attribute BaseTypeDirectDefinition.byteOrder shall exist.
 
 The only allowed values of BaseTypeDirectDefinition.byteOrder in this case
 are mostSignificantByteFirst and mostSignificantByteLast (cid:99)()
@@ -15363,7 +15039,7 @@ SwDataDefProp
 s
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This property allows to specify data deﬁnition
+0..1 aggr This property allows to specify data deﬁnition
 
 properties which apply on data prototype level.
 
@@ -15802,67 +15478,67 @@ C
 
 *
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1
+0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
-
-x
-
-#@SECTION: 0..1 0..1
-
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1
 
 x
 
-x
+0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
 x
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+x
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+x
 
-#@SECTION: 0..1
+0..1 0..1 0..1 0..1 0..1
+
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
+
+0..1
 
 0..* 0..* 0..* 0..* 0..*
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1
-
-x
+0..1 0..1 0..1 0..1 0..1
 
 x
 
-#@SECTION: 0..1 0..1
+x
 
-#@SECTION: 0..1 0..1
+0..1 0..1
+
+0..1 0..1
 
 Attributes of SwDataDefProps
 annotation
@@ -16170,35 +15846,35 @@ x
 
 *
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1
+0..1 0..1 0..1 0..1
 
-#@SECTION: 0..1 0..1 0..1 0..1 0..1 0..1 0..1
-
-x
+0..1 0..1 0..1 0..1 0..1 0..1 0..1
 
 x
 
-#@SECTION: 0..1
+x
 
-#@SECTION: 0..1 0..1 0..1 0..1
+0..1
+
+0..1 0..1 0..1 0..1
 
 Attributes of SwDataDefProps
 
@@ -16311,7 +15987,7 @@ argument prototype.
 
 Mul. Kind Note
 
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -16336,7 +16012,7 @@ nt
 AutosarDataTyp
 e
 
-#@SECTION: 0..1
+0..1
 
 ref This allows to denote the intended type within
 
@@ -16376,7 +16052,7 @@ ValueSpecificati
 on
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr Speciﬁes initial value(s) of the
+0..1 aggr Speciﬁes initial value(s) of the
 
 VariableDataPrototype
 
@@ -16398,7 +16074,7 @@ ValueSpecificati
 on
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr Speciﬁes initial value(s) of the
+0..1 aggr Speciﬁes initial value(s) of the
 
 ParameterDataPrototype
 
@@ -16525,18 +16201,18 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref This references a variable which is provided by a
 
 port and/or which is part of a CompositeDataType.
 
-#@SECTION: 0..1 aggr This is used if the target variable is inside of
+0..1 aggr This is used if the target variable is inside of
 
 variableDataPrototype typed by an
 ImplementationDataType.
 
-#@SECTION: 0..1
+0..1
 
 ref This reference is used if the variable is local to the
 
@@ -16596,7 +16272,7 @@ Mul. Kind Note
 
 PortPrototype
 
-#@SECTION: 0..1
+0..1
 
 ref This is the port providing/receiving the root of the
 
@@ -16613,7 +16289,7 @@ otype
 VariableDataPr
 ototype
 
-#@SECTION: 0..1
+0..1
 
 ref This refers to the variableDataPrototype which is
 
@@ -16726,13 +16402,13 @@ Datatype
 DataPrototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref This instance reference is used if the callibration
 
 DataPrototype
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -17824,7 +17500,7 @@ NativeDeclarati
 onString
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute is used to declare native qualiﬁers of
 
@@ -17858,7 +17534,7 @@ pads ...) related to the current data object.
 
 baseType SwBaseType
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.roleElement=true; xml.roleWrapper
 Element=true; xml.sequenceOffset=20; xml.type
@@ -17872,7 +17548,7 @@ hod
 
 CompuMethod
 
-#@SECTION: 0..1
+0..1
 
 ref Computation method associated with the
 
@@ -17882,7 +17558,7 @@ Tags: xml.sequenceOffset=50
 
 dataConstr DataConstr
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.sequenceOffset=180
 ref Data constraint for this data object.
@@ -17893,7 +17569,7 @@ mat
 DisplayFormatS
 tring
 
-#@SECTION: 0..1
+0..1
 
 attr This property describes how a number is to be
 
@@ -17911,7 +17587,7 @@ DataType
 
 Tags: xml.sequenceOffset=210
 
-#@SECTION: 0..1
+0..1
 
 ref This association denotes the
 
@@ -17946,7 +17622,7 @@ on
 
 Tags: xml.sequenceOffset=215
 
-#@SECTION: 0..1 aggr Optional value to express invalidity of the actual
+0..1 aggr Optional value to express invalidity of the actual
 
 data element.
 
@@ -17954,7 +17630,7 @@ stepSize
 
 Float
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.sequenceOffset=255
 
@@ -17973,7 +17649,7 @@ Datatype
 SwAddrMethod
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref Addressing method related to this data object. Via
 an association to the same SwAddrMethod it can
@@ -17986,7 +17662,7 @@ nt
 
 AlignmentType
 
-#@SECTION: 0..1
+0..1
 
 attr The attribute describes the intended alignment of
 
@@ -18005,7 +17681,7 @@ ation
 
 Tags: xml.sequenceOffset=33
 
-#@SECTION: 0..1 aggr Description of the binary representation in case of
+0..1 aggr Description of the binary representation in case of
 
 a bit variable.
 
@@ -18017,7 +17693,7 @@ onAccess
 SwCalibrationA
 ccessEnum
 
-#@SECTION: 0..1
+0..1
 
 attr Speciﬁes the read or write access by MCD tools
 
@@ -18029,7 +17705,7 @@ AxisSet
 SwCalprmAxisS
 et
 
-#@SECTION: 0..1 aggr This speciﬁes the properties of the axes in case of
+0..1 aggr This speciﬁes the properties of the axes in case of
 
 a curve or map etc. This is mainly applicable to
 calibration parameters.
@@ -18058,7 +17734,7 @@ aggr Variables used for comparison in an MCD process.
 Tags: xml.sequenceOffset=170; xml.type
 Element=false
 
-#@SECTION: 0..1 aggr Describes how the value of the data object has to
+0..1 aggr Describes how the value of the data object has to
 
 be calculated from the value of another data
 object (by the MCD system).
@@ -18069,7 +17745,7 @@ iable
 SwVariableRefP
 roxy
 
-#@SECTION: 0..1 aggr Contains a reference to a variable which serves as
+0..1 aggr Contains a reference to a variable which serves as
 
 a host-variable for a bit variable. Only applicable
 to bit objects.
@@ -18082,7 +17758,7 @@ cy
 SwImplPolicyEn
 um
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -18103,7 +17779,7 @@ dResolutio
 n
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr The purpose of this element is to describe the
 
@@ -18141,7 +17817,7 @@ swDataDependency .
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 swInterpol
 ationMetho
@@ -18149,7 +17825,7 @@ d
 
 swIsVirtual Boolean
 
-#@SECTION: 0..1
+0..1
 
 swPointerT
 argetProps
@@ -18158,7 +17834,7 @@ SwPointerTarge
 tProps
 
 Tags: xml.sequenceOffset=260
-#@SECTION: 0..1 aggr Speciﬁes that the containing data object is a
+0..1 aggr Speciﬁes that the containing data object is a
 pointer to another data object.
 
 swRecordL
@@ -18175,13 +17851,13 @@ lTime
 
 Tags: xml.sequenceOffset=280
 
-#@SECTION: 0..1
+0..1
 
 ref Record layout for this data object.
 
 Tags: xml.sequenceOffset=290
 
-#@SECTION: 0..1 aggr This element speciﬁes the frequency in which the
+0..1 aggr This element speciﬁes the frequency in which the
 object involved shall be or is called or calculated.
 This timing can be collected from the task in which
 write access processes to the variable run. But
@@ -18203,14 +17879,14 @@ Datatype
 SwTextProps
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr
+0..1 aggr
 
 the speciﬁc properties if the data object is a text
 object.
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr This represents the size of a Value Block
 
@@ -18227,7 +17903,7 @@ unit
 
 Unit
 
-#@SECTION: 0..1
+0..1
 
 ref Physical unit associated with the semantics of this
 
@@ -18244,7 +17920,7 @@ tiveDataType
 
 Tags: xml.sequenceOffset=350
 
-#@SECTION: 0..1
+0..1
 
 ref The referenced ApplicationPrimitiveDataType
 
@@ -18297,7 +17973,7 @@ Datatype
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 If the "bit data object" is hosted within another
 data object (e.g. if the memory can be accessed
@@ -18310,7 +17986,7 @@ Bits
 
 Integer
 
-#@SECTION: 0..1
+0..1
 
 attr Number of bits allocated by a "bit data object"
 
@@ -18476,31 +18152,31 @@ properties speciﬁed on prototype level override the ones speciﬁed on type le
 
 More formally, the precedence of such properties is:
 
-#@SECTION: 1. attributes of SwDataDefProps deﬁned on ApplicationDataType which may
+ 1. attributes of SwDataDefProps deﬁned on ApplicationDataType which may
 
 be overwritten by
 
-#@SECTION: 2. attributes of SwDataDefProps deﬁned on ImplementationDataType which
+ 2. attributes of SwDataDefProps deﬁned on ImplementationDataType which
 
 may be overwritten by
 
-#@SECTION: 3. attributes of SwDataDefProps deﬁned on DataPrototype which may be over
+3. attributes of SwDataDefProps deﬁned on DataPrototype which may be over
 
 written by
 
-#@SECTION: 4. attributes of SwDataDefProps deﬁned on InstantiationDataDefProps
+4. attributes of SwDataDefProps deﬁned on InstantiationDataDefProps
 
 which may be overwritten by
 
-#@SECTION: 5. attributes of SwDataDefProps deﬁned on ParameterAccess respectively Ar
+5. attributes of SwDataDefProps deﬁned on ParameterAccess respectively Ar
 
 gument which may be overwritten by
 
-#@SECTION: 6. attributes of SwDataDefProps deﬁned on FlatInstanceDescriptor which
+6. attributes of SwDataDefProps deﬁned on FlatInstanceDescriptor which
 
 may be overwritten by
 
-#@SECTION: 7. attributes of SwDataDefProps deﬁned on McDataInstance
+7. attributes of SwDataDefProps deﬁned on McDataInstance
 
 (cid:99)()
 
@@ -19535,17 +19211,17 @@ cording to the string encoding. (cid:99)()
 [constr_1302] Restriction of data invalidation (cid:100) Data invalidation is only applicable
 for one of the following cases applicable on the receiving side:
 
-#@SECTION: 1. VariableDataPrototypes typed by either an ApplicationPrimitive
+ 1. VariableDataPrototypes typed by either an ApplicationPrimitive
 DataType or an ImplementationDataType of category VALUE or
 TYPE_REFERENCE that boils down to category VALUE that have deﬁned an
 invalidValue.
 
-#@SECTION: 2. VariableDataPrototypes typed by either an ApplicationComposite
+ 2. VariableDataPrototypes typed by either an ApplicationComposite
 DataType or an ImplementationDataType of category STRUCTURE, or
 ARRAY or of category TYPE_REFERENCE that boils down to category STRUC
 TURE, or ARRAY that have at least one primitive element with an invalidValue.
 
-#@SECTION: 3. VariableDataPrototypes typed by an ImplementationDataType of cat
+3. VariableDataPrototypes typed by an ImplementationDataType of cat
 egory UNION or of category TYPE_REFERENCE that boils down to category
 UNION where all primitive elements deﬁne an invalidValue.
 
@@ -19838,7 +19514,7 @@ category
 goryEnum
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 axis.
 
@@ -19846,7 +19522,7 @@ attr This property speciﬁes the category of a particular
 
 baseType SwBaseType
 
-#@SECTION: 0..1
+0..1
 
 ref The SwBaseType to be used for the axis. Note
 
@@ -19864,7 +19540,7 @@ ApplicationDataTypes. The value shall be ignored.
 Tags: atp.Status=removed
 xml.sequenceOffset=110
 
-#@SECTION: 0..1
+0..1
 
 attr This property speciﬁes how the axis values shall
 
@@ -19878,7 +19554,7 @@ ex
 
 AxisIndexType
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute speciﬁes which axis is speciﬁed by
 
@@ -19895,7 +19571,7 @@ ccessEnum
 
 Tags: xml.sequenceOffset=20
 
-#@SECTION: 0..1
+0..1
 
 attr Describes the applicability of parameters and
 
@@ -20010,7 +19686,7 @@ class SwAxisGrouped).
 ARObject,SwCalprmAxisTypeProps
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 CompuMethod
 
 ref This is the compuMethod which is expected for the
@@ -20024,7 +19700,7 @@ hod
 
 dataConstr DataConstr
 
-#@SECTION: 0..1
+0..1
 
 ref Refers to constraints, e.g. for plausibility checks.
 
@@ -20048,12 +19724,12 @@ eric
 
 SwAxisGeneric
 
-#@SECTION: 0..1 aggr
+0..1 aggr
 
 
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This is the datatype of the input value for the axis.
 
@@ -20146,7 +19822,7 @@ Datatype
 Unit
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This represents the physical unit of the input value
 
@@ -20212,7 +19888,7 @@ parameters.
 ARObject,SwCalprmAxisTypeProps
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 ApplicationPrimi
 tiveDataType
 
@@ -20235,7 +19911,7 @@ Datatype
 AxisIndexType
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Describes which axis of the referenced calibration
 parameter provides the values for the group axis.
@@ -20396,7 +20072,7 @@ AutosarParamet
 erRef
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This represents a Parameter within AUTOSAR.
+0..1 aggr This represents a Parameter within AUTOSAR.
 
 Note that the Datatype of the referenced
 ParameterDataPrototype shall be an
@@ -20443,7 +20119,7 @@ Ref
 iable
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This represents the reference to a Variable in an
+0..1 aggr This represents the reference to a Variable in an
 
 Autosar system. Note that the target of the
 reference within AutosarVariableRef shall be typed
@@ -20700,7 +20376,7 @@ SwDataDepend
 encyArgs
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr Speciﬁes the arguments used in the data
+0..1 aggr Speciﬁes the arguments used in the data
 
 dependency. Note that this is 0..1 since the
 aggregated class is a container (atpMixed).
@@ -20712,7 +20388,7 @@ ormula
 CompuGeneric
 Math
 
-#@SECTION: 0..1 aggr This element describes the formula with which the
+0..1 aggr This element describes the formula with which the
 
 dependencies between the participating objects
 are deﬁned.
@@ -21091,7 +20767,7 @@ Datatype
 Compu
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This speciﬁes the computation from internal
+0..1 aggr This speciﬁes the computation from internal
 
 values to physical values.
 
@@ -21100,7 +20776,7 @@ sToInternal
 
 Compu
 
-#@SECTION: 0..1 aggr This represents the computation from physical
+0..1 aggr This represents the computation from physical
 
 Tags: xml.sequenceOffset=80
 
@@ -21114,7 +20790,7 @@ mat
 DisplayFormatS
 tring
 
-#@SECTION: 0..1
+0..1
 
 attr This property speciﬁes, how the physical value
 shall be displayed e.g. in documents or
@@ -21124,7 +20800,7 @@ unit
 
 Unit
 
-#@SECTION: 0..1
+0..1
 
 ref This is the physical unit of the Physical values for
 
@@ -21321,13 +20997,13 @@ shortLabel can be taken as a the source for naming the symbol that represents th
 CompuScale in the C code. The following rule applies (lower values indicate higher
 priority) for all CompuScales with a point-range:
 
-#@SECTION: 1. Take the value of symbol if this attribute exists.
+ 1. Take the value of symbol if this attribute exists.
 
-#@SECTION: 2. Take the value of vt if it makes a valid C identiﬁer.
+ 2. Take the value of vt if it makes a valid C identiﬁer.
 
 
 
-#@SECTION: 3. Take the value of shortLabel if it exists.
+3. Take the value of shortLabel if it exists.
 
 Fail if none of the possible options apply.
 
@@ -21381,7 +21057,7 @@ CompuConst
 Tags: xml.roleElement=false; xml.roleWrapper
 Element=false; xml.sequenceOffset=20; xml.type
 Element=false; xml.typeWrapperElement=false
-#@SECTION: 0..1 aggr This property can be used to specify an output
+0..1 aggr This property can be used to specify an output
 
 value for a conversion formula, if the value to be
 converted lies outside the plausibility limit.
@@ -21448,13 +21124,13 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr <desc> represents a general but brief description
+0..1 aggr <desc> represents a general but brief description
 
 of the object in question.
 
 CompuConst
 
-#@SECTION: 0..1 aggr This is the inverse value of the constraint. This
+0..1 aggr This is the inverse value of the constraint. This
 
 Tags: xml.sequenceOffset=30
 
@@ -21469,7 +21145,7 @@ ntents
 
 Tags: xml.sequenceOffset=60
 
-#@SECTION: 0..1 aggr This represents the computation details of the
+0..1 aggr This represents the computation details of the
 
 scale.
 
@@ -21477,7 +21153,7 @@ lowerLimit
 
 Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the lower limit of the scale.
 
@@ -21489,7 +21165,7 @@ mask
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -21516,7 +21192,7 @@ shortLabel
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref This element speciﬁes a short name for the
 
@@ -21534,7 +21210,7 @@ Datatype
 CIdentifier
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref The symbol, if provided, is used by code
 
@@ -21547,7 +21223,7 @@ Tags: xml.sequenceOffset=25
 
 upperLimit Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the upper limit of a of the scale.
 
@@ -22485,7 +22161,7 @@ Listing 5.9: example for linear and texttable CompuMethod
 The semantics of rational function is:
 Internal = v0∗phys0+v1∗phys1+v2∗phys2+...
 v0∗phys0+v∗
-#@SECTION: 1 phys1+v2∗phys2+...
+1 phys1+v2∗phys2+...
 
 The following example illustrates a reciprocal conversion.
 
@@ -22567,7 +22243,7 @@ error
 01(16) = low pressure
 10(32) = unbalanced
 11(48) = unknown
-#@SECTION: 11111111 = invalid value
+11111111 = invalid value
 
 Table 5.75: Example Bitﬁeld
 
@@ -22576,8 +22252,8 @@ part of the mask. By this the error can safely be masked out.
 
 Internal: 28
 
-#@SECTION: 28 = 0b0001_1100
-#@SECTION: 7654 3210
+28 = 0b0001_1100
+7654 3210
 Bit
 
 Physical:
@@ -22938,7 +22614,7 @@ SingleLanguage
 UnitNames
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This speciﬁes how the unit shall be displayed in
+0..1 aggr This speciﬁes how the unit shall be displayed in
 
 documents or in user interfaces of tools.The
 displayName corresponds to the Unit.Display in an
@@ -22962,7 +22638,7 @@ ion
 
 Tags: xml.sequenceOffset=20
 
-#@SECTION: 0..1
+0..1
 
 attr This is the factor for the conversion from and to
 
@@ -22970,7 +22646,7 @@ siUnits.
 
 Tags: xml.sequenceOffset=30
 
-#@SECTION: 0..1
+0..1
 
 attr This is the offset for the conversion from and to
 
@@ -22978,7 +22654,7 @@ siUnits.
 
 Tags: xml.sequenceOffset=40
 
-#@SECTION: 0..1
+0..1
 
 ref This association represents the physical
 
@@ -23035,14 +22711,14 @@ Datatype
 currentExp Numerical
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute represents the exponent of the
 physical dimension "electric current".
 
 lengthExp Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension "length".
 
@@ -23053,7 +22729,7 @@ tensityExp
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension "luminous
 
@@ -23067,7 +22743,7 @@ massExp
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension "mass".
 
@@ -23079,7 +22755,7 @@ eExp
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension "quantity
 
@@ -23091,7 +22767,7 @@ Tags: xml.sequenceOffset=70
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension
 
@@ -23103,7 +22779,7 @@ timeExp
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr The exponent of the physical dimension "time".
 
@@ -23444,7 +23120,7 @@ Integer
 attr This attribute describes the category of a
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 constraint. One of its functions is in the area of
 constraint violation, where it can be used from a
@@ -23461,7 +23137,7 @@ nstrs
 
 InternalConstrs
 
-#@SECTION: 0..1 aggr Describes the limitations applicable on the internal
+0..1 aggr Describes the limitations applicable on the internal
 
 domain (as opposed to the physical domain).
 
@@ -23471,7 +23147,7 @@ rs
 PhysConstrs
 
 Tags: xml.sequenceOffset=40
-#@SECTION: 0..1 aggr Describes the limitations applicable on the
+0..1 aggr Describes the limitations applicable on the
 
 physical domain (as opposed to the internal
 domain).
@@ -23505,7 +23181,7 @@ Datatype
 Limit
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the lower limit of the constraint.
 
@@ -23517,7 +23193,7 @@ maxDiff
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr Maximum difference that is permitted between two
 
@@ -23529,7 +23205,7 @@ nt
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr This element speciﬁes the maximum slope that
 
@@ -23563,7 +23239,7 @@ unit
 
 Unit
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.roleElement=true; xml.roleWrapper
 Element=true; xml.sequenceOffset=40; xml.type
@@ -23575,7 +23251,7 @@ speciﬁed limits.
 
 upperLimit Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the upper limit of the constraint.
 
@@ -23602,7 +23278,7 @@ Datatype
 Limit
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the lower limit of the constraint.
 
@@ -23619,7 +23295,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Maximum difference that is permitted between two
 
@@ -23633,7 +23309,7 @@ nt
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr This element speciﬁes the maximum slope that
 
@@ -23671,7 +23347,7 @@ Element=false; xml.typeWrapperElement=false
 
 upperLimit Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the upper limit deﬁned by the
 
@@ -23702,7 +23378,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr <desc> represents a general but brief description
+0..1 aggr <desc> represents a general but brief description
 
 of the object in question.
 
@@ -23710,7 +23386,7 @@ lowerLimit
 
 Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the lower limit of the scale.
 
@@ -23729,7 +23405,7 @@ Datatype
 Identifier
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This element speciﬁes a short name for the
 
@@ -23743,7 +23419,7 @@ Tags: xml.sequenceOffset=20
 
 upperLimit Limit
 
-#@SECTION: 0..1
+0..1
 
 ref This speciﬁes the upper limit of a the scale.
 
@@ -23752,7 +23428,7 @@ validity
 ScaleConstrVali
 dityEnum
 
-#@SECTION: 0..1
+0..1
 
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
@@ -23810,7 +23486,7 @@ m
 attr This speciﬁes the type of the interval. If the
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attribute is missing the interval shall be considered
 as "CLOSED".
@@ -24114,7 +23790,7 @@ attr Enumeration to specify the name pattern of the
 ref This attribute introduces the ability to specify
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Memory Allocation Keyword.
 
@@ -24137,7 +23813,7 @@ In the Memory Mapping conﬁguration, this option
 list is used to determine an appropriate
 MemMapAddressingModeSet.
 
-#@SECTION: 0..1
+0..1
 
 attr Speciﬁes the expected initialization of the
 
@@ -24159,7 +23835,7 @@ e
 MemorySection
 Type
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes the type of memory sections which can be
 
@@ -24407,7 +24083,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This aggregation allows for a brief description
+0..1 aggr This aggregation allows for a brief description
 
 about the particular record layout value which can
 help to identify the entry. In-depth documentation
@@ -24423,11 +24099,11 @@ category
 AsamRecordLa
 youtSemantics
 
-#@SECTION: 0..1
+0..1
 
 baseType SwBaseType
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.sequenceOffset=20
 
@@ -24475,7 +24151,7 @@ layout value.
 
 Tags: xml.sequenceOffset=3
 
-#@SECTION: 0..1
+0..1
 
 ref This association supports the case that a value
 
@@ -24496,7 +24172,7 @@ ex
 
 AxisIndexType
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute gives the index of the axis of which
 
@@ -24523,7 +24199,7 @@ ApplicationDataType.
 
 Integer
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute speciﬁes the ﬁller character for the
 
@@ -24535,7 +24211,7 @@ FIXRIGHTDIFF.
 
 NameTokens
 
-#@SECTION: 0..1
+0..1
 
 attr The symbolic value for iteration, or the symbolic
 
@@ -24566,7 +24242,7 @@ ayoutVPro
 p
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute describes the kind of values to be
 
@@ -24595,7 +24271,7 @@ OverviewParagr
 aph
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This aggregation allows a brief description about
+0..1 aggr This aggregation allows a brief description about
 the particular record layout group which can help
 to identify the entry. In-depth documentation
 should be added to the introduction of the
@@ -24610,7 +24286,7 @@ category
 AsamRecordLa
 youtSemantics
 
-#@SECTION: 0..1
+0..1
 
 shortLabel
 
@@ -24652,7 +24328,7 @@ SwGenericAxis
 ParamType
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This association allows to specify record layout
 
@@ -24667,7 +24343,7 @@ aggregated.
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref This attribute is used to denote the component to
 
@@ -24699,7 +24375,7 @@ ype
 
 AxisIndexType
 
-#@SECTION: 0..1
+0..1
 
 swRecordL
 ayoutGrou
@@ -24708,7 +24384,7 @@ pAxis
 SwRecordLayo
 utGroupContent
 
-#@SECTION: 0..1 aggr This is the contents of the recordLayout which is
+0..1 aggr This is the contents of the recordLayout which is
 produced for every step of iteration.
 
 Tags: xml.sequenceOffset=30
@@ -24720,7 +24396,7 @@ pFrom
 RecordLayoutIt
 eratorPoint
 
-#@SECTION: 0..1
+0..1
 
 Tags: xml.roleElement=false; xml.roleWrapper
 Element=false; xml.sequenceOffset=100; xml.type
@@ -24740,7 +24416,7 @@ pIndex
 
 NameToken
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute attributes a symbolic name to the
 
@@ -24763,7 +24439,7 @@ ayoutGrou
 pStep
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute speciﬁes the step width for the
 
@@ -24784,7 +24460,7 @@ is "1".
 
 Tags: xml.sequenceOffset=80
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute speciﬁes the end point for the
 
@@ -25364,11 +25040,11 @@ Table 5.108: InterpolationRoutine
 signed to a meta-class by aggregating the meta-class ValueSpecification. This
 aggregation can be used in two ways:
 
-#@SECTION: 1. by referencing to a reusable ConstantSpecification which contains another
+ 1. by referencing to a reusable ConstantSpecification which contains another
 
 ValueSpecification
 
-#@SECTION: 2. or through an inline aggregation of a value speciﬁcation of various kind.
+ 2. or through an inline aggregation of a value speciﬁcation of various kind.
 
 (cid:99)(RS_SWCT_03175)
 
@@ -25417,7 +25093,7 @@ Identifier
 ref This can be used to identify particular value
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 Attribute
@@ -25822,7 +25498,7 @@ ont
 RuleBasedValu
 eCont
 
-#@SECTION: 0..1 aggr This represents the values of an array or
+0..1 aggr This represents the values of an array or
 
 Compound Primitive Data Type.
 
@@ -25923,7 +25599,7 @@ unit
 
 Unit
 
-#@SECTION: 0..1
+0..1
 
 ref This represents the physical unit of the provided
 
@@ -25968,7 +25644,7 @@ Tags: xml.roleElement=true; xml.roleWrapper
 Element=false; xml.sequenceOffset=80; xml.type
 WrapperElement=false
 
-#@SECTION: 0..1 aggr This attribute deﬁnes the size of each dimension
+0..1 aggr This attribute deﬁnes the size of each dimension
 for compound primitivies CURVE, MAP, CUBOID,
 CUBE_4, CUBE_5, COM_AXIS, RES_AXIS,
 CURVE_AXIS, VAL_BLK, STRING.
@@ -25983,7 +25659,7 @@ unit
 
 Unit
 
-#@SECTION: 0..1
+0..1
 
 ref This represents the physical unit of the provided
 
@@ -26193,7 +25869,7 @@ Fill
 
 Integer
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -26237,7 +25913,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This represents a numerical value for the
 
@@ -26245,7 +25921,7 @@ vf
 
 Numerical
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a numerical value for the
 
@@ -26264,7 +25940,7 @@ vtf
 
 VerbatimString
 
-#@SECTION: 0..1
+0..1
 
 ref This represents a textual value for the
 RuleBasedValueSpeciﬁcation.
@@ -26272,7 +25948,7 @@ RuleBasedValueSpeciﬁcation.
 NumericalOrTex
 t
 
-#@SECTION: 0..1 aggr This aggregation represents the ability to provide
+0..1 aggr This aggregation represents the ability to provide
 
 a value that is either numerical or text which
 existence is subject to variability.
@@ -26460,7 +26136,7 @@ ont
 
 SwValueCont
 
-#@SECTION: 0..1 aggr This represents the values of a Compound
+0..1 aggr This represents the values of a Compound
 
 Primitive Data Type.
 
@@ -26587,7 +26263,7 @@ SingleLanguage
 UnitNames
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This represents the display name which is used for
+0..1 aggr This represents the display name which is used for
 
 the physical unit of the axis.
 
@@ -26611,7 +26287,7 @@ Datatype
 ValueList
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This attribute deﬁnes the size of each dimension
+0..1 aggr This attribute deﬁnes the size of each dimension
 for compound primitivies CURVE, MAP, CUBOID,
 CUB_4, CUBE_5, COM_AXIS, RES_AXIS,
 CURVE_AXIS, VAL_BLK, STRING.
@@ -26626,7 +26302,7 @@ hys
 SwValues
 
 Tags: xml.sequenceOffset=40
-#@SECTION: 0..1 aggr swValuesPhys represents the values in the
+0..1 aggr swValuesPhys represents the values in the
 
 physical domain.
 
@@ -26650,7 +26326,7 @@ Name
 SingleLanguage
 UnitNames
 
-#@SECTION: 0..1 aggr This speciﬁes how the physical units of the current
+0..1 aggr This speciﬁes how the physical units of the current
 
 value set shall be displayed in documents or in
 user interfaces of tools.
@@ -26792,14 +26468,14 @@ MultilanguageL
 ongName
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This label allows to give the valueGroup a
+0..1 aggr This label allows to give the valueGroup a
 
 partiluclar name. It can be usel if the Values are
 rendered as a table.
 
 SwValues
 
-#@SECTION: 0..1 aggr This represents the contents of the value group.
+0..1 aggr This represents the contents of the value group.
 
 Tags: xml.sequenceOffset=20
 
@@ -26869,7 +26545,7 @@ Datatype
 Numerical
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This attribute represents the ability to provide a
 numerical value. The latest binding time of the
@@ -26883,7 +26559,7 @@ vt
 
 String
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute represents the ability to provide a
 
@@ -27159,11 +26835,11 @@ following conceptual levels for the deﬁnition of initial values exist:
 
 
 
-#@SECTION: 1. It is possible to aggregate an initValue directly at the deﬁnition of any Vari
+ 1. It is possible to aggregate an initValue directly at the deﬁnition of any Vari
 
 ableDataPrototype/ParameterDataPrototype.
 
-#@SECTION: 2. It is possible to aggregate an initValue at the level of a ComSpec, namely:
+ 2. It is possible to aggregate an initValue at the level of a ComSpec, namely:
 
 • NonqueuedSenderComSpec
 
@@ -27175,7 +26851,7 @@ ableDataPrototype/ParameterDataPrototype.
 
 • NvRequireComSpec
 
-#@SECTION: 3. It is possible to aggregate a implInitValue and an appInitValue at the
+3. It is possible to aggregate a implInitValue and an appInitValue at the
 
 deﬁnition of a CalibrationParameterValue.
 
@@ -27490,9 +27166,9 @@ FlatInstanceDes
 criptor
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This is the initial value speciﬁcation structured
+0..1 aggr This is the initial value speciﬁcation structured
 
-#@SECTION: 0..1 aggr This is the initial value speciﬁcation structured
+0..1 aggr This is the initial value speciﬁcation structured
 
 ref This represents the parameter that is initialized by
 
@@ -27535,11 +27211,11 @@ other.
 
 For the compatibility of PortInterfaces basically two options apply:
 
-#@SECTION: 1. ﬁnding of matching pairs of elements of PortInterfaces is based on matching
+ 1. ﬁnding of matching pairs of elements of PortInterfaces is based on matching
 
 shortName plus the application of compatibility rules for their attributes.
 
-#@SECTION: 2. a PortInterfaceMapping can be taken to declare two elements of PortPro
+ 2. a PortInterfaceMapping can be taken to declare two elements of PortPro
 
 totypes as compatible without applying further formal checks.
 
@@ -27569,7 +27245,7 @@ ing conditions applies:
 
 
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) They have the same category (see table in ﬁgure 5.8).
 
@@ -27577,13 +27253,13 @@ ing conditions applies:
 
 meaning of this statement is explained in section 6.2.4.
 
-#@SECTION: 2. In the context of using the ApplicationPrimitiveDataType, a DataPro
+ 2. In the context of using the ApplicationPrimitiveDataType, a DataPro
 totypeMapping exists that refers to a DataPrototype typed by one of the
 ApplicationPrimitiveDataTypes in the role firstDataPrototype and
 to another DataPrototype typed by the other ApplicationPrimitive
 DataType in the role secondDataPrototype.
 
-#@SECTION: 3. In the context of using the ApplicationPrimitiveDataType, a DataPro
+3. In the context of using the ApplicationPrimitiveDataType, a DataPro
 totypeMapping exists that refers to a DataPrototype typed by the Appli
 cationPrimitiveDataType in the role secondDataPrototype and to an
 other DataPrototype typed by an ApplicationCompositeDataType in the
@@ -27607,13 +27283,13 @@ details the terms of compatibility (see [TPS_SWCT_01543]).
 ApplicationRecordDataTypes are compatible if and only if one of the following
 conditions applies:
 
-#@SECTION: 1. All elements at
+ 1. All elements at
 
 the same record position are of compatible Autosar
 DataTypes either ApplicationCompositeDataTypes or Application
 PrimitiveDataTypes).
 
-#@SECTION: 2. In the context of a DataPrototypeMapping,
+ 2. In the context of a DataPrototypeMapping,
 
 for each Application
 RecordElement of the required ApplicationRecordDataType a SubEle
@@ -27632,7 +27308,7 @@ RecordElement of the provided ApplicationRecordDataType.
 plicationArrayDataType are compatible if and only if one of the following condi
 tions applies:
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) Their elements are of a compatible AutosarDataTypes (either Ap
 ApplicationPrimitive
@@ -27646,7 +27322,7 @@ DataTypes).
 
 (given the existence) have identical values.
 
-#@SECTION: 2. In the context of a DataPrototypeMapping, for the ApplicationArrayEle
+ 2. In the context of a DataPrototypeMapping, for the ApplicationArrayEle
 ment of the required ApplicationArrayDataType a SubElementMapping
 exists such that a ApplicationCompositeDataTypeSubElementRef in the
 role firstElement or secondElement exists that references the required Ap
@@ -27663,7 +27339,7 @@ provided ApplicationArrayDataType.
 plementationDataType are compatible if and only if after all type-references are
 resolved one of the following rules apply:
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) They have the same category (see table 5.18)
 
@@ -27679,7 +27355,7 @@ istence) identical values.
 
 meaning of this statement is explained in section 6.2.4.
 
-#@SECTION: 2. In the context of using the ImplementationDataType, a DataProto
+ 2. In the context of using the ImplementationDataType, a DataProto
 typeMapping exists that refers to a DataPrototype typed by one of the Im
 plementationDataTypes in the role firstDataPrototype and to another
 DataPrototype typed by the other ImplementationDataType in the role
@@ -27687,7 +27363,7 @@ secondDataPrototype.
 
 
 
-#@SECTION: 3. In the context of using the ImplementationDataType, a DataProto
+3. In the context of using the ImplementationDataType, a DataProto
 typeMapping exists that refers to a DataPrototype typed by the Implemen
 tationDataTypes in the role secondDataPrototype and to another Dat
 aPrototype typed by an ImplementationDataType with a subElement in
@@ -27730,17 +27406,17 @@ ues. (cid:99)()
 [constr_1051] Compatibility of SwDataDefProps (cid:100) SwDataDefProps are compat
 ible if and only if:
 
-#@SECTION: 1. They refer to compatible Unit deﬁnitions, or neither of them has an associated
+ 1. They refer to compatible Unit deﬁnitions, or neither of them has an associated
 
 Unit.
 
-#@SECTION: 2. They refer to compatible conversion methods (see chapter 6.2.4.5) or neither of
+ 2. They refer to compatible conversion methods (see chapter 6.2.4.5) or neither of
 
 them associates such a method.
 
 
 
-#@SECTION: 3. One of the following conditions apply to ValueSpecifications aggregated
+3. One of the following conditions apply to ValueSpecifications aggregated
 in the role invalidValue for being considered compatible (after following and
 resolving indirections created by ConstantReference):
 
@@ -27763,9 +27439,9 @@ plicationValueSpecification then the check for compatibility shall
 apply the CompuMethod on the physical value such that a comparison on
 the implementation level becomes possible. [TPS_GST_02501] applies1.
 
-#@SECTION: 4. They refer to compatible data constraints dataConstr.
+4. They refer to compatible data constraints dataConstr.
 
-#@SECTION: 5. They refer to compatible swRecordLayouts
+5. They refer to compatible swRecordLayouts
 
 All other attributes (e.g. swCalibrationAccess do not affect compatibility). (cid:99)()
 
@@ -27774,11 +27450,11 @@ All other attributes (e.g. swCalibrationAccess do not affect compatibility). (ci
 [constr_1052] Compatibility of Units (cid:100) Two Unit deﬁnitions are compatible if and
 only if:
 
-#@SECTION: 1. They have compatible (see [TPS_GST_02501]) values of attributes factorSi
+ 1. They have compatible (see [TPS_GST_02501]) values of attributes factorSi
 
 ToUnit and offsetSiToUnit.
 
-#@SECTION: 2. They either refer to identical deﬁnitions of PhysicalDimension or neither of
+ 2. They either refer to identical deﬁnitions of PhysicalDimension or neither of
 
 them associates a PhysicalDimension.
 
@@ -27910,23 +27586,23 @@ ditions shall be met to ensure compatibility.
 Note that depending on the category of the ImplementationDataType, at most
 one of these four constraints is actually relevant:
 
-#@SECTION: 1. category [constr_1055] ImplementationDataType has category VALUE
+ 1. category [constr_1055] ImplementationDataType has category VALUE
 (cid:100) The attributes baseType shall refer to a compatible SwBaseType (cid:99)() (see ex
 planation in the following rule). The rules regarding the compatibility of SwBase
 Types are covered by [constr_1220].
 
-#@SECTION: 2. category TYPE_REFERENCE: [constr_1056] ImplementationDataType
+ 2. category TYPE_REFERENCE: [constr_1056] ImplementationDataType
 has category TYPE_REFERENCE (cid:100) The ImplementationDataTypes refer
 enced by the attributes SwDataDefProps.implementationDataType shall
 be compatible . (cid:99)()
 
-#@SECTION: 3. category DATA_REFERENCE: [constr_1057] ImplementationDataType
+3. category DATA_REFERENCE: [constr_1057] ImplementationDataType
 has category DATA_REFERENCE (cid:100) The attributes SwDataDefProps.sw
 PointerTargetProps shall have identical targetCategory and shall refer
 to SwDataDefProps where all attributes are identical (cid:99)() (in other words, the
 target types of the pointers shall be identical, not only compatible).
 
-#@SECTION: 4. category FUNCTION_REFERENCE:
+4. category FUNCTION_REFERENCE:
 
 [constr_1058] Implementation
 DataType has category FUNCTION_REFERENCE (cid:100) The attributes Sw
@@ -28136,7 +27812,7 @@ Several rules depend on the category of the data types:
 
 rule,
 
-#@SECTION: 1. As a general
+ 1. As a general
 
 if an ImplementationDataType of category
 TYPE_REFERENCE is targeted by a type mapping or port connection all the rules
@@ -28151,7 +27827,7 @@ tationDataType of category VALUE.
 
 
 
-#@SECTION: 2. [constr_1059] Compatibility of data types with category VALUE (cid:100) An Ap
+ 2. [constr_1059] Compatibility of data types with category VALUE (cid:100) An Ap
 plicationDataType of category VALUE can only be mapped/connected to
 an ImplementationDataType which also has category VALUE. (cid:99)()
 
@@ -28175,7 +27851,7 @@ to another ImplementationDataType at the data element itself but via the
 networkRepresentation of the ComSpec (for further explanation of this as
 pect see section 4.5.1).
 
-#@SECTION: 3. [constr_1060] Compatibility of data types with category ARRAY, VAL_BLK
+3. [constr_1060] Compatibility of data types with category ARRAY, VAL_BLK
 (cid:100) An ApplicationDataType of category ARRAY, VAL_BLK can only be
 mapped/connected to
 
@@ -28202,7 +27878,7 @@ respective ShortNames are identical.
 
 is not
 
-#@SECTION: 4. [constr_1061] Compatibility of data types with category STRUCTURE (cid:100) An
+4. [constr_1061] Compatibility of data types with category STRUCTURE (cid:100) An
 ApplicationDataType of category STRUCTURE can only be mapped/con
 nected to an ImplementationDataType of category STRUCTURE. (cid:99)()
 
@@ -28213,11 +27889,11 @@ element.
 
 
 
-#@SECTION: 5. [constr_1063] Compatibility of data types with category BOOLEAN (cid:100) An Ap
+5. [constr_1063] Compatibility of data types with category BOOLEAN (cid:100) An Ap
 plicationDataType of category BOOLEAN can only be mapped/connected
 to an ImplementationDataType of category VALUE. (cid:99)()
 
-#@SECTION: 6. [constr_1064] Compatibility of data types with category COM_AXIS,
+6. [constr_1064] Compatibility of data types with category COM_AXIS,
 RES_AXIS, CURVE, MAP, CUBOID, CUBE_4, or CUBE_5 (cid:100) An Application
 DataType of category COM_AXIS, RES_AXIS, CURVE, MAP, CUBOID, CUBE_4,
 or CUBE_5 can only be mapped/connected to an ImplementationDataType
@@ -28234,7 +27910,7 @@ RecordLayout.
 It is not required, to deﬁne DataTypeMaps for the sub-elements or both repre
 sentations.
 
-#@SECTION: 7. [constr_1066] Forbidden mappings to ImplementationDataType (cid:100) An
+7. [constr_1066] Forbidden mappings to ImplementationDataType (cid:100) An
 ApplicationDataType shall never be mapped to an Implementa
 tionDataType of of category UNION, DATA_REFERENCE, or FUNC
 TION_REFERENCE. (cid:99)()
@@ -28243,19 +27919,19 @@ Concerning the SwDataDefProps of an ApplicationDataType instance resp. an
 ImplementationDataType instance which shall be mapped/connected on M1, we
 refer to the table shown in ﬁgure 5.39. The following rules apply:
 
-#@SECTION: 1. The cases where the ImplementationDataType is not allowed to set a prop
+ 1. The cases where the ImplementationDataType is not allowed to set a prop
 erty but only “inherits” it from the ApplicationDataType are not relevant for
 compatibility. These attributes are simply not allowed in the Implementation
 DataType.
 
-#@SECTION: 2. In case that only the ImplementationDataType may “deﬁne” the property this
+ 2. In case that only the ImplementationDataType may “deﬁne” the property this
 deﬁnition shall ﬁt into the semantical requirements given by the Application
 DataType in order to make the two types compatible.
 
 This is namely important for the attribute baseType and is explained above in
 the rule for types of category VALUE.
 
-#@SECTION: 3. In case the ImplementationDataType may “add” a property it may only add
+3. In case the ImplementationDataType may “add” a property it may only add
 but not change a property deﬁned by the ApplicationDataType (namely
 note, displayFormat, and swImplPolicy) in order to be compatible.
 
@@ -28264,7 +27940,7 @@ In all other cases, only the Applica
 of the types in order to be compatible.
 tionDataType may deﬁne the computation method.
 
-#@SECTION: 4. For the compatibility with respect to connectors there are some additional rules
+4. For the compatibility with respect to connectors there are some additional rules
 for the values of the attribute swImplPolicy which are considered general rules
 on the level of DataPrototypes and PortInterfaces.
 
@@ -28272,14 +27948,14 @@ on the level of DataPrototypes and PortInterfaces.
 
 Therefore these additional rules are explained in chapter 6.3 and chapter 6.4.4.
 
-#@SECTION: 5. The case that an ImplementationDataType may “redeﬁne” a property which
+5. The case that an ImplementationDataType may “redeﬁne” a property which
 is already set by the ApplicationDataType is not considered as relevant for
 the compatibility with respect to mapping of the types in general but of course
 for
 there may be project speciﬁc rules as to which redeﬁnition is allowed (e.g.
 swAddrMethod or dataConstr). See also 5.5.3 about data constraints.
 
-#@SECTION: 6. For the compatibility with respect to connectors the attribute dataConstr shall
+6. For the compatibility with respect to connectors the attribute dataConstr shall
 be treated in the same way as for compatibility of data types in general, for more
 details please refer to 6.2.4.
 
@@ -28293,7 +27969,7 @@ ParameterDataPrototypes of ApplicationPrimitiveDataTypes or Imple
 mentationDataTypes of category VALUE, BOOLEAN, or STRING are compatible if
 and only if one of the following conditions applies:
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) They are typed by (read “refer to”) compatible AutosarDataTypes
 
@@ -28306,7 +27982,7 @@ and ParameterInterfaces.
 
 VariableDataPrototypes.
 
-#@SECTION: 2. In the context of a DataPrototypeMapping, one of the applicable Variable
+ 2. In the context of a DataPrototypeMapping, one of the applicable Variable
 DataPrototypes or ParameterDataPrototypes is referenced by the Dat
 aPrototypeMapping in the role firstDataPrototype and the other Vari
 ableDataPrototypes or ParameterDataPrototypes is referenced by the
@@ -28323,11 +27999,11 @@ conditions evaluates to true:
 
 
 
-#@SECTION: 1. The underlying ApplicationCompositeDataTypes or Implementation
+ 1. The underlying ApplicationCompositeDataTypes or Implementation
 
 DataTypes of category STRUCTURE or ARRAY are identical
 
-#@SECTION: 2. The underlying ApplicationCompositeDataTypes or Implementation
+ 2. The underlying ApplicationCompositeDataTypes or Implementation
 DataTypes of category STRUCTURE or ARRAY fulﬁll the following condition:
 
 • They consist of the same number of elements and
@@ -28342,7 +28018,7 @@ in the same order and
 
 AutosarDataType.
 
-#@SECTION: 3. In the context of a DataPrototypeMapping,
+3. In the context of a DataPrototypeMapping,
 
 for each ApplicationCom
 positeElementDataPrototype of the required DataPrototype a SubEle
@@ -28354,7 +28030,7 @@ in the other role (i.e. secondElement or firstElement) that in turn refer
 ences an ApplicationCompositeElementDataPrototype of the provided
 ApplicationCompositeDataType.
 
-#@SECTION: 4. If and only if the DataPrototype is not typed by an ApplicationDataType
+4. If and only if the DataPrototype is not typed by an ApplicationDataType
 in the context of a DataProto
 but by an ImplementationDataType:
 typeMapping, for each ImplementationDataTypeElement of the required
@@ -28389,7 +28065,7 @@ AssemblySwConnector.
 the context of AssemblySwConnectors (cid:100) PortPrototypes of different DataIn
 terfaces are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For each VariableDataPrototype or ParameterDataPrototype de
 ﬁned in the context of the DataInterface of the required PortProto
@@ -28410,7 +28086,7 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -28428,7 +28104,7 @@ egationSwConnector.
 in the context of DelegationSwConnectors (cid:100) PortPrototypes of different
 DataInterfaces are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 
 
@@ -28455,7 +28131,7 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-#@SECTION: 2. One of the following conditions applies:
+ 2. One of the following conditions applies:
 
 (a) For at least one VariableDataPrototype or ParameterDataProto
 type deﬁned in the context of the SenderReceiverInterface, Nv
@@ -28483,7 +28159,7 @@ ii. It references one of the two VariableDataPrototypes or Param
 eterDataPrototypes in the role firstDataPrototype and the
 other in the role secondDataPrototype.
 
-#@SECTION: 3. For each such pair, the values of their isService attributes are identical.
+3. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -28495,7 +28171,7 @@ other in the role secondDataPrototype.
 in the context of a PassThroughSwConnector (cid:100) PortPrototypes of different
 DataInterfaces are considered compatible if and only if
 
-#@SECTION: 1. For at least one VariableDataPrototype or ParameterDataPrototype
+ 1. For at least one VariableDataPrototype or ParameterDataPrototype
 deﬁned in the context of the DataInterface of the required outer PortPro
 totype a compatible VariableDataPrototype or ParameterDataProto
 type exists in the DataInterface of the provided outer PortPrototype.
@@ -28509,7 +28185,7 @@ aPrototypes are used to identify the pair or a PortInterfaceMapping ex
 ists that deﬁnes which differently named elements of PortInterfaces correlate
 with each other.
 
-#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
+ 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
@@ -28665,7 +28341,7 @@ an AssemblySwConnector.
 AssemblySwConnector (cid:100) PortPrototypes of different ModeSwitchInterfaces
 are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For the ModeDeclarationGroupPrototype deﬁned in the context of the
 ModeSwitchInterface of the required PortPrototype a compatible
@@ -28682,7 +28358,7 @@ ii. It references one of the two ModeDeclarationGroupPrototypes in
 the role firstModeGroup and the other in the role secondMode
 Group.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -28695,7 +28371,7 @@ DelegationSwConnector.
 DelegationSwConnector (cid:100) PortPrototypes of different ModeSwitchInter
 faces are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For the ModeDeclarationGroupPrototype deﬁned in the context of the
 ModeSwitchInterface of the inner PortPrototype a compatible Mod
@@ -28712,7 +28388,7 @@ ii. It references one of the two ModeDeclarationGroupPrototypes in
 the role firstModeGroup and the other in the role secondMode
 Group.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -28724,7 +28400,7 @@ Group.
 PassThroughSwConnector (cid:100) PortPrototypes of different ModeSwitchInter
 faces are considered compatible if and only if
 
-#@SECTION: 1. For the ModeDeclarationGroupPrototype deﬁned in the context of the Mod
+ 1. For the ModeDeclarationGroupPrototype deﬁned in the context of the Mod
 eSwitchInterface of the required outer PortPrototype a compatible Mod
 eDeclarationGroupPrototype exists in the ModeSwitchInterface of the
 provided outer PortPrototype.
@@ -28733,7 +28409,7 @@ Either the shortNames of the ModeDeclarationGroupPrototypes are used
 to identify the pair or a ModeInterfaceMapping exists that maps the corre
 sponding ModeDeclarationGroupPrototypes.
 
-#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
+ 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
@@ -28746,9 +28422,9 @@ identical.
 ModeDeclarationGroupPrototypes are compatible if and only if one of the follow
 ing conditions applies:
 
-#@SECTION: 1. They are typed by (read “refer to”) compatible ModeDeclarationGroups.
+ 1. They are typed by (read “refer to”) compatible ModeDeclarationGroups.
 
-#@SECTION: 2. A ModeDeclarationGroupPrototypeMapping exists that identiﬁes the dif
+ 2. A ModeDeclarationGroupPrototypeMapping exists that identiﬁes the dif
 ferently named ModeDeclarationGroupPrototypes that correlate with each
 other. [constr_1210] applies.
 
@@ -28759,7 +28435,7 @@ other. [constr_1210] applies.
 [constr_1075] Compatibility of ModeDeclarationGroups (cid:100) ModeDeclara
 tionGroups are compatible if and only if one of the following conditions applies:
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) They deﬁne an identical number of ModeDeclarations.
 
@@ -28809,7 +28485,7 @@ tical values of the attributes ModeDeclaration.value and also the
 value of ModeDeclarationGroup.onTransitionValue matches on
 both sides.
 
-#@SECTION: 2. A ModeDeclarationMapping is applied which identiﬁes the corresponding
+ 2. A ModeDeclarationMapping is applied which identiﬁes the corresponding
 
 ModeDeclarations.
 
@@ -28831,11 +28507,11 @@ ModeDeclarationMapping mapping is applied.
 [constr_1194] Identical ModeTransitions (cid:100) Two ModeDeclarationGroups con
 tain identical modeTransitions if and only if
 
-#@SECTION: 1. For each ModeTransition deﬁned in the context of the mode provider one
+ 1. For each ModeTransition deﬁned in the context of the mode provider one
 ModeTransition with the same shortName is deﬁned in the context of the
 mode user.
 
-#@SECTION: 2. Each pair of ModeTransitions in both ModeDeclarationGroups identiﬁed
+ 2. Each pair of ModeTransitions in both ModeDeclarationGroups identiﬁed
 by their respective shortName have identical targets (in terms of the short
 
 
@@ -28850,12 +28526,12 @@ and exitedMode.
 [constr_1076] Compatibility of ArgumentDataPrototypes (cid:100) Two ArgumentDat
 aPrototypes are compatible if and only if
 
-#@SECTION: 1. They are typed by compatible AutosarDataTypes or a ClientServerOper
+ 1. They are typed by compatible AutosarDataTypes or a ClientServerOper
 ationMapping.argumentMapping exists that references one ArgumentDat
 aPrototype in the role firstDataPrototype and the other ArgumentDat
 aPrototype in the role secondDataPrototype.
 
-#@SECTION: 2. They have the same value of the argument direction (in, out or inout), i.e.
+ 2. They have the same value of the argument direction (in, out or inout), i.e.
 
 [constr_1268] applies.
 
@@ -28866,7 +28542,7 @@ aPrototype in the role secondDataPrototype.
 [constr_1077] Compatibility of ApplicationErrors (cid:100) Two ApplicationErrors
 are compatible if and only if one of the following conditions applies:
 
-#@SECTION: 1. All of the following subconditions apply:
+ 1. All of the following subconditions apply:
 
 (a) They have the same shortName.
 
@@ -28874,7 +28550,7 @@ are compatible if and only if one of the following conditions applies:
 
 in both ApplicationErrors.
 
-#@SECTION: 2. A ClientServerInterfaceMapping.errorMapping exists that references
+ 2. A ClientServerInterfaceMapping.errorMapping exists that references
 one of the ApplicationErrors in the role firstApplicationError and
 the other ApplicationErrors in the role secondApplicationError.
 
@@ -28894,19 +28570,19 @@ Compatibility
 Two
 In partic
 
-#@SECTION: 1. They have the same number of ArgumentDataPrototypes.
+ 1. They have the same number of ArgumentDataPrototypes.
 
 
 
-#@SECTION: 2. The n-th arguments of both ClientServerOperations are compatible. This
+ 2. The n-th arguments of both ClientServerOperations are compatible. This
 
 implies ordering of ArgumentDataPrototypes.
 
-#@SECTION: 3. They have the same shortName (again allows for mapping in PortInter
+3. They have the same shortName (again allows for mapping in PortInter
 
 faces).
 
-#@SECTION: 4. The required ClientServerOperation speciﬁes a compatible Applica
+4. The required ClientServerOperation speciﬁes a compatible Applica
 tionError for each ApplicationError that is possibly raised by the pro
 vided ClientServerOperation, maybe more. Thereby, ClientServerOp
 erations that refer to a possibleError that represents the value E_OK are
@@ -28927,7 +28603,7 @@ operation to allow the server to work correctly).
 [constr_1079] Compatibility of ClientServerInterfaces in the context of an
 AssemblySwConnector (cid:100) ClientServerInterfaces are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For each ClientServerOperation deﬁned in the context of
 
@@ -28947,7 +28623,7 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -28959,7 +28635,7 @@ firstOperation and the other in the role secondOperation.
 DelegationSwConnector (cid:100) ClientServerInterfaces are compatible if and only
 if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For each ClientServerOperation deﬁned in the context of
 
@@ -28981,7 +28657,7 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-#@SECTION: 2. One of the following conditions applies:
+ 2. One of the following conditions applies:
 
 (a) For at
 
@@ -29001,7 +28677,7 @@ ii. It references one of the two ClientServerOperations in the role
 
 firstOperation and the other in the role secondOperation.
 
-#@SECTION: 3. For each such pair, the values of their isService attributes are identical.
+3. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -29011,7 +28687,7 @@ firstOperation and the other in the role secondOperation.
 PassThroughSwConnector (cid:100) PortPrototypes of different ClientServerIn
 terfaces are considered compatible if and only if
 
-#@SECTION: 1. For at least one ClientServerOperation deﬁned in the context of
+ 1. For at least one ClientServerOperation deﬁned in the context of
 
 the
 ClientServerInterface of the provided outer PortPrototype a compat
@@ -29025,7 +28701,7 @@ Either the shortNames of the ClientServerOperations are used to identify
 the pair or a ClientServerInterfaceMapping exists that maps the corre
 sponding ClientServerOperations.
 
-#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
+ 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
@@ -29043,7 +28719,7 @@ operation to allow the server to work correctly).
 [constr_1081] Compatibility of TriggerInterfaces in the context of an Assem
 blySwConnector (cid:100) TriggerInterfaces are compatible if and only if
 
-#@SECTION: 1. One of the following conditions applies:
+ 1. One of the following conditions applies:
 
 (a) For each Trigger deﬁned in the context of the TriggerInterface of the
 required PortPrototype a compatible Trigger exists in the Trigger
@@ -29060,7 +28736,7 @@ ii. It references one of the two Triggers in the role firstTrigger and
 
 the other in the role secondTrigger.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -29072,7 +28748,7 @@ following conditions apply:
 
 
 
-#@SECTION: 1. One of the following subconditions applies:
+ 1. One of the following subconditions applies:
 
 (a) For each Trigger deﬁned in the context of the TriggerInterface of the
 required inner PortPrototype a compatible Trigger exists in the Trig
@@ -29094,7 +28770,7 @@ ii. It references one of the two Triggers in the role firstTrigger and
 
 the other in the role secondTrigger.
 
-#@SECTION: 2. For each such pair, the values of their isService attributes are identical.
+ 2. For each such pair, the values of their isService attributes are identical.
 
 (cid:99)()
 
@@ -29104,7 +28780,7 @@ the other in the role secondTrigger.
 context of a PassThroughSwConnector (cid:100) PortPrototypes of different Trigger
 Interfaces are considered compatible if and only if
 
-#@SECTION: 1. For at least one Trigger deﬁned in the context of the TriggerInterface of
+ 1. For at least one Trigger deﬁned in the context of the TriggerInterface of
 the required outer PortPrototype a compatible Trigger exists in the Trig
 gerInterface of the provided outer PortPrototype.
 
@@ -29112,7 +28788,7 @@ Either the shortName of Triggers are used to identify the pair or a Trigger
 InterfaceMapping exists that that refers to one of the Triggers in the role
 firstTrigger and to the other in the role secondTrigger.
 
-#@SECTION: 2. For each such pair, the values of the PortInterface.isService attributes are
+ 2. For each such pair, the values of the PortInterface.isService attributes are
 
 identical.
 
@@ -29133,7 +28809,7 @@ fulﬁlled:
 
 the provided outer PortPrototype at
 
-#@SECTION: 1. For each VariableDataPrototype or ParameterDataPrototype present
+ 1. For each VariableDataPrototype or ParameterDataPrototype present
 in the SenderReceiverInterface, NvDataInterface, or Parameter
 Interface of
 least one connec
@@ -29153,7 +28829,7 @@ Table 6.1 deﬁnes which PortInterface elements are compatible depending
 on the kind of PortInterface and the swImplPolicy attributes of the Port
 Interface elements.
 
-#@SECTION: 2. For each VariableDataPrototype provided by a PRPortPrototype that is
+ 2. For each VariableDataPrototype provided by a PRPortPrototype that is
 typed by a SenderReceiverInterface or NvDataInterface and that is ref
 erenced in the role outerPort by a DelegationSwConnector a correspond
 ing VariableDataPrototype owned by an innerPort shall be provided by
@@ -29163,7 +28839,7 @@ Either the shortNames of VariableDataPrototypes are used to identify the
 pair or a PortInterfaceMapping deﬁnes which differently named PortIn
 terface elements correlate with each other.
 
-#@SECTION: 3. For the ModeDeclarationGroupPrototype present in the ModeSwitch
+3. For the ModeDeclarationGroupPrototype present in the ModeSwitch
 Interface of
 the provided outer PortPrototype exactly one connec
 tion via DelegationSwConnector to a provided inner PortPrototype or
@@ -29176,7 +28852,7 @@ Either the shortNames of ModeDeclarationGroupPrototypes are used to
 identify the pair or a PortInterfaceMapping deﬁnes which differently named
 PortInterface elements correlate with each other.
 
-#@SECTION: 4. For each ClientServerOperation present in the ClientServerInter
+4. For each ClientServerOperation present in the ClientServerInter
 face of the provided outer PortPrototype exactly one connection via Dele
 gationSwConnector to a provided inner PortPrototype or PassThrough
 
@@ -29190,7 +28866,7 @@ Either the shortNames of ClientServerOperations are used to identify the
 pair or a PortInterfaceMapping deﬁnes which differently named PortIn
 terface elements correlate with each other.
 
-#@SECTION: 5. For each Trigger present in the TriggerInterface of the provided outer
+5. For each Trigger present in the TriggerInterface of the provided outer
 PortPrototype exactly one connection via DelegationSwConnector to a
 provided inner PortPrototype or PassThroughSwConnector to a required
 outer PortPrototype with a compatible Trigger in the TriggerInterface
@@ -30898,9 +30574,9 @@ pects:
 
 
 
-#@SECTION: 1. deﬁning an RTEEvent
+ 1. deﬁning an RTEEvent
 
-#@SECTION: 2. deﬁning how the RTE should deal with the RTEEvent when it occurs.
+ 2. deﬁning how the RTE should deal with the RTEEvent when it occurs.
 
 (cid:99)()
 
@@ -30926,7 +30602,7 @@ on
 
 Mul. Kind Note
 ref
-#@SECTION: 0..1
+0..1
 
 If the activationReasonRepresentation is
 referenced from the enclosing AbstractEvent this
@@ -30972,7 +30648,7 @@ Declaration
 
 RunnableEntity
 
-#@SECTION: 0..1
+0..1
 
 ref RunnableEntity starts when the corresponding
 
@@ -31097,7 +30773,7 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Data element referenced by event
 
@@ -31127,7 +30803,7 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Data element referenced by event
 
@@ -31157,7 +30833,7 @@ eration
 iref The operation to be executed as the consequence
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 of the event.
 
@@ -31260,7 +30936,7 @@ attr Speciﬁes if the event is activated on entering or
 
 exiting the referenced Mode.
 
-#@SECTION: 1..2
+ 1..2
 
 iref Reference to one or two Modes that initiate the
 
@@ -31317,7 +30993,7 @@ Datatype
 Trigger
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Reference to the applicable Trigger.
 
@@ -31416,9 +31092,9 @@ iref Trigger for which the transformer can trigger this
 iref This represents the ClientServerOperation to
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
 TransformerHardErrorEvent
 
@@ -31806,14 +31482,14 @@ RunnableEntitys are never running concurrently.
 This requirement could be implemented by several of the implementation strategies
 described above. For example:
 
-#@SECTION: 1. Scheduling strategy: if, for example, RunnableEntitys ’r1’ and ’r2’ are mapped
+ 1. Scheduling strategy: if, for example, RunnableEntitys ’r1’ and ’r2’ are mapped
 to the same task, the criterion is automatically satisﬁed. For this purpose it is
 necessary to make sure that the OS can only execute a single instance of the
 task into which the RunnableEntitys are put.
 
 
 
-#@SECTION: 2. Mutual exclusion semaphores: in case ’r1’ and ’r2’ are mapped to different tasks
+ 2. Mutual exclusion semaphores: in case ’r1’ and ’r2’ are mapped to different tasks
 is executing
 (’T1’, respectively ’T2’), the OS shall make sure that while ’T1’
 ’r1’, ’T2’ running ’r2’ can never preempt it and vice-versa. This could be im
@@ -32013,7 +31689,7 @@ um
 attr This attribute, when set to value queued, allows
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 for a queued processing of Triggers.
 
@@ -32078,17 +31754,17 @@ RTE.
 receiver paradigm (cid:100) The possible interaction patterns for the application of the sender
 receiver paradigm are explained, namely:
 
-#@SECTION: 1. Data-access in a cat. 1 RunnableEntity,
+ 1. Data-access in a cat. 1 RunnableEntity,
 
-#@SECTION: 2. explicit sending,
+ 2. explicit sending,
 
-#@SECTION: 3. the DataSendCompletedEvent: dealing with the success/failure of an explicit
+3. the DataSendCompletedEvent: dealing with the success/failure of an explicit
 
 send, and
 
-#@SECTION: 4. the DataReceivedEvent: responding to the reception of data
+ 4. the DataReceivedEvent: responding to the reception of data
 
-#@SECTION: 5. the DataReceiveErrorEvent: notifying an error concerning the reception of
+ 5. the DataReceiveErrorEvent: notifying an error concerning the reception of
 
 data.
 
@@ -32150,9 +31826,9 @@ On the other hand, the RunnableEntity might use its dataWriteAccess to per
 form a write access on the dataElement but the actual value might never make it
 beyond the RunnableEntity because
 
-#@SECTION: 1. the latter is not required to terminate ever and
+ 1. the latter is not required to terminate ever and
 
-#@SECTION: 2. the actual write access is executed after the RunnableEntity terminates.
+ 2. the actual write access is executed after the RunnableEntity terminates.
 
 
 
@@ -32196,7 +31872,7 @@ aggr This denotes the accessed variable.
 
 Mul. Kind Note
 
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -32592,7 +32268,7 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Data element referenced by event
 
@@ -32678,7 +32354,7 @@ VariableDataPr
 ototype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Data element referenced by event
 
@@ -32758,17 +32434,17 @@ where the RTE is supposed to trigger a speciﬁc RunnableEntity when the opera
 tion completes. The description of the corresponding AtomicSwComponentType would
 typically contain the following elements:
 
-#@SECTION: 1. The AtomicSwComponentType contains an RPortPrototype ‘myPort’ typed
+ 1. The AtomicSwComponentType contains an RPortPrototype ‘myPort’ typed
 by a PortInterface that in turn contains the deﬁnition of an ClientServer
 Operation ‘remoteOperation’.
 
-#@SECTION: 2. The AtomicSwComponentType’s SwcInternalBehavior contains at least
+ 2. The AtomicSwComponentType’s SwcInternalBehavior contains at least
 two RunnableEntitys:
 the RunnableEntity ‘main’ is supposed to invoke
 the operation; the RunnableEntity ‘callback’ is the one that should be called
 when the operation completes.
 
-#@SECTION: 3. The description of
+3. The description of
 
 the RunnableEntity ‘main’ contains an Asyn
 chronousServerCallPoint ‘invokeMyOperation’ referencing the respective
@@ -32782,7 +32458,7 @@ AtpStructureElementIdentifiableServerCallPoint+ timeout  :TimeValueAtpStructureE
 totype ‘myPort’. This implies that the RunnableEntity is allowed to invoke
 this operation asynchronously.
 
-#@SECTION: 4. The description of
+4. The description of
 
 the RunnableEntity ‘callback’ contains an Asyn
 chronousServerCallResultPoint ‘fetchMyOperationResults’
@@ -32791,14 +32467,14 @@ the respective AsynchronousServerCallPoint ‘invokeMyOperation’ This im
 plies that the RunnableEntity is allowed to fetch the results of the asyn
 chronously invoked operation.
 
-#@SECTION: 5. The description of
+5. The description of
 
 the SwcInternalBehavior includes an Asyn
 chronousServerCallReturnsEvent ‘myOperationReturns’ which refer
 ences the previously deﬁned AsynchronousServerCallResultPoint
 ‘fetchMyOperationResults’
 
-#@SECTION: 6. The description of the AsynchronousServerCallReturnsEvent ‘myOper
+6. The description of the AsynchronousServerCallReturnsEvent ‘myOper
 ationReturns’ references the RunnableEntity ‘callback’, indicating that the
 RTE should trigger the execution of this Runnable when ‘myOperationReturns’
 is raised.
@@ -32824,7 +32500,7 @@ attr Time in seconds before the server call times out
 iref The operation that is called by this runnable.
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 1
 
@@ -32860,7 +32536,7 @@ deepest level inside one or more ExclusiveAreas
 that are nested in the given order.
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 
@@ -33049,7 +32725,7 @@ eration
 iref The operation to be executed as the consequence
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 of the event.
 
@@ -33123,9 +32799,9 @@ iref Trigger for which the transformer can trigger this
 iref This represents the ClientServerOperation to
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
 TransformerHardErrorEvent
 
@@ -33168,7 +32844,7 @@ ExternalTriggeri
 ngPointIdent
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr The aggregation in the role ident provides the
+0..1 aggr The aggregation in the role ident provides the
 
 ability to make the ExternalTriggeringPoint
 identiﬁable.
@@ -33191,7 +32867,7 @@ trigger
 
 Trigger
 
-#@SECTION: 0..1
+0..1
 
 iref The trigger taken for the ExternalTriggeringPoint.
 
@@ -33236,7 +32912,7 @@ Datatype
 Trigger
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 iref Reference to the applicable Trigger.
 
@@ -33314,7 +32990,7 @@ erRef
 SwDataDefProp
 s
 
-#@SECTION: 0..1 aggr This allows denote instance and access speciﬁc
+0..1 aggr This allows denote instance and access speciﬁc
 
 aggr Refernce to the accessed calibration parameter.
 
@@ -33424,12 +33100,12 @@ which shall be applied
 1
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This is the particular ParameterDataPrototypes on
+0..1 aggr This is the particular ParameterDataPrototypes on
 
 which the swDataDefProps shall be applied.
 aggr These are the particular data deﬁnition properties
 
-#@SECTION: 0..1 aggr This is the particular VariableDataPrototypes on
+0..1 aggr This is the particular VariableDataPrototypes on
 
 which the swDataDefProps shall be applied.
 
@@ -33513,7 +33189,7 @@ If set to true, the software-component is able to
 use the API reference for deriving a pointer to an
 object.
 
-#@SECTION: 0..1
+0..1
 
 attr This speciﬁes whether the RunnableEntitys which
 
@@ -33808,8 +33484,8 @@ SwDataDefProp
 s
 
 Mul. Kind Note
-#@SECTION: 0..1
-#@SECTION: 0..1 aggr This represents the ability to to allocate RAM at
+0..1
+0..1 aggr This represents the ability to to allocate RAM at
 
 attr Speciﬁes initial value(s) of the PerInstanceMemory
 
@@ -33966,7 +33642,7 @@ ref AutosarDataType belonging to the
 
 literalPrefix Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref
 
@@ -34035,7 +33711,7 @@ Mul. Kind Note
 
 Identifier
 
-#@SECTION: 0..1
+0..1
 
 ref The preﬁx shall be used by the RTE generator as
 a preﬁx for the creation of symbols related to the
@@ -34287,7 +33963,7 @@ TypeAssignmen
 t
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This is the role of the assignment data type in the
+0..1 aggr This is the role of the assignment data type in the
 
 given context.
 
@@ -34299,7 +33975,7 @@ Props
 
 Stereotypes: atpVariation
 Tags: vh.latestBindingTime=preCompileTime
-#@SECTION: 0..1 aggr This attribute can be taken to contribute to the
+0..1 aggr This attribute can be taken to contribute to the
 creation of symbolic name values.
 
 Table 7.52: ServiceDependency
@@ -34365,7 +34041,7 @@ vh.latestBindingTime=preCompileTime
 
 PortGroup
 
-#@SECTION: 0..1
+0..1
 
 ref This reference speciﬁes an association between
 
@@ -34539,7 +34215,7 @@ ent
 AutosarParamet
 erRef
 
-#@SECTION: 0..1 aggr The VariableDataPrototype used in this role, e.g.
+0..1 aggr The VariableDataPrototype used in this role, e.g.
 
 • Permanent RAM Block of an NVRAM Block
 
@@ -34553,7 +34229,7 @@ refer to a VariableDataPrototype in a
 SenderReceiverInterface or a
 NvDataInterface.
 
-#@SECTION: 0..1 aggr The ParameterDataPrototype used in this role,
+0..1 aggr The ParameterDataPrototype used in this role,
 
 e.g.
 
@@ -34571,7 +34247,7 @@ usedPim
 PerInstanceMe
 mory
 
-#@SECTION: 0..1
+0..1
 
 ref The (untyped) PerInstanceMemory used in this
 role (e.g. as a Permanent RAM Block for an
@@ -34668,7 +34344,7 @@ attr Deﬁnes if the Static Block Id check shall be
 NvData to store the associated RAM Block.
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This represents the period for cyclic writing of
 
@@ -34682,9 +34358,9 @@ enabled.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
 
 
@@ -34694,7 +34370,7 @@ nDataSets PositiveInteger
 Datatype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Number of data sets to be provided by the
 
@@ -34703,7 +34379,7 @@ ks
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 NVRAM manager for this block. This is the total
 number of ROM Blocks and RAM Blocks.
@@ -34716,7 +34392,7 @@ contiguous area.
 RamBlockStatu
 sControlEnum
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute deﬁnes how the management of the
 
@@ -34724,7 +34400,7 @@ RAM Block status is controlled.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr True: data of this NVRAM Block are write
 
@@ -34732,16 +34408,16 @@ NvBlockNeedsR
 eliabilityEnum
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 protected for normal operation (but protection can
 be disabled) false: no restriction
 
-#@SECTION: 0..1
+0..1
 
 attr Reliability against data loss on the non-volatile
 
@@ -34776,7 +34452,7 @@ tdown
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -34785,7 +34461,7 @@ basic software.
 
 storeCyclic Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -34813,18 +34489,18 @@ gency
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 storeImme
 diate
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 useAutoVa
 lidationAtS
@@ -34835,7 +34511,7 @@ nism
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -34850,7 +34526,7 @@ nce
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes write protection after ﬁrst write: true: This
 block is prevented from being changed/erased or
@@ -34870,13 +34546,13 @@ Datatype
 Boolean
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes if Write Veriﬁcation shall be enabled for
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 this NVRAM Block.
 
@@ -34891,7 +34567,7 @@ NvBlockNeeds
 WritingPriorityE
 num
 
-#@SECTION: 0..1
+0..1
 
 attr Requires the priority of writing this block in case of
 
@@ -35895,7 +35571,7 @@ PositiveInteger
 attr The maximum length of a cryptographic key, that
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 Attribute
@@ -36763,7 +36439,7 @@ ement
 DiagRequireme
 ntIdString
 
-#@SECTION: 0..1
+0..1
 
 attr This denotes the requirement identiﬁer to which
 
@@ -36778,7 +36454,7 @@ become obsolete.
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute denotes the level of security which is
 
@@ -36926,7 +36602,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 Boolean
 
 attr PTO (Power Take Off) has an impact on the
@@ -36963,14 +36639,14 @@ DiagEventDebo
 unceAlgorithm
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr Speciﬁes the abstract need on the Debounce
+0..1 aggr Speciﬁes the abstract need on the Debounce
 
 Algorithm applied by the Diagnostic Event
 Manager.
 
 DtcKindEnum
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute indicates the kind of the diagnostic
 monitor according to the SWS Diagnostic Event
@@ -36994,7 +36670,7 @@ nNeeds
 This attribute applies for the UDS diagnostics use
 case.
 
-#@SECTION: 0..1
+0..1
 
 ref This represents the primary Function Inhibition
 
@@ -37014,7 +36690,7 @@ mber
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -37036,14 +36712,14 @@ vior
 ReportBehavior
 Enum
 
-#@SECTION: 0..1
+0..1
 
 udsDtcNu
 mber
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -37346,7 +37022,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 DtcKindEnum
 
 attr This attribute indicates the kind of the diagnostic
@@ -37372,7 +37048,7 @@ Datatype
 PositiveInteger
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -37391,7 +37067,7 @@ mber
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a reasonable Diagnostic Trouble
 
@@ -38152,7 +37828,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 DiagnosticServi
 ceRequestCallb
 ackTypeEnum
@@ -38245,7 +37921,7 @@ diagRoutin
 eType
 ridNumber PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a routine identiﬁer for the
 
@@ -38294,7 +37970,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 DiagnosticValue
 Needs
 
@@ -38317,7 +37993,7 @@ didNumber PositiveInteger
 Datatype
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This represents a Data identiﬁer for the diagnostic
 value. This allows to predeﬁne the DID number if
@@ -38337,14 +38013,14 @@ Supported
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute determines, if the referenced port
 supports temporary freezing of I/O value.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr This represents a ﬂag for the existence of the
 
@@ -38352,7 +38028,7 @@ ResetToDefault operation in the service interface.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute determines, if the referenced port
 
@@ -38423,7 +38099,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 
 attr This attribute is applicable only if the ServiceNeed
 is aggregated within BswModuleDependency.
@@ -38441,9 +38117,9 @@ ValueAcce
 ss
 didNumber PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
 This attribute represents the length of data (in
 bytes) provided for this particular PID signal.
@@ -38465,14 +38141,14 @@ Style
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute controls whether the data length of
 
 DiagnosticProce
 ssingStyleEnum
 
-#@SECTION: 0..1
+0..1
 
 the data is ﬁxed.
 
@@ -39073,7 +38749,7 @@ nNeeds
 
 ref The rate based monitored Diagnostic Event.
 
-#@SECTION: 0..1
+0..1
 
 ref This represents the primary Function Inhibition
 
@@ -39196,7 +38872,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 
 attr This attribute is applicable only if the
 
@@ -39247,7 +38923,7 @@ ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
 Referrable,Referrable,ServiceNeeds
 Mul. Kind Note
 Datatype
-#@SECTION: 0..1
+0..1
 
 attr This attribute is applicable only if the
 
@@ -39682,7 +39358,7 @@ PositiveInteger
 attr Describes the length in byte of the additional
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 
@@ -39695,7 +39371,7 @@ Response
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 information for RA authentication that is needed
 by the software entity. If the software entity is a
@@ -39755,7 +39431,7 @@ PositiveInteger
 attr Describes the length in byte of the additional
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 
@@ -39768,7 +39444,7 @@ Response
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 routingActi
 vationType
@@ -40387,7 +40063,7 @@ ConditionByFor
 mula
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr This condition acts as Binding Function for the
+0..1 aggr This condition acts as Binding Function for the
 
 VariationPoint.
 
@@ -40412,14 +40088,14 @@ PostBuildVarian
 tCriterion
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 ref This association to ImplementationDataType shall
 
 be taken as an implementation hint by the RTE
 generator.
 
-#@SECTION: 0..1
+0..1
 
 ref This represents the applicable
 
@@ -40443,7 +40119,7 @@ tCondition
 AttributeValueV
 ariationPoint
 
-#@SECTION: 0..1 aggr This value acts as Binding Function for the
+0..1 aggr This value acts as Binding Function for the
 
 VariationPoint.
 
@@ -40568,7 +40244,7 @@ EVendor
 
 String
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -40832,7 +40508,7 @@ PositiveInteger
 attr The RTE shall take the value of this attribute for
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 Base
 
@@ -40909,7 +40585,7 @@ nValue
 ModeErrorBeha
 vior
 
-#@SECTION: 0..1 aggr This represents the ability to deﬁne the error
+0..1 aggr This represents the ability to deﬁne the error
 
 behavior expected by the mode manager in case
 of errors on the mode user side (e.g. terminated
@@ -40926,7 +40602,7 @@ vior
 
 the ModeDeclarationGroup
 
-#@SECTION: 0..1 aggr This represents the deﬁnition of the error behavior
+0..1 aggr This represents the deﬁnition of the error behavior
 
 expected by the mode user in case of errors on
 the mode manager side (e.g. terminated mode
@@ -40934,7 +40610,7 @@ manager).
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 attr The value of this attribute shall be taken into
 
@@ -41137,7 +40813,7 @@ e
 iref The mode declaration group that is switched by
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 this runnable.
 
@@ -41252,7 +40928,7 @@ ModeAccessPoi
 ntIdent
 
 Mul. Kind Note
-#@SECTION: 0..1 aggr The aggregation in the role ident provides the
+0..1 aggr The aggregation in the role ident provides the
 
 ability to make the ModeAccessPoint identiﬁable.
 
@@ -41266,7 +40942,7 @@ from Identiﬁable).
 Tags: atp.Status=shallBecomeMandatory
 xml.sequenceOffset=-100
 
-#@SECTION: 0..1
+0..1
 
 iref The mode declaration group that is accessed by
 
@@ -41414,7 +41090,7 @@ n
 ref This represents the ModeDeclaration that is
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 considered the error mode in the context of the
 enclosing ModeDeclarationGroup.
@@ -42985,7 +42661,7 @@ aggr Deﬁnes the RAM Block of the NVRAM Block
 
 provided by NvBlockSwComponentType.
 
-#@SECTION: 0..1 aggr Deﬁnes the ROM Block of the NVRAM Block
+0..1 aggr Deﬁnes the ROM Block of the NVRAM Block
 
 provided by NvBlockSwComponentType.
 
@@ -43004,14 +42680,14 @@ t
 
 TimingEvent
 
-#@SECTION: 0..1
+0..1
 
 ref
 
 
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr Speciﬁes whether calling of NvM functions for
 
@@ -43202,7 +42878,7 @@ attr Number of data sets to be provided by the
 NvData to store the associated RAM Block.
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 attr This represents the period for cyclic writing of
 
@@ -43216,18 +42892,18 @@ Boolean
 
 attr Deﬁnes if CRC (re)calculation for the permanent
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
-#@SECTION: 0..1
+0..1
 
 nRomBloc
 ks
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 NVRAM manager for this block. This is the total
 number of ROM Blocks and RAM Blocks.
@@ -43257,7 +42933,7 @@ tdown
 RamBlockStatu
 sControlEnum
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute deﬁnes how the management of the
 
@@ -43265,7 +42941,7 @@ RAM Block status is controlled.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr True: data of this NVRAM Block are write
 
@@ -43273,16 +42949,16 @@ NvBlockNeedsR
 eliabilityEnum
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 protected for normal operation (but protection can
 be disabled) false: no restriction
 
-#@SECTION: 0..1
+0..1
 
 attr Reliability against data loss on the non-volatile
 
@@ -43300,7 +42976,7 @@ software.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -43309,7 +42985,7 @@ basic software.
 
 storeCyclic Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes whether or not the associated RAM Block
 
@@ -43318,14 +42994,14 @@ gency
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 storeImme
 diate
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 shall be implicitly stored periodically by the basic
 software.
@@ -43357,14 +43033,14 @@ Boolean
 
 Mul. Kind Note
 attr
-#@SECTION: 0..1
+0..1
 
 If set to true the RAM Block shall be auto validated
 during shutdown phase.
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr
 
@@ -43379,7 +43055,7 @@ nce
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes write protection after ﬁrst write: true: This
 block is prevented from being changed/erased or
@@ -43394,13 +43070,13 @@ uency
 
 Boolean
 
-#@SECTION: 0..1
+0..1
 
 attr Deﬁnes if Write Veriﬁcation shall be enabled for
 
 PositiveInteger
 
-#@SECTION: 0..1
+0..1
 
 this NVRAM Block.
 
@@ -43415,7 +43091,7 @@ NvBlockNeeds
 WritingPriorityE
 num
 
-#@SECTION: 0..1
+0..1
 
 attr Requires the priority of writing this block in case of
 
@@ -43711,7 +43387,7 @@ Ref
 
 aggr Reference to a VariableDataPrototype of a RAM
 
-#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a pPort
+0..1 aggr Reference to a VariableDataPrototype of a pPort
 of the NvBlockComponent providing read access
 to the RAM Block.If there is no PortPrototype
 providing read access (write-only) the reference
@@ -43733,13 +43409,13 @@ dNvData
 AutosarVariable
 Ref
 
-#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a rPort of
+0..1 aggr Reference to a VariableDataPrototype of a rPort of
 
 the NvBlockComponent providing write access to
 the RAM Block. If there is no port providing write
 access (read-only) the reference can be omitted.
 
-#@SECTION: 0..1 aggr Reference to a VariableDataPrototype of a
+0..1 aggr Reference to a VariableDataPrototype of a
 
 PRPortPrototype of the
 NvBlockSwComponentType providing write and
@@ -44030,7 +43706,7 @@ c
 
 Chapter
 
-#@SECTION: 0..1 aggr This element contains calibration instructions and
+0..1 aggr This element contains calibration instructions and
 
 hints for a calibration engineer.
 
@@ -44039,7 +43715,7 @@ Offset=60; xml.typeElement=false
 
 Chapter
 
-#@SECTION: 0..1 aggr This element records the documentation
+0..1 aggr This element records the documentation
 
 requested by CARB.
 
@@ -44050,7 +43726,7 @@ Chapter
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=80; xml.typeElement=false
-#@SECTION: 0..1 aggr This element contains general information about
+0..1 aggr This element contains general information about
 
 diagnostics issues within the component.
 
@@ -44059,7 +43735,7 @@ Def
 
 Chapter
 
-#@SECTION: 0..1 aggr This element contains the deﬁnition of the physical
+0..1 aggr This element contains the deﬁnition of the physical
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=75; xml.typeElement=false
@@ -44085,20 +43761,20 @@ Chapter
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=20; xml.typeElement=false
-#@SECTION: 0..1 aggr This element contains the textual description of
+0..1 aggr This element contains the textual description of
 
 the software functionality of this software
 component. Expert should write this description.
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=30; xml.typeElement=false
-#@SECTION: 0..1 aggr This element contains information regarding the
+0..1 aggr This element contains information regarding the
 
 software maintenance of the component.
 
 Tags: xml.roleElement=true; xml.sequence
 Offset=70; xml.typeElement=false
-#@SECTION: 0..1 aggr This element contains suggestions and hints for
+0..1 aggr This element contains suggestions and hints for
 
 the test of the software functionality of this
 software component.
@@ -44176,7 +43852,7 @@ of the host ECU.
 
 rptSystem System
 
-#@SECTION: 0..1
+0..1
 
 Stereotypes: atpSplitable; atpVariation
 Tags: atp.Splitkey=shortName, variation
@@ -44259,7 +43935,7 @@ rptHook
 
 RptHook
 
-#@SECTION: 0..1 aggr The rptHook describes the link between a
+0..1 aggr The rptHook describes the link between a
 
 byPassPoint and the rapid prototyping algorithm.
 
@@ -44288,7 +43964,7 @@ codeLabel CIdentifier
 ref This attribute provides a code label which is used
 
 Mul. Kind Note
-#@SECTION: 0..1
+0..1
 
 in the implementation of the hook. For example
 this can be an C function name or the name of
@@ -44300,13 +43976,13 @@ mcdIdentifi
 er
 rptArHook AtpFeature
 
-#@SECTION: 0..1
+0..1
 
 attr This attribute provides an identiﬁer which shall be
 
 used in a MCD System to display the Rpt Hook.
 
-#@SECTION: 0..1
+0..1
 
 iref This describes the hook with the means of another
 

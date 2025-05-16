@@ -23,6 +23,14 @@ INPUT_DIR = "input"
 MD_FILENAME = "test_chapter3.md"
 OUTPUT_DIR = "output"
 
+# 文件名常量 (可以考虑版本号v5)
+UNIFIED_METADATA_FILENAME = "unified_metadata.json"
+OUTPUT_LINKED_CONSTRAINTS_FILENAME = "constraints_linked_v5.json"
+OUTPUT_REVIEW_QUEUE_FILENAME = "review_queue_v5.csv"
+OUTPUT_RAW_LLM_FILENAME = "constraints_raw_v5.jsonl" # 明确文件名
+
+
+
 # LLM 的 Schema (V5 - 支持多目标)
 CONSTRAINT_SCHEMA = {
   "type": "object",
@@ -59,12 +67,6 @@ CONSTRAINT_SCHEMA = {
   },
   "required": ["id", "id_type", "title", "expression", "targets"] # LLM 必须保证的核心必填字段
 }
-
-# 文件名常量 (可以考虑版本号v5)
-UNIFIED_METADATA_FILENAME = "unified_metadata.json"
-OUTPUT_LINKED_CONSTRAINTS_FILENAME = "constraints_linked_v5.json"
-OUTPUT_REVIEW_QUEUE_FILENAME = "review_queue_v5.csv"
-OUTPUT_RAW_LLM_FILENAME = "constraints_raw_v5.jsonl" # 明确文件名
 
 # 正则表达式
 CONSTRAINT_PATTERN = r"\[((?:TPS_SWCT|constr)_[A-Za-z0-9_]+?)\]\s*(.*?)\s*\(cid:100\)(.*?)\(cid:99\)\s*\((.*?)\)"
