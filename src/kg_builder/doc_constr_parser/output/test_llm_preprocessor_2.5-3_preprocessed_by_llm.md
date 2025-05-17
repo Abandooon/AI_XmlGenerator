@@ -1,9 +1,6 @@
 #@SECTION: 2.5 Communication Speciﬁcation of Composition Component Types
 #@CLASS: CompositionSwComponentType
 #@CLASS: PortPrototype
-
-[TPS_SWCT_01088] ComSpecs defined by CompositionSwComponentTypes (cid:100) It shall be possible to attach ComSpecs to PortPrototypes owned by Composition SwComponentTypes. (cid:99)(RS_SWCT_03220)
-#@SECTION: 2.5.1 Rationale
 #@CLASS: AtomicSwComponentType
 #@CLASS: CompositionSwComponentType
 #@CLASS: ConstantSpecificationMappingSet
@@ -11,10 +8,13 @@
 #@CLASS: DelegationSwConnector
 #@CLASS: ParameterSwComponentType
 #@CLASS: PortInterface
-#@CLASS: PortPrototype
 #@CLASS: PPortComSpec
 #@CLASS: RPortComSpec
 #@CLASS: SwComponentPrototype
+
+[TPS_SWCT_01088] ComSpecs defined by CompositionSwComponentTypes (cid:100) It shall be possible to attach ComSpecs to PortPrototypes owned by CompositionSwComponentTypes. (cid:99)(RS_SWCT_03220)
+
+#@SECTION: 2.5.1 Rationale
 
 ComSpecs attached to a PortPrototype owned by an AtomicSwComponentType have a direct impact on the generation of the RTE. The RTE Generator, on the other hand, does not consider the existence of CompositionSwComponentTypes.
 
@@ -31,33 +31,30 @@ On the other hand, a requirement that the initValues defined on the surface of C
 Please note that the ability to define a ComSpec in the context of a CompositionSwComponentType implies that it shall be possible to define mappings of ApplicationDataTypes used in a PortInterface to their corresponding ImplementationDataTypes. For this purpose the CompositionSwComponentType owns a DataTypeMappingSet in the role dataTypeMapping and a ConstantSpecificationMappingSet in the role constantValueMapping.
 
 Figure 2.6: Specification of data type mapping for CompositionSwComponentType
+
 #@SECTION: 2.6 PRPortPrototype
 #@CLASS: NvBlockSwComponentType
 #@CLASS: PortPrototype
 #@CLASS: SwComponentType
-
-In some cases SwComponentTypes need to read and write the same piece of data. One of the most prominent examples for this use case is the NvBlockSwComponentType that factually ready and writes blocks of NvRAM. Without the ability to combine read and write semantics in a kind of PortPrototype that supports both read and write semantics work-arounds have to be implemented that come with a certain footprint on memory and processing time.
-#@SECTION: 2.6.1 Use Case 1
 #@CLASS: ApplicationSwComponentType
-#@CLASS: NvBlockSwComponentType
 #@CLASS: PPortPrototype
 #@CLASS: PRPortPrototype
-#@CLASS: PortPrototype
 #@CLASS: RPortPrototype
+#@CLASS: ApplicationSwComponentType
+#@CLASS: CompositionSwComponentType
+#@CLASS: RunnableEntity
+
+In some cases SwComponentTypes need to read and write the same piece of data. One of the most prominent examples for this use case is the NvBlockSwComponentType that factually ready and writes blocks of NvRAM. Without the ability to combine read and write semantics in a kind of PortPrototype that supports both read and write semantics work-arounds have to be implemented that come with a certain footprint on memory and processing time.
+
+#@SECTION: 2.6.1 Use Case 1
 
 Without the ability to define a combined read and write semantics the definition of an RPortPrototype and a PPortPrototype is required for reading and writing the applicable data.
 
 Figure 2.7: Use Case 1 for the existence of PRPortPrototype
 
 Technically, this read and write access is related to the same data item in an NVRAM Block. This requires a consistent connection of the PortPrototypes between an NvBlockSwComponentType and ApplicationSwComponentType as well as a consistent mapping of the corresponding RPortPrototype and a PPortPrototype of the NvBlockSwComponentType and the related element of the ramBlock.
+
 #@SECTION: 2.6.2 Use Case 2
-#@CLASS: ApplicationSwComponentType
-#@CLASS: CompositionSwComponentType
-#@CLASS: PPortPrototype
-#@CLASS: PRPortPrototype
-#@CLASS: RPortPrototype
-#@CLASS: RunnableEntity
-#@CLASS: SwComponentType
 
 It may happen that a SwComponentType need to consume the same data that it produces. If the only way to achieve this was the connection of a PPortPrototype to an RPortPrototype of the same SwComponentType then the creator of the SwComponentType cannot enforce this connection as it is created on a higher level of abstraction in the context of a CompositionSwComponentType.
 
@@ -68,23 +65,23 @@ Figure 2.8: Use Case 2 for the existence of PRPortPrototype
 This means that only in the in best case one buffer for the data is needed. But depending on the mapping RunnableEntitys to OS tasks additional buffers may need to be allocated by the RTE to fully implement the implicit communication pattern.
 
 As an alternative, the ApplicationSwComponentType could utilize inter-runnable variables but unfortunately this inhibits any optimization in the RTE and will consume additional RAM. In contrast to the previous approach at least two buffers are needed.
+
 #@SECTION: 2.6.3 Use Case 3
-#@CLASS: ApplicationSwComponentType
-#@CLASS: PRPortPrototype
 
 In this scenario, several ApplicationSwComponentTypes are iterating over the same large set of data. This means each ApplicationSwComponentType implements one out of many steps of a complex data processing algorithm applied to the same piece of data.
 
 Figure 2.9: Use Case 3 for the existence of PRPortPrototype
 
 For example, this scenario may apply for video signal processing in camera applications. Typically, such applications will not be distributed over several ECUs. It is clear that in this case the allocation of several buffers in the RTE is required to implement the individual connections between the ApplicationSwComponentTypes. In most cases, the processing has to be executed at a certain point in time in a dedicated order.
+
 #@SECTION: 2.6.4 Solution
-#@CLASS: PortPrototype
-#@CLASS: PRPortPrototype
 
 The solution to the above-mentioned use cases is the ability to define a PortPrototype that can read and write the same piece of data. This solves both the described problem of resource consumption as well as the problem of having to define multiple PortPrototypes as outlets for same piece of data item.
 
 The technical details of the definition of PRPortPrototype are explained in chapters 3.1 and 4.1.
+
 #@SECTION: 2.7 Pretended Networking
+
 #@CLASS: ModeDeclaration
 #@CLASS: ModeDeclarationGroup
 #@CLASS: ModeSwitchInterface
@@ -92,9 +89,11 @@ The technical details of the definition of PRPortPrototype are explained in chap
 #@CLASS: RPortPrototype
 #@CLASS: SenderReceiverInterface
 #@CLASS: SwComponentType
-
+#@CLASS: AutosarDataType
+#@CLASS: ModeDeclarationGroupPrototype
+#@CLASS: VariableDataPrototype
+#@CLASS: PortInterface
 [TPS_SWCT_01510] The role of pretended networking (cid:100) Pretended networking is a feature to reduce energy consumption of an ECU by switching the ECU in a mode called Pretended Networking. In this mode the communication on communication networks is reduced and the ECU can go into power saving modes.
-
 When communication via communication networks is required the mode Pretended Networking shall be left by request of a mode change to Normal Mode. (cid:99)()
 
 [TPS_SWCT_01511] Configuration option is encoded into ModeDeclaration (cid:100) The identification of different configuration options for Pretended Networking shall be encoded into the definition of dedicated ModeDeclarations inside a ModeDeclarationGroup. (cid:99)(RS_SWCT_03110)
@@ -115,14 +114,21 @@ More details about how a mode change is requested can be found in section 9.
 [TPS_SWCT_01513] React on the change of Pretended Networking mode (cid:100) A SwComponentType that needs to be able to react on a change in the operating mode of Pretended Networking shall provide an RPortPrototype typed by a ModeSwitchInterface (see [TPS_SWCT_01087]) for reacting on a change (initiated by the BswM [15]) of the Pretended Networking mode.
 
 It is out of the scope of this document to define the particular properties of the applicable ModeSwitchInterface. The details of this specific ModeSwitchInterface can be found in the specification of the BswM [15]. (cid:99)(RS_SWCT_03110)
-#@SECTION: 2.8 Variable-size Array Data Types
-#@SECTION: 2.8.1 Overview and Use cases
-AUTOSAR supports the definition of array data types where the size of the actual payload varies at run-time. As far as the configuration is concerned, it is possible to specify a maximum number of array elements that shall not be exceeded at run-time.
 
-In order to properly understand the approach, it is necessary to understand that the support for Variable-Size Array Data Types has been introduced in two waves that each had a different motivation.
-#@SECTION: 2.8.1.1 “Old-world” dynamic-size Arrays
+#@SECTION: 2.8 Variable-size Array Data Types
 #@CLASS: ApplicationArrayDataType
 #@CLASS: ImplementationDataType
+#@CLASS: ApplicationArrayElement
+#@CLASS: ImplementationDataTypeElement
+#@CLASS: ApplicationDataType
+#@CLASS: DataTypeMap
+
+#@SECTION: 2.8.1 Overview and Use cases
+
+AUTOSAR supports the definition of array data types where the size of the actual payload varies at run-time. As far as the configuration is concerned, it is possible to specify a maximum number of array elements that shall not be exceeded at run-time.
+In order to properly understand the approach, it is necessary to understand that the support for Variable-Size Array Data Types has been introduced in two waves that each had a different motivation.
+
+#@SECTION: 2.8.1.1 “Old-world” dynamic-size Arrays
 
 In the ﬁrst wave, the support for Variable-Size Array Data Types was limited to data types that basically boil down to an array where the base type is an unsigned integer data type with a length of exactly one byte.
 
@@ -153,11 +159,8 @@ In general, the disambiguation becomes multi-faceted (but not necessarily easier
 By and large, the deﬁning characteristics for “old-world” dynamic-size arrays is the absence of a deﬁnition of the attribute ApplicationArrayDataType.dynamicArraySizeProfile resp. ImplementationDataType.dynamicArraySizeProfile.
 
 By regulation of [constr_1387], “old-world” dynamic-size arrays are not supported for transmission by means of a data transformer. The only supported kind of Variable Size Array Data Type that can be transmitted using a data transformer is the “new-world” variable-size arrays.
+
 #@SECTION: 2.8.1.2 “New-world” variable-size Arrays
-#@CLASS: ApplicationArrayDataType
-#@CLASS: ApplicationArrayElement
-#@CLASS: ImplementationDataType
-#@CLASS: ImplementationDataTypeElement
 
 In contrast to this, the second wave of support for Variable-Size Array Data Types was motivated by the application software layer itself.
 
@@ -189,10 +192,8 @@ Fully Flexible The data type of the elements of the Variable-Size Array Data Typ
 Figure 2.10: Structural variety of array data types with variable size
 
 Please note that the leaf elements in a Variable-Size Array Data Type doesn’t have to be primitive data types. As mentioned before, it is possible to deﬁne multiple dimension Variable-Size Array Data Types. The “terminal” elements can be recognized as such in that they don’t establish further Variable-Size Array Data Types.
+
 #@SECTION: 2.8.2 Modeling Aspects regarding Application Data Types
-#@CLASS: ApplicationDataType
-#@CLASS: DataTypeMap
-#@CLASS: ImplementationDataType
 
 In the context of the AUTOSAR layered data type concept, the level of ApplicationDataTypes is not concerned about the structure of how the Variable-Size Array Data Types. If it was, the case boils down to the rectangular scenario tagged (b).
 
@@ -203,8 +204,8 @@ Consequently, the support for Variable-Size Array Data Types on the level of App
 If a Variable-Size Array Data Type is modeled on the level of ApplicationDataType it is necessary to also provide a companion ImplementationDataType as well as a DataTypeMap that refers to both the ApplicationDataType and the ImplementationDataType.
 
 The contrary is not applicable, i.e. it is possible to define a Variable-Size Array Data Type with only an ImplementationDataType, see [TPS_SWCT_01622].
+
 #@SECTION: 2.8.3 Modeling Aspects regarding Implementation Data Types
-#@CLASS: ImplementationDataType
 
 On the other hand, the data type used for the actual hosting of the Variable Size Array Data Type corresponds directly to the level of the Implementation DataType. Here, it is possible to define how an ImplementationDataType can be used to define a Variable-Size Array Data Type. The definition of ImplementationDataType in the AUTOSAR meta-model comes with a certain level of generic nature the support for Variable-Size Array Data Types on this level comes as a mixture of dedicated attributes in the meta-model and a set of recipes how to support different use cases of Variable-Size Array Data Types. This means that the definition of ImplementationDataTypes for the purpose of creating Variable-Size Array Data Types only has a chance to take off if the structure of these data types is replicated in different implementations of AUTOSAR software. Therefore, AUTOSAR defines a common way of how ImplementationDataTypes for the purpose of creating Variable-Size Array Data Types shall be defined such that the ImplementationDataType shall be of category STRUCTURE with the following sub-elements:
 1. A numerical value that determines the actual size. This element shall be called the Size Indicator throughout this document.
