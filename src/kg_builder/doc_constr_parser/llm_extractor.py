@@ -61,10 +61,10 @@ class LlmExtractor:
             *   如果约束是针对整个类或枚举本身，或者文本中没有明确提及且在注入上下文中也找不到对应的具体属性/字面量，则此列表应为 `["{CLASS_LEVEL_ATTR}"]` (对于类) 或 `["{ENUM_LEVEL_ATTR}"]` (对于枚举)。
             *   **关键**: 不要自行创造属性或字面量名称。它们必须来自注入的局部上下文注释中的列表，或者是 "{CLASS_LEVEL_ATTR}" 或 "{ENUM_LEVEL_ATTR}"。
 6.  **章节范围 (`scope_section`)**:
-    *   优先使用文档片段开头的 `<!-- {PARENT_SECTION_CONTEXT_TAG}: SectionPath -->` 注释中的 `SectionPath`。
-    *   如果该注释不存在，或者片段内有更具体的 `#@SECTION: [章节标题]` 注解，则提取最近的 `#@SECTION` 标题或编号。如果两者都存在，可以考虑组合它们，例如 "父路径 > 当前章节标题"。
+    *   使用文档片段开头的 {PARENT_SECTION_CONTEXT_TAG}: [章节标题]注释中的 `[章节标题]`,可以考虑组合它们，例如 "父路径 > 当前章节标题。
 7.  **约束类型 (`constraint_type`)**: 例如："definition", "cardinality", "behavioral" 等。
 8.  **值 (`value`)**: 如果适用，提取约束的具体值。
+9.  **缩进(Hierarchical)**: "#@Hierarchical"到"/#@Hierarchical"标注之间为同一块缩进，需紧密结合上下文
 
 将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合以下 Schema:
 {self.constraint_schema_str}
