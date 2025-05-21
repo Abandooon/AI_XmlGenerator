@@ -7,13 +7,14 @@
 #@CLASS: PlatformDataType
 #@CLASS: StandardType
 #@CLASS: SwDataDefProps
+#@CLASS: DataPrototype
+#@CLASS: SwRecordLayout
 
 [TPS_SWCT_01229] Three different levels of abstraction regarding the definition of data types (cid:100) In the context of defining data types and prototypes, the AUTOSAR concept distinguishes between three different levels of abstraction as depicted in Table 5.1. (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
 
 Application Data Level
 Implementation Data Level
 Base Type Level
-
 Table 5.1: Abstraction Levels for Describing Data
 
 [TPS_SWCT_01230] Application Data Level (cid:100) The Application Data Level is the common level at which ApplicationSwComponentTypes specify a data type or prototype. This level allows to define all the data attributes which are needed from the application point of view, in order to exchange data between software components or between a software component and a measurement and calibration tool. It is possible to specify data communication of a complete Virtual Function Bus based on this level only.
@@ -64,26 +65,31 @@ For example, if a physical value can be expressed with sufficient accuracy and r
 
 Conversion between several data implementations of the same application data type might be necessary in case of communication between components on different ECUs. AUTOSAR COM [21] is responsible for this.
 
-It implies that the configuration depends on the definition of the data that are transmitted between components2. (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
+It implies that the configuration depends on the definition of the data that are transmitted between components. (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
+More exactly speaking, the data shall be converted to and from a so-called SystemSignal.
 
 AUTOSAR COM might need to convert a 16-bit integer between little-endian and big-endian representations; whereas an array of 16 bytes does not need to be swapped even if the endianess changes. In case of intra-ECU communication byte order conversion is not necessary, since the software-components reside on the same machine.
 
 [TPS_SWCT_01236] Big picture of data types (cid:100) Another way of approaching the concept of data types in AUTOSAR (especially with respect to the question of what "kind" of data type in related to which modeling meta-level) is to sketch the following "big picture" of data types:
-
+#@Hierarchical
 ApplicationDataType Defined on M2 - provides the meta model for data types on application level. It covers the application-relevant aspects of a data type. An ApplicationDataType shall finally be mapped to an ImplementationDataType.
-
+/#@Hierarchical
+#@Hierarchical
 ImplementationDataType Defined on M2 - provides the meta-model for data types on implementation level. With respect to C source code, an ImplementationDataType finally boils down to a typedef.
-
+/#@Hierarchical
+#@Hierarchical
 BaseType Defined on M2 - provides the platform-dependent part of an ImplementationDataType. the dependency on the platform covers the following aspects:
 • Definition on the level of the C language - using nativeDeclaration
 • Technical representation on the target platform (byte order, alignment, encoding) as required for the support of MCD systems.
-
+/#@Hierarchical
+#@Hierarchical
 Platform Data Type Defined on M1 - provided by AUTOSAR. Platform types shall be available on each platform on which an AUTOSAR-System can run. The name of the Platform Data Type and the properties with respect to the interface between modules / components is the same on every platform. The particular representation varies from platform to platform. Platform Data Types shall be modeled using ImplementationDataTypes.
 
 Note that in AUTOSAR R3.x the platform types are implemented manually and could even not be expressed on ARXML model (see [SRS_Rte_00150]). In AUTOSAR R4.1 the Platform Data Types can be represented in the ARXML model. Subsequent releases of AUTOSAR may generate the Platform Data Types directly from the ARXML Model.
-
+/#@Hierarchical
+#@Hierarchical
 Standard Type Defined on M1 - provided by AUTOSAR. Standard types are defined by referring to platform types.
-
+/#@Hierarchical
 (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)
 
 [TPS_SWCT_01237] SwDataDefProps (cid:100) The properties of data are summarized in the meta-class SwDataDefProps. This meta-class itself is the superset of all applicable properties. (cid:99)(RS_SWCT_03216, RS_SWCT_03217)
@@ -95,6 +101,7 @@ Subsets of SwDataDefProps are applicable in specific case, for a summary please 
 • Properties for DataPrototypes typed by ApplicationDataTypes are summarized in table 5.31.
 • Properties for DataPrototypes typed by ImplementationDataTypes are summarized in table 5.32.
 • Applicability of SwDataDefProps is summarized in table 5.39.
+
 #@SECTION: 5.2 Data Types
 #@SECTION: 5.2.1 Overview
 #@CLASS: ApplicationDataType
@@ -109,13 +116,26 @@ As explained in section 5.1 it is possible to describe data provided by a softwa
 Figure 5.1 shows a summary of the basic meta-classes used for the definition of AutosarDataTypes.
 
 Figure 5.1: Summary of AutosarDataType
+Table 5.2:AutosarDataType
+Table 5.3: ApplicationDataType
+Table 5.4: ImplementationDataType
 
 [TPS_SWCT_01073] Composite ApplicationDataType (cid:100) An ApplicationDataType can be composed (in form of a record or an array) of elements which themselves are typed by another ApplicationDataType. (cid:99)(RS_SWCT_03215, RS_SWCT_03216)
 
 [TPS_SWCT_01074] Composite ImplementationDataType (cid:100) An ImplementationDataType can also be composed of elements but in this case no type/prototype concept (see [12]) has been applied. Both concepts will be explained in the following chapters in more detail. (cid:99)(RS_SWCT_03215, RS_SWCT_03217)
+
 #@SECTION: 5.2.2 Data Type Mapping
 #@CLASS: DataTypeMap
 #@CLASS: DataTypeMappingSet
+#@CLASS: ModeRequestTypeMap
+#@CLASS: ApplicationDataType
+#@CLASS: InternalBehavior
+#@CLASS: ParameterSwComponentType
+#@CLASS: NvBlockDescriptor
+#@CLASS: CompositionSwComponentType
+#@CLASS: PortPrototypes
+#@CLASS: DelegationSwConnector
+#@CLASS: PassThroughSwConnector
 
 As explained above, the concept of application data types as well as that of implementation data types can be used to instantiate a data prototype in an M1 model. However there are use cases, especially in order to generate the RTE contract for ApplicationSwComponentTypes, where it is required to consider both levels for one given data prototype.
 
@@ -136,8 +156,6 @@ For example, if a software component is moved to another hardware platform the m
 [TPS_SWCT_01191] mapped ApplicationDataType and ImplementationDataType shall be compatible (cid:100) In order to set up a valid DataTypeMap between an ApplicationDataType and an ImplementationDataType the two types shall be compatible. This is further explained in chapter 6.2.5. Of course, if ImplementationDataTypes are generated from existing ApplicationDataTypes it is expected that they will be automatically compatible. (cid:99)(RS_SWCT_03216, RS_SWCT_03217)
 
 Furthermore, the various mappings are aggregated in a container DataTypeMappingSet for easier maintenance in artifacts.
-
-This class represents a list of mappings between ApplicationDataTypes and ImplementationDataTypes. In addition, it can contain mappings between ImplementationDataTypes and ModeDeclarationGroups.
 
 Table 5.6: DataTypeMappingSet
 
@@ -163,12 +181,16 @@ For more details about this aspect please refer to figure 5.60.
 This constraint is visualized in figure 5.2.
 
 Figure 5.2: Compatibility of Data Types
+
 #@SECTION: 5.2.3 Data Categories
 #@CLASS: ApplicationDataType
 #@CLASS: AutosarDataType
 #@CLASS: ImplementationDataType
 #@CLASS: SwDataDefProps
-
+#@CLASS: SwSystemconst
+#@CLASS: ImplementationDataType
+#@CLASS: McDataInstance
+#@CLASS: Identifiable
 An AutosarDataType is derived from Identifiable, thus having a longName, a shortName, a category, and several further attributes for administrative and documentation purposes (for details see [12]).
 
 [TPS_SWCT_01238] Attribute category used in the context of Autosar DataType (cid:100) The category attribute is used to set constraints for the various properties which can be specified for an AutosarDataType. These properties are defined by aggregating the meta-class SwDataDefProps which contains several attributes and references, see detailed description in chapter 5.4 and 5.4. (cid:99)()
@@ -188,46 +210,22 @@ Please note that the column "RTE + BSW" of table 5.7 is only applicable for cate
 Table 5.7: Usage of category for Data Types
 
 [TPS_SWCT_01239] default value for attribute category used in the context of SwSystemconst (cid:100) The default value for the category of a SwSystemconst shall be VALUE. This has to be applied if no explicit definition of the category can be found. (cid:99)()
+
 #@SECTION: 5.2.4 Application Data Type
 #@CLASS: ApplicationArrayDataType
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: ApplicationDataType
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: ApplicationRecordDataType
-
+#@CLASS: SwDataDefProps
+#@CLASS: DataPrototype
 [TPS_SWCT_01240] Subclasses of ApplicationDataType (cid:100) As figure 5.3 explains, the abstract meta-class ApplicationDataType is further derived into an ApplicationPrimitiveDataType and an ApplicationCompositeDataType which are further explained in the following sub-chapters. (cid:99)(RS_SWCT_03216)
 
 Figure 5.3: Basic Meta-Model for ApplicationDataType
-
 Table 5.8: Allowed Attributes vs. category for ApplicationDataTypes
+This is required by [TPS_SWCT_01179].
 
-3This is required by [TPS_SWCT_01179].
-
-ApplicationPrimitiveDataType
-
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
-Note A primitive data type defines a set of allowed values.
-Base Attribute – 
-Tags: atp.recommendedPackage=ApplicationDataTypes
-ARElement,ARObject,ApplicationDataType,AtpBlueprint,AtpBlueprintable,AtpClassifier,AtpType,AutosarDataType,CollectableElement,Identifiable,MultilanguageReferrable,PackageableElement,Referrable
-Datatype – 
-Mul. Kind Note – 
-– 
-– 
 Table 5.9: ApplicationPrimitiveDataType
-
-ApplicationCompositeDataType (abstract)
-
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
-Note Abstract base class for all application data types composed of other data types.
-Base ARObject,ApplicationDataType,AtpBlueprint,AtpBlueprintable,AtpClassifier,AtpType,AutosarDataType,CollectableElement,Identifiable,MultilanguageReferrable,PackageableElement,Referrable
-Datatype – 
-Mul. Kind Note – 
-Attribute – 
-– 
-– 
 Table 5.10: ApplicationCompositeDataType
 
 [TPS_SWCT_01241] Applicable categorys for subclasses of ApplicationDataType (cid:100) Like any AutosarDataType, also the primitive and composite types on application level are characterized by their category and their SwDataDefProps. For a given category, only a limited set of attributes of the SwDataDefProps makes sense. (cid:99)(RS_SWCT_03216)
@@ -237,6 +235,7 @@ Table 5.10: ApplicationCompositeDataType
 This list makes use of the SwDataDefProps and other meta-model elements which are explained in detail in the further sections of this chapter.
 
 [constr_1008] Applicability of categorys STRUCTURE and ARRAY (cid:100) The categories STRUCTURE and ARRAY correspond to ApplicationCompositeDataTypes whereas all other categorys can be applied only for ApplicationPrimitiveDataTypes. (cid:99)()
+
 #@SECTION: 5.2.4.1 Application Primitive Data Types
 #@SECTION: 5.2.4.1.1 Data Types for Single Values
 #@CLASS: ApplicationDataType
@@ -286,13 +285,15 @@ The CompuMethod needs to be applicable for limits of an ApplicationDataType. The
 The handling of invalidValue for ApplicationPrimitiveDataType of category STRING is defined by [constr_1242].
 
 For a more detailed description of the properties that can be defined for data types (and data prototypes as well) see sections 5.4 and 5.4.2.
+
 #@SECTION: 5.2.4.1.2 About Enumerations
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: CompuMethod
 #@CLASS: ImplementationDataType
 #@CLASS: SwDataDefProps
-
+#@CLASS: ApplicationValueSpecification
+#@CLASS: ApplicationRuleBasedValueSpecification
 [TPS_SWCT_01243] Definition of enumeration types (cid:100) In the AUTOSAR meta model, an enumeration is not implemented by means of an ApplicationCompositeDataType. Instead, a range of integer numbers can be used as a structural description for a single ApplicationPrimitiveDataType or an ImplementationDataType of category VALUE or TYPE_REFERENCE that boils down to an ImplementationDataType of category VALUE. The mapping of the integer numbers to labels in the scope of the definition of an enumeration is considered part of the semantical definition via an attached CompuMethod rather than part of the structural description. (cid:99)(RS_SWCT_03216)
 
 [TPS_SWCT_01562] Specification of values of an enumeration (cid:100) For the specification of values of an enumeration on the basis of the labels defined in the applicable CompuMethod it is necessary to distinguish two approaches based on the used AutosarDataType:
@@ -304,6 +305,7 @@ The relevant meta-classes in the context of SwDataDefProps are sketched in Figur
 Figure 5.7: Relevant meta-classes for the specification of enumerations
 
 An example of how an enumeration looks like in ARXML is contained in section 5.5.1.3.
+
 #@SECTION: 5.2.4.1.3 Data Types for Calibration Parameters
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: ApplicationDataType
@@ -318,6 +320,7 @@ Less obvious is the fact that ApplicationDataTypes of the categories VAL_BLK, CO
 In contrast to ApplicationCompositeDataTypes, they are not composed in a self similar way of other AutosarDataTypes. Their substructure needs a special description in oder to be compatible with existing calibration techniques. (cid:99)()
 
 [TPS_SWCT_01245] SwDataDefProps control the structure of calibration parameters (cid:100) The substructure of these types is attached to the SwDataDefProps. By this means it is possible to define on the level of DataPrototypes or other artifacts, where the SwDataDefProps come into play. For details on these part of the SwDataDefProps see chapters 5.4.4 and 5.5.5. (cid:99)()
+
 #@SECTION: 5.2.4.1.4 Data Types for Textual Strings
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: ApplicationValueSpecification
@@ -329,12 +332,16 @@ In contrast to ApplicationCompositeDataTypes, they are not composed in a self si
 #@CLASS: SwRecordLayoutGroup
 #@CLASS: SwRecordLayoutV
 #@CLASS: SwTextProps
+#@CLASS: DataTypeMap
+#@CLASS: DataTypeMappingSet
 
-textual strings (cid:100) An ApplicationPrimitiveDataType[constr_1093] Definition of DataType of category STRING shall have a swTextProps which determines the arraySizeSemantics and swMaxTextSize. (cid:99)()
+
+[constr_1093]Definition of textual strings (cid:100) An ApplicationPrimitiveDataType[constr_1093] Definition of DataType of category STRING shall have a swTextProps which determines the arraySizeSemantics and swMaxTextSize. (cid:99)()
 
 [TPS_SWCT_01488] ApplicationPrimitiveDataType shall be interpreted as a string of a particular encoding (cid:100) To indicate that an ApplicationPrimitiveDataType shall be interpreted as a string of a particular encoding it shall reference swDataDefProps.swTextProps.baseType and the only attribute of the referenced SwBaseType relevant for this purpose is the BaseTypeDirectDefinition.baseTypeEncoding. (cid:99)()
 
 Figure 5.8: Specification of textual strings
+Table 5.11: SwTextProps
 
 [TPS_SWCT_01127] Byte array with variable size (cid:100) SwTextProps can be used to define byte arrays of variable size. (cid:99)(RS_SWCT_03182, RS_SWCT_03181)
 
@@ -380,12 +387,22 @@ Listing 5.1: Example for the definition of a string ApplicationPrimitiveDataType
 Note that the category is set to the value STRING. Also the ApplicationPrimitiveDataType.swDataDefProps.swTextProps indicate the width of the string and also define (by means of the reference to baseType) the encoding this string data type is supposed to utilize.
 
 Note further that the fact that an ApplicationDataType directly references (across the implementation level) to a SwBaseType represents an exception to the rule that ApplicationDataType should not be concerned about the lowest level of data type definition in AUTOSAR.
-
+If the bridging of the implementation level were accepted as a general pattern for the
+modeling of ApplicationDataType it would easily be possible to bypass the implementation level to some extent and this would render ApplicationDataTypes less
+versatile.
 [TPS_SWCT_01128] SwRecordLayout needed for ApplicationPrimitiveDataType of category STRING (cid:100) As mentioned in [TPS_SWCT_01179], an ApplicationPrimitiveDataType of category STRING is considered a Compound Primitive Data Type. Therefore, it needs a reference to the definition of a SwRecordLayout that presets the approach for creating a matching ImplementationDataType. (cid:99)()
 
 In this specific example the definition of the SwRecordLayout foresees the ApplicationPrimitiveDataType of category STRING to be implemented as a structured data type that consists of:
 1. the size of an instance of the string data type in terms of the number of characters plus
 2. an array that can be used to store the individual characters contained in an instance of the string data type.
+
+Depending on the used encoding the array may need to be bigger (in terms of the
+number of elements) than the corresponding value of the size. Furthermore, the definition of the SwRecordLayout already takes into account that the implementation of an array data type by means of an ImplementationDataType requires the definition of an ImplementationDataTypeElement.
+
+The meaning of the standardized values of SwRecordLayoutV.swRecordLayoutVProp are documented in [TPS_SWCT_01489]. In the scope of this example the values COUNT and VALUE are used.
+
+The fact that the swRecordLayoutGroupTo contains the value -1 means that the
+iteration ends at the last element of the array.
 
 Listing 5.2: Example for the definition of a SwRecordLayout for an ApplicationPrimitiveDataType of category STRING
 <AR-PACKAGE>
@@ -426,6 +443,12 @@ char[]
 </SW-RECORD-LAYOUT>
 </ELEMENTS>
 </AR-PACKAGE>
+
+Please note further that the discussed example of an ApplicationPrimitiveDataType of category STRING also contains the definition of an invalidValue for the string data type.
+The next step is the definition of an ImplementationDataType that represents the
+string type on the implementation level. The definition of the ImplementationDataType can be derived from the definition of the applicable SwRecordLayout.
+Please note that the ImplementationDataType also defines an invalidValue. As mentioned in [TPS_SWCT_01487], the consistency of the invalidValue defined in the scope of the ApplicationPrimitiveDataType of category STRING and the invalidValue defined in the scope of the corresponding ImplementationDataType cannot formally be checked.
+
 
 Listing 5.3: Example for the definition of a string ImplementationDataType
 <AR-PACKAGE>
@@ -486,6 +509,17 @@ Listing 5.3: Example for the definition of a string ImplementationDataType
 </ELEMENTS>
 </AR-PACKAGE>
 
+The interesting part about this definition is the fact that on the implementation level, it
+was (driven by the definition of the SwRecordLayout) decided to implement the string
+as a structure of a size element (that goes by the shortName “size”) and a value
+element (that goes by the shortName “string”) which in turn is defined as an array
+data type and therefore has a sub-element that goes by the shortName “character”.
+The latter references (in the role swDataDefProps.implementationDataType)
+the Platform Data Type “uint8” (that, according to the rules of Platform Data
+Types, is realized by an ImplementationDataType “uint8”).
+Please note that the ApplicationPrimitiveDataType named “MyApplicationStringType” references the SwBaseType named “MyTextBaseType” which is defined
+in the following XML fragment:
+
 Listing 5.4: Example for the definition of a string SwBaseType
 <AR-PACKAGE>
 <SHORT-NAME>BaseTypes</SHORT-NAME>
@@ -502,6 +536,9 @@ Listing 5.4: Example for the definition of a string SwBaseType
 </ELEMENTS>
 </AR-PACKAGE>
 
+The contribution of this definition of SwBaseType to the overall definition of a string
+data type is represented by the definition of the encoding (which is set to UTF-8). However, there ist still one important part missing, i.e. the definition of the mapping of ApplicationPrimitiveDataType to ImplementationDataType (and vice versa):
+
 Listing 5.5: Example for the definition of the applicable DataTypeMappingSet
 <AR-PACKAGE>
 <SHORT-NAME>DataTypeMappingSets</SHORT-NAME>
@@ -517,8 +554,15 @@ Listing 5.5: Example for the definition of the applicable DataTypeMappingSet
 </DATA-TYPE-MAPPING-SET>
 </ELEMENTS>
 </AR-PACKAGE>
+As mentioned before, the definition of an ImplementationDataType that corresponds to an ApplicationPrimitiveDataType of category STRING can be
+to some extent derived from the ApplicationPrimitiveDataType.swDataDefProps.swRecordLayout.
 
 [TPS_SWCT_01570] DataTypeMap is mandatory in the presence of ApplicationPrimitiveDataType.swDataDefProps.swRecordLayout (cid:100) The definition of a DataTypeMap is mandatory even if an ImplementationDataType has been derived from an ApplicationPrimitiveDataType that defines a SwRecordLayout. (cid:99)()
+
+One motivation for the existence of [TPS_SWCT_01570] is that the integrator of an
+AUTOSAR ECU may rightfully decide to take a different ImplementationDataType
+other than the one that has been generated on the basis of the SwRecordLayout.
+
 #@SECTION: 5.2.4.2 Application Composite Data Types
 #@CLASS: ApplicationArrayDataType
 #@CLASS: ApplicationCompositeDataType
@@ -532,6 +576,7 @@ Such a composite data type is required if the application software wants to have
 It is possible to use a combination of ApplicationArrayDataType and ApplicationRecordDataType, so that an ApplicationArrayDataType could be defined as ApplicationRecordElement of a ApplicationRecordDataType and in the same manner a ApplicationRecordDataType could be used as the base type of an ApplicationArrayDataType. The creation of nested ApplicationCompositeDataTypes is also possible. (cid:99)
 
 Figure 5.9: Summary of ApplicationCompositeDataType
+
 #@SECTION: 5.2.4.2.1 ApplicationArrayDataType
 #@CLASS: ApplicationArrayDataType
 #@CLASS: ApplicationArrayElement
@@ -560,7 +605,6 @@ Table 5.13: ApplicationArrayElement
 Please note that the information about the number of elements of a specific ApplicationArrayDataType is not absolute but allows for further interpretation.
 
 [TPS_SWCT_01076] Number of elements of a specific ApplicationArrayDataType might vary at run-time (cid:100) That is, there are cases where the number of elements of a specific ApplicationArrayDataType might vary at run-time. To be precise, the number of elements might vary between 0 and the value denoted by maxNumberOfElements. For this purpose an additional attribute arraySizeSemantics is available that can be used to clarify the meaning of maxNumberOfElements.
-
 For clarification, it might indeed happen that the actual number of elements in a specific ApplicationArrayDataType yields 0 simply because the respective DataPrototype is part of a higher-level protocol where under certain circumstances the DataPrototype of ApplicationArrayDataType is simply not required for expressing a given semantics. (cid:99)(RS_SWCT_03180, RS_SWCT_03181, RS_SWCT_03144)
 
 Table 5.14: ArraySizeSemanticsEnum
@@ -622,6 +666,13 @@ All ApplicationArrayDataTypes before shall have an ApplicationArrayElement that 
 • The attribute ApplicationArrayElement.arraySizeHandling shall be set to the value inheritedFromArrayElementTypeSize.
 • The ApplicationArrayElement shall be typed by an ApplicationArrayDataType. (cid:99)()
 
+The part of [constr_1315], [constr_1316], and [constr_1317] that demands that the referred ApplicationArrayDataType shall refer over a chain (under consideration
+of the number of dimensions of the “root” ApplicationArrayDataType) of nested
+ApplicationArrayDataTypes with ApplicationArrayElements to an ApplicationDataType that is not an ApplicationArrayDataType where the attribute
+dynamicArraySizeProfile exists basically boils down to the simple explanation
+that the “leaf” data type of the Variable-Size Array Data Type can be anything
+but a Variable-Size Array Data Type.
+
 [constr_1316] Profile VSA_RECTANGULAR for ApplicationArrayDataType (cid:100) If the dynamicArraySizeProfile of ApplicationArrayDataType is set to VSA_RECTANGULAR the contained ApplicationArrayElement shall fulfill all of the following conditions:
 • The attribute ApplicationArrayElement.arraySizeSemantics shall be set to the value variableSize.
 • The attribute ApplicationArrayElement.maxNumberOfElements shall be defined.
@@ -677,132 +728,39 @@ Figure 5.10 shows a three dimensional array described with a set of ApplicationA
 Matching ApplicationArrayElements and ImplementationDataTypeElements are shown on the same layer. For the sake of clarity correlating maxNumberOfElements and arraySize attributes are described with the identical instance of a SwSystemconst instead of a value. Further details of variant rich M1 models are not in the scope of this example.
 
 The data type of the array element is described by the ApplicationArrayDataType with the means of a ApplicationPrimitiveDataType of category BOOLEAN. In order to fulfill [constr_1152] the category of ApplicationArrayElement "Dim3" is set to BOOLEAN. This ApplicationPrimitiveDataType "BOOLEAN" correlates to the ImplementationDataType "boolean" of category VALUE which is typically the boolean type of the AUTOSAR Platform Types. Please note here [constr_1063].
+
 #@SECTION: 5.2.4.2.2 ApplicationRecordDataType
 #@CLASS: ApplicationRecordDataType
 #@CLASS: ApplicationRecordElement
 
 [TPS_SWCT_01249] ApplicationRecordDataType (cid:100) A declaration of ApplicationRecordDataType describes a non-empty set of objects, each of which has a unique identiﬁer with respect to the ApplicationRecordDataType and each has an own ApplicationDataType. The shortName of each ApplicationRecordElement within the scope of an ApplicationRecordDataType shall be unique. (cid:99)(RS_SWCT_03216)
 
-ApplicationRecordDataType
-
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
-Note An application data type which can be decomposed into prototypes of other application data types.
-
-Base Attribute element (ordered)
-
-Tags: atp.recommendedPackage=ApplicationDataTypes ARElement,ARObject,ApplicationCompositeDataType,ApplicationDataType,AtpBlueprint,AtpBlueprintable,AtpClassiﬁer,AtpType,AutosarDataType,CollectableElement,Identiﬁable,MultilanguageReferrable,PackageableElement,Referrable Datatype ApplicationRecordElement
-
-Mul. Kind Note 1..* aggr Speciﬁes an element of a record. The aggregation of ApplicationRecordElement is subject to variability with the purpose to support the conditional existence of elements inside a ApplicationrecordDataType. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
 Table 5.16: ApplicationRecordDataType
-
-ApplicationRecordElement
-
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
-Note Describes the properties of one particular element of an application record data type.
-Base ARObject,ApplicationCompositeElementDataPrototype,AtpFeature,AtpPrototype,DataPrototype,Identiﬁable,MultilanguageReferrable,Referrable Datatype –
-
-Mul. Kind Note – Attribute – – –
-
 Table 5.17: ApplicationRecordElement
+
 #@SECTION: 5.2.5 Implementation Data Type
 #@CLASS: ImplementationDataType
 #@CLASS: ImplementationDataTypeElement
 #@CLASS: SwPointerTargetProps
 #@CLASS: ImplementationProps
 #@CLASS: SymbolProps
+#@CLASS: SwDataDefProps
+#@CLASS: SwBaseType
+#@CLASS: BswModuleEntry
+#@CLASS: ImplementationProps
+#@CLASS: SymbolProps
+#@CLASS: SwDataDefProps
+#@CLASS: AutosarDataType
+#@CLASS: CompuMethod
+#@CLASS: DataConstr
 
 [TPS_SWCT_01250] ImplementationDataType has been introduced to optimize the formal support for data type handling on the implementation level (cid:100) The concept of an ImplementationDataType has been introduced to optimize the formal support for data type handling on the implementation level.
 
 That is, an ImplementationDataType conceptually corresponds to the level of (C) source code. For example, ImplementationDataTypes have a direct impact on the contract (please find an explanation of this term in [2]) of a software-component and the RTE. (cid:99)(RS_SWCT_03217)
 
-Root Element
+There is a use case for the definition of an invalidValue for category ARRAY and therefore category STRUCTURE is also supported for the sake of symmetry.
+This represents an exception such that it would make sense to use an entire ArrayValueSpecification as the invalidValue because a string semantically is more than just a bunch of characters in a row.
 
-Attribute Existence per Category
-
-Attributes of SwDataDefProps
-
-additionalNativeTypeQualifier
-
-annotation
-
-baseType
-
-compuMethod
-
-dataConstr
-
-displayFormat
-
-implementationDataType
-
-invalidValue
-
-stepSize
-
-swAddrMethod
-
-5There is a use case for the definition of an invalidValue for category ARRAY and therefore category STRUCTURE is also supported for the sake of symmetry.
-
-6This represents an exception such that it would make sense to use an entire ArrayValueSpecification as the invalidValue because a string semantically is more than just a bunch of characters in a row.
-
-Root Element
-
-Attribute Existence per Category
-
-Attributes of SwDataDefProps
-
-swAlignment
-
-swBitRepresentation
-
-swCalibrationAccess
-
-swCalprmAxisSet
-
-swComparisonVariable
-
-swDataDependency
-
-swHostVariable
-
-swImplPolicy
-
-swIntendedResolution
-
-swInterpolationMethod
-
-swIsVirtual
-
-swPointerTargetProps
-
-swPointerTargetProps.swDataDefProps
-
-swPointerTargetProps.functionPointerSignature
-
-swRecordLayout
-
-swRefreshTiming
-
-swTextProps
-
-swValueBlockSize
-
-unit
-
-valueAxisDataType
-
-Other Attributes
-
-subElement: DataTypeElement
-
-Implementation
-
-subElement.arraySizeSemantics
-
-subElement.arraySize
 
 Table 5.18: Allowed Attributes vs. category for ImplementationDataType
 
@@ -812,11 +770,9 @@ Table 5.18: Allowed Attributes vs. category for ImplementationDataType
 
 This list makes use of the SwDataDefProps and other meta-model elements which are explained in detail in the further sections of this chapter.
 
-categorys
+[constr_1158] Applicable categorys for attribute ImplementationDataType.swDataDefProps.compuMethod (cid:100) The definition of the reference ImplementationDataType.swDataDefProps.compuMethod is restricted to a CompuMethod of either category BITFIELD_TEXTTABLE or category TEXTTABLE (these might be seen as implementation specific in certain cases). (cid:99)()
 
-Implementation[constr_1158] Applicable DataType.swDataDefProps.compuMethod (cid:100) The definition of the reference ImplementationDataType.swDataDefProps.compuMethod is restricted to a CompuMethod of either category BITFIELD_TEXTTABLE or category TEXTTABLE (these might be seen as implementation specific in certain cases). (cid:99)()
-
-attribute for [constr_1383] Existence of CompuMethod and DataConstr for ImplementationDataTypes of category TYPE_REFERENCE (cid:100) The existence of ImplementationDataType.swDataDefProps.compuMethod and ImplementationDataType.swDataDefProps.dataConstr for ImplementationDataTypes of category TYPE_REFERENCE is only allowed if the respective ImplementationDataType, after all type references are resolved, ends up in an ImplementationDataType of category VALUE. (cid:99)()
+[constr_1383] Existence of CompuMethod and DataConstr for ImplementationDataTypes of category TYPE_REFERENCE (cid:100) The existence of ImplementationDataType.swDataDefProps.compuMethod and ImplementationDataType.swDataDefProps.dataConstr for ImplementationDataTypes of category TYPE_REFERENCE is only allowed if the respective ImplementationDataType, after all type references are resolved, ends up in an ImplementationDataType of category VALUE. (cid:99)()
 
 Please note that, as a consequence of the existence of [constr_1383], it is possible that the elements of a composite ImplementationDataType define individual CompuMethods. However, the definition of one CompuMethod that applies to the entire composite ImplementationDataType is not supported.
 
@@ -831,20 +787,6 @@ Please note that, as a consequence of the existence of [constr_1383], it is poss
 The general structure of ImplementationDataType is sketched in Figure 5.11. If a specific ImplementationDataType is supposed to define a composite data type the ImplementationDataType aggregates ImplementationDataTypeElements.
 
 Figure 5.11: ImplementationDataType overview
-
-ImplementationDataType
-
-Class Package M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes Note Describes a reusable data type on the implementation level. This will typically correspond to a typedef in C-code.
-
-Base Attribute dynamicArraySizeProfile subElement (ordered)
-
-Tags: atp.recommendedPackage=ImplementationDataTypes ARElement,ARObject,AtpBlueprint,AtpBlueprintable,AtpClassifier,AtpType,AutosarDataType,CollectableElement,Identifiable,MultilanguageReferrable,PackageableElement,Referrable Datatype String Mul. Kind Note 0..1 attr Specifies the profile which the array will follow in case this data type is a variable size array.
-
-ImplementationDataTypeElement * aggr Specifies an element of an array, struct, or union data type. The aggregation of ImplementionDataTypeElement is subject to variability with the purpose to support the conditional existence of elements inside a ImplementationDataType representing a structure. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
-Attribute symbolProps Datatype SymbolProps Mul. Kind Note 0..1 aggr This represents the SymbolProps for the ImplementationDataType. Stereotypes: atpSplitable Tags: atp.Splitkey=shortName
-
-typeEmitter NameToken 0..1 attr This attribute is used to control which part of the AUTOSAR toolchain is supposed to trigger data type definitions.
 
 Table 5.19: ImplementationDataType
 
@@ -865,24 +807,6 @@ Note that the rules listed above imply that the allowed values of the attribute 
 
 [constr_1107] Union shall have at least one element (cid:100) An ImplementationDataType or ImplementationDataTypeElement of category UNION shall own at least one ImplementationDataTypeElement. (cid:99)()
 
-ImplementationDataTypeElement
-
-Class Package M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes Note Declares a data object which is locally aggregated. Such an element can only be used within the scope where it is aggregated. This element either consists of further subElements or it is further defined via its swDataDefProps. There are several use cases within the system of ImplementationDataTypes fur such a local declaration:
-
-• It can represent the elements of an array, defining the element type and array size
-• It can represent an element of a struct, defining its type
-• It can be the local declaration of a debug element.
-
-Base Attribute arraySize ARObject,Identifiable,MultilanguageReferrable,Referrable Datatype PositiveInteger Mul. Kind Note 0..1 attr The existence of this attributes (if bigger than 0) defines the size of an array and declares that this ImplementationDataTypeElement represents the type of each single array element. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
-arraySizeHandling ArraySizeHandlingEnum 0..1 attr The way how the size of the array is handled in case of a variable size array.
-
-arraySizeSemantics ArraySizeSemanticsEnum 0..1 attr This attribute controls the meaning of the value of the array size.
-
-subElement ImplementationDataTypeElement * aggr Element of an array, struct, or union in case of a nested declaration (i.e. without using "typedefs"). The aggregation of ImplementionDataTypeElement is subject to variability with the purpose to support the conditional existence of elements inside a ImplementationDataType representing a structure. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
-swDataDefProps SwDataDefProps 0..1 aggr The properties of this ImplementationDataTypeElementt.
-
 Table 5.20: ImplementationDataTypeElement
 
 [TPS_SWCT_01254] ImplementationDataType with array semantics (cid:100) Of course, it is also possible to define an ImplementationDataType that provides array semantics. (cid:99)(RS_SWCT_03217)
@@ -890,10 +814,8 @@ Table 5.20: ImplementationDataTypeElement
 [TPS_SWCT_01006] ImplementationDataType.subElement.arraySize shall be used to define the size of the array (cid:100) The primitive attribute ImplementationDataType.subElement.arraySize shall be used to define the size of the array. (cid:99)()
 
 [TPS_SWCT_01007] Semantics of array index (cid:100) For an ImplementationDataType that implements an array data type, the semantics of the array index is such that
-
 • it shall start with the value 0
 • it shall run to the value of arraySize -1
-
 (cid:99)()
 
 [constr_1105] Value of arraySize (cid:100) The value of the attribute arraySize of an ImplementationDataTypeElement owned by an ImplementationDataType or ImplementationDataTypeElement of category ARRAY shall be greater than 0. (cid:99)()
@@ -913,10 +835,8 @@ Please find more information about this topic in section 5.2.4.2.
 [TPS_SWCT_01610] Modeling of a Variable-Size Array Data Type with Size Indicator enabled (cid:100) An ImplementationDataType with category STRUCTURE where the attribute ImplementationDataType.dynamicArraySizeProfile exists represents a Variable-Size Array Data Type with Size Indicator enabled. For the sake of a proper definition of terminology, this ImplementationDataType shall be called the VSA ImplementationDataType. (cid:99)(RS_SWCT_03181)
 
 [TPS_SWCT_01650] Structure of the VSA ImplementationDataType (cid:100) The VSA ImplementationDataType shall consist of
-
 • an ImplementationDataTypeElement representing the Size Indicator and
 • an ImplementationDataTypeElement representing the Payload of the Variable-Size Array Data Type (see section 2.8.1.2).
-
 For the sake of a proper definition of terminology, these ImplementationDataTypeElements shall be called the VSA Size Indicator ImplementationDataTypeElement and the VSA Payload ImplementationDataTypeElement respectively. (cid:99)(RS_SWCT_03181)
 
 [TPS_SWCT_01612] arraySizeHandling specifies how the size is determined (cid:100) arraySizeHandling specifies how the size is determined in case of multi dimensional variable size array. (cid:99)(RS_SWCT_03181)
@@ -932,23 +852,61 @@ The statement made by [TPS_SWCT_01612] allows the specification of coherencies b
 For reasons of readability and understandability the following constraints focus on the payload of the Variable-Size Array Data Type only. For the Size Indicator additional individual constraints do apply.
 
 [constr_1318] Profile VSA_LINEAR for ImplementationDataType (cid:100) If the value of attribute ImplementationDataType.dynamicArraySizeProfile is set to VSA_LINEAR, the ImplementationDataType shall aggregate a VSA Payload ImplementationDataTypeElement that fulfills all of the following conditions:
-
 • The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
 • The attribute ImplementationDataTypeElement.category shall be set to ARRAY.
 • The attribute ImplementationDataTypeElement.arraySize shall not be defined.
 • The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
-
 The VSA Payload ImplementationDataTypeElement shall immediately aggregate another ImplementationDataTypeElement that shall fulfill all of the following conditions:
-
 • The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
 • The attribute ImplementationDataTypeElement.arraySize shall be defined.
 • The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
-
 (cid:99)()
 
 Please note that the ImplementationDataTypeElement aggregated by the VSA Payload ImplementationDataTypeElement can basically have any possible value of the attribute category.
 
 [constr_1319] Profile VSA_SQUARE for ImplementationDataType (cid:100) If the value of attribute ImplementationDataType.dynamicArraySizeProfile is set to VSA_SQUARE, the ImplementationDataType shall aggregate a VSA Payload ImplementationDataTypeElement that fulfills all of the the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
+The VSA Payload ImplementationDataTypeElement shall immediately aggregate another ImplementationDataTypeElement (representing the first dimension) that shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value inheritedFromArrayElementTypeSize.
+All intermediate ImplementationDataTypeElements in the aggregation chain that do not terminate the chain shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value inheritedFromArrayElementTypeSize.
+The terminating ImplementationDataTypeElement in the aggregation chain shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.arraySize shall be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
+(cid:99)()
+
+[constr_1320] Profile VSA_RECTANGULAR for ImplementationDataType (cid:100) If the value of attribute ImplementationDataType.dynamicArraySizeProfile is set to VSA_RECTANGULAR, the ImplementationDataType shall aggregate a VSA Payload ImplementationDataTypeElement that fulfills all of the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
+The VSA Payload ImplementationDataTypeElement shall immediately aggregate another ImplementationDataTypeElement (representing the first dimension) that shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.arraySize shall be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
+All intermediate ImplementationDataTypeElements in the aggregation chain that do not terminate the chain shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.arraySize shall be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
+The terminating ImplementationDataTypeElement in the aggregation chain shall fulfill all of the following conditions:
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.arraySize shall be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
+(cid:99)()
+
+[constr_1321] Profile VSA_FULLY_FLEXIBLE for ImplementationDataType (cid:100) If the value of attribute ImplementationDataType.dynamicArraySizeProfile is set to the value VSA_FULLY_FLEXIBLE, the ImplementationDataType shall aggregate a VSA Payload ImplementationDataTypeElement that fulfills all of the following conditions:
 
 • The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
 • The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
@@ -957,17 +915,31 @@ Please note that the ImplementationDataTypeElement aggregated by the VSA Payload
 
 The VSA Payload ImplementationDataTypeElement shall immediately aggregate another ImplementationDataTypeElement (representing the first dimension) that shall fulfill all of the following conditions:
 
+• The attribute ImplementationDataTypeElement.category shall be set to STRUCTURE.
 • The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+• The attribute ImplementationDataTypeElement.arraySize shall be defined.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesDifferentArraySize.
+
+The ImplementationDataTypeElement shall aggregate another ImplementationDataTypeElement that fulfills the following conditions:
+
+• The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
 • The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
 • The attribute ImplementationDataTypeElement.arraySize shall not be defined.
-• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value inheritedFromArrayElementTypeSize.
+• The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
 
-All intermediate ImplementationDataTypeElements in the aggregation chain that do not terminate the chain shall fulfill all of the following conditions:
+The aggregation chain is continued by a (possible empty) sequence of a pair of ImplementationDataTypeElements with the following characteristics:
 
-• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
-• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
-• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
-• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value inheritedFromArrayElementTypeSize.
+• The first ImplementationDataTypeElement in the pair shall fulfill all of the following conditions:
+  - The attribute ImplementationDataTypeElement.category shall be set to STRUCTURE.
+  - The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
+  - The attribute ImplementationDataTypeElement.arraySize shall be defined.
+  - The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesDifferentArraySize.
+
+• The second ImplementationDataTypeElement in the pair shall fulfill all of the following conditions:
+  - The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
+  - The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
+  - The attribute ImplementationDataTypeElement.arraySize shall not be defined.
+  - The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
 
 The terminating ImplementationDataTypeElement in the aggregation chain shall fulfill all of the following conditions:
 
@@ -977,26 +949,111 @@ The terminating ImplementationDataTypeElement in the aggregation chain shall ful
 
 (cid:99)()
 
-[constr_1320] Profile VSA_RECTANGULAR for ImplementationDataType (cid:100) If the value of attribute ImplementationDataType.dynamicArraySizeProfile is set to VSA_RECTANGULAR, the ImplementationDataType shall aggregate a VSA Payload ImplementationDataTypeElement that fulfills all of the following conditions:
+[constr_1396] Restriction for the value of attribute category for non-terminating ImplementationDataTypeElements taken to model a Variable-Size Array Data Type (cid:100) The value of attribute category for non-terminating ImplementationDataTypeElements taken to model a Variable-Size Array Data Type shall not be set to TYPE_REFERENCE. (cid:99)()
 
-• The attribute ImplementationDataTypeElement.arraySizeSemantics shall not be defined.
-• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
-• The attribute ImplementationDataTypeElement.arraySize shall not be defined.
-• The attribute ImplementationDataTypeElement.arraySizeHandling shall not be defined.
+[constr_1322] Size Indicator for undefined dynamicArraySizeProfile (cid:100) If the ImplementationDataType.dynamicArraySizeProfile does not exists but the ImplementationDataType is mapped to an ApplicationArrayDataType where the attribute ApplicationArrayDataType.dynamicArraySizeProfile exists, then the ImplementationDataType shall have the category STRUCTURE, representing a Variable-Size Array Data Type with Size Indicator enabled. (cid:99)()
 
-The VSA Payload ImplementationDataTypeElement shall immediately aggregate another ImplementationDataTypeElement (representing the first dimension) that shall fulfill all of the following conditions:
+[TPS_SWCT_01617] Structure of an ImplementationDataType that represents a variable-sized array data type (cid:100) The ImplementationDataType that represents a Variable-Size Array Data Type shall have the category STRUCTURE that has two subElements.
+The role of the subElements with the definition of a Variable-Size Array Data Type is defined by [TPS_SWCT_01618], [TPS_SWCT_01619], [TPS_SWCT_01620], and [TPS_SWCT_01621]. (cid:99)(RS_SWCT_03181)
 
-• The attribute ImplementationDataTypeElement.category shall be set to the value ARRAY.
-• The attribute ImplementationDataTypeElement.arraySizeSemantics shall be set to the value variableSize.
-• The attribute ImplementationDataTypeElement.arraySize shall be defined.
-• The attribute ImplementationDataTypeElement.arraySizeHandling shall be set to the value allIndicesSameArraySize.
+[TPS_SWCT_01618] Size Indicator for dynamicArraySizeProfile set to VSA_LINEAR, VSA_SQUARE, or VSA_FULLY_FLEXIBLE (cid:100) If an ImplementationDataType is mapped to an ApplicationArrayDataType which has attribute dynamicArraySizeProfile set to the value VSA_LINEAR, VSA_SQUARE or VSA_FULLY_FLEXIBLE, the first ImplementationDataType.subElement shall be an integer large enough to hold the maximum number of valid elements of the variable size array (according to maxArraySize).
 
-All intermediate
+This is the Size Indicator which holds the current number of valid elements of the variable size array. (cid:99)(RS_SWCT_03181)
+
+[TPS_SWCT_01647] Size Indicator for dynamicArraySizeProfile set to VSA_LINEAR, VSA_SQUARE, or VSA_FULLY_FLEXIBLE if only ImplementationDataType is present (cid:100) For each ImplementationDataType which has attribute dynamicArraySizeProfile set to the value VSA_LINEAR, VSA_SQUARE, or VSA_FULLY_FLEXIBLE, the first ImplementationDataType.subElement shall be an integer large enough to hold the maximum number of valid elements of the variable size array (according to maxArraySize).
+
+This is the Size Indicator which holds the current number of valid elements of the Variable-Size Array Data Type. (cid:99)(RS_SWCT_03181)
+
+[TPS_SWCT_01619] Size Indicator for dynamicArraySizeProfile set to VSA_RECTANGULAR (cid:100) If an ImplementationDataType is mapped to an ApplicationArrayDataType where the attribute ApplicationArrayDataType.dynamicArraySizeProfile exists and is set to the value VSA_RECTANGULAR, the first ImplementationDataType.subElement shall be a ImplementationDataTypeElement with the category set to ARRAY and the attribute arraySize set to a value equal to the number of the according dimension of the corresponding ApplicationDataType. (cid:99)(RS_SWCT_03181)
+
+[TPS_SWCT_01648] Size Indicator for dynamicArraySizeProfile set to VSA_RECTANGULAR if only ImplementationDataType is present (cid:100) For each ImplementationDataType where the attribute ImplementationDataType.dynamicArraySizeProfile exists and is set to the value VSA_RECTANGULAR, the first ImplementationDataType.subElement shall be a ImplementationDataTypeElement with the category set to ARRAY and the attribute arraySize set to a value equal to the size of the according dimension of the rectangular array. (cid:99)(RS_SWCT_03181)
+
+[TPS_SWCT_01620] Size Indicator for dynamicArraySizeProfile set to VSA_RECTANGULAR (cid:100) The elements of this Size Indicator array shall consist of integers large enough to hold the maximum number of valid elements (according to maxArraySize). (cid:99)(RS_SWCT_03181)
+
+This array holds the Size Indicators of all dimensions.
+
+[TPS_SWCT_01621] Payload for dynamicArraySizeProfile (cid:100) If an ImplementationDataType is mapped to an ApplicationArrayDataType where the attribute dynamicArraySizeProfile exists, the second ImplementationDataType.subElement shall be an array which can hold the data of the variable size array with all dimensions defined for the ApplicationDataType.
+
+The category shall be set to ARRAY and arraySize shall be set to maxArraySize of the corresponding ApplicationArrayDataType. (cid:99)(RS_SWCT_03181)
+
+[TPS_SWCT_01649] Payload for dynamicArraySizeProfile if only ImplementationDataType is present (cid:100) Each ImplementationDataType where the attribute dynamicArraySizeProfile exists shall aggregate a second ImplementationDataType.subElement with the category set to ARRAY. (cid:99)(RS_SWCT_03181)
+
+For examples, see Appendix E.1.
+
+An ImplementationDataType is also allowed to have SwDataDefProps (this feature is inherited from AutosarDataType), i.e. it can define various specific structural and semantical attributes. Table 5.39 shows which SwDataDefProps will be typically used here.
+
+[TPS_SWCT_01257] ImplementationDataType or the aggregated ImplementationDataTypeElements do not form closed sets (cid:100) As figures 5.11 shows, an ImplementationDataType or the aggregated ImplementationDataTypeElements do not form closed sets but refer to further type definitions in one of four distinctive ways, depending on whether the type is implemented via a base type, a data or function pointer, or a reference to another implementation data type:
+
+1. Reference to an underlying SwBaseType corresponds to category VALUE.
+2. Reference to BswModuleEntry in SwPointerTargetProps corresponds to category FUNCTION_REFERENCE.
+3. SwDataDefProps in SwPointerTargetProps corresponds to category DATA_REFERENCE.
+4. Reference to another ImplementationDataType corresponds to category TYPE_REFERENCE.
+
+(cid:99)(RS_SWCT_03217)
+
+At the end, all the "leafs" of the complete tree formed by these references shall end up in SwBaseTypes. Figures 5.12, 5.13, and Figure 5.14 illustrate more examples about Typedefs and references.
+
+Figure 5.12: Example (1) for TypeDefs
+
+[TPS_SWCT_01258] Definition of a pointer to data (cid:100) The definition of a data pointer requires a special meta-class SwPointerTargetProps which aggregates another SwDataDefProps. This mechanism allows to describe the category and properties of the pointer object itself as well as the category and properties of its target data type. (cid:99)(RS_SWCT_03217)
+
+[constr_1177] Allowed targetCategory for SwPointerTargetProps (cid:100) The value of targetCategory for SwPointerTargetProps can only be one of TYPE_REFERENCE or FUNCTION_REFERENCE. The only exception from this rule applies if the swDataDefProps owned by the SwPointerTargetProps refers to a SwBaseType with native type declaration void, in this case the value VALUE is also permitted. (cid:99)()
+
+Figure 5.13: Example (2) for TypeDefs
+
+As far as the AUTOSAR meta-model is concerned, a pointer to a pointer could in principle be implemented in two ways:
+
+1. by defining an ImplementationDataType of category DATA_REFERENCE that aggregates SwDataDefProps in the role swDataDefProps that in turn aggregate SwPointerTargetProps in the role swPointerTargetProps with attribute targetCategory set to TYPE_REFERENCE that aggregates SwDataDefProps in the role swDataDefProps that references an ImplementationDataType of category DATA_REFERENCE.
+
+2. by defining an ImplementationDataType of category DATA_REFERENCE that aggregates SwDataDefProps in the role swDataDefProps that in turn aggregate SwPointerTargetProps in the role swPointerTargetProps with attribute targetCategory set to DATA_REFERENCE (which is not allowed according to [constr_1177]) that in turn aggregates SwDataDefProps in the role swDataDefProps that aggregates SwPointerTargetProps in the role swPointerTargetProps that references an ImplementationDataType of category e.g. VALUE.
+
+[constr_1254] Definition of a pointer to a pointer (cid:100) AUTOSAR does not support the definition of a pointer to a pointer by defining an ImplementationDataType of category DATA_REFERENCE that aggregates SwDataDefProps in the role swDataDefProps that in turn aggregate SwPointerTargetProps in the role swPointerTargetProps with attribute targetCategory set to DATA_REFERENCE that in turn aggregates SwDataDefProps in the role swDataDefProps that aggregates SwPointerTargetProps in the role swPointerTargetProps that references an ImplementationDataType of category e.g. VALUE. (cid:99)()
+
+For clarification, The AUTOSAR RTE does not support a definition of a pointer to a pointer by way of option 2 anyway. For all intents and purposes, [constr_1254] merely reflects this restriction on the level of AUTOSAR models. Option 1 (which is also featured in Figure 5.14) is the only viable way that is positively supported by the AUTOSAR RTE [2].
+
+Figure 5.14: Example (3) for TypeDefs
+
+[TPS_SWCT_01259] Definition of a pointer to a function (cid:100) An ImplementationDataType or one of its sub-elements can also describe a function pointer. This completes its ability to declare all kinds of local data and of possible arguments used in library calls.
+
+A function pointer is defined by the category FUNCTION_REFERENCE and the association SwPointerTargetProps.functionPointerSignature that refers to a BswModuleEntry. The latter essentially describes the signature of a function as explained in [7]. (cid:99)(RS_SWCT_03217)
+
+Table 5.21: SwPointerTargetProps
+
+The allowed existence and multiplicity of all the attributes of SwDataDefProps and other properties depend on the category of the ImplementationDataType.
+
+Figure 5.15: SwDataDefProps used in the context of ImplementationDataType
+
+[constr_1178] Existence of attributes of SwDataDefProps in the context of ImplementationDataType (cid:100) For the sake of removing possible sources of ambiguity, SwDataDefProps used in the context of ImplementationDataType can only have one of 
+• baseType 
+• swPointerTargetProps 
+• implementationDataType 
+(cid:99)()
+
+Please note that an ImplementationDataType manifests itself in the source code of an RTE into which a DataPrototype typed by the ImplementationDataType is deployed. This implies potential naming conflicts if ImplementationDataTypes that have identical shortNames are deployed into a specific RTE.
+
+[TPS_SWCT_01194] Symbolic name of an ImplementationDataType (cid:100) To mitigate this potential hazard it is possible to provide the ImplementationDataType along with an accompanying symbolic name that can be used for resolving the name clash. The symbolic name is provided by means of the attribute symbol of the meta-class SymbolProps owned by ImplementationDataType in the role symbolProps (for more information, please refer to Figure 5.11). (cid:99)()
+
+[TPS_SWCT_01441] Nature of a TYPE_REFERENCE (cid:100) A type reference (formally represented by an ImplementationDataType of category TYPE_REFERENCE) implements a redirection to common ImplementationDataTypes. (cid:99)()
+
+[TPS_SWCT_01442] ImplementationDataType of category TYPE_REFERENCE does not define own properties (cid:100) As long as an ImplementationDataType of category TYPE_REFERENCE does not define own properties the properties of the refined ImplementationDataType apply. (cid:99)()
+
+[TPS_SWCT_01443] ImplementationDataType of category TYPE_REFERENCE overwrites properties of refined ImplementationDataType (cid:100) If an implementation data types of category TYPE_REFERENCE defines own properties (e.g. CompuMethod) this properties overwrite the properties of the refined ImplementationDataType. (cid:99)()
+
+As explained by [constr_1050], Compatibility checks of ImplementationDataType require a prior resolution of possible type references, i.e. the compatibility shall be checked on the resolved ImplementationDataType.
+
+Figure 5.16: ImplementationProps and its subclasses
+
+ImplementationProps (abstract)
+Table 5.22: ImplementationProps
+Table 5.23: SymbolProps
+
 #@SECTION: 5.2.6 Base Type
 #@CLASS: BaseType
 #@CLASS: BaseTypeDefinition
 #@CLASS: BaseTypeDirectDefinition
 #@CLASS: SwBaseType
+#@CLASS: DataPrototype
+#@CLASS: ImplementationDataType
 
 [TPS_SWCT_01260] SwBaseType (cid:100) BaseType is used to specify the basic level mentioned in chapter 5.1. In AUTOSAR, we use the meta-class SwBaseType which is derived from the abstract class BaseType due to other use cases for BaseType in ASAM HDO. (cid:99)()
 
@@ -1023,7 +1080,7 @@ Table 5.27: BaseTypeDirectDefinition
 Figure 5.17: BaseType
 
 Some additional hints to the properties of SwBaseType:
-
+#@Hierarchical
 • [constr_1011] category of SwBaseType (cid:100) For the attribute SwBaseType.category only the values FIXED_LENGTH and VARIABLE_LENGTH are supported. (cid:99)()
 • [constr_1012] Value of category is FIXED_LENGTH (cid:100) If the value of the attribute SwBaseType.category is set to FIXED_LENGTH then the attribute baseTypeSize shall be filled with content and attribute maxBaseTypeSize shall not exist. (cid:99)()
 • [constr_1013] Value of category is VARIABLE_LENGTH (cid:100) If the value of the attribute SwBaseType.category is set to VARIABLE_LENGTH then the attribute maxBaseTypeSize shall be filled with content and attribute baseTypeSize shall not exist. (cid:99)()
@@ -1051,6 +1108,7 @@ Some additional hints to the properties of SwBaseType:
 • [TPS_SWCT_01262] memAlignment and byteOrder are platform-specific (cid:100) The value of attributes BaseTypeDirectDefinition.memAlignment and BaseTypeDirectDefinition.byteOrder is platform-specific and therefore should be set only in use cases where this is really needed. These attributes shall be considered as optional. If a SwBaseType is platform-specific then also the ImplementationDataType and software-component descriptions build on top of it become platform-specific. (cid:99)()
 
 However, there are use cases for SwBaseType where this does not matter: especially the calibration support format which is generated in ECU-specific scope (and also contains SwBaseType, see [7]) could well be platform-specific.
+/#@Hierarchical
 
 Further regulations apply for the case that the value UTF-16 is used for setting the attribute BaseTypeDirectDefinition.baseTypeEncoding:
 
@@ -1067,10 +1125,12 @@ A further question that needs clarification is the usage of the so-called Byte O
 [TPS_SWCT_01653] UTF-16-encoded strings are not allowed to start with a BOM (cid:100) If the value of attribute BaseTypeDirectDefinition.baseTypeEncoding is set to UTF-16 then the value of a DataPrototype (which is effectively representing a string) is not allowed to start with a Byte Order Mark (BOM). (cid:99)()
 
 Please note that [TPS_SWCT_01653] removes a possible redundancy in the definition and execution of UTF-16-encoded strings. The redundancy is not only regarded unnecessary but also potentially dangerous because it is not possible to check whether the definition is consistent with the execution at configuration time. From the formal point of view, [TPS_SWCT_01653] does not represent an actual constraint although it is formulated as such. However, an AUTOSAR tool would not be able to properly check the condition at configuration time and therefore this rule is published as a specification item.
+
 #@SECTION: 5.2.7 Data Type Terminology
 #@CLASS: ApplicationDataType
 
 There are uses of data types that on the one hand need a handy term (because this kind of data type is used a lot) but on the other hand cannot easily be expressed in simple terms of meta-model elements (like ApplicationDataType). Therefore, it is not an option to fully describe the characteristics of these kinds of data types precisely every time one of these is used. A definition of terminology is supposed to associate the mentioned kinds of data types with the term under which their use shall be paraphrased.
+
 #@SECTION: 5.2.7.1 Primitive Type
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: AutosarDataType
@@ -1089,6 +1149,7 @@ However, this may end up in lengthy and potentially inconsistent descriptions at
 • it is an AutosarDataType according to [TPS_SWCT_01564]
 • it is an AutosarDataType of category TYPE_REFERENCE that, after all type references have been resolved, boils down an AutosarDataType according to [TPS_SWCT_01564].
 (cid:99)()
+
 #@SECTION: 5.2.7.2 Compound Primitive Data Type
 #@CLASS: ApplicationPrimitiveDataType
 
@@ -1101,6 +1162,7 @@ The main characteristic of the "compound primitive data type" is that with respe
 [TPS_SWCT_01486] ApplicationPrimitiveDataType of category STRING may have invalidValue (cid:100) The only kind of Compound Primitive Data Type that is allowed to define an invalidValue is an ApplicationPrimitiveDataType of category STRING. (cid:99)(RS_SWCT_03216)
 
 [constr_1241] Compound Primitive Data Types and invalidValue (cid:100) Compound Primitive Data Types that have set the value of of category other than STRING shall not define invalidValue. (cid:99)()
+
 #@SECTION: 5.2.7.3 Integral Primitive Type
 #@CLASS: ApplicationDataType
 #@CLASS: DataTypeMap
@@ -1123,10 +1185,13 @@ The SenderReceiverToSignalMapping (see [11]) allows for the integral mapping of 
 • ApplicationDataType.category is set to BOOLEAN, VALUE, STRING, or ARRAY
 • in the applicable scope a DataTypeMap is available that refers to the given ApplicationDataType
 • the found DataTypeMap refers to an ImplementationDataType that fulfills the requirements of [constr_1229] (cid:99)()
+
 #@SECTION: 5.2.7.4 Variable-Size Array Data Type
 The definition of and further explanation regarding the term Variable-Size Array Data Type can be found in chapter 2.8.
+
 #@SECTION: 5.3 Data Prototypes
 #@SECTION: 5.3.1 Overview
+
 #@CLASS: ApplicationArrayElement
 #@CLASS: ApplicationCompositeElementDataPrototype
 #@CLASS: ApplicationRecordElement
@@ -1135,7 +1200,11 @@ The definition of and further explanation regarding the term Variable-Size Array
 #@CLASS: DataPrototype
 #@CLASS: ParameterDataPrototype
 #@CLASS: VariableDataPrototype
-
+#@CLASS: PortInterface
+#@CLASS: ApplicationDataType
+#@CLASS: SwDataDefProps
+#@CLASS: ApplicationDataType
+#@CLASS: ImplementationDataType
 [TPS_SWCT_01264] Data prototypes implement a role of a data type (cid:100) Generally speaking, a data prototype represents the implementation of a role of a data type within the definition of another data type, e.g. a "typed" data object declared within a software component or a port interface. This means formally that it has an is-of-type relation to a data type and is usually aggregated by another element, e.g. the internal behavior or a port interface. (cid:99)()
 
 In the meta-model, various kinds of data prototypes are derived from the abstract DataPrototype as shown in figure 5.18. The reason for the introduction of this hierarchy was the distinction between AutosarDataPrototype (which can be used for the application and implementation types as well) and ApplicationCompositeElementDataPrototype (which is restricted to be used within the application types).
@@ -1145,10 +1214,6 @@ Figure 5.18: Data Prototypes Overview
 Table 5.28: DataPrototype
 
 Table 5.29: AutosarDataPrototype
-
-ApplicationCompositeElementDataPrototype (abstract)
-
-This class represents a data prototype which is aggregated within a composite application data type (record or array). It is introduced to provide a better distinction between target and context in instanceRefs.
 
 Table 5.30: ApplicationCompositeElementDataPrototype
 
@@ -1160,13 +1225,17 @@ Because these DataPrototypes are modeled as own meta-classes it is possible to d
 
 Further information can be found in table 5.31 and table 5.32.
 
-[constr_1289] Allowed Attributes vs. category for DataPrototypes typed by ApplicationDataTypes (cid:100) The allowed values of Attributes per category for DataPrototypes typed by ApplicationDataTypes are documented in table 5.31. (cid:99)()
+Please note that table 5.31 does not include the ApplicationRecordElement and
+ApplicationArrayElement because these specializations of ApplicationCompositeElementDataPrototype are already part of table 5.8. The same applies for
+table 5.32 which does not include the ImplementationDataTypeElement.
 
 Table 5.31: Allowed Attributes vs. category for DataPrototypes typed by Application Data Types
 
-[constr_1288] Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes (cid:100) The allowed values per category for DataPrototypes typed by ImplementationDataTypes are documented in table 5.32. (cid:99)()
+[constr_1289] Allowed Attributes vs. category for DataPrototypes typed by ApplicationDataTypes (cid:100) The allowed values of Attributes per category for DataPrototypes typed by ApplicationDataTypes are documented in table 5.31. (cid:99)()
 
 Table 5.32: Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes
+
+[constr_1288] Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes (cid:100) The allowed values per category for DataPrototypes typed by ImplementationDataTypes are documented in table 5.32. (cid:99)()
 
 [TPS_SWCT_01266] Three non-abstract classes derived from AutosarDataPrototype (cid:100) There are three non-abstract classes derived from AutosarDataPrototype which reflect the main use cases in the SWC-Template:
 • Operation arguments (ArgumentDataPrototype) in a client-server interface.
@@ -1190,6 +1259,7 @@ An example is the aggregation of VariableDataPrototype by SwcInternalBehavior in
 Figure 5.19: Initial value for AutosarDataPrototypes
 
 Find more information about the interpretation of initValue in section 5.7.
+
 #@SECTION: 5.3.2 Reference to Data Prototypes
 #@CLASS: ApplicationCompositeElementDataPrototype
 #@CLASS: ArVariableInImplementationDataInstanceRef
@@ -1199,6 +1269,11 @@ Find more information about the interpretation of initValue in section 5.7.
 #@CLASS: DataPrototype
 #@CLASS: ParameterDataPrototype
 #@CLASS: VariableDataPrototype
+#@CLASS: AutosarDataType
+#@CLASS: AtpInstanceRef
+#@CLASS: FlatInstanceDescriptor
+#@CLASS: AnyInstanceRef
+#@CLASS: McDataInstance
 
 This chapter explains the various patterns for referencing DataPrototypes.
 
@@ -1210,24 +1285,9 @@ This chapter explains the various patterns for referencing DataPrototypes.
 • Reference to the internal structure of a VariableDataPrototype implemented using a composite ImplementationDataType.
 (cid:99)()
 
-AutosarDataPrototypeVariableDataPrototypeValueSpecification+ shortLabel :Identifier [0..1]AutosarDataPrototypeParameterDataPrototype+initValue0..1+initValue0..1
-
-This class represents a reference to a variable within AUTOSAR which can be one of the following use cases:
-localVariable:
-• localVariable which is used as whole (e.g. InterRunnableVariable, inputValue for curve)
-autosarVariable:
-• a variable provided via Port which is used as whole (e.g. dataAccesspoints)
-• an element inside of a composite local variable typed by ApplicationDatatype (e.g. inputValue for a curve)
-• an element inside of a composite variable provided via Port and typed by ApplicationDatatype (e.g. inputValue for a curve)
-autosarVariableInImplDatatype:
-• an element inside of a composite local variable typed by ImplementationDatatype (e.g. nvramData mapping)
-• an element inside of a composite variable provided via Port and typed by ImplementationDatatype (e.g. inputValue for a curve)
-
 Table 5.36: AutosarVariableRef
 
 Figure 5.20: Implementation of AutosarVariableRef
-
-This class represents the ability to navigate into a data element inside of an VariableDataPrototype which is typed by an ImplementationDatatype. Note that it shall not be used if the target is the VariableDataPrototype itself (e.g. if its a primitive).
 
 Table 5.37: ArVariableInImplementationDataInstanceRef
 
@@ -1245,17 +1305,6 @@ Please note that there is a very limited amount of use-cases available where the
 [constr_1173] Applicability of AutosarParameterRef referencing a VariableDataPrototype (cid:100) A reference from AutosarParameterRef to VariableDataPrototype is only applicable if the AutosarParameterRef is used in the context of SwAxisGrouped. (cid:99)()
 
 For example, the use case referenced in [constr_1173] applies if it is required to store a grouped axis in a variable in order to adapt the axis during run-time of the ECU by a dedicated algorithm. Note that in all cases where [constr_1173] does not apply [constr_2535] shall be fulfilled.
-
-This class represents a reference to a parameter within AUTOSAR which can be one of the following use cases:
-localParameter:
-• localParameter which is used as whole (e.g. sharedAxis for curve)
-autosarVariable:
-• a parameter provided via PortPrototype which is used as whole (e.g. parameterAccess)
-• an element inside of a composite local parameter typed by ApplicationDatatype (e.g. sharedAxis for a curve)
-• an element inside of a composite parameter provided via Port and typed by ApplicationDatatype (e.g. sharedAxis for a curve)
-autosarParameterInImplDatatype:
-• an element inside of a composite local parameter typed by ImplementationDatatype
-• an element inside of a composite parameter provided via PortPrototype and typed by ImplementationDatatype
 
 Table 5.38: AutosarParameterRef
 
@@ -1279,201 +1328,32 @@ Figure 5.22: Implementation of the InstanceRef for AutosarParameterRef
 [TPS_SWCT_01375] Implementation of AutosarVariableRef (cid:100) The reference to rootVariableDataPrototype is not redundant. It is required for identifying the autosarVariable itself in a SenderReceiverInterface or NvDataInterface if and only if the AutosarDataType of the autosarVariable is a composite data type. If the AutosarDataType was a primitive data type the targetDataPrototype reference is the only reference required. (cid:99)()
 
 Figure 5.23: Implementation of the InstanceRef for AutosarVariableRef
+
 #@SECTION: 5.4 Properties of Data Deﬁnitions
 #@SECTION: 5.4.1 Overview
-#@CLASS: AbstractProvidedPortPrototype
-#@CLASS: AbstractRequiredPortPrototype
-#@CLASS: ApplicationArrayDataType
-#@CLASS: ApplicationArrayElement
-#@CLASS: ApplicationCompositeDataType
-#@CLASS: ApplicationCompositeDataTypeSubElementRef
-#@CLASS: ApplicationCompositeElementDataPrototype
-#@CLASS: ApplicationCompositeElementInPortInterfaceInstanceRef
+#@CLASS: SwDataDefProps
 #@CLASS: ApplicationDataType
-#@CLASS: ApplicationError
-#@CLASS: ApplicationPrimitiveDataType
-#@CLASS: ApplicationRecordDataType
-#@CLASS: ApplicationRecordElement
-#@CLASS: ApplicationSwComponentType
-#@CLASS: ArVariableInImplementationDataInstanceRef
-#@CLASS: ArgumentDataPrototype
-#@CLASS: AssemblySwConnector
-#@CLASS: AsynchronousServerCallPoint
-#@CLASS: AsynchronousServerCallResultPoint
-#@CLASS: AsynchronousServerCallReturnsEvent
-#@CLASS: AtomicSwComponentType
-#@CLASS: AutosarDataPrototype
-#@CLASS: AutosarDataType
-#@CLASS: AutosarParameterRef
-#@CLASS: AutosarVariableRef
-#@CLASS: BackgroundEvent
-#@CLASS: CalibrationParameterValue
-#@CLASS: CalibrationParameterValueSet
-#@CLASS: ClientComSpec
-#@CLASS: ClientServerAnnotation
-#@CLASS: ClientServerApplicationErrorMapping
-#@CLASS: ClientServerInterface
-#@CLASS: ClientServerInterfaceMapping
-#@CLASS: ClientServerOperation
-#@CLASS: ClientServerOperationMapping
-#@CLASS: ComplexDeviceDriverSwComponentType
-#@CLASS: ComponentInCompositionInstanceRef
-#@CLASS: CompositeNetworkRepresentation
-#@CLASS: CompositionSwComponentType
-#@CLASS: ConsistencyNeeds
-#@CLASS: DataInterface
+#@CLASS: CompuMethod
+#@CLASS: ImplementationDataType
+#@CLASS: NativeDeclarationString
+#@CLASS: SwBitRepresentation
+#@CLASS: DisplayFormatString
+#@CLASS: Annotation
 #@CLASS: DataPrototype
-#@CLASS: DataPrototypeGroup
-#@CLASS: DataPrototypeMapping
-#@CLASS: DataReceiveErrorEvent
-#@CLASS: DataReceivedEvent
-#@CLASS: DataSendCompletedEvent
-#@CLASS: DataTypeMap
-#@CLASS: DataTypeMappingSet
-#@CLASS: DataWriteCompletedEvent
-#@CLASS: DelegatedPortAnnotation
-#@CLASS: DelegationSwConnector
-#@CLASS: EcuAbstractionSwComponentType
-#@CLASS: EndToEndDescription
-#@CLASS: EndToEndProtection
-#@CLASS: EndToEndProtectionSet
-#@CLASS: EndToEndProtectionVariablePrototype
-#@CLASS: ExternalTriggerOccurredEvent
-#@CLASS: ExternalTriggeringPoint
-#@CLASS: ExternalTriggeringPointIdent
-#@CLASS: IdentCaption
-#@CLASS: ImplementationDataTypeSubElementRef
-#@CLASS: IncludedDataTypeSet
-#@CLASS: IncludedModeDeclarationGroupSet
-#@CLASS: InitEvent
-#@CLASS: InnerDataPrototypeGroupInCompositionInstanceRef
-#@CLASS: InnerPortGroupInCompositionInstanceRef
-#@CLASS: InnerRunnableEntityGroupInCompositionInstanceRef
-#@CLASS: InstanceEventInCompositionInstanceRef
+#@CLASS: AtomicSwComponentType
+#@CLASS: SwCalibrationAccessEnum
 #@CLASS: InstantiationDataDefProps
-#@CLASS: InstantiationRTEEventProps
-#@CLASS: InstantiationTimingEventProps
-#@CLASS: InternalTriggerOccurredEvent
-#@CLASS: InternalTriggeringPoint
-#@CLASS: InterpolationRoutine
-#@CLASS: InterpolationRoutineMapping
-#@CLASS: InterpolationRoutineMappingSet
-#@CLASS: InvalidationPolicy
-#@CLASS: IoHwAbstractionServerAnnotation
-#@CLASS: ModeAccessPoint
-#@CLASS: ModeAccessPointIdent
-#@CLASS: ModeDeclaration
-#@CLASS: ModeDeclarationMapping
-#@CLASS: ModeDeclarationMappingSet
-#@CLASS: ModeGroupInAtomicSwcInstanceRef
-#@CLASS: ModeInterfaceMapping
-#@CLASS: ModePortAnnotation
-#@CLASS: ModeSwitchInterface
-#@CLASS: ModeSwitchPoint
-#@CLASS: ModeSwitchReceiverComSpec
-#@CLASS: ModeSwitchSenderComSpec
-#@CLASS: ModeSwitchedAckEvent
-#@CLASS: ModeSwitchedAckRequest
-#@CLASS: NonqueuedReceiverComSpec
-#@CLASS: NonqueuedSenderComSpec
-#@CLASS: NvBlockDataMapping
-#@CLASS: NvBlockDescriptor
-#@CLASS: NvBlockSwComponentType
-#@CLASS: NvDataInterface
-#@CLASS: NvDataPortAnnotation
-#@CLASS: NvProvideComSpec
-#@CLASS: NvRequireComSpec
-#@CLASS: OperationInAtomicSwcInstanceRef
-#@CLASS: OperationInvokedEvent
-#@CLASS: PModeGroupInAtomicSwcInstanceRef
-#@CLASS: POperationInAtomicSwcInstanceRef
-#@CLASS: PPortComSpec
-#@CLASS: PPortInCompositionInstanceRef
-#@CLASS: PPortPrototype
-#@CLASS: PRPortPrototype
-#@CLASS: PTriggerInAtomicSwcTypeInstanceRef
 #@CLASS: ParameterAccess
-#@CLASS: ParameterDataPrototype
-#@CLASS: ParameterInAtomicSWCTypeInstanceRef
-#@CLASS: ParameterInterface
-#@CLASS: ParameterPortAnnotation
-#@CLASS: ParameterProvideComSpec
-#@CLASS: ParameterRequireComSpec
-#@CLASS: ParameterSwComponentType
-#@CLASS: PassThroughSwConnector
-#@CLASS: PerInstanceMemory
-#@CLASS: PerInstanceMemorySize
-#@CLASS: PortAPIOption
-#@CLASS: PortDefinedArgumentValue
-#@CLASS: PortGroup
-#@CLASS: PortInCompositionTypeInstanceRef
-#@CLASS: PortInterface
-#@CLASS: PortInterfaceMapping
-#@CLASS: PortInterfaceMappingSet
-#@CLASS: PortPrototype
-#@CLASS: QueuedReceiverComSpec
-#@CLASS: QueuedSenderComSpec
-#@CLASS: RModeGroupInAtomicSWCInstanceRef
-#@CLASS: RModeInAtomicSwcInstanceRef
-#@CLASS: ROperationInAtomicSwcInstanceRef
-#@CLASS: RPortComSpec
-#@CLASS: RPortInCompositionInstanceRef
-#@CLASS: RPortPrototype
-#@CLASS: RTEEvent
-#@CLASS: RTriggerInAtomicSwcInstanceRef
-#@CLASS: RVariableInAtomicSwcInstanceRef
-#@CLASS: RapidPrototypingScenario
-#@CLASS: ReceiverAnnotation
-#@CLASS: ReceiverComSpec
-#@CLASS: RoleBasedDataTypeAssignment
-#@CLASS: RoleBasedPortAssignment
-#@CLASS: RptContainer
-#@CLASS: RptHook
-#@CLASS: RunnableEntity
-#@CLASS: RunnableEntityArgument
-#@CLASS: RunnableEntityGroup
-#@CLASS: RunnableEntityInCompositionInstanceRef
-#@CLASS: SenderAnnotation
-#@CLASS: SenderComSpec
-#@CLASS: SenderReceiverAnnotation
-#@CLASS: SenderReceiverInterface
-#@CLASS: SensorActuatorSwComponentType
-#@CLASS: ServerCallPoint
-#@CLASS: ServerComSpec
-#@CLASS: ServiceProxySwComponentType
-#@CLASS: ServiceSwComponentType
-#@CLASS: SubElementMapping
-#@CLASS: SubElementRef
-#@CLASS: SwComponentDocumentation
-#@CLASS: SwComponentPrototype
-#@CLASS: SwComponentType
-#@CLASS: SwConnector
-#@CLASS: SwcImplementation
-#@CLASS: SwcInternalBehavior
-#@CLASS: SwcModeManagerErrorEvent
-#@CLASS: SwcModeSwitchEvent
-#@CLASS: SwcServiceDependency
-#@CLASS: SymbolProps
-#@CLASS: SynchronousServerCallPoint
-#@CLASS: TextTableMapping
-#@CLASS: TextTableValuePair
-#@CLASS: TimingEvent
-#@CLASS: TransformationComSpecProps
-#@CLASS: TransformerHardErrorEvent
-#@CLASS: TransmissionAcknowledgementRequest
-#@CLASS: TriggerInAtomicSwcInstanceRef
-#@CLASS: TriggerInterface
-#@CLASS: TriggerInterfaceMapping
-#@CLASS: TriggerPortAnnotation
-#@CLASS: UserDefinedTransformationComSpecProps
-#@CLASS: VariableAccess
-#@CLASS: VariableAndParameterInterfaceMapping
+#@CLASS: FlatInstanceDescriptor
+#@CLASS: McDataInstance
+#@CLASS: McSupportData
+#@CLASS: SwImplPolicyEnum
 #@CLASS: VariableDataPrototype
-#@CLASS: VariableDataPrototypeInCompositionInstanceRef
-#@CLASS: VariableInAtomicSWCTypeInstanceRef
-#@CLASS: VariableInAtomicSwcInstanceRef
-#@CLASS: VariationPointProxy
-#@CLASS: WaitPoint
+#@CLASS: SenderReceiverInterface
+#@CLASS: NvDataInterface
+#@CLASS: ParameterDataPrototype
+#@CLASS: ArgumentDataPrototype
+#@CLASS: SwServiceArg
 
 As it has already been shown in the previous chapters, various properties and associations can be attached to the definition of data types as well as prototypes. These are described by the meta-class SwDataDefProps which covers all properties of a particular data object under various aspects.
 
@@ -1513,26 +1393,6 @@ Example: an ApplicationDataType of category BOOLEAN supports the definition of a
 
 Some of the property names contain the term "variable" or "calprm", this comes from historical reasons and can be taken as some hint where the property most likely applies to.
 
-(cid:28)atpVariation(cid:29) SwDataDefProps
-
-Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties
-
-This class is a collection of properties relevant for data objects under various aspects. One could consider this class as a "pattern of inheritance by aggregation". The properties can be applied to all objects of all classes in which SwDataDefProps is aggregated.
-
-Note that not all of the attributes or associated elements are useful all of the time. Hence, the process definition (e.g. expressed with an OCL or a Document Control Instance MSR-DCI) has the task of implementing limitations.
-
-SwDataDefProps covers various aspects:
-
-• Structure of the data element for calibration use cases: is it a single value, a curve, or a map, but also the recordLayouts which specify how such elements are mapped/converted to the DataTypes in the programming language (or in AUTOSAR). This is mainly expressed by properties like swRecordLayout and swCalprmAxisSet
-
-• Implementation aspects, mainly expressed by swImplPolicy, swVariableAccessImplPolicy, swAddrMethod, swPointerTagetProps, baseType, implementationDataType and additionalNativeTypeQualifier
-
-• Access policy for the MCD system, mainly expressed by swCalibrationAccess
-
-• Semantics of the data element, mainly expressed by compuMethod and/or unit, dataConstr, invalidValue
-
-• Code generation policy provided by swRecordLayout
-
 Table 5.40: SwDataDefProps
 
 Table 5.41: NativeDeclarationString
@@ -1546,9 +1406,7 @@ Table 5.44: Annotation
 [constr_1244] DataPrototypes used in application software shall not be typed by C enums (cid:100) A DataPrototype that is used in an AtomicSwComponentType shall not set swDataDefProps.additionalNativeTypeQualifier to enum. (cid:99)()
 
 [TPS_SWCT_01272] Semantics of swComparisonVariable (cid:100) Please note that swComparisonVariables shall be displayed in the MCD system on the ordinate in a curve. By showing the input value and the comparison value the calibration engineer can see if the current working point is above or below a curve provident thresholds. For example in a curve specifying a temperature depending gear shift threshold engine speed the engine speed can be shown as "comparisonVariable".
-
 These variables can be used to display the value of a variable on the value axis of a calibration parameter (characteristic), that is currently displayed in the MCD-System. The purpose is to compare the appropriate result from the calibration parameter in question, with a value being calculated or taken from a sensor (the comparison variable).
-
 The sole purpose of this comparison-variable is therefore to serve the calibration process. (cid:99)()
 
 Figure 5.24: Explanation of swComparisonVariable
@@ -1593,6 +1451,9 @@ Table 5.46: SwImplPolicyEnum
 
 [TPS_SWCT_01275] values of the attribute swImplPolicy are restricted depending on the context (cid:100) The values of the attribute swImplPolicy are restricted depending on the context. This restriction reflects the fact that not all possible implementation strategies are useful or supported for all kinds of DataPrototypes. (cid:99)()
 
+These restrictions are summarized in table 5.47 and formalized in the following constraints. Please note that the usage of swImplPolicy is further constraint in the
+combination with the attribute value swCalibrationAccess as described in [constr_1017].
+
 Table 5.47: Allowed attributes values for SwImplPolicy vs. DataPrototypes and their roles
 
 The following settings apply in table 5.47:
@@ -1611,7 +1472,20 @@ NA Attribute is not applicable for usage in the scope of this element.
 
 [constr_2039] swImplPolicy for VariableDataPrototype in the role explicitInterRunnableVariable (cid:100) The overriding swImplPolicy attribute value of a VariableDataPrototype in the role explicitInterRunnableVariable shall be standard. (cid:99)()
 
-[constr_2040] swImplPolicy
+[constr_2040] swImplPolicy for VariableDataPrototype in the role arTypedPerInstanceMemory (cid:100) The overriding swImplPolicy attribute value of a VariableDataPrototype in the role arTypedPerInstanceMemory shall be standard or measurementPoint.(cid:99)()
+[constr_2041] swImplPolicy for VariableDataPrototype in the role staticMemory (cid:100) The overriding swImplPolicy attribute value of a VariableDataPrototype in the role staticMemory shall be standard, measurementPoint or message.(cid:99)()
+[constr_2042] swImplPolicy for ParameterDataPrototype in ParameterInterface (cid:100) The overriding swImplPolicy attribute value of a ParameterDataPrototype in ParameterInterface shall be standard, const or fixed.(cid:99)()
+[constr_2043] swImplPolicy for ParameterDataPrototype in the role staticMemory (cid:100) The overriding swImplPolicy attribute value of a ParameterDataPrototype in the role romBlock shall be standard.(cid:99)()
+[constr_2044] swImplPolicy for ParameterDataPrototype in the role sharedParameter (cid:100) The overriding swImplPolicy attribute value of a ParameterDataPrototype in the role sharedParameter shall be standard.(cid:99)()
+[constr_2045] swImplPolicy for ParameterDataPrototype in the role perInstanceParameter (cid:100) The overriding swImplPolicy attribute value of a ParameterDataPrototype in the role sharedParameter shall be standard.(cid:99)()
+[constr_2046] swImplPolicy for ParameterDataPrototype in the role constantMemory (cid:100) The overriding swImplPolicy attribute value of a ParameterDataPrototype in the role sharedParameter shall be standard, const or fixed.(cid:99)()
+[constr_2047] swImplPolicy for ArgumentDataPrototype (cid:100) The overriding
+swImplPolicy attribute value of a ArgumentDataPrototype shall be standard. (cid:99)()
+[constr_2048] swImplPolicy for SwServiceArg (cid:100) The overriding swImplPolicy
+attribute value of a SwServiceArg shall be standard or const. (cid:99)()
+[TPS_SWCT_02000] Default value for attribute swImplPolicy (cid:100) If the attribute
+swImplPolicy is not explicitly set at any of the locations listed in "‘Place of Setting"’for SwDataDefProps mentioned in table 5.39 the default value standard applies.(cid:99)()
+
 #@SECTION: 5.4.2 Invalid Value
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: ApplicationPrimitiveDataType
@@ -1624,18 +1498,33 @@ NA Attribute is not applicable for usage in the scope of this element.
 #@CLASS: SenderReceiverInterface
 #@CLASS: SwDataDefProps
 #@CLASS: VariableDataPrototype
+#@CLASS: ValueSpecification
+#@CLASS: AutosarDataType
+#@CLASS: DataPrototype
+#@CLASS: RuleBasedValueSpecification
+#@CLASS: ReferenceValueSpecification
+#@CLASS: SwBaseType
+#@CLASS: CompuScales
+#@CLASS: TextValueSpecification
+#@CLASS: CompuMethod
+#@CLASS: ImplementationDataTypeElement
+#@CLASS: BaseType
+#@CLASS: ApplicationDataType
+#@CLASS: NumericalValueSpecification
+#@CLASS: HandleInvalidEnum
 
 The diagram 5.5 shows that in addition to the semantics defined through the compuMethod (explained below in chapter 5.5.1), also an invalidValue can be specified. This is a requirement of the VFB [3], allowing to express which specific value is used to indicate invalidation.
 
 Figure 5.25: Invalid value
 
 The invalidValue can be used in different flavors (also illustrated in Figure 5.6:
-
+#@Hierarchical
 • [TPS_SWCT_01432] Keep the invalidValue transparent to the sending and receiving software components (cid:100) On the one hand it is possible to keep the invalidValue transparent to the sending and receiving software components. In this case the invalidation API of the RTE on the sender side has to be used. The receiving software component can either use the data receive status or the DataReceiveErrorEvent respectively DataReceivedEvent to decide about the validity of the received data or the receiving software component can rely on the reception of an initValue as a default value in case of data invalidation. In this case the invalid value should (and usually will) be outside of the range limits defined by the compuMethod. (cid:99)()
 
 • [TPS_SWCT_01434] Sender and receiver have knowledge of invalid value (cid:100) On the other hand it is possible that the communicating software components do have knowledge about the invalidValue and the invalidValue is visible for them. This is in particular the case if the sender and receiver are calculating a checksum over a larger data structure to implement an end to end communication protection. To ensure the integrity of the checksums it is required to set invalid values by the sending component directly and to receive invalid values unchanged. In this case the invalid value should (and usually will) be inside of the range limits defined by the compuMethod. (cid:99)()
 
 • [TPS_SWCT_01436] Different receivers require different handling of data invalidation (cid:100) It is possible that in case of 1:n communication different receivers requiring a different handling of data invalidation depending on the criticality of its functionality. For instance, one receiver applies the checksum based end to end communication protection and another receiver relies on the substitution of invalid values by invalidValues. (cid:99)()
+/#@Hierarchical
 
 A typical use case for putting the invalidValue inside the boundaries of the applicable CompuMethod is a composite data type that contains the values of all individual wheel speeds. If one of the sensors fails and starts to send invalidValue it would probably not make sense to consider the whole composite data element invalid. It may very likely still be possible to make sense of the remaining intact wheel speed values and carry on with whatever business the receiving software-component has with that data. From this perspective, it would obviously be OK for the sending software-component to actively send the invalidValue that is then processed as a "regular" value without applying additional semantics by the RTE/Com.
 
@@ -1661,7 +1550,9 @@ Rationale for [constr_1384]: there is no use case for sending a DataPrototype ty
 
 [constr_1242] Restriction of invalidValue for ApplicationPrimitiveDataType of category STRING (cid:100) invalidValue for ApplicationPrimitiveDataType of category STRING ([constr_1241] applies) is restricted to be either a compatible ApplicationValueSpecification or a ConstantReference that in turn points to a compatible ApplicationValueSpecification. (cid:99)()
 
-[TPS_SWCT_01487] Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType (cid:100) The invalidValue specified on the level of an ApplicationPrimitiveDataType shall correspond to the invalidValue specified on the level of a compatible ImplementationDataType. The terms "corresponds" boils down to: • category VALUE or BOOLEAN: application of CompuMethod • category STRING: mapping of the encoding on the ApplicationPrimitiveDataType side to the numerical values on the level of the ImplementationDataType (shall reference SwBaseType with baseTypeEncoding set to NONE). There is no formal support defined to check that the values of invalidValue really correspond to each other. (cid:99)()
+[TPS_SWCT_01487] Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType (cid:100) The invalidValue specified on the level of an ApplicationPrimitiveDataType shall correspond to the invalidValue specified on the level of a compatible ImplementationDataType. The terms "corresponds" boils down to: 
+• category VALUE or BOOLEAN: application of CompuMethod 
+• category STRING: mapping of the encoding on the ApplicationPrimitiveDataType side to the numerical values on the level of the ImplementationDataType (shall reference SwBaseType with baseTypeEncoding set to NONE). There is no formal support defined to check that the values of invalidValue really correspond to each other. (cid:99)()
 
 [constr_1225] DataPrototype is typed by an ImplementationDataType that references a CompuMethod of category TEXTTABLE or BITFIELD_TEXTTABLE (cid:100) If a DataPrototype is typed by an ImplementationDataType that references a CompuMethod of category TEXTTABLE or BITFIELD_TEXTTABLE the applicable ValueSpecification shall be a TextValueSpecification. In this case the value provided shall match to one of the applicable text values (vt, shortLabel, symbol) defined by the applicable CompuScales. (cid:99)()
 
@@ -1678,6 +1569,7 @@ The term "corresponding" (as utilized in [constr_1140]) refers to the fact that 
 Figure 5.26: Relationships required to consider the invalidValue
 
 [constr_1282] Restriction concerning the usage of RuleBasedValueSpecification or a ReferenceValueSpecification for the specification of an invalidValue (cid:100) The aggregation of a RuleBasedValueSpecification or a ReferenceValueSpecification for the definition of a ApplicationPrimitiveDataType.swDataDefProps.invalidValue is not supported. (cid:99)()
+
 #@SECTION: 5.4.3 Properties for Measurement
 #@CLASS: ArgumentDataPrototype
 #@CLASS: DataPrototype
@@ -1689,6 +1581,11 @@ Figure 5.26: Relationships required to consider the invalidValue
 #@CLASS: SwcInternalBehavior
 #@CLASS: VariableAccess
 #@CLASS: VariableDataPrototype
+#@CLASS: SwDataDefProps
+#@CLASS: VariableAccess
+#@CLASS: SwCalibrationAccessEnum
+#@CLASS: ArgumentDataPrototype
+#@CLASS: ClientServerOperation
 
 In embedded automotive software design, measurement means access to memory locations in an ECU and transferring its contents to the measurement & calibration system. While in classical software design, variables abstract the memory locations in the code, AUTOSAR provides for this purpose the DataPrototype with its various specializations:
 
@@ -1724,6 +1621,7 @@ Table 5.48: SwCalibrationAccessEnum
 Table 5.49: Supported combinations of swImplPolicy and swCalibrationAccess
 
 [constr_1018] measurementPoint shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess (cid:100) Due to the nature of data elements characterized by setting the swImplPolicy to measurementPoint, such data elements shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess. (cid:99)()
+
 #@SECTION: 5.4.4 Properties of Curves and Maps
 #@CLASS: ApplicationDataType
 #@CLASS: ApplicationPrimitiveDataType
@@ -1744,6 +1642,11 @@ Table 5.49: Supported combinations of swImplPolicy and swCalibrationAccess
 #@CLASS: SwRecordLayout
 #@CLASS: SwVariableRefProxy
 #@CLASS: Unit
+#@CLASS: SwGenericAxisParamType
+#@CLASS: CalprmAxisCategoryEnum
+#@CLASS: CompuMethod
+#@CLASS: BaseType
+#@CLASS: AutosarDataType
 
 A characteristic table is defined by setting the category of the corresponding AutosarDataType or DataPrototype to CURVE respectively MAP, CUBOID, CUBE_4, and CUBE_5. Its SwDataDefProps determine an axis description. The type of the functional values is given by the attached SwBaseType and the CompuMethod.
 
@@ -1760,22 +1663,15 @@ Figure 5.29 shows how an individual axis is represented by the meta-model. The c
 [TPS_SWCT_01107] swMinAxisPoints and swMaxAxisPoints represent variation points (cid:100) The value of attributes swMinAxisPoints and swMaxAxisPoints is subject to variant handling. (cid:99)(RS_SWCT_03148)
 
 Figure 5.29: Meta-Model Elements used for a Curve
-
 Figure 5.30: Illustration of a Curve in M1
+Table 5.50: SwCalprmAxisSet
+Table 5.51: SwCalprmAxis
+Table 5.52: CalprmAxisCategoryEnum
+Table 5.53: SwCalprmAxisTypeProps
+Table 5.54: SwAxisIndividual
+Table 5.55: SwAxisGeneric
+Table 5.56: SwAxisGrouped
 
-SwCalprmAxisSet Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter Note This element specifies the input parameter axes (abscissas) of parameters (and variables, if these are used adaptively).
-
-SwCalprmAxis Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter This element specifies an individual input parameter axis (abscissa). Note
-
-Enumeration CalprmAxisCategoryEnum Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter This enum specifies the possible values of the category property within SwCalprmAxis. Description COM_AXIS is equal to an STD_AXIS, the difference is, that a COM_AXIS is an shared axis, that means this axis can be used multiple times by different CURVEs, MAPs, CUBOIDs, CUBE_4s, and CUBE_5s.
-
-SwCalprmAxisTypeProps (abstract) Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationParameter Note Base class for the type of the calibration axis. This provides the particular model of the specialization. If the specialization would be the directly from SwCalPrmAxis, the sequence of common properties and the specializes ones would be different.
-
-SwAxisIndividual Class Package M2::AUTOSARTemplates::CommonStructure::Axis Note This meta-class describes an axis integrated into a parameter (field etc.). The integration makes this individual to each parameter. The so-called grouped axis represents the counterpart to this. It is conceived as an independent parameter (see class SwAxisGrouped).
-
-SwAxisGeneric Class Package M2::AUTOSARTemplates::CommonStructure::Axis Note This meta-class defines a generic axis. In a generic axis the axispoints points are calculated in the ECU. The ECU is equipped with a fixed calculation algorithm. Parameters for the algorithm can be stored in the data component of the ECU. Therefore these parameters are specified in the data declaration, not in the calibration data.
-
-SwAxisGrouped Class Package M2::AUTOSARTemplates::CommonStructure::Axis Note An SwAxisGrouped is an axis which is shared between multiple calibration parameters.
 #@SECTION: 5.4.5 Setting an Axis Input Value
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: ArgumentDataPrototype
@@ -1855,6 +1751,7 @@ The basic patterns for referencing DataPrototypes are explained in section 5.3.2
 As the definition of a calibration parameter may involve the definition of several axes the necessity to provide this amount of information might become cumbersome and (to some extent) redundant and difficult to maintain if the same calibration parameter is accessed from within several RunnableEntitys. In this case it would be necessary to repeat the more or less complex set of information for each RunnableEntity.
 
 In other words: To avoid this unnecessary level of complexity for the definition of access to calibration parameters, it is possible to define the access to the calibration parameter on the level of InstantiationDataDefProps which have been defined to facilitate this kind of re-use (for more information please refer to section 7.5.4). This ability is also documented in Table 5.39.
+
 #@SECTION: 5.4.6 Specifying Data Dependencies
 #@CLASS: ParameterDataPrototype
 #@CLASS: SwDataDependency
@@ -1863,12 +1760,11 @@ In other words: To avoid this unnecessary level of complexity for the definition
 
 SwDataDependency allows dependent data elements to be specified. For example, other ParameterDataPrototypes can be combined into one ParameterDataPrototype whose consistent value is automatically derived by the measurement and calibration system. Upon adjusting one of the parameters, the dependent parameter is then also automatically adjusted according to the chosen formula.
 
-Consider for example a rectangular triangle with a hypotenuse of length 1, where the length of the other sides are the parameter A and B. When adjusting A the parameter (cid:113) (1 − A ∗ A). Also other parameters might depend on B, e.g. B_AREA = B ∗ B or TRIANGULAR_AREA = (A ∗ B)/2. This example is shown in listing 5.6.
+Consider for example a rectangular triangle with a hypotenuse of length 1, where the length of the other sides are the parameter A and B. When adjusting A the parameter B has to be adjusted accordingly to B = √(1 − A ∗ A). Also other parameters might depend on B, e.g. B_AREA = B ∗ B or TRIANGULAR_AREA = (A ∗ B)/2. This example is shown in listing 5.6.
 
 A dependent parameter should not be adjustable by itself. The only way to influence its value is through the adjustment of a parameter it depends on.
 
 Listing 5.6: Data Dependency
-
 <PER-INSTANCE-PARAMETERS>
 <PARAMETER-DATA-PROTOTYPE>
 <SHORT-NAME>A</SHORT-NAME>
@@ -1942,22 +1838,11 @@ Listing 5.6: Data Dependency
 </PARAMETER-DATA-PROTOTYPE>
 </PER-INSTANCE-PARAMETERS>
 
-SwDataDependency
-
-This element describes the interdependencies of data objects, e.g. variables and parameters.
-
-Use cases:
-• Calculate the value of a calibration parameter (by the MCD system) from the value(s) of other calibration parameters.
-• Virtual data - that means the data object is not directly in the ecu and this property describes how the "virtual variable" can be computed from the real ones (by the MCD system).
 
 Table 5.59: SwDataDependency
-
-(cid:28)atpMixed(cid:29) SwDataDependencyArgs
-
-This element specifies the elements used in a SwDataDependency.
-
 Table 5.60: SwDataDependencyArgs
-#@SECTION: 5.4.7 Precedence of data properties with respect to data elements, axis ele
+
+#@SECTION: 5.4.7 Precedence of data properties with respect to data elements, axis elements, computation methods, units
 #@CLASS: ApplicationDataType
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: AutosarDataType
@@ -1966,8 +1851,10 @@ Table 5.60: SwDataDependencyArgs
 #@CLASS: SwCalprmAxisSet
 #@CLASS: SwCalprmAxisTypeProps
 #@CLASS: SwDataDefProps
+#@CLASS: SwCalibrationAccessEnum
+#@CLASS: DataConstr
+#@CLASS: CompuMethod
 
-ments, computation methods, units
 
 There are similar attributes defined in SwDataDefProps as well as in SwCalprmAxis as well as in CompuMethod. Therefore we need to define which attribute value wins in the overall process from SWC-Description to MC-Support to ASAM-A2L.
 
@@ -1984,6 +1871,7 @@ Figure 5.35 illustrates the fact that some attributes in SwDataDefProps can also
 Figure 5.35: Various Attributes in the Context of SwDataDefProps
 
 The following examples illustrate particular cases (the highest precedence comes first):
+#@Hierarchical
 • [TPS_SWCT_01497] Precedence of the unit of value axis (cid:100) For the usage of unit of value axis the following precedence rule is defined:
   - SwDataDefProps.valueAxisDataType.swDataDefProps.unit
   - SwDataDefProps.valueAxisDataType.swDataDefProps.compuMethod.unit
@@ -2055,7 +1943,43 @@ Note that SwAxisIndividual.inputVariableType.swDataDefProps.dataConstr represent
 Please note that SwAxisIndividual.inputVariableType.swDataDefProps.dataConstr represent the input value and not the axis itself. For this reason there is no specific constraint that displayFormat needs to match.
 
 • [TPS_SWCT_01505] Precedence of calibration access along structure hierarchies in complex types (cid:100) For the usage of calibration access along structure hierarchies in complex types the precedence rule is defined in table 5.61. (cid:99)()
-
+[
+  {
+    "outer": "notAccessible",
+    "inner": "*",
+    "result": "notAccessible"
+  },
+  {
+    "outer": "readOnly",
+    "inner": "readOnly",
+    "result": "readOnly"
+  },
+  {
+    "outer": "readOnly",
+    "inner": "readWrite",
+    "result": "readOnly"
+  },
+  {
+    "outer": "readOnly",
+    "inner": "notAccessible",
+    "result": "notAccessible"
+  },
+  {
+    "outer": "readWrite",
+    "inner": "notAccessible",
+    "result": "notAccessible"
+  },
+  {
+    "outer": "readWrite",
+    "inner": "readOnly",
+    "result": "readOnly"
+  },
+  {
+    "outer": "readWrite",
+    "inner": "readWrite",
+    "result": "readWrite"
+  }
+]
 Table 5.61: Precedence of swCalibrationAccess along structure hierarchies
 
 The interpretation of table 5.61 is it lists possible combinations of values of SwCalibrationAccessEnum for outer and inner elements of a complex data type and the (in the column "result") indicates value of SwCalibrationAccessEnum applicable for this specific combination.
@@ -2066,6 +1990,8 @@ The interpretation of table 5.61 is it lists possible combinations of values of 
 (cid:99)()
 
 Note that the swCalibrationAccess defined on a Compound Primitive Data Type (see [TPS_SWCT_01179]) reflects the entire curve or map. Therefore, if the entire curve or map cannot be accessed by the measurement calibration diagnostic system (MCD-System), the axis can also not be accessed. On the other hand it might be that access is granted for the value axis only but not for the axis points.
+/#@Hierarchical
+---------------------------------------------------------
 #@SECTION: 5.5 Elements used in Properties of Data Deﬁnitions
 This section describes further elements which are attached to SwDataDefProps via associations.
 #@SECTION: 5.5.1 Computation Methods
@@ -2087,12 +2013,6 @@ This section describes further elements which are attached to SwDataDefProps via
 [TPS_SWCT_01276] Computation methods (cid:100) An important part of semantics is the specification of a so-called computation method which specifies the conversion between the physical and the internal representation of data. This usually makes sense only for primitive data types. (cid:99)()
 
 An ApplicationCompositeDataType cannot be given a particular semantic meaning as a whole but it is obviously possible to specify the semantics of all or a part of the contained elements, i.e. the ApplicationPrimitiveDataTypes.
-
-CompuMethod
-
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod This meta-class represents the ability to express the relationship between a physical value and the mathematical representation.
-
-Note that this is still independent of the technical implementation in data types. It only specifies the formula how the internal value corresponds to its physical pendant.
 
 Table 5.62: CompuMethod
 
@@ -2138,7 +2058,7 @@ For more complex functions (e.g. rational functions) it is usually not possible 
 A further implication is that the unit itself may not have a dimension, i.e. all exponents of SI units are 0.
 
 Figure 5.36 sketches a conceptual overview of CompuMethod. It consists of the following attributes:
-
+#@Hierarchical
 • [TPS_SWCT_01281] Unit associated with a PhysicalDimension (cid:100) A unit (described in next section) can be associated with a PhysicalDimension. (cid:99)()
 
 Note that quantities like "%" are not derived from SI units. However, they have a meaning in the physical world and need to be represented in form of data types. Therefore, a CompuMethod also applies in those cases.
@@ -2160,6 +2080,7 @@ Within each CompuScale we have the abstract CompuScaleContents. To deal with pos
 The sequence of the values V carries the information for the exponents, that means the first V is the coefficient for x0, the second V is the coefficient for x1, etc. With this sequence the values of the exponents can be entirely represented. (cid:99)()
 
 [constr_1025] Avoid division by zero in rational formula (cid:100) The rational formula shall not yield any division by zero. (cid:99)()
+/#@Hierarchical
 
 [TPS_SWCT_01284] CompuScale might require a representation in the generated RTE C code (cid:100) A CompuScale might require a representation in the generated RTE C code. For this purpose it is necessary to identify a property that controls how to symbol used for the CompuScale in the C code is created. The symbol itself can be created out of different sources according to a standardized precedence schema. (cid:99)()
 
@@ -2178,8 +2099,25 @@ The sequence of the values V carries the information for the exponents, that mea
  • SCALE_RATIONAL_AND_TEXTTABLE
  • TEXTTABLE
  • BITFIELD_TEXTTABLE (cid:99)()
+Table 5.63: Compu
+Table 5.64: CompuContent
+Table 5.65: CompuScale
+Table 5.66: CompuScales
+Table 5.67: CompuScaleContents
+Table 5.68: CompuRationalCoeffs
+Table 5.69: CompuConst
 
 [TPS_SWCT_01429] [constr_1135] only applies for BITFIELD_TEXTTABLE (cid:100) Note that [constr_1135] only applies for BITFIELD_TEXTTABLE. It does not apply to the definition of vt in the context of an ApplicationValueSpecification. (cid:99)()
+Table 5.70: CompuScaleRationalFormula
+Table 5.71: CompuScaleConstantContents
+Table 5.72: CompuNominatorDenominator
+Please note that the values of coefficients within a rational formula are not restricted
+to integer values. It is possible to use floating point values as well.
+The values of exponents cannot be set arbitrarily but are implicitly defined by the
+appearance of coefficients in CompuNominatorDenominator.v, i.e. the first value in
+the ordered list of CompuNominatorDenominator.v represents the exponent 0, the
+second CompuNominatorDenominator.v represents the exponent 1, and so on.
+
 #@SECTION: 5.5.1.1 Category Values in the context of a CompuMethod
 #@CLASS: CompuMethod
 #@CLASS: CompuScale
@@ -2191,18 +2129,6 @@ Table 5.73 contains a definition of possible values for the attribute category.
 
 Table 5.73: ASAM compuMethod
 
-| ASAM Category | Meaning | Specific properties |
-|--------------|---------|---------------------|
-| IDENTICAL | This CompuMethod just hands over the internal value with an optional unit. | Only the base elements are allowed and unit, physConstr and internalConstr are optional. This is the simplest type of a CompuMethod. |
-| LINEAR | A linear conversion can be performed in two steps: The internal value is multiplied with a factor; after that, an offset is added to the result of the multiplication. | Exactly one CompuScale, with two v in compuNumerator and one v in compuDenominator. |
-| SCALE_LINEAR | Used for a piecewise linear conversion | More than one compuScale can be defined. Additionally there have to be the upperLimit and lowerLimit elements which define the region of validity for the linear function. The boundaries of the regions shall not overlap. |
-| SCALE_LINEAR_AND_TEXTTABLE | Used for piecewise definition of one linear and several texttable scales. | Properties depend on the used scale function. For details see definition of SCALE_LINEAR and TEXTTABLE. The scales shall each provide lowerLimit and upperLimit definitions. |
-| RAT_FUNC | The rational function type is similar to the linear type without the restrictions for the compuNumerators and compuDenominators. | It can have as many v elements as needed for the rational function. The sequence of the values v carries the information for the exponents, that means the first v is the coefficient for x0, the second v is the coefficient for x1, etc. With this sequence the values of the exponents can be entirely represented. A rational function is only applicable for conversions in the direction that it is defined for, i.e. the automatic calculation of the inverse function is not supported by the MCD system. |
-| SCALE_RAT_FUNC | Used for piecewise defined rational conversion. | Properties depend on the used scale function. For details see definition of SCALE_RAT_FUNC and TEXTTABLE. The scales shall each provide lowerLimit and upperLimit definitions. |
-| SCALE_RATIONAL_AND_TEXTTABLE | Used for piecewise definition of one rational and several texttable scales. | Properties depend on the used scale function. For details see definition of SCALE_RAT_FUNC and TEXTTABLE. The scales shall each provide lowerLimit and upperLimit definitions. |
-| TEXTTABLE | The type TEXTTABLE is used for transformations of the internal value into textual elements. | [constr_1134] Allowed structure of TEXTTABLE (cid:100) physConstr is not allowed. compuInternalToPhys shall exist with compuScales consisting of upperLimit and lowerLimit. (cid:99)() The result is placed in the vt member of CompuConst. The compuDefaultValue is optional. If the reverse calculation is needed then for each scale the compuInverseValue can be used to define the reverse calculation result. If no inverse value is explicitly defined then the smallest possible value of the scale will be used as result of the reverse calculation. The values per scale are defined in CompuConst. |
-| TAB_NOINTP | Similar to TEXTTABLE, but for numerical values. | |
-| BITFIELD_TEXTTABLE | Similar to TEXTTABLE but for bit fields | BITFIELD_TEXTTABLE is derived from TEXTTABLE. The main difference is that TEXTTABLE results to a single value while BITFIELD_TEXTTABLE results to a concatenated value set. [constr_1135] The separator in vt is "|" and is forbidden in vt therefore. (cid:99)() In difference to all the other computational methods every CompuScale will be applied including the bit mask specified in mask. Therefore it is allowed for this type of CompuMethod, that CompuScales overlap. To calculate the string reverse to a value, the string has to be split and the according value for each substring has to be summed up. The sum is finally transmitted. The processing has to be done in order of the CompuScale elements. |
 #@SECTION: 5.5.1.2 Applicability of Attributes in the context of a CompuMethod
 #@CLASS: CompuConst
 #@CLASS: CompuMethod
@@ -2219,9 +2145,21 @@ Please note that annotations apply to the individual cell values. These annotati
 
 Table 5.74: Allowed Attributes vs. category for CompuMethods
 
-The following legend applies to the cells in table 5.74: D Define the attribute. Attribute is not applicable for usage in the scope of this element. O Optionally define the attribute.
+The following legend applies to the cells in table 5.74: 
+D Define the attribute. 
+N/A Attribute is not applicable for usage in the scope of this element. 
+O Optionally define the attribute.
 
-In addition to the primary cell legend the following annotations apply to the cells in table 5.74: (1) This applies if not already defined by compuPhysToInternal. (2) In this case both compuPhysToInternal and compuInternalToPhys shall be defined (according to [constr_1021]) unless compuInverseValue exists (see [TPS_SWCT_01282]). In other words, if the explicit definition of a compuInverseValue exists then there is no need to define conversions from internal to physical and vice versa. (3) Not applicable for CompuScales where attribute compuScaleContents.compuConst exists. (4) Limits shall be defined according to [constr_1022]. (5) Restrictions on the structure of the CompuMethod according to [constr_1134] apply. (6) Specify an output value for a conversion formula if the value to be converted yields outside the plausibility limit (for more information, please refer to the class table of Compu). (7) Restricted applicability for the attribute CompuScale.symbol, see [constr_1146]). (8) Mandatory for CompuConst; enforced for CompuRationalCoeffs.
+In addition to the primary cell legend the following annotations apply to the cells in table 5.74:
+(1) This applies if not already defined by compuPhysToInternal. 
+(2) In this case both compuPhysToInternal and compuInternalToPhys shall be defined (according to [constr_1021]) unless compuInverseValue exists (see [TPS_SWCT_01282]). In other words, if the explicit definition of a compuInverseValue exists then there is no need to define conversions from internal to physical and vice versa. 
+(3) Not applicable for CompuScales where attribute compuScaleContents.compuConst exists. 
+(4) Limits shall be defined according to [constr_1022]. 
+(5) Restrictions on the structure of the CompuMethod according to [constr_1134] apply. 
+(6) Specify an output value for a conversion formula if the value to be converted yields outside the plausibility limit (for more information, please refer to the class table of Compu). 
+(7) Restricted applicability for the attribute CompuScale.symbol, see [constr_1146]). 
+(8) Mandatory for CompuConst; enforced for CompuRationalCoeffs.
+
 #@SECTION: 5.5.1.3 Example for Enumeration
 #@CLASS: CompuMethod
 
@@ -2251,6 +2189,7 @@ Listing 5.7: example for enumeration
 </COMPU-SCALES>
 </COMPU-INTERNAL-TO-PHYS>
 </COMPU-METHOD>
+
 #@SECTION: 5.5.1.4 Example for Linear Conversion
 #@CLASS: CompuMethod
 
@@ -2280,6 +2219,7 @@ Listing 5.8: example for linear CompuMethod
 </COMPU-SCALES>
 </COMPU-INTERNAL-TO-PHYS>
 </COMPU-METHOD>
+
 #@SECTION: 5.5.1.5 Example for Linear Conversion with texttable
 #@CLASS: CompuMethod
 
@@ -2323,62 +2263,44 @@ Listing 5.9: example for linear and texttable CompuMethod
 </COMPU-SCALES>
 </COMPU-INTERNAL-TO-PHYS>
 </COMPU-METHOD>
+
 #@SECTION: 5.5.1.6 Example for conversion speciﬁed by a rational function
-The semantics of rational function is: Internal = v0*phys0+v1*phys1+v2*phys2+... v0*phys0+v1*phys1+v2*phys2+...
+The semantics of rational function is: 
+Internal = (v0*phys0+v1*phys1+v2*phys2+...)/(v0*phys0+v1*phys1+v2*phys2+...)
 
-The following example illustrates a reciprocal conversion. I = 1000 60+2[K-1]*P[K]
-
-<COMPU-METHOD>
+The following example illustrates a reciprocal conversion. 
+I = 1000 /(60+2[K-1]*P[K])
 
 Listing 5.10: example for rational CompuMethod
-
+<COMPU-METHOD>
 <SHORT-NAME>rational</SHORT-NAME>
 <CATEGORY>RAT_FUNC</CATEGORY>
 <UNIT-REF DEST="UNIT">Kelvin</UNIT-REF>
 <COMPU-PHYS-TO-INTERNAL>
-
 <COMPU-SCALES>
-
 <COMPU-SCALE>
-
 <LOWER-LIMIT INTERVAL-TYPE="CLOSED">-29</LOWER-LIMIT>
 <UPPER-LIMIT INTERVAL-TYPE="OPEN">INF</UPPER-LIMIT>
 <COMPU-RATIONAL-COEFFS>
-
 <COMPU-NUMERATOR>
-
 <V>1000</V>
-
 </COMPU-NUMERATOR>
 <COMPU-DENOMINATOR>
-
 <V>60</V>
 <V>2</V>
-
 </COMPU-DENOMINATOR>
 </COMPU-RATIONAL-COEFFS>
-
 </COMPU-SCALE>
-
 </COMPU-SCALES>
-
 </COMPU-PHYS-TO-INTERNAL>
-
 </COMPU-METHOD>
+----------------------------------------------------------------
 #@SECTION: 5.5.1.7 Example for BITFIELD_TEXTTABLE
 #@CLASS: CompuConstNumericContent
 #@CLASS: CompuConstTextContent
 #@CLASS: CompuScaleContents
 
 The following example shows how a CompuMethod of category BITFIELD_TEXTTABLE can be used to assign a special meaning to each bit of an AutosarDataType of category VALUE:
-
-Bit 0 front left 0(0) = no, 1(1) = yes
-
-Bit 1 front right 0(0) = no, 1(2) = yes
-Bit 2 rear left 0(0) = no, 1(4) = yes
-Bit 3 rear right 0(0) = no, 1(8) = yes
-Bit 4-5 problem 00(0) = flat tire 01(16) = low pressure 10(32) = unbalanced 11(48) = unknown
-All Bits error 11111111 = invalid value
 
 Table 5.75: Example Bitfield
 
