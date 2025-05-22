@@ -1991,9 +1991,10 @@ The interpretation of table 5.61 is it lists possible combinations of values of 
 
 Note that the swCalibrationAccess defined on a Compound Primitive Data Type (see [TPS_SWCT_01179]) reflects the entire curve or map. Therefore, if the entire curve or map cannot be accessed by the measurement calibration diagnostic system (MCD-System), the axis can also not be accessed. On the other hand it might be that access is granted for the value axis only but not for the axis points.
 /#@Hierarchical
----------------------------------------------------------
+
 #@SECTION: 5.5 Elements used in Properties of Data Deﬁnitions
 This section describes further elements which are attached to SwDataDefProps via associations.
+
 #@SECTION: 5.5.1 Computation Methods
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: ApplicationPrimitiveDataType
@@ -2009,6 +2010,8 @@ This section describes further elements which are attached to SwDataDefProps via
 #@CLASS: CompuScales
 #@CLASS: PhysicalDimension
 #@CLASS: Unit
+#@CLASS: CompuConstTextContent
+#@CLASS: Compu
 
 [TPS_SWCT_01276] Computation methods (cid:100) An important part of semantics is the specification of a so-called computation method which specifies the conversion between the physical and the internal representation of data. This usually makes sense only for primitive data types. (cid:99)()
 
@@ -2299,6 +2302,8 @@ Listing 5.10: example for rational CompuMethod
 #@CLASS: CompuConstNumericContent
 #@CLASS: CompuConstTextContent
 #@CLASS: CompuScaleContents
+#@CLASS: CompuMethod
+#@CLASS: CompuScale
 
 The following example shows how a CompuMethod of category BITFIELD_TEXTTABLE can be used to assign a special meaning to each bit of an AutosarDataType of category VALUE:
 
@@ -2472,6 +2477,10 @@ Table 5.78: CompuConstNumericContent
 #@CLASS: PhysicalDimensionMappingSet
 #@CLASS: Unit
 #@CLASS: UnitGroup
+#@CLASS: ApplicationPrimitiveDataType
+#@CLASS: SwDataDefProps
+#@CLASS: PhysConstrs
+#@CLASS: PhysConstrs
 
 [TPS_SWCT_01285] Physical dimension (cid:100) Another important part of the semantics associated with a data type is its physical dimension. Units are used to augment the value with additional information like m/s or liter. This is necessary for a correct interpretation of the physical value for input and output processes. The conversion of values into other units like km/h into miles/h is also possible. Therefore the unit involves information about its physical dimensions. (cid:99)()
 
@@ -2534,6 +2543,11 @@ Figure 5.41: Example for units and unit groups
 #@CLASS: Limit
 #@CLASS: MonotonyEnum
 #@CLASS: IntervalTypeEnum
+#@CLASS: ARElement
+#@CLASS: ImplementationDataType
+#@CLASS: ApplicationDataType
+#@CLASS: AbstractNumericalVariationPoint
+
 
 Section 5.2.4.1 already shows an example on how to define constraints for the physical range of a data type, see Figure 5.4.
 
@@ -2589,6 +2603,10 @@ Table 5.92: IntervalTypeEnum
 #@CLASS: SwAddrMethod
 #@CLASS: SwComponentPrototype
 #@CLASS: VariableDataPrototype
+#@CLASS: MemorySection
+#@CLASS: Implementation
+#@CLASS: BswSchedulableEntity
+#@CLASS: AlignmentType
 
 In an ECU there might be various methods to access a particular object (e.g measurement or calibration parameter) according to a given address. This variety might come from different kind of memory (near, far, . . .) but also from indirections which are introduced by the compiler.
 
@@ -2698,6 +2716,8 @@ Via the SwDataDefProps a record-layout can be associated to a data entity. If th
 #@CLASS: SwRecordLayoutGroup
 #@CLASS: SwRecordLayoutGroupContent
 #@CLASS: SwRecordLayoutV
+#@CLASS: ImplementationDataType
+
 
 As mentioned above, the purpose of record layout is to specify how an object (e.g. a calibration parameter) is serialized in memory of an ECU. The canonical approach for this is to define nested groups (SwRecordLayoutGroup). These groups indicate the structure of the corresponding ImplementationDataType. The serialization is then executed by iterating over the axes of a curve, a map, or iterating along a string. The contents of such a record layout group (SwRecordLayoutGroupContent) is a mixture of (thus nested) groups and values (SwRecordLayoutV).
 
@@ -2793,6 +2813,10 @@ FNC_VALUES -->
 #@CLASS: ImplementationDataType
 #@CLASS: ParameterDataPrototype
 #@CLASS: SwRecordLayout
+#@CLASS: AutosarDataType
+#@CLASS: ImplementationDataTypeElement
+
+
 
 [constr_1027] Types for record layouts (cid:100) Because ParameterDataPrototypes have a (cid:28)isOfType(cid:29)-relation to ApplicationDataTypes or ImplementationDataTypes the related data types shall properly match to the details as speciﬁed in swDataDefProps. (cid:99)()
 
@@ -2830,6 +2854,9 @@ Figure 5.52: reﬁning subElements
 #@CLASS: InterpolationRoutine
 #@CLASS: InterpolationRoutineMapping
 #@CLASS: InterpolationRoutineMappingSet
+#@CLASS: BswModuleEntry
+#@CLASS: InterpolationRoutine
+#@CLASS: SwDataDefProps
 
 [TPS_SWCT_01300] Relationship between record layouts and interpolation routines (cid:100) The relationship between record layouts and interpolation routines can be specified in InterpolationRoutineMappingSet.
 
