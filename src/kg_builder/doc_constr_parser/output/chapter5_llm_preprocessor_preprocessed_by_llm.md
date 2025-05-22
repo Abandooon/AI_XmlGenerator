@@ -2294,7 +2294,7 @@ Listing 5.10: example for rational CompuMethod
 </COMPU-SCALES>
 </COMPU-PHYS-TO-INTERNAL>
 </COMPU-METHOD>
-----------------------------------------------------------------
+
 #@SECTION: 5.5.1.7 Example for BITFIELD_TEXTTABLE
 #@CLASS: CompuConstNumericContent
 #@CLASS: CompuConstTextContent
@@ -2308,8 +2308,7 @@ Note that this example is somehow tricky. Bit 6+7 are not used for valid data, b
 
 Internal: 28
 28 = 0b0001_1100
-7654 3210
-Bit
+Bit  7654 3210
 
 Physical: "problem = low pressure | rear right = yes | rear left = yes | front right = no | front left = no"
 
@@ -2461,68 +2460,12 @@ Listing 5.11: example for bit field text table CompuMethod
 
 Note that a constraint applies concerning the values within a CompuMethod that is subject to [constr_1146]. According to [constr_1133], it is (as exemplified in the example) required that if a specific CompuScale Symbolic Name appears more than once in the context of the CompuMethod then the values of CompuScale.lowerLimit shall be identical for all affected CompuScales and the values of CompuScale.upperLimit shall also be identical for all affected CompuScales.
 
-CompuScaleContents (abstract)
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
-This abstract meta-class represents the content of one particular scale.
-Note
-ARObject
-Base
-Datatype
-Attribute
-–
-–
-
-Mul. Kind Note
-–
-–
-–
-–
-
 Table 5.76: CompuScaleContents
-
-CompuConstTextContent
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
-Note
-Base
-Attribute
-vt
-
-This meta-class represents the textual content of a scale.
-ARObject,CompuConstContent
-Datatype
-VerbatimString
-
-ref This represents a textual constant in the computation method.
-
-Mul. Kind Note
-1
 
 Table 5.77: CompuConstTextContent
 
-CompuConstNumericContent
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::ComputationMethod
-Note
-
-This meta-class represents the fact that the constant value of the computation method is a numerical value. It is separated from CompuConstFormulaContent to support compatibility with ASAM HDO.
-ARObject,CompuConstContent
-Datatype
-Numerical
-
-attr This represents the numerical value.
-
-Mul. Kind Note
-1
-
-Base
-Attribute
-v
-
-Tags: xml.sequenceOffset=50
-
 Table 5.78: CompuConstNumericContent
+
 #@SECTION: 5.5.2 Physical Units, Physical Dimensions and Unit Groups
 #@CLASS: PhysicalDimension
 #@CLASS: PhysicalDimensionMapping
@@ -2532,7 +2475,9 @@ Table 5.78: CompuConstNumericContent
 
 [TPS_SWCT_01285] Physical dimension (cid:100) Another important part of the semantics associated with a data type is its physical dimension. Units are used to augment the value with additional information like m/s or liter. This is necessary for a correct interpretation of the physical value for input and output processes. The conversion of values into other units like km/h into miles/h is also possible. Therefore the unit involves information about its physical dimensions. (cid:99)()
 
-[TPS_SWCT_01056] Physical dimension (cid:100) The substructure of physical dimensions defines all used quantities in the SI-System12 (e.g. velocity as length/time corresponds to m/s). (cid:99)(RS_SWCT_02100)
+[TPS_SWCT_01056] Physical dimension (cid:100) The substructure of physical dimensions defines all used quantities in the SI-System (e.g. velocity as length/time corresponds to m/s). (cid:99)(RS_SWCT_02100)
+
+For the deﬁnition of what SI units are, see http://physics.nist.gov/cuu/Units/
 
 [TPS_SWCT_01057] Unit references one physical dimension (cid:100) The unit references one physical dimension. If the physical dimensions of two units are identical, a conversion between them is basically possible. (cid:99)(RS_SWCT_02100)
 
@@ -2542,23 +2487,21 @@ Figure 5.38: Definition of SI based units
 
 For a detailed description of these elements please refer to the [23]. Standard units are already predeﬁned for AUTOSAR in form of a description ﬁle.
 
-Unit Class Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units Note This is a physical measurement unit. All units that might be deﬁned should stem from SI units. In order to convert one unit into another factor and offset are deﬁned. For the calculation from SI-unit to the deﬁned unit the factor (factorSiToUnit ) and the offset (offsetSiToUnit ) are applied: unit = siUnit * factorSiToUnit + offsetSiToUnit For the calculation from a unit to SI-unit the reciprocal of the factor (factorSiToUnit ) and the negation of the offset (offsetSiToUnit ) are applied: siUnit = (unit - offsetSiToUnit) / factorSiToUnit Base Attribute Tags: atp.recommendedPackage=Units ARElement,ARObject,CollectableElement,Identiﬁable,Multilanguage Referrable,PackageableElement,Referrable Datatype Mul. Kind Note 12For the deﬁnition of what SI units are, see http://physics.nist.gov/cuu/Units/
-
 Table 5.79: Unit
 
 [TPS_SWCT_01059] Exponent for each of the seven fundamental dimensions (cid:100) For basing a new unit directly upon SI units an exponent for each of the seven fundamental dimensions and its corresponding SI unit needs to be speciﬁed. (cid:99)(RS_SWCT_02100)
 
 [TPS_SWCT_01060] Negative exponents (cid:100) Negative exponents are allowed. (cid:99)(RS_SWCT_02100) Note that quantities like "%" are not derived from SI units and therefore have no association to a physical dimension.
 
-PhysicalDimension Class Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units Note This class represents a physical dimension. If the physical dimension of two units is identical, then a conversion between them is possible. The conversion between units is related to the deﬁnition of the physical dimension. Note that the equivalence of the exponents does not per se deﬁne the convertibility. For example Energy and Torque share the same exponents (Nm). Please note further the value of an exponent does not necessarily have to be an integer number. It is also possible that the value yields a rational number, e.g. to compute the square root of a given physical quantity. In this case the exponent value would be a rational number where the numerator value is 1 and the denominator value is 2. Base Tags: atp.recommendedPackage=PhysicalDimensions ARElement,ARObject,CollectableElement,Identiﬁable,Multilanguage Referrable,PackageableElement,Referrable Attribute Datatype currentExp Numerical Mul. Kind Note 0..1 attr This attribute represents the exponent of the physical dimension "electric current". lengthExp Numerical 0..1 attr The exponent of the physical dimension "length". Tags: xml.sequenceOffset=50 luminousIntensityExp Numerical 0..1 attr The exponent of the physical dimension "luminous intensity". Tags: xml.sequenceOffset=80 massExp Numerical 0..1 attr The exponent of the physical dimension "mass". molarAmountExp temperatureExp Numerical 0..1 attr The exponent of the physical dimension "quantity of substance". Tags: xml.sequenceOffset=30 Tags: xml.sequenceOffset=70 Numerical 0..1 attr The exponent of the physical dimension "temperature". Tags: xml.sequenceOffset=60 timeExp Numerical 0..1 attr The exponent of the physical dimension "time". Tags: xml.sequenceOffset=40 Table 5.80: PhysicalDimension
+Note that quantities like "%" are not derived from SI units and therefore have no association to a physical dimension.
+
+Table 5.80: PhysicalDimension
 
 AUTOSAR provides the ability to map two PhysicalDimensions onto each others with the implication that the two mapped PhysicalDimensions shall be considered compatible (for more explanation please refer to [constr_1053]). PhysicalDimensionMappings are aggregated in form of PhysicalDimensionMappingSets. This allows for gathering semantically related PhysicalDimensionMappings into the same PhysicalDimensionMappingSet.
 
 Figure 5.39: Modeling of PhysicalDimensionMapping
-
-PhysicalDimensionMappingSet Class Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units Note This class represents a container for a list of mappings between PhysicalDimensions. Base Attribute physicalDimensionMapping Tags: atp.recommendedPackage=PhysicalDimensionMappingSets ARElement,ARObject,CollectableElement,Identiﬁable,Multilanguage Referrable,PackageableElement,Referrable Datatype PhysicalDimensionMapping Mul. Kind Note * aggr This aggregation represents a concrete collections of PhysicalDimensionMappings in the context of one PhysicalDimensionMappingSet. Table 5.81: PhysicalDimensionMappingSet
-
-PhysicalDimensionMapping Class Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units Note This class represents a speciﬁc mapping between two PhysicalDimensions. Base Attribute firstPhysicalDimension ARObject Datatype PhysicalDimension enclosing PhysicalDimensionMapping. Mul. Kind Note 1 ref This represents the ﬁrst PhysicalDimension of the Table 5.82: PhysicalDimensionMapping
+Table 5.81: PhysicalDimensionMappingSet
+Table 5.82: PhysicalDimensionMapping
 
 [constr_1026] Compatibility of Units (cid:100) For data types or prototypes, units should be referenced from within the associated CompuMethod. But if it is referenced from within SwDataDefProps and/or PhysConstrs (for exceptional use cases) it shall be compatible (for more details please refer to [constr_1052]) to the ones referenced from the referred CompuMethod. (cid:99)()
 
@@ -2566,17 +2509,21 @@ Please note that for the sake of model consistency, it is also possible to deﬁ
 
 [constr_1255] ApplicationPrimitiveDataTypes of category BOOLEAN and STRING (cid:100) If a Unit is referenced from within SwDataDefProps and/or PhysConstrs owned by an ApplicationPrimitiveDataTypes of category BOOLEAN and STRING it is required that this Unit represents a meaningless unit, i.e. the referenced physicalDimension shall not deﬁne any exponent value other than 0. (cid:99)()
 
-UnitGroup Class Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Units Note This meta-class represents the ability to specify a logical grouping of units.The category denotes the unit system that the referenced units are associated to. In this way, e.g. country-speciﬁc unit systems (CATEGORY="COUNTRY") can be deﬁned as well as speciﬁc unit systems for certain application domains. In the same way a group of equivalent units, can be deﬁned which are used in different countries, by setting CATEGORY="EQUIV_UNITS". KmPerHour and MilesPerHour could such be combined to one group named "vehicle_speed". The unit MeterPerSec would not belong to this group because it is normally not used for vehicle speed. But all of the mentioned units could be combined to one group named "speed". Note that the UnitGroup does not ensure the physical compliance of the units. This is maintained by the physical dimension. Base Attribute Tags: atp.recommendedPackage=UnitGroups ARElement,ARObject,CollectableElement,Identiﬁable,Multilanguage Referrable,PackageableElement,Referrable Datatype Mul. Kind Note Attribute unit Datatype Unit Mul. Kind Note * ref This represents one particular unit in the UnitGroup. Tags: xml.sequenceOffset=20 Table 5.83: UnitGroup
+Table 5.83: UnitGroup
 
 [TPS_SWCT_01068] Units can be grouped with the help of UnitGroup (cid:100) Units can be grouped with the help of UnitGroup. This grouping is intended as a logical grouping which allows for example an MCD (Measurement Calibration Diagnostic) device to present different unit systems to the user such that he can chose the most appropriate one. (cid:99)(RS_SWCT_02100)
 
 Figure 5.40: Relation of SwComponentType to UnitGroup
 
-The association from SwComponentType to UnitGroup (beside the obvious use case to allow for the speciﬁcation of unitGroups relevant for the enclosing SwComponentType in particular) is supposed to support the identiﬁcation of UnitGroups relevant for the enclosing System. This aspect facilitates the creation of ASAM MCD2 ﬁles for a concrete ECU. According to [23] the following three values for categorys are recommended in the context of UnitGroup: • COUNTRY collects units which are common in a particular country, denoted by the shortName / longName of the UnitGroup • CALCULATION refers to speciﬁc units intended for the creation of data types. In this category of UnitGroup, several Units may refer to the same PhysicalDimension as well as to different PhysicalDimension. • EQUIV_UNITS deﬁne a group of equivalent units, which are used for example in different countries. Additional values for category may be mutually agreed between the stakeholders. In the example shown in Figure 5.41, Units are classiﬁed by country and use.
+The association from SwComponentType to UnitGroup (beside the obvious use case to allow for the speciﬁcation of unitGroups relevant for the enclosing SwComponentType in particular) is supposed to support the identiﬁcation of UnitGroups relevant for the enclosing System. This aspect facilitates the creation of ASAM MCD2 ﬁles for a concrete ECU. 
+According to [23] the following three values for categorys are recommended in the context of UnitGroup: • COUNTRY collects units which are common in a particular country, denoted by the shortName / longName of the UnitGroup • CALCULATION refers to speciﬁc units intended for the creation of data types. In this category of UnitGroup, several Units may refer to the same PhysicalDimension as well as to different PhysicalDimension. • EQUIV_UNITS deﬁne a group of equivalent units, which are used for example in different countries. Additional values for category may be mutually agreed between the stakeholders. In the example shown in Figure 5.41, Units are classiﬁed by country and use.
 
-[TPS_SWCT_01061] Conversion of units (cid:100) If a unit has to be converted according to the chosen country code the physicalDimension of both units shall be the same. If another unit shares the same UnitGroup with a category of EQUIV_UNITS it is preferred as target of the conversion. (cid:99)(RS_SWCT_02100) Assume "MilesPerHour" should be converted to a European unit: Based on the physicalDimension a conversion to "MeterPerSec" as well as "MilesPerHour" is possible. In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are both members of the UnitGroup named "VehicleSpeed". In contrast to this "MeterPerSec" is not considered as appropriate for "VehicleSpeed".
+[TPS_SWCT_01061] Conversion of units (cid:100) If a unit has to be converted according to the chosen country code the physicalDimension of both units shall be the same. If another unit shares the same UnitGroup with a category of EQUIV_UNITS it is preferred as target of the conversion. (cid:99)(RS_SWCT_02100) 
+
+Assume "MilesPerHour" should be converted to a European unit: Based on the physicalDimension a conversion to "MeterPerSec" as well as "MilesPerHour" is possible. In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are both members of the UnitGroup named "VehicleSpeed". In contrast to this "MeterPerSec" is not considered as appropriate for "VehicleSpeed".
 
 Figure 5.41: Example for units and unit groups
+
 #@SECTION: 5.5.3 Data Constraints
 #@CLASS: DataConstr
 #@CLASS: DataConstrRule
@@ -2596,7 +2543,10 @@ Figure 5.42 and the following class tables show the meta-classes involved in the
 
 A more detailed documentation of these meta-classes can be found in in [23]. As refinement of these definitions, the following values apply for constrLevel:
 
-[constr_2561] Application of DataConstrRule.constrLevel (cid:100) DataConstrRule.constrLevel is limited to 0: This represents so called "hard limits". They shall always be specified. 1: This represents so called "soft limits". Soft limits may be violated after confirmation by the user of an MCD-System. Other values may exist, but the semantics is outside of the AUTOSAR scope. (cid:99)()
+[constr_2561] Application of DataConstrRule.constrLevel (cid:100) DataConstrRule.constrLevel is limited to 
+0: This represents so called "hard limits". They shall always be specified. 
+1: This represents so called "soft limits". Soft limits may be violated after confirmation by the user of an MCD-System. 
+Other values may exist, but the semantics is outside of the AUTOSAR scope. (cid:99)()
 
 [TPS_SWCT_01287] Standard limits and extended limits in the ASAM-MCD2 (ASAP2) specification (cid:100) The ASAM-MCD2 (ASAP2) specification [25] defines standard limits and extended limits. If extended limits exist, the standard limits may be violated upon user confirmation. Note that in consequence, of this definition, the following approach applies for A2L generation:
 • If only one DataConstrRule with constrLevel set to 0 is specified, it represents the standard limits in A2L. No extended limits are generated.
@@ -2606,7 +2556,15 @@ A more detailed documentation of these meta-classes can be found in in [23]. As 
 Note that even if this is somehow counterintuitive (since the one with constrLevel set to 0 changes its role), it matches the best to the definitions in ASAM-MCD2. (cid:99)()
 
 Figure 5.42: Meta-model for defining Data Constraints
-
+Table 5.84: DataConstr
+Table 5.85: DataConstrRule
+Table 5.86: PhysConstrs
+Table 5.87: InternalConstrs
+Table 5.88: ScaleConstr
+Table 5.89: ScaleConstrValidityEnum
+Table 5.90: Limit
+Table 5.91: MonotonyEnum
+----------------------------------------------------
 [TPS_SWCT_01288] Interpretation of PhysConstrs and InternalConstrs by tools (cid:100) DataConstr is an ARElement which can be reused by several data type specifications. Especially an ImplementationDataType and an ApplicationDataType which are mapped to each other, can refer to the same constraints or they can define their own constraints. To avoid conflicts, in both cases PhysConstrs shall be interpreted by tools only with respect to application data types while InternalConstrs shall be interpreted only with respect to implementation data types. If either a physical or internal constraint is missing an existing CompuMethod can be used to calculate the missing information. (cid:99)()
 
 [TPS_SWCT_01289] Semantics of Limit (cid:100) Technically, a Limit specifies a boundary of the interval of valid values for a given context (i.e. a data type). Please note that the boundary might or might not be part of the interval itself, i.e. the interval might be open or closed. From the formal point of view, the range represents all real numbers defined by: range = {x ∈ (cid:60) (cid:107) lowerLimit.value < x < upperLimit.value} ∪{lowerLimit.value (cid:107) lowerLimit.intervalT ype == "CLOSED"} ∪{upperLimit.value (cid:107) upperLimit.intervalT ype == "CLOSED"} (cid:99)()
