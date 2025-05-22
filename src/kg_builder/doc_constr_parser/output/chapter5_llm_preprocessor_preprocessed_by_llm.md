@@ -2564,16 +2564,22 @@ Table 5.88: ScaleConstr
 Table 5.89: ScaleConstrValidityEnum
 Table 5.90: Limit
 Table 5.91: MonotonyEnum
-----------------------------------------------------
+
 [TPS_SWCT_01288] Interpretation of PhysConstrs and InternalConstrs by tools (cid:100) DataConstr is an ARElement which can be reused by several data type specifications. Especially an ImplementationDataType and an ApplicationDataType which are mapped to each other, can refer to the same constraints or they can define their own constraints. To avoid conflicts, in both cases PhysConstrs shall be interpreted by tools only with respect to application data types while InternalConstrs shall be interpreted only with respect to implementation data types. If either a physical or internal constraint is missing an existing CompuMethod can be used to calculate the missing information. (cid:99)()
 
-[TPS_SWCT_01289] Semantics of Limit (cid:100) Technically, a Limit specifies a boundary of the interval of valid values for a given context (i.e. a data type). Please note that the boundary might or might not be part of the interval itself, i.e. the interval might be open or closed. From the formal point of view, the range represents all real numbers defined by: range = {x ∈ (cid:60) (cid:107) lowerLimit.value < x < upperLimit.value} ∪{lowerLimit.value (cid:107) lowerLimit.intervalT ype == "CLOSED"} ∪{upperLimit.value (cid:107) upperLimit.intervalT ype == "CLOSED"} (cid:99)()
+[TPS_SWCT_01289] Semantics of Limit (cid:100) Technically, a Limit specifies a boundary of the interval of valid values for a given context (i.e. a data type). Please note that the boundary might or might not be part of the interval itself, i.e. the interval might be open or closed. From the formal point of view, the range represents all real numbers defined by: 
+range = {𝑥 ∈ ℝ || lowerLimit.value < 𝑥 < upperLimit.value}
+        ∪ {lowerLimit.value || lowerLimit.intervalType == "CLOSED"}
+        ∪ {upperLimit.value || upperLimit.intervalType == "CLOSED"}
+(cid:99)()
 
 Please note that Limit inherits from AbstractNumericalVariationPoint. This means it is a number which may be subject to variability. For this reason, it is not possible to constrain the content already in the xml schema.
 
 [constr_1191] Value of Limit shall yield a numerical value (cid:100) After all variability is bound, the content obtained from a limit shall yield a numerical value. (cid:99)()
 
 Nevertheless it is not possible to distinguish on this level between float and integer values. Consequently [constr_1191] will not take the burden from an AUTOSAR tool to decide whether or not the value provided as a limit actually makes sense in any of the given contexts.
+Table 5.92: IntervalTypeEnum
+
 #@SECTION: 5.5.4 Addressing Methods
 #@CLASS: DataPrototype
 #@CLASS: MemoryAllocationKeywordPolicyType
@@ -2657,51 +2663,20 @@ The reason for this is that the resources for data allocated by the RTE will be 
 
 The purpose of [constr_1402] is a reduction of the complexity of memory layouts and reduce the amount of memory gaps due to allocation restrictions.
 
-SwAddrMethod
-
-Class Package M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects Note Used to assign a common addressing method, e.g. common memory section, to data or code objects. These objects could actually live in different modules or components.
-
-Base Attribute memoryAllocationKeywordPolicy option Tags: atp.recommendedPackage=SwAddrMethods ARElement,ARObject,AtpBlueprint,AtpBlueprintable,Collectable Element,Identifiable,MultilanguageReferrable,PackageableElement,Referrable Datatype MemoryAllocationKeywordPolicyType Identifier attr Enumeration to specify the name pattern of the ref This attribute introduces the ability to specify Mul. Kind Note 0..1 Memory Allocation Keyword. * sectionInitializationPolicy SectionInitializationPolicyType further intended properties of the MemorySection in with the related objects shall be placed. These properties are handled as to be selected. The intended options are mentioned in the list. In the Memory Mapping configuration, this option list is used to determine an appropriate MemMapAddressingModeSet. 0..1 attr Specifies the expected initialization of the variables (inclusive those which are implementing VariableDataPrototypes). Therefore this is an implementation constraint for initialization code of BSW modules (especially RTE) as well as the start-up code which initializes the memory segment to which the AutosarDataPrototypes referring to the SwAddrMethod's are later on mapped. If the attribute is not defined it has the identical semantic as the attribute value "INIT" sectionType MemorySectionType 0..1 attr Defines the type of memory sections which can be associated with this addresssing method.
-
 Table 5.93: SwAddrMethod
-
-Primitive Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive SectionInitializationPolicyType Note Types SectionInitializationPolicyType describes the intended initialization of MemorySections. The following values are standardized in AUTOSAR Methodology:
-
-• NO-INIT: No initialization and no clearing is performed. Such data elements shall not be read before one has written a value into it.
-• INIT: To be used for data that are initialized by every reset to the specified value (initValue).
-• POWER-ON-INIT: To be used for data that are initialized by "Power On" to the specified value (initValue). Note: there might be several resets between power on resets.
-• CLEARED: To be used for data that are initialized by every reset to zero.
-• POWER-ON-CLEARED: To be used for data that are initialized by "Power On" to zero. Note: there might be several resets between power on resets.
-
-Please note that the values are defined similar to the representation of enumeration types in the XML schema to ensure backward compatibility.
-
-Tags: xml.xsd.customType=SECTION-INITIALIZATION-POLICY-TYPE; xml.xsd.type=NMTOKEN
 
 Table 5.94: SectionInitializationPolicyType
 
-Enumeration MemorySectionType Package Note Literal calibration Variables calprm code configData const excludeFromFlash M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects Enumeration to specify the essential nature of the data which can be allocated in a common memory class by the means of the AUTOSAR Memory Mapping. Description This memory section is reserved for "virtual variables" that are computed by an MCD system during a measurement session but do not exist in the ECU memory. To be used for calibratable constants of ECU-functions. To be used for mapping code to application block, boot block, external flash etc. Constants with attributes that show that they reside in one segment for module configuration. To be used for global or static constants. This memory section is reserved for "virtual parameters" that are taken for computing the values of so-called dependent parameter of an MCD system. Dependent Parameters that are not at the same time "virtual parameters" are allocated in the ECU memory.
-
-Virtual parameters, on the other hand, are not allocated in the ECU memory. Virtual parameters exist in the ECU Hex file for the purpose of being considered (for computing the values of dependent parameters) during an offline-calibration session. To be used for global or static variables. The expected initialization is specified with the attribute sectionInitializationPolicy.
-
-var
-
 Table 5.95: MemorySectionType
 
-Enumeration MemoryAllocationKeywordPolicyType Package Note Literal addrMethodShortName M2::AUTOSARTemplates::CommonStructure::AuxillaryObjects Enumeration to specify the name pattern of the Memory Allocation Keyword. Description The MemorySection shortNames of referring MemorySections and therefore the belonging Memory Allocation Keywords in the code are build with the shortName of the SwAddrMethod. This is the default value if the attribute does not exist. The MemorySection shortNames of referring MemorySections and therefore the belonging Memory Allocation Keywords in the code are build with the shortName of the SwAddrMethod and a variable alignment postfix.
-
-addrMethodShortNameAndAlignment Thereby the alignment postfix needs to be consistent with the alignment attribute of the related MemorySection.
-
 Table 5.96: MemoryAllocationKeywordPolicyType
-
-Primitive AlignmentType Package M2::AUTOSARTemplates::GenericStructure::GeneralTemplateClasses::Primitive Note Types This primitive represents the alignment of objects within a memory section. The value is in number of bits or UNKNOWN (deprecated), 8 , 16, 32 UNSPECIFIED or BOOLEAN. Typical values for numbers are 8, 16, 32.
-
-Tags: xml.xsd.customType=ALIGNMENT-TYPE; xml.xsd.pattern=[1-9][0-9]*|0x[0-9a-f]*|0[0-7]*|0b[0-1]*|UNSPECIFIED|UNKNOWN|BOOLEAN; xml.xsd.type=string
 
 Table 5.97: AlignmentType
 
 For more information on the specification of the MemorySection refer to [7].
 
 Figure 5.43: Assigning an address method to a memory section
+
 #@SECTION: 5.5.5 Record Layouts
 #@CLASS: ApplicationDataType
 #@CLASS: SwDataDefProps
@@ -2714,6 +2689,7 @@ Figure 5.43: Assigning an address method to a memory section
 • to identify the proper interpolation routines
 
 Via the SwDataDefProps a record-layout can be associated to a data entity. If the very same serialization approach is used for multiple ApplicationDataTypes all of these may refer to the same SwRecordLayout even if the size of the data is different. (cid:99)()
+
 #@SECTION: 5.5.5.1 Specifying Record Layouts
 #@CLASS: AsamRecordLayoutSemantics
 #@CLASS: AxisIndexType
@@ -2728,42 +2704,15 @@ As mentioned above, the purpose of record layout is to specify how an object (e.
 These values refer to particular properties of the object (e.g. value, count, . . .). By application of this pattern, the serialization of any complex object can be specified.
 
 Figure 5.44: Specification of a record layout
-
-SwRecordLayout
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-Defines how the data objects (variables, calibration parameters etc.) are to be stored in the ECU memory. As an example, this definition specifies the sequence of axis points in the ECU memory. Iterations through axis values are stored within the sub-elements swRecordLayoutGroup.
-
 Table 5.98: SwRecordLayout
-
-SwRecordLayoutV
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-This element specifies which values are stored for the current SwRecordLayoutGroup. If no baseType is present, the SwBaseType referenced initially in the parent SwRecordLayoutGroup is valid. The specification of swRecordLayoutVAxis gives the axis of the values which shall be stored in accordance with the current record layout SwRecordLayoutGroup. In swRecordLayoutVProp one can specify the information which shall be stored.
-
 Table 5.99: SwRecordLayoutV
-
-SwRecordLayoutGroup
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-Specifies how a record layout is set up. Using SwRecordLayoutGroup it recursively models iterations through axis values. The subelement swRecordLayoutGroupContentType may reference other SwRecordLayouts, SwRecordLayoutVs and SwRecordLayoutGroups for the modeled record layout.
-
 Table 5.100: SwRecordLayoutGroup
-
-SwRecordLayoutGroupContent
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-This is the contents of a RecordLayout which is inserted for every iteration. Note that since this is atpMixed, multiple properties can be inserted for each iteration.
-
 Table 5.101: SwRecordLayoutGroupContent
 
 [constr_1264] Iteration along output axis is only supported for VALUE and VAL_BLK (cid:100) swRecordLayoutVIndex in SwRecordLayoutV cannot be 0 for any value of SwRecordLayoutV.category other than VALUE and VAL_BLK. (cid:99)()
 
 For CURVE, MAP, etc. the iteration shall be performed along the input axis.
-
-AxisIndexType
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
+#@Hierarchical
 This meta-class specifies an axis in a curve/map data object. The index satisfies the following convention:
 • 0 output "axis"
 • 1 input axis 1 (X input axis e.g. of a CURVE)
@@ -2772,15 +2721,8 @@ This meta-class specifies an axis in a curve/map data object. The index satisfie
 • 4 input axis 3 (Z4 input axis e.g. of a CUBE_4)
 • 5 input axis 3 (Z5 input axis e.g. of a CUBE_5)
 • 6..9 etc.
-
-The output "axis" provides access to the output value of the parameter. Note that this access is usually performed via an index according to the input axis. In addition to this, the Values STRING and ARRAY support specific iterations.
-
 Table 5.102: AxisIndexType
-
-RecordLayoutIteratorPoint
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-This meta-class denotes a start / endpoint for the iteration of a SwRecordLayoutGroup. It can be an integer or one of the keywords MAX-TEXT-SIZE|ARRAY-SIZE. Note that negative numbers are counted backwards. Therefore e.g. -1 refers to the last value.
+/#@Hierarchical
 
 Table 5.103: RecordLayoutIteratorPoint
 
@@ -2796,14 +2738,56 @@ Figure 5.46: Values for swRecordLayoutVProp for fixed axis
 
 [TPS_SWCT_01296] Different approaches of ASAM MCD-2MC and AUTOSAR with respect to SwRecordLayout (cid:100) ASAM MCD-2D specification (also known as A2L, resp. ASAP) uses keywords in record layouts where MSR/AUTOSAR uses the more generic approach specified here. It may happen that this generic approach cannot always be safely mapped to the A2L keywords. Therefore SwRecordLayoutV.category as well as SwRecordLayoutGroup.category can assist the conversion to the current A2L format. (cid:99)()
 
-AsamRecordLayoutSemantics
-Package M2::AUTOSARTemplates::SWComponentTemplate::Datatype::RecordLayout
-Note
-This meta-class is used to denote the semantics in particular in terms of the corresponding A2L-Keyword. This is to support the mapping of the more general record layouts in AUTOSAR/MSR to the specific A2L keywords. It is possible to express the specific semantics of A2l RecordLayout keywords in SwRecordlayoutGroup but not always vice versa. Therefore the mapping is provided in this optional attribute. It is specified as NMTOKEN to reduce the direct dependency of ASAM an AUTOSAR standards.
-
 Table 5.105: AsamRecordLayoutSemantics
 
-The values of SwRecordLayoutV.category resp. SwRecordLayoutGroup.category can, for example, be taken from the ASAM MCD 2D specification provided in [25]. Examples are such as INDEX_INCR, INDEX_DECR, COLUMN_DIR, ROW_DIR, ALTERNATE_WITH_X, ALTERNATE_WITH_Y, ALTERNATE_CURVES. The consistency of these values of SwRecordLayoutV.category resp. SwRecordLayoutGroup.category with the structure of the SwRecordLayout shall be ensured by the author of the SwRecord Layout. Note that there are keywords in A2L bound to a calibration parameter which in MSR/AUTOSAR are represented by the SwRecordLayout (DEPOSIT etc.).
+The values of SwRecordLayoutV.category resp. SwRecordLayoutGroup.category can, for example, be taken from the ASAM MCD 2D specification provided in [25]. Examples are such as INDEX_INCR, INDEX_DECR, COLUMN_DIR, ROW_DIR, ALTERNATE_WITH_X, ALTERNATE_WITH_Y, ALTERNATE_CURVES. 
+The consistency of these values of SwRecordLayoutV.category resp. SwRecordLayoutGroup.category with the structure of the SwRecordLayout shall be ensured by the author of the SwRecord Layout. 
+Note that there are keywords in A2L bound to a calibration parameter which in MSR/AUTOSAR are represented by the SwRecordLayout (DEPOSIT etc.).
+
+The following XML fragment provides an example for a SwRecordLayout for a curve. Note that in this case recognizing the patterns represented by the A2LKeywords (shown in XML-Comment) is pretty straight forward, even if the keywords were not provided in the SwRecordLayoutV.category as well as SwRecordLayoutGroup.category.
+
+Listing 5.12: Example for RecordLayout of a curve
+<SW-RECORD-LAYOUT>
+<SHORT-NAME>RecordLayoutCurve</SHORT-NAME>
+<SW-RECORD-LAYOUT-GROUP>
+<SW-RECORD-LAYOUT-V><!-- SRC_ADDR_X -->
+<SHORT-LABEL>srcAdr</SHORT-LABEL>
+<SW-RECORD-LAYOUT-V-PROP>SOURCE-ADR</SW-RECORD-LAYOUT-V-PROP>
+</SW-RECORD-LAYOUT-V>
+<SW-RECORD-LAYOUT-V><!-- NO_AXIS_PTS_X -->
+<SHORT-LABEL>noOfAxisPts</SHORT-LABEL>
+<SW-RECORD-LAYOUT-V-PROP>COUNT</SW-RECORD-LAYOUT-V-PROP>
+<SW-RECORD-LAYOUT-V-INDEX>1</SW-RECORD-LAYOUT-V-INDEX>
+</SW-RECORD-LAYOUT-V>
+<SW-RECORD-LAYOUT-GROUP><!-- AXIS_PTS_X -->
+<SHORT-LABEL>xPts</SHORT-LABEL>
+<CATEGORY>INDEX_INCR</CATEGORY>
+<SW-RECORD-LAYOUT-GROUP-AXIS>1</SW-RECORD-LAYOUT-GROUP-AXIS>
+<SW-RECORD-LAYOUT-GROUP-FROM>1</SW-RECORD-LAYOUT-GROUP-FROM>
+<SW-RECORD-LAYOUT-GROUP-TO>-1</SW-RECORD-LAYOUT-GROUP-TO>
+<SW-RECORD-LAYOUT-V>
+<SHORT-LABEL>xPt</SHORT-LABEL>
+<SW-RECORD-LAYOUT-V-AXIS>1</SW-RECORD-LAYOUT-V-AXIS> <!--
+AXIS_PTS_X -->
+<SW-RECORD-LAYOUT-V-PROP>VALUE</SW-RECORD-LAYOUT-V-PROP>
+</SW-RECORD-LAYOUT-V>
+</SW-RECORD-LAYOUT-GROUP>
+<SW-RECORD-LAYOUT-GROUP>
+<SHORT-LABEL>values</SHORT-LABEL><!-- FNC_VALUES -->
+<CATEGORY>COLUMN_DIR</CATEGORY>
+<SW-RECORD-LAYOUT-GROUP-AXIS>0</SW-RECORD-LAYOUT-GROUP-AXIS>
+<SW-RECORD-LAYOUT-GROUP-FROM>1</SW-RECORD-LAYOUT-GROUP-FROM>
+<SW-RECORD-LAYOUT-GROUP-TO>-1</SW-RECORD-LAYOUT-GROUP-TO>
+<SW-RECORD-LAYOUT-V>
+<SHORT-LABEL>value</SHORT-LABEL>
+<SW-RECORD-LAYOUT-V-AXIS>0</SW-RECORD-LAYOUT-V-AXIS><!--
+FNC_VALUES -->
+<SW-RECORD-LAYOUT-V-PROP>VALUE</SW-RECORD-LAYOUT-V-PROP>
+</SW-RECORD-LAYOUT-V>
+</SW-RECORD-LAYOUT-GROUP>
+</SW-RECORD-LAYOUT-GROUP>
+</SW-RECORD-LAYOUT>
+
 #@SECTION: 5.5.5.2 RecordLayouts and DataTypes
 #@CLASS: ApplicationDataType
 #@CLASS: ImplementationDataType
@@ -2841,6 +2825,7 @@ Figure 5.51: algorithm to map the details of an application data type to the cor
 [TPS_SWCT_01299] Relation of swRecordLayoutGroup to subElement (cid:100) For each swRecordLayoutGroup an appropriate subElement shall be created. This sub element is then reﬁned according to the approach sketched in ﬁgure 5.52. The algorithm shall be recursively applied applied to the newly created ImplementationDataTypeElements. As the record layout groups are nested, this recursion yields the complete structure in the ImplementationDataType. (cid:99)()
 
 Figure 5.52: reﬁning subElements
+
 #@SECTION: 5.5.5.3 Record Layouts and Interpolation Routines
 #@CLASS: InterpolationRoutine
 #@CLASS: InterpolationRoutineMapping
@@ -2852,30 +2837,15 @@ The interpolation routine is represented as BswModuleEntry and implements a part
 
 The intended interpolation method is denoted in the value of attribute SwDataDefProps.swInterpolationMethod. (cid:99)()
 
-process subElements of RecordLayoutGroup«iterative»RecordElementsubElementset category to STRUCTUREset category to ARRAYset MaxNumberOfElementsget RecordLayoutGroup or RecordLayoutVImplementationDataTypeElementset category to VALUE and set dataDefPropertiescreate subElementoriginImplementationDataType Or ImplementationDataTypeElementcreate subElementImplementationDataTypeElementActivityFinal[hasSwRecordLayoutFrom][has no iterator][has exactly one value][RecordLayoutGroup][RecordLayoutValue]
-
 Figure 5.53: Mapping of Record Layouts and Interpolation Routines
-
-InterpolationRoutineMappingSet
-This meta-class specifies a set of interpolation routine mappings.
-
-Tags: atp.recommendedPackage=InterpolationRoutineMappingSets
-ARElement,ARObject,CollectableElement,Identifiable,Multilanguage
-Referrable,PackageableElement,Referrable
 
 Table 5.106: InterpolationRoutineMappingSet
 
-InterpolationRoutineMapping
-This meta-class provides a mapping between one record layout and its matching interpolation routines. This allows to formally specify the semantics of the interpolation routines.
-
-The use case is such that the curves/Maps define an interpolation method. This mapping table specifies which interpolation routine implements methods for a particular record layout. Using this information, the implementer of a software-component can select the appropriate interpolation routine.
-
 Table 5.107: InterpolationRoutineMapping
 
-InterpolationRoutine
-This represents an interpolation routine taken to evaluate the contents of a curve or map against a specific input value.
-
 Table 5.108: InterpolationRoutine
+
+----------------------------------------------------------------------------------
 #@SECTION: 5.6 Speciﬁcation of Constant Values
 #@SECTION: 5.6.1 Overview
 #@CLASS: ApplicationArrayDataType
