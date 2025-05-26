@@ -62,7 +62,7 @@ Note: [constr_1295] corresponds to [SWS_RTE_07670].
 #@CLASS: RPortPrototype
 #@CLASS: SenderReceiverInterface
 #@CLASS: VariableDataPrototype
-#@CLASS: HandleInvalidEnum
+#@ENUM: HandleInvalidEnum
 
 [TPS_SWCT_01114] SenderReceiverInterface (cid:100) SenderReceiverInterfaces allow for the specification of the typically asynchronous communication pattern where a sender provides data that is required by one or more receivers.
 
@@ -121,10 +121,10 @@ The underlying semantics of a client/server communication is that a client may i
 
 #@SECTION: 4.2.3.1 Client Server Interface
 #@CLASS: ArgumentDataPrototype
-#@CLASS: ArgumentDirectionEnum
+#@ENUM: ArgumentDirectionEnum
 #@CLASS: ClientServerInterface
 #@CLASS: ClientServerOperation
-#@CLASS: ServerArgumentImplPolicyEnum
+#@ENUM: ServerArgumentImplPolicyEnum
 #@CLASS: AutosarDataPrototype
 #@CLASS: AutosarDataType
 #@CLASS: ApplicationArrayElement
@@ -301,7 +301,7 @@ For more information regarding the ability to connect different kinds of PortPro
 #@CLASS: ServiceSwComponentType
 #@CLASS: SwcInternalBehavior
 #@CLASS: SwComponentType
-#@CLASS: SwCalibrationAccessEnum
+#@ENUM: SwCalibrationAccessEnum
 #@CLASS: VariableDataPrototype
 #@CLASS: FlatInstanceDescriptor
 #@CLASS: CompuMethod
@@ -724,7 +724,7 @@ The coefficient D0 represents the (reciprocal) offset and can take any value.
 #@SECTION: 4.3.2.2 Table Conversion
 #@CLASS: DataPrototype
 #@CLASS: DataPrototypeMapping
-#@CLASS: MappingDirectionEnum
+#@ENUM: MappingDirectionEnum
 #@CLASS: TextTableMapping
 #@CLASS: TextTableValuePair
 #@CLASS: AutosarDataType
@@ -818,8 +818,8 @@ Figure 4.19: Mapping of DataPrototypes that eventually refer to CompuMethods of 
 Figure 4.20: Application Level Port Annotations Overview
 
 #@SECTION: 4.4.2 SenderReceiverAnnotation
-#@CLASS: DataLimitKindEnum
-#@CLASS: ProcessingKindEnum
+#@ENUM: DataLimitKindEnum
+#@ENUM: ProcessingKindEnum
 #@CLASS: ReceiverAnnotation
 #@CLASS: RPortPrototype
 #@CLASS: SenderAnnotation
@@ -889,9 +889,9 @@ Figure 4.22: ClientServerAnnotation
 
 #@SECTION: 4.4.4 Annotation for the I/O Hardware Abstraction Layer
 #@CLASS: ArgumentDataPrototype
-#@CLASS: FilterDebouncingEnum
+#@ENUM: FilterDebouncingEnum
 #@CLASS: IoHwAbstractionServerAnnotation
-#@CLASS: PulseTestEnum
+#@ENUM: PulseTestEnum
 #@CLASS: SensorActuatorSwComponentType
 #@CLASS: VariableDataPrototype
 #@CLASS: NvDataInterface
@@ -980,7 +980,7 @@ Figure 4.27: NvDataPortAnnotation
 #@CLASS: DelegationSwConnector
 #@CLASS: PortPrototype
 #@CLASS: SenderReceiverInterface
-#@CLASS: SignalFanEnum
+#@ENUM: SignalFanEnum
 #@CLASS: VariableDataPrototype
 
 [TPS_SWCT_01216] DelegatedPortAnnotation (cid:100) The DelegatedPortAnnotation is used to define the Signal Fan In or Signal Fan Out inside the CompositionSwComponentType.
@@ -1097,9 +1097,9 @@ If consistency would be required this constraint might be a major obstacle for i
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: CompositeNetworkRepresentation
 #@CLASS: DataFilter
-#@CLASS: DataFilterTypeEnum
-#@CLASS: HandleOutOfRangeEnum
-#@CLASS: HandleTimeoutEnum
+#@ENUM: DataFilterTypeEnum
+#@ENUM: HandleOutOfRangeEnum
+#@ENUM: HandleTimeoutEnum
 #@CLASS: NonqueuedReceiverComSpec
 #@CLASS: NonqueuedSenderComSpec
 #@CLASS: PPortPrototype

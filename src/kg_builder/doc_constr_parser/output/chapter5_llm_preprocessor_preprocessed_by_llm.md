@@ -586,8 +586,8 @@ Figure 5.9: Summary of ApplicationCompositeDataType
 #@CLASS: ApplicationPrimitiveDataType
 #@CLASS: ApplicationRecordDataType
 #@CLASS: ApplicationRecordElement
-#@CLASS: ArraySizeHandlingEnum
-#@CLASS: ArraySizeSemanticsEnum
+#@ENUM: ArraySizeHandlingEnum
+#@ENUM: ArraySizeSemanticsEnum
 #@CLASS: AutosarDataType
 #@CLASS: DataPrototype
 #@CLASS: ImplementationDataType
@@ -1341,13 +1341,13 @@ Figure 5.23: Implementation of the InstanceRef for AutosarVariableRef
 #@CLASS: Annotation
 #@CLASS: DataPrototype
 #@CLASS: AtomicSwComponentType
-#@CLASS: SwCalibrationAccessEnum
+#@ENUM: SwCalibrationAccessEnum
 #@CLASS: InstantiationDataDefProps
 #@CLASS: ParameterAccess
 #@CLASS: FlatInstanceDescriptor
 #@CLASS: McDataInstance
 #@CLASS: McSupportData
-#@CLASS: SwImplPolicyEnum
+#@ENUM: SwImplPolicyEnum
 #@CLASS: VariableDataPrototype
 #@CLASS: SenderReceiverInterface
 #@CLASS: NvDataInterface
@@ -1511,7 +1511,7 @@ swImplPolicy is not explicitly set at any of the locations listed in "‘Place o
 #@CLASS: BaseType
 #@CLASS: ApplicationDataType
 #@CLASS: NumericalValueSpecification
-#@CLASS: HandleInvalidEnum
+#@ENUM: HandleInvalidEnum
 
 The diagram 5.5 shows that in addition to the semantics defined through the compuMethod (explained below in chapter 5.5.1), also an invalidValue can be specified. This is a requirement of the VFB [3], allowing to express which specific value is used to indicate invalidation.
 
@@ -1583,7 +1583,7 @@ Figure 5.26: Relationships required to consider the invalidValue
 #@CLASS: VariableDataPrototype
 #@CLASS: SwDataDefProps
 #@CLASS: VariableAccess
-#@CLASS: SwCalibrationAccessEnum
+#@ENUM: SwCalibrationAccessEnum
 #@CLASS: ArgumentDataPrototype
 #@CLASS: ClientServerOperation
 
@@ -1643,7 +1643,7 @@ Table 5.49: Supported combinations of swImplPolicy and swCalibrationAccess
 #@CLASS: SwVariableRefProxy
 #@CLASS: Unit
 #@CLASS: SwGenericAxisParamType
-#@CLASS: CalprmAxisCategoryEnum
+#@ENUM: CalprmAxisCategoryEnum
 #@CLASS: CompuMethod
 #@CLASS: BaseType
 #@CLASS: AutosarDataType
@@ -1851,7 +1851,7 @@ Table 5.60: SwDataDependencyArgs
 #@CLASS: SwCalprmAxisSet
 #@CLASS: SwCalprmAxisTypeProps
 #@CLASS: SwDataDefProps
-#@CLASS: SwCalibrationAccessEnum
+#@ENUM: SwCalibrationAccessEnum
 #@CLASS: DataConstr
 #@CLASS: CompuMethod
 
@@ -2539,10 +2539,10 @@ Figure 5.41: Example for units and unit groups
 #@CLASS: InternalConstrs
 #@CLASS: PhysConstrs
 #@CLASS: ScaleConstr
-#@CLASS: ScaleConstrValidityEnum
+#@ENUM: ScaleConstrValidityEnum
 #@CLASS: Limit
-#@CLASS: MonotonyEnum
-#@CLASS: IntervalTypeEnum
+#@ENUM: MonotonyEnum
+#@ENUM: IntervalTypeEnum
 #@CLASS: ARElement
 #@CLASS: ImplementationDataType
 #@CLASS: ApplicationDataType
@@ -2872,7 +2872,6 @@ Table 5.107: InterpolationRoutineMapping
 
 Table 5.108: InterpolationRoutine
 
-----------------------------------------------------------------------------------
 #@SECTION: 5.6 Speciﬁcation of Constant Values
 #@SECTION: 5.6.1 Overview
 #@CLASS: ApplicationArrayDataType
@@ -2888,78 +2887,27 @@ Table 5.108: InterpolationRoutine
 #@CLASS: RecordValueSpecification
 #@CLASS: TextValueSpecification
 #@CLASS: ValueSpecification
+#@CLASS: ReferenceValueSpecification
+#@CLASS: ApplicationValueSpecification
+#@CLASS: ApplicationDataType
+
 
 [TPS_SWCT_01177] Assignment of constant values (cid:100) Constant values can be assigned to a meta-class by aggregating the meta-class ValueSpecification. This aggregation can be used in two ways:
 1. by referencing to a reusable ConstantSpecification which contains another ValueSpecification
 2. or through an inline aggregation of a value specification of various kind. (cid:99)(RS_SWCT_03175)
 
-ConstantSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note Specification of a constant that can be part of a package, i.e. it can be defined stand-alone.
-Base Tags: atp.recommendedPackage=ConstantSpecifications ARElement,ARObject,CollectableElement,Identifiable,Multilanguage Referrable,PackageableElement,Referrable
-Datatype Mul. Kind Note
-Attribute valueSpec ValueSpecification 1 aggr Specification of an expression leading to a value for this constant.
 Table 5.109: ConstantSpecification
 
-ValueSpecification (abstract)
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note Base class for expressions leading to a value which can be used to initialize a data object.
-Base ARObject
-Datatype Identifier
-Attribute ref This can be used to identify particular value specifications for human readers, for example elements of a record type.
-Mul. Kind Note 0..1
-Attribute shortLabel
 Table 5.110: ValueSpecification
 
-ArrayValueSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note Specifies the values for an array.
-Base ARObject,ValueSpecification
-Datatype Mul. Kind Note
-Attribute element (ordered) ValueSpecification 1..* aggr The value for a single array element. All ValueSpecifications aggregated by ArrayValueSpecification shall have the same structure.
-Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
 Table 5.111: ArrayValueSpecification
 
-RecordValueSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note Specifies the values for a record.
-Base ARObject,ValueSpecification
-Datatype ValueSpecification
-Attribute field (ordered) Mul. Kind Note 1..* aggr The value for a single record field. This could also be mapped explicitly to a record element of the data type using the shortName of the ValueSpecification. But this would introduce a relationship to the data type that is too strong. As of now, it is only important that the structure of the data type matches the structure of the ValueSpecification indepenently of the shortNames.
-Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
 Table 5.112: RecordValueSpecification
 
-TextValueSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note The purpose of TextValueSpecification is to define the labels that correspond to enumeration values.
-Base ARObject,ValueSpecification
-Datatype VerbatimString
-Attribute value ref This is the value itself. Mul. Kind Note 1
-Note that vt uses the | operator to separate the values for the different bitfield masks in case that the semantics of the related DataPrototype is described by means of a BITFIELD_TEXTTABLE in the associated CompuMethod.
 Table 5.113: TextValueSpecification
 
-NumericalValueSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note A numerical ValueSpecification which is intended to be assigned to a Primitive data element. Note that the numerical value is a variant, it can be computed by a formula.
-Base ARObject,ValueSpecification
-Datatype Numerical
-Attribute value attr This is the value itself. Mul. Kind Note 1
-Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
 Table 5.114: NumericalValueSpecification
 
-ReferenceValueSpecification
-Class#@CLASS: 
-Package M2::AUTOSARTemplates::CommonStructure::Constants
-Note Specifies a reference to a data prototype to be used as an initial value for a pointer in the software.
-Base ARObject,ValueSpecification
-Datatype DataPrototype
-Attribute referenceValue ref The referenced data prototype. Mul. Kind Note 1
 Table 5.115: ReferenceValueSpecification
 
 [TPS_SWCT_01178] Specialized subclasses of ValueSpecification (cid:100) Figure 5.54 shows the specialized subclasses of ValueSpecification which allow to define values for different use cases:
@@ -2968,10 +2916,11 @@ Table 5.115: ReferenceValueSpecification
 • NumericalValueSpecification
 • ArrayValueSpecification
 • RecordValueSpecification
-• ApplicationValueSpecification: this can be used to specify the value of Compound Primitive Data Types (see [TPS_SWCT_01179]) such as curves and maps. for a primitive calibration value) for the specification of a value of a DataPrototype typed by an ApplicationDataType (see section 5.7.4). It is also possible to use this in general (e.g. Note that ApplicationValueSpecification is modeled along the example of ASAM CDF (for more information please refer to [27]).
+• ApplicationValueSpecification: this can be used to specify the value of Compound Primitive Data Types (see [TPS_SWCT_01179]) such as curves and maps. It is also possible to use this in general (e.g. for a primitive calibration value) for the speciﬁcation of a value of a DataPrototype typed by an ApplicationDataType (see section 5.7.4). Note that ApplicationValueSpecification is modeled along the example of ASAM CDF (for more information please refer to [27]).
 • reference to a DataPrototype: this can be used to describe initial values for pointer variables in the basic software. One use case is the exchange of data descriptions used to access calibration data for software emulation methods (see [7] for details).
 • ApplicationRuleBasedValueSpecification
-• NumericalRuleBasedValueSpecification (cid:99)(RS_SWCT_03175)
+• NumericalRuleBasedValueSpecification 
+(cid:99)(RS_SWCT_03175)
 
 Figure 5.54: Summary of ValueSpecification
 
@@ -2981,7 +2930,9 @@ It's important to understand that although the name of the meta-class TextValueS
 
 In other words, the purpose of TextValueSpecification is to define the labels that correspond to enumeration values. The constraints [constr_1225] and [constr_1284] correspond to each other such that [constr_1225] demands the usage of TextValueSpecification for the definition of labels for enumeration values while [constr_1284] says that the definition of labels for enumeration values is the only use case for TextValueSpecification.
 
-Note that ValueSpecification does not inherit from any data type. This would cause a redundancy in the meta-model since the intended data type of a ValueSpecification is already determined by the context in which it is aggregated. Nonetheless the intended data type imposes a certain constraint on the content of a ValueSpecification:
+Note that ValueSpecification does not inherit from any data type. This would cause a redundancy in the meta-model since the intended data type of a ValueSpecification is already determined by the context in which it is aggregated. 
+For example, “1” can be taken as a constant value for many data types. If the ValueSpecification would refer to a speciﬁc AutosarDataType it would be necessary to deﬁne a “1” for every single AutosarDataType this value is supposed to be used in combination with.
+Nonetheless the intended data type imposes a certain constraint on the content of a ValueSpecification:
 
 [constr_4035] ValueSpecification shall fit into data type (cid:100) An instance of ValueSpecification which is used to assign a value to a software object typed by an AutosarDataType shall fit into this AutosarDataType without losing information. (cid:99)()
 
@@ -2998,6 +2949,7 @@ The consequence of [constr_1273] is that for e.g. an ApplicationArrayDataType th
 [constr_1274] ArrayValueSpecification.elements shall be identical to the value of ImplementationDataType.subElement.arraySize of category ARRAY (cid:100) The initialization of a DataPrototype typed by an ImplementationDataType of category ARRAY by means of an ArrayValueSpecification shall exactly match the structure of the ImplementationDataType regardless of the setting of the attribute ImplementationDataType.subElement.arraySizeSemantics. This means that the number of ArrayValueSpecification.elements shall be identical to the value of ImplementationDataType.subElement.arraySize. (cid:99)()
 
 For deeply nested composite data types (including ImplementationDataTypes created in response to the existence of a Compound Primitive Data Type) [constr_1271], [constr_1272], and [constr_1273] shall be applied recursively according to the nature of the given nesting levels. For the "leaf" elements [constr_4035] applies.
+
 #@SECTION: 5.6.2 Speciﬁcation of Values based on Rules
 #@CLASS: AbstractRuleBasedValueSpecification
 #@CLASS: ApplicationRuleBasedValueSpecification
@@ -3006,6 +2958,7 @@ For deeply nested composite data types (including ImplementationDataTypes create
 #@CLASS: RuleBasedValueCont
 #@CLASS: RuleBasedValueSpecification
 #@CLASS: RuleArguments
+#@CLASS: CompuMethod
 
 [TPS_SWCT_01484] Meaning of ApplicationRuleBasedValueSpecification (cid:100) The purpose of the ApplicationRuleBasedValueSpecification is to provide means for a compact provision of values for DataPrototypes that otherwise would require a high volume (in terms of serialized ARXML) of e.g. initialization data. ApplicationRuleBasedValueSpecification may used for ApplicationArrayDataType, and also (if applicable) to the so-called Compound Primitive Data Types. (cid:99)(RS_SWCT_03260)
 
@@ -3058,22 +3011,13 @@ Please note that a single argument can be defined by the attributes • RuleArgu
 Table 5.121: RuleBasedValueSpecification
 
 Table 5.122: RuleArguments
+
 #@SECTION: 5.6.3 Reference to Constant
 #@CLASS: ConstantReference
 
 Note the specific meaning of ConstantReference: it passes the definition of the value on to a ConstantSpecification that is defined as part of an AUTOSAR ARPackage.
-
-ConstantReference
-
-Class Package M2::AUTOSARTemplates::CommonStructure::Constants Note Base Attribute constant
-
-Instead of defining this value inline, a constant is referenced. ARObject,ValueSpecification Datatype ConstantSpecification
-
-ref The referenced constant.
-
-Mul. Kind Note 1
-
 Table 5.123: ConstantReference
+
 #@SECTION: 5.6.4 Values for Compound Primitive Data Types
 #@CLASS: ApplicationValueSpecification
 #@CLASS: NumericalOrText
@@ -3082,8 +3026,10 @@ Table 5.123: ConstantReference
 #@CLASS: SwValues
 #@CLASS: ValueGroup
 #@CLASS: ValueList
+#@CLASS: AttributeValueVariationPoint
+#@CLASS: SwSystemconst
 
-if the size of [TPS_SWCT_01180] Maximum possible size of Compound Primitive Data Type (cid:100) Note that the Compound Primitive Data Type (see [TPS_SWCT_01179]) (curve/map) is defined using an AttributeValueVariationPoint (in other words swMaxAxisPoints, swValueBlockSize dependent on the value of SwSystemconst) the initValue shall provide the maximum possible amount of values. (cid:99)(RS_SWCT_03216)
+[TPS_SWCT_01180] Maximum possible size of Compound Primitive Data Type (cid:100) Note that if the size of the Compound Primitive Data Type (see [TPS_SWCT_01179]) (curve/map) is defined using an AttributeValueVariationPoint (in other words swMaxAxisPoints, swValueBlockSize dependent on the value of SwSystemconst) the initValue shall provide the maximum possible amount of values. (cid:99)(RS_SWCT_03216)
 
 In this case it is the responsibility of model author to ensure that the size of the specified init values matches the range of the involved system constants.
 
@@ -3118,68 +3064,14 @@ Hence values of the COM_AXIS itself are described by SwValueCont.
 [constr_1243] NumericalOrText shall either define vf or vt (cid:100) Within the context of one NumericalOrText, either the attribute vf or the attribute vt shall be defined. The existence of both attributes at the same time is not permitted. (cid:99)()
 
 Figure 5.58: Definition of an ApplicationValueSpecification
-
-ApplicationValueSpecification Class Package M2::AUTOSARTemplates::CommonStructure::Constants Note This meta-class represents values for DataPrototypes typed by ApplicationDataTypes (this includes in particular compound primitives). Base Attribute category For further details refer to ASAM CDF 2.0. This meta-class corresponds to some extent with SW-INSTANCE in ASAM CDF 2.0. ARObject,ValueSpecification Datatype Identifier Mul. Kind Note 1 ref Specifies to which category of ApplicationDataType this ApplicationValueSpecification can be applied (e.g. as an initial value), thus imposing constraints on the structure and semantics of the contained values, see [constr_1006] and [constr_2051].
-
-swAxisCont (ordered) SwAxisCont * aggr This represents the axis values of a Compound Primitive Data Type (curve or map). The first swAxisCont describes the x-axis, the second swAxisCont describes the y-axis, the third swAxisCont describes the z-axis. In addition to this, the axis can be denoted in swAxisIndex.
-
-swValueCont SwValueCont 0..1 aggr This represents the values of a Compound Primitive Data Type.
-
 Table 5.124: ApplicationValueSpecification
-
-SwAxisCont Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue Note This represents the values for the axis of a compound primitive (curve, map). For standard and fix axes, SwAxisCont contains the values of the axis directly. The axis values of SwAxisCont with the category CURVE_AXIS, COM_AXIS, RES_AXIS are for display only. For editing and processing, only the values in the related GroupAxis are binding. ARObject Datatype CalprmAxisCategoryEnum attr This category specifies the particular axis types: Mul. Kind Note 1 • FIX_AXIS Base Attribute category • STD_AXIS • COM_AXIS • CURVE_AXIS (swArraysize necessary) • RES_AXIS (swArraysize necessary)
-
-swArraysize ValueList 1 aggr For multidimensional compound primitivies (curve, map ...) it is necessary to know the dimensions.They are specified using swArraySize. Tags: xml.sequenceOffset=20 • RES_AXIS • CURVE_AXIS
-
-swAxisIndex swValuesPhys AxisIndexType 1 attr This property allows to explicitly assign the axis Tags: xml.sequenceOffset=70 contents to a particular axis. It is specified by numbers where 1 corresponds to the x-axis. It is also possible to derive the axis association from the sequence of the parent.
-
-SwValues 1 aggr swValuesPhys represents the values in the Tags: xml.sequenceOffset=50 physical domain. Tags: xml.sequenceOffset=80
-
-unit Unit 1 ref This represents the physical unit of the provided values. Tags: xml.sequenceOffset=30
-
-Attribute unitDisplayName Datatype SingleLanguageUnitNames Mul. Kind Note 0..1 aggr This represents the display name which is used for the physical unit of the axis. Tags: xml.sequenceOffset=40
-
 Table 5.125: SwAxisCont
-
-SwValueCont Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue Note This metaclass represents the content of one particular SwInstance. ARObject Datatype ValueList Mul. Kind Note 0..1 aggr This attribute defines the size of each dimension for compound primitivies CURVE, MAP, CUBOID, CUB_4, CUBE_5, COM_AXIS, RES_AXIS, CURVE_AXIS, VAL_BLK, STRING. Base Attribute swArraysize For each dimension one value has to be defined, e.g. one in case of COM_AXIS and two or more in case of MAP.
-
-swValuesPhys SwValues Tags: xml.sequenceOffset=40 0..1 aggr swValuesPhys represents the values in the physical domain.
-
-unit Unit 1 ref This represents the physical unit of the provided Tags: xml.sequenceOffset=50 values. Tags: xml.sequenceOffset=20
-
-unitDisplayName SingleLanguageUnitNames 0..1 aggr This specifies how the physical units of the current value set shall be displayed in documents or in user interfaces of tools. Tags: xml.sequenceOffset=30
-
 Table 5.126: SwValueCont
-
-SwValues Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue Note This meta-class represents a list of values. These values can either be the input values of a curve (abscissa values) or the associated values (ordinate values). In case of multidimensional structures, the values are ordered such that the lowest index runs the fastest. In particular for maps and cuboids etc. the resulting long value list can be subsectioned using ValueGroup. But the processing needs to be done as if vg is not there. Base Attribute v Note that numerical values and textual values should not be mixed. ARObject Datatype Numerical Mul. Kind Note 1 attr This is a non variant Value. It is provided for sake of Compatibility to ASAM CDF. Tags: xml.sequenceOffset=40
-
-vf Numerical 1 attr This allows to specify the value as VariationPoint. It is distinguished to non variant for sake of compatibility to ASAM CDF 2.0.
-
-vg ValueGroup 1 aggr This allows to have intersections in the values in Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime xml.sequenceOffset=20 order to support specific rendering (eg. using stylesheets). For tools it is important that the v values are always processed in the same (flattened) order and the tool is able to interpret it without respecting vg. Tags: xml.sequenceOffset=50
-
-vt VerbatimString 1 ref This represents the values of textual data elements (Strings). Note that vt uses the | to separate the values for the different bitfield masks in case that the semantics of the related DataPrototype is described by means of a BITFIELD_TEXTTABLE in the associated CompuMethod.
-
-vtf NumericalOrText 1 Tags: xml.sequenceOffset=30 aggr Thias aggregation represents the ability to provide a value that is either numerical or text which existence is subject to variability. From the formal point of view, the aggregation needs to have the multiplicity 1 because SwValues is modelled with stereotype «atpMixed». Nevertheless, the existence of vtf is optional and subject to constraints. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
 Table 5.127: SwValues
-
-ValueGroup Class Package M2::AUTOSARTemplates::CommonStructure::CalibrationValue Note This element enables valules to be grouped. It can be used to perform row and column-orientated groupings, so that these can be rendered properly e.g. as a table. ARObject Datatype MultilanguageLongName Mul. Kind Note 0..1 aggr This label allows to give the valueGroup a partiluclar name. It can be usel if the Values are rendered as a table. Base Attribute label
-
-vgContents SwValues 0..1 aggr This represents the contents of the value group. Tags: xml.sequenceOffset=20 Tags: xml.roleElement=false; xml.roleWrapperElement=false; xml.sequenceOffset=30; xml.typeElement=false; xml.typeWrapperElement=false
-
 Table 5.128: ValueGroup
-
-ValueList Class Package M2::AUTOSARTemplates::CommonStructure::DataDefProperties Note This is a generic list of numerical values. ARObject Datatype Numerical Mul. Kind Note 1 attr This is a particular numerical value without variation. Tags: xml.sequenceOffset=30 Base Attribute v
-
-(or Numerical * attr This is one entry in the list of numerical values vf dered) Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime xml.roleElement=true; xml.roleWrapperElement=false; xml.typeElement=false; xml.typeWrapperElement=false
-
 Table 5.129: ValueList
-
-NumericalOrText Class Package M2::AUTOSARTemplates::CommonStructure::Constants Note This meta-class represents the ability to yield either a numerical or a string. A typical use case is that two or more instances of this meta-class are aggregated with a VariationPoint where some instances yield strings while other instances yield numerical depending on the resolution of the binding expression. ARObject Datatype Numerical Mul. Kind Note 0..1 attr This attribute represents the ability to provide a numerical value. The latest binding time of the VariationPoint shall be preCompileTime. Base Attribute vf
-
-vt String 0..1 attr This attribute represents the ability to provide a Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime xml.sequenceOffset=10 textual value. Tags: xml.sequenceOffset=20
-
 Table 5.130: NumericalOrText
+
 #@SECTION: 5.6.5 Examples
 #@SECTION: 5.6.5.1 Example for Constant Speciﬁcation for CURVE
 #@CLASS: ConstantSpecification
@@ -3226,8 +3118,10 @@ Listing 5.13: Example for Constant Specification for CURVE
 </APPLICATION-VALUE-SPECIFICATION>
 </VALUE-SPEC>
 </CONSTANT-SPECIFICATION>
+
 #@SECTION: 5.6.5.2 Example for Constant Speciﬁcation for MAP
 #@CLASS: ConstantSpecification
+#@CLASS: MAP
 
 The following example illustrates how an ConstantSpecification is specified for a MAP. In this case one axis of the MAP is a STD_AXIS and the second one is a COM_AXIS. Please note that in this example the v attribute is used for the swArraysize as well as for the swValuesPhys. This is possible because the example contains only invariant values.
 
@@ -3286,6 +3180,7 @@ Listing 5.14: Example for Constant Specification for MAP
 </APPLICATION-VALUE-SPECIFICATION>
 </VALUE-SPEC>
 </CONSTANT-SPECIFICATION>
+
 #@SECTION: 5.6.5.3 Example for Constant Speciﬁcation for COM_AXIS
 #@CLASS: ConstantSpecification
 
@@ -3318,6 +3213,7 @@ Listing 5.15: Example for Constant Specification for COM_AXIS
 </APPLICATION-VALUE-SPECIFICATION>
 </VALUE-SPEC>
 </CONSTANT-SPECIFICATION>
+
 #@SECTION: 5.7 Initial Values
 #@SECTION: 5.7.1 Overview
 #@CLASS: CalibrationParameterValue
@@ -3353,6 +3249,7 @@ The meaning of "supersede" in this context is that that the definition of an ini
 3. It is possible to aggregate a implInitValue and an appInitValue at the definition of a CalibrationParameterValue.
 
 The priority of one definition of an initial value over another is reflected by the numerical order of the above enumeration, e.g. a definition on level 2 supersedes a definition on level 1. (cid:99)()
+
 #@SECTION: 5.7.2 Initial Value Representation
 #@CLASS: ApplicationArrayDataType
 #@CLASS: ApplicationDataType
@@ -3361,10 +3258,21 @@ The priority of one definition of an initial value over another is reflected by 
 #@CLASS: AutosarDataType
 #@CLASS: DataPrototype
 #@CLASS: ImplementationDataType
+#@CLASS: CompuMethod
+#@CLASS: RecordValueSpecification
+#@CLASS: ArrayValueSpecification
+#@CLASS: NumericalRuleBasedValueSpecification
+#@CLASS: ConstantSpecificationMapping
+#@CLASS: CompuScale
+#@CLASS: ApplicationValueSpecification
 
-[TPS_SWCT_01183] Actual value of an initValue shall be interpreted according to the AutosarDataType (cid:100) A DataPrototype can be typed by either an ApplicationDataType or else an ImplementationDataType. Therefore, the actual value of an initValue shall be interpreted according to the AutosarDataType that types the DataPrototype. That is, if the DataPrototype is typed by an ApplicationDataType the value shall be interpreted as a physical value while if the DataPrototype is typed by an ImplementationDataType the value is to be interpreted as the direct numerical representation. (cid:99)(RS_SWCT_03216, RS_SWCT_03217)
+[TPS_SWCT_01183] Actual value of an initValue shall be interpreted according to the AutosarDataType (cid:100) A DataPrototype can be typed by either an ApplicationDataType or else an ImplementationDataType. Therefore, the actual value of an initValue shall be interpreted according to the AutosarDataType that types the DataPrototype. 
+That is, if the DataPrototype is typed by an ApplicationDataType the value shall be interpreted as a physical value while if the DataPrototype is typed by an ImplementationDataType the value is to be interpreted as the direct numerical representation. (cid:99)(RS_SWCT_03216, RS_SWCT_03217)
 
-[TPS_SWCT_01184] ApplicationPrimitiveDataTypes with category VALUE (cid:100) In case of ApplicationPrimitiveDataTypes with category VALUE it is the initValues are provided as physical values only because the sufficient RTE Generator should be able to evaluate the related CompuMethod appropriately. (cid:99)(RS_SWCT_03216, RS_SWCT_03217) Please note that DataPrototypes that refer to CompuMethods of category SCALE_LINEAR_AND_TEXTTABLE (or similar) shall be initialized by means of the definition of several ApplicationValueSpecification.swValueCont.swValues Phys.vtf. Depending on the evaluation of the binding expression either a numerical value or a string is taken to initialize the DataPrototype.
+[TPS_SWCT_01184] ApplicationPrimitiveDataTypes with category VALUE (cid:100) In case of ApplicationPrimitiveDataTypes with category VALUE it is the initValues are provided as physical values only because the sufficient RTE Generator should be able to evaluate the related CompuMethod appropriately. (cid:99)(RS_SWCT_03216, RS_SWCT_03217) 
+
+Please note that DataPrototypes that refer to CompuMethods of category SCALE_LINEAR_AND_TEXTTABLE (or similar) shall be initialized by means of the definition of several ApplicationValueSpecification.swValueCont.swValues Phys.vtf. 
+Depending on the evaluation of the binding expression either a numerical value or a string is taken to initialize the DataPrototype.
 
 [TPS_SWCT_01185] initValues for Compound Primitive Data Types (cid:100) The definition of initValues in the numerical representation for Compound Primitive Data Type (see section 5.6) is done such that the initValues have to be provided as a RecordValueSpecification respectively an ArrayValueSpecification or NumericalRuleBasedValueSpecification matching to the related ImplementationDataType. The additional representation can be provided and associated by means of a ConstantSpecificationMapping. (cid:99)(RS_SWCT_03216)
 
@@ -3377,6 +3285,7 @@ The priority of one definition of an initial value over another is reflected by 
 [constr_1223] DataPrototype is typed by an ApplicationRecordDataType (cid:100) If a DataPrototype is typed by an ApplicationRecordDataType the corresponding initValue shall be provided by a RecordValueSpecification. (cid:99)()
 
 [constr_1224] DataPrototype is typed by an ApplicationArrayDataType (cid:100) If a DataPrototype is typed by an ApplicationArrayDataType the corresponding initValue shall be provided by an ArrayValueSpecification or ApplicationRuleBasedValueSpecification. (cid:99)()
+
 #@SECTION: 5.7.3 Constant Speciﬁcation Mapping
 #@CLASS: ConstantSpecificationMapping
 #@CLASS: ConstantSpecificationMappingSet
@@ -3384,6 +3293,9 @@ The priority of one definition of an initial value over another is reflected by 
 #@CLASS: NvBlockDescriptor
 #@CLASS: NvBlockSwComponentType
 #@CLASS: ParameterSwComponentType
+#@CLASS: ValueSpecification
+#@CLASS: ConstantReference
+#@CLASS: ConstantSpecification
 
 [TPS_SWCT_01186] ConstantSpecificationMapping (cid:100) The ConstantSpecificationMapping is used to associate ValueSpecifications defined in the implementation domain with corresponding ValueSpecifications defined in the application domain. To make this possible the ValueSpecification actually needs to be a ConstantReference. The ConstantSpecification referenced by the ConstantReference is also the target of the references owned by ConstantSpecificationMapping. (cid:99)()
 
@@ -3392,41 +3304,34 @@ The priority of one definition of an initial value over another is reflected by 
 [TPS_SWCT_01187] ConstantSpecificationMappingSet referenced by the InternalBehavior (cid:100) In most cases the meta-class ConstantSpecificationMappingSet will be referenced by the InternalBehavior. This ConstantSpecificationMappingSet contains the applicable ConstantSpecificationMappings. (cid:99)()
 
 However, in some specializations the software-components will not have an InternalBehavior:
+#@Hierarchical
 • [constr_1030] ParameterSwComponentType references ConstantSpecificationMappingSet (cid:100) ParameterSwComponentType: here the ConstantSpecificationMappingSet is directly associated by the ParameterSwComponentType. (cid:99)()
 • [constr_1031] NvBlockSwComponentType references ConstantSpecificationMappingSet (cid:100) NvBlockSwComponentType: in this case the ConstantSpecificationMappingSet is associated with the aggregated NvBlockDescriptor. (cid:99)()
+/#@Hierarchical
 
 Figure 5.59: Constant Mapping
-
-ConstantSpecificationMapping Class#@CLASS: Package M2::AUTOSARTemplates::CommonStructure::Constants Note This meta-class is used to create an association of two ConstantSpecifications. One ConstantSpecification is supposed to be defined in the application domain while the other should be defined in the implementation domain. Hence the ConstantSpecificationMapping needs to be used where a ConstantSpecification defined in one domain needs to be associated to a ConstantSpecification in the other domain. Base Attribute applConstant implConstant This information is crucial for the RTE generator. ARObject Datatype ConstantSpecification ConstantSpecification Mul. Kind Note 1 ref A ConstantSpecification defined in the implementation domain. 1 ref A ConstantSpecification defined in the application domain.
-
 Table 5.131: ConstantSpecificationMapping
-
-ConstantSpecificationMappingSet Class#@CLASS: Package M2::AUTOSARTemplates::CommonStructure::Constants Note This meta-class represents the ability to map two ConstantSpecifications to each others. One ConstantSpecification is supposed to be described in the application domain and the other should be described in the implementation domain. Base Attribute mapping Tags: atp.recommendedPackage=ConstantSpecificationMappingSets ARElement,ARObject,CollectableElement,Identifiable,Multilanguage Referrable,PackageableElement,Referrable Datatype ConstantSpecificationMapping Mul. Kind Note 1..* aggr ConstantSpecificationMappings owned by the ConstantSpecificationMappingSet.
-
 Table 5.132: ConstantSpecificationMappingSet
-
 Figure 5.60: Aggregation of ConstantSpecificationMappingSet
+
 #@SECTION: 5.7.4 Initial Values For CalibrationParameters
 #@CLASS: CalibrationParameterValue
 #@CLASS: CalibrationParameterValueSet
 #@CLASS: ParameterDataPrototype
 #@CLASS: ParameterProvideComSpec
 #@CLASS: ParameterRequireComSpec
+#@CLASS: ValueSpecification
+#@CLASS: ApplicationDataType
+#@CLASS: ImplementationDataType
 
 [TPS_SWCT_01188] Definition of calibration data sets through RTE-generator and compiler (cid:100) It is possible to provide sets of initial values for calibration parameters which are instance specific, thus overriding any initial values predefined by a ParameterDataPrototype, ParameterRequireComSpec or a ParameterProvideComSpec.
-
 This allows to create the calibration data sets through RTE-generator and compiler. These initial values are specified in CalibrationParameterValueSet and CalibrationParameterValue. The latter aggregates a ValueSpecification in two different roles:
 • applInitValue for data structured according to ApplicationDataType. In this case the values are defined in the physical domain.
 • implInitValue for data structured according to ImplementationDataType. In this case the values are defined in the numerical domain.
+(cid:99)(RS_SWCT_03175) 
 
-(cid:99)(RS_SWCT_03175) Anyhow, these initial values can be imported from e.g. an ASAM CDF file.
+Anyhow, these initial values can be imported from e.g. an ASAM CDF file.
 
 Figure 5.61: Calibration Parameter Values
-
-Class Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::CalibrationParameterValueSet Note Base Attribute calibration Parameter Value CalibrationParameterValues Specification of a constant that can be part of a package, i.e. it can be defined stand-alone. Tags: atp.recommendedPackage=CalibrationParameterValueSets ARElement,ARObject,CollectableElement,Identifiable,Multilanguage Referrable,PackageableElement,Referrable Datatype CalibrationParameterValue aggr This represents single Mul. Kind Note * CalibrationParameterValues in the CalibrationParameterValueSet. Stereotypes: atpVariation Tags: vh.latestBindingTime=preCompileTime
-
 Table 5.133: CalibrationParameterValueSet
-
-Class Package M2::AUTOSARTemplates::SWComponentTemplate::MeasurementAndCalibration::CalibrationParameterValue Note CalibrationParameterValues Specifies instance specific calibration parameter values used to initialize the memory objects implementing calibration parameters in the generated RTE code. RTE generator will use the implInitValue to override the initial values specified for the DataPrototypes of a component type. The applInitValue is used to exchange init values with the component vendor not publishing the transformation algorithm between ApplicationDataTypes and ImplementationDataTypes or defining a instance specific initialization of components which are only defined with ApplicationDataTypes. Note: If both representations of init values are available these need to represent the same content. Note further that in this case an explicit mapping of ValueSpecification is not implemented because calibration parameters are delivered back after the calibration phase. ARObject Datatype ValueSpecification ValueSpecification FlatInstanceDescriptor Mul. Kind Note 0..1 aggr This is the initial value specification structured 0..1 aggr This is the initial value specification structured ref This represents the parameter that is initialized by according to the ImplementationDataType according to the ApplicationDataType the CalibrationParameterValue. 1 Base Attribute applInitValue implInitValue initializedParameter
-
 Table 5.134: CalibrationParameterValue
