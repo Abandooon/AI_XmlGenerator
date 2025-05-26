@@ -1,3 +1,4 @@
+-------------------------------------------------------------
 #@SECTION: 7 Internal Behavior
 #@SECTION: 7.1 Introduction
 #@CLASS: AtomicSwComponentType
