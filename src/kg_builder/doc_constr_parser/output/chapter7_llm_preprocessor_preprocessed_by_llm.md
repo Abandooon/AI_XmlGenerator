@@ -1,4 +1,3 @@
--------------------------------------------------------------
 #@SECTION: 7 Internal Behavior
 #@SECTION: 7.1 Introduction
 #@CLASS: AtomicSwComponentType
@@ -40,6 +39,7 @@ Figure 7.2: SwcInternalBehavior
 #@CLASS: SwcInternalBehavior
 #@CLASS: SwComponentPrototype
 #@CLASS: SwComponentType
+#@CLASS: EcuInstance
 
 The concept of RunnableEntity (more details can be found in Figure 7.3) is defined in the specification of the Virtual Function Bus [3].
 
@@ -99,6 +99,7 @@ For example: The internal behavior of an AtomicSwComponentType MyComponentType d
 The AtomicSwComponentType MyComponentType is instantiated on an ECU. When a call of the operation is received, the corresponding instance of the RunnableEntity R1 is enabled and the RTE will start executing the RunnableEntity (the RunnableEntity is in state running) in a task eventually managed by the AUTOSAR OS.
 
 If another call of the operation is received while the RunnableEntity is in state running it is not allowed that the RTE runs the RunnableEntity again in a second task. Rather, the RTE has to wait (and maybe queue the second incoming request) until the RunnableEntity has returned and has moved to the suspended state.
+
 #@SECTION: 7.2.2 Concurrency and Reentrancy of a RunnableEntity that can be Invoked Concurrently
 #@CLASS: AtomicSwComponentType
 #@CLASS: ClientServerInterface
@@ -158,6 +159,7 @@ Note that all code that is called by different RunnableEntitys (like e.g. librar
 #@CLASS: PortDefinedArgumentValue
 #@CLASS: RunnableEntity
 #@CLASS: RTEEvent
+#@CLASS: OperationInvokedEvent
 
 [TPS_SWCT_01309] signature of a RunnableEntity depends on the connected RTEEvent (cid:100) The signature of a RunnableEntity depends on the connected RTEEvent. Multiple OperationInvokedEvents are only supported if all referred ClientServerOperations would result in the same RunnableEntity signature for the server RunnableEntity. (cid:99)()
 
@@ -177,6 +179,7 @@ In addition, it is required that the return value defined on both sides shall ma
 
 #@SECTION: 7.2.4.4 Categories of Runnable Entities
 #@CLASS: RunnableEntity
+#@CLASS: WaitPoint
 
 [TPS_SWCT_01310] Categories of RunnableEntitys (cid:100) RunnableEntitys are subdivided into the following categories:
 
@@ -194,6 +197,8 @@ Category 2 In contrast to Category 1 RunnableEntitys, RunnableEntitys of categor
 #@CLASS: PortPrototype
 #@CLASS: RunnableEntity
 #@CLASS: RunnableEntityArgument
+#@CLASS: BswModuleEntry
+#@CLASS: SwServiceArg
 
 In many cases an RTE generator will be able to figure out not only the number and data type of arguments to a RunnableEntity but also the name of the arguments. In some cases, however, formal support from the upstream templates is required to facilitate this task.
 
@@ -218,6 +223,8 @@ Table 7.5: RunnableEntityArgument
 #@CLASS: RTEEvent
 #@CLASS: RunnableEntity
 #@CLASS: TimingEvent
+#@CLASS: DataReceivedEvent
+#@CLASS: WaitPoint
 
 It is feasible to activate a given RunnableEntity by means of several RTEEvents. In many cases, it is therefore necessary to retrieve the information about the activating RTEEvent from within the implementation of the RunnableEntity.
 
@@ -250,6 +257,8 @@ Please note that the attribute ExecutableEntityActivationReason.symbol is needed
 #@CLASS: RunnableEntity
 #@CLASS: SynchronousServerCallPoint
 #@CLASS: WaitPoint
+#@CLASS: RTEEvent
+#@CLASS: ExecutableEntity
 
 One way to make sure that certain initializations are applied before a software component enters its state of normal operation is to use the AUTOSAR mode management, in particular by defining a ModeDeclarationGroup that contains a specific ModeDeclaration with the semantics of representing a mode that is exclusively used for setting up and initializing a software-component.
 
@@ -371,6 +380,7 @@ In other words, the attributes operation and trigger of meta-class TransformerHa
 #@CLASS: TimingEvent
 #@CLASS: VariableAccess
 #@CLASS: VariableDataPrototype
+#@CLASS: WaitPoint
 
 The description of the SwcInternalBehavior includes a description of all The description of RTEEvents that the SwcInternalBehavior of the AtomicSwComponentType relies on.
 
@@ -467,6 +477,8 @@ Two possible approaches for formal specification of this kind of communication a
 #@CLASS: RunnableEntity
 #@CLASS: SwcInternalBehavior
 #@CLASS: SynchronousServerCallPoint
+#@CLASS: ExclusiveArea
+#@CLASS: ExclusiveAreaNestingOrder
 
 This section describes how the concept of ExclusiveAreas can be used in the description of the SwcInternalBehavior of an AtomicSwComponentType. Please note that ExclusiveAreas are actually owned by the base class of SwcInternalBehavior, i.e. InternalBehavior. These ExclusiveAreas do not imply a specific implementation (e.g. with mutual-exclusion semaphores).
 
@@ -500,6 +512,7 @@ Table 7.25: ExclusiveAreaNestingOrder
 
 #@SECTION: 7.4.1.1 Entire Runnable Runs in the Exclusive Area
 #@CLASS: RunnableEntity
+#@CLASS: ExclusiveArea
 
 [TPS_SWCT_01050] RunnableEntity always runs inside an ExclusiveArea (cid:100) In the ﬁrst approach, the formal description speciﬁes that certain RunnableEntitys always run inside an ExclusiveArea. (cid:99)(RS_SWCT_00120, RS_SWCT_02090)
 
@@ -529,6 +542,8 @@ Additionally it is possible to define the execution time the RunnableEntity will
 #@CLASS: SwcInternalBehavior
 #@CLASS: VariableAccess
 #@CLASS: VariableDataPrototype
+#@CLASS: ExclusiveArea
+#@CLASS: ImplementationDataType
 
 For certain cases the ExclusiveArea concept does not provide enough information to configure the RTE correctly. In these cases it may be advised to opt for a different approach that is based on the guarded access to variables protected by the RTE.
 
@@ -804,24 +819,8 @@ Table 7.31: DataWriteCompletedEvent
 Figure 7.22: dataWriteAccess
 
 #@SECTION: 7.5.1.6 DataReceivedEvent
-#@CLASS: AbstractEvent
-#@CLASS: AbstractProvidedPortPrototype
-#@CLASS: AtpBlueprintable
-#@CLASS: AtpPrototype
-#@CLASS: AtomicSwComponentType
-#@CLASS: AutosarVariableRef
-#@CLASS: DataPrototype
+
 #@CLASS: DataReceivedEvent
-#@CLASS: DataWriteCompletedEvent
-#@CLASS: ExecutableEntity
-#@CLASS: Identifiable
-#@CLASS: InternalBehavior
-#@CLASS: PortPrototype
-#@CLASS: RunnableEntity
-#@CLASS: SenderReceiverInterface
-#@CLASS: SwComponentType
-#@CLASS: SwcInternalBehavior
-#@CLASS: VariableAccess
 #@CLASS: VariableDataPrototype
 
 [TPS_SWCT_01337] DataReceivedEvent (cid:100) A receiver is notified through the same event mechanism when a VariableDataPrototype is received. As shown in Figure 7.23, the DataReceivedEvent is directly associated with the corresponding VariableDataPrototype. (cid:99)(RS_SWCT_00200)
@@ -871,6 +870,7 @@ Table 7.33: DataReceiveErrorEvent
 #@CLASS: SwcInternalBehavior
 #@CLASS: SynchronousServerCallPoint
 #@CLASS: WaitPoint
+#@CLASS: RPortPrototype
 
 [TPS_SWCT_01342] Invocation of a server operation (cid:100) A RunnableEntity invokes a server operation formally defined as a ClientServerOperation via an RPortPrototype of the enclosing SwComponentPrototype typed by a particular AtomicSwComponentType. (cid:99)(RS_SWCT_00200)
 
@@ -984,9 +984,6 @@ Table 7.42: ExternalTriggerOccurredEvent
 
 #@SECTION: 7.5.4 RunnableEntities and Parameter Access
 #@CLASS: ArgumentDataPrototype
-#@CLASS: AtomicSwComponentType
-#@CLASS: AutosarParameterRef
-#@CLASS: AutosarVariableRef
 #@CLASS: ClientServerInterface
 #@CLASS: DataPrototype
 #@CLASS: NvDataInterface
@@ -1026,7 +1023,7 @@ Table 7.43: ParameterAccess
 • by defining the ParameterAccess association from a RunnableEntity to the ParameterDataPrototype in the roles sharedParameter or perInstanceParameter. This is shown in Figure 2.3 in the lower association from RunnableEntity to ParameterDataPrototype (cid:99)(RS_SWCT_00200)
 
 Note: A ParameterDataPrototype in the roles constantMemory is not provided by the RTE and therefore the ParameterAccess association is not required to control the RTE API generation.
-
+-----------------------------------------------------------------------------------
 #@SECTION: 7.5.4.1 InstantiationDataDefProps
 #@CLASS: ApplicationCompositeDataType
 #@CLASS: DataPrototype
