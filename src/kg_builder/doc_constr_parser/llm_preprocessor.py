@@ -151,7 +151,7 @@ def main():
     llm_model_name = config.LLM_MODEL_NAME
 
     input_dir = config.INPUT_DIR
-    md_filename = "chapter_llm_preprocessor.md"
+    md_filename = ".md"
     output_dir = config.OUTPUT_DIR
     unified_metadata_filename = config.UNIFIED_METADATA_FILENAME
 
