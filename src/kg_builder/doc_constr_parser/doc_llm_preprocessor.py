@@ -3,6 +3,8 @@ import json
 import re
 from openai import OpenAI  # Works for DeepSeek if base_url and api_key are set
 
+# 运行此脚本预处理md文件，规整格式插入#@CLASS: 标注，并调用LLM进行内容清理和类名识别。
+
 # Import configurations from config.py
 try:
     import config
