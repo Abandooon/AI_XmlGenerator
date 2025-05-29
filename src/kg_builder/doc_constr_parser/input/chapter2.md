@@ -54,16 +54,11 @@ To provide calibration parameters for being visible in other SwComponentTypes, a
 
 Table 2.1: ParameterSwComponentType
 
-[TPS_SWCT_01420] SwComponentType requiring access to shared calibration
-parameters needs RPortPrototype typed by a ParameterInterface (cid:100) Every
-SwComponentType requiring access to shared calibration parameters will have an
-RPortPrototype typed by a ParameterInterface. The deﬁnition of this shared
-calibration access in the context of a CompositionSwComponentType will be deﬁned by creating a SwConnector between the relevant SwComponentPrototypes. (cid:99)()
+[TPS_SWCT_01420] SwComponentType requiring access to shared calibration parameters needs RPortPrototype typed by a ParameterInterface (cid:100) Every SwComponentType requiring access to shared calibration parameters will have an RPortPrototype typed by a ParameterInterface. The deﬁnition of this shared calibration access in the context of a CompositionSwComponentType will be deﬁned by creating a SwConnector between the relevant SwComponentPrototypes. (cid:99)()
 
 Table 2.2: ParameterInterface
 
-[TPS_SWCT_01421] ParameterInterface is not restricted to parameters which
-can actually can be calibrated (cid:100) Note that a ParameterInterface is not restricted to parameters which can actually can be calibrated. It can be used whenever there shall be no write access to the data during normal operation of the software, i.e. only constant data are visible over the interface. (cid:99)()
+[TPS_SWCT_01421] ParameterInterface is not restricted to parameters which can actually can be calibrated (cid:100) Note that a ParameterInterface is not restricted to parameters which can actually can be calibrated. It can be used whenever there shall be no write access to the data during normal operation of the software, i.e. only constant data are visible over the interface. (cid:99)()
 
 The compatibility rules for ParameterInterfaces are described in chapter 6.4; the compatibility rules for ParameterDataPrototypes are described in chapter 6.4.4.
 

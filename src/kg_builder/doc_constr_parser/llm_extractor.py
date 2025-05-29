@@ -32,90 +32,72 @@ class LlmExtractor:
 
     def _build_extraction_prompt(self, text_block_for_llm):
         prompt = f"""
-你是一位专业的 AUTOSAR 助手。你的任务是从提供的 AUTOSAR 规范文档片段中精确提取结构化信息。
-文档片段可能包含以下类型的上下文信息：
-1.  `<!-- LLM_CONTEXT FOR CLASS ClassName: Attributes=[attr1, attr2,...] -->`：在 `#@CLASS: ClassName` 标注后，提供该类的属性列表。
-2.  `<!-- LLM_CONTEXT FOR ENUM EnumName: Literals=[lit1, lit2,...] -->`：在 `#@ENUM: EnumName` 标注后，提供该枚举的字面量列表。
-3.  {PARENT_SECTION_CONTEXT_TAG} 在片段开头，可能提供该片段所属的章节路径。
-4. '<-------------- multimodal context ... ------->',表示该图表包含多模态上下文信息。
+        # 角色
+        你是一位 AUTOSAR 规范助手，负责把文档片段转换为结构化约束 JSON。
 
-请仔细分析以下文档片段，识别其中所有符合 AUTOSAR 约束或规范模式的内容。
+        # 输出格式
+        仅返回如下 JSON： {"{"}"extracted_constraints":[...]{"}"}
+        数组元素需 100% 符合 CONSTRAINT_SCHEMA（已通过 self.constraint_schema_str 注入）。
 
-待分析的文档片段:
-\"\"\"
-{text_block_for_llm}
-\"\"\"
+        # 必提取约束
+        • 发现 `[TPS_SWCT_\\d+]` 或 `[constr_\\d+]` 且同段或随后的文字包含 `(cid:100)` 与 `(cid:99)` → **必输出** 一条约束。  
+        • 一次 ID = 一条记录，不可合并，不可遗漏。
 
-请仔细阅读输入文本片段，并根据以下指令提取信息，生成一个或多个符合上述 `CONSTRAINT_SCHEMA` 的JSON对象。如果一个文本片段包含多个独立的约束定义，请为每个约束生成一个单独的JSON对象。
-文档中的规范和约束格式为[TPS_SWCT_***]或[constr_***] 标题 (cid:100) 细则 (cid:99) (引用id),所有约束都以这种形式标识，不要遗漏。
-    
-1.  **ID 与类型 (`id`, `id_type`)**:
-    *   例如 `[TPS_SWCT_01032]` 或 `[constr_1387]`，并且约束中一定有(cid:100)和(cid:99)标记。
-    *   `id`: 完整的ID字符串 (如 "TPS_SWCT_01032")。
-    *   `id_type`: ID的前缀部分，必须是 `CONSTRAINT_SCHEMA` 中 `id_type` 枚举定义的值之一 ('TPS_SWCT' 或 'constr')。
+        # 正则速记
+        ID        `\\[(TPS_SWCT|constr)_\\d+]`  
+        expression 在 `(cid:100)` 与 `(cid:99)` 之间
 
-2.  **标题 (`title`)**:
-    *   提取紧跟在ID标记之后，通常被明确标识为 "Title" 或作为约束描述起始的简短标题文本。
+        # 字段要求（缺省填 null / []）
+        id, id_type, title, expression, references, targets, constraint_type, value, scope_path, xml_example_content
 
-3.  **细则/表达式 (`expression`)**:
-    *   提取约束的核心描述文本。这通常是位于特殊标记（如文档中的 `(cid:100)` 和 `(cid:99)` 符号）之间，或者是在标题之后、引用之前的主体说明文字。确保提取完整的约束逻辑。
+        # 提取流程
+        1. 全文搜索 ID 正则；对每个 ID 查看前后段，提取字段。  
+        2. 解析 `#@CLASS:` / `#@ENUM:` + `<!-- LLM_CONTEXT ... -->` 生成 targets；无具体属性时用 `["_classLevel"]`/`["_enumLevel"]`。  
+        3. 利用 `<!-- PARENT_SECTION_CONTEXT:` 与最近 `#@SECTION:` 组装 scope_path（高→低）。  
+        4. Listing X.Y + XML → constraint_type="xml_instantiation_example"，id_type="example"，id 例：`Listing_5_1`。  
+        5. (可选) 推理隐式约束—以 section 编号为 id，id_type="constr"。  
 
-4.  **引用 (`references`)**:
-    *   如果约束文本末尾的括号中列出了其他约束ID或约束文本中引用了其他约束id（通常以"See \\ in "或直接罗列ID的形式），将这些ID提取为一个字符串列表。如果不存在则此字段为空列表 `[]`。
+        # few-shot 1：最简单
+        [BEGIN]
+        #@CLASS: SwComponentPrototype
+        <!-- LLM_CONTEXT FOR CLASS SwComponentPrototype: Attributes=[shortName] -->
+        [TPS_SWCT_00001] Short name uniqueness (cid:100) shortName must be unique. (cid:99)
+        [END]
+        期望输出（字段顺序随意）:
+        {"{"}"extracted_constraints":[{"{"}
+        "id":"TPS_SWCT_00001","id_type":"TPS_SWCT","title":"Short name uniqueness",
+        "expression":"shortName must be unique.","references":[],
+        "targets":[{"{"}"targetEntityName":"SwComponentPrototype","entityType":"class","targetAttributes":["shortName"]{"}"}],
+        "constraint_type":"other","value":null,"scope_path":[],"xml_example_content":null
+        {"}"}]{"}"}
 
-5.  **目标实体与属性 (`targets` - 这是一个对象列表)**:
-    *   一个约束可能针对一个或多个AUTOSAR类或枚举，以及这些类/枚举的一个或多个属性/字面量，或者针对类/枚举本身。
-    *   仔细阅读约束文本，并**必须结合**文本中出现的所有 `#@CLASS: ClassName`、`#@ENUM: EnumName` 标注以及紧随其后的 `<!-- LLM_CONTEXT FOR ClassName/EnumName ... -->` HTML风格注释来确定所有相关的目标实体。
-    *   对于每一个被约束影响的实体 (类或枚举)，在 `targets` 列表中创建一个对象，包含:
-        *   `targetEntityName`: (string) 目标AUTOSAR类名或枚举名 (来自 `#@CLASS:` 或 `#@ENUM:` 标记)。
-        *   `entityType`: (string) 必须是 "class" 或 "enum" (根据 `#@CLASS:` 或 `#@ENUM:` 判断)。
-        *   `targetAttributes`: (array of strings)
-            *   如果约束针对该实体的特定属性或字面量，从其对应的 `<!-- LLM_CONTEXT ... -->` 注释中的 `Attributes: [...]` 或 `Literals: [...]` 列表中识别并列出**所有**相关的属性/字面量名称。一个实体可能涉及多个属性/字面量。
-            *   如果约束是针对整个类或枚举本身（例如，定义类的存在性或枚举的用途），或者文本中没有明确提及且在其对应的 `<!-- LLM_CONTEXT ... -->` 中也找不到相关的具体属性/字面量，则此列表应为 `["_classLevel"]` (对于类) 或 `["_enumLevel"]` (对于枚举)。
-            *   **关键**: 不要自行创造属性或字面量名称。它们**必须**来自注入的 `<!-- LLM_CONTEXT ... -->` 注释中的 `Attributes` 或 `Literals` 列表，或者是预定义的 `"_classLevel"` 或 `"_enumLevel"`。
+        # few-shot 2：含 references + enum
+        [BEGIN]
+        #@ENUM: ImplementationType
+        <!-- LLM_CONTEXT FOR ENUM ImplementationType: Literals=[AUTOSAR, ISO26262] -->
+        [constr_1234] Allowed types (cid:100) Only AUTOSAR is permitted (cid:99) (See [constr_5678])
+        [END]
+        …(给出对应 JSON)…
 
-6.  **章节范围路径 (`scope_path`)**:
-    *   这是一个字符串列表，表示约束在文档中的层级位置。
-    *   仔细查找文本片段开头或上下文中的章节标记，如 `{PARENT_SECTION_CONTEXT_TAG}: [父章节标题1]`, `{PARENT_SECTION_CONTEXT_TAG}: [父章节标题2]`, 以及当前约束直接所属的章节标题（可能由 `#@SECTION: [当前章节标题]` 标记指示，或通过文本结构判断）。
-    *   按从高层到低层的顺序组合这些章节标题，形成一个路径列表。例如，如果父章节是 "Chapter 5 Data Types"，当前章节是 "5.1 Primitive Types"，则 `scope_path` 可能为 `["Chapter 5 Data Types", "5.1 Primitive Types"]`。确保路径的完整性和正确性。
+        # few-shot 3：XML 示例
+        [BEGIN]
+        Listing 5.1 SwComponentPrototype example
+        <SW-COMPONENT-PROTOTYPE>
+          <SHORT-NAME>Main</SHORT-NAME>
+        </SW-COMPONENT-PROTOTYPE>
+        [END]
+        …(JSON，其中 id="Listing_5_1", id_type="example", constraint_type="xml_instantiation_example")…
 
-7.  **约束类型 (`constraint_type`)**:
-    *   根据约束文本的语义，从 `CONSTRAINT_SCHEMA` 中为 `constraint_type` 字段定义的**枚举列表**中选择最合适的类型。例如："definition" (定义类/属性/枚举), "cardinality" (数量约束), "value_restriction" (值范围/集合约束), "behavioral" (行为约束), "xml_instantiation_example" (XML实例化示例) 等。如果无法精确匹配，选择 "other"。
+        # 待处理文档
+        \"\"\"{text_block_for_llm}\"\"\"
 
-8.  **值 (`value`)**:
-    *   如果约束中明确给出了一个具体的值（例如，基数范围 `[0..1]` 中的 `0` 和 `1`，某个属性必须等于的特定字符串或数字），则提取该值。值的类型应符合Schema定义（string, number, boolean）。如果约束不涉及具体数值，则此字段为 `null`。对于范围，可以考虑表示为字符串如 "[0..1]" 或提取上下限。
+        # 输出要求
+        • 直接输出 JSON；不要 Markdown/代码框。
+        • 未找到约束返回 {"{"}"extracted_constraints":[]{"}"}。
 
-9.  **层次化上下文 (`#@Hierarchical` ... `/#@Hierarchical`)**:
-    *   如果约束文本位于 `#@Hierarchical` 和 `/#@Hierarchical` 标记之间，这通常表示这块区域内的所有约束共享一个共同的父级上下文或主题。
-    *   此标记本身不直接生成单独的字段，而是用于辅助理解相关约束组。
-
-10. **XML实例化示例提取 (`xml_instantiation_example`)**:
-    *   如果在文本中遇到以 "Listing X.Y" (例如 "Listing 5.1") 开头，并后跟一段XML代码片段的文本块，这通常是一个规范性的XML实例化示例。
-    *   对于此类情况：
-        *   将 `constraint_type` 设为 `"xml_instantiation_example"`。
-        *   **必须**将完整的XML代码片段提取到 `xml_example_content` 字段中。
-        *   通过阅读 "Listing" 的标题或紧邻的描述文本，结合 `#@CLASS:` 或 `<!-- LLM_CONTEXT ... -->` 注释，确定这个XML示例是针对哪个AUTOSAR类或枚举的，并相应填充 `targets` 字段（通常 `targetAttributes` 会是 `["_classLevel"]` 或 `["_enumLevel"]`，因为示例是针对整个类的实例化）。
-        *   此类条目的 `id` 可以基于 "Listing X.Y" 生成一个唯一的ID，例如 "Listing_5_1_Example"。`id_type` 可以设为 "constr" (或新增一个 "example" 类型，如果需要更细区分)。
-        *   `title` 可以是 "Listing X.Y" 的完整标题。
-        *   `expression` 可以是对此XML示例的简短描述或其用途说明。
-11.**多模态表格图片信息**：
-    *   文本中的表格或图片的标题（例如 "Figure X.Y: 类名、类结构" 或 "Table X.Y: 类名"），即为这个类的信息，已在注入的类上下文中。
-    *   '<-------------- multimodal context ... ------->',表示该图表包含多模态上下文信息。
-    *   多模态信息中可能会有约束信息，格式与正文一致。
-    *   正文中可能会引用多模态信息，需要作为约束信息的补充甚至单独作为一个约束处理，约束id为当前的图表数字标题号，同要需要对齐上下文类信息。
-
-**通用指令与注意事项:**
-
-*   严格遵循Schema: 生成的每个JSON对象都必须严格符合提供的 `CONSTRAINT_SCHEMA`。
-*   不要遗漏任何符合约束格式的约束。
-*   除了标准格式的约束之外，llm还可以自己从文本中推理出约束，约束id为当前的#@SECTION数字标题号，同要需要对齐上下文类信息。
-
-将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合以下 CONSTRAINT_SCHEMA:
-{self.constraint_schema_str}
-
-如果文档片段中没有找到任何约束，请返回包含空列表的 JSON 对象，例如：{{"extracted_constraints": []}}。
-确保 JSON 中的所有字符串值都已正确转义。
-"""
+        将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合以下 CONSTRAINT_SCHEMA:
+        {self.constraint_schema_str}
+        """
         return prompt
 
     def extract_constraints_from_block(self, text_block_for_llm):
