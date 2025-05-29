@@ -15,6 +15,14 @@
 Application Data Level
 Implementation Data Level
 Base Type Level
+
+<-------------- multimodal context 
+```markdown
+| Application Data Level    |
+|---------------------------|
+| Implementation Data Level |
+| Base Type Level           |
+``` ---------------------->
 Table 5.1: Abstraction Levels for Describing Data
 
 [TPS_SWCT_01230] Application Data Level (cid:100) The Application Data Level is the common level at which ApplicationSwComponentTypes specify a data type or prototype. This level allows to define all the data attributes which are needed from the application point of view, in order to exchange data between software components or between a software component and a measurement and calibration tool. It is possible to specify data communication of a complete Virtual Function Bus based on this level only.
@@ -180,6 +188,30 @@ For more details about this aspect please refer to figure 5.60.
 
 This constraint is visualized in figure 5.2.
 
+
+<-------------- multimodal context 
+This diagram illustrates AUTOSAR’s rules for ensuring type compatibility between application-level data definitions on connected ports and their corresponding implementation-level representations. It shows how two ApplicationDataType prototypes on a sender and receiver side must be mutually compatible and connected, how each maps down to an ImplementationDataType in its respective SW-component, and how those implementation types must themselves be compatible to guarantee correct end-to-end data exchange.
+
+• Component hierarchy  
+  – Two ApplicationDataType elements (source and sink) and two corresponding ImplementationDataType elements  
+  – Implicitly tied to two SW-component instances via their ports  
+
+• Ports & interfaces  
+  – RPort/PPort exchanging ApplicationDataType  
+  – DataPrototype mapping steps from ApplicationDataType to ImplementationDataType  
+
+• Data flow  
+  – Bidirectional “compatible and connected” at application level  
+  – Unidirectional “compatible and mapped” down to implementation  
+  – Dashed link “shall also be compatible” between implementation types  
+
+• Key AUTOSAR concepts  
+  – ApplicationDataType vs. ImplementationDataType  
+  – DataPrototype mapping and compatibility rules  
+  – Port interfaces and type compatibility requirements  
+
+• Scenario  
+  – Design intent: enforce transitive type compatibility from port interfaces through to code-level data structures for safe inter-SWC communication. ---------------------->
 Figure 5.2: Compatibility of Data Types
 
 #@SECTION: 5.2.3 Data Categories
@@ -208,6 +240,33 @@ Please note that the column "RTE + BSW" of table 5.7 is only applicable for cate
 [constr_1006] applicable data categories (cid:100) Table 5.7 defines the applicable categorys depending on specific model elements related to data definition properties. (cid:99)()
 
 Table 5.7: Usage of category for Data Types
+<-------------- multimodal context 
+
+
+| Category |Applicable to ApplicationArrayDataype |Applicable to ApplicationRecordDataType |Applicable to ApplicationPrimitiveDataTpe |Applicable to ApplicationRecordElement |Applicable to ApplicationArrayElement |Applicable to ApplicationValueSpecification | Applicable to ImplementationDataype |Applicable to ImplementationDataTypeElement |Applicable to SwServiceArg |Applicable to SwSystemconst |Applicable to MCDatanstance |use case for Calibration |use case for Measurement |use case for CommunicationPortInterfaces |use case for RTE+BSW | Description |
+|----------|------------------------|---------------------------|----------------------------|-------------------------|------------------------|------------------------------|----------------------|------------------------------|--------------|---------------|---------------|-------------|-------------|---------------------------|---------|-------------|
+| VALUE | | | X | X | X | X | X | X | | X | X | X | X |X | x | Contains a single value. |
+| VAL_BLK | | | X | X | X | X | | | | | X | X | | | | A value block defines values stored together within one calibration parameter object.It is similar to an value array but it stores the values by means of an axis instead (only important for calibration data handling). |
+| DATA_REFERENCE | | | | | | | X | X | X | | | | | | X | Contains an address of another DataPrototype(whose type is given via SwDataDefProps.swPointerTargetProps). |
+| FUNCTION_REFERENCE | | | | | | | X | X | X | | | | | | X | Contains an address of a function prototype(whose signature is given via SwDataDefProps.swPointerTargetProps.functionPointerSignature). |
+| TYPE_REFERENCE | | | | | | | X | x | X | | | | | X | x | The element is defined via reference to another data type (via SwDataDefProps.implementationDataType). |
+| STRUCTURE | | X | | X | X | | X | X | | | X | X | X | X | x | Holds one or several further elements which can have different AutosarDataTypes.The underlying elements are defined in the same manner as normal data except for the association to SwAddrMethod:This has to be the same for all underlying elements.Corresponds to a Record if used in the application domain. |
+| UNION | | | | | | | X | X | | | x | X | X | | x | Can hold values of different data types.It is similar to STRUCTURE except that all of its members start at the same location in memory.A UNION data prototype can contain only one of its elements at a time.The size of the UNION is at least the size of the largest member. |
+| ARRAY | x | | | x | X | | X | X | | | x | X | x | x | x | An array of sub-elements which are of the same type. |
+| BIT | | | | | | | | | | | x | X | X | | x | One or several bits within a host variable,which are treated as an own data object. |
+| HOST | | | | | | | | | | | x | X | X | | x | A HOST data type is like a simple VALUE,but it is used for packed bit definition.That means it can host several BIT variables which have their own description and measurement access. |
+| STRING | | | X | X | X | X | | | | | x | x | X | X | | Contains a single value interpreted as a text string(note that it appears as a single value for the application domain;the internal representation can be an array). |
+| BOOLEAN | | | X | X | X | X | | | | | x | x | X | X | | Contains one boolean state.Depending on the CPU direct addressing of single bits may not be available.So a byte or a word can be used to store only one logical state. |
+| COM_AXIS | | | X | | x | X | | | | | x | X | | | | An axis definition as separate calibration parameter which can be referenced by any CURVE,MAP,CUBOID,CUBE_4,and CUBE_5.The benefits by using a common axis is that it saves memory space;because it is stored only one time and can be used in multiple CURVES,MAPS,CUBOIDS,CUBE_4s,and CUBE_5S. |
+| RES_AXIS | | | X | | x | x | | | | | x | X | | | | A RES_AXIS(rescale axis)is also a shared axis like COM_AXIS,the difference is that this kind of axis can be used for rescaling.Note that the RES_AXIS is by nature a CURVE which is used to implement a non linear scaling(rescale)of the axis.In addition to saving memory space via the shared usage like a COM_AXIS,it can compress a huge range to a non-linear distributed axis points thus retaining the required accuracy. |
+| CURVE_AXIS | | | X | X | X | X | | | | | x | x | | | | CURVE_AXIS uses a separate CURVE to rescale the axis.The referenced CURVE is used to lookup an axis index,and the index value is used by the controller to determine the operating point in the CURVE,MAP,CUBOID,CUBE_4,or CUBE_5. |
+| CURVE | | | X | X | X | X | | | | | X | X | | | | Calibration parameter with one input value and one output value.That means output values can be defined depending on the input value.The granularity of implemented functionality can be changed by using different number of axis points.A CURVE has always one input axis and one output axis.The output axis is a characteristic of the curve and every time present but the input axis can be defined within the curve definition or separately. |
+| MAP | | | X | X | X | X | | | | | x | x | | | | Calibration parameter with two input values and one output value.That means output values can be defined depending on the input values.The granularity of implemented functionality can be changed by using different number of axis points for y-and x-axis.A MAP has always two input axes and one output axis.The output axis is a characteristic of the MAP and every time present but the input axes can be defined within the MAP definition or separately. |
+| CUBOID | | | X | X | X | X | | | | | X | X | | | | Calibration parameter with three input values and one output value.That means output values can be defined depending on the input values.The granularity of implemented functionality can be changed by using different number of axis points for the input axes.A CUBOID has always three input axes and one output axis.The output axis is a characteristic of the CUBOID and every time present but the input axes can be defined within the CUBOID definition or separately. |
+| CUBE_4 | | | X | X | X | X | | | | | x | x | | | | Calibration parameter with four input values and one output value.That means output values can be defined depending on the input values.The granularity of implemented functionality can be changed by using different number of axis points for the input axes.A CUBE_4 has always four input axes and one output axis.The output axis is a characteristic of the CUBE_4 and every time present but the input axes can be defined within the CUBE_4 definition or separately. |
+| CUBE_5 | | | X | X | X | X | | | | | x | x | | | | Calibration parameter with five input values and one output value.That means output values can be defined depending on the input values.The granularity of implemented functionality can be changed by using different number of axis points for the input axes.A CUBE_5 has always five input axes and one output axis.The output axis is a characteristic of the CUBE_5 and every time present but the input axes can be defined within the CUBE_5 definition or separately. |
+| MACRO | | | | | | | | | X | | |  | | x| x | This represents an argument to a C macro. |
+------------------------->
 
 [TPS_SWCT_01239] default value for attribute category used in the context of SwSystemconst (cid:100) The default value for the category of a SwSystemconst shall be VALUE. This has to be applied if no explicit definition of the category can be found. (cid:99)()
 
@@ -223,6 +282,46 @@ Table 5.7: Usage of category for Data Types
 
 Figure 5.3: Basic Meta-Model for ApplicationDataType
 Table 5.8: Allowed Attributes vs. category for ApplicationDataTypes
+<-------------- multimodal context 
+
+| Attribute of **SwDataDefProps** | ApplicationDataType | ApplicationRecordElement | ApplicationArrayElement | VALUE | VAL_BLK | STRUCTURE | ARRAY | STRING | BOOLEAN | COM_AXIS | RES_AXIS | CURVE | MAP | CUBOID | CUBE_4 | CUBE_5 |
+|--------------------------------|:-------------------:|:------------------------:|:-----------------------:|:-----:|:-------:|:---------:|:-----:|:------:|:-------:|:--------:|:--------:|:-----:|:---:|:------:|:------:|:------:|
+| additionalNativeTypeQualifier |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| annotation | x | x | x | * | * | * | * | * | * | * | * | * | * | * | * | * |
+| baseType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| compuMethod | x |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| dataConstr | x | x | x | 0..1 | 0..1 |  |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| displayFormat | x | x | x | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| implementationDataType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| invalidValue | x |  |  | 0..1 |  |  |  | 0..1 | 0..1 |  |  |  |  |  |  |  |
+| stepSize | x | x | x | 0..1 | 0..1 |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAddrMethod | x |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAlignment |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swBitRepresentation |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalibrationAccess | x |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| swCalprmAxisSet | x |  |  |  |  |  |  |  |  | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| swComparisonVariable |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swDataDependency |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swHostVariable |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swImplPolicy | x |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIntendedResolution | x | x | x | 0..1 |  |  |  |  |  |  |  |  |  |  |  |  |
+| swInterpolationMethod | x |  |  | 0..1 |  |  |  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIsVirtual |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swPointerTargetProps |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swRecordLayout | x |  |  | 0..1 | 0..1（note） |  |  | 0..1 |  | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| swRefreshTiming | x |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  |  |  |  |  |  |
+| swTextProps | x |  |  |  |  |  |  | 1 |  |  |  |  |  |  |  |  |
+| swValueBlockSize | x |  |  |  | 1 |  |  |  |  |  |  |  |  |  |  |  |
+| unit | x |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| valueAxisDataType | x |  |  |   |  0..1  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| **Other attributes below the root element** |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| element: ApplicationRecordElement | x | x | x |  |  | 1..* |  |  |  |  |  |  |  |  |  |  |
+| element: ApplicationArrayElement | x | x | x |  |  |  | 1 |  |  |  |  |  |  |  |  |  |
+| ApplicationArrayElemen.arraySizeSemantics | x |  |  |  |  |  | 0..1 |  |  |  |  |  |  |  |  |  |
+| ApplicationArrayElement.maxNumberOfElements | x |  |  |  | |  | 1 |  |  |  |  |  |  |  |  |  |
+note：This is required by [TPS_SWCT_01179].
+----------------------------------------------->
+
 This is required by [TPS_SWCT_01179].
 
 Table 5.9: ApplicationPrimitiveDataType
@@ -763,7 +862,49 @@ This represents an exception such that it would make sense to use an entire Arra
 
 
 Table 5.18: Allowed Attributes vs. category for ImplementationDataType
+<-------------- multimodal context 
 
+
+| Attributes | Root Element |  |  |  | Attribute Existence per Category |  |  |  |  |  |  |
+|------------|--------------|--|--|--|------------------|-----------------|-------------------|-----------------|-----------|-------|-------|
+|  | ImplementationDataType | ImplementationDataTypeElement | SwPointerTargetProps | SwServiceArg | VALUE | DATA REFERENCE | FUNCTION REFERENCE | TYPE_REFERENCE | STRUCTURE | UNION | ARRAY |
+| additionalNativeTypeQualifier | X | X | X | X | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| annotation | X | X | X | X | * | * | * | * | * | * | * |
+| baseType | X | X | X | X | 1 |  |  |  |  |  |  |
+| compuMethod | X | X | X | X | 0..1 |  |  | 0..1 |  |  |  |
+| dataConstr | X | X | X | X | 0..1 |  |  | 0..1 |  |  |  |
+| displayFormat | X | X |  |  | 0..1 |  |  |  | 0..1 | 0..1 | 0..1 |
+| implementationDataType | X | X | X | X |  |  |  | 1 |  |  |  |
+| invalidValue | X | X | X |  | 0..1 |  |  | 0..1 | 0..1(note1) |  | 0..1(note2) |
+| stepSize | X | X |  |  | 0..1 |  |  |  |  |  |  |
+| swAddrMethod | X | X | X |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAlignment | X |  |  |  | 0..1 | 0..1 | 0..1 |  | 0..1 | 0..1 | 0..1 |
+| swBitRepresentation |  |  |  |  |  |  |  |  |  |  |  |
+| swCalibrationAccess | X | X |  |  | 0..1 |  |  |  | 0..1 | 0..1 | 0..1 |
+| swCalprmAxisSet |  |  |  |  |  |  |  |  |  |  |  |
+| swComparisonVariable |  |  |  |  |  |  |  |  |  |  |  |
+| swDataDependency |  |  |  |  |  |  |  |  |  |  |  |
+| swHostVariable |  |  |  |  |  |  |  |  |  |  |  |
+| swImplPolicy | X |  | X | X | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIntendedResolution |  |  |  |  |  |  |  |  |  |  |  |
+| swInterpolationMethod |  |  |  |  |  |  |  |  |  |  |  |
+| swIsVirtual |  |  |  |  |  |  |  |  |  |  |  |
+| swPointerTargetProps | X | X | X | X |  | 1 | 1 |  |  |  |  |
+| swPointerTargetProps.swDataDefProps | X | X | X | X |  | 1 |  |  |  |  |  |
+| swPointerTargetProps.functionPointerSignature | X | X | X | X |  |  | 1 |  |  |  |  |
+| swRecordLayout |  |  |  |  |  |  |  |  |  |  |  |
+| swRefreshTiming | X | X | X | X | 0..1 |  |  |  | 0..1 | 0..1 | 0..1 |
+| swTextProps |  |  |  |  |  |  |  |  |  |  |  |
+| swValueBlockSize |  |  |  |  |  |  |  |  |  |  |  |
+| unit |  |  |  |  |  |  |  |  |  |  |  |
+| valueAxisDataType |  |  |  |  |  |  |  |  |  |  |  |
+### Other Attributes
+| subElement: ImplementationDataTypeElement | X | X |  |  |  |  |  |  | 1..* | 1..* | 1 |
+| subElement.arraySizeSemantics | X | X |  |  |  |  |  |  |  |  | 0..1 |
+| subElement.arraySize | X | X |  |  |  |  |  |  |  |  | 1 |
+note1:There is a use case for the definition of an invalidValue for category ARRAY and therefore category STRUCTURE is also supported for the sake of symmetry.
+note2:This represents an exception such that it would make sense to use an entire ArrayValueSpecification as the invalidValue because a string semantically is more than just a bunch of characters in a row.
+--------------------------->
 [TPS_SWCT_01251] Limited set of values for category are applicable for ImplementationDataType (cid:100) Like any AutosarDataType, also the data types on implementation level are characterized by its category and its SwDataDefProps. For a given category, only a limited set of attributes of the SwDataDefProps makes sense. (cid:99)(RS_SWCT_03217)
 
 [constr_1009] SwDataDefProps applicable to ImplementationDataTypes (cid:100) A complete list of the SwDataDefProps and other attributes and their multiplicities which are allowed for a given category is shown in table 5.18. (cid:99)()
@@ -1231,9 +1372,91 @@ table 5.32 which does not include the ImplementationDataTypeElement.
 
 Table 5.31: Allowed Attributes vs. category for DataPrototypes typed by Application Data Types
 
+<-------------- multimodal context 
+
+
+### Attributes of SwDataDefProps
+
+| Attributes | RootElem. |  |  | AttributeExistenceperCategory |  |  |  |  |  |  |  |  |  |  |  |  |
+|------------|-----------|--|--|-------------------------------|---------|-----------|-------|--------|----------|----------|----------|-------|-----|--------|--------|--------|
+|  | DataPrototype | InstantiationDataDefProps | ParameterAccess | VALUE | VAL_BLK | STRUCTURE | ARRAY | STRING | BOOLEAN | COM_AXIS | RES_AXIS | CURVE | MAP | CUBOID | CUBE_4 | CUBE_5 |
+| additionalNativeTypeQualifier |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| annotation | x | x | x | * | * | * | * | * | * | * | * | * | * | * | * | * |
+| baseType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| compuMethod |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| dataConstr | x | x |  | 0..1 | 0..1 |  |  |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| displayFormat | x | x |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| implementationDataType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| invalidValue |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| stepSize | x | x | x | 0..1 | 0..1 |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAddrMethod | x | x |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAlignment | x | x |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swBitRepresentation |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalibrationAccess | x | x |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swCalprmAxisSet |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalprmAxisSet.swCalprmAxis/SwAxisGrouped.swCalprmRef |  | x | x |  |  |  |  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swCalprmAxisSet.swCalprmAxis/SwAxisIndividual.swVariableRef |  | x | x |  |  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swCalprmAxisSet.swCalprmAxis/SwAxisGrouped.sharedAxisType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalprmAxisSet.swCalprmAxis/SwAxisIndividual.inputVariableType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalprmAxisSet.swCalprmAxis/SwAxisIndividual.unit |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swCalprmAxisSet.swCalprmAxis.baseType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swComparisonVariable |  |  | x |  |  |  |  |  |  |  |  | 0..* | 0..* | 0..* | 0..* | 0..* |
+| swDataDependency | x | x |  | 0..1 |  |  |  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swHostVariable |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swImplPolicy | x |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIntendedResolution |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swInterpolationMethod | x | x | x | 0..1 |  |  |  |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIsVirtual | x | x |  | 0..1 |  |  |  |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swPointerTargetProps |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swRecordLayout |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swRefreshTiming | x | x |  | 0..1 | 0..1 |  |  | 0..1 | 0..1 |  |  |  |  |  |  |  |
+| swTextProps |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| swValueBlockSize |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| unit |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| valueAxisDataType |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+------------------------>
 [constr_1289] Allowed Attributes vs. category for DataPrototypes typed by ApplicationDataTypes (cid:100) The allowed values of Attributes per category for DataPrototypes typed by ApplicationDataTypes are documented in table 5.31. (cid:99)()
 
 Table 5.32: Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes
+<-------------- multimodal context 
+
+
+### Attributes of SwDataDefProps
+
+| Attributes | RootElement |  |  | Attribute Existence per Category |  |  |  |  |  |  |
+|------------|-------------|--|--|------------------------------|-----------------|---------------------|-----------------|----------|-------|-------|
+|  | DataPrototype | InstantiationDataDefProps | ParameterAccess | VALUE | DATA_REFERENCE | FUNCTION_REFERENCE | TYPE_REFERENCE | STRUCTURE | UNION | ARRAY |
+| additionalNativeTypeQualifier |  |  |  |  |  |  |  |  |  |  |
+| annotation | x | x | x | * | * | * | * | * | * | * |
+| baseType |  |  |  |  |  |  |  |  |  |  |
+| compuMethod |  |  |  |  |  |  |  |  |  |  |
+| dataConstr | x | x |  | 0..1 |  |  | 0..1 |  |  |  |
+| displayFormat | x | x |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 |
+| implementationDataType |  |  |  |  |  |  |  |  |  |  |
+| invalidValue |  |  |  | 0..1 |  |  |  |  |  |  |
+| stepSize | x | x |  | 0..1 |  |  |  |  |  |  |
+| swAddrMethod | x | x |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swAlignment | x | x |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swBitRepresentation |  |  |  |  |  |  |  |  |  |  |
+| swCalibrationAccess | x | x |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 |
+| swCalprmAxisSet |  |  |  |  |  |  |  |  |  |  |
+| swComparisonVariable |  |  |  |  |  |  |  |  |  |  |
+| swDataDependency |  |  |  |  |  |  |  |  |  |  |
+| swHostVariable |  |  |  |  |  |  |  |  |  |  |
+| swImplPolicy | x |  |  | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 | 0..1 |
+| swIntendedResolution |  |  |  |  |  |  |  |  |  |  |
+| swInterpolationMethod |  |  |  |  |  |  |  |  |  |  |
+| swIsVirtual |  |  |  |  |  |  |  |  |  |  |
+| swPointerTargetProps |  |  |  |  |  |  |  |  |  |  |
+| swPointerTargetProps.swDataDefProps |  |  |  |  |  |  |  |  |  |  |
+| swPointerTargetProps.functionPointerSignature |  |  |  |  |  |  |  |  |  |  |
+| swRecordLayout |  |  |  |  |  |  |  |  |  |  |
+| swRefreshTiming | x | x |  | 0..1 |  |  | 0..1 | 0..1 | 0..1 | 0..1 |
+| swTextProps |  |  |  |  |  |  |  |  |  |  |
+| swValueBlockSize |  |  |  |  |  |  |  |  |  |  |
+| unit |  |  |  |  |  |  |  |  |  |  |
+| valueAxisDataType |  |  |  |  |  |  |  |  |  |  |
+------------------------>
 
 [constr_1288] Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes (cid:100) The allowed values per category for DataPrototypes typed by ImplementationDataTypes are documented in table 5.32. (cid:99)()
 
@@ -1364,8 +1587,50 @@ However, there are constraints for the attributes depending on the role of the d
 [constr_1015] Prioritization of SwDataDefProps (cid:100) The prioritization and usage of attributes of meta-class SwDataDefProps shall follow the restrictions given in table 5.39. (cid:99)()
 
 Table 5.39: Usage of Attributes of SwDataDefProps
+<-------------- multimodal context 
+
+
+| Attribute of **SwDataDefProps** | Usage For RTE | Usage For A2L | Usage For Other | ApplicationDataType | ImplementationDataType | DataPrototype | InstantiationDataProps | ParameterAccess | ComSpec | SwServiceArg | FlatInstanceDescriptor |McDataInatance| SwSystemconst | PerInstanceMemory |
+|---------------------------------|:------------------:|:------------------:|:---------------:|:--------------------:|:-----------------------:|:--------------:|:------------------------:|:----------------:|:------:|:-----------:|:-------------------------:|:----------------:|:----------------:|:----------------:|:----------------:|
+| additionalNativeTypeQualifier                                     |  x  |   | x | NA | D  | I  | NA | NA | NA | D  | NA | I  | NA  | NA  |
+| annotation                                                        |     |   | x | D  | A  | A  | A  | A  | A  | D  | NA |  A | D   | NA  |
+| baseType                                                          |  x  | x | x | NA | D  | I  | I  | I  | R  | D  | NA |  A | M   | NA  |
+| compuMethod                                                       |  x  | x | x | D | AI  | I  | I  |NA  | R  | I  | AI | AI | D   | NA  |
+| dataConstr                                                        |  x  | x | x | D  | C  | R  | R  | I  |NA  | R  | NA | I  | D   | NA  |
+| displayFormat                                                     |   |  x  |   | D  | A  | R  | R  | I  | NA | R  | NA |  I | D   | NA  |
+| implementationDataType                                            |  x  |   | x | NA | D  | I  | I  | I  | NA | D  | NA | NA |NA   | NA  |
+| invalidValue                                                      |  x  | x |   | D  | A  | I  | I  | NA | D  | NA | NA | I  | NA  | NA  |
+| stepSize                                                          |   |  x  |   | D  | A  | A  | A  | A  | NA | NA | A  | I  |  NA | NA  |
+| swAddrMethod                                                      | x |  x  | x | D  | R  | R  | R  |NA  | NA | NA | R  | NA | NA  | D   |
+| swAlignment                                                       | x |   |  x  | NA | D  | R  | R  |NA  | NA | NA |NA  | NA | NA  | NA  |
+| swBitRepresentation                                               |   |  x | x  | NA |NA  | NA | NA |NA  | NA | NA | NA | D  | NA  | NA  |
+| swCalibrationAccess                                               | x |  x  |   | D  | R  | R  | R  | NA | NA | R  | R  | I  | D   | NA  |
+| swCalprmAxisSet                                                   |  x  | x |   | D  | NA | I  | I  | I  | NA | NA | NA | I   | NA | NA  |
+| swCalprmAxisSet.swCalprmAxis / SwAxisGrouped.swCalprmRef          |   |  x  |   | NA | NA | NA | D  | R  | NA | NA | NA | I   | NA | NA  |
+| swCalprmAxisSet.swCalprmAxis / SwAxisIndividual.swVariableRef     |   |  x  |   | NA | NA | NA | D  | R  | NA | NA | NA | I   | NA | NA  |
+| swCalprmAxisSet.swCalprmAxis / SwAxisGrouped.sharedAxisType       |   |  x  |   | D  | NA | NA | NA | NA | NA | NA | NA | I   | NA | NA  |
+| swCalprmAxisSet.swCalprmAxis / SwAxisIndividual.inputVariableType |   |  x  |   | D  | NA | NA | NA | NA | NA | NA | NA | I   | NA | NA  |
+| swCalprmAxisSet / SwAxisIndividual.unit                           |   | opt.|   | D  | NA | I  | I  | I  | NA | I  | NA | I  | NA   | NA  |
+| swComparisonVariable                                              |    |  x |   | NA | NA | NA | NA | D  | NA | NA | NA | I   | NA | NA  |
+| swDataDependency                                                  |   |  x |  x | NA | NA | D  | R  | NA | NA | NA | NA | I   | NA | NA  |
+| swHostVariable                                                    |   |  x  | x | NA |NA  | NA | NA |NA  | NA | NA | NA | D  | NA  | NA  |
+| swImplPolicy                                                      |  x  |   | x | D  | A  | A  | NA | NA | NA | D  | NA | NA  | NA  | NA  |
+| swIntendedResolution                                              |   |    |  x | D(NOTE) | NA | NA | NA | NA | NA | NA | NA  | NA | NA  | NA |
+| swInterpolationMethod                                             |    |   |  x | D  | I  | R  | R  | R  | NA | NA | NA | I  | NA  | NA  |
+| swIsVirtual                                                       |    | x  |   | NA | NA | D  | R  | NA | NA | NA | NA | I  | NA  | NA  |
+| swPointerTargetProps                                              |    |   |  x | NA | D  | I  | NA | NA | NA | D  | NA | NA |NA   | NA  |
+| swRecordLayout                                                    |  x  |  x  |  x  | D | NA | I | I | I | NA | NA |NA | I | NA |NA |
+| swRefreshTiming                                                   |   |  x  |   | D | R | R | R | NA |NA | R | NA | R | NA |NA |
+| swTextProps                                                       |    |  x  | x | D | I | I | I | I | NA | NA | NA | I |NA |NA |
+| swValueBlockSize                                                  |    |  x  | x | D | I | I | I | I | NA | NA | NA | I |NA |NA |
+| unit                                                              |    |  x  | x | D | I | I | I | NA| NA | I |  NA | I |NA |NA |
+| valueAxisDataTypeType                                             |    |  x  | x | D | I | I | I | I | NA | NA | NA | I |NA |NA |
+
+NOTE:swIntendedResolution is used only in an early phase of the definition of data types, namely in the context of the definition of so-called blueprints. To that extent, swIntendedResolution represents a non-binding requirement that shall later be considered for the definition of an appropriate CompuMethod.
+---------------------->
 
 The following settings apply in table 5.39:
+
 
 D Define the attribute independent from settings to the left.
 
@@ -1409,6 +1674,15 @@ Table 5.44: Annotation
 These variables can be used to display the value of a variable on the value axis of a calibration parameter (characteristic), that is currently displayed in the MCD-System. The purpose is to compare the appropriate result from the calibration parameter in question, with a value being calculated or taken from a sensor (the comparison variable).
 The sole purpose of this comparison-variable is therefore to serve the calibration process. (cid:99)()
 
+
+<-------------- multimodal context 
+The provided figure is not an AUTOSAR SW-Component architecture at all but rather a time-response plot of a variable called swComparisonVariable (measured voltage Vs rising toward and oscillating about a threshold V until a motor-start time tmot). To summarize its intent:
+
+– It shows how Vs climbs to V (at tx) and then settles around V before the motor-enable instant tmot.  
+– “swComparisonVariable” is the internal signal being compared against threshold V.  
+– The plot illustrates damping/overshoot behavior when Vs reaches its set value.  
+– Use-case: trigger a downstream action (e.g. motor start) when the monitored voltage crosses and stabilizes at the threshold.  
+– No SW-Components, ports, interfaces or AUTOSAR prototypes are depicted—this is purely a timing/behavioral graph, not an SWC architecture. ---------------------->
 Figure 5.24: Explanation of swComparisonVariable
 
 Table 5.45: SwCalibrationAccessEnum
@@ -1455,6 +1729,19 @@ These restrictions are summarized in table 5.47 and formalized in the following 
 combination with the attribute value swCalibrationAccess as described in [constr_1017].
 
 Table 5.47: Allowed attributes values for SwImplPolicy vs. DataPrototypes and their roles
+<-------------- multimodal context 
+
+
+| AttributeofSwImplPolicyEnum | VariableDataPrototype |  |  |  |  |  |  | ParameterDataPrototype |  |  |  |  | Misc. |  |
+|----------------------------|----------------------|--|--|--|--|--|--|------------------------|--|--|--|--|-------|--|
+|  | VariableDataPrototype in SenderReceiverInterface | VariableDataPrototype in NvDataInterface | VariableDataPrototype in role ramBlock | VariableDataPrototype in role implicitInterRunnableVariable | VariableDataPrototype in role explicitInterRunnableVariable | VariableDataPrototype in role arTypedPerInstanceMemory | VariableDataPrototype in role staticMemory | ParameterDataPrototype in ParameterInterface | ParameterDataPrototype in role romBlock | ParameterDataPrototype in role sharedParameter | ParameterDataPrototype in role perInstanceParameter | ParameterDataPrototype in role constantMemory | ArgumentDataPrototype | SwServiceArg |
+| const | NA | NA | NA | NA | NA | NA | NA | x | NA | NA | NA | x | NA | x |
+| fixed | NA | NA | NA | NA | NA | NA | NA | x | NA | NA | NA | x | NA | NA |
+| measurementPoint | x | NA | NA | NA | NA | x | x | NA | NA | NA | NA | NA | NA | NA |
+| queued | x | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |
+| standard | x | x | x | x | x | x | x | x | x | x | x | x | x | x |
+| message | NA | NA | NA | NA | NA | NA | x | NA | NA | NA | NA | NA | NA | NA |
+------------------------>
 
 The following settings apply in table 5.47:
 
@@ -1517,6 +1804,36 @@ The diagram 5.5 shows that in addition to the semantics defined through the comp
 
 Figure 5.25: Invalid value
 
+
+<-------------- multimodal context 
+This diagram illustrates the layered mapping of an AUTOSAR ApplicationDataType into an ECU’s raw BaseType representation, showing how physical values are constrained, converted via a CompuMethod, and how invalid values are handled at each layer.
+
+- Component hierarchy  
+  • ApplicationDataType at the top level  
+  • CompuMethod mediating value conversion  
+  • ImplementationDataType intermediate layer  
+  • BaseType providing the underlying numeric range  
+
+- Ports & interfaces  
+  • physConstrs of ApplicationDataType (upper/lower bounds)  
+  • limits of CompuMethod (mapping domain)  
+  • internalConstrs of ApplicationDataType and ImplementationDataType  
+  • range by BaseType  
+
+- Data flow  
+  • Physical value enters ApplicationDataType  
+  • Mapped through CompuMethod to an internal scale  
+  • Constrained by ImplementationDataType  
+  • Finally represented within the BaseType range  
+
+- Key AUTOSAR concepts  
+  • CompuMethod for scaling/calibration  
+  • physConstrs/internalConstrs for validity checks  
+  • InvalidValue (transparent vs. known)  
+  • Layered DataType definitions  
+
+- Scenario  
+  • Converting a sensor’s physical measurement into a validated, ECU-compatible integer signal, while managing out-of-range and invalid values. ---------------------->
 The invalidValue can be used in different flavors (also illustrated in Figure 5.6:
 #@Hierarchical
 • [TPS_SWCT_01432] Keep the invalidValue transparent to the sending and receiving software components (cid:100) On the one hand it is possible to keep the invalidValue transparent to the sending and receiving software components. In this case the invalidation API of the RTE on the sender side has to be used. The receiving software component can either use the data receive status or the DataReceiveErrorEvent respectively DataReceivedEvent to decide about the validity of the received data or the receiving software component can rely on the reception of an initValue as a default value in case of data invalidation. In this case the invalid value should (and usually will) be outside of the range limits defined by the compuMethod. (cid:99)()
@@ -1618,6 +1935,18 @@ Table 5.48: SwCalibrationAccessEnum
 
 [constr_1017] Supported combinations of swImplPolicy and swCalibrationAccess (cid:100) The table 5.49 defines the supported combinations of swImplPolicy and swCalibrationAccess attribute setting. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| swImplPolicy     | swCalibrationAccess |                |             |
+|------------------|---------------------|----------------|-------------|
+|                  | notAccessible       | readOnly       | readWrite   |
+| fixed            | yes                 | not supported  | not supported |
+| const            | yes                 | yes            | not supported |
+| standard         | yes                 | yes            | yes           |
+| queued           | yes                 | not supported  | not supported |
+| measurementPoint | not supported       | yes            | not supported |
+``` ---------------------->
 Table 5.49: Supported combinations of swImplPolicy and swCalibrationAccess
 
 [constr_1018] measurementPoint shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess (cid:100) Due to the nature of data elements characterized by setting the swImplPolicy to measurementPoint, such data elements shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess. (cid:99)()
@@ -2129,8 +2458,24 @@ second CompuNominatorDenominator.v represents the exponent 1, and so on.
 For a detailed description of CompuMethods, please refer to the ASAM MCD 2 Harmonized Data Objects [23].
 
 Table 5.73 contains a definition of possible values for the attribute category.
-
+<--------------note:以下表格中有[constr_1134][constr_1135]两个约束>
 Table 5.73: ASAM compuMethod
+<-------------- multimodal context 
+
+
+| ASAMCategory | Meaning | Specific properties |
+|--------------|---------|-------------------|
+| IDENTICAL | This CompuMethod just hands over the internal value with an optional unit. | Only the base elements are allowed and unit, physConstr and internalConstr are optional. This is the simplest type of a CompuMethod. |
+| LINEAR | A linear conversion can be performed in two steps: The internal value is multiplied with a factor; after that, an offset is added to the result of the multiplication. | Exactly one CompuScale, with two v in compuNumerator and one v in compuDenominator. |
+| SCALE_LINEAR | Used for a piecewise linear conversion | More than one compuScale can be defined. Additionally there have to be the upperLimit and lowerLimit elements which define the region of validity for the linear function. The boundaries of the regions shall not overlap. |
+| SCALE_LINEAR_AND_TEXTTABLE | Used for piecewise definition of one linear and several text table scales. | Properties depend on the used scale function. For details see definition of SCALE_LINEAR and TEXTTABLE. The scales shall each provide lowerLimit and upperLimit definitions. |
+| RAT_FUNC | The rational function type is similar to the linear type without the restrictions for the compuNumerators and compuDenominators. | It can have as many v elements as needed for the rational function. The sequence of the values v carries the information for the exponents, that means the first v is the coefficient for x⁰, the second v is the coefficient for x¹, etc. With this sequence the values of the exponents can be entirely represented. A rational function is only applicable for conversions in the direction that it is defined for, i.e. the automatic calculation of the inverse function is not supported by the MCD system. |
+| SCALE_RAT_FUNC | Used for piecewise defined rational conversion. | |
+| SCALE_RATIONAL_AND_TEXTTABLE | Used for piecewise definition of one rational and several text table scales. | Properties depend on the used scale function. For details see definition of SCALE_RAT_FUNC and TEXTTABLE. The scales shall each provide lowerLimit and upperLimit definitions. |
+| TEXTTABLE | The type TEXTTABLE is used for transformations of the internal value into textual elements. | [constr_1134] Allowed structure of TEXTTABLE  (cid:100) physConstr is not allowed. compuInternalToPhys  shall exist with compuScales consisting of upperLimit and lowerLimit.(cid:99)() The result is placed in the vt member of CompuConst. The compuDefaultValue is optional. If the reverse calculation is needed then for each scale the compuInverseValue can be used to define the reverse calculation result. If no inverse value is explicitly defined then the smallest possible value of the scale will be used as result of the reverse calculation. |
+| TAB_NOINTP | Similar to TEXTTABLE, but for numerical values. | The values per scale are defined in CompuConst. |
+| BITFIELD_TEXTTABLE | Similar to TEXTTABLE but for bitfields | BITFIELD_TEXTTABLE is derived from TEXTTABLE. The main difference is that TEXTTABLE results to a single value while BITFIELD_TEXTTABLE results to a concatenated value set. [constr_1135] Limit of vt in BITFIELD_TEXTTABLE (cid:100) The separator is “|” and is forbidden in vt therefore.(cid:99)() In difference to all the other computational methods every CompuScale will be applied including the bit mask specified in mask. Therefore it is allowed for this type of CompuMethod, that CompuScales overlap. To calculate the string reverse to a value, the string has to be split and the according value for each substring has to be summed up. The sum is finally transmitted.The processing has to be done in order of the CompuScale elements. |
+------------------------>
 
 #@SECTION: 5.5.1.2 Applicability of Attributes in the context of a CompuMethod
 #@CLASS: CompuConst
@@ -2147,6 +2492,34 @@ For clarification, the first two rows of Table 5.74 define the applicability of 
 Please note that annotations apply to the individual cell values. These annotations are formulated by means of a numerical value in parentheses, e.g. (1). The legend for the individual annotations can be found below Table 5.74.
 
 Table 5.74: Allowed Attributes vs. category for CompuMethods
+<-------------- multimodal context 
+
+### Attributes of CompuMethod
+
+| Attributes | Attribute Existence per Category |  |  |  |  |  |  |  |  |  |
+|------------|------------------------------|--|--|--|--|--|--|--|--|--|
+|  | IDENTICAL | LINEAR | SCALE_LINEAR | RAT_FUNC | SCALE_RAT_FUNC | TEXTTABLE | BITFIELD_TEXTTABLE | SCALE_LINEAR_AND_TEXTTABLE | SCALE_RATIONAL_AND_TEXTTABLE | TAB_NOINTP |
+| compuInternalToPhys | N/A | D(1) | D(1) | D(2) | D(2) | D | D | D(8) | D(2) | D |
+| compuPhysToInternal | N/A | D | D | D(2) | D(2) | N/A | N/A | N/A | D(2,3) | N/A |
+
+### Attributesofmeta-classesrelatedtoCompuMethod
+
+| Attributes | AttributeExistenceperCategory |  |  |  |  |  |  |  |  |  |
+|------------|------------------------------|--|--|--|--|--|--|--|--|--|
+|  | IDENTICAL | LINEAR | SCALE_LINEAR | RAT_FUNC | SCALE_RAT_FUNC | TEXTTABLE | BITFIELD_TEXTTABLE | SCALE_LINEAR_AND_TEXTTABLE | SCALE_RATIONAL_AND_TEXTTABLE | TAB_NOINTP |
+| compuDefaultValue | N/A | O(6) | O(6) | O(6) | O(6) | O(6) | O(6) | O(6) | O(6) | O(6) |
+| CompuScale | N/A | D/1..1 | D/1..n | D/1..1 | D/1..n | D/1..n | D/1..n | D/1..n | D/1..n | D/1..n |
+| CompuScale.compuInverseValue | N/A | N/A | N/A | O(2) | O(2) | O(5) | N/A | O(2,5) | O(2,5) | O(5) |
+| CompuScale.lowerLimit | N/A | O | D | D(4) | D(4) | D | D | D | D(4) | D |
+| CompuScale.mask | N/A | N/A | N/A | N/A | N/A | N/A | D | N/A | N/A | N/A |
+| CompuScale.shortLabel | N/A | N/A | N/A | N/A | N/A | O(7) | O(7) | O(7) | O(7) | N/A |
+| CompuScale.symbol | N/A | N/A | N/A | N/A | N/A | O(7) | O(7) | O(7) | O(7) | N/A |
+| CompuScale.upperLimit | N/A | O | D | D(4) | D(4) | D | D | D | D(4) | D |
+| CompuConst | N/A | N/A | N/A | N/A | N/A | D/vt | D/vt | D/vt | D/vt | D/vt or vf |
+| CompuRationalCoeffs | N/A | D | D | D | D | N/A | N/A | D | D | N/A |
+| CompuRationalCoeffs.compuDenominator | N/A | D/1v | D/1v | D | D | N/A | N/A | D/1v | D | N/A |
+| CompuRationalCoeffs.compuDenominator | N/A | D/2v | D/2v | D | D | N/A | N/A | D/2v | D | N/A |
+------------------------>
 
 The following legend applies to the cells in table 5.74: 
 D Define the attribute. 
@@ -2307,6 +2680,17 @@ Listing 5.10: example for rational CompuMethod
 
 The following example shows how a CompuMethod of category BITFIELD_TEXTTABLE can be used to assign a special meaning to each bit of an AutosarDataType of category VALUE:
 
+
+<-------------- multimodal context 
+```markdown
+| Bit      | Description  | Encoding                                                                 |
+|----------|--------------|--------------------------------------------------------------------------|
+| Bit 0    | front left   | 0(0) = no, 1(1) = yes                                                    |
+| Bit 2    | rear left    | 0(0) = no, 1(4) = yes                                                    |
+| Bit 3    | rear right   | 0(0) = no, 1(8) = yes                                                    |
+| Bit 4-5  | problem      | 00(0) = flat tire  <br> 01(16) = low pressure  <br> 10(32) = unbalanced  <br> 11(48) = unknown |
+| All Bits | error        | 11111111 = invalid value                                                 |
+``` ---------------------->
 Table 5.75: Example Bitfield
 
 Note that this example is somehow tricky. Bit 6+7 are not used for valid data, but are part of the mask. By this the error can safely be masked out.
@@ -2531,6 +2915,32 @@ According to [23] the following three values for categorys are recommended in th
 
 Assume "MilesPerHour" should be converted to a European unit: Based on the physicalDimension a conversion to "MeterPerSec" as well as "MilesPerHour" is possible. In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are both members of the UnitGroup named "VehicleSpeed". In contrast to this "MeterPerSec" is not considered as appropriate for "VehicleSpeed".
 
+
+<-------------- multimodal context 
+This diagram defines an AUTOSAR‐style unit conversion scheme by grouping country identifiers and equivalent measurement units, and binding a VehicleSpeed data prototype to one of those units. It shows how base “units” (Eu, USA) map to metric/imperial units, and how a signal’s DataPrototype refers to a specific unit via these groups.
+
+- Component hierarchy  
+  • UnitGroup(Category=“COUNTRY”) contains Units Eu and USA  
+  • UnitGroup(Category=“EQUIV_UNITS”) contains Units Km, KmPerHour, MilesPerHour, MeterPerSec  
+  • ApplicationDataPrototype VehicleSpeed linked to a Unit  
+
+- Ports & interfaces  
+  • No explicit RPort/PPort; units act as DataType elements  
+  • DataPrototype VehicleSpeed uses the DataInterface defined by KmPerHour  
+
+- Data flow  
+  • Arrows denote derivation/mapping relationships:  
+    – Eu → Km, KmPerHour, MeterPerSec  
+    – USA → MilesPerHour  
+  • VehicleSpeed ← KmPerHour  
+
+- Key AUTOSAR concepts  
+  • UnitGroup and Unit as specializations of ApplicationDataType  
+  • ApplicationDataPrototype referencing a Unit  
+  • Implicit DataTypeMapping between country identifiers and equivalent units  
+
+- Scenario  
+  • Enable multi-region support by converting country‐specific units into a common set of equivalent measurement units and binding physical signals (e.g., VehicleSpeed) to those units. ---------------------->
 Figure 5.41: Example for units and unit groups
 
 #@SECTION: 5.5.3 Data Constraints
@@ -2752,8 +3162,26 @@ Table 5.104: swRecordLayoutVProp
 
 Figure 5.45 and Figure 5.46 illustrate most of these properties.
 
+
+<-------------- multimodal context 
+The diagram defines the in-memory record layout (swRecordLayoutVProp) for a single axis, partitioning four slots (COUNT = 4) into VALUE, LEFTDIFF, RIGHTDIFF and padding. It shows how LEFTDIFF and RIGHTDIFF offsets are derived dynamically at runtime, while FIXLEFTDIFF and FIXRIGHTDIFF provide static byte spans over the first two and last two slots respectively, guiding RTE marshalling for axis data.
+
+- Component hierarchy: a single AtomicSwComponentType “swRecordLayoutVProp” (or part of a CompositionSwComponentType) handling one axis’s record packing.
+- Ports & interfaces: one AbstractProvidedPortPrototype (e.g. AxisRecordPort) of a ClientServerInterface or DataInterface carrying an ApplicationCompositeDataType with element prototypes VALUE, LEFTDIFF, RIGHTDIFF.
+- Data flow: the SWC writes axis raw value then computes left/right differentials into the composite record; RTE transmits the packed record to consumers.
+- Key AUTOSAR concepts: ApplicationCompositeDataType and ApplicationCompositeElementDataPrototype, swRecordLayoutVProp mapping, COUNT property, AbstractProvidedPortPrototype, fixed vs. dynamic offsets.
+- Scenario: packaging sensor or actuator axis data (current point and deviations) into a standardized record for communication, diagnostics or logging. ---------------------->
 Figure 5.45: Values for swRecordLayoutVProp for individual axis
 
+
+<-------------- multimodal context 
+This diagram illustrates how the swRecordLayoutVProp for a fixed axis is computed in AUTOSAR. It defines a starting OFFSET and a constant interval DIST (or equivalently 2^SHIFT) to calculate the position of each record element via the formula Value = OFFSET + n * DIST (or + n * 2^SHIFT). This ensures uniform spacing of sub-elements in memory or communication records.
+
+• Component hierarchy – No SW-Components or compositions are depicted; it concerns a single property prototype (swRecordLayoutVProp).  
+• Ports & interfaces – No PPorts/RPorts or interfaces are shown.  
+• Data flow – A mathematical pattern: each element index n maps to a position value by adding OFFSET plus n times DIST (or 2^SHIFT).  
+• Key AUTOSAR concepts – swRecordLayoutVProp, fixed axis, OFFSET, DIST, SHIFT (power-of-two spacing).  
+• Scenario – Specifies linear layout of record or array elements with uniform spacing for data mapping. ---------------------->
 Figure 5.46: Values for swRecordLayoutVProp for fixed axis
 
 [TPS_SWCT_01296] Different approaches of ASAM MCD-2MC and AUTOSAR with respect to SwRecordLayout (cid:100) ASAM MCD-2D specification (also known as A2L, resp. ASAP) uses keywords in record layouts where MSR/AUTOSAR uses the more generic approach specified here. It may happen that this generic approach cannot always be safely mapped to the A2L keywords. Therefore SwRecordLayoutV.category as well as SwRecordLayoutGroup.category can assist the conversion to the current A2L format. (cid:99)()
@@ -2844,6 +3272,33 @@ The algorithm to generate the desired data types is illustrated in the following
 
 We create an ImplementationDataType for each ApplicationDataType. Figure 5.51 illustrates how to map the details.
 
+
+<-------------- multimodal context 
+This diagram defines an AUTOSAR SW-Component that implements an algorithmic mapping from application-level data types to their corresponding implementation records. It shows two runnables that iteratively consume each ApplicationDataType, break it into sub-elements based on a RecordLayout, and emit ImplementationDataTypeElement instances. A single data flow chain connects an input RPort (“ApplicationDataType”) through the CreateType and create subElement runnables to an output PPort (“TypeContentFromRecordLayout”). This design encapsulates the transformation logic needed by an RTE or code-generator module to reconcile abstract data prototypes with concrete ECU memory layouts.
+
+• Component hierarchy  
+  – One AtomicSwComponentType (“DataTypeMapper”)  
+  – Two runnables: CreateType, create subElement  
+  – No nested compositions or delegated sub-components  
+
+• Ports & interfaces  
+  – RPort: ApplicationDataType (data interface carrying ApplicationDataType prototypes)  
+  – PPort: TypeContentFromRecordLayout (data interface for ImplementationDataTypeElement)  
+  – One AssemblySwConnector linking ports to Runnables  
+
+• Data flow  
+  – Iterative loop («iterative») over all ApplicationDataTypes  
+  – ApplicationDataType → CreateType → create subElement → ImplementationDataTypeElement → TypeContentFromRecordLayout  
+
+• Key AUTOSAR concepts  
+  – Runnable entities with explicit triggering via iterative scheduling  
+  – AbstractProvidedPortPrototype (PPort) and AbstractRequiredPortPrototype (RPort)  
+  – ApplicationDataType, ApplicationCompositeDataTypeSubElementRef  
+  – ImplementationDataTypeElement as AutosarDataPrototype  
+  – RecordLayout-based mapping  
+
+• Scenario  
+  – Code‐generation or RTE‐configuration step that transforms abstract application data definitions into concrete memory layouts for ECU software. ---------------------->
 Figure 5.51: algorithm to map the details of an application data type to the corresponding implementation data type according to the record layout
 
 [TPS_SWCT_01299] Relation of swRecordLayoutGroup to subElement (cid:100) For each swRecordLayoutGroup an appropriate subElement shall be created. This sub element is then reﬁned according to the approach sketched in ﬁgure 5.52. The algorithm shall be recursively applied applied to the newly created ImplementationDataTypeElements. As the record layout groups are nested, this recursion yields the complete structure in the ImplementationDataType. (cid:99)()

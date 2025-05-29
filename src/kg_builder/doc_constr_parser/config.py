@@ -5,23 +5,23 @@ load_dotenv() # 从 .env 文件加载环境变量
 
 # LLM API 配置
 LLM_API_KEY = os.getenv("LLM_API_KEY")
-LLM_API_BASE = os.getenv("LLM_API_BASE", "https://api.deepseek.com/v1")
-LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME", "deepseek-chat")
+LLM_API_BASE = os.getenv("LLM_API_BASE")
+LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME")
 
 
 # LLM 上下文窗口和 Token 相关常量
-MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS", 200000))
-MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", 30000))
-TOKEN_BUFFER = int(os.getenv("TOKEN_BUFFER", 5000))  # 保留的Token数量，避免超出限制
+MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS"))
+MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS"))
+TOKEN_BUFFER = int(os.getenv("TOKEN_BUFFER"))  # 保留的Token数量，避免超出限制
 # 新增：为LLM输入内容设定的安全Token上限，以间接控制输出Token
 # 这个值需要根据实际测试调整，3k输入对应8k输出是一个1:2.67的比例
 # 假设 prompt 指令本身消耗一部分，我们为内容区设定一个值
-SAFE_INPUT_CONTENT_MAX_TOKENS = int(os.getenv("SAFE_INPUT_CONTENT_MAX_TOKENS", 15000))  # 1.5万Token
+SAFE_INPUT_CONTENT_MAX_TOKENS = int(os.getenv("SAFE_INPUT_CONTENT_MAX_TOKENS"))  # 1.5万Token
 
 
 # 添加路径配置参数
 INPUT_DIR = "input"
-MD_FILENAME = "autosar_spec_swc.md"
+MD_FILENAME = "chapter2.md"
 OUTPUT_DIR = "output"
 
 # 文件名常量 (可以考虑版本号v5)
@@ -30,10 +30,8 @@ OUTPUT_LINKED_CONSTRAINTS_FILENAME = "constraints_linked_v5.json"
 OUTPUT_REVIEW_QUEUE_FILENAME = "review_queue_v5.csv"
 OUTPUT_RAW_LLM_FILENAME = "constraints_raw_v5.jsonl" # 明确文件名
 
-
-
 # LLM 的 Schema (V5 - 支持多目标)
-{
+CONSTRAINT_SCHEMA = {
   "type": "object",
   "properties": {
     "id": {

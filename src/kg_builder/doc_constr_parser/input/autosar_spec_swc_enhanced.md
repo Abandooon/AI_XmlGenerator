@@ -283,6 +283,31 @@ In some cases SwComponentTypes need to read and write the same piece of data. On
 
 Without the ability to define a combined read and write semantics the definition of an RPortPrototype and a PPortPrototype is required for reading and writing the applicable data.
 
+
+<-------------- multimodal context 
+This diagram illustrates an Application SW-Component interacting with an NvBlock SW-Component to read and write persistent data (“MyNvData”) through mirrored required/provided port prototypes, with the NvBlock mapping both ports to an internal RAM storage element.
+
+• Component hierarchy  
+  – Two AtomicSwComponentTypes: “Application SW Component” and “NvBlock SW Component”  
+  – No nested compositions; they are standalone instances linked by assembly connectors  
+
+• Ports & interfaces  
+  – Each SW-Component defines an AbstractRequiredPortPrototype (R_MyNvData) and an AbstractProvidedPortPrototype (P_MyNvData)  
+  – Both ports use a shared DataInterface (e.g. ApplicationCompositeDataType)  
+  – AssemblySwConnectors cross-link P_MyNvData↔R_MyNvData in both directions  
+
+• Data flow  
+  – Application invokes its P_MyNvData to send new NvData into the NvBlock  
+  – Application reads back stored data via its R_MyNvData, served by the NvBlock’s P_MyNvData  
+  – Bidirectional synchronous data exchange routed through the block’s ramBlock  
+
+• Key AUTOSAR concepts  
+  – Port prototypes (PRPortPrototype) and ClientServerInterface  
+  – ArVariableInImplementationDataInstanceRef mapping of ports to an internal ApplicationDataPrototype (“ramBlock”)  
+  – Dashed “mappings” represent DataPrototypeMapping/InstantiationDataDefProps  
+
+• Scenario  
+  – Demonstrates how a generic non-volatile storage SWC exposes internal RAM via provided ports for application use, validating the need for PRPortPrototypes in AUTOSAR. ---------------------->
 Figure 2.7: Use Case 1 for the existence of PRPortPrototype
 
 Technically, this read and write access is related to the same data item in an NVRAM Block. This requires a consistent connection of the PortPrototypes between an NvBlockSwComponentType and ApplicationSwComponentType as well as a consistent mapping of the corresponding RPortPrototype and a PPortPrototype of the NvBlockSwComponentType and the related element of the ramBlock.
@@ -293,6 +318,28 @@ It may happen that a SwComponentType need to consume the same data that it produ
 
 In other words, it is impossible to fully specify the semantics of the otherwise self contained SwComponentType.
 
+
+<-------------- multimodal context 
+The diagram illustrates a simple AUTOSAR composition in which Application SW-Component A produces a data element “MyData”, consumes its own output for internal feedback, and forwards it to Application SW-Component B. RunA1 writes to a provided port and reads back the same data via a required port, while RunB1 reads the forwarded value. This use case motivates a combined PRPortPrototype to avoid redundant port definitions when chaining reads and writes across components.
+
+• Component hierarchy  
+  – Two AtomicSwComponentType instances: Application SW Component A (with Runnable RunA1) and Application SW Component B (with Runnable RunB1).  
+
+• Ports & interfaces  
+  – A: AbstractProvidedPortPrototype P_MyData and AbstractRequiredPortPrototype R_MyData, both typed by a common DataInterface “MyData.”  
+  – B: AbstractRequiredPortPrototype MyData (same DataInterface).  
+  – One AssemblySwConnector links P_MyData to both R_MyData and B’s MyData port.  
+
+• Data flow  
+  – RunA1 writes “MyData” through P_MyData; the data is routed back into A via R_MyData (loopback) and out to B’s MyData port.  
+  – RunB1 reads “MyData” via its required port.  
+
+• Key AUTOSAR concepts  
+  – Separate RPort/PPort prototypes, DataInterface, AssemblySwConnector, runnable-to-port data access (read/write).  
+  – Highlights need for a PRPortPrototype to merge P/R roles.  
+
+• Scenario  
+  – Demonstrates self-feedback plus inter-component data provision, driving the justification for a unified PRPortPrototype. ---------------------->
 Figure 2.8: Use Case 2 for the existence of PRPortPrototype
 
 This means that only in the in best case one buffer for the data is needed. But depending on the mapping RunnableEntitys to OS tasks additional buffers may need to be allocated by the RTE to fully implement the implicit communication pattern.
@@ -303,6 +350,31 @@ As an alternative, the ApplicationSwComponentType could utilize inter-runnable v
 
 In this scenario, several ApplicationSwComponentTypes are iterating over the same large set of data. This means each ApplicationSwComponentType implements one out of many steps of a complex data processing algorithm applied to the same piece of data.
 
+
+<-------------- multimodal context 
+This diagram illustrates a simple three‐component data pipeline using PRPortPrototypes: Component A produces data, B reads and transforms it, and C reads and forwards it. Each component hosts a single runnable that accesses a provided port for output and a required port for input, showing how PRPortPrototypes enable chaining of data interfaces via assembly connectors.
+
+• Component hierarchy  
+  – Three AtomicSwComponentTypes: Application SW Component A, B, C  
+  – Each contains one RunnableEntity (RunA1 in A and C, RunB1 in B)
+
+• Ports & interfaces  
+  – Each SWC has one ProvidedPortPrototype (PPort) and one RequiredPortPrototype (RPort)  
+  – Ports expose a DataInterface for read/write access  
+  – AssemblySwConnectors link A→B and B→C ports
+
+• Data flow  
+  – RunA1 writes to A’s PPort → B’s RPort  
+  – RunB1 reads from B’s RPort, writes to B’s PPort → C’s RPort  
+  – RunA1 in C reads from C’s RPort and writes to C’s PPort
+
+• Key AUTOSAR concepts  
+  – AbstractProvidedPortPrototype / AbstractRequiredPortPrototype  
+  – ClientServer (data) interface, PRPortPrototype usage  
+  – Runnable–Port data access relationships
+
+• Scenario  
+  – Demonstrates existence and chaining of PRPortPrototypes for inter-component data flow in a producer–consumer chain. ---------------------->
 Figure 2.9: Use Case 3 for the existence of PRPortPrototype
 
 For example, this scenario may apply for video signal processing in camera applications. Typically, such applications will not be distributed over several ECUs. It is clear that in this case the allocation of several buffers in the RTE is required to implement the individual connections between the ApplicationSwComponentTypes. In most cases, the processing has to be executed at a certain point in time in a dedicated order.
@@ -422,6 +494,30 @@ Rectangular The data type of the elements of the Variable-Size Array Data Type i
 Fully Flexible The data type of the elements of the Variable-Size Array Data Type itself consists of Variable-Size Array Data Types where the maximum number of elements in “second order” arrays is not necessarily identical with each other and (obviously) not necessarily identical to the maximum number of elements in the “ﬁrst order” array. This case corresponds to the tag (d) in Figure 2.10. This case corresponds to the possible value VSA_FULLY_FLEXIBLE of attribute dynamicArraySizeProfile.
 (cid:99)(RS_SWCT_03181)
 
+
+<-------------- multimodal context 
+This diagram illustrates the structural variants of AUTOSAR ApplicationArrayDataType definitions when the array length is not fixed. It shows how a single variable-size array, nested arrays, segmented arrays, and arrays with heterogeneous element sizes can be modeled purely at the data-type level to support differing runtime sizing requirements.
+
+• Component hierarchy  
+  – One top-level ApplicationArrayDataType in each variant  
+  – (b) and (c) show nested ApplicationArrayElement groups (i.e. arrays of arrays)  
+  – (d) demonstrates heterogeneous element sizing within one ApplicationArrayDataType  
+
+• “Ports & interfaces”  
+  – No RPort/PPort here; these are pure DataPrototype definitions  
+  – Each ApplicationArrayElement acts like an inner data prototype group  
+
+• Data flow  
+  – Not IPC but static data composition  
+  – Consumers read from the outer array; inner elements are materialized at runtime  
+
+• Key AUTOSAR concepts  
+  – ApplicationArrayDataType with variableSizeAllowed = true  
+  – ApplicationArrayElement and ApplicationCompositeDataTypeSubElementRef  
+  – Use of heterogeneous vs. homogeneous sub-element modeling  
+
+• Scenario / design intent  
+  – Provide flexible array structures for calibration tables, sensor buffers or dynamic payloads where element count or size must vary at configuration time rather than code-generation time. ---------------------->
 Figure 2.10: Structural variety of array data types with variable size
 
 Please note that the leaf elements in a Variable-Size Array Data Type doesn’t have to be primitive data types. As mentioned before, it is possible to deﬁne multiple dimension Variable-Size Array Data Types. The “terminal” elements can be recognized as such in that they don’t establish further Variable-Size Array Data Types.
@@ -497,6 +593,33 @@ icSwComponentTypes. Such AtomicSwComponentTypes encapsulate the imple
 mentation of their functionality and behavior and merely expose well-deﬁned connec
 tion points, called PortPrototypes, to the outside world.
 
+
+<-------------- multimodal context 
+This diagram illustrates how an atomic AUTOSAR Software Component defines and exposes its communication façades via ports and connectors. It shows both client-server and sender-receiver interactions, including a dedicated service port and attribute port, enabling synchronous operations, asynchronous signal exchange, and configuration data flow within an ECU software architecture.
+
+• Component hierarchy  
+  – A single AtomicSwComponentType (“AUTOSAR-SW-Component”), no nested compositions  
+
+• Ports & interfaces  
+  – Provided PortPrototype (PPort), ClientServerInterface  
+  – Required PortPrototype (RPort), ClientServerInterface  
+  – Provided PortPrototype, SenderReceiverInterface  
+  – Required PortPrototype, SenderReceiverInterface  
+  – Required service PortPrototype, SenderReceiverInterface  
+  – Provided PortPrototype (attribute port), SenderReceiverInterface  
+
+• Data flow  
+  – ConnectorPrototypes link provided/required ClientServer ports (RPC request/response)  
+  – Connectors link SenderReceiver ports for publish/subscription of data and attributes  
+  – Service port used for on-demand data exchange  
+
+• Key AUTOSAR concepts  
+  – AbstractProvidedPortPrototype, AbstractRequiredPortPrototype  
+  – PortInterface (ClientServerInterface, SenderReceiverInterface)  
+  – ConnectorPrototype, service PortPrototype, attributes on ports  
+
+• Scenario  
+  – Demonstrates a component offering and consuming services (RPC), publishing signals and attributes, and subscribing to asynchronous events in an ECU network. ---------------------->
 Figure 3.1: Graphical representation of software-components in AUTOSAR
 
 The graphical appearance of AUTOSAR software-components according to [3] is depicted in Figure 3.1.
@@ -746,9 +869,43 @@ Prototypes in order to allow for reuse as part of another system.
 Table 3.13: SwConnector
 Table 3.14: AssemblySwConnector
 Table 3.15: DelegationSwConnector
+
+<-------------- multimodal context 
+This diagram illustrates a Composition SW Component that delegates two data ports through an inner Application SW Component, using PassThroughSwConnectors to forward input data to a Runnable (“RunA1”) and then emit an output trigger back to the outer world.
+
+• Component hierarchy  
+  – A CompositionSwComponent contains one ApplicationSwComponent (AtomicSwComponentType)  
+  – Outer and inner ports are linked via DelegationSwConnectors and PassThroughSwConnectors  
+
+• Ports & interfaces  
+  – External ports on the Composition: one ProvidedPortPrototype (>>) and one RequiredPortPrototype (▷) on each side  
+  – Internal ports on the Application SWC: corresponding AbstractProvidedPortPrototype and AbstractRequiredPortPrototype  
+  – DataInterface instances map the ports; connectors: DelegationSwConnector (to composition boundary) and PassThroughSwConnector (between inner ports)  
+
+• Data flow  
+  – Incoming data arrives at the inner RPort, passes through to RunA1 as an argument (dashed arrow)  
+  – RunA1 is activated by an RTO timing event, produces a “Trigger” on the inner PPort  
+  – The trigger is passed through to the external PPort and delivered to downstream components  
+
+• Key AUTOSAR concepts  
+  – RunnableEntity (“RunA1”) with InternalTriggeringPoint (RTO)  
+  – AbstractProvided/RequiredPortPrototypes, DataInterfaces, DelegationSwConnector, PassThroughSwConnector  
+  – Event-driven vs. data-triggered invocation, port-based communication  
+
+• Scenario  
+  – Demonstrates a pass-through use case: forwarding raw data into an application runnable and routing its event-triggered output unchanged to an external consumer. ---------------------->
 Figure 3.9: Use case for PassThroughSwConnector (I)
 Table 3.16: PassThroughSwConnector
 Figure 3.10: Connectors
+
+<-------------- multimodal context 
+This diagram illustrates a Composition SWC using a PassThroughSwConnector pattern: it exposes client-server interfaces on its outer ports that are directly delegated to an inner Application SWC’s matching ports via DelegationSwConnectors and a PortInterfaceMapping, enabling transparent forwarding of operation calls and responses without additional composition-level logic.
+
+- Component hierarchy – one CompositionSwComponent encapsulates a single ApplicationSwComponent; child ports are linked to parent ports by DelegationSwConnectors.  
+- Ports & interfaces – two outer Provided ports (PPorts, “>>” icon) and one outer Required port (RPort, “>” icon) on the composition; inner ApplicationSwComponent defines corresponding AbstractProvidedPortPrototype and AbstractRequiredPortPrototype typed by a ClientServerInterface.  
+- Data flow – client sends an asynchronous server call to the composition’s RPort, which is delegated to the inner RPort; the inner PPort returns the result back through the composition’s PPort.  
+- Key AUTOSAR concepts – DelegationSwConnector, PortInterfaceMapping, AbstractProvidedPortPrototype/AbstractRequiredPortPrototype, ClientServerInterface, AsynchronousServerCallPoint/ReturnsEvent.  
+- Scenario – a transparent container pattern that groups and re-exposes an SWC’s interface unchanged for layering, reuse, or packaging. ---------------------->
 Figure 3.11: Use case for PassThroughSwConnector (II)
 
 [TPS_SWCT_01079] SwConnector (cid:100) Note that CompositionSwComponent
@@ -1057,10 +1214,27 @@ Factually, [constr_1033] is not applicable to a scenario where several PRPortPro
 
 [constr_1202] Supported connections by AssemblySwConnector for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface (cid:100) For the modeling of AssemblySwConnectors between PortPrototypes typed by a SenderReceiverInterface or NvDataInterface, only the connections documented in Table 4.4 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+|                     | RPortPrototype | PPortPrototype | PRPortPrototype |
+|---------------------|---------------|---------------|-----------------|
+| **RPortPrototype**  | No            | Yes           | Yes             |
+| **PPortPrototype**  | Yes           | No            | Yes             |
+| **PRPortPrototype** | Yes           | Yes           | No              | ---------------------->
 Table 4.4: Supported connections for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface
 
 [constr_1203] Supported connections by DelegationSwConnector for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface (cid:100) For the modeling of DelegationSwConnectors between PortPrototypes typed by a SenderReceiverInterface or NvDataInterface, only the connections documented in Table 4.5 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| innerPort       | outerPort       |               |                  |
+|-----------------|-----------------|---------------|------------------|
+|                 | RPortPrototype  | PPortPrototype| PRPortPrototype  |
+| RPortPrototype  | Yes             | No            | Yes              |
+| PPortPrototype  | No              | Yes           | Yes              |
+| PRPortPrototype | Yes             | Yes           | Yes              |
+``` ---------------------->
 Table 4.5: Supported connections for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface
 
 #@SECTION: 4.2.3 Client Server Communication
@@ -1143,16 +1317,56 @@ Please note that the scenario described in [TPS_SWCT_01125] is depicted in Figur
 
 [constr_1286] serverArgumentImplPolicy and ArgumentDataPrototype typed by primitive data types (cid:100) The value of the attribute ArgumentDataPrototype.serverArgumentImplPolicy shall not be set to useVoid for an ArgumentDataPrototype of direction in that is typed by an AutosarDataType that boils down to a primitive C data type (see [TPS_SWCT_01565]). (cid:99)()
 
+
+<-------------- multimodal context 
+The diagram shows three AtomicSwComponentType “clients” each with a RequiredPort “C” typed by ClientServerInterface {A}, {B}, or {C}, all assembled via AssemblySwConnectors (with multiplicities n=2,3,4) to three ProvidedPorts on a CompositionSwComponentType “server” that hosts a single Server RunnableEntity. It exemplifies how multiple clients invoke a common server runnable through distinct interfaces with specified connector multiplicities.
+
+• Component hierarchy  
+  – Three leaf AtomicSwComponentType clients  
+  – One CompositionSwComponentType server containing a Server RunnableEntity  
+
+• Ports & interfaces  
+  – Clients: AbstractRequiredPortPrototype “C” typed {A}, {B}, {C}  
+  – Server: AbstractProvidedPortPrototype instances typed {A}, {B}, {C}  
+  – AssemblySwConnectors link matching ports  
+
+• Data flow  
+  – Clients invoke server operations via Assembly connectors  
+  – Dashed lines denote RunnableEntity interactions  
+
+• Key AUTOSAR concepts  
+  – AbstractRequired/ProvidedPortPrototype  
+  – ClientServerInterface with multiplicity “n” on AssemblySwConnector  
+  – RunnableEntity inside CompositionSwComponentType  
+
+• Scenario  
+  – Multi-client access pattern where 2, 3, and 4 client instances call server interfaces A, B, C respectively to share a central service. ---------------------->
 Figure 4.3: Example for [TPS_SWCT_01125]
 
 Please note that the server RunnableEntity needs information about the currently used array length respectively structure size by usage of additionally arguments passed by the Client or via PortDefinedArgumentValue. Note further that a ClientServerInterface does not define any timing information (how quickly the client expects a response of the server). It does not define how the threading works (if the client for example blocks until the response comes back from the server). It also does not define explicitly how information is passed between an implementation of the client and the server and the underlying RTE (for example: through "pointers" or "by value").
 
 [constr_1204] Supported connections by AssemblySwConnector for Port Prototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface (cid:100) For the modeling of AssemblySwConnectors between PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface, only the connections documented in Table 4.11 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+|                     | RPortPrototype | PPortPrototype | PRPortPrototype |
+|---------------------|---------------:|---------------:|----------------:|
+| **RPortPrototype**  | No             | Yes            | Yes             |
+| **PPortPrototype**  | Yes            | No             | No              |
+| **PRPortPrototype** | Yes            | No             | No              | ---------------------->
 Table 4.11: Supported connections for PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface
 
 [constr_1205] Supported connections by DelegationSwConnector for Port Prototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface (cid:100) For the modeling of DelegationSwConnectors between PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface, only the connections documented in Table 4.12 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| innerPort      | outerPort        |                |                   |
+|                | RPortPrototype   | PPortPrototype | PRPortPrototype   |
+|----------------|------------------|----------------|-------------------|
+| RPortPrototype | Yes              | No             | No                |
+| PPortPrototype | No               | Yes            | No                |
+``` ---------------------->
 Table 4.12: Supported connections for PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface
 
 #@SECTION: 4.2.3.2 Error Handling in Client/Server Communication
@@ -2032,6 +2246,15 @@ Table 4.58: RPortComSpec
 
 [constr_1043] PortInterface vs. ComSpec (cid:100) The allowed combinations of a specific kind of PortInterface and a kind of ComSpec are documented in Table 4.59. (cid:99)()
 
+
+<-------------- multimodal context 
+| PortInterface              | ComSpec                                                          |
+|----------------------------|------------------------------------------------------------------|
+| SenderReceiverInterface    | SenderComSpec, ReceiverComSpec                                   |
+| ClientServerInterface      | ClientComSpec, ServerComSpec                                     |
+| ModeSwitchInterface        | ModeSwitchSenderComSpec, ModeSwitchReceiverComSpec               |
+| ParameterInterface         | ParameterProvideComSpec, ParameterRequireComSpec                 |
+| NvDataInterface            | NvRequireComSpec, NvProvideComSpec                               | ---------------------->
 Table 4.59: PortInterface vs. ComSpec
 
 As explained in section 2.5, there are cases where PortPrototypes owned by a CompositionSwComponentType could have initValues.
@@ -2649,6 +2872,14 @@ The coherence is created at the point in time when the RunnableEntitys of the pr
 Application Data Level
 Implementation Data Level
 Base Type Level
+
+<-------------- multimodal context 
+```markdown
+| Application Data Level    |
+|---------------------------|
+| Implementation Data Level |
+| Base Type Level           |
+``` ---------------------->
 Table 5.1: Abstraction Levels for Describing Data
 
 [TPS_SWCT_01230] Application Data Level (cid:100) The Application Data Level is the common level at which ApplicationSwComponentTypes specify a data type or prototype. This level allows to define all the data attributes which are needed from the application point of view, in order to exchange data between software components or between a software component and a measurement and calibration tool. It is possible to specify data communication of a complete Virtual Function Bus based on this level only.
@@ -2814,6 +3045,30 @@ For more details about this aspect please refer to figure 5.60.
 
 This constraint is visualized in figure 5.2.
 
+
+<-------------- multimodal context 
+This diagram illustrates AUTOSAR’s rules for ensuring type compatibility between application-level data definitions on connected ports and their corresponding implementation-level representations. It shows how two ApplicationDataType prototypes on a sender and receiver side must be mutually compatible and connected, how each maps down to an ImplementationDataType in its respective SW-component, and how those implementation types must themselves be compatible to guarantee correct end-to-end data exchange.
+
+• Component hierarchy  
+  – Two ApplicationDataType elements (source and sink) and two corresponding ImplementationDataType elements  
+  – Implicitly tied to two SW-component instances via their ports  
+
+• Ports & interfaces  
+  – RPort/PPort exchanging ApplicationDataType  
+  – DataPrototype mapping steps from ApplicationDataType to ImplementationDataType  
+
+• Data flow  
+  – Bidirectional “compatible and connected” at application level  
+  – Unidirectional “compatible and mapped” down to implementation  
+  – Dashed link “shall also be compatible” between implementation types  
+
+• Key AUTOSAR concepts  
+  – ApplicationDataType vs. ImplementationDataType  
+  – DataPrototype mapping and compatibility rules  
+  – Port interfaces and type compatibility requirements  
+
+• Scenario  
+  – Design intent: enforce transitive type compatibility from port interfaces through to code-level data structures for safe inter-SWC communication. ---------------------->
 Figure 5.2: Compatibility of Data Types
 
 #@SECTION: 5.2.3 Data Categories
@@ -2843,6 +3098,7 @@ Please note that the column "RTE + BSW" of table 5.7 is only applicable for cate
 
 Table 5.7: Usage of category for Data Types
 <-------------- multimodal context 
+
 
 | Category |Applicable to ApplicationArrayDataype |Applicable to ApplicationRecordDataType |Applicable to ApplicationPrimitiveDataTpe |Applicable to ApplicationRecordElement |Applicable to ApplicationArrayElement |Applicable to ApplicationValueSpecification | Applicable to ImplementationDataype |Applicable to ImplementationDataTypeElement |Applicable to SwServiceArg |Applicable to SwSystemconst |Applicable to MCDatanstance |use case for Calibration |use case for Measurement |use case for CommunicationPortInterfaces |use case for RTE+BSW | Description |
 |----------|------------------------|---------------------------|----------------------------|-------------------------|------------------------|------------------------------|----------------------|------------------------------|--------------|---------------|---------------|-------------|-------------|---------------------------|---------|-------------|
@@ -2884,6 +3140,7 @@ Table 5.7: Usage of category for Data Types
 Figure 5.3: Basic Meta-Model for ApplicationDataType
 Table 5.8: Allowed Attributes vs. category for ApplicationDataTypes
 <-------------- multimodal context 
+
 | Attribute of **SwDataDefProps** | ApplicationDataType | ApplicationRecordElement | ApplicationArrayElement | VALUE | VAL_BLK | STRUCTURE | ARRAY | STRING | BOOLEAN | COM_AXIS | RES_AXIS | CURVE | MAP | CUBOID | CUBE_4 | CUBE_5 |
 |--------------------------------|:-------------------:|:------------------------:|:-----------------------:|:-----:|:-------:|:---------:|:-----:|:------:|:-------:|:--------:|:--------:|:-----:|:---:|:------:|:------:|:------:|
 | additionalNativeTypeQualifier |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -3464,6 +3721,7 @@ This represents an exception such that it would make sense to use an entire Arra
 Table 5.18: Allowed Attributes vs. category for ImplementationDataType
 <-------------- multimodal context 
 
+
 | Attributes | Root Element |  |  |  | Attribute Existence per Category |  |  |  |  |  |  |
 |------------|--------------|--|--|--|------------------|-----------------|-------------------|-----------------|-----------|-------|-------|
 |  | ImplementationDataType | ImplementationDataTypeElement | SwPointerTargetProps | SwServiceArg | VALUE | DATA REFERENCE | FUNCTION REFERENCE | TYPE_REFERENCE | STRUCTURE | UNION | ARRAY |
@@ -3973,6 +4231,7 @@ Table 5.31: Allowed Attributes vs. category for DataPrototypes typed by Applicat
 
 <-------------- multimodal context 
 
+
 ### Attributes of SwDataDefProps
 
 | Attributes | RootElem. |  |  | AttributeExistenceperCategory |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -4017,6 +4276,7 @@ Table 5.31: Allowed Attributes vs. category for DataPrototypes typed by Applicat
 
 Table 5.32: Allowed Attributes vs. category for DataPrototypes typed by ImplementationDataTypes
 <-------------- multimodal context 
+
 
 ### Attributes of SwDataDefProps
 
@@ -4186,6 +4446,7 @@ However, there are constraints for the attributes depending on the role of the d
 Table 5.39: Usage of Attributes of SwDataDefProps
 <-------------- multimodal context 
 
+
 | Attribute of **SwDataDefProps** | Usage For RTE | Usage For A2L | Usage For Other | ApplicationDataType | ImplementationDataType | DataPrototype | InstantiationDataProps | ParameterAccess | ComSpec | SwServiceArg | FlatInstanceDescriptor |McDataInatance| SwSystemconst | PerInstanceMemory |
 |---------------------------------|:------------------:|:------------------:|:---------------:|:--------------------:|:-----------------------:|:--------------:|:------------------------:|:----------------:|:------:|:-----------:|:-------------------------:|:----------------:|:----------------:|:----------------:|:----------------:|
 | additionalNativeTypeQualifier                                     |  x  |   | x | NA | D  | I  | NA | NA | NA | D  | NA | I  | NA  | NA  |
@@ -4270,6 +4531,15 @@ Table 5.44: Annotation
 These variables can be used to display the value of a variable on the value axis of a calibration parameter (characteristic), that is currently displayed in the MCD-System. The purpose is to compare the appropriate result from the calibration parameter in question, with a value being calculated or taken from a sensor (the comparison variable).
 The sole purpose of this comparison-variable is therefore to serve the calibration process. (cid:99)()
 
+
+<-------------- multimodal context 
+The provided figure is not an AUTOSAR SW-Component architecture at all but rather a time-response plot of a variable called swComparisonVariable (measured voltage Vs rising toward and oscillating about a threshold V until a motor-start time tmot). To summarize its intent:
+
+– It shows how Vs climbs to V (at tx) and then settles around V before the motor-enable instant tmot.  
+– “swComparisonVariable” is the internal signal being compared against threshold V.  
+– The plot illustrates damping/overshoot behavior when Vs reaches its set value.  
+– Use-case: trigger a downstream action (e.g. motor start) when the monitored voltage crosses and stabilizes at the threshold.  
+– No SW-Components, ports, interfaces or AUTOSAR prototypes are depicted—this is purely a timing/behavioral graph, not an SWC architecture. ---------------------->
 Figure 5.24: Explanation of swComparisonVariable
 
 Table 5.45: SwCalibrationAccessEnum
@@ -4317,6 +4587,7 @@ combination with the attribute value swCalibrationAccess as described in [constr
 
 Table 5.47: Allowed attributes values for SwImplPolicy vs. DataPrototypes and their roles
 <-------------- multimodal context 
+
 
 | AttributeofSwImplPolicyEnum | VariableDataPrototype |  |  |  |  |  |  | ParameterDataPrototype |  |  |  |  | Misc. |  |
 |----------------------------|----------------------|--|--|--|--|--|--|------------------------|--|--|--|--|-------|--|
@@ -4390,6 +4661,36 @@ The diagram 5.5 shows that in addition to the semantics defined through the comp
 
 Figure 5.25: Invalid value
 
+
+<-------------- multimodal context 
+This diagram illustrates the layered mapping of an AUTOSAR ApplicationDataType into an ECU’s raw BaseType representation, showing how physical values are constrained, converted via a CompuMethod, and how invalid values are handled at each layer.
+
+- Component hierarchy  
+  • ApplicationDataType at the top level  
+  • CompuMethod mediating value conversion  
+  • ImplementationDataType intermediate layer  
+  • BaseType providing the underlying numeric range  
+
+- Ports & interfaces  
+  • physConstrs of ApplicationDataType (upper/lower bounds)  
+  • limits of CompuMethod (mapping domain)  
+  • internalConstrs of ApplicationDataType and ImplementationDataType  
+  • range by BaseType  
+
+- Data flow  
+  • Physical value enters ApplicationDataType  
+  • Mapped through CompuMethod to an internal scale  
+  • Constrained by ImplementationDataType  
+  • Finally represented within the BaseType range  
+
+- Key AUTOSAR concepts  
+  • CompuMethod for scaling/calibration  
+  • physConstrs/internalConstrs for validity checks  
+  • InvalidValue (transparent vs. known)  
+  • Layered DataType definitions  
+
+- Scenario  
+  • Converting a sensor’s physical measurement into a validated, ECU-compatible integer signal, while managing out-of-range and invalid values. ---------------------->
 The invalidValue can be used in different flavors (also illustrated in Figure 5.6:
 #@Hierarchical
 • [TPS_SWCT_01432] Keep the invalidValue transparent to the sending and receiving software components (cid:100) On the one hand it is possible to keep the invalidValue transparent to the sending and receiving software components. In this case the invalidation API of the RTE on the sender side has to be used. The receiving software component can either use the data receive status or the DataReceiveErrorEvent respectively DataReceivedEvent to decide about the validity of the received data or the receiving software component can rely on the reception of an initValue as a default value in case of data invalidation. In this case the invalid value should (and usually will) be outside of the range limits defined by the compuMethod. (cid:99)()
@@ -4491,6 +4792,18 @@ Table 5.48: SwCalibrationAccessEnum
 
 [constr_1017] Supported combinations of swImplPolicy and swCalibrationAccess (cid:100) The table 5.49 defines the supported combinations of swImplPolicy and swCalibrationAccess attribute setting. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| swImplPolicy     | swCalibrationAccess |                |             |
+|------------------|---------------------|----------------|-------------|
+|                  | notAccessible       | readOnly       | readWrite   |
+| fixed            | yes                 | not supported  | not supported |
+| const            | yes                 | yes            | not supported |
+| standard         | yes                 | yes            | yes           |
+| queued           | yes                 | not supported  | not supported |
+| measurementPoint | not supported       | yes            | not supported |
+``` ---------------------->
 Table 5.49: Supported combinations of swImplPolicy and swCalibrationAccess
 
 [constr_1018] measurementPoint shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess (cid:100) Due to the nature of data elements characterized by setting the swImplPolicy to measurementPoint, such data elements shall not be referenced by a VariableAccess aggregated by RunnableEntity in the role dataReadAccess. (cid:99)()
@@ -5006,6 +5319,7 @@ Table 5.73 contains a definition of possible values for the attribute category.
 Table 5.73: ASAM compuMethod
 <-------------- multimodal context 
 
+
 | ASAMCategory | Meaning | Specific properties |
 |--------------|---------|-------------------|
 | IDENTICAL | This CompuMethod just hands over the internal value with an optional unit. | Only the base elements are allowed and unit, physConstr and internalConstr are optional. This is the simplest type of a CompuMethod. |
@@ -5036,6 +5350,7 @@ Please note that annotations apply to the individual cell values. These annotati
 
 Table 5.74: Allowed Attributes vs. category for CompuMethods
 <-------------- multimodal context 
+
 ### Attributes of CompuMethod
 
 | Attributes | Attribute Existence per Category |  |  |  |  |  |  |  |  |  |
@@ -5222,6 +5537,17 @@ Listing 5.10: example for rational CompuMethod
 
 The following example shows how a CompuMethod of category BITFIELD_TEXTTABLE can be used to assign a special meaning to each bit of an AutosarDataType of category VALUE:
 
+
+<-------------- multimodal context 
+```markdown
+| Bit      | Description  | Encoding                                                                 |
+|----------|--------------|--------------------------------------------------------------------------|
+| Bit 0    | front left   | 0(0) = no, 1(1) = yes                                                    |
+| Bit 2    | rear left    | 0(0) = no, 1(4) = yes                                                    |
+| Bit 3    | rear right   | 0(0) = no, 1(8) = yes                                                    |
+| Bit 4-5  | problem      | 00(0) = flat tire  <br> 01(16) = low pressure  <br> 10(32) = unbalanced  <br> 11(48) = unknown |
+| All Bits | error        | 11111111 = invalid value                                                 |
+``` ---------------------->
 Table 5.75: Example Bitfield
 
 Note that this example is somehow tricky. Bit 6+7 are not used for valid data, but are part of the mask. By this the error can safely be masked out.
@@ -5446,6 +5772,32 @@ According to [23] the following three values for categorys are recommended in th
 
 Assume "MilesPerHour" should be converted to a European unit: Based on the physicalDimension a conversion to "MeterPerSec" as well as "MilesPerHour" is possible. In this case "KmPerHour" is preferred because "MilesPerHour" and "KmPerHour" are both members of the UnitGroup named "VehicleSpeed". In contrast to this "MeterPerSec" is not considered as appropriate for "VehicleSpeed".
 
+
+<-------------- multimodal context 
+This diagram defines an AUTOSAR‐style unit conversion scheme by grouping country identifiers and equivalent measurement units, and binding a VehicleSpeed data prototype to one of those units. It shows how base “units” (Eu, USA) map to metric/imperial units, and how a signal’s DataPrototype refers to a specific unit via these groups.
+
+- Component hierarchy  
+  • UnitGroup(Category=“COUNTRY”) contains Units Eu and USA  
+  • UnitGroup(Category=“EQUIV_UNITS”) contains Units Km, KmPerHour, MilesPerHour, MeterPerSec  
+  • ApplicationDataPrototype VehicleSpeed linked to a Unit  
+
+- Ports & interfaces  
+  • No explicit RPort/PPort; units act as DataType elements  
+  • DataPrototype VehicleSpeed uses the DataInterface defined by KmPerHour  
+
+- Data flow  
+  • Arrows denote derivation/mapping relationships:  
+    – Eu → Km, KmPerHour, MeterPerSec  
+    – USA → MilesPerHour  
+  • VehicleSpeed ← KmPerHour  
+
+- Key AUTOSAR concepts  
+  • UnitGroup and Unit as specializations of ApplicationDataType  
+  • ApplicationDataPrototype referencing a Unit  
+  • Implicit DataTypeMapping between country identifiers and equivalent units  
+
+- Scenario  
+  • Enable multi-region support by converting country‐specific units into a common set of equivalent measurement units and binding physical signals (e.g., VehicleSpeed) to those units. ---------------------->
 Figure 5.41: Example for units and unit groups
 
 #@SECTION: 5.5.3 Data Constraints
@@ -5667,8 +6019,26 @@ Table 5.104: swRecordLayoutVProp
 
 Figure 5.45 and Figure 5.46 illustrate most of these properties.
 
+
+<-------------- multimodal context 
+The diagram defines the in-memory record layout (swRecordLayoutVProp) for a single axis, partitioning four slots (COUNT = 4) into VALUE, LEFTDIFF, RIGHTDIFF and padding. It shows how LEFTDIFF and RIGHTDIFF offsets are derived dynamically at runtime, while FIXLEFTDIFF and FIXRIGHTDIFF provide static byte spans over the first two and last two slots respectively, guiding RTE marshalling for axis data.
+
+- Component hierarchy: a single AtomicSwComponentType “swRecordLayoutVProp” (or part of a CompositionSwComponentType) handling one axis’s record packing.
+- Ports & interfaces: one AbstractProvidedPortPrototype (e.g. AxisRecordPort) of a ClientServerInterface or DataInterface carrying an ApplicationCompositeDataType with element prototypes VALUE, LEFTDIFF, RIGHTDIFF.
+- Data flow: the SWC writes axis raw value then computes left/right differentials into the composite record; RTE transmits the packed record to consumers.
+- Key AUTOSAR concepts: ApplicationCompositeDataType and ApplicationCompositeElementDataPrototype, swRecordLayoutVProp mapping, COUNT property, AbstractProvidedPortPrototype, fixed vs. dynamic offsets.
+- Scenario: packaging sensor or actuator axis data (current point and deviations) into a standardized record for communication, diagnostics or logging. ---------------------->
 Figure 5.45: Values for swRecordLayoutVProp for individual axis
 
+
+<-------------- multimodal context 
+This diagram illustrates how the swRecordLayoutVProp for a fixed axis is computed in AUTOSAR. It defines a starting OFFSET and a constant interval DIST (or equivalently 2^SHIFT) to calculate the position of each record element via the formula Value = OFFSET + n * DIST (or + n * 2^SHIFT). This ensures uniform spacing of sub-elements in memory or communication records.
+
+• Component hierarchy – No SW-Components or compositions are depicted; it concerns a single property prototype (swRecordLayoutVProp).  
+• Ports & interfaces – No PPorts/RPorts or interfaces are shown.  
+• Data flow – A mathematical pattern: each element index n maps to a position value by adding OFFSET plus n times DIST (or 2^SHIFT).  
+• Key AUTOSAR concepts – swRecordLayoutVProp, fixed axis, OFFSET, DIST, SHIFT (power-of-two spacing).  
+• Scenario – Specifies linear layout of record or array elements with uniform spacing for data mapping. ---------------------->
 Figure 5.46: Values for swRecordLayoutVProp for fixed axis
 
 [TPS_SWCT_01296] Different approaches of ASAM MCD-2MC and AUTOSAR with respect to SwRecordLayout (cid:100) ASAM MCD-2D specification (also known as A2L, resp. ASAP) uses keywords in record layouts where MSR/AUTOSAR uses the more generic approach specified here. It may happen that this generic approach cannot always be safely mapped to the A2L keywords. Therefore SwRecordLayoutV.category as well as SwRecordLayoutGroup.category can assist the conversion to the current A2L format. (cid:99)()
@@ -5759,6 +6129,33 @@ The algorithm to generate the desired data types is illustrated in the following
 
 We create an ImplementationDataType for each ApplicationDataType. Figure 5.51 illustrates how to map the details.
 
+
+<-------------- multimodal context 
+This diagram defines an AUTOSAR SW-Component that implements an algorithmic mapping from application-level data types to their corresponding implementation records. It shows two runnables that iteratively consume each ApplicationDataType, break it into sub-elements based on a RecordLayout, and emit ImplementationDataTypeElement instances. A single data flow chain connects an input RPort (“ApplicationDataType”) through the CreateType and create subElement runnables to an output PPort (“TypeContentFromRecordLayout”). This design encapsulates the transformation logic needed by an RTE or code-generator module to reconcile abstract data prototypes with concrete ECU memory layouts.
+
+• Component hierarchy  
+  – One AtomicSwComponentType (“DataTypeMapper”)  
+  – Two runnables: CreateType, create subElement  
+  – No nested compositions or delegated sub-components  
+
+• Ports & interfaces  
+  – RPort: ApplicationDataType (data interface carrying ApplicationDataType prototypes)  
+  – PPort: TypeContentFromRecordLayout (data interface for ImplementationDataTypeElement)  
+  – One AssemblySwConnector linking ports to Runnables  
+
+• Data flow  
+  – Iterative loop («iterative») over all ApplicationDataTypes  
+  – ApplicationDataType → CreateType → create subElement → ImplementationDataTypeElement → TypeContentFromRecordLayout  
+
+• Key AUTOSAR concepts  
+  – Runnable entities with explicit triggering via iterative scheduling  
+  – AbstractProvidedPortPrototype (PPort) and AbstractRequiredPortPrototype (RPort)  
+  – ApplicationDataType, ApplicationCompositeDataTypeSubElementRef  
+  – ImplementationDataTypeElement as AutosarDataPrototype  
+  – RecordLayout-based mapping  
+
+• Scenario  
+  – Code‐generation or RTE‐configuration step that transforms abstract application data definitions into concrete memory layouts for ECU software. ---------------------->
 Figure 5.51: algorithm to map the details of an application data type to the corresponding implementation data type according to the record layout
 
 [TPS_SWCT_01299] Relation of swRecordLayoutGroup to subElement (cid:100) For each swRecordLayoutGroup an appropriate subElement shall be created. This sub element is then reﬁned according to the approach sketched in ﬁgure 5.52. The algorithm shall be recursively applied applied to the newly created ImplementationDataTypeElements. As the record layout groups are nested, this recursion yields the complete structure in the ImplementationDataType. (cid:99)()
@@ -6755,6 +7152,7 @@ NvD NvDataInterface
 
 Table 6.1: Overview of compatibility of ParameterDataPrototype and VariableDataPrototype
 <-------------- multimodal context 
+
 | ProvidedPort | | | RequiredPort | | | | |
 | RequiredOuterPort | | | RequiredInnerPort | | | | |
 | ProvidedInnerPort | | | ProvidedOuterPort | | | | |
@@ -7137,10 +7535,47 @@ The rules for compatibility with respect to the connection of dataElements by me
 
 One of the less trivial examples of this kind is the case of sender/receiver n:1 communication. Figure 6.1 sketches a case where both sender software-components provide the dull set of dataElements that are required by the RPortPrototype of the receiving software-component.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal n:1 sender–receiver communication: two producer AtomicSwComponentTypes each expose data elements {A,B} via provided ports, and one consumer AtomicSwComponentType collects both through a single required port, all wired in a CompositionSwComponentType via AssemblySwConnectors.
+
+- Component hierarchy  
+  • Two source AtomicSwComponentTypes and one sink AtomicSwComponentType instantiated inside a CompositionSwComponentType.
+
+- Ports & interfaces  
+  • Each source has an AbstractProvidedPortPrototype (PPort) offering a sender–receiver DataInterface with elements {A,B}.  
+  • The sink has one AbstractRequiredPortPrototype (RPort) requiring the same interface.  
+  • Two AssemblySwConnectors link each PPort to the single RPort.
+
+- Data flow  
+  • Unidirectional, asynchronous transfer of ApplicationCompositeDataType elements A and B from both producers to the consumer.
+
+- Key AUTOSAR concepts  
+  • AtomicSwComponentType, CompositionSwComponentType, AbstractProvidedPortPrototype, AbstractRequiredPortPrototype, AssemblySwConnector, DataInterface, ApplicationCompositeDataType, PPort/RPort.
+
+- Scenario  
+  • A consumer SWC aggregates or arbitrates data A and B from two redundant or alternative producer SWCs. ---------------------->
 Figure 6.1: legal n:1 communication
 
 The next case (exemplified by Figure 6.2) implements a situation where one sender provides two dataElements {A,b} while the other sender provides only as subset of these, i.e. {B}. As the RPortPrototype of the receiving software-component requires only the dataElement {B} compatibility issues will not occur because for every required dataElement a compatible dataElement is provided.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal n:1 assembly communication in AUTOSAR, where two provider SW-components expose overlapping interface sets to a single consumer SW-component. It shows how multiple P-Ports can be connected to one R-Port without violating AUTOSAR’s interface-set rules.
+
+• Component hierarchy  
+  – Three AtomicSwComponentType instances (two providers on the left, one consumer on the right) hosted in a single CompositionSwComponentType.  
+• Ports & interfaces  
+  – Top provider: AbstractProvidedPortPrototype offering {A,B}  
+  – Bottom provider: AbstractProvidedPortPrototype offering {B}  
+  – Consumer: AbstractRequiredPortPrototype requiring {B}  
+  – Two AssemblySwConnectors link each PPort to the single RPort.  
+• Data flow  
+  – Both providers may invoke operations or send data on interface B into the consumer’s RPort (n:1 communication).  
+• Key AUTOSAR concepts  
+  – Uses AbstractProvided/RequiredPortPrototypes, ClientServerInterface with multi-element sets, AssemblySwConnectors, and legal n:1 connector cardinality.  
+• Scenario  
+  – Demonstrates redundant or fallback provisioning of interface B to a consumer component, enabling fault tolerance or dynamic source selection. ---------------------->
 Figure 6.2: legal n:1 communication
 
 #@SECTION: 6.16.1.2 Illegal Use
@@ -7148,6 +7583,31 @@ Figure 6.2: legal n:1 communication
 
 On possible example for an illegal configuration of a sender/receiver communication is the scenario sketched in Figure 6.3. Although the sender software-components in total provide the set of required dataElements the individual AssemblySwConnectors create incompatible connections between sender and receiver.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal “many-to-one” port connection in an AUTOSAR composition, where two producers drive a single required port on a consumer, violating the n:1 communication rule.
+
+- Component hierarchy  
+  • Three SW-Component instances in a CompositionSwComponentType: two producer AtomicSwComponentTypes (top and bottom) and one consumer AtomicSwComponentType (right).  
+  • Flat composition—no nested sub-compositions or further hierarchies.
+
+- Ports & interfaces  
+  • Producers each expose an AbstractProvidedPortPrototype (PPort) with a DataInterface carrying elements {B} (top) and {A} (bottom).  
+  • Consumer has one AbstractRequiredPortPrototype (RPort) expecting the combined DataInterface {A, B}.  
+  • Two AssemblySwConnectors both target the same consumer RPort.
+
+- Data flow  
+  • Producer SWCs asynchronously send signals A and B independently.  
+  • Both signal streams merge at the single consumer port, implying conflation of two sources into one sink.
+
+- Key AUTOSAR concepts  
+  • AbstractProvided/RequiredPortPrototypes with DataInterfaces  
+  • ApplicationCompositeElementDataPrototypes {A, B}  
+  • AssemblySwConnectors  
+  • Illegal n:1 communication constraint (no multi-producer to single consumer).
+
+- Scenario  
+  • Demonstrates an invalid design where two SW-Components feed one required port—used to highlight the need for intermediate merging SWC or bus communication to enforce 1:1 port connections. ---------------------->
 Figure 6.3: illegal n:1 communication
 
 #@SECTION: 6.16.2 Compatibility on Delegation Level
@@ -7171,6 +7631,25 @@ The examples explain the usage of DelegationSwConnectors in different configurat
 
 At a later point in time it has to be consistent or can be removed. Decorating the example with applicable values of DelegatedPortAnnotation should facilitate the understanding of the meaning of the DelegatedPortAnnotation.
 
+
+<-------------- multimodal context 
+This diagram illustrates a Composition exposing an AbstractProvidedPortPrototype “infold” that aggregates four ApplicationDataPrototypes {A,B,C,D}. Two AtomicSwComponentTypes inside the Composition each have an AbstractRequiredPortPrototype: the top sub-component consumes {A,B}, the bottom consumes {B,C}, via DelegationSwConnectors. This arrangement demonstrates how a single provided port can legally be split to supply only the required subsets of data prototypes to different components.
+
+- Component hierarchy:
+  • One CompositionSwComponentType containing two AtomicSwComponentType instances (top and bottom).
+- Ports & interfaces:
+  • Composition: one AbstractProvidedPortPrototype (“infold”) carrying {A,B,C,D}.
+  • Each AtomicSwComponentType: one AbstractRequiredPortPrototype with its own subset ({A,B} or {B,C}).
+  • Two DelegationSwConnectors linking the provided port to the required ports.
+- Data flow:
+  • “infold” port collects A,B,C,D → delegates {A,B} to top component, {B,C} to bottom.
+  • Prototype D is not forwarded; prototype B appears in both subsets.
+- Key AUTOSAR concepts:
+  • AbstractProvidedPortPrototype and AbstractRequiredPortPrototype
+  • DelegationSwConnector and prototype grouping (“infold”)
+  • ApplicationDataPrototype sets and legal splitting of delegation connectors
+- Scenario:
+  • Use-case: selective distribution of aggregated data prototypes from a single Composition port to multiple SW-components based on their individual interface requirements. ---------------------->
 Figure 6.4: Legal split of delegation connector
 
 All required dataElements are provided by the DelegationSwConnectors attached to the delegation RPortPrototype. The fact that dataElement D is not conveyed to any of the RPortPrototypes owned by the SwComponentPrototypes does not have any impact on the compatibility.
@@ -7181,30 +7660,133 @@ This requires the value of the attribute signalFan of DelegatedPortAnnotation to
 
 In the next example the RPortPrototype of the CompositionSwComponentType contains the superset of dataElements {A ,B}. The two RPortPrototypes of the SwComponentPrototypes contain different subsets, i.e. {A} and {B}.
 
+
+<-------------- multimodal context 
+This diagram illustrates how a composition can legally split a single multi‐operation client/server port into two delegated connectors, each carrying a subset of the interface’s operations to two inner SW-components.
+
+- Component hierarchy – One CompositionSwComponentType containing two AtomicSwComponentType instances (upper and lower gray SW-components).
+- Ports & interfaces – The composition declares one RPort (or ProvidedPort) with ClientServerInterface {A,B} [single], which is delegated via two DelegationSwConnectors to inner ports: top port {A}, bottom port {B}.
+- Data flow – Calls or requests tagged “A” route through the upper connector to the first component; those tagged “B” route to the second component.
+- Key AUTOSAR concepts – AbstractRequiredPortPrototype/AbstractProvidedPortPrototype, DelegationSwConnector, interface partitioning, single port cardinality, ClientServerInterface operations.
+- Scenario – Splitting a composite interface into two functional providers, each handling distinct operations of the same interface. ---------------------->
 Figure 6.5: Legal split of delegation connector
 
 In this case the resulting communication pattern on the VFB would be n:1. In this case the value of the attribute signalFan of DelegatedPortAnnotation should be set to single.
 
 The next example is about the merge of DelegationSwConnectors. The PPortPrototype owned by the CompositionSwComponentType contains a superset of dataElements {A ,B}. The two PPortPrototypes of the SwComponentPrototypes contain a disjoint subset each, i.e. {A} and {B}.
 
+
+<-------------- multimodal context 
+The diagram shows a CompositionSwComponentType that merges two internal Provided ports—each offering a distinct DataInterface—into one external port, then connects it via an AssemblySwConnector to a consuming SWC. This legal merge bundles interface sets A and B into a single port, simplifying downstream connectivity.
+
+- Component hierarchy  
+  • CompositionSwComponentType with two AtomicSwComponentType instances as inner subcomponents  
+- Ports & interfaces  
+  • Inner subcomponents expose AbstractProvidedPortPrototype {A} and {B}  
+  • Composition defines an AbstractProvidedPortPrototype {A,B} [single]  
+  • AssemblySwConnector links the merged port to an external RequiredPortPrototype  
+- Data flow  
+  • Fan-in pattern: two provided streams (A, B) delegated upward, merged, then forwarded as one to the consumer  
+- Key AUTOSAR concepts  
+  • DelegationSwConnector merge of AbstractProvidedPortPrototype  
+  • Interface sets ({A}, {B}, {A,B}) and multiplicity “single”  
+  • AssemblySwConnector, AbstractRequiredPortPrototype/AbstractProvidedPortPrototype  
+- Scenario  
+  • Use-case: consolidate separate functional outputs into a unified port for a downstream SWC ---------------------->
 Figure 6.6: Legal merge of delegation connector
 
 In this case the resulting communication pattern on the VFB would be 1:x, with x taking values between 0 and n. In this case the value of the attribute signalFan of DelegatedPortAnnotation should be set to single. All VariableDataPrototypes of the provided outer PortPrototypes are provided by exactly one provided inner PortPrototype.
 
 As a variation of this theme, the next example features a PPortPrototype owned by a CompositionSwComponentType that contains the superset of dataElements {A ,B, C}. The PPortPrototypes of the SwComponentPrototypes in turn contain subsets of dataElements, i.e. {A, B} and {B, C}. In this case the resulting communication pattern on the VFB for {B} would be n:1.
 
+
+<-------------- multimodal context 
+This diagram shows a legal merge of delegated data ports inside a CompositionSwComponentType: two inner atomic SW-components each export overlapping data sets which are infold-merged via a DelegationSwConnector into a single port that feeds an external consumer. It demonstrates how AUTOSAR allows union of data prototypes when delegating through a composition.
+
+• Component hierarchy  
+  – A top-level CompositionSwComponentType contains two AtomicSwComponentType instances and one external SW-component linked via delegation.  
+
+• Ports & interfaces  
+  – Inner SWCs expose AbstractProvidedPortPrototypes carrying {A,B} and {B,C}.  
+  – A DelegationSwConnector merges those into an inner AbstractProvidedPortPrototype {A,B,C}[Infold].  
+  – That port is further delegated to an external SWC’s AbstractRequiredPortPrototype.  
+
+• Data flow  
+  – Data elements A and B travel from SWC1; B and C from SWC2.  
+  – At the infold port they union into {A,B,C}, which is then sent to the consumer.  
+
+• Key AUTOSAR concepts  
+  – Uses DelegationSwConnector, port prototype infolding, inner/outer ports, and DataInterface grouping.  
+
+• Scenario  
+  – Illustrates composing multiple data providers into one aggregated interface for an external client. ---------------------->
 Figure 6.7: Legal merge of delegation connector
 
 This would require the value of the attribute signalFan of DelegatedPortAnnotation to be set to nfold. All dataElements of the delegation PPortPrototype are provided by at least one PPortPrototype of the SwComponentPrototypes. Therefore the criteria of entire delegation defined in chapter 6.14 are fulfilled.
 
 The next example looks very similar. However, the subtle difference is that the second SwComponentPrototype provides dataElements {C,D} rather than {B,C}.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal merge of two internal Provided ports into a single outside-facing Provided port within a CompositionSwComponentType, aggregating data sets {A,B} and {C,D} into {A,B,C}. It showcases how internal producers can safely delegate and combine data flows before exposing them to an external consumer SW-Component.
+
+• Component hierarchy  
+  – A CompositionSwComponentType contains two AtomicSwComponentType subcomponents.  
+  – Each subcomponent hosts its own AbstractProvidedPortPrototype.  
+  – The composition itself defines one merged AbstractProvidedPortPrototype.  
+  – An external SW-ComponentType consumes the merged port.
+
+• Ports & interfaces  
+  – Two inner Provided ports with data sets {A,B} and {C,D}.  
+  – One inner merge port with union {A,B,C} and multiplicity [single].  
+  – One external Provided port {A,B,C}.  
+  – AssemblySwConnector edges linking subcomponent ports to the merge port and outwards.
+
+• Data flow  
+  – Each subcomponent emits its data elements.  
+  – Delegation connectors merge flows, filtering to {A,B,C}.  
+  – External consumer receives the unified data stream.
+
+• Key AUTOSAR concepts  
+  – AbstractProvidedPortPrototype, AssemblySwConnector, delegation connectors.  
+  – DataPrototype sets, multiplicity “[single]”.  
+  – Legal merge rule ensures disjoint or compatible data subsets.
+
+• Scenario  
+  – Aggregate signals from two producers, filter and expose a consistent subset to a downstream SW-Component. ---------------------->
 Figure 6.8: Legal merge of delegation connector
 
 Although dataElement {D} does not appear in the delegation PPortPrototype the compatibility rules are fully satisfied with this scenario.
 
 The next example shows a valid delegation of SwConnectors that goes end-to-end via CompositionSwComponentTypes to included SwComponentPrototypes.
 
+
+<-------------- multimodal context 
+This diagram shows two nested CompositionSwComponentTypes (“LeftComp” and “RightComp”) delegating client-server or data interfaces end-to-end between four AtomicSwComponentTypes, filtering interface sets at each delegation point to satisfy connectability rules.
+
+• Component hierarchy  
+  - LeftComp: CompositionSwComponentType containing AtomicSwComponentType SWC1 and SWC2  
+  - RightComp: CompositionSwComponentType containing AtomicSwComponentType SWC3 and SWC4  
+
+• Ports & interfaces  
+  - SWC1 has an AbstractRequiredPortPrototype with interface set {A,B}  
+  - SWC2 has an AbstractRequiredPortPrototype with {B,C}  
+  - Both delegate to LeftComp’s inner RequiredPortPrototype (aggregated {A,B})  
+  - LeftComp inner port connects via DelegationSwConnector to RightComp inner port ({A,B})  
+  - RightComp inner port delegates to SWC3’s RPort {A} and SWC4’s RPort {B}  
+
+• Data flow  
+  - Interfaces A and B emitted by SWC1 are propagated through nested delegation to SWC3 (A) and SWC4 (B)  
+  - SWC2’s C is dropped at LeftComp because no downstream port supports C  
+
+• Key AUTOSAR concepts  
+  - AbstractRequiredPortPrototype / AbstractProvidedPortPrototype  
+  - CompositionSwComponentType nesting  
+  - DelegationSwConnector chaining  
+  - Interface subset connectability rules  
+
+• Scenario  
+  - Illustrates valid end-to-end delegation of SwConnectors across two compositions, demonstrating how interface sets are aggregated and filtered to satisfy each AtomicSwComponentType’s port requirements. ---------------------->
 Figure 6.9: Valid delegation of SwConnectors that goes end-to-end
 
 #@SECTION: 6.16.2.2 Illegal Use
@@ -7223,16 +7805,88 @@ Figure 6.10: Illegal split of delegation connector
 
 In the next example compatibility is also not fulﬁlled because the required dataElement {E} is not provided by the delegation RPortPrototype.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal split of a delegation connector in an AUTOSAR CompositionSwComponentType: a single inner port carrying data {A,B,C,D} is delegated to two sub-components’ ports whose data sets overlap and don’t match the original, violating AUTOSAR port grouping rules.
+
+• Component hierarchy  
+  – One CompositionSwComponentType containing two AtomicSwComponentType instances.  
+
+• Ports & interfaces  
+  – Composition has an AbstractProvidedPortPrototype (or RPortPrototype) with data elements {A,B,C,D}.  
+  – Each sub-component has an AbstractRequiredPortPrototype (or PPortPrototype): one with {A,B}, the other with {B,C,E}.  
+
+• Data flow  
+  – A single delegation connector is split into two DelegationSwConnectors to the two inner ports.  
+  – Overlap on B and inclusion of E (not in {A,B,C,D}) cause mismatched partitioning.  
+
+• Key AUTOSAR concepts  
+  – DelegationSwConnector, InnerPortPrototype, DataPrototypeGroup partitioning, port exact-match rule.  
+
+• Scenario  
+  – Demonstrates a modeling error: you cannot split one port’s data set into two sub-ports unless they form an exact, non-overlapping partition of the original. ---------------------->
 Figure 6.11: Illegal split of delegation connector
 
 An incompatible merge of DelegationSwConnectors is sketched in Figure 6.12. In this case the dataElement {E} is not provided by one of the PPortPrototypes owned by the SwComponentPrototypes inside the CompositionSwComponentType.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal merge of multiple AssemblySwConnectors into a single DelegationSwConnector within a CompositionSwComponentType, leading to incompatible interface sets at the composition port.
+
+- Component hierarchy  
+  • A CompositionSwComponentType containing two AtomicSwComponentType inner components.  
+  • One external AtomicSwComponentType connected via delegation.
+
+- Ports & interfaces  
+  • Inner Component 1 has an AbstractProvidedPortPrototype ({A,B}).  
+  • Inner Component 2 has an AbstractProvidedPortPrototype ({B,C}).  
+  • The composition’s inner port (merge point) is an AbstractRequiredPortPrototype ({A,C,E}).  
+  • An outer DelegationSwConnector links that to an external AbstractRequiredPortPrototype ({A,C,E}).
+
+- Data flow  
+  • Two AssemblySwConnectors feed interfaces {A,B} and {B,C} into a merge node.  
+  • The merged signal then travels through a DelegationSwConnector to the external port.
+
+- Key AUTOSAR concepts  
+  • AssemblySwConnector merging, DelegationSwConnector, AbstractProvidedPortPrototype/AbstractRequiredPortPrototype.  
+  • Interface compatibility rules prevent merging ports with disjoint interface sets.  
+  • Demonstrates illegal merge semantics (no InterfaceMapping to reconcile {A,B,C} vs. {A,C,E}).
+
+- Scenario  
+  • Validates connector compatibility in a composition: merging two provided ports before delegation.  
+  • Shows an error case where interface sets do not match, violating AUTOSAR port merging rules. ---------------------->
 Figure 6.12: Illegal merge of delegation connector
 
 The next example shows an invalid delegation of SwConnectors that goes end-to-end via CompositionSwComponentTypes to included SwComponentPrototypes.
 
 Similar to the example sketched in Figure 6.12, the dataElement {E} is not provided by one of the PPortPrototypes owned by the SwComponentPrototypes inside the CompositionSwComponentType.
 
+
+<-------------- multimodal context 
+This diagram illustrates an invalid end-to-end delegation of SwConnectors between two CompositionSwComponentTypes, where required interfaces from inner AtomicSwComponents are improperly forwarded across composition boundaries to provided ports without using proper assembly connectors.
+
+• Component hierarchy  
+  – Two CompositionSwComponentType blocks, each containing two AtomicSwComponentType instances.  
+  – Inner components in the left composition both have RPorts; inner components in the right composition both have PPorts.
+
+• Ports & interfaces  
+  – Left inner RPorts require {A,B} and {B,C}.  
+  – Left composition’s outer RPort (delegated) exposes {A,C,E}.  
+  – Right composition’s outer PPort (delegated) exposes {A,C,E}.  
+  – Right inner PPorts provide {A} and {C,E}.
+
+• Data flow  
+  – Interfaces A, B, C are required by left inners, aggregated to the outer RPort.  
+  – The outer RPort is directly delegated to the right outer PPort, which splits to inner PPorts.  
+  – This bypasses an intermediate assembly, causing an illegal end-to-end delegation.
+
+• Key AUTOSAR concepts  
+  – AbstractRequiredPortPrototype (RPort) and AbstractProvidedPortPrototype (PPort).  
+  – DelegationSwConnector used instead of AssemblySwConnector.  
+  – Interface sets must match exactly; partial mappings and chaining across compositions violate connector rules.
+
+• Scenario  
+  – Intended to demonstrate a misuse of SwConnector delegation where required interfaces are improperly forwarded and split across compositions, highlighting AUTOSAR’s prohibition of direct end-to-end delegation. ---------------------->
 Figure 6.13: Invalid delegation of SwConnectors that goes end-to-end
 
 #@SECTION: 7 Internal Behavior
@@ -10336,6 +10990,30 @@ The IOControl service requires in its diagnostic response the current value of t
 
 The service use case is visualized in Figure 7.46. The SwComponentPrototype contains two SwcServiceDependencys, one for the I/O Control, and one for the access of the dataElement with the shortName "IOx" by the Dcm.
 
+
+<-------------- multimodal context 
+This architecture depicts an AUTOSAR service use case where an application SW-Component requests and receives IO control commands and diagnostic data from a DCM service SW-Component via well-defined SenderReceiverInterfaces. It shows how service dependencies and data needs inside an ApplicationSwComponentType map onto ports and connect through AssemblySwConnectors to a DcmServiceSwComponentType, enabling two-way IO control and continuous diagnostic value exchange.
+
+• Component hierarchy  
+  – SwComponentPrototype “IOControlRequest_IOx” (ApplicationSwComponentType) contains two SwcServiceDependency instances (“IOx” and “Data_IOx”) linked to DiagnosticControlNeeds and DiagnosticValueNeeds.  
+  – A separate SwComponentPrototype (DcmServiceSwComponentType) provides the corresponding interfaces.  
+
+• Ports & interfaces  
+  – RoleBasedPortAssignment: PPort “IOControlRequest” and RPort “IOControlResponse” use SenderReceiverInterface “IOControlRequest_IOx” and “IOControlResponse_IOx.”  
+  – RoleBasedDataAssignment: data port “signalBasedDiagnostics” uses SenderReceiverInterface “DataXY_IO” (elements “IOx,” “IOy”).  
+  – AssemblySwConnectors link each matching port prototype.  
+
+• Data flow  
+  – Application SW-C sends IOControlRequest to DCM SW-C, which processes and returns IOControlResponse.  
+  – Diagnostic values (currentValue) flow from DCM back into the application via DataServices_Data_IOx.  
+
+• Key AUTOSAR concepts  
+  – SwComponentPrototype, ApplicationSwComponentType, DcmServiceSwComponentType  
+  – RoleBasedPortAssignment, RoleBasedDataAssignment  
+  – SenderReceiverInterface, AssemblySwConnector  
+
+• Scenario  
+  – Enables an application to issue IO control commands to a diagnostic manager (DCM) and receive both control confirmations and real-time diagnostic data. ---------------------->
 Figure 7.46: Visualization of the service use case
 
 Please note that, in this example, the SenderReceiverInterface used on the PPortPrototype of the ApplicationSwComponentType has several dataElements (where the dataElement with the shortName "IOx" is one of them). This is a perfectly valid configuration.
@@ -11064,6 +11742,30 @@ Such a mode dependent software-component is shown in Figure 9.3.
 
 [TPS_SWCT_01077] Configure the response to mode changes (cid:100) Since the behavior of AtomicSwComponentTypes is mainly determined by the RunnableEntitys contained in the SwcInternalBehavior it is necessary to configure the response to mode changes on the level of RunnableEntitys. (cid:99)(RS_SWCT_03120)
 
+
+<-------------- multimodal context 
+This diagram illustrates how an AtomicSwComponentType exposes runnables and a ModeAccessPoint to integrate with an AUTOSAR state manager. The SW-Component 1 receives system mode notifications from the ModeManager and dispatches four internal runnables based on mode logic.
+
+• Component hierarchy  
+  – One AtomicSwComponentType (“SW-Component 1”)  
+  – Four internal RunnableEntities (1a, 1b, 1c, 1d)  
+
+• Ports & interfaces  
+  – A single RequiredPortPrototype at the bottom implementing ModeSwitchInterface (ModeManager)  
+  – Four Provided/Required DataPorts on the right (unlabeled) for data I/O  
+
+• Data flow  
+  – ModeManager → RPort: mode change events  
+  – Runnables query ModeAccessPoint to adapt behavior  
+  – DataPorts exchange application data with other components  
+
+• Key AUTOSAR concepts  
+  – AtomicSwComponentType, RunnableEntity  
+  – RequiredPortPrototype, ModeAccessPoint, ModeDeclarationGroup  
+  – DelegationConnector for mode interface  
+
+• Scenario  
+  – SW-Component 1 adjusts its internal runnables’ execution in response to global mode changes managed by the state manager. ---------------------->
 Figure 9.3: State Managers and software-components
 
 Figure 9.4 shows an excerpt of the meta-model illustrating how the relationship between the current mode and the SwcInternalBehavior of the AtomicSwComponentType can be described.
@@ -11198,6 +11900,32 @@ Figure 9.8 provides an overview of all meta-model elements that have a direct re
 
 To get the complete picture, it should be noted that also the concepts of PortGroups (see 4.6) and ServiceProxySwComponentType (see 11.4) have a semantical relationship to mode management, though this is not expressed via relations in the meta model.
 
+
+<-------------- multimodal context 
+This diagram excerpt illustrates the AUTOSAR meta-model for atomic SW-components with mode management: it shows how SwComponentType and its AtomicSwComponentType specialization host ports, internal behaviors, runnables, RTE events, mode declarations and transitions. It captures the structural elements and their relationships, defining how mode switch requests and client-server communications are integrated into a component’s runnable execution and mode lifecycle.
+
+• Component hierarchy  
+  – SwComponentType → AtomicSwComponentType contains an InternalBehavior (SwInternalBehavior) with RunnableEntity instances.  
+  – Composition relations link Component, AtpBlueprint/AtpPrototype, and ARElement.  
+
+• Ports & interfaces  
+  – AbstractProvidedPortPrototype → PPortPrototype (client-server), PRPortPrototype  
+  – AbstractRequiredPortPrototype → RPortPrototype  
+  – PortInterface defines provided/required interfaces; ModeSwitchInterface uses AtpPrototype (ModeDeclarationGroupPrototype).  
+
+• Data flow  
+  – RTE events (AsynchronousServerCallPoint/ResultPoint, DataReceivedEvent) drive runnable activation (+startOnEvent).  
+  – AssemblySwConnector/DelegationSwConnector connect ports across components.  
+  – Mode events (SwcModeSwitchEvent, ModeSwitchedAckEvent) signal mode changes.  
+
+• Key AUTOSAR concepts  
+  – Prototypes: AtpBlueprint, AtpPrototype, Abstract(Provided/Required)PortPrototype  
+  – Interfaces: PortInterface, ClientServerInterface, ModeSwitchInterface  
+  – Modes: ModeDeclarationGroup, ModeDeclaration, ModeTransition  
+  – RTE elements: RTEEvent, InternalTriggeringPoint, RunnableEntity  
+
+• Scenario  
+  – An atomic SW-component receives mode-switch requests via a PPort/ModeSwitchInterface, acknowledges via ModeSwitchedAckEvent, and triggers runnables through RTE events to implement behavior per active mode. ---------------------->
 Figure 9.8: Summary meta-model excerpt related to modes
 
 #@SECTION: 10 ECU Abstraction and Complex Drivers
@@ -11216,6 +11944,32 @@ One interface between hardware and software is discussed in the memory and execu
 
 The AUTOSAR concept defines a software architecture (see Figure 10.1) and within this layered architecture the interfaces between the hardware and the software are explicitly modeled.
 
+
+<-------------- multimodal context 
+This diagram illustrates a layered AUTOSAR ECU software architecture where Application, Actuator, and Sensor Software Components (SWCs) communicate via the Runtime Environment (RTE) with underlying Basic Software modules (OS, Services, Communication, ECU & Microcontroller Abstraction, Complex Device Drivers) to access ECU hardware.
+
+• Component hierarchy  
+  – AtomicSwComponentType instances: Application SWC, Actuator SWC, Sensor SWC  
+  – CompositionSwComponentType (implicitly shown) hosts these SWCs  
+  – Basic Software layers: OperatingSystem, Services, Communication, ECU Abstraction, Microcontroller Abstraction, Complex Device Drivers  
+
+• Ports & interfaces  
+  – SWCs expose AbstractProvidedPortPrototype (PPort) and AbstractRequiredPortPrototype (RPort)  
+  – DataInterfaces and ClientServerInterfaces bind SWC ports via AssemblySwConnector and DelegationSwConnector into the RTE  
+  – Standardized interfaces between RTE and each BSW module  
+
+• Data flow  
+  – Sensor SWC RPort pushes data through RTE → Communication service → Actuator SWC PPort  
+  – Application SWC issues client-server calls via RTE to Services/ECU Abstraction  
+  – Complex Device Drivers deliver specialized I/O events into RTE  
+
+• Key AUTOSAR concepts  
+  – ApplicationSwComponentType, AtomicSwComponentType  
+  – AbstractRPortPrototype/AbstractPPortPrototype, DataInterface, ClientServerInterface  
+  – Standardized interfaces, DelegationSwConnector, AssemblySwConnector  
+
+• Scenario  
+  – A typical ECU use-case: sensor data acquisition, in-ECU processing, actuator command output, all decoupled from hardware by RTE and Basic Software layers. ---------------------->
 Figure 10.1: AUTOSAR ECU Software Architecture
 
 The signal flow from a hardware to software and vice versa will be described in the following sections. A sensor is converting a physical value (1) in Figure 10.2 (e.g. light intensity) into an electrical signal (2) which can be either a current or a voltage. temperature, force, Inside the ECU generally there will be some electronics to enhance the electrical signal provided by the sensor. In AUTOSAR this is called ECU Electronics. This electronics is also responsible for the conversion of the electrical signal into a microcontroller compatible form (3), usually a voltage.
@@ -11226,6 +11980,28 @@ After the electrical signal has been enhanced and converted it will be captured 
 
 2For the sake of simplicity this discussion is limited to the sensor aspects. Nevertheless, the same applies also for actuators.
 
+
+<-------------- multimodal context 
+This diagram illustrates an AUTOSAR layered SW-component architecture for reading car velocity and sensor current, routing them through abstraction layers to an application, and driving microcontroller peripherals via MCAL.
+
+• Component hierarchy  
+  – Topology: Application SW-C ←→ Sensor SW-C ←→ ECU Abstraction SW-C ←→ MCAL  
+  – Hardware view: Car environment → Sensor → ECU Electronics → µC Peripherals  
+
+• Ports & interfaces  
+  – Sensor SW-C provides get_v(), requires get_I_sensor()  
+  – Application SW-C requires get_v()  
+  – ECU Abstraction provides get_I_sensor(), requires ADC_get(), provides DIO_set()  
+  – DataInterfaces: car velocity (physical), I_sensor [0..200 mA], U_ECU [0..5 V]  
+
+• Data flow  
+  – Application invokes get_v() on Sensor SW-C → Sensor reads I_sensor via ECU Abstraction → ECU Abstraction calls ADC_get() → Sensor computes velocity → Application receives v  
+
+• Key AUTOSAR concepts  
+  – AtomicSwComponentType, ClientServerInterface (RPort/PPort), DataInterface, MCAL abstraction, DelegationSwConnector  
+
+• Scenario  
+  – Use-case: sample car speed and sensor current, abstract hardware details, and supply data to application logic while controlling ADC and digital I/O via MCAL. ---------------------->
 Figure 10.2: Interfaces between hardware and software
 
 This signal chain is represented one to one in the AUTOSAR software architecture and depicted in the lower part of Figure 10.2.
@@ -11242,6 +12018,28 @@ Now this physical value is available on the RTE and can be consumed or read by o
 
 In Figure 10.3 a complete signal flow from a sensor input to an actuator output is shown.
 
+
+<-------------- multimodal context 
+This diagram illustrates the layered AUTOSAR design for reading a vehicle’s speed and driving a lamp actuator. Application SW-C modules invoke Sensor and Actuator SW-C components, which use an ECU Abstraction SW-C and the MCAL (μCAL) driver to convert between physical signals and digital I/O on a microcontroller, enforcing clear abstraction and reuse.
+
+- Component hierarchy  
+  ­­• Application SW-C1 and SW-C2 at the top  
+  ­­• Sensor SW-C and Actuator SW-C as AtomicSwComponentType  
+  ­­• ECU Abstraction SW-C in the middle  
+  ­­• μCAL (MCAL Driver) and μC Peripherals at the bottom  
+- Ports & interfaces  
+  ­­• Sensor SW-C has RPort get_v() and PPort get_I_ECU() (ClientServerInterface)  
+  ­­• Actuator SW-C has RPort set_lamp() and PPort set_I_ECU()  
+  ­­• ECU Abstraction exposes RPorts DIO_get(), DIO_set() to μCAL  
+- Data flow  
+  ­­• get_v() fetches sensor voltage → get_I_ECU() → DIO_get() → MCAL → hardware  
+  ­­• set_lamp() → set_I_ECU() → DIO_set() → MCAL → physical lamp  
+- Key AUTOSAR concepts  
+  ­­• AbstractRequired/ProvidedPortPrototype, ClientServerOperation, DataInterface  
+  ­­• Layered Component types (AtomicSwComponentType, ComplexDeviceDriver)  
+  ­­• Delegation (AssemblySwConnector) from ECU Abstraction to MCAL  
+- Scenario  
+  ­­• Read car velocity via a voltage sensor and drive a car-light actuator through a microcontroller abstraction stack ---------------------->
 Figure 10.3: Sensor and Actuator Signal Flow
 
 In the next section the interfaces between the involved software modules are discussed.
@@ -11269,6 +12067,32 @@ Since the AUTOSAR standard is designed with the focus on the integration of soft
 
 In the case of the sensors and actuators the interface is gathered in the ECU Abstraction. For each sensor and actuator there is one AUTOSAR PortPrototype that represents the AUTOSAR Signal that is delivered by the sensor or the AUTOSAR Signal that is consumed by the actuator. This relationship is depicted in Figure 10.4.
 
+
+<-------------- multimodal context 
+This diagram shows a minimal AUTOSAR application layer where a Sensor SW-C obtains raw measurements via a required port and then offers processed velocity data through a provided port to an ECU Abstraction SW-C. It illustrates how client/server interfaces and port connectors realize signal-based communication within the RTE.
+
+• Component hierarchy  
+  – Two AtomicSwComponentTypes in a Composition: Sensor SW-C and ECU Abstraction  
+  – Sensor SW-C sits “below” ECU Abstraction in the data chain  
+
+• Ports & interfaces  
+  – Sensor SW-C has a RequiredPortPrototype (RPort) IF_3 for get_velocity()  
+  – Sensor SW-C has a ProvidedPortPrototype (PPort) IF_2 for get_velocity_current()  
+  – ECU Abstraction has an RPort IF_1 for get_velocity_current()  
+  – AssemblySwConnector links IF_2 → IF_1  
+
+• Data flow  
+  – Sensor SW-C invokes IF_3 to read raw velocity/current  
+  – Sensor SW-C then calls IF_2 to provide current velocity to ECU Abstraction  
+  – ECU Abstraction receives data via IF_1 for further processing  
+
+• Key AUTOSAR concepts  
+  – AtomicSwComponentType, RequiredPortPrototype, ProvidedPortPrototype  
+  – ClientServerInterface with two operations (get_velocity, get_velocity_current)  
+  – AssemblySwConnector, ApplicationPrimitiveDataType for signal semantics  
+
+• Scenario  
+  – Decouple physical sensor acquisition from higher-level ECU logic by standardizing get_velocity services through a software abstraction layer. ---------------------->
 Figure 10.4: Interfaces of signals in software
 
 Each sensor and actuator has an AUTOSAR PortPrototype at the ECU Abstraction. Connected to this port is the SensorActuatorSwComponentType. The SensorActuatorSwComponentType has one PortPrototype (i.e. IF_2) to the ECU Abstraction (which provides the values via IF_1) where it gets the AUTOSAR signals from the hardware, and one PortPrototype (i.e. IF_3) to AtomicSwComponentTypes where it provides the actual physical value to the rest of AUTOSAR on the RTE.
@@ -11288,6 +12112,32 @@ In the layered software architecture described in [6] each hardware sensor/actua
 
 [TPS_SWCT_01047] Reference from the software representation of a sensor/actuator to the actual hardware element (cid:100) Since the Software Component Template is going to be used to describe the SensorActuatorSwComponentType as well, there is also a reference needed from the software representation of a sensor/actuator to the actual hardware element described in the ECU Resource description. (cid:99)(RS_SWCT_02080, RS_SWCT_03090)
 
+
+<-------------- multimodal context 
+This diagram illustrates how a physical sensor resource is encapsulated into an AUTOSAR Software Component Template, enabling reuse and standardized interfacing across ECUs.
+
+• Component hierarchy  
+  – ECU Resource Template “Sensor” (atomic resource model)  
+  – SW-C Template “Sensor SW-C” referencing the ECU Resource Template  
+
+• Ports & interfaces  
+  – Sensor SW-C provides a PPort (yellow square) and requires an RPort (green circle)  
+  – Both ports use a Sensor-related DataInterface  
+  – Dashed “reference” link realizes the binding between SW-C and ECU resource  
+
+• Data flow  
+  – Physical sensor delivers data into its ECU Resource Template (input arrow)  
+  – Sensor SW-C forwards this data through its PPort to downstream consumers  
+  – RPort on Sensor SW-C allows configuration or control signals back to the resource  
+
+• Key AUTOSAR concepts  
+  – AtomicSwComponentType (Sensor SW-C) vs. Complex/EcuAbstractionSwComponentType (resource)  
+  – AbstractProvidedPortPrototype, AbstractRequiredPortPrototype  
+  – AssemblySwConnector (reference binding)  
+  – Use of SW-C Template to encapsulate hardware resources  
+
+• Scenario  
+  – Packaging (“shipment”) of a hardware sensor into a reusable SW-C, standardizing its access and integration across ECUs. ---------------------->
 Figure 10.5: Shipment of a sensor
 
 So each time a sensor/actuator is selected to be connected to an ECU also the corresponding SensorActuatorSwComponentType is available.
@@ -11380,6 +12230,16 @@ AtomicSwComponentTypes that require AUTOSAR Services use Standardized AUTOSAR In
 
 Table 11.1: ServiceConnectorPattern
 
+
+<-------------- multimodal context 
+| I  | II  | III             | IV                                                                                      |
+|----|-----|-----------------|-----------------------------------------------------------------------------------------|
+| A  | 1:n | PPort : RPort   | distribution of data or modes to n SW-Cs, e.g. used for ECU mode                         |
+| A* | 1:n | RPort : PPort   | currently not used, not supported for client-server communication                       |
+| B  | 1:1 | PPort : RPort   | SW-C acts as Server, used for so called “call-backs”                                    |
+| B  | 1:1 | RPort : PPort   | Service acts as Server, typical Service usage                                          |
+| C* | n:1 | PPort : RPort   | conceptually not used to support index abstraction via PortDefinedArgumentValues       |
+| C  | n:1 | RPort:PPort     | SW-C acts as Server, used for so called “call-backs” invoked by more than one Service  | ---------------------->
 Legend for Table 11.1:
 I Pattern name
 II Communication pattern (client/server, sender/receiver)
@@ -11499,6 +12359,34 @@ In case of pattern A for each different type of service port one port on the Ser
 
 [TPS_SWCT_01414] Mode manager needs to communicate with application software components located on other ECUs (cid:100) There are however use cases for the application and vehicle mode management, where a mode manager (namely the Basic Software Mode Manager, see [15]) is part of the basic software but conceptually still needs to communicate with application software components located on other ECUs (as exemplified by Figure 11.3). In order to make this communication possible, the ServiceProxySwComponentType is used. For the application software and the RTE it behaves like a "normal" AtomicSwComponentType, but it is actually a proxy for an AUTOSAR Service. (cid:99)()
 
+
+<-------------- multimodal context 
+The diagram illustrates a distributed mode‐request use case in which a VehicleClampControl component issues a mode change that is transparently proxied across two ECUs via VehicleClampProxy and the BswM service, reaching a remote application on ECU2.
+
+• Component hierarchy  
+  - SW-Components: VehicleClampControl (VCC), VehicleClampProxy (VCP), Application1 (App1), Application2 (App2).  
+  - On VFB they float on the virtual bus; in deployment each ECU contains its local RTE, hosting VCC+VCP+App1+BswM on ECU1 and VCP+App2+BswM on ECU2.  
+
+• Ports & interfaces  
+  - VCC: PPort “ModeRequest” (ClientServerInterface).  
+  - VCP: RPort “ModeRequest” and PPort “ModeRequest” (delegating proxy).  
+  - BswM Service: RPort “ModeRequest” and PPort “ModeRequest.”  
+  - App1/App2: client ports (black square) for downstream calls.  
+  - AssemblySwConnectors link PPorts to RPorts; the network-transparent DelegationSwConnectors carry calls between ECU1 and ECU2.  
+
+• Data flow  
+  - VCC invokes the ModeRequest operation on its PPort → VCP.RPort → VCP.PPort → local BswM.RPort.  
+  - BswM.PPort sends the request over the network (RTE1→RTE2) to remote BswM.RPort → VCP.RPort on ECU2 → VCP.PPort → App2 client port.  
+
+• Key AUTOSAR concepts  
+  - AbstractProvidedPortPrototype (PPort) and AbstractRequiredPortPrototype (RPort) for ClientServerInterface.  
+  - AssemblySwConnector for intra-ECU binding, DelegationSwConnector for inter-ECU (network).  
+  - ModeAccessPoint via BswM, proxies for location transparency.  
+  - CompositionSwComponentType (ECU composition hosting RTE and BSW).  
+
+• Scenario  
+  - Design intent: VehicleClampControl issues a mode switch that must reach a remote application on ECU2.  
+  - VehicleClampProxy abstracts network, BswM orchestrates mode propagation across ECUs. ---------------------->
 Figure 11.3: Mode request over the network [3]
 
 [TPS_SWCT_01415] Interfaces of ServiceProxySwComponentType (cid:100) This means that on the one side it has to communicate over service ports with the ECU-local ServiceSwComponentType it represents. On the other side it has to offer the corresponding PortPrototypes to the ApplicationSwComponentTypes. (cid:99)()
@@ -11610,6 +12498,7 @@ The recommended relationship is shown in table 11.7. But please note that this t
 
 Table 11.7: NvBlockNeeds dependencies
 <-------------- multimodal context 
+
 
 | Attribute of NvBlockNeeds | NvBlockNeeds of different nv data PortPrototypes of software-components | NvBlockNeeds of NvBlockDescriptor |
 |------------------------|---------------------------------------------------|--------------------------------|
@@ -11806,6 +12695,32 @@ Please note that the VariableDataPrototype located in the PortPrototype, in the 
 
 Please note that a mixing of mutually exclusive mappings for entire sub-elements or leaf elements as described by [TPS_SWCT_01659] is positively supported (see Figure 11.10).
 
+
+<-------------- multimodal context 
+This diagram illustrates an AUTOSAR NvBlockSwComponent that exposes a single NvDataInterface port (nvData) mapped onto an internal NvBlockDescriptor (ramBlock). It demonstrates how root, leaf and sub-elements of a composite NvData structure are bound to fields of an in-component RAM data block for non-volatile data storage.
+
+• Component hierarchy  
+  – AtomicSwComponentType “NvBlockSwComponent”  
+  – Exposes one AbstractProvidedPortPrototype linked to NvDataInterface  
+  – Contains an internal implementation data type NvBlockDescriptor  
+
+• Ports & interfaces  
+  – PPort: nvData : NvDataInterface  
+  – Data elements: a, b, g (root); h, j, s (inside g); u, w (inside s)  
+  – Internal data instance: ramBlock with matching fields  
+
+• Data flow  
+  – nvData root elements a/b map directly to ramBlock.a/ramBlock.b  
+  – Leaf elements h/j map to ramBlock.h/ramBlock.j  
+  – Sub-element s maps to ramBlock.s, whose u/w map to ramBlock.s.u/ramBlock.s.w  
+
+• Key AUTOSAR concepts  
+  – Provided port, data interface, application composite data prototypes  
+  – Element-level mapping kinds: “nvData root,” “leaf element,” “sub-element”  
+  – No mode switches or events shown  
+
+• Scenario  
+  – Example of TPS_SWCT_01659 NvBlockDataMapping: binding an external NvDataInterface to an internal RAM descriptor for persistent storage. ---------------------->
 Figure 11.10: Example NvBlockDataMapping to explain [TPS_SWCT_01659]
 
 [constr_1395] NvBlockDataMapping shall be complete (cid:100) If an NvBlockDataMapping refers to sub-elements or leaf elements of the NvDataInterface.nvData in the context of a particular PortPrototype then all remaining sub-elements or leaf elements shall effectively be mapped according to [TPS_SWCT_01659] by means of a collection of NvBlockDataMappings. (cid:99)()
@@ -11823,6 +12738,24 @@ In order to be able to properly assign such a notiﬁcation to the content of th
 This motivates the existence of [constr_1404]:
 [constr_1404] All NvDataInterface.nvData of PortPrototypes in the context of a speciﬁc SwcServiceDependency shall be mapped to the same NvBlockDescriptor (cid:100) In the context of a given SwcServiceDependency (which, in turn, is owned by an AtomicSwComponentType), all NvDataInterface.nvData of PortPrototypes referenced by a RoleBasedPortAssignment with attribute RoleBasedPortAssignment.role set to NvDataPort shall be connected (either directly or via the deﬁnition of suitable PortInterfaceMappings) to NvDataInterface.nvData (on the side of the NvBlockSwComponentType) that are completely mapped (via NvBlockDataMappings) to the identical NvBlockDescriptor.ramBlock. (cid:99)()
 
+
+<-------------- multimodal context 
+This architecture defines an Application SW-Component and an NvBlock SW-Component collaborating to persist and retrieve non-volatile data. The Application SWC exposes DataX via NvDataPorts and invokes an SwcServiceDependency for NVRAM operations; the NvBlock SWC implements the storage mapping, links ramBlockY to BlockY, and signals completion through the NvMNotifyJobFinished Client-Server interface.
+
+• Component hierarchy  
+  – Two SwComponentPrototype instances: one typed by ApplicationSwComponentType containing SwcServiceDependency “DataX” and NvDataInterface/DataX1, DataX2; one typed by NvBlockSwComponentType housing NvBlockDataMapping, VariableDataPrototype “ramBlockY” and NvBlockDescriptor “BlockY.”  
+
+• Ports & interfaces  
+  – RoleBasedPortAssignment for roles NvDataPort (PPort/RPort for DataX1/DataX2) and NvMNotifyJobFinished (ClientServerInterface); NvBlockNeeds «isOfType» DataX; NvDataInterface «isOfType» DataY2.  
+
+• Data flow  
+  – Application sends DataX to NvBlock via NvDataPort assemblies; NvBlock stores it in ramBlockY/BlockY; upon completion, NvBlock invokes NvMNotifyJobFinished back to the Application.  
+
+• Key AUTOSAR concepts  
+  – SwcServiceDependency, RoleBasedPortAssignment, AssemblySwConnector, DelegationSwConnector, «isOfType» associations, ClientServerInterface, NvBlockDataMapping, VariableDataPrototype, NvBlockDescriptor.  
+
+• Scenario  
+  – Design intent: enable the Application component to offload non-volatile data storage to an NvBlock SWC and receive asynchronous job-finished notifications. ---------------------->
 Figure 11.11: Visualization of the statement made by [constr_1404]
 
 The statement made by [constr_1404] is visualized in Figure 11.11. The context deﬁning model elements, i.e. SwcServiceDependency owned by the AtomicSwComponentType as well as NvBlockDescriptor owned by the NvBlockSwComponentType, are colored in light orange.
@@ -11987,6 +12920,7 @@ The following values of the attribute category are predefined by the AUTOSAR sta
 
 Table 13.4: Category of RptContainers
 <-------------- multimodal context 
+
 
 | Category | Meaning | Specific properties |
 |----------|---------|-------------------|

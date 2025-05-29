@@ -501,6 +501,22 @@ S/R SenderReceiverInterface
 NvD NvDataInterface
 
 Table 6.1: Overview of compatibility of ParameterDataPrototype and VariableDataPrototype
+<-------------- multimodal context 
+
+| ProvidedPort | | | RequiredPort | | | | |
+| RequiredOuterPort | | | RequiredInnerPort | | | | |
+| ProvidedInnerPort | | | ProvidedOuterPort | | | | |
+| RequiredOuterPort | | | ProvidedOuterPort | | | | |
+| **PortInterface** | | | **Prm** | | | **S/R** | | **NvD** |
+| **Interface Element** | | | **PDP** | | | **VDP** | | **VDP** |
+| **SwImplPolicyEnum** | | | **fixed** | **const** | **standard** | **standard** | **queued** | **standard** |
+| **Prm** | **PDP** | **fixed** | yes | yes | yes | yes | no | yes |
+| | | **const** | no | yes | yes | yes | no | yes |
+| | | **standard** | no | no | yes | yes | no | yes |
+| **S/R** | **VDP** | **standard** | no | no | no | yes | no | yes |
+| | | **queued** | no | no | no | no | yes | no |
+| **NvD** | **VDP** | **standard** | no | no | no | yes | no | yes |
+------------------------>
 
 [constr_1071] defines which PortInterface elements are compatible depending on the kind of PortInterface and the swImplPolicy attributes of the PortInterface elements.
 
@@ -869,10 +885,47 @@ The rules for compatibility with respect to the connection of dataElements by me
 
 One of the less trivial examples of this kind is the case of sender/receiver n:1 communication. Figure 6.1 sketches a case where both sender software-components provide the dull set of dataElements that are required by the RPortPrototype of the receiving software-component.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal n:1 sender–receiver communication: two producer AtomicSwComponentTypes each expose data elements {A,B} via provided ports, and one consumer AtomicSwComponentType collects both through a single required port, all wired in a CompositionSwComponentType via AssemblySwConnectors.
+
+- Component hierarchy  
+  • Two source AtomicSwComponentTypes and one sink AtomicSwComponentType instantiated inside a CompositionSwComponentType.
+
+- Ports & interfaces  
+  • Each source has an AbstractProvidedPortPrototype (PPort) offering a sender–receiver DataInterface with elements {A,B}.  
+  • The sink has one AbstractRequiredPortPrototype (RPort) requiring the same interface.  
+  • Two AssemblySwConnectors link each PPort to the single RPort.
+
+- Data flow  
+  • Unidirectional, asynchronous transfer of ApplicationCompositeDataType elements A and B from both producers to the consumer.
+
+- Key AUTOSAR concepts  
+  • AtomicSwComponentType, CompositionSwComponentType, AbstractProvidedPortPrototype, AbstractRequiredPortPrototype, AssemblySwConnector, DataInterface, ApplicationCompositeDataType, PPort/RPort.
+
+- Scenario  
+  • A consumer SWC aggregates or arbitrates data A and B from two redundant or alternative producer SWCs. ---------------------->
 Figure 6.1: legal n:1 communication
 
 The next case (exemplified by Figure 6.2) implements a situation where one sender provides two dataElements {A,b} while the other sender provides only as subset of these, i.e. {B}. As the RPortPrototype of the receiving software-component requires only the dataElement {B} compatibility issues will not occur because for every required dataElement a compatible dataElement is provided.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal n:1 assembly communication in AUTOSAR, where two provider SW-components expose overlapping interface sets to a single consumer SW-component. It shows how multiple P-Ports can be connected to one R-Port without violating AUTOSAR’s interface-set rules.
+
+• Component hierarchy  
+  – Three AtomicSwComponentType instances (two providers on the left, one consumer on the right) hosted in a single CompositionSwComponentType.  
+• Ports & interfaces  
+  – Top provider: AbstractProvidedPortPrototype offering {A,B}  
+  – Bottom provider: AbstractProvidedPortPrototype offering {B}  
+  – Consumer: AbstractRequiredPortPrototype requiring {B}  
+  – Two AssemblySwConnectors link each PPort to the single RPort.  
+• Data flow  
+  – Both providers may invoke operations or send data on interface B into the consumer’s RPort (n:1 communication).  
+• Key AUTOSAR concepts  
+  – Uses AbstractProvided/RequiredPortPrototypes, ClientServerInterface with multi-element sets, AssemblySwConnectors, and legal n:1 connector cardinality.  
+• Scenario  
+  – Demonstrates redundant or fallback provisioning of interface B to a consumer component, enabling fault tolerance or dynamic source selection. ---------------------->
 Figure 6.2: legal n:1 communication
 
 #@SECTION: 6.16.1.2 Illegal Use
@@ -880,6 +933,31 @@ Figure 6.2: legal n:1 communication
 
 On possible example for an illegal configuration of a sender/receiver communication is the scenario sketched in Figure 6.3. Although the sender software-components in total provide the set of required dataElements the individual AssemblySwConnectors create incompatible connections between sender and receiver.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal “many-to-one” port connection in an AUTOSAR composition, where two producers drive a single required port on a consumer, violating the n:1 communication rule.
+
+- Component hierarchy  
+  • Three SW-Component instances in a CompositionSwComponentType: two producer AtomicSwComponentTypes (top and bottom) and one consumer AtomicSwComponentType (right).  
+  • Flat composition—no nested sub-compositions or further hierarchies.
+
+- Ports & interfaces  
+  • Producers each expose an AbstractProvidedPortPrototype (PPort) with a DataInterface carrying elements {B} (top) and {A} (bottom).  
+  • Consumer has one AbstractRequiredPortPrototype (RPort) expecting the combined DataInterface {A, B}.  
+  • Two AssemblySwConnectors both target the same consumer RPort.
+
+- Data flow  
+  • Producer SWCs asynchronously send signals A and B independently.  
+  • Both signal streams merge at the single consumer port, implying conflation of two sources into one sink.
+
+- Key AUTOSAR concepts  
+  • AbstractProvided/RequiredPortPrototypes with DataInterfaces  
+  • ApplicationCompositeElementDataPrototypes {A, B}  
+  • AssemblySwConnectors  
+  • Illegal n:1 communication constraint (no multi-producer to single consumer).
+
+- Scenario  
+  • Demonstrates an invalid design where two SW-Components feed one required port—used to highlight the need for intermediate merging SWC or bus communication to enforce 1:1 port connections. ---------------------->
 Figure 6.3: illegal n:1 communication
 
 #@SECTION: 6.16.2 Compatibility on Delegation Level
@@ -903,6 +981,25 @@ The examples explain the usage of DelegationSwConnectors in different configurat
 
 At a later point in time it has to be consistent or can be removed. Decorating the example with applicable values of DelegatedPortAnnotation should facilitate the understanding of the meaning of the DelegatedPortAnnotation.
 
+
+<-------------- multimodal context 
+This diagram illustrates a Composition exposing an AbstractProvidedPortPrototype “infold” that aggregates four ApplicationDataPrototypes {A,B,C,D}. Two AtomicSwComponentTypes inside the Composition each have an AbstractRequiredPortPrototype: the top sub-component consumes {A,B}, the bottom consumes {B,C}, via DelegationSwConnectors. This arrangement demonstrates how a single provided port can legally be split to supply only the required subsets of data prototypes to different components.
+
+- Component hierarchy:
+  • One CompositionSwComponentType containing two AtomicSwComponentType instances (top and bottom).
+- Ports & interfaces:
+  • Composition: one AbstractProvidedPortPrototype (“infold”) carrying {A,B,C,D}.
+  • Each AtomicSwComponentType: one AbstractRequiredPortPrototype with its own subset ({A,B} or {B,C}).
+  • Two DelegationSwConnectors linking the provided port to the required ports.
+- Data flow:
+  • “infold” port collects A,B,C,D → delegates {A,B} to top component, {B,C} to bottom.
+  • Prototype D is not forwarded; prototype B appears in both subsets.
+- Key AUTOSAR concepts:
+  • AbstractProvidedPortPrototype and AbstractRequiredPortPrototype
+  • DelegationSwConnector and prototype grouping (“infold”)
+  • ApplicationDataPrototype sets and legal splitting of delegation connectors
+- Scenario:
+  • Use-case: selective distribution of aggregated data prototypes from a single Composition port to multiple SW-components based on their individual interface requirements. ---------------------->
 Figure 6.4: Legal split of delegation connector
 
 All required dataElements are provided by the DelegationSwConnectors attached to the delegation RPortPrototype. The fact that dataElement D is not conveyed to any of the RPortPrototypes owned by the SwComponentPrototypes does not have any impact on the compatibility.
@@ -913,30 +1010,133 @@ This requires the value of the attribute signalFan of DelegatedPortAnnotation to
 
 In the next example the RPortPrototype of the CompositionSwComponentType contains the superset of dataElements {A ,B}. The two RPortPrototypes of the SwComponentPrototypes contain different subsets, i.e. {A} and {B}.
 
+
+<-------------- multimodal context 
+This diagram illustrates how a composition can legally split a single multi‐operation client/server port into two delegated connectors, each carrying a subset of the interface’s operations to two inner SW-components.
+
+- Component hierarchy – One CompositionSwComponentType containing two AtomicSwComponentType instances (upper and lower gray SW-components).
+- Ports & interfaces – The composition declares one RPort (or ProvidedPort) with ClientServerInterface {A,B} [single], which is delegated via two DelegationSwConnectors to inner ports: top port {A}, bottom port {B}.
+- Data flow – Calls or requests tagged “A” route through the upper connector to the first component; those tagged “B” route to the second component.
+- Key AUTOSAR concepts – AbstractRequiredPortPrototype/AbstractProvidedPortPrototype, DelegationSwConnector, interface partitioning, single port cardinality, ClientServerInterface operations.
+- Scenario – Splitting a composite interface into two functional providers, each handling distinct operations of the same interface. ---------------------->
 Figure 6.5: Legal split of delegation connector
 
 In this case the resulting communication pattern on the VFB would be n:1. In this case the value of the attribute signalFan of DelegatedPortAnnotation should be set to single.
 
 The next example is about the merge of DelegationSwConnectors. The PPortPrototype owned by the CompositionSwComponentType contains a superset of dataElements {A ,B}. The two PPortPrototypes of the SwComponentPrototypes contain a disjoint subset each, i.e. {A} and {B}.
 
+
+<-------------- multimodal context 
+The diagram shows a CompositionSwComponentType that merges two internal Provided ports—each offering a distinct DataInterface—into one external port, then connects it via an AssemblySwConnector to a consuming SWC. This legal merge bundles interface sets A and B into a single port, simplifying downstream connectivity.
+
+- Component hierarchy  
+  • CompositionSwComponentType with two AtomicSwComponentType instances as inner subcomponents  
+- Ports & interfaces  
+  • Inner subcomponents expose AbstractProvidedPortPrototype {A} and {B}  
+  • Composition defines an AbstractProvidedPortPrototype {A,B} [single]  
+  • AssemblySwConnector links the merged port to an external RequiredPortPrototype  
+- Data flow  
+  • Fan-in pattern: two provided streams (A, B) delegated upward, merged, then forwarded as one to the consumer  
+- Key AUTOSAR concepts  
+  • DelegationSwConnector merge of AbstractProvidedPortPrototype  
+  • Interface sets ({A}, {B}, {A,B}) and multiplicity “single”  
+  • AssemblySwConnector, AbstractRequiredPortPrototype/AbstractProvidedPortPrototype  
+- Scenario  
+  • Use-case: consolidate separate functional outputs into a unified port for a downstream SWC ---------------------->
 Figure 6.6: Legal merge of delegation connector
 
 In this case the resulting communication pattern on the VFB would be 1:x, with x taking values between 0 and n. In this case the value of the attribute signalFan of DelegatedPortAnnotation should be set to single. All VariableDataPrototypes of the provided outer PortPrototypes are provided by exactly one provided inner PortPrototype.
 
 As a variation of this theme, the next example features a PPortPrototype owned by a CompositionSwComponentType that contains the superset of dataElements {A ,B, C}. The PPortPrototypes of the SwComponentPrototypes in turn contain subsets of dataElements, i.e. {A, B} and {B, C}. In this case the resulting communication pattern on the VFB for {B} would be n:1.
 
+
+<-------------- multimodal context 
+This diagram shows a legal merge of delegated data ports inside a CompositionSwComponentType: two inner atomic SW-components each export overlapping data sets which are infold-merged via a DelegationSwConnector into a single port that feeds an external consumer. It demonstrates how AUTOSAR allows union of data prototypes when delegating through a composition.
+
+• Component hierarchy  
+  – A top-level CompositionSwComponentType contains two AtomicSwComponentType instances and one external SW-component linked via delegation.  
+
+• Ports & interfaces  
+  – Inner SWCs expose AbstractProvidedPortPrototypes carrying {A,B} and {B,C}.  
+  – A DelegationSwConnector merges those into an inner AbstractProvidedPortPrototype {A,B,C}[Infold].  
+  – That port is further delegated to an external SWC’s AbstractRequiredPortPrototype.  
+
+• Data flow  
+  – Data elements A and B travel from SWC1; B and C from SWC2.  
+  – At the infold port they union into {A,B,C}, which is then sent to the consumer.  
+
+• Key AUTOSAR concepts  
+  – Uses DelegationSwConnector, port prototype infolding, inner/outer ports, and DataInterface grouping.  
+
+• Scenario  
+  – Illustrates composing multiple data providers into one aggregated interface for an external client. ---------------------->
 Figure 6.7: Legal merge of delegation connector
 
 This would require the value of the attribute signalFan of DelegatedPortAnnotation to be set to nfold. All dataElements of the delegation PPortPrototype are provided by at least one PPortPrototype of the SwComponentPrototypes. Therefore the criteria of entire delegation defined in chapter 6.14 are fulfilled.
 
 The next example looks very similar. However, the subtle difference is that the second SwComponentPrototype provides dataElements {C,D} rather than {B,C}.
 
+
+<-------------- multimodal context 
+This diagram illustrates a legal merge of two internal Provided ports into a single outside-facing Provided port within a CompositionSwComponentType, aggregating data sets {A,B} and {C,D} into {A,B,C}. It showcases how internal producers can safely delegate and combine data flows before exposing them to an external consumer SW-Component.
+
+• Component hierarchy  
+  – A CompositionSwComponentType contains two AtomicSwComponentType subcomponents.  
+  – Each subcomponent hosts its own AbstractProvidedPortPrototype.  
+  – The composition itself defines one merged AbstractProvidedPortPrototype.  
+  – An external SW-ComponentType consumes the merged port.
+
+• Ports & interfaces  
+  – Two inner Provided ports with data sets {A,B} and {C,D}.  
+  – One inner merge port with union {A,B,C} and multiplicity [single].  
+  – One external Provided port {A,B,C}.  
+  – AssemblySwConnector edges linking subcomponent ports to the merge port and outwards.
+
+• Data flow  
+  – Each subcomponent emits its data elements.  
+  – Delegation connectors merge flows, filtering to {A,B,C}.  
+  – External consumer receives the unified data stream.
+
+• Key AUTOSAR concepts  
+  – AbstractProvidedPortPrototype, AssemblySwConnector, delegation connectors.  
+  – DataPrototype sets, multiplicity “[single]”.  
+  – Legal merge rule ensures disjoint or compatible data subsets.
+
+• Scenario  
+  – Aggregate signals from two producers, filter and expose a consistent subset to a downstream SW-Component. ---------------------->
 Figure 6.8: Legal merge of delegation connector
 
 Although dataElement {D} does not appear in the delegation PPortPrototype the compatibility rules are fully satisfied with this scenario.
 
 The next example shows a valid delegation of SwConnectors that goes end-to-end via CompositionSwComponentTypes to included SwComponentPrototypes.
 
+
+<-------------- multimodal context 
+This diagram shows two nested CompositionSwComponentTypes (“LeftComp” and “RightComp”) delegating client-server or data interfaces end-to-end between four AtomicSwComponentTypes, filtering interface sets at each delegation point to satisfy connectability rules.
+
+• Component hierarchy  
+  - LeftComp: CompositionSwComponentType containing AtomicSwComponentType SWC1 and SWC2  
+  - RightComp: CompositionSwComponentType containing AtomicSwComponentType SWC3 and SWC4  
+
+• Ports & interfaces  
+  - SWC1 has an AbstractRequiredPortPrototype with interface set {A,B}  
+  - SWC2 has an AbstractRequiredPortPrototype with {B,C}  
+  - Both delegate to LeftComp’s inner RequiredPortPrototype (aggregated {A,B})  
+  - LeftComp inner port connects via DelegationSwConnector to RightComp inner port ({A,B})  
+  - RightComp inner port delegates to SWC3’s RPort {A} and SWC4’s RPort {B}  
+
+• Data flow  
+  - Interfaces A and B emitted by SWC1 are propagated through nested delegation to SWC3 (A) and SWC4 (B)  
+  - SWC2’s C is dropped at LeftComp because no downstream port supports C  
+
+• Key AUTOSAR concepts  
+  - AbstractRequiredPortPrototype / AbstractProvidedPortPrototype  
+  - CompositionSwComponentType nesting  
+  - DelegationSwConnector chaining  
+  - Interface subset connectability rules  
+
+• Scenario  
+  - Illustrates valid end-to-end delegation of SwConnectors across two compositions, demonstrating how interface sets are aggregated and filtered to satisfy each AtomicSwComponentType’s port requirements. ---------------------->
 Figure 6.9: Valid delegation of SwConnectors that goes end-to-end
 
 #@SECTION: 6.16.2.2 Illegal Use
@@ -955,14 +1155,86 @@ Figure 6.10: Illegal split of delegation connector
 
 In the next example compatibility is also not fulﬁlled because the required dataElement {E} is not provided by the delegation RPortPrototype.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal split of a delegation connector in an AUTOSAR CompositionSwComponentType: a single inner port carrying data {A,B,C,D} is delegated to two sub-components’ ports whose data sets overlap and don’t match the original, violating AUTOSAR port grouping rules.
+
+• Component hierarchy  
+  – One CompositionSwComponentType containing two AtomicSwComponentType instances.  
+
+• Ports & interfaces  
+  – Composition has an AbstractProvidedPortPrototype (or RPortPrototype) with data elements {A,B,C,D}.  
+  – Each sub-component has an AbstractRequiredPortPrototype (or PPortPrototype): one with {A,B}, the other with {B,C,E}.  
+
+• Data flow  
+  – A single delegation connector is split into two DelegationSwConnectors to the two inner ports.  
+  – Overlap on B and inclusion of E (not in {A,B,C,D}) cause mismatched partitioning.  
+
+• Key AUTOSAR concepts  
+  – DelegationSwConnector, InnerPortPrototype, DataPrototypeGroup partitioning, port exact-match rule.  
+
+• Scenario  
+  – Demonstrates a modeling error: you cannot split one port’s data set into two sub-ports unless they form an exact, non-overlapping partition of the original. ---------------------->
 Figure 6.11: Illegal split of delegation connector
 
 An incompatible merge of DelegationSwConnectors is sketched in Figure 6.12. In this case the dataElement {E} is not provided by one of the PPortPrototypes owned by the SwComponentPrototypes inside the CompositionSwComponentType.
 
+
+<-------------- multimodal context 
+This diagram illustrates an illegal merge of multiple AssemblySwConnectors into a single DelegationSwConnector within a CompositionSwComponentType, leading to incompatible interface sets at the composition port.
+
+- Component hierarchy  
+  • A CompositionSwComponentType containing two AtomicSwComponentType inner components.  
+  • One external AtomicSwComponentType connected via delegation.
+
+- Ports & interfaces  
+  • Inner Component 1 has an AbstractProvidedPortPrototype ({A,B}).  
+  • Inner Component 2 has an AbstractProvidedPortPrototype ({B,C}).  
+  • The composition’s inner port (merge point) is an AbstractRequiredPortPrototype ({A,C,E}).  
+  • An outer DelegationSwConnector links that to an external AbstractRequiredPortPrototype ({A,C,E}).
+
+- Data flow  
+  • Two AssemblySwConnectors feed interfaces {A,B} and {B,C} into a merge node.  
+  • The merged signal then travels through a DelegationSwConnector to the external port.
+
+- Key AUTOSAR concepts  
+  • AssemblySwConnector merging, DelegationSwConnector, AbstractProvidedPortPrototype/AbstractRequiredPortPrototype.  
+  • Interface compatibility rules prevent merging ports with disjoint interface sets.  
+  • Demonstrates illegal merge semantics (no InterfaceMapping to reconcile {A,B,C} vs. {A,C,E}).
+
+- Scenario  
+  • Validates connector compatibility in a composition: merging two provided ports before delegation.  
+  • Shows an error case where interface sets do not match, violating AUTOSAR port merging rules. ---------------------->
 Figure 6.12: Illegal merge of delegation connector
 
 The next example shows an invalid delegation of SwConnectors that goes end-to-end via CompositionSwComponentTypes to included SwComponentPrototypes.
 
 Similar to the example sketched in Figure 6.12, the dataElement {E} is not provided by one of the PPortPrototypes owned by the SwComponentPrototypes inside the CompositionSwComponentType.
 
+
+<-------------- multimodal context 
+This diagram illustrates an invalid end-to-end delegation of SwConnectors between two CompositionSwComponentTypes, where required interfaces from inner AtomicSwComponents are improperly forwarded across composition boundaries to provided ports without using proper assembly connectors.
+
+• Component hierarchy  
+  – Two CompositionSwComponentType blocks, each containing two AtomicSwComponentType instances.  
+  – Inner components in the left composition both have RPorts; inner components in the right composition both have PPorts.
+
+• Ports & interfaces  
+  – Left inner RPorts require {A,B} and {B,C}.  
+  – Left composition’s outer RPort (delegated) exposes {A,C,E}.  
+  – Right composition’s outer PPort (delegated) exposes {A,C,E}.  
+  – Right inner PPorts provide {A} and {C,E}.
+
+• Data flow  
+  – Interfaces A, B, C are required by left inners, aggregated to the outer RPort.  
+  – The outer RPort is directly delegated to the right outer PPort, which splits to inner PPorts.  
+  – This bypasses an intermediate assembly, causing an illegal end-to-end delegation.
+
+• Key AUTOSAR concepts  
+  – AbstractRequiredPortPrototype (RPort) and AbstractProvidedPortPrototype (PPort).  
+  – DelegationSwConnector used instead of AssemblySwConnector.  
+  – Interface sets must match exactly; partial mappings and chaining across compositions violate connector rules.
+
+• Scenario  
+  – Intended to demonstrate a misuse of SwConnector delegation where required interfaces are improperly forwarded and split across compositions, highlighting AUTOSAR’s prohibition of direct end-to-end delegation. ---------------------->
 Figure 6.13: Invalid delegation of SwConnectors that goes end-to-end

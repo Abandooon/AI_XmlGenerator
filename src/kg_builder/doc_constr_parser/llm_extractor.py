@@ -11,7 +11,7 @@ from config import (
 )
 
 try:
-    tokenizer = tiktoken.encoding_for_model(LLM_MODEL_NAME)
+    tokenizer = tiktoken.encoding_for_model("o4-mini")
 except KeyError:
     print(f"Warning: Model {LLM_MODEL_NAME} not found for tiktoken. Using cl100k_base.")
     tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -37,6 +37,7 @@ class LlmExtractor:
 1.  `<!-- LLM_CONTEXT FOR CLASS ClassName: Attributes=[attr1, attr2,...] -->`：在 `#@CLASS: ClassName` 标注后，提供该类的属性列表。
 2.  `<!-- LLM_CONTEXT FOR ENUM EnumName: Literals=[lit1, lit2,...] -->`：在 `#@ENUM: EnumName` 标注后，提供该枚举的字面量列表。
 3.  {PARENT_SECTION_CONTEXT_TAG} 在片段开头，可能提供该片段所属的章节路径。
+4. '<-------------- multimodal context ... ------->',表示该图表包含多模态上下文信息。
 
 请仔细分析以下文档片段，识别其中所有符合 AUTOSAR 约束或规范模式的内容。
 
@@ -46,10 +47,10 @@ class LlmExtractor:
 \"\"\"
 
 请仔细阅读输入文本片段，并根据以下指令提取信息，生成一个或多个符合上述 `CONSTRAINT_SCHEMA` 的JSON对象。如果一个文本片段包含多个独立的约束定义，请为每个约束生成一个单独的JSON对象。
-
+文档中的规范和约束格式为[TPS_SWCT_***]或[constr_***] 标题 (cid:100) 细则 (cid:99) (引用id),所有约束都以这种形式标识，不要遗漏。
+    
 1.  **ID 与类型 (`id`, `id_type`)**:
-    *   从文本中形如 `[ID_TYPE_ID_NUMBER]` (例如 `[TPS_SWCT_01032]` 或 `[constr_XYZ_001]`) 的标记中提取。
-    *   文档中的规范和约束形式为[TPS/constr_***_01032]标题(cid:100)细则(cid:99)(引用id)
+    *   例如 `[TPS_SWCT_01032]` 或 `[constr_1387]`，并且约束中一定有(cid:100)和(cid:99)标记。
     *   `id`: 完整的ID字符串 (如 "TPS_SWCT_01032")。
     *   `id_type`: ID的前缀部分，必须是 `CONSTRAINT_SCHEMA` 中 `id_type` 枚举定义的值之一 ('TPS_SWCT' 或 'constr')。
 
@@ -60,8 +61,7 @@ class LlmExtractor:
     *   提取约束的核心描述文本。这通常是位于特殊标记（如文档中的 `(cid:100)` 和 `(cid:99)` 符号）之间，或者是在标题之后、引用之前的主体说明文字。确保提取完整的约束逻辑。
 
 4.  **引用 (`references`)**:
-    *   如果约束文本末尾的括号中列出了其他约束ID（通常以"See \ in "或直接罗列ID的形式），将这些ID提取为一个字符串列表。如果不存在则此字段为 `null` 或空列表 `[]`。
-    *   如果约束文本中明确引用了表（例如in table 5.61.）或是根据上下文推断出需要引用某个表的内容但是上下文中只有这个表的标题（如果表格名为类名则在上下文中已经注入了这个类的信息，不需要引用），则将此表格id提取放入引用列表）
+    *   如果约束文本末尾的括号中列出了其他约束ID或约束文本中引用了其他约束id（通常以"See \\ in "或直接罗列ID的形式），将这些ID提取为一个字符串列表。如果不存在则此字段为空列表 `[]`。
 
 5.  **目标实体与属性 (`targets` - 这是一个对象列表)**:
     *   一个约束可能针对一个或多个AUTOSAR类或枚举，以及这些类/枚举的一个或多个属性/字面量，或者针对类/枚举本身。
@@ -87,7 +87,6 @@ class LlmExtractor:
 
 9.  **层次化上下文 (`#@Hierarchical` ... `/#@Hierarchical`)**:
     *   如果约束文本位于 `#@Hierarchical` 和 `/#@Hierarchical` 标记之间，这通常表示这块区域内的所有约束共享一个共同的父级上下文或主题。
-    *   在提取这些约束时，确保它们的 `scope_path` 正确反映了这个共享的父级章节。例如，如果 `#@Hierarchical` 块位于 "Section A" 之下，那么从该块中提取的所有约束的 `scope_path` 都应该以 "Section A" (或更上级的路径) 作为前缀。
     *   此标记本身不直接生成单独的字段，而是用于辅助理解相关约束组。
 
 10. **XML实例化示例提取 (`xml_instantiation_example`)**:
@@ -99,15 +98,17 @@ class LlmExtractor:
         *   此类条目的 `id` 可以基于 "Listing X.Y" 生成一个唯一的ID，例如 "Listing_5_1_Example"。`id_type` 可以设为 "constr" (或新增一个 "example" 类型，如果需要更细区分)。
         *   `title` 可以是 "Listing X.Y" 的完整标题。
         *   `expression` 可以是对此XML示例的简短描述或其用途说明。
-11.**表格图片信息**：
+11.**多模态表格图片信息**：
     *   文本中的表格或图片的标题（例如 "Figure X.Y: 类名、类结构" 或 "Table X.Y: 类名"），即为这个类的信息，已在注入的类上下文中。
+    *   '<-------------- multimodal context ... ------->',表示该图表包含多模态上下文信息。
+    *   多模态信息中可能会有约束信息，格式与正文一致。
+    *   正文中可能会引用多模态信息，需要作为约束信息的补充甚至单独作为一个约束处理，约束id为当前的图表数字标题号，同要需要对齐上下文类信息。
 
 **通用指令与注意事项:**
 
-*   **严格遵循Schema:** 生成的每个JSON对象都必须严格符合提供的 `CONSTRAINT_SCHEMA`。
-*   **处理可选字段:** 如果某个非必需字段的信息在文本中找不到，请将该字段的值设为 `null` (如果Schema允许) 或直接省略该字段 (如果Schema允许且不是必需的)。
-*   **准确性优先:** 确保提取的信息准确无误，特别是ID、路径引用、类名和属性名。
-*   **原子性:** 每个JSON对象应代表一个独立的、原子性的约束或XML示例。
+*   严格遵循Schema: 生成的每个JSON对象都必须严格符合提供的 `CONSTRAINT_SCHEMA`。
+*   不要遗漏任何符合约束格式的约束。
+*   除了标准格式的约束之外，llm还可以自己从文本中推理出约束，约束id为当前的#@SECTION数字标题号，同要需要对齐上下文类信息。
 
 将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合以下 CONSTRAINT_SCHEMA:
 {self.constraint_schema_str}
@@ -136,7 +137,7 @@ class LlmExtractor:
                 ],
                 response_format={"type": "json_object"},
                 temperature=0.0,
-                max_tokens=MAX_OUTPUT_TOKENS,
+                max_completion_tokens=MAX_OUTPUT_TOKENS,
                 stream=False
             )
             raw_response_content = completion.choices[0].message.content

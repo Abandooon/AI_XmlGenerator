@@ -3099,6 +3099,30 @@ The IOControl service requires in its diagnostic response the current value of t
 
 The service use case is visualized in Figure 7.46. The SwComponentPrototype contains two SwcServiceDependencys, one for the I/O Control, and one for the access of the dataElement with the shortName "IOx" by the Dcm.
 
+
+<-------------- multimodal context 
+This architecture depicts an AUTOSAR service use case where an application SW-Component requests and receives IO control commands and diagnostic data from a DCM service SW-Component via well-defined SenderReceiverInterfaces. It shows how service dependencies and data needs inside an ApplicationSwComponentType map onto ports and connect through AssemblySwConnectors to a DcmServiceSwComponentType, enabling two-way IO control and continuous diagnostic value exchange.
+
+• Component hierarchy  
+  – SwComponentPrototype “IOControlRequest_IOx” (ApplicationSwComponentType) contains two SwcServiceDependency instances (“IOx” and “Data_IOx”) linked to DiagnosticControlNeeds and DiagnosticValueNeeds.  
+  – A separate SwComponentPrototype (DcmServiceSwComponentType) provides the corresponding interfaces.  
+
+• Ports & interfaces  
+  – RoleBasedPortAssignment: PPort “IOControlRequest” and RPort “IOControlResponse” use SenderReceiverInterface “IOControlRequest_IOx” and “IOControlResponse_IOx.”  
+  – RoleBasedDataAssignment: data port “signalBasedDiagnostics” uses SenderReceiverInterface “DataXY_IO” (elements “IOx,” “IOy”).  
+  – AssemblySwConnectors link each matching port prototype.  
+
+• Data flow  
+  – Application SW-C sends IOControlRequest to DCM SW-C, which processes and returns IOControlResponse.  
+  – Diagnostic values (currentValue) flow from DCM back into the application via DataServices_Data_IOx.  
+
+• Key AUTOSAR concepts  
+  – SwComponentPrototype, ApplicationSwComponentType, DcmServiceSwComponentType  
+  – RoleBasedPortAssignment, RoleBasedDataAssignment  
+  – SenderReceiverInterface, AssemblySwConnector  
+
+• Scenario  
+  – Enables an application to issue IO control commands to a diagnostic manager (DCM) and receive both control confirmations and real-time diagnostic data. ---------------------->
 Figure 7.46: Visualization of the service use case
 
 Please note that, in this example, the SenderReceiverInterface used on the PPortPrototype of the ApplicationSwComponentType has several dataElements (where the dataElement with the shortName "IOx" is one of them). This is a perfectly valid configuration.

@@ -8,146 +8,149 @@ from pathlib import Path
 from config import (
     LLM_API_KEY, LLM_API_BASE, LLM_MODEL_NAME,
     MAX_OUTPUT_TOKENS,
-    INPUT_DIR, MD_FILENAME, OUTPUT_DIR
+    INPUT_DIR, MD_FILENAME, OUTPUT_DIR,UNIFIED_METADATA_FILENAME
 )
 
+# ────────────────────────────────────────────────────────────────
+# 辅助函数：从 unified_metadata.json 提取 SWC 相关类名
+# ────────────────────────────────────────────────────────────────
+def load_autosar_classes_from_metadata(metadata_file_path: str) -> List[str]:
+    """
+    Parse `unified_metadata.json` and return all AUTOSAR class names that
+    are under package path ["AUTOSAR Templates", "SWComponentTemplate"].
+    """
+    autosar_classes: set[str] = set()
+    try:
+        with open(metadata_file_path, "r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+        if not isinstance(metadata.get("groups"), dict):
+            print(f"Warning: 'groups' not found or invalid in {metadata_file_path}")
+            return []
+
+        for group in metadata["groups"].values():
+            if (
+                isinstance(group, dict)
+                and isinstance(group.get("Package"), list)
+                and len(group["Package"]) >= 2
+                and group["Package"][:2] == ["AUTOSAR Templates", "SWComponentTemplate"]
+            ):
+                autosar_classes.add(group.get("name", ""))
+        classes_sorted = sorted(c for c in autosar_classes if c)
+        print(f"Loaded {len(classes_sorted)} AUTOSAR UML classes from metadata.")
+        if classes_sorted:
+            print(f"Sample classes: {classes_sorted[:5]}")
+        return classes_sorted
+
+    except FileNotFoundError:
+        print(f"Error: metadata file '{metadata_file_path}' not found.")
+    except json.JSONDecodeError:
+        print(f"Error: failed to parse JSON from '{metadata_file_path}'.")
+    except Exception as e:
+        print(f"Unexpected error while loading class names: {e}")
+    return []
 
 class AutosarImageFactExtractor:
-    def __init__(self):
-        """
-        初始化AUTOSAR图片事实提取器
-        """
-        self.api_key = LLM_API_KEY
-        self.model_name = LLM_MODEL_NAME
-        self.api_base = LLM_API_BASE
+    def __init__(self) -> None:
+        """Initialise extractor."""
+        self.api_key: str = LLM_API_KEY
+        self.model_name: str = LLM_MODEL_NAME
+        self.api_base: str = LLM_API_BASE
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
+            "Authorization": f"Bearer {self.api_key}",
         }
+        metadata_filepath = os.path.join(INPUT_DIR, UNIFIED_METADATA_FILENAME)
+        self.autosar_terms: List[str] = load_autosar_classes_from_metadata(
+            metadata_filepath
+        )
 
-    def encode_image(self, image_path: str) -> str:
-        """将图片编码为base64格式"""
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
+    # ───────────── 基础工具 ─────────────
+    @staticmethod
+    def encode_image(image_path: str) -> str:
+        with open(image_path, "rb") as img:
+            return base64.b64encode(img.read()).decode("utf-8")
 
-    def extract_identifier_from_filename(self, filename: str) -> Optional[str]:
-        """
-        从文件名中提取标识符 (固定格式: t/fx.x)
+    @staticmethod
+    def extract_identifier_from_filename(filename: str) -> Optional[str]:
+        """Extract figure/table id like f2.7 or t5.4 from filename."""
+        stem = os.path.splitext(filename)[0]
+        return stem.lower() if re.fullmatch(r"[ft]\d+\.\d+", stem, re.I) else None
 
-        Args:
-            filename: 图片文件名
-
-        Returns:
-            标识符，如 "f2.7", "t5.74" 等
-        """
-        # 移除文件扩展名
-        name_without_ext = os.path.splitext(filename)[0]
-
-        # 严格匹配格式: [ft]数字.数字
-        pattern = r'^[ft]\d+\.\d+$'
-        if re.match(pattern, name_without_ext, re.IGNORECASE):
-            return name_without_ext.lower()
-
-        return None
-
+    # ───────────── OpenAI 调用 ─────────────
     def call_llm_api(self, image_path: str, identifier: str) -> str:
         """
-        调用openai多模态LLM API提取AUTOSAR图片信息
-
-        Args:
-            image_path: 图片路径
-            identifier: 图片标识符
-
-        Returns:
-            提取的结构化信息
+        Call multimodal LLM to analyse AUTOSAR figure / table.
+        Always returns English content.
         """
         try:
-            # 编码图片
-            base64_image = self.encode_image(image_path)
+            base64_img = self.encode_image(image_path)
+            is_table = identifier.startswith("t")
 
-            # 根据标识符确定图片类型
-            is_table = identifier.startswith('t')
+            # -------- prompt 构造 --------
+            autosar_glossary = (
+                ", ".join(self.autosar_terms[:80]) + " ..."
+                if self.autosar_terms
+                else "N/A"
+            )
 
             if is_table:
-                # 表格特定的提示词
-                autosar_prompt = """请提取这张AUTOSAR SWC规范文档中的表格，并转为md格式的表格。"""
+                autosar_prompt = (
+                    "You are an AUTOSAR domain expert.\n\n"
+                    "Task: Extract the table contained in this AUTOSAR SWC specification "
+                    "figure and convert it into GitHub-flavoured Markdown. "
+                    "Keep header rows, all rows, and cell content verbatim. "
+                    "Do NOT add commentary or explanations.\n\n"
+                    f"Reference UML class glossary (partial): {autosar_glossary}"
+                )
             else:
-                # 图形特定的提示词
-                autosar_prompt = """请分析这张AUTOSAR SWC规范文档中的图形，并提取结构化信息。
+                autosar_prompt = (
+                    "You are an AUTOSAR domain expert.\n\n"
+                    "Analyse the following AUTOSAR SWC architecture diagram and summarise its "
+                    "structure in **concise English**.\n\n"
+                    "Focus points:\n"
+                    "1. Component hierarchy – identify SW-components and their relationships.\n"
+                    "2. Ports & interfaces – list RPort/PPort, data interfaces and connections.\n"
+                    "3. Data flow – describe communication patterns between components.\n"
+                    "4. Key AUTOSAR concepts – prototypes, interfaces, modes, etc.\n"
+                    "5. Scenario – briefly state the use-case or design intent expressed by the diagram.\n\n"
+                    "Output format (strict):\n"
+                    "- A short paragraph (≤150 words) describing the diagram purpose.\n"
+                    "- A bullet list capturing the five focus points above.\n"
+                    "Avoid translating labels; use the original technical terms when possible.\n\n"
+                    f"Reference UML class glossary (partial): {autosar_glossary}"
+                )
 
-**图形分析要点：**
-1. **组件架构**：识别软件组件(SW Component)的类型、名称和层次关系
-2. **端口与接口**：分析端口(Port)的类型(R-Port/P-Port)、数据接口和连接关系
-3. **数据流**：理解组件间的数据传输路径和通信模式
-4. **AUTOSAR概念**：识别图中的关键AUTOSAR元素，如原型(Prototype)、接口等
-5. **用例场景**：理解图形所展示的具体应用场景或设计模式
-
-**输出要求：**
-- 重点描述架构关系和设计意图，而非细节标签
-- 突出关键的AUTOSAR软件组件概念
-- 用简洁的中文描述图形的主要目的和核心信息
-- 适合作为技术文档上下文，帮助理解相关设计"""
-
-            # 构建请求payload
             payload = {
                 "model": self.model_name,
                 "messages": [
                     {
                         "role": "user",
                         "content": [
-                            {
-                                "type": "text",
-                                "text": autosar_prompt
-                            },
+                            {"type": "text", "text": autosar_prompt},
                             {
                                 "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{base64_image}"
-                                }
-                            }
-                        ]
+                                "image_url": {"url": f"data:image/jpeg;base64,{base64_img}"},
+                            },
+                        ],
                     }
                 ],
                 "max_completion_tokens": MAX_OUTPUT_TOKENS,
-                "temperature": 0.1
+                "temperature": 0.1,
             }
 
-            # 发送请求
             api_url = f"{self.api_base}/chat/completions"
-            response = requests.post(api_url, headers=self.headers, json=payload, timeout=60)
+            resp = requests.post(api_url, headers=self.headers, json=payload, timeout=60)
 
-            # 添加详细的错误信息
-            if response.status_code != 200:
-                print(f"错误状态码: {response.status_code}")
-                print(f"错误响应内容: {response.text}")
-                try:
-                    error_json = response.json()
-                    print(f"错误详情: {json.dumps(error_json, indent=2, ensure_ascii=False)}")
-                except:
-                    pass
+            if resp.status_code != 200:
+                print(f"HTTP {resp.status_code}: {resp.text}")
+            resp.raise_for_status()
 
-            response.raise_for_status()
-
-            # 解析响应
-            result = response.json()
-            content = result['choices'][0]['message']['content'].strip()
-
-            return content
-
-
-        except requests.exceptions.HTTPError as e:
-
-            print(f"HTTP错误 ({image_path}): {str(e)}")
-
-            print(f"响应内容: {e.response.text if hasattr(e, 'response') else 'N/A'}")
-
-            return f"AUTOSAR图片分析失败: {str(e)}"
+            return resp.json()["choices"][0]["message"]["content"].strip()
 
         except Exception as e:
-
-            print(f"调用openai API失败 ({image_path}): {str(e)}")
-
-            return f"AUTOSAR图片分析失败: {str(e)}"
+            print(f"❌ LLM call failed for {image_path}: {e}")
+            return f"Image analysis failed: {e}"
 
     def process_images(self, figures_dir: str) -> Dict[str, str]:
         """
@@ -285,7 +288,7 @@ class AutosarImageFactExtractor:
                 fact_info = task['fact_info']
 
                 # 构建注入文本
-                injection_text = f"<-------------- figure/table context {fact_info} ---------------------->"
+                injection_text = f"<-------------- multimodal context {fact_info} ---------------------->"
 
                 # 在指定行上方插入
                 lines.insert(line_num, injection_text)

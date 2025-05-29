@@ -106,10 +106,27 @@ Factually, [constr_1033] is not applicable to a scenario where several PRPortPro
 
 [constr_1202] Supported connections by AssemblySwConnector for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface (cid:100) For the modeling of AssemblySwConnectors between PortPrototypes typed by a SenderReceiverInterface or NvDataInterface, only the connections documented in Table 4.4 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+|                     | RPortPrototype | PPortPrototype | PRPortPrototype |
+|---------------------|---------------|---------------|-----------------|
+| **RPortPrototype**  | No            | Yes           | Yes             |
+| **PPortPrototype**  | Yes           | No            | Yes             |
+| **PRPortPrototype** | Yes           | Yes           | No              | ---------------------->
 Table 4.4: Supported connections for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface
 
 [constr_1203] Supported connections by DelegationSwConnector for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface (cid:100) For the modeling of DelegationSwConnectors between PortPrototypes typed by a SenderReceiverInterface or NvDataInterface, only the connections documented in Table 4.5 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| innerPort       | outerPort       |               |                  |
+|-----------------|-----------------|---------------|------------------|
+|                 | RPortPrototype  | PPortPrototype| PRPortPrototype  |
+| RPortPrototype  | Yes             | No            | Yes              |
+| PPortPrototype  | No              | Yes           | Yes              |
+| PRPortPrototype | Yes             | Yes           | Yes              |
+``` ---------------------->
 Table 4.5: Supported connections for PortPrototypes typed by a SenderReceiverInterface or NvDataInterface
 
 #@SECTION: 4.2.3 Client Server Communication
@@ -192,16 +209,56 @@ Please note that the scenario described in [TPS_SWCT_01125] is depicted in Figur
 
 [constr_1286] serverArgumentImplPolicy and ArgumentDataPrototype typed by primitive data types (cid:100) The value of the attribute ArgumentDataPrototype.serverArgumentImplPolicy shall not be set to useVoid for an ArgumentDataPrototype of direction in that is typed by an AutosarDataType that boils down to a primitive C data type (see [TPS_SWCT_01565]). (cid:99)()
 
+
+<-------------- multimodal context 
+The diagram shows three AtomicSwComponentType “clients” each with a RequiredPort “C” typed by ClientServerInterface {A}, {B}, or {C}, all assembled via AssemblySwConnectors (with multiplicities n=2,3,4) to three ProvidedPorts on a CompositionSwComponentType “server” that hosts a single Server RunnableEntity. It exemplifies how multiple clients invoke a common server runnable through distinct interfaces with specified connector multiplicities.
+
+• Component hierarchy  
+  – Three leaf AtomicSwComponentType clients  
+  – One CompositionSwComponentType server containing a Server RunnableEntity  
+
+• Ports & interfaces  
+  – Clients: AbstractRequiredPortPrototype “C” typed {A}, {B}, {C}  
+  – Server: AbstractProvidedPortPrototype instances typed {A}, {B}, {C}  
+  – AssemblySwConnectors link matching ports  
+
+• Data flow  
+  – Clients invoke server operations via Assembly connectors  
+  – Dashed lines denote RunnableEntity interactions  
+
+• Key AUTOSAR concepts  
+  – AbstractRequired/ProvidedPortPrototype  
+  – ClientServerInterface with multiplicity “n” on AssemblySwConnector  
+  – RunnableEntity inside CompositionSwComponentType  
+
+• Scenario  
+  – Multi-client access pattern where 2, 3, and 4 client instances call server interfaces A, B, C respectively to share a central service. ---------------------->
 Figure 4.3: Example for [TPS_SWCT_01125]
 
 Please note that the server RunnableEntity needs information about the currently used array length respectively structure size by usage of additionally arguments passed by the Client or via PortDefinedArgumentValue. Note further that a ClientServerInterface does not define any timing information (how quickly the client expects a response of the server). It does not define how the threading works (if the client for example blocks until the response comes back from the server). It also does not define explicitly how information is passed between an implementation of the client and the server and the underlying RTE (for example: through "pointers" or "by value").
 
 [constr_1204] Supported connections by AssemblySwConnector for Port Prototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface (cid:100) For the modeling of AssemblySwConnectors between PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface, only the connections documented in Table 4.11 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+|                     | RPortPrototype | PPortPrototype | PRPortPrototype |
+|---------------------|---------------:|---------------:|----------------:|
+| **RPortPrototype**  | No             | Yes            | Yes             |
+| **PPortPrototype**  | Yes            | No             | No              |
+| **PRPortPrototype** | Yes            | No             | No              | ---------------------->
 Table 4.11: Supported connections for PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface
 
 [constr_1205] Supported connections by DelegationSwConnector for Port Prototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface (cid:100) For the modeling of DelegationSwConnectors between PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface, only the connections documented in Table 4.12 are supported by AUTOSAR. (cid:99)()
 
+
+<-------------- multimodal context 
+```markdown
+| innerPort      | outerPort        |                |                   |
+|                | RPortPrototype   | PPortPrototype | PRPortPrototype   |
+|----------------|------------------|----------------|-------------------|
+| RPortPrototype | Yes              | No             | No                |
+| PPortPrototype | No               | Yes            | No                |
+``` ---------------------->
 Table 4.12: Supported connections for PortPrototypes typed by a ClientServerInterface, ModeSwitchInterface, or TriggerInterface
 
 #@SECTION: 4.2.3.2 Error Handling in Client/Server Communication
@@ -789,7 +846,7 @@ Table 4.39: MappingDirectionEnum
 Table 4.40: TextTableValuePair
 
 Figure 4.19: Mapping of DataPrototypes that eventually refer to CompuMethods of category TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and BITFIELD_TEXTTABLE
---------------------------------------------
+
 #@SECTION: 4.4 Port Annotation
 #@SECTION: 4.4.1 Introduction
 #@CLASS: ClientServerAnnotation
@@ -1081,6 +1138,15 @@ Table 4.58: RPortComSpec
 
 [constr_1043] PortInterface vs. ComSpec (cid:100) The allowed combinations of a specific kind of PortInterface and a kind of ComSpec are documented in Table 4.59. (cid:99)()
 
+
+<-------------- multimodal context 
+| PortInterface              | ComSpec                                                          |
+|----------------------------|------------------------------------------------------------------|
+| SenderReceiverInterface    | SenderComSpec, ReceiverComSpec                                   |
+| ClientServerInterface      | ClientComSpec, ServerComSpec                                     |
+| ModeSwitchInterface        | ModeSwitchSenderComSpec, ModeSwitchReceiverComSpec               |
+| ParameterInterface         | ParameterProvideComSpec, ParameterRequireComSpec                 |
+| NvDataInterface            | NvRequireComSpec, NvProvideComSpec                               | ---------------------->
 Table 4.59: PortInterface vs. ComSpec
 
 As explained in section 2.5, there are cases where PortPrototypes owned by a CompositionSwComponentType could have initValues.
