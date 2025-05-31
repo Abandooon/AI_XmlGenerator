@@ -1,6 +1,8 @@
 import json
 import re
 import tiktoken
+import google.generativeai as genai
+
 from openai import OpenAI
 from config import (
     LLM_API_BASE, LLM_API_KEY, LLM_MODEL_NAME,
@@ -11,7 +13,7 @@ from config import (
 )
 
 try:
-    tokenizer = tiktoken.encoding_for_model("o4-mini")
+    tokenizer = tiktoken.encoding_for_model(f"{LLM_MODEL_NAME}")
 except KeyError:
     print(f"Warning: Model {LLM_MODEL_NAME} not found for tiktoken. Using cl100k_base.")
     tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -27,9 +29,12 @@ class LlmExtractor:
     def __init__(self):
         if not LLM_API_KEY:
             raise ValueError("环境变量中未找到 LLM_API_KEY。")
-        self.client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_API_BASE)
+        # openai
+        # self.client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_API_BASE)
+        # gemini
+        genai.configure(api_key=LLM_API_KEY,transport="rest",client_options={"api_endpoint": "https://api.openai-proxy.org/google"})  # 配置 Gemini
+        self.model = genai.GenerativeModel(LLM_MODEL_NAME)  # 初始化 Gemini 模型
         self.constraint_schema_str = json.dumps(CONSTRAINT_SCHEMA)
-
     def _build_extraction_prompt(self, text_block_for_llm):
         prompt = f"""
         # 角色
@@ -45,17 +50,32 @@ class LlmExtractor:
 
         # 正则速记
         ID        `\\[(TPS_SWCT|constr)_\\d+]`  
+        title 在ID与 ` (cid:100)` 之间
         expression 在 `(cid:100)` 与 `(cid:99)` 之间
+        references 在 `(cid:99)` 之后的括号或约束文本中
 
         # 字段要求（缺省填 null / []）
         id, id_type, title, expression, references, targets, constraint_type, value, scope_path, xml_example_content
+        
+        # 推理约束
+        文档中可能出现：'<-------- multimodal context'多模态上下文，仅当该块**显然在约束 AUTOSAR 元模型实例**时，才生成条目。
+            • 将表 / 图编号（如 “Table 11.7”, “Figure 5.3”）转为 id：例：Table_11_7，Figure_5_3  
+            • 判断语气常见关键词：  
+                – 出现 shall / must / shall not / has to 等 → id_type = "additional_binding"  
+                – 出现 recommended / should / may 等      → id_type = "additional_not_binding"
+            • 典型字段映射
+                | multimodal 元素                    | JSON 字段                            |
+                |-----------------------------------|-------------------------------------|
+                | 行标题或“属性”列                  | targets[i].targetAttributes            |
+                | 行右侧说明（如 “must match …”）    | expression / value / constraint_type  |
+                | 整体表或图标题                    | title；scope_path 最后一段               |
 
         # 提取流程
         1. 全文搜索 ID 正则；对每个 ID 查看前后段，提取字段。  
         2. 解析 `#@CLASS:` / `#@ENUM:` + `<!-- LLM_CONTEXT ... -->` 生成 targets；无具体属性时用 `["_classLevel"]`/`["_enumLevel"]`。  
         3. 利用 `<!-- PARENT_SECTION_CONTEXT:` 与最近 `#@SECTION:` 组装 scope_path（高→低）。  
         4. Listing X.Y + XML → constraint_type="xml_instantiation_example"，id_type="example"，id 例：`Listing_5_1`。  
-        5. (可选) 推理隐式约束—以 section 编号为 id，id_type="constr"。  
+        5. 遇到 multimodal 块 → 按上表规则决定是否生成 `"additional_binding"` / `"not_binding"` 约束。
 
         # few-shot 1：最简单
         [BEGIN]
@@ -63,7 +83,7 @@ class LlmExtractor:
         <!-- LLM_CONTEXT FOR CLASS SwComponentPrototype: Attributes=[shortName] -->
         [TPS_SWCT_00001] Short name uniqueness (cid:100) shortName must be unique. (cid:99)
         [END]
-        期望输出（字段顺序随意）:
+        期望输出:
         {"{"}"extracted_constraints":[{"{"}
         "id":"TPS_SWCT_00001","id_type":"TPS_SWCT","title":"Short name uniqueness",
         "expression":"shortName must be unique.","references":[],
@@ -71,15 +91,7 @@ class LlmExtractor:
         "constraint_type":"other","value":null,"scope_path":[],"xml_example_content":null
         {"}"}]{"}"}
 
-        # few-shot 2：含 references + enum
-        [BEGIN]
-        #@ENUM: ImplementationType
-        <!-- LLM_CONTEXT FOR ENUM ImplementationType: Literals=[AUTOSAR, ISO26262] -->
-        [constr_1234] Allowed types (cid:100) Only AUTOSAR is permitted (cid:99) (See [constr_5678])
-        [END]
-        …(给出对应 JSON)…
-
-        # few-shot 3：XML 示例
+        # few-shot 2：XML 示例
         [BEGIN]
         Listing 5.1 SwComponentPrototype example
         <SW-COMPONENT-PROTOTYPE>
@@ -87,17 +99,38 @@ class LlmExtractor:
         </SW-COMPONENT-PROTOTYPE>
         [END]
         …(JSON，其中 id="Listing_5_1", id_type="example", constraint_type="xml_instantiation_example")…
+        
+        # few-shot 3：multimodal 推荐性（not_binding）
+        输入片段:
+        Table 11.7: NvBlockNeeds dependencies
+        <-------------- multimodal context
+        | Attribute | NvBlockDescriptor side |
+        | readonly  | Recommended to match for all connected PortPrototypes |
+        -------------->
+        期望输出:
+        {{"extracted_constraints":[{{
+        "id":"Table_11_7",
+        "id_type":"additional_not_binding",
+        "title":"readonly consistency (recommended)",
+        "expression":"NvBlockDescriptor.readonly is recommended to match the value requested by all connected PortPrototypes.",
+        "references":[],
+        "targets":[
+          {{"targetEntityName":"NvBlockNeeds","entityType":"class","targetAttributes":["readonly"]}},
+          {{"targetEntityName":"NvBlockDescriptor","entityType":"class","targetAttributes":["readonly"]}}
+        ],
+        "constraint_type":"relationship",
+        "value":null,
+        "scope_path":["Table 11.7 NvBlockNeeds dependencies"],
+        "xml_example_content":null
+        }}]}}
 
         # 待处理文档
         \"\"\"{text_block_for_llm}\"\"\"
 
-        # 输出要求
-        • 直接输出 JSON；不要 Markdown/代码框。
-        • 未找到约束返回 {"{"}"extracted_constraints":[]{"}"}。
-
-        将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合以下 CONSTRAINT_SCHEMA:
-        {self.constraint_schema_str}
+        将所有提取的约束信息输出为单个 JSON 对象。该 JSON 对象应包含一个名为 "extracted_constraints" 的键，其值为一个 JSON 数组。数组中的每个元素都是一个代表单个约束的 JSON 对象，并且必须严格符合通过 API 的 `response_schema` 参数强制执行的输出 Schema。
         """
+        #数组中的每个元素都是一个代表单个约束的JSON对象，并且必须严格符合以下CONSTRAINT_SCHEMA:
+        #{self.constraint_schema_str}
         return prompt
 
     def extract_constraints_from_block(self, text_block_for_llm):
@@ -109,21 +142,38 @@ class LlmExtractor:
         print(f"\n--- 正在向 LLM 发送请求 (片段内容 tokens: {current_tokens}, 总输入 tokens: {total_input_tokens}) ---")
         # print(f"LLM 请求片段预览:\n{text_block_for_llm[:500]}...")
 
+        raw_response_content = None
         try:
-            completion = self.client.chat.completions.create(
-                model=LLM_MODEL_NAME,
-                messages=[
-                    {"role": "system",
-                     "content": "你是一位专业的 AUTOSAR 助手，设计用于将信息精确提取为 JSON 格式。请严格遵循输出 Schema。"},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"},
+            generation_config = genai.types.GenerationConfig(
+                response_mime_type="application/json",
+                response_schema=CONSTRAINT_SCHEMA,  # <--- 关键：这里传入 Python 对象
                 temperature=0.0,
-                max_completion_tokens=MAX_OUTPUT_TOKENS,
-                stream=False
+                max_output_tokens=MAX_OUTPUT_TOKENS
             )
-            raw_response_content = completion.choices[0].message.content
+
+            response = self.model.generate_content(
+                contents=prompt,
+                generation_config=generation_config
+            )
+            raw_response_content = response.text
+
+
+        # try:
+        #     completion = self.client.chat.completions.create(
+        #         model=LLM_MODEL_NAME,
+        #         messages=[
+        #             {"role": "system",
+        #              "content": "你是一位专业的 AUTOSAR 助手，设计用于将信息精确提取为 JSON 格式。请严格遵循输出 Schema。"},
+        #             {"role": "user", "content": prompt}
+        #         ],
+        #         response_format={"type": "json_object"},
+        #         temperature=0.0,
+        #         max_completion_tokens=MAX_OUTPUT_TOKENS,
+        #         stream=False
+        #     )
+        #     raw_response_content = completion.choices[0].message.content
             # print(f"DEBUG: LLM 原始响应:\n{raw_response_content[:1000]}...")
+
 
             extracted_data = json.loads(raw_response_content)
 
