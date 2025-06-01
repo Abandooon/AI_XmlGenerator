@@ -1,13 +1,11 @@
 # TODO List
 
 19. 应将etas示例工程和规范文档中的listing(如5.1) 示例arxml提取出来放入知识图谱作为小样本学习样例,6.16.2.1 Legal Use这样的使用实例也应该放入样本-----etas工程通过云端 / API 进行小样本微调
-
 21. 尝试gemini api
 22. 将上下文注入和link的元数据扩充父类元素，比如ImplementationDataType的category就在父类Identifiable中，导致link失败
 23. 新增目标实体为抽象层级，不需link
 
 可能存在问题：
-2. 图表直接解析出来插入原文中，去掉promote中处理表格的提示词(图片的保留？)------表格插入原文，图片作为小样本？
 3. 需要对***Ref单独说明吗--------构建知识图谱和生成xml时需要
 
 注：
@@ -15,3 +13,12 @@
 2. AuraSAR (奥拉SAR/灵晖SAR):Aura (光环，氛围，也指微妙的预示或智慧的氛围) + SAR 含义：为AUTOSAR配置带来清晰洞察和智能光环的助手。
 3. 思考：考虑到最大输出token的限制，应该多阶段生成一个完整的项目，模仿人类工程师配置过程，后续实例引用先前示例，考虑basex查找引用放入上下文中.
 4. ASW只生成arxml，代码生成主要由RTE实现（辅助系统）
+
+
+
+变体:
+case1:类->类conditional->类content(在complextype中聚合)------>因此针对这种情况需要提到group中
+case2: 属性aggr/attr/iref----->不需要更改
+case3: 属性Ref->类中多一个变体点和属性类型为xxxRefConditional，该类同样有变体点属性，但是该类的qualifiedName与引用类型xxx重名了（当前会覆盖掉原来的这个类），比如PortPrototypeRefConditional
+
+xxxConditional都有是由变体生成的的说明

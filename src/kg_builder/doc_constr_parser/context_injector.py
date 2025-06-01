@@ -60,63 +60,98 @@ def get_enum_literals(metadata, enum_name):
 
 def get_class_info(metadata, class_name):
     """
-    从元数据中获取指定类的属性、继承关系和子类信息。
+    从元数据中获取指定类的属性（包括所有父类的属性）、
+    直接继承关系和直接子类信息。
     """
-    attributes = set()
-    generalization = []
-    childs = []
+    accumulated_attributes = set()
+    direct_parents_of_target_class = []
+    childs_of_target_class = []
 
-    # 从 "groups" 中提取属性、继承和子类信息
+    processing_queue = [class_name]  # Start with the requested class
+    visited_classes_for_attributes = set()
+
+    while processing_queue:
+        current_class_to_process = processing_queue.pop(0)  # FIFO for BFS-like traversal
+
+        if current_class_to_process in visited_classes_for_attributes:
+            continue
+        visited_classes_for_attributes.add(current_class_to_process)
+
+        # 1. Collect direct attributes for current_class_to_process
+        # From "groups"
+        if current_class_to_process in metadata.get("groups", {}):
+            group_data = metadata["groups"][current_class_to_process]
+            elements = group_data.get("elements", [])
+            if isinstance(elements, list):
+                for el in elements:
+                    if isinstance(el, dict) and el.get("qualifiedName"):
+                        accumulated_attributes.add(el["qualifiedName"])
+
+        # From "complexTypes"
+        if current_class_to_process in metadata.get("complexTypes", {}):
+            complex_type_data = metadata["complexTypes"][current_class_to_process]
+            # Attributes from "attributes" key
+            complex_attributes_list = complex_type_data.get("attributes", [])
+            if isinstance(complex_attributes_list, list):
+                for attr in complex_attributes_list:
+                    if isinstance(attr, dict) and attr.get("name"):
+                        accumulated_attributes.add(attr["name"])
+            # Attributes from "elements" key (if complexType also uses 'elements' for attribute-like things)
+            complex_elements_list = complex_type_data.get("elements", [])
+            if isinstance(complex_elements_list, list):
+                for el in complex_elements_list:
+                    if isinstance(el, dict) and el.get("name"):
+                        accumulated_attributes.add(el["name"])
+
+        # From "extract_inner_class"
+        if current_class_to_process in metadata.get("extract_inner_class", {}):
+            inner_class_data = metadata["extract_inner_class"][current_class_to_process]
+            inner_attributes_list = inner_class_data.get("attributes", [])
+            if isinstance(inner_attributes_list, list):
+                for attr in inner_attributes_list:
+                    if isinstance(attr, dict) and attr.get("name"):
+                        accumulated_attributes.add(attr["name"])
+
+        # 2. Process parents (Generalization) for current_class_to_process
+        # Parents are typically defined within the "groups" structure for class hierarchies
+        if current_class_to_process in metadata.get("groups", {}):
+            group_data_for_parents = metadata["groups"][current_class_to_process]
+            parents_of_current = group_data_for_parents.get("generalization", [])
+
+            if isinstance(parents_of_current, list):
+                # If this is the originally requested class, store its direct parents
+                if current_class_to_process == class_name:
+                    for p_name in parents_of_current:
+                        if isinstance(p_name, str) and p_name.strip():
+                            direct_parents_of_target_class.append(p_name.strip())
+
+                # Add valid parents to the queue for further attribute collection
+                for parent_name_str in parents_of_current:
+                    if isinstance(parent_name_str, str) and parent_name_str.strip():
+                        cleaned_parent_name = parent_name_str.strip()
+                        # Only add to queue if not already visited (its attributes would be processed)
+                        # and not already in queue (though visited check is primary)
+                        if cleaned_parent_name not in visited_classes_for_attributes:
+                            if cleaned_parent_name not in processing_queue:  # Minor optimization
+                                processing_queue.append(cleaned_parent_name)
+
+    # Collect Child Information (for the original class_name only)
     if class_name in metadata.get("groups", {}):
-        group_data = metadata["groups"][class_name]
+        group_data_for_children = metadata["groups"][class_name]
+        child_names_list = group_data_for_children.get("childs", [])
+        if isinstance(child_names_list, list):
+            for c_name in child_names_list:
+                if isinstance(c_name, str) and c_name.strip():
+                    childs_of_target_class.append(c_name.strip())
 
-        # 提取属性
-        elements = group_data.get("elements", [])
-        for el in elements:
-            if el.get("qualifiedName"):
-                attributes.add(el["qualifiedName"])
-
-        # 提取继承信息 (generalization)
-        if "generalization" in group_data and isinstance(group_data["generalization"], list):
-            # 确保列表中的元素是字符串且非空，然后去重并排序
-            generalization = sorted(
-                list(set(g for g in group_data["generalization"] if isinstance(g, str) and g.strip())))
-
-        # 提取子类信息 (childs)
-        if "childs" in group_data and isinstance(group_data["childs"], list):
-            # 确保列表中的元素是字符串且非空，然后去重并排序
-            childs = sorted(list(set(c for c in group_data["childs"] if isinstance(c, str) and c.strip())))
-
-    # 从 "complexTypes" 中提取属性
-    if class_name in metadata.get("complexTypes", {}):
-        complex_type_data = metadata["complexTypes"][class_name]
-        complex_attributes = complex_type_data.get("attributes", [])
-        for attr in complex_attributes:
-            if attr.get("name"):
-                attributes.add(attr["name"])
-        complex_elements = complex_type_data.get("elements", [])
-        for el in complex_elements:
-            if el.get("name"):
-                attributes.add(el["name"])
-
-    # 从 "extract_inner_class" 中提取属性
-    if class_name in metadata.get("extract_inner_class", {}):
-        inner_class_data = metadata["extract_inner_class"][class_name]
-        inner_attributes = inner_class_data.get("attributes", [])
-        for attr in inner_attributes:
-            if attr.get("name"):
-                attributes.add(attr["name"])
-
-    sorted_attributes = sorted(list(attributes))
-
-    # 仅当主要属性列表为空时发出警告，继承和子类是附加信息
-    if not sorted_attributes:
-        print(f"警告: 未能为类 '{class_name}' 从元数据中找到任何属性。")
+    # Warning if no attributes were found in the entire hierarchy for the requested class
+    if not accumulated_attributes:
+        print(f"警告: 未能为类 '{class_name}' 或其任何父类从元数据中找到任何属性。")
 
     return {
-        "attributes": sorted_attributes,
-        "generalization": generalization,
-        "childs": childs
+        "attributes": sorted(list(accumulated_attributes)),
+        "generalization": sorted(list(set(direct_parents_of_target_class))),  # Unique, sorted direct parents
+        "childs": sorted(list(set(childs_of_target_class)))  # Unique, sorted direct children
     }
 
 
@@ -132,43 +167,44 @@ def inject_local_context(markdown_content, metadata):
 
         class_match = re.search(CLASS_ANNOTATION_PATTERN, line)
         if class_match:
+            # This block remains largely the same, but the 'attributes' list from get_class_info
+            # will now be comprehensive (including inherited ones).
             print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - CLASS_ANNOTATION_PATTERN 成功匹配!")
             class_name = class_match.group(1).strip()
             print(f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 CLASS 标注: '{class_name}'")
 
-            class_info = get_class_info(metadata, class_name)
+            class_info = get_class_info(metadata, class_name)  # This now returns inherited attributes too
             attributes = class_info["attributes"]
-            generalization = class_info["generalization"]
-            childs = class_info["childs"]
+            generalization = class_info["generalization"]  # Direct parents
+            childs = class_info["childs"]  # Direct children
 
             context_parts = []
             if attributes:
                 attr_str = ', '.join(attributes)
-                context_parts.append(f"Attributes=[{attr_str}]")
+                context_parts.append(f"Attributes=[{attr_str}] (包含继承属性)")  # Clarified in comment
             else:
-                # 即使属性为空，也明确指出
-                context_parts.append("Attributes=[] (元数据中未找到属性或该类无直接定义的属性)")
+                # Updated message to reflect that inherited attributes were also checked
+                context_parts.append("Attributes=[] (元数据中未找到该类及其父类的任何属性)")
 
             if generalization:
                 gen_str = ', '.join(generalization)
-                context_parts.append(f"Generalization=[{gen_str}]")
+                context_parts.append(f"Generalization=[{gen_str}] (直接父类)")  # Clarified
 
             if childs:
                 child_str = ', '.join(childs)
-                context_parts.append(f"Childs=[{child_str}]")
+                context_parts.append(f"Childs=[{child_str}] (直接子类)")  # Clarified
 
             context_comment_content = '; '.join(context_parts)
             context_comment = f"<!-- LLM_CONTEXT FOR CLASS {class_name}: {context_comment_content} -->"
 
             print(f"DEBUG: inject_local_context: 为 CLASS '{class_name}' 生成的上下文: {context_comment}")
             if not attributes and not generalization and not childs:
-                # 这个额外的打印是为了在所有信息都缺失时（除了属性列表为空的默认信息外）引起注意
                 print(
-                    f"DEBUG: inject_local_context: 注意 - 为 CLASS '{class_name}' 未在元数据中找到任何属性、继承或子类信息 (除了属性列表为空的默认标记)。")
+                    f"DEBUG: inject_local_context: 注意 - 为 CLASS '{class_name}' 未在元数据中找到任何属性（包括继承）、直接父类或直接子类信息。")
 
             processed_lines.append(context_comment)
             print(f"DEBUG: inject_local_context: 已追加 CLASS 上下文到第 {current_line_number} 行之后。")
-            continue  # 处理下一行
+            continue
         else:
             if line.strip().startswith("#@CLASS"):
                 print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - CLASS_ANNOTATION_PATTERN 未能匹配。")
@@ -185,10 +221,11 @@ def inject_local_context(markdown_content, metadata):
 
         enum_match = re.search(ENUM_ANNOTATION_PATTERN, line)
         if enum_match:
+            # Enum handling remains the same as it doesn't have inheritance of literals in this context
             print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - ENUM_ANNOTATION_PATTERN 成功匹配!")
             enum_name = enum_match.group(1).strip()
             print(f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 ENUM 标注: '{enum_name}'")
-            literals = get_enum_literals(metadata, enum_name)  # get_enum_literals 保持不变
+            literals = get_enum_literals(metadata, enum_name)
 
             context_parts_enum = []
             if literals:
@@ -197,15 +234,12 @@ def inject_local_context(markdown_content, metadata):
             else:
                 context_parts_enum.append("Literals=[] (元数据中未找到字面量)")
 
-            enum_context_comment_content = '; '.join(context_parts_enum)  # 虽然目前只有Literals，但保持结构一致性
+            enum_context_comment_content = '; '.join(context_parts_enum)
             context_comment = f"<!-- LLM_CONTEXT FOR ENUM {enum_name}: {enum_context_comment_content} -->"
 
             print(f"DEBUG: inject_local_context: 为 ENUM '{enum_name}' 生成的上下文: {context_comment}")
             processed_lines.append(context_comment)
             print(f"DEBUG: inject_local_context: 已追加 ENUM 上下文到第 {current_line_number} 行之后。")
-        # else: # 可选：为 ENUM 添加类似的未匹配诊断
-        # if line.strip().startswith("#@ENUM"):
-        #     print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - ENUM_ANNOTATION_PATTERN 未能匹配。")
 
     enhanced_content = "\n".join(processed_lines)
     print(f"DEBUG: inject_local_context: 局部上下文注入完成。增强后内容的长度: {len(enhanced_content)}")

@@ -39,44 +39,73 @@ class LlmExtractor:
         prompt = f"""
         # 角色
         你是一位 AUTOSAR 规范助手，负责把文档片段转换为结构化约束 JSON。
-
-        # 输出格式
-        仅返回如下 JSON： {"{"}"extracted_constraints":[...]{"}"}
-        数组元素需 100% 符合 CONSTRAINT_SCHEMA（已通过 self.constraint_schema_str 注入）。
-
-        # 必提取约束
-        • 发现 `[TPS_SWCT_\\d+]` 或 `[constr_\\d+]` 且同段或随后的文字包含 `(cid:100)` 与 `(cid:99)` → **必输出** 一条约束。  
-        • 一次 ID = 一条记录，不可合并，不可遗漏。
-
-        # 正则速记
-        ID        `\\[(TPS_SWCT|constr)_\\d+]`  
-        title 在ID与 ` (cid:100)` 之间
-        expression 在 `(cid:100)` 与 `(cid:99)` 之间
-        references 在 `(cid:99)` 之后的括号或约束文本中
-
-        # 字段要求（缺省填 null / []）
-        id, id_type, title, expression, references, targets, constraint_type, value, scope_path, xml_example_content
         
-        # 推理约束
-        文档中可能出现：'<-------- multimodal context'多模态上下文，仅当该块**显然在约束 AUTOSAR 元模型实例**时，才生成条目。
-            • 将表 / 图编号（如 “Table 11.7”, “Figure 5.3”）转为 id：例：Table_11_7，Figure_5_3  
-            • 判断语气常见关键词：  
-                – 出现 shall / must / shall not / has to 等 → id_type = "additional_binding"  
-                – 出现 recommended / should / may 等      → id_type = "additional_not_binding"
-            • 典型字段映射
-                | multimodal 元素                    | JSON 字段                            |
-                |-----------------------------------|-------------------------------------|
-                | 行标题或“属性”列                  | targets[i].targetAttributes            |
-                | 行右侧说明（如 “must match …”）    | expression / value / constraint_type  |
-                | 整体表或图标题                    | title；scope_path 最后一段               |
-
-        # 提取流程
-        1. 全文搜索 ID 正则；对每个 ID 查看前后段，提取字段。  
-        2. 解析 `#@CLASS:` / `#@ENUM:` + `<!-- LLM_CONTEXT ... -->` 生成 targets；无具体属性时用 `["_classLevel"]`/`["_enumLevel"]`。  
-        3. 利用 `<!-- PARENT_SECTION_CONTEXT:` 与最近 `#@SECTION:` 组装 scope_path（高→低）。  
-        4. Listing X.Y + XML → constraint_type="xml_instantiation_example"，id_type="example"，id 例：`Listing_5_1`。  
-        5. 遇到 multimodal 块 → 按上表规则决定是否生成 `"additional_binding"` / `"not_binding"` 约束。
-
+        # 输出格式
+        严格按照以下要求输出：
+        1.  仅返回一个 JSON 对象。
+        2.  该 JSON 对象必须包含一个顶层键 `"extracted_constraints"`，其值为一个 JSON 数组。
+        3.  数组中的每个元素都是一个代表单个约束的 JSON 对象，且必须 100% 符合通过 API 的 `response_schema` 参数强制执行的输出 Schema。
+        4.  若无任何约束可提取，则返回 `{"extracted_constraints":[]}`。
+        
+        # 约束提取指令与优先级
+        
+        ## 1. 提取带显式 ID 的约束 (最高优先级)
+           - 查找文本中的显式 ID 标记 (如 `[TPS_SWCT_xxxx]` 或 `[constr_xxxx]`)。
+           - 对每个 ID：
+             - `id`: 完整 ID 字符串。
+             - `id_type`: 根据 ID 前缀设为 "TPS_SWCT" 或 "constr"。
+             - `title`: 通常在 ID 与 `(cid:100)` 之间。
+             - `expression`: 通常在 `(cid:100)` 与 `(cid:99)` 之间。
+             - `references`: 通常在 `(cid:99)` 之后括号内或约束文本中。
+        
+        ## 2. 提取无显式 ID 的文本/推理约束 (次高优先级)
+           - **扫描所有文本内容（优先处理主要叙述文本，其次是多模态上下文内的描述性文本）**，寻找表达规范性要求（定义、规则、推荐、限制等）的语句。
+           - **`id_type` 判断**:
+             - 若语句含 `shall`, `must`, `shall not`, `has to` 等强硬语气词，`id_type` = `"additional_binding"`。
+             - 若语句含 `recommended`, `should`, `may` 等建议性语气词，`id_type` = `"additional_not_binding"`。
+           - **`id` 生成**:
+             - **优先**: 若要求与特定图表（如 "Figure X.Y", "Table X.Y"）的**标题或其直接描述**紧密关联，使用图/表编号作 ID (例: `Figure_X_Y`, `Table_X_Y`)。
+             - **其次**: 若源自纯文本且无直接关联图表编号，生成描述性 ID (例: `Constr_主题描述_上下文`)。
+           - **`title` 与 `expression`**:
+             - `expression`: 捕获完整的规范性语句或其核心内容。
+             - `title`: 根据 `expression` 简洁概括主题。
+           - **处理多模态上下文 (`<-------- multimodal context ... -------->`)**:
+             - 此类上下文通常描述图/表。
+             - **原则**: **优先从主要叙述文本提取约束。**
+             - **仅当**约束的**核心信息主要通过图/表传达**，或多模态上下文为正文约束提供了**关键且不可或缺的细节**时，才重点依赖此上下文。
+             - **若基于多模态上下文提取** (因其满足上述条件)，可参考以下映射：
+               | multimodal 元素 (图/表描述) | JSON 字段 (参考)             |
+               |------------------------------|-----------------------------|
+               | 图/表内关键项/属性列         | targets[i].targetAttributes   |
+               | 图/表内某项的说明            | expression (补充) / value   |
+               | 整体图/表标题                | title (补充); scope_path 末尾 |
+             - **避免冗余**: 若主要叙述文本已清晰表达约束，则**不应**仅因存在多模态上下文而生成重复约束。
+        
+        ## 3. 提取 XML 示例约束
+           - 识别 "Listing X.Y" 及其后的 XML 代码块。
+           - `id`: 根据 Listing 编号生成 (例: `Listing_X_Y`)。
+           - `id_type`: `"example"`。
+           - `constraint_type`: `"xml_instantiation_example"`。
+           * `xml_example_content`: 提取的 XML 代码。
+        
+        # 通用字段处理规则 (适用于所有约束类型)
+        
+        -   **`targets`**:
+        - 主要依据 `#@CLASS: Name` / `#@ENUM: Name` 及 `<!-- LLM_CONTEXT ... -->` 注释。
+        - **当 `targetEntityName` 是一个具体的类名或枚举名时** (`entityType` 为 `"class"` 或 `"enum"`):
+        - 如果约束针对该实体下的特定属性/字面量，则 `targetAttributes` 列出这些属性/字面量名。
+        - 如果约束针对整个实体本身，则 `targetAttributes` 为 `["_classLevel"]` (对于类) 或 `["_enumLevel"]` (对于枚举)。
+        - **注意**: `["_abstractLevel"]` **不应**用于具体类或枚举的 `targetAttributes`。
+        - **当约束针对广泛场景或抽象概念时** (`entityType` 设为 `"abstract"`):
+        - `targetEntityName` 应为一个描述该抽象概念或场景的名称 (例如 "GeneralDatatypeRule", "PretendedNetworkingConcept")。*（如果链接器已修改为接受 `targetEntityName: "_abstractLevel"`，则此处也可允许）*
+        - `targetAttributes` 应为 `["_abstractLevel"]`。
+        -   **`scope_path`**:
+            - 依据 `<!-- PARENT_SECTION_CONTEXT: ... -->` 和最近的 `#@SECTION: Title` 组装。
+            - 若与特定图/表关联，其标题可作 `scope_path` 末尾。
+        -   **`constraint_type`**: 根据约束语义选择 (如 `definition`, `cardinality`, `existence`, `relationship` 等)。仔细判断无 ID 约束的类型。
+        -   **其他字段** (`value`, `references` 等): 根据上下文提取，缺失则为 `null` 或 `[]`。
+        
+        # Few-shot 示例 (保持不变或根据需要调整)
         # few-shot 1：最简单
         [BEGIN]
         #@CLASS: SwComponentPrototype
@@ -84,12 +113,27 @@ class LlmExtractor:
         [TPS_SWCT_00001] Short name uniqueness (cid:100) shortName must be unique. (cid:99)
         [END]
         期望输出:
-        {"{"}"extracted_constraints":[{"{"}
-        "id":"TPS_SWCT_00001","id_type":"TPS_SWCT","title":"Short name uniqueness",
-        "expression":"shortName must be unique.","references":[],
-        "targets":[{"{"}"targetEntityName":"SwComponentPrototype","entityType":"class","targetAttributes":["shortName"]{"}"}],
-        "constraint_type":"other","value":null,"scope_path":[],"xml_example_content":null
-        {"}"}]{"}"}
+        {
+            "extracted_constraints":[
+                {
+                    "id":"TPS_SWCT_00001",
+                    "id_type":"TPS_SWCT",
+                    "title":"Short name uniqueness",
+                    "expression":"shortName must be unique.",
+                    "references":[],"targets":
+                        [
+                            {
+                                "targetEntityName":"SwComponentPrototype",
+                                "entityType":"class",
+                                "targetAttributes":["shortName"]
+                            }
+                        ],
+                    "constraint_type":"other",
+                    "value":null,"scope_path":[],
+                    "xml_example_content":null
+                }
+            ]
+        }
 
         # few-shot 2：XML 示例
         [BEGIN]
@@ -108,21 +152,33 @@ class LlmExtractor:
         | readonly  | Recommended to match for all connected PortPrototypes |
         -------------->
         期望输出:
-        {{"extracted_constraints":[{{
-        "id":"Table_11_7",
-        "id_type":"additional_not_binding",
-        "title":"readonly consistency (recommended)",
-        "expression":"NvBlockDescriptor.readonly is recommended to match the value requested by all connected PortPrototypes.",
-        "references":[],
-        "targets":[
-          {{"targetEntityName":"NvBlockNeeds","entityType":"class","targetAttributes":["readonly"]}},
-          {{"targetEntityName":"NvBlockDescriptor","entityType":"class","targetAttributes":["readonly"]}}
-        ],
-        "constraint_type":"relationship",
-        "value":null,
-        "scope_path":["Table 11.7 NvBlockNeeds dependencies"],
-        "xml_example_content":null
-        }}]}}
+        {
+            "extracted_constraints": [
+                {
+                    "id": "Table_11_7",
+                    "id_type": "additional_not_binding",
+                    "title": "readonly consistency (recommended)",
+                    "expression": "NvBlockDescriptor.readonly is recommended to match the value requested by all connected PortPrototypes.",
+                    "references": [],
+                    "targets": [
+                        {
+                            "targetEntityName": "NvBlockNeeds",
+                            "entityType": "class",
+                            "targetAttributes": ["readonly"]
+                        },
+                        {
+                            "targetEntityName": "NvBlockDescriptor",
+                            "entityType": "class",
+                            "targetAttributes": ["readonly"]
+                        }
+                    ],
+                    "constraint_type": "relationship",
+                    "value": null,
+                    "scope_path": ["Table 11.7 NvBlockNeeds dependencies"],
+                    "xml_example_content": null
+                }
+            ]
+        }
 
         # 待处理文档
         \"\"\"{text_block_for_llm}\"\"\"

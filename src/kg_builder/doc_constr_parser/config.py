@@ -116,88 +116,98 @@ OUTPUT_RAW_LLM_FILENAME = "constraints_raw_v5.jsonl" # 明确文件名
 
 # gemini 'response_schema'
 CONSTRAINT_SCHEMA = {
-  "type": "OBJECT",
+  "type": "OBJECT",  # The entire response is an object
   "properties": {
-    "id": {
-      "type": "STRING",
-      "description": "完整的规范/约束ID，例如 TPS_SWCT_01032 或 constr_XYZ_001"
-    },
-    "id_type": {
-      "type": "STRING",
-      "enum": ["TPS_SWCT", "constr", "example", "additional_binding", "additional_not_binding"],
-      "description": "ID的类型"
-    },
-    "title": {
-      "type": "STRING",
-      "description": "规范/约束的标题文本"
-    },
-    "targets": {
-      "type": "ARRAY",
-      "description": "约束所应用的目标实体列表",
-      "items": {
+    "extracted_constraints": {  # This object has one key: "extracted_constraints"
+      "type": "ARRAY",          # The value of "extracted_constraints" is an array
+      "description": "A list of extracted constraint objects.",
+      "items": {                # Each item in the array is an object defined below
         "type": "OBJECT",
         "properties": {
-          "targetEntityName": {
+          "id": {
             "type": "STRING",
-            "description": "目标AUTOSAR类名或枚举名"
+            "description": "完整的规范/约束ID(例如 TPS_SWCT_01032 或 constr_XYZ_001)，图表标题(Figure_2_6)，章节号+主要描述(2.8.3_Constr_ImplDataType_VariableSizeArrayStructure)，"
           },
-          "entityType": {
+          "id_type": {
             "type": "STRING",
-            "enum": ["class", "enum"],
-            "description": "目标实体的类型 ('class' 或 'enum')"
+            "enum": ["TPS_SWCT", "constr", "example", "additional_binding", "additional_not_binding"],
+            "description": "ID的类型"
           },
-          "targetAttributes": {
+          "title": {
+            "type": "STRING",
+            "description": "规范/约束的标题文本"
+          },
+          "targets": {
+            "type": "ARRAY",
+            "description": "约束所应用的目标实体列表",
+            "items": {
+              "type": "OBJECT",
+              "properties": {
+                "targetEntityName": {
+                  "type": "STRING",
+                  "description": "目标AUTOSAR类名或枚举名或抽象层级('_abstractLevel')"
+                },
+                "entityType": {
+                  "type": "STRING",
+                  "enum": ["class", "enum", "abstract"],
+                  "description": "目标实体的类型 ('class' 或 'enum')或抽象层级('abstract')"
+                },
+                "targetAttributes": {
+                  "type": "ARRAY",
+                  "items": { "type": "STRING" },
+                  "description": "约束目标的具体属性/字面量名列表。如果针对整个类/枚举本身，则为 [\"_classLevel\"] (对于类) 或 [\"_enumLevel\"] (对于枚举)；如果是抽象层级则为[\"_abstractLevel\"]"
+                }
+              },
+              "required": ["targetEntityName", "entityType", "targetAttributes"]
+            }
+          },
+          "expression": {
+            "type": "STRING",
+            "description": "约束的详细文本描述，通常是 (cid:100) 和 (cid:99) 之间的内容，或约束的主体文本"
+          },
+          "references": {
             "type": "ARRAY",
             "items": { "type": "STRING" },
-            "description": "约束目标的具体属性/字面量名列表。如果针对整个类/枚举本身，则为 [\"_classLevel\"] (对于类) 或 [\"_enumLevel\"] (对于枚举)"
+            "description": "约束末尾括号中引用的其他ID列表"
+          },
+          "constraint_type": {
+            "type": "STRING",
+            "enum": [
+              "definition",
+              "cardinality",
+              "value_restriction",
+              "format",
+              "existence",
+              "behavioral",
+              "relationship",
+              "ordering",
+              "naming_convention",
+              "xml_instantiation_example",
+              "other"
+            ],
+            "description": "约束的语义类型。如果是XML示例，请使用 'xml_instantiation_example'"
+          },
+          "value": {
+            "type": "STRING",
+            "nullable": True,
+            "description": "约束的具体值 (如果适用，例如基数的值、特定的限制值等)。如果原始值是数字或布尔，请提供其字符串表示形式。"
+          },
+          "scope_path": {
+            "type": "ARRAY",
+            "items": { "type": "STRING" },
+            "description": "表示约束所属章节层级路径的字符串列表，从顶层章节到当前章节，例如 [\"Chapter 1\", \"Section 1.1\", \"Subsection 1.1.1\"]"
+          },
+          "xml_example_content": {
+            "type": "STRING",
+            "nullable": True,
+            "description": "如果 constraint_type 是 'xml_instantiation_example'，则此字段包含提取的XML代码片段；否则为null。"
           }
         },
-        "required": ["targetEntityName", "entityType", "targetAttributes"]
+        "required": ["id", "id_type", "title", "expression", "targets", "constraint_type", "scope_path"]
       }
-    },
-    "expression": {
-      "type": "STRING",
-      "description": "约束的详细文本描述，通常是 (cid:100) 和 (cid:99) 之间的内容，或约束的主体文本"
-    },
-    "references": {
-      "type": "ARRAY",
-      "items": { "type": "STRING" },
-      "description": "约束末尾括号中引用的其他ID列表或约束表述中明确需要引用的表格id (如果存在)"
-    },
-    "constraint_type": {
-      "type": "STRING",
-      "enum": [
-        "definition",
-        "cardinality",
-        "value_restriction",
-        "format",
-        "existence",
-        "behavioral",
-        "relationship",
-        "ordering",
-        "naming_convention",
-        "xml_instantiation_example",
-        "other"
-      ],
-      "description": "约束的语义类型。如果是XML示例，请使用 'xml_instantiation_example'"
-    },
-    "value": {
-      "type": "STRING",
-      "nullable": True,
-      "description": "约束的具体值 (如果适用，例如基数的值、特定的限制值等)。如果原始值是数字或布尔，请提供其字符串表示形式。"
-    },
-    "scope_path": {
-      "type": "ARRAY",
-      "items": { "type": "STRING" },
-      "description": "表示约束所属章节层级路径的字符串列表，从顶层章节到当前章节，例如 [\"Chapter 1\", \"Section 1.1\", \"Subsection 1.1.1\"]"
-    },
-    "xml_example_content": {
-      "type": "STRING",
-      "nullable": True,
-      "description": "如果 constraint_type 是 'xml_instantiation_example'，则此字段包含提取的XML代码片段；否则为null。"
     }
   },
-  "required": ["id", "id_type", "title", "expression", "targets", "constraint_type", "scope_path"]
+  "required": ["extracted_constraints"] # The top-level object must have the "extracted_constraints" key
 }
 
 # 正则表达式

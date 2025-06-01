@@ -97,6 +97,7 @@
     *   "**目标属性/字面量确定 (严格规则)：**
         *   如果目标是类 (`targetClass`)：查看注入的 `---CONTEXT START---` 中 `Referenced Classes` 下对应 `ClassName` 的 `Attributes` 列表。当前规范/约束文本中提及的属性**必须**在该列表中。如果找到，则设为 `targetAttribute`。
         *   如果目标是枚举 (`targetEnum`)：查看注入的 `---CONTEXT START---` 中 `Referenced Enums` 下对应 `EnumName` 的 `Literals` 列表。当前规范/约束文本中提及的字面量**必须**在该列表中。如果找到，则设为 `targetAttribute` (或 `targetLiteral`，schema中统一为 `targetAttribute`)。
+        *   如果不针对具体类，则标记为["_abstractLevel"]
         *   **禁止推测：** 如果文本中提及的属性/字面量**不在**对应实体（类/枚举）的上下文注入的属性/字面量列表中，**绝不能自行推测或创造**。
         *   **类/枚举级别默认：** 在上述“禁止推测”的情况下，或规范/约束本身明确是针对整个类/枚举的，则将 `targetAttribute` 设置为特殊值 `_classLevel` (对于类) 或 `_enumLevel` (对于枚举)。"
     *   "**层级关系：** 如果当前规范/约束之前紧邻 `#@Hierarchical` 标注，尝试将前一个抽取的非层级规范/约束的 `id` 作为本条记录的 `parent_id`。"
@@ -115,7 +116,7 @@
         *   否则，`targetRef` 为 `[targetClass].[targetAttribute]` 或 `[targetEnum].[targetAttribute]`。
     2.  **UML元数据校验：**
         *   **实体存在性：** 校验 `targetClass` 或 `targetEnum` 是否在 `unified_metadata.json` 中。
-        *   **属性/字面量存在性 (LLM遵循性校验)：** 如果 `targetAttribute` 不是 `_classLevel` 或 `_enumLevel`，校验其是否是对应类/枚举的合法属性/字面量。
+        *   **属性/字面量存在性 (LLM遵循性校验)：** 如果 `targetAttribute` 不是 `_classLevel` 或 `_enumLevel`，校验其是否是对应类/枚举的合法属性/字面量，如果是[\"_abstractLevel\"]则不需要校验
         *   **类型兼容性校验：** (同V3) 检查约束 `type` 和 `value` 与元数据定义是否兼容。
     3.  **ID类型与格式校验：** 验证 `id_type` 是否为 "TPS_SWCT" 或 "constr"，验证 `id` 格式。
     4.  **层级关系校验：** 如果存在 `parent_id`，校验具有该 `id` 的父约束是否存在于已处理的集合中。

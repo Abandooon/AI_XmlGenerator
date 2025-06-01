@@ -21,6 +21,7 @@ def extractAttributeGroup(root):
             pure_minOccurs = result['pureMM_minOccurs']
             qualifiedName = result['qualifiedName']
             qualifiedNameParts = result['qualifiedNameParts']
+            latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
 
             attrName = attribute.get('name')  # 获取属性的名称
             attrType = attribute.get('type')  # 获取属性的类型
@@ -36,6 +37,7 @@ def extractAttributeGroup(root):
                 'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
+                'latestBindingTime': latestBindingTime  # 添加最新绑定时间
             })
 
         attributeGroups[name] = attributes  # 将属性组的名称和属性列表存储到字典中

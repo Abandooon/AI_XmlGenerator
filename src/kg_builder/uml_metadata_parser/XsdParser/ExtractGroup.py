@@ -129,6 +129,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
         pure_minOccurs = result['pureMM_minOccurs']
         qualifiedName = result['qualifiedName']
         qualifiedNameParts = result['qualifiedNameParts']
+        latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
 
         wrapperElement = False
         if element_type:
@@ -149,6 +150,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
             else:
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
@@ -167,6 +169,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
         else:
             # 这里就是生成内部类对应的字段------嵌套内部类也要考虑list
@@ -189,6 +192,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                             pure_minOccurs = result['pureMM_minOccurs']
                             qualifiedName = result['qualifiedName']
                             qualifiedNameParts = result['qualifiedNameParts']
+                            latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
                     for inner_type in inner_complex_types:
                         for attr in inner_type.get('InnerClassAttributes'):
                             elements.append({
@@ -206,6 +210,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                                 'stereotypes': stereotypes,
                                 'pure_minOccurs': pure_minOccurs,
                                 'pure_maxOccurs': pure_maxOccurs,
+                                'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                             })
                         #---将嵌套内部类提取出来放到外层
                         for innerInnerClass in inner_type.get('innerInnerClass'):
@@ -227,6 +232,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
+                        'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                     })
                     # 处理内部的complexType并生成内部类
                     for inner_type in inner_complex_types:
@@ -247,6 +253,7 @@ def process_elements(root, sequenceOrChoice, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
                 # 处理内部的complexType并生成内部类
                 for inner_type in inner_complex_types:
@@ -261,6 +268,7 @@ def extract_annotation(group_element):
     pure_minOccurs = 0
     qualifiedName = ""
     stereotypes = []
+    latestBindingTime = ""
     annotation = group_element.find("./{http://www.w3.org/2001/XMLSchema}annotation")
     if annotation is not None:
         documentation = annotation.find("./{http://www.w3.org/2001/XMLSchema}documentation")
@@ -281,6 +289,11 @@ def extract_annotation(group_element):
                 if qn_match:
                     qn = qn_match.group(1)
                     qualifiedName = qn
+                vh_binding_time_match = re.search(r'vh\.latestBindingTime\s*=\s*"([^"]+)"', tag_text)
+                if vh_binding_time_match:
+                    latestBindingTime = vh_binding_time_match.group(1)
+                else:
+                    latestBindingTime = ""
             elif source == "stereotypes" and appinfo.text:
                 stereotypes = appinfo.text.strip().split(',')  # 按逗号分割为列表
     description = description.strip()
@@ -290,5 +303,6 @@ def extract_annotation(group_element):
         "pureMM_maxOccurs": pure_maxOccurs,
         "pureMM_minOccurs": pure_minOccurs,
         "qualifiedName": qualifiedName,
-        "qualifiedNameParts": qualifiedName.split('.', 1)[1] if '.' in qualifiedName else ""
+        "qualifiedNameParts": qualifiedName.split('.', 1)[1] if '.' in qualifiedName else "",
+        "latestBindingTime" : latestBindingTime
     }

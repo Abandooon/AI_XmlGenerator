@@ -19,8 +19,8 @@ The actual explanation of the concept of a software-component starts in chapter 
 #@CLASS: CompositionSwComponentType
 #@CLASS: SwConnector
 #@CLASS: RPortPrototype
-#@CLASS: AssemblySwConnectors
-#@CLASS: DelegationSwConnectors
+#@CLASS: AssemblySwConnector
+#@CLASS: DelegationSwConnector
 #@CLASS: AtomicSwComponentType
 
 #@SECTION: 2.2.1 Basic Approach of Measurement and Calibration

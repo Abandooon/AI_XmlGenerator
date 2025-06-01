@@ -91,6 +91,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
         pure_minOccurs = result['pureMM_minOccurs']
         qualifiedName = result['qualifiedName']
         qualifiedNameParts = result['qualifiedNameParts']
+        latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
 
         if element_type:
             if maxOccurs == '1':
@@ -110,6 +111,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
             else:
                 element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')
@@ -128,6 +130,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
         #如果是内部类，要先看是否生成@wrapper注解，生成就直接就直接把内部类元素提到外层，不生成就正常element加内部类
         else:
@@ -153,6 +156,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                                 'stereotypes': stereotypes,
                                 'pure_minOccurs': pure_minOccurs,
                                 'pure_maxOccurs': pure_maxOccurs,
+                                'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                             })
                         #---将嵌套内部类提取出来放到外层
                         for innerInnerClass in inner_type.get('innerInnerClass'):
@@ -174,6 +178,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
+                        'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                     })
                     # 处理内部的complexType并生成内部类
                     for inner_type in inner_complex_types:
@@ -193,6 +198,7 @@ def extract_element(root, sequence, maxOccurs, element_wrapper):
                     'stereotypes': stereotypes,
                     'pure_minOccurs': pure_minOccurs,
                     'pure_maxOccurs': pure_maxOccurs,
+                    'latestBindingTime': latestBindingTime  # 添加最新绑定时间
                 })
                 # 处理内部的complexType并生成内部类
                 for inner_type in inner_complex_types:
