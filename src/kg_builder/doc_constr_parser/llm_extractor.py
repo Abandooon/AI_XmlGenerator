@@ -45,7 +45,7 @@ class LlmExtractor:
         1.  仅返回一个 JSON 对象。
         2.  该 JSON 对象必须包含一个顶层键 `"extracted_constraints"`，其值为一个 JSON 数组。
         3.  数组中的每个元素都是一个代表单个约束的 JSON 对象，且必须 100% 符合通过 API 的 `response_schema` 参数强制执行的输出 Schema。
-        4.  若无任何约束可提取，则返回 `{"extracted_constraints":[]}`。
+        4.  若无任何约束可提取，则返回 `{{"extracted_constraints":[]}}`。
         
         # 约束提取指令与优先级
         

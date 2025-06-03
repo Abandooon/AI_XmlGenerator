@@ -3,7 +3,6 @@ from config import (
     CLASS_ANNOTATION_PATTERN, ENUM_ANNOTATION_PATTERN, SECTION_ANNOTATION_PATTERN
 )
 
-
 # get_enum_literals 函数保持不变 (如原文档提供)
 def get_enum_literals(metadata, enum_name):
     def to_camel_case(s):
@@ -60,7 +59,7 @@ def get_enum_literals(metadata, enum_name):
 
 def get_class_info(metadata, class_name):
     """
-    从元数据中获取指定类的属性（包括所有父类的属性）、
+    从元数据中获取指定类的属性（包括所有父类的属性、以及根据新规则从 'Content' 类获取的属性）、
     直接继承关系和直接子类信息。
     """
     accumulated_attributes = set()
@@ -78,14 +77,20 @@ def get_class_info(metadata, class_name):
         visited_classes_for_attributes.add(current_class_to_process)
 
         # 1. Collect direct attributes for current_class_to_process
+
         # From "groups"
-        if current_class_to_process in metadata.get("groups", {}):
-            group_data = metadata["groups"][current_class_to_process]
-            elements = group_data.get("elements", [])
+        # Get data for current_class_to_process from "groups" once
+        original_class_data_from_groups = metadata.get("groups", {}).get(current_class_to_process)
+
+        if original_class_data_from_groups:
+            elements = original_class_data_from_groups.get("elements", [])
             if isinstance(elements, list):
                 for el in elements:
-                    if isinstance(el, dict) and el.get("qualifiedName"):
-                        accumulated_attributes.add(el["qualifiedName"])
+                    if isinstance(el, dict):
+                        # Prefer qualifiedName, fallback to name
+                        attr_name_to_add = el.get("qualifiedName") or el.get("name")
+                        if attr_name_to_add:  # Ensure we have a name
+                            accumulated_attributes.add(attr_name_to_add)
 
         # From "complexTypes"
         if current_class_to_process in metadata.get("complexTypes", {}):
@@ -94,14 +99,16 @@ def get_class_info(metadata, class_name):
             complex_attributes_list = complex_type_data.get("attributes", [])
             if isinstance(complex_attributes_list, list):
                 for attr in complex_attributes_list:
-                    if isinstance(attr, dict) and attr.get("name"):
+                    if isinstance(attr, dict) and attr.get("name"):  # complexType attributes usually just have 'name'
                         accumulated_attributes.add(attr["name"])
             # Attributes from "elements" key (if complexType also uses 'elements' for attribute-like things)
             complex_elements_list = complex_type_data.get("elements", [])
             if isinstance(complex_elements_list, list):
                 for el in complex_elements_list:
-                    if isinstance(el, dict) and el.get("name"):
-                        accumulated_attributes.add(el["name"])
+                    if isinstance(el, dict):
+                        attr_name_to_add = el.get("qualifiedName") or el.get("name")
+                        if attr_name_to_add:
+                            accumulated_attributes.add(attr_name_to_add)
 
         # From "extract_inner_class"
         if current_class_to_process in metadata.get("extract_inner_class", {}):
@@ -109,34 +116,66 @@ def get_class_info(metadata, class_name):
             inner_attributes_list = inner_class_data.get("attributes", [])
             if isinstance(inner_attributes_list, list):
                 for attr in inner_attributes_list:
-                    if isinstance(attr, dict) and attr.get("name"):
-                        accumulated_attributes.add(attr["name"])
+                    if isinstance(attr, dict):  # Assuming similar structure, prefer qualifiedName or name
+                        attr_name_to_add = attr.get("qualifiedName") or attr.get("name")
+                        if attr_name_to_add:
+                            accumulated_attributes.add(attr_name_to_add)
+
+        # --- START OF NEW RULE IMPLEMENTATION ---
+        # Check if current_class_to_process (from groups data) has a non-empty "latestBindingTime"
+        if original_class_data_from_groups:
+            latest_binding_time = original_class_data_from_groups.get("latestBindingTime")
+            # Ensure latest_binding_time is a non-empty string
+            if latest_binding_time and isinstance(latest_binding_time, str) and latest_binding_time.strip():
+                # Construct the "Content" class name
+                content_class_name = f"{current_class_to_process}Content"
+
+                # Check if the "Content" class exists in metadata.groups
+                if content_class_name in metadata.get("groups", {}):
+                    content_class_data = metadata["groups"][content_class_name]
+                    content_elements = content_class_data.get("elements", [])
+
+                    if isinstance(content_elements, list):
+                        for content_element in content_elements:
+                            if isinstance(content_element, dict):
+                                content_el_doc_name = content_element.get("document_name")
+
+                                # The property identifier from the content element to be potentially added.
+                                # Prefer qualifiedName, fallback to name.
+                                prop_identifier_from_content_el = content_element.get(
+                                    "qualifiedName") or content_element.get("name")
+
+                                if content_el_doc_name and prop_identifier_from_content_el:
+                                    # Expected document_name format for the content_element is: OriginalClass.PropertyName
+                                    # Where PropertyName is the prop_identifier_from_content_el itself.
+                                    expected_doc_name = f"{current_class_to_process}.{prop_identifier_from_content_el}"
+
+                                    if content_el_doc_name == expected_doc_name:
+                                        accumulated_attributes.add(prop_identifier_from_content_el)
+                                        # print(f"DEBUG: Added '{prop_identifier_from_content_el}' to '{current_class_to_process}' from '{content_class_name}' via new rule.")
+        # --- END OF NEW RULE IMPLEMENTATION ---
 
         # 2. Process parents (Generalization) for current_class_to_process
-        # Parents are typically defined within the "groups" structure for class hierarchies
-        if current_class_to_process in metadata.get("groups", {}):
-            group_data_for_parents = metadata["groups"][current_class_to_process]
-            parents_of_current = group_data_for_parents.get("generalization", [])
-
+        # This part remains unchanged, it collects parents to add to queue for their attributes
+        if original_class_data_from_groups:  # Use the already fetched group data
+            parents_of_current = original_class_data_from_groups.get("generalization", [])
             if isinstance(parents_of_current, list):
-                # If this is the originally requested class, store its direct parents
-                if current_class_to_process == class_name:
+                if current_class_to_process == class_name:  # If this is the originally requested class
                     for p_name in parents_of_current:
                         if isinstance(p_name, str) and p_name.strip():
                             direct_parents_of_target_class.append(p_name.strip())
 
-                # Add valid parents to the queue for further attribute collection
                 for parent_name_str in parents_of_current:
                     if isinstance(parent_name_str, str) and parent_name_str.strip():
                         cleaned_parent_name = parent_name_str.strip()
-                        # Only add to queue if not already visited (its attributes would be processed)
-                        # and not already in queue (though visited check is primary)
                         if cleaned_parent_name not in visited_classes_for_attributes:
-                            if cleaned_parent_name not in processing_queue:  # Minor optimization
+                            if cleaned_parent_name not in processing_queue:
                                 processing_queue.append(cleaned_parent_name)
 
     # Collect Child Information (for the original class_name only)
-    if class_name in metadata.get("groups", {}):
+    # This part remains unchanged
+    if class_name in metadata.get("groups",
+                                  {}):  # Can't reuse original_class_data_from_groups if class_name != current_class_to_process
         group_data_for_children = metadata["groups"][class_name]
         child_names_list = group_data_for_children.get("childs", [])
         if isinstance(child_names_list, list):
@@ -144,14 +183,13 @@ def get_class_info(metadata, class_name):
                 if isinstance(c_name, str) and c_name.strip():
                     childs_of_target_class.append(c_name.strip())
 
-    # Warning if no attributes were found in the entire hierarchy for the requested class
     if not accumulated_attributes:
         print(f"警告: 未能为类 '{class_name}' 或其任何父类从元数据中找到任何属性。")
 
     return {
         "attributes": sorted(list(accumulated_attributes)),
-        "generalization": sorted(list(set(direct_parents_of_target_class))),  # Unique, sorted direct parents
-        "childs": sorted(list(set(childs_of_target_class)))  # Unique, sorted direct children
+        "generalization": sorted(list(set(direct_parents_of_target_class))),  # Unique, sorted
+        "childs": sorted(list(set(childs_of_target_class)))  # Unique, sorted
     }
 
 
@@ -167,40 +205,40 @@ def inject_local_context(markdown_content, metadata):
 
         class_match = re.search(CLASS_ANNOTATION_PATTERN, line)
         if class_match:
-            # This block remains largely the same, but the 'attributes' list from get_class_info
-            # will now be comprehensive (including inherited ones).
             print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - CLASS_ANNOTATION_PATTERN 成功匹配!")
-            class_name = class_match.group(1).strip()
-            print(f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 CLASS 标注: '{class_name}'")
+            class_name_from_annot = class_match.group(1).strip()
+            print(
+                f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 CLASS 标注: '{class_name_from_annot}'")
 
-            class_info = get_class_info(metadata, class_name)  # This now returns inherited attributes too
+            class_info = get_class_info(metadata, class_name_from_annot)
             attributes = class_info["attributes"]
-            generalization = class_info["generalization"]  # Direct parents
-            childs = class_info["childs"]  # Direct children
+            generalization = class_info["generalization"]
+            childs = class_info["childs"]
 
             context_parts = []
             if attributes:
                 attr_str = ', '.join(attributes)
-                context_parts.append(f"Attributes=[{attr_str}] (包含继承属性)")  # Clarified in comment
+                # 更新注释以反映属性可能来自多个来源（包括新规则）
+                context_parts.append(f"Attributes=[{attr_str}] (包含继承及相关属性)")
             else:
-                # Updated message to reflect that inherited attributes were also checked
-                context_parts.append("Attributes=[] (元数据中未找到该类及其父类的任何属性)")
+                # 更新注释
+                context_parts.append("Attributes=[] (元数据中未找到该类、其父类或相关Content类的任何属性)")
 
             if generalization:
                 gen_str = ', '.join(generalization)
-                context_parts.append(f"Generalization=[{gen_str}] (直接父类)")  # Clarified
+                context_parts.append(f"Generalization=[{gen_str}] (直接父类)")
 
             if childs:
                 child_str = ', '.join(childs)
-                context_parts.append(f"Childs=[{child_str}] (直接子类)")  # Clarified
+                context_parts.append(f"Childs=[{child_str}] (直接子类)")
 
             context_comment_content = '; '.join(context_parts)
-            context_comment = f"<!-- LLM_CONTEXT FOR CLASS {class_name}: {context_comment_content} -->"
+            context_comment = f"<!-- LLM_CONTEXT FOR CLASS {class_name_from_annot}: {context_comment_content} -->"
 
-            print(f"DEBUG: inject_local_context: 为 CLASS '{class_name}' 生成的上下文: {context_comment}")
+            print(f"DEBUG: inject_local_context: 为 CLASS '{class_name_from_annot}' 生成的上下文: {context_comment}")
             if not attributes and not generalization and not childs:
                 print(
-                    f"DEBUG: inject_local_context: 注意 - 为 CLASS '{class_name}' 未在元数据中找到任何属性（包括继承）、直接父类或直接子类信息。")
+                    f"DEBUG: inject_local_context: 注意 - 为 CLASS '{class_name_from_annot}' 未在元数据中找到任何属性（包括继承/相关）、直接父类或直接子类信息。")
 
             processed_lines.append(context_comment)
             print(f"DEBUG: inject_local_context: 已追加 CLASS 上下文到第 {current_line_number} 行之后。")
@@ -221,11 +259,10 @@ def inject_local_context(markdown_content, metadata):
 
         enum_match = re.search(ENUM_ANNOTATION_PATTERN, line)
         if enum_match:
-            # Enum handling remains the same as it doesn't have inheritance of literals in this context
             print(f"DEBUG: inject_local_context: 第 {current_line_number} 行 - ENUM_ANNOTATION_PATTERN 成功匹配!")
-            enum_name = enum_match.group(1).strip()
-            print(f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 ENUM 标注: '{enum_name}'")
-            literals = get_enum_literals(metadata, enum_name)
+            enum_name_from_annot = enum_match.group(1).strip()
+            print(f"DEBUG: inject_local_context: 在第 {current_line_number} 行找到 ENUM 标注: '{enum_name_from_annot}'")
+            literals = get_enum_literals(metadata, enum_name_from_annot)
 
             context_parts_enum = []
             if literals:
@@ -235,9 +272,9 @@ def inject_local_context(markdown_content, metadata):
                 context_parts_enum.append("Literals=[] (元数据中未找到字面量)")
 
             enum_context_comment_content = '; '.join(context_parts_enum)
-            context_comment = f"<!-- LLM_CONTEXT FOR ENUM {enum_name}: {enum_context_comment_content} -->"
+            context_comment = f"<!-- LLM_CONTEXT FOR ENUM {enum_name_from_annot}: {enum_context_comment_content} -->"
 
-            print(f"DEBUG: inject_local_context: 为 ENUM '{enum_name}' 生成的上下文: {context_comment}")
+            print(f"DEBUG: inject_local_context: 为 ENUM '{enum_name_from_annot}' 生成的上下文: {context_comment}")
             processed_lines.append(context_comment)
             print(f"DEBUG: inject_local_context: 已追加 ENUM 上下文到第 {current_line_number} 行之后。")
 

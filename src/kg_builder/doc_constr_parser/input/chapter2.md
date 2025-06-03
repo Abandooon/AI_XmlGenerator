@@ -422,6 +422,7 @@ It is out of the scope of this document to define the particular properties of t
 #@CLASS: ImplementationDataTypeElement
 #@CLASS: ApplicationDataType
 #@CLASS: DataTypeMap
+#@CLASS: SwDataDefProps
 
 #@SECTION: 2.8.1 Overview and Use cases
 

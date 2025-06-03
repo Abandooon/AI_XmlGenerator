@@ -54,7 +54,7 @@ def generate_wrapper_classes(input_dir, complexTypeClassesInfo, output_dir, wrap
             has_different_tag_attr = False
             differentTagAttr = None
             #针对ref类添加查找方法
-            if attr_name is None:
+            if attr_name is None or attr_type is None:
                 continue
             #第一种情况针对引用类：本身为Ref类且属性有dest，则搜索所有子类确定返回值类型，在模板中构建get方法，与其他if条件互不相关，对返回值类型无影响
             if original_class_name.split('_')[0].endswith(('Ref', 'Iref', 'Tref')) and attr_name == 'dest':

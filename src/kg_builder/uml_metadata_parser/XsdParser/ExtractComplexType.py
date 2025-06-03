@@ -14,7 +14,8 @@ def process_complex_type(complexType, root, element_wrapper, groups, attributeGr
     pure_minOccurs = result['pureMM_minOccurs']
     qualifiedName = result['qualifiedName']
     qualifiedNameParts = result['qualifiedNameParts']
-    latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
+    latestBindingTime = result['latestBindingTime']
+    splitkey = result['splitkey']  # 获取最新绑定时间
     attribute_groups = []
     for attributeGroupRef in complexType.findall(".//{http://www.w3.org/2001/XMLSchema}attributeGroup"):
         refName = to_pascal_case(attributeGroupRef.get('ref').split(':')[-1])

@@ -14,11 +14,12 @@
 3. 思考：考虑到最大输出token的限制，应该多阶段生成一个完整的项目，模仿人类工程师配置过程，后续实例引用先前示例，考虑basex查找引用放入上下文中.
 4. ASW只生成arxml，代码生成主要由RTE实现（辅助系统）
 
-
-
-变体:
+变体:-------->在上下文注入和元模型链接里改
 case1:类->类conditional->类content(在complextype中聚合)------>因此针对这种情况需要提到group中
 case2: 属性aggr/attr/iref----->不需要更改
-case3: 属性Ref->类中多一个变体点和属性类型为xxxRefConditional，该类同样有变体点属性，但是该类的qualifiedName与引用类型xxx重名了（当前会覆盖掉原来的这个类），比如PortPrototypeRefConditional
+case3: 属性Ref->类中多一个变体点和属性类型为xxxRefConditional，该类同样有变体点属性，
+但是该类的qualifiedName与引用类型xxx重名了（当前会覆盖掉原来的这个类），比如PortPrototypeRefConditional
+
+检查其他章节有没有ImplementationDataType.swDataDefProps.baseType这样的需要手动加SwDataDefProps类的情况------link的时候呢
 
 xxxConditional都有是由变体生成的的说明

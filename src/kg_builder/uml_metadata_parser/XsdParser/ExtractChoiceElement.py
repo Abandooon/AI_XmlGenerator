@@ -21,7 +21,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
         stereotypes = result['stereotypes']
         pure_maxOccurs = result['pureMM_maxOccurs']
         pure_minOccurs = result['pureMM_minOccurs']
-        latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
+        latestBindingTime = result['latestBindingTime']
+        splitkey = result['splitkey']  # 获取最新绑定时间
 
 
         # 如果single_element没有complextype
@@ -43,7 +44,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
-                'latestBindingTime': latestBindingTime
+                'latestBindingTime': latestBindingTime,
+                'splitkey': splitkey
             })
         #wrapper，有嵌套内部类，只生成最内层类做为内部类
         else:
@@ -62,7 +64,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                 'stereotypes': stereotypes,
                 'pure_minOccurs': pure_minOccurs,
                 'pure_maxOccurs': pure_maxOccurs,
-                'latestBindingTime': latestBindingTime
+                'latestBindingTime': latestBindingTime,
+                'splitkey': splitkey
             })
             inner_class_name = to_pascal_case(element_name)  # 将元素名称转换为PascalCase，用作内部类的名称
             inner_complex_types = []  # 初始化列表，用于存储内部复杂类型信息
@@ -120,7 +123,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
             stereotypes = result['stereotypes']
             pure_maxOccurs = result['pureMM_maxOccurs']
             pure_minOccurs = result['pureMM_minOccurs']
-            latestBindingTime = result['latestBindingTime']  # 获取最新绑定时间
+            latestBindingTime = result['latestBindingTime']
+            splitkey = result['splitkey']  # 获取最新绑定时间
 
             element_name = element.get('name')  # 获取元素名称
             element_type = element.get('type')  # 获取元素类型-----》没有就是内部类
@@ -138,7 +142,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
-                        'latestBindingTime': latestBindingTime
+                        'latestBindingTime': latestBindingTime,
+                        'splitkey': splitkey
                     })
                 else:
                     element_type = mapXsdTypeToJava(element_type.split(':')[-1], context='group')  # 将类型映射为Java类型
@@ -153,7 +158,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
-                        'latestBindingTime': latestBindingTime
+                        'latestBindingTime': latestBindingTime,
+                        'splitkey': splitkey
                     })
             else:
                 # 这里就是生成内部类对应的字段------》嵌套内部类也要考虑list
@@ -169,7 +175,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
-                        'latestBindingTime': latestBindingTime
+                        'latestBindingTime': latestBindingTime,
+                        'splitkey': splitkey
                     })
                 else:
                     elements.append({
@@ -183,7 +190,8 @@ def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_
                         'stereotypes': stereotypes,
                         'pure_minOccurs': pure_minOccurs,
                         'pure_maxOccurs': pure_maxOccurs,
-                        'latestBindingTime': latestBindingTime
+                        'latestBindingTime': latestBindingTime,
+                        'splitkey': splitkey
                     })
                 # 处理内部的 complexType 并生成内部类
 
