@@ -202,7 +202,7 @@ class LlmExtractor:
         try:
             generation_config = genai.types.GenerationConfig(
                 response_mime_type="application/json",
-                response_schema=CONSTRAINT_SCHEMA,  # <--- 关键：这里传入 Python 对象
+                response_schema=CONSTRAINT_SCHEMA,  # <--- 关键：这里传入 约束 Python 对象
                 temperature=0.0,
                 max_output_tokens=MAX_OUTPUT_TOKENS
             )

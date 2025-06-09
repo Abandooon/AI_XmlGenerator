@@ -1,9 +1,7 @@
 # TODO List
 
 19. 应将etas示例工程和规范文档中的listing(如5.1) 示例arxml提取出来放入知识图谱作为小样本学习样例,6.16.2.1 Legal Use这样的使用实例也应该放入样本-----etas工程通过云端 / API 进行小样本微调
-21. 尝试gemini api
-22. 将上下文注入和link的元数据扩充父类元素，比如ImplementationDataType的category就在父类Identifiable中，导致link失败
-23. 新增目标实体为抽象层级，不需link
+24. 尝试将xml标签转为json作为response_schema传给gemini，生成后再转为xml
 
 可能存在问题：
 3. 需要对***Ref单独说明吗--------构建知识图谱和生成xml时需要
@@ -21,5 +19,5 @@ case3: 属性Ref->类中多一个变体点和属性类型为xxxRefConditional，
 但是该类的qualifiedName与引用类型xxx重名了（当前会覆盖掉原来的这个类），比如PortPrototypeRefConditional
 
 检查其他章节有没有ImplementationDataType.swDataDefProps.baseType这样的需要手动加SwDataDefProps类的情况------link的时候呢
-
 xxxConditional都有是由变体生成的的说明
+
