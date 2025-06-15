@@ -21,8 +21,10 @@ SAFE_INPUT_CONTENT_MAX_TOKENS = int(os.getenv("SAFE_INPUT_CONTENT_MAX_TOKENS")) 
 
 # 添加路径配置参数
 INPUT_DIR = "input"
-MD_FILENAME = "chapter2.md"
 OUTPUT_DIR = "output"
+MD_FILENAME = "chapter11-13.md"
+RE_EXTRACT_CHUNKS = []
+
 
 # 文件名常量 (可以考虑版本号v5)
 UNIFIED_METADATA_FILENAME = "unified_metadata.json"
@@ -136,6 +138,9 @@ CONSTRAINT_SCHEMA = {
           "title": {
             "type": "STRING",
             "description": "规范/约束的标题文本"
+          },
+          "is_active": {
+            "type":"BOOLEAN",
           },
           "targets": {
             "type": "ARRAY",

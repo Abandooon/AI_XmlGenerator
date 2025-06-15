@@ -488,7 +488,8 @@ It is out of the scope of this document to define the particular properties of t
 <!-- LLM_CONTEXT FOR CLASS DataTypeMap: Attributes=[applicationDataType, implementationDataType] (包含继承及相关属性) -->
 #@CLASS: SwDataDefProps
 <!-- LLM_CONTEXT FOR CLASS SwDataDefProps: Attributes=[SwDataDefPropsVariant, additionalNativeTypeQualifier, annotation, baseType, compuMethod, dataConstr, displayFormat, implementationDataType, invalidValue, mcFunction, stepSize, swAddrMethod, swAlignment, swBitRepresentation, swCalibrationAccess, swCalprmAxisSet, swComparisonVariable, swDataDependency, swHostVariable, swImplPolicy, swIntendedResolution, swInterpolationMethod, swIsVirtual, swPointerTargetProps, swRecordLayout, swRefreshTiming, swTextProps, swValueBlockSize, unit, valueAxisDataType] (包含继承及相关属性) -->
-
+#@CLASS: BaseTypeDirectDefinition
+<!-- LLM_CONTEXT FOR CLASS BaseTypeDirectDefinition: Attributes=[baseTypeEncoding, baseTypeSize, byteOrder, maxBaseTypeSize, memAlignment, nativeDeclaration] (包含继承及相关属性) -->
 #@SECTION: 2.8.1 Overview and Use cases
 
 AUTOSAR supports the definition of array data types where the size of the actual payload varies at run-time. As far as the configuration is concerned, it is possible to specify a maximum number of array elements that shall not be exceeded at run-time.

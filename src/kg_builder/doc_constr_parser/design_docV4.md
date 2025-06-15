@@ -92,16 +92,17 @@
     *   "**细则：** 提取 `Details` 部分作为 `expression`。"
     *   "**引用：** 提取 `(References)` 中的所有ID作为 `references` 列表。"
     *   "**目标实体确定：**
-        *   查看紧邻当前规范/约束文本之前的 `#@CLASS: ClassName` 或 `#@ENUM: EnumName` 标注。以此确定 `targetClass` 或 `targetEnum`。
-        *   如果两者都存在，优先考虑更近的或根据启发式规则（例如，如果文本内容更倾向于描述类属性则选Class，如果描述枚举值则选Enum）。"
+    *   查看紧邻当前规范/约束文本之前的 `#@CLASS: ClassName` 或 `#@ENUM: EnumName` 标注。以此确定 `targetClass` 或 `targetEnum`。
+    *   如果两者都存在，优先考虑更近的或根据启发式规则（例如，如果文本内容更倾向于描述类属性则选Class，如果描述枚举值则选Enum）。"
     *   "**目标属性/字面量确定 (严格规则)：**
-        *   如果目标是类 (`targetClass`)：查看注入的 `---CONTEXT START---` 中 `Referenced Classes` 下对应 `ClassName` 的 `Attributes` 列表。当前规范/约束文本中提及的属性**必须**在该列表中。如果找到，则设为 `targetAttribute`。
-        *   如果目标是枚举 (`targetEnum`)：查看注入的 `---CONTEXT START---` 中 `Referenced Enums` 下对应 `EnumName` 的 `Literals` 列表。当前规范/约束文本中提及的字面量**必须**在该列表中。如果找到，则设为 `targetAttribute` (或 `targetLiteral`，schema中统一为 `targetAttribute`)。
-        *   如果不针对具体类，则标记为["_abstractLevel"]
-        *   **禁止推测：** 如果文本中提及的属性/字面量**不在**对应实体（类/枚举）的上下文注入的属性/字面量列表中，**绝不能自行推测或创造**。
-        *   **类/枚举级别默认：** 在上述“禁止推测”的情况下，或规范/约束本身明确是针对整个类/枚举的，则将 `targetAttribute` 设置为特殊值 `_classLevel` (对于类) 或 `_enumLevel` (对于枚举)。"
+    *   如果目标是类 (`targetClass`)：查看注入的 `---CONTEXT START---` 中 `Referenced Classes` 下对应 `ClassName` 的 `Attributes` 列表。当前规范/约束文本中提及的属性**必须**在该列表中。如果找到，则设为 `targetAttribute`。
+    *   如果目标是枚举 (`targetEnum`)：查看注入的 `---CONTEXT START---` 中 `Referenced Enums` 下对应 `EnumName` 的 `Literals` 列表。当前规范/约束文本中提及的字面量**必须**在该列表中。如果找到，则设为 `targetAttribute` (或 `targetLiteral`，schema中统一为 `targetAttribute`)。
+    *   如果不针对具体类，则标记为["_abstractLevel"]
+    *   **禁止推测：** 如果文本中提及的属性/字面量**不在**对应实体（类/枚举）的上下文注入的属性/字面量列表中，**绝不能自行推测或创造**。
+    *   **类/枚举级别默认：** 在上述“禁止推测”的情况下，或规范/约束本身明确是针对整个类/枚举的，则将 `targetAttribute` 设置为特殊值 `_classLevel` (对于类) 或 `_enumLevel` (对于枚举)。"
     *   "**层级关系：** 如果当前规范/约束之前紧邻 `#@Hierarchical` 标注，尝试将前一个抽取的非层级规范/约束的 `id` 作为本条记录的 `parent_id`。"
     *   "抽取其他相关字段如 `type` (约束类型，如cardinality, range等), `value`。"
+    *   "**生产性is_active：** 判断该约束是否为生产性，若是'old_word','shall be considered'则判定为false，不参与链接与后续的xml实例生成。例如"TPS_SWCT_01642""
 *   **Function Schema (`schema_v4.json`)：** 见第4节。
 *   **API 调用：** 模型 `gpt-4o-mini` 或更强，`temperature=0.0`。
 *   **输出：** `constraints_raw_v4.jsonl`。
@@ -121,6 +122,7 @@
     3.  **ID类型与格式校验：** 验证 `id_type` 是否为 "TPS_SWCT" 或 "constr"，验证 `id` 格式。
     4.  **层级关系校验：** 如果存在 `parent_id`，校验具有该 `id` 的父约束是否存在于已处理的集合中。
     5.  **置信度调整。**
+    6.  **新增is_active判断** 若为false则跳过 
 *   **输出：** `constraints_linked_v4.json`, `review_queue_v4.csv`。
 
 **4. 约束数据模型与Schema (`schema_v4.json` 示例)**

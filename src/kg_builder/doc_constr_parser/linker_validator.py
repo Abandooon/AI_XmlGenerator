@@ -51,6 +51,9 @@ def validate_and_link_constraints(raw_extracted_data, metadata):
     VALID_ENTITY_TYPES = ["class", "enum", "abstract"]
 
     for item in raw_extracted_data:
+        # 非生产性则无需链接
+        if item.get("is_active") is False:
+            continue
         issues = []
         # 注意：字段名改为 targetRefs (复数), 确保在 item 中创建这个键
         item['targetRefs'] = generate_target_refs_for_item(item)

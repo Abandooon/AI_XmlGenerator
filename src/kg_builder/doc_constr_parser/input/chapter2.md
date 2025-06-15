@@ -423,7 +423,7 @@ It is out of the scope of this document to define the particular properties of t
 #@CLASS: ApplicationDataType
 #@CLASS: DataTypeMap
 #@CLASS: SwDataDefProps
-
+#@CLASS: BaseTypeDirectDefinition
 #@SECTION: 2.8.1 Overview and Use cases
 
 AUTOSAR supports the definition of array data types where the size of the actual payload varies at run-time. As far as the configuration is concerned, it is possible to specify a maximum number of array elements that shall not be exceeded at run-time.

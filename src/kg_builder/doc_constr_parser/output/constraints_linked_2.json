@@ -1,6 +1,6 @@
 [
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "definition",
     "expression": "This means that Calibration Parameters can be deﬁned\n• individually for a SwComponentPrototype in the SwcInternalBehavior of a SwComponentType via an aggregation of an ParameterDataPrototype in the role of perInstanceParameter (similar to PerInstanceMemory) (see chapter 2.2.3.3)\n• sharing between all SwComponentPrototypes of the same SwComponentType in its SwcInternalBehavior via an aggregation of an ParameterDataPrototype in the role of sharedParameter or constantMemory (see chapter 2.2.3.2)\n• for several SwComponentPrototypes (using the port-/interface-concept with ParameterInterfaces) (see chapter 2.2.3.1).",
     "id": "TPS_SWCT_01418",
     "id_type": "TPS_SWCT",
@@ -13,14 +13,13 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "perInstanceParameter"
         ],
-        "targetEntityName": "ParameterDataPrototype"
+        "targetEntityName": "SwcInternalBehavior"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "perInstanceParameter",
           "sharedParameter",
           "constantMemory"
         ],
@@ -31,7 +30,7 @@
         "targetAttributes": [
           "_classLevel"
         ],
-        "targetEntityName": "ParameterInterface"
+        "targetEntityName": "ParameterDataPrototype"
       },
       {
         "entityType": "class",
@@ -39,9 +38,24 @@
           "_classLevel"
         ],
         "targetEntityName": "SwComponentPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterInterface"
       }
     ],
     "title": "Ways to deﬁne a calibration parameter",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
@@ -49,6 +63,7 @@
       "ParameterDataPrototype._classLevel",
       "ParameterInterface._classLevel",
       "SwComponentPrototype._classLevel",
+      "SwComponentType._classLevel",
       "SwcInternalBehavior.constantMemory",
       "SwcInternalBehavior.perInstanceParameter",
       "SwcInternalBehavior.sharedParameter"
@@ -56,7 +71,7 @@
     "confidence": 0.9
   },
   {
-    "constraint_type": "relationship",
+    "constraint_type": "existence",
     "expression": "Every SwComponentType requiring access to shared calibration parameters will have an RPortPrototype typed by a ParameterInterface. The deﬁnition of this shared calibration access in the context of a CompositionSwComponentType will be deﬁned by creating a SwConnector between the relevant SwComponentPrototypes.",
     "id": "TPS_SWCT_01420",
     "id_type": "TPS_SWCT",
@@ -94,9 +109,24 @@
           "connector"
         ],
         "targetEntityName": "CompositionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwComponentPrototype"
       }
     ],
     "title": "SwComponentType requiring access to shared calibration parameters needs RPortPrototype typed by a ParameterInterface",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
@@ -104,12 +134,14 @@
       "CompositionSwComponentType.connector",
       "ParameterInterface._classLevel",
       "RPortPrototype.requiredInterface",
-      "SwComponentType._classLevel"
+      "SwComponentPrototype._classLevel",
+      "SwComponentType._classLevel",
+      "SwConnector._classLevel"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "definition",
+    "constraint_type": "behavioral",
     "expression": "Note that a ParameterInterface is not restricted to parameters which can actually can be calibrated. It can be used whenever there shall be no write access to the data during normal operation of the software, i.e. only constant data are visible over the interface.",
     "id": "TPS_SWCT_01421",
     "id_type": "TPS_SWCT",
@@ -129,6 +161,7 @@
       }
     ],
     "title": "ParameterInterface is not restricted to parameters which can actually can be calibrated",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
@@ -168,6 +201,13 @@
         "targetAttributes": [
           "_classLevel"
         ],
+        "targetEntityName": "CompositionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
         "targetEntityName": "DelegationSwConnector"
       },
       {
@@ -182,7 +222,14 @@
         "targetAttributes": [
           "_classLevel"
         ],
-        "targetEntityName": "CompositionSwComponentType"
+        "targetEntityName": "SwComponentPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwConnector"
       },
       {
         "entityType": "class",
@@ -193,6 +240,7 @@
       }
     ],
     "title": "Delegation of PortPrototypes typed by a ParameterInterface",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
@@ -202,12 +250,14 @@
       "DelegationSwConnector._classLevel",
       "ParameterDataPrototype._classLevel",
       "ParameterInterface._classLevel",
-      "PortPrototype._classLevel"
+      "PortPrototype._classLevel",
+      "SwComponentPrototype._classLevel",
+      "SwConnector._classLevel"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "definition",
     "expression": "Additionally, it is possible to describe the implementation of shared characteristic values via a ParameterDataPrototype which is attached to an SwcInternalBehavior in the role constantMemory.\nIn contrast to the ParameterDataPrototype in sharedParameter role this kind\nof memory is not instantiated by the RTE. This supports more efﬁcient implementations (especially for software components provided as object code) by avoidance of the additional indirection caused by the RTE’s component data structure.",
     "id": "TPS_SWCT_01423",
     "id_type": "TPS_SWCT",
@@ -221,19 +271,20 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "constantMemory"
         ],
-        "targetEntityName": "ParameterDataPrototype"
+        "targetEntityName": "SwcInternalBehavior"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "constantMemory"
+          "_classLevel"
         ],
-        "targetEntityName": "SwcInternalBehavior"
+        "targetEntityName": "ParameterDataPrototype"
       }
     ],
     "title": "ParameterDataPrototype aggregated in the role constantMemory",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
@@ -244,7 +295,7 @@
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "definition",
     "expression": "To provide instance individual calibration parameters a ParameterDataPrototype is owned by a SwcInternalBehavior in perInstanceParameter role.\nWhen the SwcInternalBehavior is attached to an AtomicSwComponentType, the\nactual calibration values are speciﬁc for each SwComponentPrototype.",
     "id": "TPS_SWCT_01424",
     "id_type": "TPS_SWCT",
@@ -258,13 +309,6 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
-        ],
-        "targetEntityName": "ParameterDataPrototype"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
           "perInstanceParameter"
         ],
         "targetEntityName": "SwcInternalBehavior"
@@ -274,22 +318,38 @@
         "targetAttributes": [
           "_classLevel"
         ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
         "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwComponentPrototype"
       }
     ],
     "title": "ParameterDataPrototype aggregated in the role perInstanceParameter",
+    "is_active": true,
     "references": [],
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
       "AtomicSwComponentType._classLevel",
       "ParameterDataPrototype._classLevel",
+      "SwComponentPrototype._classLevel",
       "SwcInternalBehavior.perInstanceParameter"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "existence",
     "expression": "The Variant Handling support in the in Software Component Template is mainly driven by the purpose to describe a variable system on Virtual Functional Bus[3] level by varying\n• the existence of SwComponentPrototypes\n• the existence of SwConnectors\n• the existence of Chapters of SwComponentDocumentation\n• the existence of PortPrototypes",
     "id": "TPS_SWCT_01038",
     "id_type": "TPS_SWCT",
@@ -301,33 +361,34 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "SwComponentPrototype"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "SwConnector"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "chapter"
+          "variationPoint"
         ],
         "targetEntityName": "SwComponentDocumentation"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "PortPrototype"
       }
     ],
     "title": "Support for Variant Handling in the in Software Component Template",
+    "is_active": true,
     "references": [
       "RS_SWCT_00220",
       "RS_SWCT_03100",
@@ -338,10 +399,10 @@
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
-      "PortPrototype._classLevel",
-      "SwComponentDocumentation.chapter",
-      "SwComponentPrototype._classLevel",
-      "SwConnector._classLevel"
+      "PortPrototype.variationPoint",
+      "SwComponentDocumentation.variationPoint",
+      "SwComponentPrototype.variationPoint",
+      "SwConnector.variationPoint"
     ],
     "confidence": 0.9
   },
@@ -356,29 +417,22 @@
     ],
     "targets": [
       {
-        "entityType": "class",
+        "entityType": "abstract",
         "targetAttributes": [
-          "_classLevel"
+          "_abstractLevel"
         ],
-        "targetEntityName": "SwComponentPrototype"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "_classLevel"
-        ],
-        "targetEntityName": "SwConnector"
+        "targetEntityName": "VariantHandlingConcept"
       }
     ],
     "title": "Purpose of variant handling",
+    "is_active": true,
     "references": [
       "RS_SWCT_00220"
     ],
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
-      "SwComponentPrototype._classLevel",
-      "SwConnector._classLevel"
+      "VariantHandlingConcept._abstractLevel"
     ],
     "confidence": 0.9
   },
@@ -395,43 +449,44 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "SwComponentPrototype"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "SwConnector"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "chapter"
+          "variationPoint"
         ],
         "targetEntityName": "SwComponentDocumentation"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "PortPrototype"
       }
     ],
     "title": "Applicable binding times for model elements in the scope of the Software Component Template",
+    "is_active": true,
     "references": [
       "RS_SWCT_00220"
     ],
-    "value": null,
+    "value": "SwComponentPrototypes, SwConnectors, Chapters of SwComponentDocumentation: PostBuild binding; Existence of PortPrototypes: preCompileTime latestBindingTime",
     "xml_example_content": null,
     "targetRefs": [
-      "PortPrototype._classLevel",
-      "SwComponentDocumentation.chapter",
-      "SwComponentPrototype._classLevel",
-      "SwConnector._classLevel"
+      "PortPrototype.variationPoint",
+      "SwComponentDocumentation.variationPoint",
+      "SwComponentPrototype.variationPoint",
+      "SwConnector.variationPoint"
     ],
     "confidence": 0.9
   },
@@ -448,7 +503,7 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "SwConnector"
       },
@@ -458,9 +513,17 @@
           "_classLevel"
         ],
         "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "RTE_API_Behavior"
       }
     ],
     "title": "SwConnector exists depending on a PostBuild condition",
+    "is_active": true,
     "references": [
       "RS_SWCT_00220",
       "RS_SWCT_03100",
@@ -470,12 +533,13 @@
     "xml_example_content": null,
     "targetRefs": [
       "PortPrototype._classLevel",
-      "SwConnector._classLevel"
+      "RTE_API_Behavior._abstractLevel",
+      "SwConnector.variationPoint"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "value_restriction",
     "expression": "If SwConnectors do not exist the corresponding API functions are still part of the software-component’s implementation. It is not possible to remove the API functions in a PostBuild step. Therefore the latest reasonable Binding Time for the conditional existence of a PortPrototype is preCompileTime.",
     "id": "TPS_SWCT_01041",
     "id_type": "TPS_SWCT",
@@ -487,33 +551,26 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "_classLevel"
-        ],
-        "targetEntityName": "SwConnector"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "_classLevel"
+          "variationPoint"
         ],
         "targetEntityName": "PortPrototype"
       }
     ],
     "title": "API functions of not existing SwConnector are still part of the software-component’s implementation",
+    "is_active": true,
     "references": [
       "RS_SWCT_00220",
       "RS_SWCT_03100"
     ],
-    "value": null,
+    "value": "preCompileTime",
     "xml_example_content": null,
     "targetRefs": [
-      "PortPrototype._classLevel",
-      "SwConnector._classLevel"
+      "PortPrototype.variationPoint"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "existence",
     "expression": "In addition to variation of the VFB-related model elements, the description of variant software-component implementations is supported. Please note that this requires a broad support of variability in the Internal Behavior.\nThe identiﬁed main use case are\n• the existence of RunnableEntitys\n• the existence of RTEEvents\n• the existence of VariableDataPrototypes in the roles implicitInterRunnableVariable and explicitInterRunnableVariable\n• the existence of ParameterDataPrototypes in the roles perInstanceParameter, sharedParameter, and constantMemory",
     "id": "TPS_SWCT_01085",
     "id_type": "TPS_SWCT",
@@ -525,8 +582,20 @@
       {
         "entityType": "class",
         "targetAttributes": [
-          "runnable",
-          "event",
+          "variationPoint"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "variationPoint"
+        ],
+        "targetEntityName": "RTEEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
           "implicitInterRunnableVariable",
           "explicitInterRunnableVariable",
           "perInstanceParameter",
@@ -537,6 +606,7 @@
       }
     ],
     "title": "Variation on the behavior level",
+    "is_active": true,
     "references": [
       "RS_SWCT_03149",
       "RS_SWCT_03150",
@@ -546,24 +616,106 @@
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
+      "RTEEvent.variationPoint",
+      "RunnableEntity.variationPoint",
       "SwcInternalBehavior.constantMemory",
-      "SwcInternalBehavior.event",
       "SwcInternalBehavior.explicitInterRunnableVariable",
       "SwcInternalBehavior.implicitInterRunnableVariable",
       "SwcInternalBehavior.perInstanceParameter",
-      "SwcInternalBehavior.runnable",
       "SwcInternalBehavior.sharedParameter"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "behavioral",
+    "constraint_type": "value_restriction",
+    "expression": "For the same reason that applies on the existence of PortPrototype the latest Binding Time of these kinds of variability (existence of RunnableEntitys, RTEEvents, VariableDataPrototypes in roles implicitInterRunnableVariable/explicitInterRunnableVariable, ParameterDataPrototypes in roles perInstanceParameter/sharedParameter/constantMemory) is preCompileTime.",
+    "id": "Constr_BehavioralVariability_BindingTime_PreCompile",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "2 Conceptual Aspects",
+      "2.4 Variant Handling in the Software Component Template"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "variationPoint"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "variationPoint"
+        ],
+        "targetEntityName": "RTEEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "implicitInterRunnableVariable",
+          "explicitInterRunnableVariable",
+          "perInstanceParameter",
+          "sharedParameter",
+          "constantMemory"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      }
+    ],
+    "title": "Binding Time for Behavioral Element Variability",
+    "is_active": true,
+    "references": [],
+    "value": "preCompileTime",
+    "xml_example_content": null,
+    "targetRefs": [
+      "RTEEvent.variationPoint",
+      "RunnableEntity.variationPoint",
+      "SwcInternalBehavior.constantMemory",
+      "SwcInternalBehavior.explicitInterRunnableVariable",
+      "SwcInternalBehavior.implicitInterRunnableVariable",
+      "SwcInternalBehavior.perInstanceParameter",
+      "SwcInternalBehavior.sharedParameter"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "definition",
+    "expression": "There are four types of locations in the meta-model which may exhibit variability:\n• Aggregations\n• Associations\n• Attribute Values\n• Classes providing property sets",
+    "id": "TPS_SWCT_01042",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "2 Conceptual Aspects",
+      "2.4 Variant Handling in the Software Component Template"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "MetaModelVariabilityLocations"
+      }
+    ],
+    "title": "Four types of locations in the meta-model which may exhibit variability",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00220",
+      "RS_SWCT_03100"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "MetaModelVariabilityLocations._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
     "expression": "It shall be possible to attach ComSpecs to PortPrototypes owned by CompositionSwComponentTypes.",
     "id": "TPS_SWCT_01088",
     "id_type": "TPS_SWCT",
     "scope_path": [
-      "2 Conceptual Aspects",
-      "2.5 Communication Speciﬁcation of Composition Component Types"
+      "2 Conceptual Aspects"
     ],
     "targets": [
       {
@@ -582,6 +734,7 @@
       }
     ],
     "title": "ComSpecs defined by CompositionSwComponentTypes",
+    "is_active": true,
     "references": [
       "RS_SWCT_03220"
     ],
@@ -600,7 +753,7 @@
     "id_type": "TPS_SWCT",
     "scope_path": [
       "2 Conceptual Aspects",
-      "2.5 Communication Speciﬁcation of Composition Component Types"
+      "2.5.1 Rationale"
     ],
     "targets": [
       {
@@ -647,6 +800,7 @@
       }
     ],
     "title": "Consideration of RPortComSpec or PPortComSpec depending on the ownership",
+    "is_active": true,
     "references": [
       "RS_SWCT_03220"
     ],
@@ -663,7 +817,66 @@
     "confidence": 0.9
   },
   {
+    "constraint_type": "relationship",
+    "expression": "It shall be possible to define mappings of ApplicationDataTypes used in a PortInterface to their corresponding ImplementationDataTypes for a CompositionSwComponentType. For this purpose the CompositionSwComponentType owns a DataTypeMappingSet in the role dataTypeMapping and a ConstantSpecificationMappingSet in the role constantValueMapping.",
+    "id": "Constr_CompositionSwCT_DataTypeMappingCapability",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "2 Conceptual Aspects",
+      "2.5.1 Rationale"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "dataTypeMapping",
+          "constantValueMapping"
+        ],
+        "targetEntityName": "CompositionSwComponentType"
+      }
+    ],
+    "title": "DataType and ConstantValue Mapping Capability for CompositionSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompositionSwComponentType.constantValueMapping",
+      "CompositionSwComponentType.dataTypeMapping"
+    ],
+    "confidence": 0.9
+  },
+  {
     "constraint_type": "definition",
+    "expression": "The solution to the use cases (requiring combined read/write access to the same data) is the ability to define a PortPrototype (PRPortPrototype) that can read and write the same piece of data.",
+    "id": "Constr_PRPortPrototype_ReadWriteCapability",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "2 Conceptual Aspects",
+      "2.6 PRPortPrototype",
+      "2.6.4 Solution"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PRPortPrototype"
+      }
+    ],
+    "title": "PRPortPrototype Read/Write Capability",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PRPortPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
     "expression": "The identification of different configuration options for Pretended Networking shall be encoded into the definition of dedicated ModeDeclarations inside a ModeDeclarationGroup.",
     "id": "TPS_SWCT_01511",
     "id_type": "TPS_SWCT",
@@ -688,6 +901,7 @@
       }
     ],
     "title": "Configuration option is encoded into ModeDeclaration",
+    "is_active": true,
     "references": [
       "RS_SWCT_03110"
     ],
@@ -700,7 +914,7 @@
     "confidence": 0.9
   },
   {
-    "constraint_type": "existence",
+    "constraint_type": "relationship",
     "expression": "A SwComponentType that needs to be able to request a change in the operating mode of Pretended Networking shall provide a PPortPrototype typed by a SenderReceiverInterface (see [TPS_SWCT_01086]) for requesting a change (towards the BswM [15]) of the Pretended Networking mode.\n\nIt is out of the scope of this document to define the particular properties of the applicable SenderReceiverInterface. The details of this specific SenderReceiverInterface can be found in the specification of the BswM [15].",
     "id": "TPS_SWCT_01512",
     "id_type": "TPS_SWCT",
@@ -722,31 +936,25 @@
           "providedInterface"
         ],
         "targetEntityName": "PPortPrototype"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "_classLevel"
-        ],
-        "targetEntityName": "SenderReceiverInterface"
       }
     ],
     "title": "Request change of Pretended Networking mode",
+    "is_active": true,
     "references": [
       "RS_SWCT_03110",
-      "TPS_SWCT_01086"
+      "TPS_SWCT_01086",
+      "[15]"
     ],
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
       "PPortPrototype.providedInterface",
-      "SenderReceiverInterface._classLevel",
       "SwComponentType.port"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "existence",
+    "constraint_type": "relationship",
     "expression": "A SwComponentType that needs to be able to react on a change in the operating mode of Pretended Networking shall provide an RPortPrototype typed by a ModeSwitchInterface (see [TPS_SWCT_01087]) for reacting on a change (initiated by the BswM [15]) of the Pretended Networking mode.\n\nIt is out of the scope of this document to define the particular properties of the applicable ModeSwitchInterface. The details of this specific ModeSwitchInterface can be found in the specification of the BswM [15].",
     "id": "TPS_SWCT_01513",
     "id_type": "TPS_SWCT",
@@ -768,188 +976,125 @@
           "requiredInterface"
         ],
         "targetEntityName": "RPortPrototype"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "_classLevel"
-        ],
-        "targetEntityName": "ModeSwitchInterface"
       }
     ],
     "title": "React on the change of Pretended Networking mode",
+    "is_active": true,
     "references": [
       "RS_SWCT_03110",
-      "TPS_SWCT_01087"
+      "TPS_SWCT_01087",
+      "[15]"
     ],
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
-      "ModeSwitchInterface._classLevel",
       "RPortPrototype.requiredInterface",
       "SwComponentType.port"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "definition",
-    "expression": "An ApplicationArrayDataType that doesn’t deﬁne attribute dynamicArraySizeProfile and that aggregates an ApplicationArrayElement where attribute arraySizeSemantics exists and is set to the value variableSize shall be considered an “old-world” dynamic-size array data type.",
-    "id": "TPS_SWCT_01641",
-    "id_type": "TPS_SWCT",
+    "constraint_type": "relationship",
+    "expression": "If a Variable-Size Array Data Type is modeled on the level of ApplicationDataType it is necessary to also provide a companion ImplementationDataType as well as a DataTypeMap that refers to both the ApplicationDataType and the ImplementationDataType.",
+    "id": "Constr_AppImplDataTypeMap_VSADT",
+    "id_type": "additional_binding",
     "scope_path": [
       "2 Conceptual Aspects",
       "2.8 Variable-size Array Data Types",
-      "2.8.1 Overview and Use cases",
-      "2.8.1.1 “Old-world” dynamic-size Arrays"
+      "2.8.2 Modeling Aspects regarding Application Data Types"
     ],
     "targets": [
       {
         "entityType": "class",
         "targetAttributes": [
-          "dynamicArraySizeProfile",
-          "element"
+          "_classLevel"
         ],
-        "targetEntityName": "ApplicationArrayDataType"
+        "targetEntityName": "ApplicationDataType"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "arraySizeSemantics"
-        ],
-        "targetEntityName": "ApplicationArrayElement"
-      }
-    ],
-    "title": "Deﬁnition of an “old-world” dynamic-size array data type by means of an ApplicationArrayDataType",
-    "references": [
-      "RS_SWCT_03181"
-    ],
-    "value": null,
-    "xml_example_content": null,
-    "targetRefs": [
-      "ApplicationArrayDataType.dynamicArraySizeProfile",
-      "ApplicationArrayDataType.element",
-      "ApplicationArrayElement.arraySizeSemantics"
-    ],
-    "confidence": 0.9
-  },
-  {
-    "constraint_type": "definition",
-    "expression": "An ApplicationArrayDataType that fulﬁlls all of the following conditions shall be considered an “new-world” dynamic size array data type.\n• The ApplicationArrayDataType deﬁnes attribute ApplicationArrayDataType.dynamicArraySizeProfile.\n• ApplicationArrayDataType aggregates an ApplicationArrayElement that deﬁnes attribute ApplicationArrayElement.arraySizeHandling.",
-    "id": "TPS_SWCT_01644",
-    "id_type": "TPS_SWCT",
-    "scope_path": [
-      "2 Conceptual Aspects",
-      "2.8 Variable-size Array Data Types",
-      "2.8.1 Overview and Use cases",
-      "2.8.1.2 “New-world” variable-size Arrays"
-    ],
-    "targets": [
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "dynamicArraySizeProfile",
-          "element"
-        ],
-        "targetEntityName": "ApplicationArrayDataType"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "arraySizeHandling"
-        ],
-        "targetEntityName": "ApplicationArrayElement"
-      }
-    ],
-    "title": "Deﬁnition of a “new-world” variable-size array data type by means of an ApplicationArrayDataType",
-    "references": [
-      "RS_SWCT_03181"
-    ],
-    "value": null,
-    "xml_example_content": null,
-    "targetRefs": [
-      "ApplicationArrayDataType.dynamicArraySizeProfile",
-      "ApplicationArrayDataType.element",
-      "ApplicationArrayElement.arraySizeHandling"
-    ],
-    "confidence": 0.9
-  },
-  {
-    "constraint_type": "definition",
-    "expression": "An ImplementationDataType that fulﬁlls all of the following conditions shall be considered an “new-world” dynamic-size array data type.\n• The ImplementationDataType deﬁnes attribute ImplementationDataType.dynamicArraySizeProfile.\n• ImplementationDataType aggregates an ImplementationDataTypeElement that deﬁnes attribute ImplementationDataTypeElement.arraySizeHandling.",
-    "id": "TPS_SWCT_01645",
-    "id_type": "TPS_SWCT",
-    "scope_path": [
-      "2 Conceptual Aspects",
-      "2.8 Variable-size Array Data Types",
-      "2.8.1 Overview and Use cases",
-      "2.8.1.2 “New-world” variable-size Arrays"
-    ],
-    "targets": [
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "dynamicArraySizeProfile",
-          "subElement"
+          "_classLevel"
         ],
         "targetEntityName": "ImplementationDataType"
       },
       {
         "entityType": "class",
         "targetAttributes": [
-          "arraySizeHandling"
+          "_classLevel"
         ],
-        "targetEntityName": "ImplementationDataTypeElement"
+        "targetEntityName": "DataTypeMap"
       }
     ],
-    "title": "Deﬁnition of a “new-world” variable-size array data type by means of an ImplementationDataType",
-    "references": [
-      "RS_SWCT_03181"
-    ],
+    "title": "Companion ImplementationDataType and DataTypeMap for ApplicationDataType VSADT",
+    "is_active": true,
+    "references": [],
     "value": null,
     "xml_example_content": null,
     "targetRefs": [
-      "ImplementationDataType.dynamicArraySizeProfile",
-      "ImplementationDataType.subElement",
-      "ImplementationDataTypeElement.arraySizeHandling"
+      "ApplicationDataType._classLevel",
+      "DataTypeMap._classLevel",
+      "ImplementationDataType._classLevel"
     ],
     "confidence": 0.9
   },
   {
-    "constraint_type": "value_restriction",
-    "expression": "The possible variants for Variable-Size Array Data Types are:\nLinear The data type of the elements of the Variable-Size Array Data Type itself does not consist of a Variable-Size Array Data Type. This case corresponds to the tag (a) in Figure 2.10. This case corresponds to the possible value VSA_LINEAR of attribute dynamicArraySizeProfile.\nSquare The data type of the elements of the Variable-Size Array Data Type itself consists of Variable-Size Array Data Types where the maximum number of elements in all “second order” arrays is identical to the maximum number of elements in the “ﬁrst order” array. This case corresponds to the tag (b) in Figure 2.10. This case corresponds to the possible value VSA_SQUARE of attribute dynamicArraySizeProfile.\nRectangular The data type of the elements of the Variable-Size Array Data Type itself consists of Variable-Size Array Data Types data types where the maximum number of elements in “second order” arrays is identical but this value is typically not identical3 to the maximum number of elements in the “ﬁrst order” array. This case corresponds to the tag (c) in Figure 2.10. This case corresponds to the possible value VSA_RECTANGULAR of attribute dynamicArraySizeProfile.\nFully Flexible The data type of the elements of the Variable-Size Array Data Type itself consists of Variable-Size Array Data Types where the maximum number of elements in “second order” arrays is not necessarily identical with each other and (obviously) not necessarily identical to the maximum number of elements in the “ﬁrst order” array. This case corresponds to the tag (d) in Figure 2.10. This case corresponds to the possible value VSA_FULLY_FLEXIBLE of attribute dynamicArraySizeProfile.",
-    "id": "TPS_SWCT_01636",
-    "id_type": "TPS_SWCT",
+    "constraint_type": "other",
+    "expression": "It is possible to define a Variable-Size Array Data Type with only an ImplementationDataType.",
+    "id": "Info_VSADT_ImplOnlyPossible",
+    "id_type": "additional_not_binding",
     "scope_path": [
       "2 Conceptual Aspects",
       "2.8 Variable-size Array Data Types",
-      "2.8.1 Overview and Use cases",
-      "2.8.1.2 “New-world” variable-size Arrays"
+      "2.8.2 Modeling Aspects regarding Application Data Types"
     ],
     "targets": [
       {
         "entityType": "class",
         "targetAttributes": [
-          "dynamicArraySizeProfile"
-        ],
-        "targetEntityName": "ApplicationArrayDataType"
-      },
-      {
-        "entityType": "class",
-        "targetAttributes": [
-          "dynamicArraySizeProfile"
+          "_classLevel"
         ],
         "targetEntityName": "ImplementationDataType"
       }
     ],
-    "title": "Deﬁnition of proﬁles for the deﬁnition of Variable-Size Array Data Types",
+    "title": "Possibility of VSADT with only ImplementationDataType",
+    "is_active": true,
     "references": [
-      "RS_SWCT_03181"
+      "TPS_SWCT_01622"
     ],
-    "value": "[\"VSA_LINEAR\", \"VSA_SQUARE\", \"VSA_RECTANGULAR\", \"VSA_FULLY_FLEXIBLE\"]",
+    "value": null,
     "xml_example_content": null,
     "targetRefs": [
-      "ApplicationArrayDataType.dynamicArraySizeProfile",
-      "ImplementationDataType.dynamicArraySizeProfile"
+      "ImplementationDataType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The number of valid elements and the Size Indicator have to be kept consistent by the application.",
+    "id": "Constr_App_SizeIndicatorConsistency",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "2 Conceptual Aspects",
+      "2.8 Variable-size Array Data Types",
+      "2.8.3 Modeling Aspects regarding Implementation Data Types"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ApplicationSoftwareComponent"
+      }
+    ],
+    "title": "Application Responsibility for Size Indicator Consistency",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationSoftwareComponent._abstractLevel"
     ],
     "confidence": 0.9
   }
