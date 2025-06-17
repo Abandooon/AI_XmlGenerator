@@ -69,7 +69,8 @@ class ConstraintGraphBuilder:
             "expression": raw.get("expression", ""),
             "value": raw.get("value"),
             "scope_path": raw.get("scope_path", []),
-            # references / targets 较复杂，在 EdgeBuilder 处理
+            "targets": raw.get("targets", []),
+            "references": raw.get("references", []),
         }
         return node
 

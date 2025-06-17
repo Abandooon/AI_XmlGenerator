@@ -84,6 +84,7 @@ class OntologyGraphBuilder:
         for ctype in ctypes.values():
             cls_iri = ctype["iri"]
             self._class_index[ctype["name"]] = cls_iri
+            # 改到这里了，核对和修改complexTypes的属性
 
             self._add_node(
                 cls_iri,
@@ -114,6 +115,8 @@ class OntologyGraphBuilder:
                     "name": stype["name"],
                     "baseType": stype.get("base"),
                     "isPrimitive": stype.get("isPrimitiveType", False),
+                    "annotation": stype.get("annotation", ""),
+                    "pattern": stype.get("pattern", ""),
                 },
             )
 
@@ -134,11 +137,18 @@ class OntologyGraphBuilder:
             attr_iri,
             label="Attribute",
             props={
-                "name": attr["name"],
+                "name": attr.get("qualifiedName", attr["name"]).split(".")[-1],
+                "qualifiedName": attr.get("qualifiedName"),
                 "type": attr.get("type", ""),
                 "isXmlAttr": attr.get("is_xml_attribute", False),
                 "minOccurs": attr.get("pure_minOccurs"),
                 "maxOccurs": attr.get("pure_maxOccurs"),
+                "xml_tag": attr.get("xml_tag", ""),
+                "xml_wrapper_tag": attr.get("xml_wrapper_tag", ""),
+                "is_xml_attribute": attr.get("is_xml_attribute", False),
+                "latestBindingTime" : attr.get("latestBindingTime", ""),
+                "description" : attr.get("description", ""),
+                "stereotypes": attr.get("stereotypes", []),
             },
         )
         self._add_edge(parent_iri, "HAS_ATTRIBUTE", attr_iri)
