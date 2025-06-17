@@ -5900,5 +5900,266 @@
       "ExternalTriggeringPoint.ident"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "For each ServiceSwComponentType an SwcInternalBehavior is created or extended providing the information about PortDefinedArgumentValues, RunnableEntitys and RTEEvents necessary for RTE generation.",
+    "id": "TPS_SWCT_01407",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "11 Services",
+      "11.1 Overview: Generation of Service-related Model Elements"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "internalBehavior"
+        ],
+        "targetEntityName": "ServiceSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "portAPIOption",
+          "runnable",
+          "event"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortDefinedArgumentValue"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RTEEvent"
+      }
+    ],
+    "title": "Creation of InternalBehavior typed by a ServiceSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PortDefinedArgumentValue._classLevel",
+      "RTEEvent._classLevel",
+      "RunnableEntity._classLevel",
+      "ServiceSwComponentType.internalBehavior",
+      "SwcInternalBehavior.event",
+      "SwcInternalBehavior.portAPIOption",
+      "SwcInternalBehavior.runnable"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Depending of the configuration of the Service BSW it might be necessary to update the ValueSpecifications belonging to the PortDefinedArgumentValues generated in a previous step.",
+    "id": "TPS_SWCT_01409",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "11 Services",
+      "11.1 Overview: Generation of Service-related Model Elements"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortDefinedArgumentValue"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ValueSpecification"
+      }
+    ],
+    "title": "Update of PortDefinedArgumentValues",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PortDefinedArgumentValue._classLevel",
+      "ValueSpecification._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The first option is that the software component defines in its InternalBehavior a PerInstanceMemory and a NvBlockNeeds referring to the PerInstance Memory via a RoleBasedDataAssignment. In this case the NVRAM Block is exclusively accessed by this software component and the NvM [31]. Therefore the nv data is encapsulated inside the software component and can not be accessed directly by other software components. The PerInstanceMemory can be typed with AutosarDataTypes in the case of arTypedPerInstanceMemory or with C data types in the case of perInstanceMemory.",
+    "id": "Constr_NV_Memory_Option1_PerInstanceMemory",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "11 Services",
+      "11.5 Non Volatile Memory",
+      "11.5.1 Introduction"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "internalBehavior"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "InternalBehavior"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PerInstanceMemory"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NvBlockNeeds"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RoleBasedDataAssignment"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      }
+    ],
+    "title": "NV Memory Access via PerInstanceMemory",
+    "is_active": true,
+    "references": [
+      "[31]"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType.internalBehavior",
+      "AutosarDataType._classLevel",
+      "InternalBehavior._classLevel",
+      "NvBlockNeeds._classLevel",
+      "PerInstanceMemory._classLevel",
+      "RoleBasedDataAssignment._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The second option is that the software component uses communication based on PortPrototypes to access nv data provided by a NvBlockSwComponentType. In this case it is possible that nv data used by different AtomicSwComponentTypes is packed in one larger NVRAM Block to reduce the NVRAM Block management overhead or that the same nv data used by several software components with a reduced RAM overhead. The nv data of a NvBlockSwComponentType is typed with AutosarDataTypes.",
+    "id": "Constr_NV_Memory_Option2_PortPrototype",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "11 Services",
+      "11.5 Non Volatile Memory",
+      "11.5.1 Introduction"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "port"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NvBlockSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      }
+    ],
+    "title": "NV Memory Access via PortPrototypes and NvBlockSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType.port",
+      "AutosarDataType._classLevel",
+      "NvBlockSwComponentType._classLevel",
+      "PortPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The communication pattern C* (n:1, PPort : RPort from service to software-component) is conceptually not used to support index abstraction via PortDefinedArgumentValues.",
+    "id": "Table_11_1_Pattern_C_star",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "11 Services",
+      "11.1 Overview: Generation of Service-related Model Elements",
+      "Table 11.1 ServiceConnectorPattern"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortDefinedArgumentValue"
+      }
+    ],
+    "title": "ServiceConnectorPattern C* (n:1, PPort:RPort) conceptually not used",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PortDefinedArgumentValue._classLevel",
+      "PortPrototype._classLevel"
+    ],
+    "confidence": 0.9
   }
 ]

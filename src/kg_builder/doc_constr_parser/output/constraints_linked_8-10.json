@@ -1814,5 +1814,44 @@
       "SwcBswMapping._classLevel"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The name of the mode is the most important attribute that has to be provided for each ModeDeclaration. The ModeDeclarations are grouped together within the ModeDeclarationGroup.",
+    "id": "TPS_SWCT_01071",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeDeclaration"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "ModeDeclaration",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200",
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.shortName",
+      "ModeDeclarationGroup.modeDeclaration"
+    ],
+    "confidence": 0.9
   }
 ]

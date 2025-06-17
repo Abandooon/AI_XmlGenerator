@@ -28,9 +28,10 @@ RE_EXTRACT_CHUNKS = []
 
 # 文件名常量 (可以考虑版本号v5)
 UNIFIED_METADATA_FILENAME = "unified_metadata.json"
-OUTPUT_LINKED_CONSTRAINTS_FILENAME = "constraints_linked_v5.json"
-OUTPUT_REVIEW_QUEUE_FILENAME = "review_queue_v5.csv"
-OUTPUT_RAW_LLM_FILENAME = "constraints_raw_v5.jsonl" # 明确文件名
+OUTPUT_LINKED_CONSTRAINTS_FILENAME = "constraints_linked_11-13.json"
+OUTPUT_REVIEW_QUEUE_FILENAME = "review_queue_11-13.csv"
+OUTPUT_RAW_LLM_FILENAME = "constraints_raw_11-13.jsonl" # 明确文件名
+
 
 # LLM 的 Schema (V5 - 支持多目标)
 # CONSTRAINT_SCHEMA = {

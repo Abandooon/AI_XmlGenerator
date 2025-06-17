@@ -3397,5 +3397,1473 @@
       "DelegationSwConnector._classLevel"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Instances of ApplicationPrimitiveDataType are compatible if and only if one of the following conditions applies:\n\n1. All of the following subconditions apply: (a) They have the same category (see table in figure 5.8). (b) The swDataDefProps attached to the M1 data types are compatible. The meaning of this statement is explained in section 6.2.4.\n\n2. In the context of using the ApplicationPrimitiveDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by one of the ApplicationPrimitiveDataTypes in the role firstDataPrototype and to another DataPrototype typed by the other ApplicationPrimitiveDataType in the role secondDataPrototype.\n\n3. In the context of using the ApplicationPrimitiveDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by the ApplicationPrimitiveDataType in the role secondDataPrototype and to another DataPrototype typed by an ApplicationCompositeDataType in the role firstDataPrototype and additionally for the side of the ApplicationCompositeDataType a corresponding ApplicationCompositeDataTypeSubElementRef exists in the role firstElement that in turn references an ApplicationCompositeElementDataPrototype.",
+    "id": "constr_1047",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.1 ApplicationDataType",
+      "6.2.1.1 ApplicationPrimitiveDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "category",
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstDataPrototype",
+          "secondDataPrototype"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstElement"
+        ],
+        "targetEntityName": "SubElementMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationCompositeElementDataPrototype"
+      }
+    ],
+    "title": "Compatibility of ApplicationPrimitiveDataTypes",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationCompositeDataType._classLevel",
+      "ApplicationCompositeElementDataPrototype._classLevel",
+      "ApplicationPrimitiveDataType._classLevel",
+      "ApplicationPrimitiveDataType.category",
+      "ApplicationPrimitiveDataType.swDataDefProps",
+      "DataPrototype._classLevel",
+      "DataPrototypeMapping.firstDataPrototype",
+      "DataPrototypeMapping.secondDataPrototype",
+      "SubElementMapping.firstElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Instances of ApplicationRecordDataTypes are compatible if and only if one of the following conditions applies:\n1. All elements at the same record position are of compatible Autosar DataTypes either ApplicationCompositeDataTypes or ApplicationPrimitiveDataTypes).\n2. In the context of a DataPrototypeMapping, for each ApplicationRecordElement of the required ApplicationRecordDataType a SubElementMapping exists such that a ApplicationCompositeDataTypeSubElementRef in the role firstElement or secondElement exists that references the required ApplicationRecordElement and a corresponding ApplicationCompositeDataTypeSubElementRef exists in the other role (i.e. secondElement or firstElement) that in turn references an ApplicationRecordElement of the provided ApplicationRecordDataType.",
+    "id": "constr_1048",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.1 ApplicationDataType",
+      "6.2.1.2 ApplicationCompositeDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "element"
+        ],
+        "targetEntityName": "ApplicationRecordDataType"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationRecordElement"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "firstElement",
+          "secondElement"
+        ],
+        "targetEntityName": "SubElementMapping"
+      }
+    ],
+    "title": "Compatibility of ApplicationRecordDataTypes",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationCompositeDataType._classLevel",
+      "ApplicationPrimitiveDataType._classLevel",
+      "ApplicationRecordDataType._classLevel",
+      "ApplicationRecordDataType.element",
+      "ApplicationRecordElement._classLevel",
+      "AutosarDataType._abstractLevel",
+      "DataPrototypeMapping._classLevel",
+      "SubElementMapping._classLevel",
+      "SubElementMapping.firstElement",
+      "SubElementMapping.secondElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Instances of ApplicationArrayDataType are compatible if and only if one of the following conditions applies:\n1. All of the following subconditions apply:\n(a) Their elements are of a compatible AutosarDataTypes (either ApplicationPrimitive or ApplicationCompositeDataTypes DataTypes).\n(b) The attributes maxNumberOfElements and arraySizeSemantics (given the existence) have identical values.\n2. In the context of a DataPrototypeMapping, for the ApplicationArrayElement of the required ApplicationArrayDataType a SubElementMapping exists such that a ApplicationCompositeDataTypeSubElementRef in the role firstElement or secondElement exists that references the required ApplicationArrayElement and a corresponding ApplicationCompositeDataTypeSubElementRef exists in the other role (i.e. secondElement or firstElement) that in turn references an ApplicationArrayElement of the provided ApplicationArrayDataType.",
+    "id": "constr_1049",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.1 ApplicationDataType",
+      "6.2.1.2 ApplicationCompositeDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "element"
+        ],
+        "targetEntityName": "ApplicationArrayDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "maxNumberOfElements",
+          "arraySizeSemantics"
+        ],
+        "targetEntityName": "ApplicationArrayElement"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationArrayElement"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "firstElement",
+          "secondElement"
+        ],
+        "targetEntityName": "SubElementMapping"
+      }
+    ],
+    "title": "Compatibility of ApplicationArrayDataTypes",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationArrayDataType._classLevel",
+      "ApplicationArrayDataType.element",
+      "ApplicationArrayElement._classLevel",
+      "ApplicationArrayElement.arraySizeSemantics",
+      "ApplicationArrayElement.maxNumberOfElements",
+      "ApplicationCompositeDataType._classLevel",
+      "ApplicationPrimitiveDataType._classLevel",
+      "AutosarDataType._abstractLevel",
+      "DataPrototypeMapping._classLevel",
+      "SubElementMapping._classLevel",
+      "SubElementMapping.firstElement",
+      "SubElementMapping.secondElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Instances of ImplementationDataType are compatible if and only if after all type-references are resolved one of the following rules apply:\n\n1. All of the following subconditions apply:\n(a) They have the same category (see table 5.18)\n(b) They have the identical structure (this refers to ImplementationDataTypeElement and their subElements).\n(c) The attributes arraySize and arraySizeSemantics have (given the existence) identical values.\n(d) The swDataDefProps attached to the M1 data types are compatible. The meaning of this statement is explained in section 6.2.4.\n\n2. In the context of using the ImplementationDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by one of the ImplementationDataTypes in the role firstDataPrototype and to another DataPrototype typed by the other ImplementationDataType in the role secondDataPrototype.\n\n3. In the context of using the ImplementationDataType, a DataPrototypeMapping exists that refers to a DataPrototype typed by the ImplementationDataTypes in the role secondDataPrototype and to another DataPrototype typed by an ImplementationDataType with a subElement in the role firstDataPrototype and additionally for the side of the ImplementationDataType with a subElement a corresponding ImplementationDataTypeSubElementRef exists in the role firstElement that in turn references an ImplementationDataTypeElement.",
+    "id": "constr_1050",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.2 ImplementationDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "category",
+          "subElement",
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "subElement",
+          "arraySize",
+          "arraySizeSemantics"
+        ],
+        "targetEntityName": "ImplementationDataTypeElement"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstDataPrototype",
+          "secondDataPrototype"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstElement"
+        ],
+        "targetEntityName": "SubElementMapping"
+      }
+    ],
+    "title": "Compatibility of ImplementationDataTypes",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataPrototype._classLevel",
+      "DataPrototypeMapping.firstDataPrototype",
+      "DataPrototypeMapping.secondDataPrototype",
+      "ImplementationDataType._classLevel",
+      "ImplementationDataType.category",
+      "ImplementationDataType.subElement",
+      "ImplementationDataType.swDataDefProps",
+      "ImplementationDataTypeElement._classLevel",
+      "ImplementationDataTypeElement.arraySize",
+      "ImplementationDataTypeElement.arraySizeSemantics",
+      "ImplementationDataTypeElement.subElement",
+      "SubElementMapping.firstElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Two SwBaseTypes are compatible if and only if attributes baseTypeSize respectively maxBaseTypeSize, byteOrder, memAlignment, baseTypeEncoding, and nativeDeclaration have identical values.",
+    "id": "constr_1220",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.3 Compatibility of SwBaseType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseTypeSize",
+          "maxBaseTypeSize",
+          "byteOrder",
+          "memAlignment",
+          "baseTypeEncoding",
+          "nativeDeclaration"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      }
+    ],
+    "title": "Compatibility of SwBaseType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.baseTypeEncoding",
+      "BaseTypeDirectDefinition.baseTypeSize",
+      "BaseTypeDirectDefinition.byteOrder",
+      "BaseTypeDirectDefinition.maxBaseTypeSize",
+      "BaseTypeDirectDefinition.memAlignment",
+      "BaseTypeDirectDefinition.nativeDeclaration"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "It is not required that the shortNames of two Units shall be identical in order to consider the two units as compatible.",
+    "id": "Constr_Unit_ShortNameNotRequiredForCompatibility",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps",
+      "6.2.4.1 Compatibility of Units"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "Unit"
+      }
+    ],
+    "title": "ShortName identity not required for Unit compatibility",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "Unit.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Two PhysicalDimension definitions are compatible if and only if the values of\n• lengthExp\n• massExp\n• timeExp\n• currentExp\n• temperatureExp\n• molarAmountExp\n• luminousIntensityExp\nare identical and either the shortNames are identical or a PhysicalDimension Mapping exists that maps one of the PhysicalDimensions in the role first PhysicalDimension and the other PhysicalDimension in the role secondPhysicalDimension.",
+    "id": "constr_1053",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps",
+      "6.2.4.2 Compatibility of PhysicalDimensions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "lengthExp",
+          "massExp",
+          "timeExp",
+          "currentExp",
+          "temperatureExp",
+          "molarAmountExp",
+          "luminousIntensityExp",
+          "shortName"
+        ],
+        "targetEntityName": "PhysicalDimension"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstPhysicalDimension",
+          "secondPhysicalDimension"
+        ],
+        "targetEntityName": "PhysicalDimensionMapping"
+      }
+    ],
+    "title": "Compatibility of PhysicalDimensions",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PhysicalDimension.currentExp",
+      "PhysicalDimension.lengthExp",
+      "PhysicalDimension.luminousIntensityExp",
+      "PhysicalDimension.massExp",
+      "PhysicalDimension.molarAmountExp",
+      "PhysicalDimension.shortName",
+      "PhysicalDimension.temperatureExp",
+      "PhysicalDimension.timeExp",
+      "PhysicalDimensionMapping.firstPhysicalDimension",
+      "PhysicalDimensionMapping.secondPhysicalDimension"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The attributes SwDataDefProps.swPointerTargetProps shall have identical targetCategory and shall refer to SwDataDefProps where all attributes are identical",
+    "id": "constr_1057",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swPointerTargetProps"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "targetCategory"
+        ],
+        "targetEntityName": "SwPointerTargetProps"
+      }
+    ],
+    "title": "ImplementationDataType has category DATA_REFERENCE",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ImplementationDataType.category",
+      "SwDataDefProps.swPointerTargetProps",
+      "SwPointerTargetProps.targetCategory"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Compatibility requirements for CompuScales shall only apply for CompuScales where the category of the enclosing CompuMethod is one of the following: • SCALE_LINEAR_AND_TEXTTABLE • SCALE_RATIONAL_AND_TEXTTABLE • TEXTTABLE • TAB_NOINTP • BITFIELD_TEXTTABLE • LINEAR • RAT_FUNC • IDENTICAL",
+    "id": "constr_1153",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps",
+      "6.2.4.5 Compatibility of CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicability of compatibility requirements for CompuScales",
+    "is_active": true,
+    "references": [],
+    "value": "SCALE_LINEAR_AND_TEXTTABLE, SCALE_RATIONAL_AND_TEXTTABLE, TEXTTABLE, TAB_NOINTP, BITFIELD_TEXTTABLE, LINEAR, RAT_FUNC, IDENTICAL",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "CompuScales of category LINEAR and RAT_FUNC are considered compatible if they yield the same conversion. In other words, `n₀+n₁*phys` / `d₀+d₁*phys` is compatible to `N₀+N₁*phys` / `D₀` if `n₀ ~ N₀ && n₁ ~ N₁ && d₀ ~ D₀ && d₁ ~ 0`.",
+    "id": "constr_1176",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps",
+      "6.2.4.5 Compatibility of CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuScale"
+      }
+    ],
+    "title": "Compatibility of CompuScales of category LINEAR and RAT_FUNC",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuScale.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Similar to [constr_1176], a CompuScale where the category of the enclosing CompuMethod is set to IDENTICAL is considered compatible to a CompuScale where the category of the enclosing CompuMethod is set to RAT_FUNC or LINEAR if the following rule applies: \nint = (N0+N1*phys+Ni*physi) / (D0+D1*phys+Di*physi) = phys \nThis is the case for N0 ~ 0 && D0 ~ 1 && N1 ~ 1 && D1 ~ 0 && Ni ~ Di ~ 0 ∀i > 1.",
+    "id": "constr_1192",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.4 Compatibility of SwDataDefProps",
+      "6.2.4.5 Compatibility of CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Compatibility of \"IDENTICAL\" to \"RAT_FUNC\" or \"LINEAR\"",
+    "is_active": true,
+    "references": [
+      "constr_1176"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "An ApplicationDataType of category VALUE can only be mapped/connected to an ImplementationDataType which also has category VALUE. In this case, the ImplementationDataType.baseType shall be able to express all the numerical values required by the ApplicationDataType, see Figure 5.6. This condition is fulfilled if the numerical range which can be expressed by the SwBaseType at least covers the range defined by the limits in ApplicationDataType.swDataDefProps.dataConstr (which are either internal limits or physical limits to be converted via the CompuMethod which also has to be provided by the ApplicationDataType). The condition is also fulfilled if the SwBaseType covers the range defined in the CompuMethod for an enumeration (see 5.5.1.3).",
+    "id": "constr_1059",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.5 Compatibility of ApplicationDataType and ImplementationDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwBaseType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Compatibility of data types with category VALUE",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationDataType.category",
+      "ApplicationDataType.swDataDefProps",
+      "CompuMethod._classLevel",
+      "ImplementationDataType.category",
+      "SwBaseType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "In case that only the ImplementationDataType may \"define\" the property this definition shall fit into the semantical requirements given by the ApplicationDataType in order to make the two types compatible. This is namely important for the attribute baseType and is explained above in the rule for types of category VALUE.",
+    "id": "Constr_SwDataDefProps_ImplDefinesProperty",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.5 Compatibility of ApplicationDataType and ImplementationDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseType"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "SwDataDefProps compatibility when ImplementationDataType defines property",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationDataType._classLevel",
+      "ImplementationDataType._classLevel",
+      "SwDataDefProps.baseType"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "In case the ImplementationDataType may \"add\" a property it may only add but not change a property defined by the ApplicationDataType (namely note, displayFormat, and swImplPolicy) in order to be compatible. This means that the respective computation methods can be defined in only one of the types in order to be compatible. In all other cases, only the ApplicationDataType may define the computation method.",
+    "id": "Constr_SwDataDefProps_ImplAddsProperty",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.5 Compatibility of ApplicationDataType and ImplementationDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "note"
+        ],
+        "targetEntityName": "DocumentationBlock"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "displayFormat",
+          "swImplPolicy"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "SwDataDefProps compatibility when ImplementationDataType adds property",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationDataType._classLevel",
+      "DocumentationBlock.note",
+      "ImplementationDataType._classLevel",
+      "SwDataDefProps.displayFormat",
+      "SwDataDefProps.swImplPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The case that an ImplementationDataType may \"redefine\" a property which is already set by the ApplicationDataType is not considered as relevant for the compatibility with respect to mapping of the types in general but of course there may be project specific rules as to which redefinition is allowed (e.g. for swAddrMethod or dataConstr).",
+    "id": "Constr_SwDataDefProps_ImplRedefinesProperty",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "6 Compatibility",
+      "6.2 Compatibility of Data Types",
+      "6.2.5 Compatibility of ApplicationDataType and ImplementationDataType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swAddrMethod",
+          "dataConstr"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "SwDataDefProps redefinition relevance for compatibility",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationDataType._classLevel",
+      "ImplementationDataType._classLevel",
+      "SwDataDefProps.dataConstr",
+      "SwDataDefProps.swAddrMethod"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "DataPrototypes of ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY are compatible if one of the following conditions evaluates to true:\n\n1. The underlying ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY are identical\n\n2. The underlying ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY fulfill the following condition:\n• They consist of the same number of elements and\n• They are composed of compatible AutosarDataTypes (either ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY OR ApplicationPrimitiveDataTypes or ImplementationDataTypes of category VALUE, BOOLEAN, or STRING) in the same order and\n• All attributes match exactly, with the exception of the shortName of the M1 AutosarDataType.\n\n3. In the context of a DataPrototypeMapping, for each ApplicationCompositeElementDataPrototype of the required DataPrototype a SubElementMapping exists such that a ApplicationCompositeDataTypeSubElementRef in the role firstElement or secondElement exists that references the required ApplicationCompositeElementDataPrototype and a corresponding ApplicationCompositeDataTypeSubElementRef exists in the other role (i.e. secondElement or firstElement) that in turn references an ApplicationCompositeElementDataPrototype of the provided ApplicationCompositeDataType.\n\n4. If and only if the DataPrototype is not typed by an ApplicationDataType but by an ImplementationDataType: in the context of a DataPrototypeMapping, for each ImplementationDataTypeElement of the required DataPrototype a SubElementMapping exists such that a ImplementationDataTypeSubElementRef in the role firstElement or secondElement exists that references the required ImplementationDataTypeElement and a corresponding ImplementationDataTypeSubElementRef exists in the other role (i.e. secondElement or firstElement) that in turn references an ImplementationDataTypeElement of the provided ImplementationDataType.",
+    "id": "constr_1187",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.3 Compatibility of Variable Data Prototypes and Parameter Data Prototypes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "shortName"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "shortName"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstElement",
+          "secondElement"
+        ],
+        "targetEntityName": "SubElementMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationCompositeElementDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "applicationCompositeElement"
+        ],
+        "targetEntityName": "ApplicationCompositeDataTypeSubElementRef"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ImplementationDataTypeElement"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "implementationDataTypeElement"
+        ],
+        "targetEntityName": "ImplementationDataTypeSubElementRef"
+      }
+    ],
+    "title": "Compatibility of VariableDataPrototypes or ParameterDataPrototypes typed by composite data types",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationCompositeDataType.category",
+      "ApplicationCompositeDataType.shortName",
+      "ApplicationCompositeDataTypeSubElementRef.applicationCompositeElement",
+      "ApplicationCompositeElementDataPrototype._classLevel",
+      "AutosarDataType._classLevel",
+      "DataPrototype._classLevel",
+      "DataPrototypeMapping._classLevel",
+      "ImplementationDataType.category",
+      "ImplementationDataType.shortName",
+      "ImplementationDataTypeElement._classLevel",
+      "ImplementationDataTypeSubElementRef.implementationDataTypeElement",
+      "SubElementMapping.firstElement",
+      "SubElementMapping.secondElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "PortPrototypes of different DataInterfaces are considered compatible if and only if\n\n1. For at least one VariableDataPrototype or ParameterDataPrototype defined in the context of the DataInterface of the required outer PortPrototype a compatible VariableDataPrototype or ParameterDataPrototype exists in the DataInterface of the provided outer PortPrototype.\n\nThe table 6.1 defines which elements of PortInterface are considered compatible depending on the type of PortInterface as well as the attribute swImplPolicy of the elements of PortInterfaces.\n\nEither the shortName of VariableDataPrototypes and ParameterDataPrototypes are used to identify the pair or a PortInterfaceMapping exists that defines which differently named elements of PortInterfaces correlate with each other.\n\n2. For each such pair, the values of the PortInterface.isService attributes are identical.",
+    "id": "constr_1248",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.4 Compatibility of Sender Receiver Interfaces, Parameter Interfaces and Non Volatile Data Interfaces",
+      "6.4.3 Connection of Required and Provided Port via PassThroughSwConnector"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PassThroughSwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "isService"
+        ],
+        "targetEntityName": "PortInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterfaceMapping"
+      }
+    ],
+    "title": "Compatibility of PortPrototypes of different DataInterfaces in the context of a PassThroughSwConnector",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataInterface._classLevel",
+      "ParameterDataPrototype.shortName",
+      "PassThroughSwConnector._classLevel",
+      "PortInterface.isService",
+      "PortInterfaceMapping._classLevel",
+      "PortPrototype._classLevel",
+      "SwDataDefProps.swImplPolicy",
+      "VariableDataPrototype.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "ModeDeclarationGroups are compatible if and only if one of the following conditions applies:\n1. All of the following subconditions apply:\n(a) They define an identical number of ModeDeclarations.\n(b) Each ModeDeclaration on the required side corresponds to a ModeDeclaration on the provided side with an identical shortName.\n(c) The initialModes on both sides refer to ModeDeclarations with identical shortNames.\n(d) The attribute ModeDeclarationGroup.modeUserErrorBehavior.errorReactionPolicy has identical values on both sides.\n(e) The attribute ModeDeclarationGroup.modeManagerErrorBehavior.errorReactionPolicy has identical values on both sides.\n(f) The attribute ModeDeclarationGroup.modeUserErrorBehavior.defaultMode either does not exist on both sides or refers on both sides to ModeDeclarations with identical shortNames.\n(g) The attribute ModeDeclarationGroup.modeManagerErrorBehavior.defaultMode either does not exist on both sides or refers on both sides to ModeDeclarations with identical shortNames.\n(h) one of the following subconditions applies:\n• the attribute category has the value ALPHABETIC_ORDER on both sides.\n• the attribute category has the value EXPLICIT_ORDER on both sides and the matching ModeDeclarations according to 1(b) have the identical values of the attributes ModeDeclaration.value and also the value of ModeDeclarationGroup.onTransitionValue matches on both sides.\n2. A ModeDeclarationMapping is applied which identifies the corresponding ModeDeclarations.\nIn addition, the compatibility of corresponding ModeTransitions shall be checked, i.e. [constr_1194] and [constr_1245] apply.",
+    "id": "constr_1075",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.7 Compatibility of Mode Declaration Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeDeclaration",
+          "initialMode",
+          "modeUserErrorBehavior",
+          "modeManagerErrorBehavior",
+          "category",
+          "onTransitionValue"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName",
+          "value"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclarationMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeTransition"
+      }
+    ],
+    "title": "Compatibility of ModeDeclarationGroups",
+    "is_active": true,
+    "references": [
+      "constr_1194",
+      "constr_1245"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.shortName",
+      "ModeDeclaration.value",
+      "ModeDeclarationGroup.category",
+      "ModeDeclarationGroup.initialMode",
+      "ModeDeclarationGroup.modeDeclaration",
+      "ModeDeclarationGroup.modeManagerErrorBehavior",
+      "ModeDeclarationGroup.modeUserErrorBehavior",
+      "ModeDeclarationGroup.onTransitionValue",
+      "ModeDeclarationMapping._classLevel",
+      "ModeTransition._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Two ModeDeclarationGroups contain identical modeTransitions if and only if\n1. For each ModeTransition defined in the context of the mode provider one ModeTransition with the same shortName is defined in the context of the mode user.\n2. Each pair of ModeTransitions in both ModeDeclarationGroups identified by their respective shortName have identical targets (in terms of the shortName of the referenced ModeDeclaration) of the references enteredMode and exitedMode.",
+    "id": "constr_1194",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.7 Compatibility of Mode Declaration Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName",
+          "enteredMode",
+          "exitedMode"
+        ],
+        "targetEntityName": "ModeTransition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "Identical ModeTransitions",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.shortName",
+      "ModeDeclarationGroup._classLevel",
+      "ModeTransition.enteredMode",
+      "ModeTransition.exitedMode",
+      "ModeTransition.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The delegation of a provided outer PortPrototype is properly defined if the following criteria are fulfilled:\n\n1. For each VariableDataPrototype or ParameterDataPrototype present in the SenderReceiverInterface, NvDataInterface, or Parameter Interface of the provided outer PortPrototype at least one connection via DelegationSwConnector to a provided inner PortPrototype or PassThroughSwConnector to a required outer PortPrototype with a compatible VariableDataPrototype or ParameterDataPrototype in the SenderReceiverInterface NvDataInterface or ParameterInterface of the provided inner PortPrototype or required outer PortPrototype exists. Either the shortNames of VariableDataPrototypes or ParameterDataPrototypes are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other. Table 6.1 defines which PortInterface elements are compatible depending on the kind of PortInterface and the swImplPolicy attributes of the Port Interface elements.\n\n2. For each VariableDataPrototype provided by a PRPortPrototype that is typed by a SenderReceiverInterface or NvDataInterface and that is referenced in the role outerPort by a DelegationSwConnector a corresponding VariableDataPrototype owned by an innerPort shall be provided by either a PPortPrototype or a PRPortPrototype. Either the shortNames of VariableDataPrototypes are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other.\n\n3. For the ModeDeclarationGroupPrototype present in the ModeSwitch Interface of the provided outer PortPrototype exactly one connection via DelegationSwConnector to a provided inner PortPrototype or PassThroughSwConnector to a required outer PortPrototype with a compatible ModeDeclarationGroupPrototype in the ModeSwitchInterface of the provided inner PortPrototype or required outer PortPrototype exists. Either the shortNames of ModeDeclarationGroupPrototypes are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other.\n\n4. For each ClientServerOperation present in the ClientServerInterface of the provided outer PortPrototype exactly one connection via DelegationSwConnector to a provided inner PortPrototype or PassThroughSwConnector to a required outer PortPrototype with a compatible ClientServerOperation in the ClientServerInterface of the provided inner PortPrototype or required outer PortPrototype exists. Either the shortNames of ClientServerOperations are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other.\n\n5. For each Trigger present in the TriggerInterface of the provided outer PortPrototype exactly one connection via DelegationSwConnector to a provided inner PortPrototype or PassThroughSwConnector to a required outer PortPrototype with a compatible Trigger in the TriggerInterface of the provided inner PortPrototype or required outer PortPrototype exists. Either the shortNames of Triggers are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other.",
+    "id": "constr_1084",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.14 Entire Delegation of a Provided Port Prototype"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DelegationSwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PassThroughSwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SenderReceiverInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NvDataInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterfaceMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PRPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ModeDeclarationGroupPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ClientServerOperation"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ClientServerInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "Trigger"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TriggerInterface"
+      }
+    ],
+    "title": "delegation of a provided outer PortPrototype",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ClientServerInterface._classLevel",
+      "ClientServerOperation.shortName",
+      "DelegationSwConnector._classLevel",
+      "ModeDeclarationGroupPrototype.shortName",
+      "ModeSwitchInterface._classLevel",
+      "NvDataInterface._classLevel",
+      "PPortPrototype._classLevel",
+      "PRPortPrototype._classLevel",
+      "ParameterDataPrototype.shortName",
+      "ParameterInterface._classLevel",
+      "PassThroughSwConnector._classLevel",
+      "PortInterface._classLevel",
+      "PortInterfaceMapping._classLevel",
+      "PortPrototype._classLevel",
+      "SenderReceiverInterface._classLevel",
+      "SwDataDefProps.swImplPolicy",
+      "Trigger.shortName",
+      "TriggerInterface._classLevel",
+      "VariableDataPrototype.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "PortPrototypes of different SenderReceiverInterfaces, NvDataInterfaces, and ParameterInterfaces are compatible if and only if for at least one VariableDataPrototype or ParameterDataPrototype defined in the context of the SenderReceiverInterface, NvDataInterface, or ParameterInterface of the RPortPrototype a compatible VariableDataPrototype or ParameterDataPrototype exists in the SenderReceiverInterface, NvDataInterface, or ParameterInterface of the provided PortPrototype.\n\nThe compatibility of PortInterface elements depends on the kind of PortInterface and the swImplPolicy attributes of the PortInterface elements. Either the shortNames of VariableDataPrototypes and ParameterDataPrototypes are used to identify the pair or a PortInterfaceMapping defines which differently named PortInterface elements correlate with each other.",
+    "id": "constr_1085",
+    "id_type": "constr",
+    "scope_path": [
+      "6 Compatibility",
+      "6.14 Entire Delegation of a Provided Port Prototype",
+      "6.15 Compatibility in Case of a Flat ECU Extract"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SenderReceiverInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NvDataInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName",
+          "_classLevel"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName",
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterfaceMapping"
+      }
+    ],
+    "title": "Compatibility in the case of a flat ECU extract",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "NvDataInterface._classLevel",
+      "PPortPrototype._classLevel",
+      "ParameterDataPrototype._classLevel",
+      "ParameterDataPrototype.shortName",
+      "ParameterInterface._classLevel",
+      "PortInterface._classLevel",
+      "PortInterfaceMapping._classLevel",
+      "PortPrototype._classLevel",
+      "RPortPrototype._classLevel",
+      "SenderReceiverInterface._classLevel",
+      "SwDataDefProps.swImplPolicy",
+      "VariableDataPrototype._classLevel",
+      "VariableDataPrototype.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "When merging multiple AssemblySwConnectors (connecting AbstractProvidedPortPrototypes) into a single DelegationSwConnector (connected to an AbstractRequiredPortPrototype within a CompositionSwComponentType), the resulting interface set must be compatible. Supplying data elements (DataPrototypes) not consistently provided by all merged sources or required by the target port without proper reconciliation (e.g., via InterfaceMapping) constitutes an illegal merge, violating AUTOSAR port merging rules.",
+    "id": "Figure_6_12",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "6 Compatibility",
+      "6.16 Compatibility Examples",
+      "6.16.2 Compatibility on Delegation Level",
+      "Figure 6.12 Illegal merge of delegation connector"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AssemblySwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DelegationSwConnector"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AbstractProvidedPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AbstractRequiredPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompositionSwComponentType"
+      }
+    ],
+    "title": "Illegal merge of delegation connector: Interface compatibility",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AbstractProvidedPortPrototype._classLevel",
+      "AbstractRequiredPortPrototype._classLevel",
+      "AssemblySwConnector._classLevel",
+      "CompositionSwComponentType._classLevel",
+      "DataPrototype._classLevel",
+      "DelegationSwConnector._classLevel"
+    ],
+    "confidence": 0.9
   }
 ]

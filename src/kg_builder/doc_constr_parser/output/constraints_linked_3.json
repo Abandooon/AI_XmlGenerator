@@ -1691,5 +1691,101 @@
       "SwcServiceDependency._classLevel"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "A DelegationSwConnector can only connect a PortPrototype of a SwComponentPrototype that is owned by the same CompositionSwComponentType that also owns the connected delegationPortPrototype.",
+    "id": "constr_1088",
+    "id_type": "constr",
+    "scope_path": [
+      "3 Overview: Software Components, Ports, and Interfaces",
+      "3.3 Composition"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetEntityName": "DelegationSwConnector",
+        "targetAttributes": [
+          "innerPort"
+        ]
+      },
+      {
+        "entityType": "class",
+        "targetEntityName": "DelegationSwConnector",
+        "targetAttributes": [
+          "outerPort"
+        ]
+      },
+      {
+        "entityType": "class",
+        "targetEntityName": "CompositionSwComponentType",
+        "targetAttributes": [
+          "port"
+        ]
+      }
+    ],
+    "title": "DelegationSwConnector inside CompositionSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompositionSwComponentType.port",
+      "DelegationSwConnector.innerPort",
+      "DelegationSwConnector.outerPort"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For any element in an unconnected RPortPrototype typed by a DataInterface there shall be a requiredComSpec that deﬁnes an initValue.",
+    "id": "constr_1100",
+    "id_type": "constr",
+    "scope_path": [
+      "3 Overview: Software Components, Ports, and Interfaces",
+      "3.3 Composition"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetEntityName": "RPortPrototype",
+        "targetAttributes": [
+          "requiredComSpec"
+        ]
+      },
+      {
+        "entityType": "class",
+        "targetEntityName": "RequiredComSpecs",
+        "targetAttributes": [
+          "nonqueuedReceiverComSpec"
+        ]
+      },
+      {
+        "entityType": "class",
+        "targetEntityName": "NonqueuedReceiverComSpec",
+        "targetAttributes": [
+          "initValue"
+        ]
+      },
+      {
+        "entityType": "class",
+        "targetEntityName": "DataInterface",
+        "targetAttributes": [
+          "_classLevel"
+        ]
+      }
+    ],
+    "title": "Unconnected RPortPrototype typed by a DataInterface",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataInterface._classLevel",
+      "NonqueuedReceiverComSpec.initValue",
+      "RPortPrototype.requiredComSpec",
+      "RequiredComSpecs.nonqueuedReceiverComSpec"
+    ],
+    "confidence": 0.9
   }
 ]

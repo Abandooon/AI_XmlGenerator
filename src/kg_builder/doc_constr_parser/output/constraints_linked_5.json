@@ -9269,5 +9269,2048 @@
       "NvBlockSwComponentType.nvBlockDescriptor"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The definition of the reference ImplementationDataType.swDataDefProps.compuMethod is restricted to a CompuMethod of either category BITFIELD_TEXTTABLE or category TEXTTABLE (these might be seen as implementation specific in certain cases).",
+    "id": "constr_1158",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.5 Implementation Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuMethod"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicable categorys for attribute ImplementationDataType.swDataDefProps.compuMethod",
+    "is_active": true,
+    "references": [],
+    "value": "BITFIELD_TEXTTABLE or TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "ImplementationDataType.swDataDefProps",
+      "SwDataDefProps.compuMethod"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "For the attribute SwBaseType.category only the values FIXED_LENGTH and VARIABLE_LENGTH are supported.",
+    "id": "constr_1011",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.6 Base Type",
+      "Properties of SwBaseType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "SwBaseType"
+      }
+    ],
+    "title": "category of SwBaseType",
+    "is_active": true,
+    "references": [],
+    "value": "FIXED_LENGTH, VARIABLE_LENGTH",
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwBaseType.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "In contrast to the general rule that category can be extended by user-specific values it is not allowed to extend the meaning of the attribute category of meta-class CompuMethod",
+    "id": "constr_1142",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "category of CompuMethod shall not be extended",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "As a CompuMethod specifies the conversion between the physical world and the numerical values they shall refer to a unit unless the CompuMethod's category is one of TEXTTABLE, BITFIELD_TEXTTABLE, or IDENTICAL.",
+    "id": "constr_1175",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "unit",
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Depending on its category, CompuMethod shall refer to a unit",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.unit"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The symbol attribute shall only be provided for CompuScales where the category of the enclosing CompuMethod is one of the following:\n • SCALE_LINEAR_AND_TEXTTABLE\n • SCALE_RATIONAL_AND_TEXTTABLE\n • TEXTTABLE\n • BITFIELD_TEXTTABLE",
+    "id": "constr_1146",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "symbol"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicability of a symbol for a CompuScale in C code",
+    "is_active": true,
+    "references": [],
+    "value": "SCALE_LINEAR_AND_TEXTTABLE, SCALE_RATIONAL_AND_TEXTTABLE, TEXTTABLE, BITFIELD_TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale.symbol"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "other",
+    "expression": "Note that [constr_1135] only applies for BITFIELD_TEXTTABLE. It does not apply to the definition of vt in the context of an ApplicationValueSpecification.",
+    "id": "TPS_SWCT_01429",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "vt"
+        ],
+        "targetEntityName": "CompuConstTextContent"
+      }
+    ],
+    "title": "[constr_1135] only applies for BITFIELD_TEXTTABLE",
+    "is_active": true,
+    "references": [
+      "constr_1135"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuConstTextContent.vt",
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "physConstr is not allowed. compuInternalToPhys  shall exist with compuScales consisting of upperLimit and lowerLimit.",
+    "id": "constr_1134",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.1 Category Values in the context of a CompuMethod",
+      "Table 5.73 ASAM compuMethod"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "compuInternalToPhys"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "upperLimit",
+          "lowerLimit"
+        ],
+        "targetEntityName": "CompuScale"
+      }
+    ],
+    "title": "Allowed structure of TEXTTABLE",
+    "is_active": true,
+    "references": [],
+    "value": "TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.compuInternalToPhys",
+      "CompuScale.lowerLimit",
+      "CompuScale.upperLimit"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "format",
+    "expression": "The separator is “|” and is forbidden in vt therefore.",
+    "id": "constr_1135",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.1 Category Values in the context of a CompuMethod",
+      "Table 5.73 ASAM compuMethod"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "vt"
+        ],
+        "targetEntityName": "CompuConstTextContent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Limit of vt in BITFIELD_TEXTTABLE",
+    "is_active": true,
+    "references": [],
+    "value": "|",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuConstTextContent.vt",
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The existence of attributes of CompuMethod and related meta-classes depending on the value of the category shall follow the restrictions documented in Table 5.74.",
+    "id": "constr_1375",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuConst"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuRationalCoeffs"
+      }
+    ],
+    "title": "Existence of attributes of CompuMethod and related meta-classes",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuConst._classLevel",
+      "CompuMethod.category",
+      "CompuRationalCoeffs._classLevel",
+      "CompuScale._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For certain categories (LINEAR, SCALE_LINEAR), CompuMethod.compuInternalToPhys shall be defined if not already defined by compuPhysToInternal. (Ref: Table 5.74, Annotation 1)",
+    "id": "Table_5_74_Annotation_1",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInternalToPhys",
+          "compuPhysToInternal",
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Condition for compuInternalToPhys definition (Table 5.74 Ann.1)",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.compuInternalToPhys",
+      "CompuMethod.compuPhysToInternal"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For certain categories (RAT_FUNC, SCALE_RAT_FUNC, etc.), both compuPhysToInternal and compuInternalToPhys shall be defined (per [constr_1021]) unless CompuScale.compuInverseValue exists (per [TPS_SWCT_01282]). (Ref: Table 5.74, Annotation 2)",
+    "id": "Table_5_74_Annotation_2",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInternalToPhys",
+          "compuPhysToInternal",
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInverseValue"
+        ],
+        "targetEntityName": "CompuScale"
+      }
+    ],
+    "title": "Definition of both conversion directions or inverse value (Table 5.74 Ann.2)",
+    "is_active": true,
+    "references": [
+      "constr_1021",
+      "TPS_SWCT_01282"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.compuInternalToPhys",
+      "CompuMethod.compuPhysToInternal",
+      "CompuScale.compuInverseValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "other",
+    "expression": "For CompuMethod category SCALE_RATIONAL_AND_TEXTTABLE, compuPhysToInternal is not applicable for CompuScales where attribute compuScaleContents.compuConst exists. (Ref: Table 5.74, Annotation 3)",
+    "id": "Table_5_74_Annotation_3",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "compuPhysToInternal"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuConst"
+        ],
+        "targetEntityName": "CompuScale"
+      }
+    ],
+    "title": "Non-applicability with CompuConst (Table 5.74 Ann.3)",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.compuPhysToInternal",
+      "CompuScale.compuConst"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For certain categories (RAT_FUNC, SCALE_RAT_FUNC, etc.), CompuScale.lowerLimit and CompuScale.upperLimit shall be defined according to [constr_1022]. (Ref: Table 5.74, Annotation 4)",
+    "id": "Table_5_74_Annotation_4",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "lowerLimit",
+          "upperLimit"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Limit definition requirement (Table 5.74 Ann.4)",
+    "is_active": true,
+    "references": [
+      "constr_1022"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale.lowerLimit",
+      "CompuScale.upperLimit"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "other",
+    "expression": "For certain categories (TEXTTABLE, etc.), restrictions on CompuMethod structure per [constr_1134] apply to CompuScale.compuInverseValue. (Ref: Table 5.74, Annotation 5)",
+    "id": "Table_5_74_Annotation_5",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInverseValue"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Structural restrictions from constr_1134 (Table 5.74 Ann.5)",
+    "is_active": true,
+    "references": [
+      "constr_1134"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale.compuInverseValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "other",
+    "expression": "For certain categories (TEXTTABLE, BITFIELD_TEXTTABLE, etc.), the applicability of CompuScale.symbol is restricted by [constr_1146]. (Ref: Table 5.74, Annotation 7)",
+    "id": "Table_5_74_Annotation_7",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "symbol",
+          "shortLabel"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicability of CompuScale.symbol (Table 5.74 Ann.7)",
+    "is_active": true,
+    "references": [
+      "constr_1146"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale.shortLabel",
+      "CompuScale.symbol"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For CompuMethod category SCALE_LINEAR_AND_TEXTTABLE, compuInternalToPhys is mandatory if CompuScale uses CompuConst, and enforced if CompuScale uses CompuRationalCoeffs. (Ref: Table 5.74, Annotation 8)",
+    "id": "Table_5_74_Annotation_8",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInternalToPhys",
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuConst",
+          "compuRationalCoeffs"
+        ],
+        "targetEntityName": "CompuScale"
+      }
+    ],
+    "title": "Mandatory/Enforced definition for CompuInternalToPhys (Table 5.74 Ann.8)",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuMethod.compuInternalToPhys",
+      "CompuScale.compuConst",
+      "CompuScale.compuRationalCoeffs"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "According to [23] the following three values for categorys are recommended in the context of UnitGroup: • COUNTRY collects units which are common in a particular country, denoted by the shortName / longName of the UnitGroup • CALCULATION refers to speciﬁc units intended for the creation of data types. In this category of UnitGroup, several Units may refer to the same PhysicalDimension as well as to different PhysicalDimension. • EQUIV_UNITS deﬁne a group of equivalent units, which are used for example in different countries. Additional values for category may be mutually agreed between the stakeholders.",
+    "id": "Constr_UnitGroup_RecommendedCategories",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.2 Physical Units, Physical Dimensions and Unit Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "UnitGroup"
+      }
+    ],
+    "title": "Recommended categories for UnitGroup",
+    "is_active": true,
+    "references": [
+      "[23]"
+    ],
+    "value": "COUNTRY, CALCULATION, EQUIV_UNITS",
+    "xml_example_content": null,
+    "targetRefs": [
+      "UnitGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If a unit has to be converted according to the chosen country code the physicalDimension of both units shall be the same. If another unit shares the same UnitGroup with a category of EQUIV_UNITS it is preferred as target of the conversion.",
+    "id": "TPS_SWCT_01061",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.2 Physical Units, Physical Dimensions and Unit Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "physicalDimension"
+        ],
+        "targetEntityName": "Unit"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "UnitGroup"
+      }
+    ],
+    "title": "Conversion of units",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_02100"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "Unit.physicalDimension",
+      "UnitGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "TextValueSpecification shall only be used in the context of an AutosarDataType that references a CompuMethod in the role ImplementationDataType.sw DataDefPropos.compuMethod of category TEXTTABLE, BITFIELD_TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and SCALE_RATIONAL_AND_TEXTTABLE.",
+    "id": "constr_1284",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.6 Speciﬁcation of Constant Values",
+      "5.6.1 Overview"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TextValueSpecification"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuMethod"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Limitation of the use of TextValueSpecification",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AutosarDataType._classLevel",
+      "CompuMethod.category",
+      "ImplementationDataType.swDataDefProps",
+      "SwDataDefProps.compuMethod",
+      "TextValueSpecification._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "These initValues have no meaning for DataPrototypes within PortInterfaces because in this case a more specific definition of initial values via the so-called ComSpec is required, see chapter 4.5.",
+    "id": "TPS_SWCT_01269",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.3 Data Prototypes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterface"
+      }
+    ],
+    "title": "In PortInterfaces, initial values defined for DataPrototypes are ignored",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ParameterDataPrototype.initValue",
+      "PortInterface._classLevel",
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If a DataPrototype is typed by an ImplementationDataType its initValue shall not be provided by an ApplicationValueSpecification.",
+    "id": "constr_1385",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.7 Initial Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationValueSpecification"
+      }
+    ],
+    "title": "DataPrototype is typed by an ImplementationDataType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationValueSpecification._classLevel",
+      "ImplementationDataType._classLevel",
+      "ParameterDataPrototype.initValue",
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If a DataPrototype is typed by an ApplicationRecordDataType the corresponding initValue shall be provided by a RecordValueSpecification.",
+    "id": "constr_1223",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.7 Initial Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationRecordDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RecordValueSpecification"
+      }
+    ],
+    "title": "DataPrototype is typed by an ApplicationRecordDataType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationRecordDataType._classLevel",
+      "ParameterDataPrototype.initValue",
+      "RecordValueSpecification._classLevel",
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If a DataPrototype is typed by an ApplicationArrayDataType the corresponding initValue shall be provided by an ArrayValueSpecification or ApplicationRuleBasedValueSpecification.",
+    "id": "constr_1224",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.7 Initial Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationArrayDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ArrayValueSpecification"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationRuleBasedValueSpecification"
+      }
+    ],
+    "title": "DataPrototype is typed by an ApplicationArrayDataType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationArrayDataType._classLevel",
+      "ApplicationRuleBasedValueSpecification._classLevel",
+      "ArrayValueSpecification._classLevel",
+      "ParameterDataPrototype.initValue",
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If the value of the invalidValue of an ApplicationPrimitiveDataType of category VALUE is supposed to be inside the scope of the applicable CompuMethod an ApplicationValueSpecification is used to describe the invalidValue of the ApplicationPrimitiveDataType.",
+    "id": "constr_1281",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.4 Application Data Type",
+      "5.2.4.1 Application Primitive Data Types",
+      "5.2.4.1.1 Data Types for Single Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "invalidValue"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationValueSpecification"
+      }
+    ],
+    "title": "invalidValue is inside the scope of the compuMethod",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType.category",
+      "ApplicationPrimitiveDataType.swDataDefProps",
+      "ApplicationValueSpecification._classLevel",
+      "SwDataDefProps.invalidValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If the value of the invalidValue of an ApplicationPrimitiveDataType of category VALUE is supposed to be outside the scope of the applicable CompuMethod a NumericalValueSpecification shall be used to describe the invalidValue of the ApplicationPrimitiveDataType.",
+    "id": "constr_1283",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.4 Application Data Type",
+      "5.2.4.1 Application Primitive Data Types",
+      "5.2.4.1.1 Data Types for Single Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "invalidValue"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NumericalValueSpecification"
+      }
+    ],
+    "title": "invalidValue is outside the scope of the compuMethod",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType.category",
+      "ApplicationPrimitiveDataType.swDataDefProps",
+      "NumericalValueSpecification._classLevel",
+      "SwDataDefProps.invalidValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The only kind of Compound Primitive Data Type that is allowed to define an invalidValue is an ApplicationPrimitiveDataType of category STRING.",
+    "id": "TPS_SWCT_01486",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.7 Data Type Terminology",
+      "5.2.7.2 Compound Primitive Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "invalidValue"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "ApplicationPrimitiveDataType of category STRING may have invalidValue",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03216"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType.category",
+      "SwDataDefProps.invalidValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "Compound Primitive Data Types that have set the value of of category other than STRING shall not define invalidValue.",
+    "id": "constr_1241",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.7 Data Type Terminology",
+      "5.2.7.2 Compound Primitive Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "invalidValue"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "Compound Primitive Data Types and invalidValue",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType.category",
+      "SwDataDefProps.invalidValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The default value for the category of a SwSystemconst shall be VALUE. This has to be applied if no explicit definition of the category can be found.",
+    "id": "TPS_SWCT_01239",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "SwSystemconst"
+      }
+    ],
+    "title": "default value for attribute category used in the context of SwSystemconst",
+    "is_active": true,
+    "references": [],
+    "value": "VALUE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwSystemconst.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "To indicate that an ApplicationPrimitiveDataType shall be interpreted as a string of a particular encoding it shall reference swDataDefProps.swTextProps.baseType and the only attribute of the referenced SwBaseType relevant for this purpose is the BaseTypeDirectDefinition.baseTypeEncoding.",
+    "id": "TPS_SWCT_01488",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.4 Application Data Type",
+      "5.2.4.1 Application Primitive Data Types",
+      "5.2.4.1.4 Data Types for Textual Strings"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseType"
+        ],
+        "targetEntityName": "SwTextProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseTypeEncoding"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      }
+    ],
+    "title": "ApplicationPrimitiveDataType shall be interpreted as a string of a particular encoding",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType.swDataDefProps",
+      "BaseTypeDirectDefinition.baseTypeEncoding",
+      "SwTextProps.baseType"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The following set of rules applies for the usage of the attribute ImplementationDataType.typeEmitter:\n\n• If the value of attribute typeEmitter is NOT defined and a nativeDeclaration is provided the RTE generator shall generate the corresponding data type definition7.\n• If the value of attribute typeEmitter is set to \"RTE\" and a nativeDeclaration is provided the RTE generator shall generate the corresponding data type definition.\n• If the value of the attribute typeEmitter is set to \"RTE\" and no nativeDeclaration is provided the RTE generator shall issue an error message.\n• If the value of attribute typeEmitter is set to anything else but \"RTE\" the RTE generator shall silently not generate the corresponding data type definition regardless of the existence of nativeDeclaration attribute.\n\n",
+    "id": "TPS_SWCT_01253",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.5 Implementation Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "typeEmitter"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "nativeDeclaration"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      }
+    ],
+    "title": "Rules apply for the usage of the attribute ImplementationDataType.typeEmitter",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03217"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.nativeDeclaration",
+      "ImplementationDataType.typeEmitter"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "If nativeDeclaration does not exist in the SwBaseType it is required that the shortName (e.g. \"uint8\") of the corresponding ImplementationDataType is equal to a name of one of the Platform or Standard Types predefined in AUTOSAR code.",
+    "id": "constr_1010",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.6 Base Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "nativeDeclaration"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      }
+    ],
+    "title": "If nativeDeclaration does not exist",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.nativeDeclaration",
+      "ImplementationDataType.shortName"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "If the value of the attribute SwBaseType.category is set to FIXED_LENGTH then the attribute baseTypeSize shall be filled with content and attribute maxBaseTypeSize shall not exist.",
+    "id": "constr_1012",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.6 Base Type",
+      "Properties of SwBaseType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseTypeSize",
+          "maxBaseTypeSize"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "SwBaseType"
+      }
+    ],
+    "title": "Value of category is FIXED_LENGTH",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.baseTypeSize",
+      "BaseTypeDirectDefinition.maxBaseTypeSize",
+      "SwBaseType.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "definition",
+    "expression": "In both cases (mentioned in [constr_1012] and [constr_1013]) the size of SwBaseType is specified in bits.",
+    "id": "TPS_SWCT_01444",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.6 Base Type",
+      "Properties of SwBaseType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseTypeSize",
+          "maxBaseTypeSize"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      }
+    ],
+    "title": "Size of SwBaseType is specified in bits",
+    "is_active": true,
+    "references": [
+      "[constr_1012]",
+      "[constr_1013]"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.baseTypeSize",
+      "BaseTypeDirectDefinition.maxBaseTypeSize"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "definition",
+    "expression": "Generally speaking, a data prototype represents the implementation of a role of a data type within the definition of another data type, e.g. a \"typed\" data object declared within a software component or a port interface. This means formally that it has an is-of-type relation to a data type and is usually aggregated by another element, e.g. the internal behavior or a port interface.",
+    "id": "TPS_SWCT_01264",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.3 Data Prototypes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      }
+    ],
+    "title": "Data prototypes implement a role of a data type",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The reference to rootParameterDataPrototype is not redundant. It is required for identifying the autosarParameter itself in a ParameterInterface if and only if the AutosarDataType of the autosarParameter is a composite data type. If the AutosarDataType was a primitive data type the targetDataPrototype reference is the only reference required.",
+    "id": "TPS_SWCT_01374",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.3 Data Prototypes",
+      "5.3.2 Reference to Data Prototypes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "autosarParameter"
+        ],
+        "targetEntityName": "AutosarParameterRef"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "rootParameterDataPrototype",
+          "targetDataPrototype"
+        ],
+        "targetEntityName": "ParameterInAtomicSWCTypeInstanceRef"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "AutosarDataType"
+      }
+    ],
+    "title": "Implementation of AutosarParameterRef",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AutosarDataType.category",
+      "AutosarParameterRef.autosarParameter",
+      "ParameterDataPrototype._classLevel",
+      "ParameterInAtomicSWCTypeInstanceRef.rootParameterDataPrototype",
+      "ParameterInAtomicSWCTypeInstanceRef.targetDataPrototype"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "If the value of the attribute SwBaseType.category is set to VARIABLE_LENGTH then the attribute maxBaseTypeSize shall be filled with content and attribute baseTypeSize shall not exist.",
+    "id": "constr_1013",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types",
+      "5.2.6 Base Type",
+      "Properties of SwBaseType"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "SwBaseType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "maxBaseTypeSize",
+          "baseTypeSize"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      }
+    ],
+    "title": "Value of category is VARIABLE_LENGTH",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.baseTypeSize",
+      "BaseTypeDirectDefinition.maxBaseTypeSize",
+      "SwBaseType.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "ordering",
+    "expression": "SwDataDefProps can be specified on various levels, from type over prototype to instantiation, finally data access and calibration support after RTE generation. In general, properties specified on prototype level override the ones specified on type level.\n\nMore formally, the precedence of such properties is:\n\n1. attributes of SwDataDefProps defined on ApplicationDataType which may be overwritten by\n\n2. attributes of SwDataDefProps defined on ImplementationDataType which may be overwritten by\n\n3. attributes of SwDataDefProps defined on DataPrototype which may be overwritten by\n\n4. attributes of SwDataDefProps defined on InstantiationDataDefProps which may be overwritten by\n\n5. attributes of SwDataDefProps defined on ParameterAccess respectively Argument which may be overwritten by\n\n6. attributes of SwDataDefProps defined on FlatInstanceDescriptor which may be overwritten by\n\n7. attributes of SwDataDefProps defined on McDataInstance",
+    "id": "TPS_SWCT_01273",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.4 Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ApplicationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "InstantiationDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ParameterAccess"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "ArgumentDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swDataDefProps"
+        ],
+        "targetEntityName": "FlatInstanceDescriptor"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "resultingProperties"
+        ],
+        "targetEntityName": "McDataInstance"
+      }
+    ],
+    "title": "Precedence rules for the application of SwDataDefProps",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationDataType.swDataDefProps",
+      "ArgumentDataPrototype.swDataDefProps",
+      "DataPrototype.swDataDefProps",
+      "FlatInstanceDescriptor.swDataDefProps",
+      "ImplementationDataType.swDataDefProps",
+      "InstantiationDataDefProps.swDataDefProps",
+      "McDataInstance.resultingProperties",
+      "ParameterAccess.swDataDefProps",
+      "SwDataDefProps._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "After all variability is bound, the content obtained from a limit shall yield a numerical value.",
+    "id": "constr_1191",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.3 Data Constraints"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "Limit"
+      }
+    ],
+    "title": "Value of Limit shall yield a numerical value",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "Limit._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Please note that the RTE Generator has to derive the Memory Allocation Keyword used for RunnableEntitys and BswSchedulableEntitys from the shortName of the SwAddrMethod only because the alignment defined in MemorySection is not known at contract phase.",
+    "id": "TPS_SWCT_01293",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "SwAddrMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "BswSchedulableEntity"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "_abstractLevel"
+      }
+    ],
+    "title": "RTE Generator has to derive the Memory Allocation Keyword",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BswSchedulableEntity._classLevel",
+      "RunnableEntity._classLevel",
+      "SwAddrMethod.shortName",
+      "_abstractLevel._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If the attribute SwAddrMethod.option or MemorySection.option is set to coreLocal then the attribute SwAddrMethod.sectionInitializationPolicy of the same SwAddrMethod respectively the MemorySection.swAddrMethod shall be either set to INIT or CLEARED.",
+    "id": "constr_1402",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "option",
+          "sectionInitializationPolicy"
+        ],
+        "targetEntityName": "SwAddrMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "option",
+          "swAddrMethod"
+        ],
+        "targetEntityName": "MemorySection"
+      }
+    ],
+    "title": "Applicability of core-related possible values of MemorySection.option or SwAddrMethod.option related to SwAddrMethod.sectionInitializationPolicy",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "MemorySection.option",
+      "MemorySection.swAddrMethod",
+      "SwAddrMethod.option",
+      "SwAddrMethod.sectionInitializationPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The initialization of DataPrototype typed by an ApplicationArrayDataType by means of an ArrayValueSpecification shall exactly match the structure of the ApplicationArrayDataType regardless of the setting of the attribute ApplicationArrayDataType.element.arraySizeSemantics. This means that the number of ArrayValueSpecification.elements shall be identical to the value of ApplicationArrayDataType.element.maxNumberOfElements.",
+    "id": "constr_1273",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.6 Speciﬁcation of Constant Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "element"
+        ],
+        "targetEntityName": "ArrayValueSpecification"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "element"
+        ],
+        "targetEntityName": "ApplicationArrayDataType"
+      }
+    ],
+    "title": "ArrayValueSpecification.elements shall be identical to the value of ApplicationArrayDataType.element.maxNumberOfElements",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationArrayDataType.element",
+      "ArrayValueSpecification.element"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The initialization of a DataPrototype typed by an ImplementationDataType of category ARRAY by means of an ArrayValueSpecification shall exactly match the structure of the ImplementationDataType regardless of the setting of the attribute ImplementationDataType.subElement.arraySizeSemantics. This means that the number of ArrayValueSpecification.elements shall be identical to the value of ImplementationDataType.subElement.arraySize.",
+    "id": "constr_1274",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.6 Speciﬁcation of Constant Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "element"
+        ],
+        "targetEntityName": "ArrayValueSpecification"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "subElement"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      }
+    ],
+    "title": "ArrayValueSpecification.elements shall be identical to the value of ImplementationDataType.subElement.arraySize of category ARRAY",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ArrayValueSpecification.element",
+      "ImplementationDataType.subElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If a DataPrototype is typed by an ApplicationPrimitive DataType its initValue shall be provided by an ApplicationValueSpecification. If the underlying ApplicationPrimitiveDataType represents an enumeration, the value provided shall match to one of the applicable text values (vt, short Label, symbol) defined by the applicable CompuScales.",
+    "id": "constr_1221",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.7 Initial Values"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationPrimitiveDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ApplicationValueSpecification"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortLabel",
+          "symbol"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "vt"
+        ],
+        "targetEntityName": "CompuConstTextContent"
+      }
+    ],
+    "title": "DataPrototype is typed by an ApplicationPrimitive DataType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationPrimitiveDataType._classLevel",
+      "ApplicationValueSpecification._classLevel",
+      "CompuConstTextContent.vt",
+      "CompuScale.shortLabel",
+      "CompuScale.symbol",
+      "ParameterDataPrototype.initValue",
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If an ImplementationDataType is mapped to an ApplicationArrayDataType where the attribute dynamicArraySizeProfile exists, the second ImplementationDataType.subElement shall be an array which can hold the data of the variable size array with all dimensions defined for the ApplicationDataType.\n\nThe category shall be set to ARRAY and arraySize shall be set to maxArraySize of the corresponding ApplicationArrayDataType.",
+    "id": "TPS_SWCT_01621",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.2 Data Types"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "subElement"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "dynamicArraySizeProfile"
+        ],
+        "targetEntityName": "ApplicationArrayDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "maxNumberOfElements"
+        ],
+        "targetEntityName": "ApplicationArrayElement"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category",
+          "arraySize"
+        ],
+        "targetEntityName": "ImplementationDataTypeElement"
+      }
+    ],
+    "title": "Payload for dynamicArraySizeProfile",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03181"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationArrayDataType.dynamicArraySizeProfile",
+      "ApplicationArrayElement.maxNumberOfElements",
+      "ImplementationDataType.subElement",
+      "ImplementationDataTypeElement.arraySize",
+      "ImplementationDataTypeElement.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The reference to rootVariableDataPrototype is not redundant. It is required for identifying the autosarVariable itself in a SenderReceiverInterface or NvDataInterface if and only if the AutosarDataType of the autosarVariable is a composite data type. If the AutosarDataType was a primitive data type the targetDataPrototype reference is the only reference required.",
+    "id": "TPS_SWCT_01375",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.3 Data Prototypes",
+      "5.3.2 Reference to Data Prototypes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "autosarVariable"
+        ],
+        "targetEntityName": "AutosarVariableRef"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "rootVariableDataPrototype",
+          "targetDataPrototype"
+        ],
+        "targetEntityName": "VariableInAtomicSWCTypeInstanceRef"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "AutosarDataType"
+      }
+    ],
+    "title": "Implementation of AutosarVariableRef",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AutosarDataType.category",
+      "AutosarVariableRef.autosarVariable",
+      "VariableDataPrototype._classLevel",
+      "VariableInAtomicSWCTypeInstanceRef.rootVariableDataPrototype",
+      "VariableInAtomicSWCTypeInstanceRef.targetDataPrototype"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "format",
+    "expression": "If an ImplementationDataType references an SwBaseType with a string encoding the initValue shall still be provided as numerical values according to the string encoding.",
+    "id": "TPS_SWCT_01467",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.4 Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      }
+    ],
+    "title": "ImplementationDataType references an SwBaseType with a string encoding",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "VariableDataPrototype.initValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "ordering",
+    "expression": "For the usage of calibration access along structure hierarchies in complex types the precedence rule is defined in table 5.61.",
+    "id": "TPS_SWCT_01505",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.4 Properties of Data Deﬁnitions",
+      "5.4.7 Precedence of data properties with respect to data elements, axis elements, computation methods, units",
+      "Table 5.61 Precedence of swCalibrationAccess along structure hierarchies"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "Precedence of calibration access along structure hierarchies in complex types",
+    "is_active": true,
+    "references": [],
+    "value": "[{\"outer\":\"notAccessible\",\"inner\":\"*\",\"result\":\"notAccessible\"},{\"outer\":\"readOnly\",\"inner\":\"readOnly\",\"result\":\"readOnly\"},{\"outer\":\"readOnly\",\"inner\":\"readWrite\",\"result\":\"readOnly\"},{\"outer\":\"readOnly\",\"inner\":\"notAccessible\",\"result\":\"notAccessible\"},{\"outer\":\"readWrite\",\"inner\":\"notAccessible\",\"result\":\"notAccessible\"},{\"outer\":\"readWrite\",\"inner\":\"readOnly\",\"result\":\"readOnly\"},{\"outer\":\"readWrite\",\"inner\":\"readWrite\",\"result\":\"readWrite\"}]",
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwDataDefProps._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "For all categories where CompuMethod.compuDefaultValue is optional (O), it should specify an output value if the input value for conversion is outside plausibility limits. (Ref: Table 5.74, Annotation 6; Compu class table)",
+    "id": "Table_5_74_Annotation_6",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.2 Applicability of Attributes in the context of a CompuMethod",
+      "Table 5.74 Allowed Attributes vs. category for CompuMethods"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Default value on out-of-limit conversion (Table 5.74 Ann.6)",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
   }
 ]

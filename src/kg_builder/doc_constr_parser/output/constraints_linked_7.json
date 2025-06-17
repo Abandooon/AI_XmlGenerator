@@ -13547,5 +13547,478 @@
       "VariationPointProxy.valueAccess"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "A RunnableEntity referenced by an InitEvent in the role startOnEvent may aggregate an AsynchronousServerCallPoint but it shall not aggregate an AsynchronousServerCallResultPoint.",
+    "id": "constr_1259",
+    "id_type": "constr",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.2 Runnable Entity",
+      "7.2.6 Runnable Entity for Initialization Purpose"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "startOnEvent"
+        ],
+        "targetEntityName": "InitEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AsynchronousServerCallPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AsynchronousServerCallResultPoint"
+      }
+    ],
+    "title": "Aggregation of AsynchronousServerCallPoint and AsynchronousServerCallResultPoint",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AsynchronousServerCallPoint._classLevel",
+      "AsynchronousServerCallResultPoint._classLevel",
+      "InitEvent.startOnEvent",
+      "RunnableEntity._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "A receiver is notified of DataReceiveErrorEvent through the activation of its RunnableEntity which is referenced by this RTEEvent. A DataReceiveErrorEvent includes a reference to a VariableDataPrototype and is raised by the RTE when an error concerning the reception of the referenced data is detected by the COM layer. The following cases present some situations which will cause the RTE to raise a DataReceiveErrorEvent:\n\n• the RTE receives a signal-outdated notification from the COM layer when a monitored periodic signal is not received in time. The COM layer monitors the validity of the signal’s value based on the value of the aliveTimeout attribute of ReceiverComSpec referencing the VariableDataPrototype associated with the signal. If the time elapsed since the last update of a signal’s value exceeds its aliveTimeout then the COM layer notifies the RTE of a signal outdated error.\n\n• The RTE receives a signal invalid notification from the COM layer when the COM layer detects that an incoming signal has the predefined “invalid” value.",
+    "id": "TPS_SWCT_01338",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "7.5.1 RunnableEntities and Sender Receiver Communication"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataReceiveErrorEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "aliveTimeout"
+        ],
+        "targetEntityName": "NonqueuedReceiverComSpec"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ReceiverComSpec"
+      }
+    ],
+    "title": "DataReceiveErrorEvent",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00200"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataReceiveErrorEvent._classLevel",
+      "NonqueuedReceiverComSpec.aliveTimeout",
+      "ReceiverComSpec._classLevel",
+      "RunnableEntity._classLevel",
+      "VariableDataPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Please note that a DataReceiveErrorEvent cannot be associated with a WaitPoint, see [constr_1091]. It can only be used for the receiver software-component in a sender-receiver communication and its data reference is restricted to VariableDataPrototypes with their swImplPolicy attribute not set to queued.",
+    "id": "TPS_SWCT_01340",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "7.5.1 RunnableEntities and Sender Receiver Communication"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataReceiveErrorEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "WaitPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "VariableDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      }
+    ],
+    "title": "DataReceiveErrorEvent cannot be combined with a WaitPoint",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00200",
+      "constr_1091"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "DataReceiveErrorEvent._classLevel",
+      "SwDataDefProps.swImplPolicy",
+      "VariableDataPrototype._classLevel",
+      "WaitPoint._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The access to a ParameterDataPrototype will be indicated \n• by the ParameterAccess entity if the RunnableEntity wants to access it from a RPortPrototype. This is shown in Figure 7.29 \n• by defining the ParameterAccess association from a RunnableEntity to the ParameterDataPrototype in the roles sharedParameter or perInstanceParameter. This is shown in Figure 2.3 in the lower association from RunnableEntity to ParameterDataPrototype",
+    "id": "TPS_SWCT_01351",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "Figure 7.29 Runnable Access to a Calibration Port",
+      "Table 7.43 ParameterAccess"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterDataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ParameterAccess"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "sharedParameter",
+          "perInstanceParameter"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      }
+    ],
+    "title": "Access to a ParameterDataPrototype",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00200"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ParameterAccess._classLevel",
+      "ParameterDataPrototype._classLevel",
+      "RPortPrototype._classLevel",
+      "RunnableEntity._classLevel",
+      "SwcInternalBehavior.perInstanceParameter",
+      "SwcInternalBehavior.sharedParameter"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If the attribute PortAPIOption.errorHandling is set to transformerErrorHandling then all RunnableEntitys accessing the PortPrototype referenced by port shall handle the extended transformer error notification.",
+    "id": "TPS_SWCT_01626",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.6 Port API Options"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "errorHandling",
+          "port"
+        ],
+        "targetEntityName": "PortAPIOption"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      }
+    ],
+    "title": "Error notification of data transformer errors",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03222"
+    ],
+    "value": "transformerErrorHandling",
+    "xml_example_content": null,
+    "targetRefs": [
+      "PortAPIOption.errorHandling",
+      "PortAPIOption.port",
+      "PortPrototype._classLevel",
+      "RunnableEntity._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "AtomicSwComponentTypes that support multiple instantiation (attribute supportsMultipleInstantiation == true) will typically need a given amount of private memory per instance. It is the responsibility of the RTE to provide a mechanisms with which each instance of an AtomicSwComponentType can access its own instance-specific memory.",
+    "id": "TPS_SWCT_01359",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.7 PerInstanceMemory"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PerInstanceMemory"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "supportsMultipleInstantiation"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      }
+    ],
+    "title": "Private memory per instance",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "PerInstanceMemory._classLevel",
+      "SwcInternalBehavior.supportsMultipleInstantiation"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "AtomicSwComponentTypes that do not support multiple instantiation (attribute supportsMultipleInstantiation == false) do not necessarily need to use the PerInstanceMemory: because there will only be a single instance of the AtomicSwComponentType on an ECU, the AtomicSwComponentType can use static variables to store the AtomicSwComponentType's internal state. However, the usage of PerInstanceMemory is also allowed in this case.",
+    "id": "TPS_SWCT_01361",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.7 PerInstanceMemory"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "supportsMultipleInstantiation"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PerInstanceMemory"
+      }
+    ],
+    "title": "attribute supportsMultipleInstantiation == false",
+    "is_active": true,
+    "references": [],
+    "value": "supportsMultipleInstantiation=false",
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "PerInstanceMemory._classLevel",
+      "SwcInternalBehavior.supportsMultipleInstantiation"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "cardinality",
+    "expression": "An SwcInternalBehavior may provide several FunctionInhibitionNeeds elements, each defines the requirements related to one function inhibition ID.",
+    "id": "Constr_SwcInternalBehavior_FunctionInhibitionNeeds_Cardinality",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.11 Service Needs",
+      "7.11.3 Speciﬁc Service Dependencies",
+      "7.11.3.7 Diagnostic Service Dependency",
+      "7.11.3.7.1 Function Inhibition Needs"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "FunctionInhibitionNeeds"
+      }
+    ],
+    "title": "SwcInternalBehavior relationship with FunctionInhibitionNeeds",
+    "is_active": true,
+    "references": [
+      "[35]"
+    ],
+    "value": "0..*",
+    "xml_example_content": null,
+    "targetRefs": [
+      "FunctionInhibitionNeeds._classLevel",
+      "SwcInternalBehavior._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If a SwcServiceDependency with a ObdRatioServiceNeeds is defined and the attribute connectionType of the contained ObdRatioServiceNeeds is set to ObdRatioConnectionKindEnum.apiUse a RoleBasedPortAssignment with the role value IUMPRNumerator shall be defined.\nIf the attribute connectionType of the contained ObdRatioServiceNeeds is set to ObdRatioConnectionKindEnum.observer the role value IUMPRNumerator is not applicable.",
+    "id": "constr_2053",
+    "id_type": "constr",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.11 Service Needs",
+      "7.11.3 Speciﬁc Service Dependencies",
+      "7.11.3.7 Diagnostic Service Dependency",
+      "7.11.3.7.4 OBD related Needs",
+      "7.11.3.7.4.1 Dem Service Use Case: In-Use-Monitor Performance Ratio calculation"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "serviceNeeds"
+        ],
+        "targetEntityName": "SwcServiceDependency"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "connectionType"
+        ],
+        "targetEntityName": "ObdRatioServiceNeeds"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "role"
+        ],
+        "targetEntityName": "RoleBasedPortAssignment"
+      },
+      {
+        "entityType": "enum",
+        "targetAttributes": [
+          "apiUse",
+          "observer"
+        ],
+        "targetEntityName": "ObdRatioConnectionKindEnumSimple"
+      }
+    ],
+    "title": "Consistency between role IUMPRNumerator and ObdRatioServiceNeeds.connectionType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ObdRatioConnectionKindEnumSimple.apiUse",
+      "ObdRatioConnectionKindEnumSimple.observer",
+      "ObdRatioServiceNeeds.connectionType",
+      "RoleBasedPortAssignment.role",
+      "SwcServiceDependency.serviceNeeds"
+    ],
+    "confidence": 0.9
   }
 ]

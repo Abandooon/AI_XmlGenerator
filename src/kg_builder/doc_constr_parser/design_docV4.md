@@ -125,6 +125,12 @@
     6.  **新增is_active判断** 若为false则跳过 
 *   **输出：** `constraints_linked_v4.json`, `review_queue_v4.csv`。
 
+**3.4 阶段四：人工复核与relink (relink.py`)**
+*   **输入：** `review_queue_.csv`, `constraints_raw_.json`, `unified_metadata.json`
+*  **步骤：**
+    1.  **人工复核：** 人工检查 `review_queue_v4.csv` 中的条目，确认或修正 `targetRef`, `parent_id`, `value` 等字段。
+    2.  **重新链接：** 根据人工复核结果，更新 `constraints_linked_v4.json` 中的相关字段。(不经过llm)
+
 **4. 约束数据模型与Schema (`schema_v4.json` 示例)**
 
 ```json

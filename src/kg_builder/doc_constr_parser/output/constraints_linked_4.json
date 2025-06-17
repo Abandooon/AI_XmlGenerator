@@ -9163,5 +9163,898 @@
       "PartialNetworkStatusQueryConcept._abstractLevel"
     ],
     "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Please note that it is technically possible to let a single RunnableEntity implement the functionality of two or more ClientServerOperations. For this purpose two or more OperationInvokedEvents need to reference this single RunnableEntity.\nIn this case, however, it is essential that the queue length associated with each of the ClientServerOperations has the same value. In other words:",
+    "id": "TPS_SWCT_01225",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.5 Communication Speciﬁcation"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ClientServerOperation"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "OperationInvokedEvent"
+      }
+    ],
+    "title": "RunnableEntity implements the functionality of two or more ClientServerOperations",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ClientServerOperation._classLevel",
+      "OperationInvokedEvent._classLevel",
+      "RunnableEntity._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If two or more OperationInvokedEvents reference a single RunnableEntity the value of the ServerComSpec attribute queueLength shall be identical for all ServerComSpecs owned by PPortPrototypes of the enclosing SwComponentType that reference one of the ClientServerOperations that are also referenced by the OperationInvokedEvents.",
+    "id": "constr_1128",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.5 Communication Speciﬁcation"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "OperationInvokedEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "queueLength"
+        ],
+        "targetEntityName": "ServerComSpec"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ClientServerOperation"
+      }
+    ],
+    "title": "Queue length of ClientServerOperations associated with the same RunnableEntity",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ClientServerOperation._classLevel",
+      "OperationInvokedEvent._classLevel",
+      "PPortPrototype._classLevel",
+      "RunnableEntity._classLevel",
+      "ServerComSpec.queueLength"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "Unless the attribute swImplPolicy is set to queued, it is not required that all elements on the sender side need to be mapped to elements on the receiver side to achieve compatibility.",
+    "id": "TPS_SWCT_01551",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.1 PortInterface Mapping",
+      "4.3.1.5 Mapping of Elements of a composite Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "Trigger"
+      }
+    ],
+    "title": "Mapping of elements on the sender side to elements on the receiver side",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03210",
+      "RS_SWCT_03135"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "Trigger.swImplPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If the attribute swImplPolicy is set to queued it is not allowed to have unmapped elements of ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY on the receiver side.",
+    "id": "constr_1279",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.1 PortInterface Mapping",
+      "4.3.1.5 Mapping of Elements of a composite Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "swImplPolicy"
+        ],
+        "targetEntityName": "Trigger"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      }
+    ],
+    "title": "Unmapped elements of ApplicationCompositeDataTypes or ImplementationDataTypes and the attribute swImplPolicy",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ApplicationCompositeDataType.category",
+      "ImplementationDataType.category",
+      "Trigger.swImplPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "If elements of ApplicationCompositeDataTypes or ImplementationDataTypes of category STRUCTURE or ARRAY are not considered in a SubElementMapping then the enclosing dataElement shall have an initValue if the NonqueuedReceiverComSpec is aggregated by an AbstractRequiredPortPrototype.",
+    "id": "constr_1280",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.1 PortInterface Mapping",
+      "4.3.1.5 Mapping of Elements of a composite Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initValue"
+        ],
+        "targetEntityName": "NonqueuedReceiverComSpec"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SubElementMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "NonqueuedReceiverComSpec"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AbstractRequiredPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ApplicationCompositeDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      }
+    ],
+    "title": "Unmapped dataElement on the receiver side shall have an initValue",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AbstractRequiredPortPrototype._classLevel",
+      "ApplicationCompositeDataType.category",
+      "ImplementationDataType.category",
+      "NonqueuedReceiverComSpec._classLevel",
+      "NonqueuedReceiverComSpec.initValue",
+      "SubElementMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The definition of attributes contextDataPrototype and targetDataPrototype shall be enclosed in the context of the definition of the data type used to type rootDataPrototype.",
+    "id": "constr_1186",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.1 PortInterface Mapping",
+      "4.3.1.5 Mapping of Elements of a composite Data Type"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "contextDataPrototype",
+          "targetDataPrototype",
+          "rootVariableDataPrototype"
+        ],
+        "targetEntityName": "ArVariableInImplementationDataInstanceRef"
+      }
+    ],
+    "title": "Consistency of data types in the context of ArVariableInImplementationDataInstanceRef",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ArVariableInImplementationDataInstanceRef.contextDataPrototype",
+      "ArVariableInImplementationDataInstanceRef.rootVariableDataPrototype",
+      "ArVariableInImplementationDataInstanceRef.targetDataPrototype"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "Data conversion shall be supported for AutosarDataTypes that refer to CompuMethods of category LINEAR, IDENTICAL, SCALE_LINEAR_AND_TEXTTABLE, TEXTTABLE, and BITFIELD_TEXTTABLE.",
+    "id": "TPS_SWCT_01560",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Supported categorys of CompuMethods for data conversion",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03210"
+    ],
+    "value": "LINEAR, IDENTICAL, SCALE_LINEAR_AND_TEXTTABLE, TEXTTABLE, BITFIELD_TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "AutosarDataType._classLevel",
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "In such cases a linear conversion factor can be calculated out of the factorSiToUnit and offsetSiToUnit attributes of the referred Units and the CompuRationalCoeffs of a compuInternalToPhys/compuPhysToInternal of the referred CompuMethods.",
+    "id": "TPS_SWCT_01168",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.1 Linear Data Scaling"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "factorSiToUnit",
+          "offsetSiToUnit"
+        ],
+        "targetEntityName": "Unit"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "compuInternalToPhys",
+          "compuPhysToInternal"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "CompuRationalCoeffs"
+      }
+    ],
+    "title": "Linear conversion factor can be calculated",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03210"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.compuInternalToPhys",
+      "CompuMethod.compuPhysToInternal",
+      "CompuRationalCoeffs._classLevel",
+      "Unit.factorSiToUnit",
+      "Unit.offsetSiToUnit"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "A TextTableMapping to CompuMethods of category TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, and BITFIELD_TEXTTABLE can be defined if the AutosarDataTypes refer.",
+    "id": "TPS_SWCT_01162",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AutosarDataType"
+      }
+    ],
+    "title": "Existence of TextTableMapping",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03210"
+    ],
+    "value": "TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE, BITFIELD_TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "AutosarDataType._classLevel",
+      "CompuMethod.category",
+      "TextTableMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "If a DataPrototypeMapping aggregates a TextTableMapping then only certain combinations of the value of the applicable CompuMethod.category are supported:\n• category of firstDataPrototype: TEXTTABLE, category of secondDataPrototype: TEXTTABLE\n• category of firstDataPrototype: SCALE_LINEAR_AND_TEXTTABLE, category of secondDataPrototype: TEXTTABLE\n• category of firstDataPrototype: TEXTTABLE, category of secondDataPrototype: SCALE_LINEAR_AND_TEXTTABLE\n• category of firstDataPrototype: BITFIELD_TEXTTABLE, category of secondDataPrototype: TEXTTABLE\n• category of firstDataPrototype: TEXTTABLE, category of secondDataPrototype: BITFIELD_TEXTTABLE\n• category of firstDataPrototype: BITFIELD_TEXTTABLE, category of secondDataPrototype: BITFIELD_TEXTTABLE",
+    "id": "constr_1303",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicability of TextTableMapping depending on the value of CompuMethod.category",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototypeMapping._classLevel",
+      "TextTableMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "If a DataPrototypeMapping contains one or more TextTableMapping(s) where the DataPrototype on the sender side refers to a CompuMethod of category BITFIELD_TEXTTABLE it is not required that for each possible value and each possible bit mask on the sender side corresponding values on the receiver side are specified.",
+    "id": "TPS_SWCT_01583",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Completeness of TextTableMapping is not a requirement",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03210"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototype._classLevel",
+      "DataPrototypeMapping._classLevel",
+      "TextTableMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "Within a single mask (for BITFIELD_TEXTTABLE category on sender side), all values on the sender side shall have a mapping to the receiver side.",
+    "id": "Constr_BitfieldMask_SenderValueMappingCompleteness",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Completeness of Sender Value Mapping within a Single Bitfield Mask",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototype._classLevel",
+      "TextTableMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "cardinality",
+    "expression": "If a DataPrototypeMapping contains one or more TextTableMapping(s) where the DataPrototype on the sender side refers to a CompuMethod of category BITFIELD_TEXTTABLE then all DataPrototypeMapping.textTableMapping shall aggregate a collection of TextTableMapping.valuePair where each possible value of the sender bit mask (Depending on the applicable case this means either bitfieldTextTableMaskFirst (applies if [TPS_SWCT_01163] is in place) or bitfieldTextTableMaskSecond for the case of [TPS_SWCT_01164])) is represented by exactly one TextTableValuePair.firstValue ([TPS_SWCT_01163]) resp. TextTableValuePair.secondValue ([TPS_SWCT_01164]).",
+    "id": "constr_1313",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "textTableMapping"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "valuePair",
+          "bitfieldTextTableMaskFirst",
+          "bitfieldTextTableMaskSecond"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "DataPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstValue",
+          "secondValue"
+        ],
+        "targetEntityName": "TextTableValuePair"
+      }
+    ],
+    "title": "Completeness of TextTableMapping for the values of a given bit mask on the sender side",
+    "is_active": true,
+    "references": [
+      "[TPS_SWCT_01163]",
+      "[TPS_SWCT_01164]"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototype._classLevel",
+      "DataPrototypeMapping.textTableMapping",
+      "TextTableMapping.bitfieldTextTableMaskFirst",
+      "TextTableMapping.bitfieldTextTableMaskSecond",
+      "TextTableMapping.valuePair",
+      "TextTableValuePair.firstValue",
+      "TextTableValuePair.secondValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The attribute bitfieldTextTableMaskFirst shall be defined only if the firstDataPrototype of a DataPrototypeMapping refers to a CompuMethod that has the value of category set to BITFIELD_TEXTTABLE.",
+    "id": "constr_1304",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "bitfieldTextTableMaskFirst"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstDataPrototype"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Existence of attribute bitfieldTextTableMaskFirst",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototypeMapping.firstDataPrototype",
+      "TextTableMapping.bitfieldTextTableMaskFirst"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The attribute bitfieldTextTableMaskSecond shall be defined only if the secondDataPrototype of a DataPrototypeMapping refers to a CompuMethod that has the value of category set to BITFIELD_TEXTTABLE.",
+    "id": "constr_1305",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "bitfieldTextTableMaskSecond"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "secondDataPrototype"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Existence of attribute bitfieldTextTableMaskSecond",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototypeMapping.secondDataPrototype",
+      "TextTableMapping.bitfieldTextTableMaskSecond"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "For any TextTableMapping where both firstDataPrototype and secondDataPrototype refer to CompuMethods that have the value of category set to BITFIELD_TEXTTABLE and where the attribute TextTableMapping.valuePair exists the value of attribute TextTableMapping.identicalMapping shall be set to false.",
+    "id": "constr_1306",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.3 PortInterface Mapping and Data Scaling",
+      "4.3.2 Data Conversion",
+      "4.3.2.2 Table Conversion"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "valuePair",
+          "identicalMapping"
+        ],
+        "targetEntityName": "TextTableMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "firstDataPrototype",
+          "secondDataPrototype"
+        ],
+        "targetEntityName": "DataPrototypeMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Limitation of TextTableMapping for CompuMethods that have the value of category set to BITFIELD_TEXTTABLE",
+    "is_active": true,
+    "references": [],
+    "value": "false",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "DataPrototypeMapping.firstDataPrototype",
+      "DataPrototypeMapping.secondDataPrototype",
+      "TextTableMapping.identicalMapping",
+      "TextTableMapping.valuePair"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "definition",
+    "expression": "EndToEndProtection is the Identifiable class that owns specific elements for referencing the to-be-protected data elements and signals • EndToEndProtectionVariablePrototype: a specific dataElement owned by a specific PortPrototype • EndToEndProtectionISignalIPdu: a specific ISignalGroup in the context of an ISignalIPdu. For more details please refer to [11]",
+    "id": "TPS_SWCT_01090",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.7 End to End Protection"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EndToEndProtection"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EndToEndProtectionVariablePrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "dataElement"
+        ],
+        "targetEntityName": "SenderReceiverInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EndToEndProtectionISignalIPdu"
+      }
+    ],
+    "title": "EndToEndProtection",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03240"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "EndToEndProtection._classLevel",
+      "EndToEndProtectionISignalIPdu._classLevel",
+      "EndToEndProtectionVariablePrototype._classLevel",
+      "SenderReceiverInterface.dataElement"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The ImplementationDataType referenced by a ModeRequestTypeMap shall either be of category VALUE or of category TYPE_REFERENCE that in turn references an ImplementationDataType of category VALUE. The baseType referenced by the ImplementationDataType shall have set the value of the attribute BaseTypeDirectDefinition.baseTypeEncoding to NONE.",
+    "id": "constr_1167",
+    "id_type": "constr",
+    "scope_path": [
+      "4 Details: Software Components, Ports, and Interfaces",
+      "4.2 Port Interface Details"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseType"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "implementationDataType"
+        ],
+        "targetEntityName": "ModeRequestTypeMap"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "baseTypeEncoding"
+        ],
+        "targetEntityName": "BaseTypeDirectDefinition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ImplementationDataType"
+      }
+    ],
+    "title": "ImplementationDataTypes used as ModeRequestTypeMap.implementationDataType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BaseTypeDirectDefinition.baseTypeEncoding",
+      "ImplementationDataType.category",
+      "ModeRequestTypeMap.implementationDataType",
+      "SwDataDefProps.baseType"
+    ],
+    "confidence": 0.9
   }
 ]

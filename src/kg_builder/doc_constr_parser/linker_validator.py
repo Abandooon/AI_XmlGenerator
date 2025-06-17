@@ -109,8 +109,9 @@ def validate_and_link_constraints(raw_extracted_data, metadata):
                 if entity_type == "class":
                     class_exists_in_groups = entity_name in metadata.get("groups", {})
                     class_exists_in_complex = entity_name in metadata.get("complexTypes", {})
+                    class_exists_in_inner = entity_name in metadata.get("extract_inner_class", {})
 
-                    if not (class_exists_in_groups or class_exists_in_complex):
+                    if not (class_exists_in_groups or class_exists_in_complex or class_exists_in_inner):
                         issues.append(f"目标类 '{entity_name}' 在元数据中未找到。")
                     else:
                         class_info_from_meta = get_class_info(metadata, entity_name)
