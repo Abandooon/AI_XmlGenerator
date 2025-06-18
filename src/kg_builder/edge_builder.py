@@ -31,11 +31,13 @@ class EdgeAssembler:
         attr_index: dict[str, str],
         enum_index: dict[str, str],
         literal_index: dict[str, str],
+        parent_index: dict[str, list[str]]
     ) -> None:
         self.cls_idx = class_index
         self.attr_idx = attr_index
         self.enum_idx = enum_index
         self.lit_idx = literal_index
+        self.parent_idx = parent_index
 
     # ---------------- 对外主接口 ----------------
     def build_edges(
@@ -64,46 +66,38 @@ class EdgeAssembler:
         logger.info("EdgeAssembler 生成边 %d 条", len(edges))
         return edges
 
-    # ---------------- 私有 ----------------
+    # ---------- 构造 CONSTRAINS / APPLIES_TO_CLASS ----------
     def _build_constrains_edges(self, node: dict[str, Any], c_iri: str) -> list[Edge]:
         edges: list[Edge] = []
-
-        for target in node.get("targets", []):
-            t_name = target["targetEntityName"]
-            attrs = target.get("targetAttributes", [])
-            etype = target["entityType"]
-
-            # 获取实体 iri
-            if etype == "class":
-                base_iri = self.cls_idx.get(t_name)
-                if not base_iri:
-                    raise MissingTargetError(f"找不到目标类 {t_name}")
-                # _classLevel
-                if attrs == ["_classLevel"]:
-                    edges.append((c_iri, "CONSTRAINS", base_iri))
-                else:
-                    for a in attrs:
-                        a_iri = self.attr_idx.get(f"{t_name}/{a}")
-                        if not a_iri:
-                            raise MissingTargetError(f"{t_name}.{a} 不存在")
-                        edges.append((c_iri, "CONSTRAINS", a_iri))
-
-            elif etype == "enum":
-                enum_iri = self.enum_idx.get(t_name)
-                if not enum_iri:
-                    raise MissingTargetError(f"找不到枚举 {t_name}")
-                if attrs == ["_enumLevel"]:
-                    edges.append((c_iri, "CONSTRAINS", enum_iri))
-                else:
-                    for lit in attrs:
-                        lit_iri = self.lit_idx.get(f"{t_name}/{lit}")
-                        if not lit_iri:
-                            raise MissingTargetError(f"{t_name}.{lit} 不存在")
-                        edges.append((c_iri, "CONSTRAINS", lit_iri))
-
-            else:  # abstract
-                edges.append((c_iri, "CONSTRAINS", f"abstract:{t_name}"))
-
+        for tgt in node.get("targets", []):
+            cls_name = tgt["targetEntityName"]
+            attrs = tgt.get("targetAttributes", [])
+            etype = tgt["entityType"]
+            if etype != "class":
+                continue  # 其他实体类型此处略
+            cls_iri = self.cls_idx.get(cls_name)
+            if not cls_iri:
+                raise MissingTargetError(f"找不到目标类 {cls_name}")
+            # _classLevel 直接连类节点
+            if attrs == ["_classLevel"]:
+                edges.append((c_iri, "CONSTRAINS", cls_iri))
+                continue
+            for a in attrs:
+                if a == "_classLevel":  # ← ② 双保险，遇到也跳过
+                    continue
+                key = f"{cls_name}/{a}"
+                a_iri = self.attr_idx.get(key)
+                # ① 本类未声明 → 回溯祖先
+                if not a_iri:
+                    anc = self._find_ancestor_with_attr(cls_name, a)
+                    if not anc:
+                        raise MissingTargetError(f"{cls_name}.{a} 不存在")
+                    a_iri = self.attr_idx[f"{anc}/{a}"]
+                    edges.append((c_iri, "CONSTRAINS", a_iri))
+                    edges.append((c_iri, "APPLIES_TO_CLASS", cls_iri))
+                    continue
+                # ② 本类命中
+                edges.append((c_iri, "CONSTRAINS", a_iri))
         return edges
 
     # ---------------- Section 节点生成 ----------------
@@ -120,3 +114,21 @@ class EdgeAssembler:
         iri = f"doc:sec/{slug}"
         cache[key] = iri
         return iri
+
+
+    # ------- 多继承回溯 -------
+    def _find_ancestor_with_attr(self, cls: str, attr: str) -> str | None:
+        visited: set[str] = set()
+        stack: list[str] = [cls]  # DFS；广度同理
+
+        while stack:
+            cur = stack.pop()
+            if cur in visited:
+                continue
+            visited.add(cur)
+
+            if f"{cur}/{attr}" in self.attr_idx:
+                return cur  # 命中
+
+            stack.extend(self.parent_idx.get(cur, []))
+        return None

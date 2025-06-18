@@ -32,7 +32,8 @@ _DEFAULT_CFG: dict[str, Any] = {
         "password": "autosar4.2.2"
     },
     # 输入数据
-    "metadata_path": "data/unified_metadata.json",
+    # "metadata_path": "data/unified_metadata.json",
+    "metadata_path": "data/unified_metadata_with_inlines.json",
     "constraints_path": "data/constraints_linked.json",
     # 域与版本
     "domain": "AUTOSAR",
