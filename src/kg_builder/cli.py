@@ -123,17 +123,17 @@ def main() -> None:  # pragma: no cover
         RdfExporter().export(nodes, edges, ttl_path="output/kg.ttl")
 
     # ---------- 10. 导出 SHACL / SMT / GBNF ----------
-    out_dir = Path(cfg["output_dir"]); out_dir.mkdir(exist_ok=True)
-    ShapeEmitter(cfg["domain"], cfg["version"]).build(con_nodes) \
-        .serialize(cfg["export"]["shacl"])
-    Path(cfg["export"]["smt"]).write_text(
-        SmtEmitter().build(con_nodes), encoding="utf-8"
-    )
-    Path(cfg["export"]["gbnf"]).write_text(
-        GbnfMaker().build(con_nodes), encoding="utf-8"
-    )
+    # out_dir = Path(cfg["output_dir"]); out_dir.mkdir(exist_ok=True)
+    # ShapeEmitter(cfg["domain"], cfg["version"]).build(con_nodes) \
+    #     .serialize(cfg["export"]["shacl"])
+    # Path(cfg["export"]["smt"]).write_text(
+    #     SmtEmitter().build(con_nodes), encoding="utf-8"
+    # )
+    # Path(cfg["export"]["gbnf"]).write_text(
+    #     GbnfMaker().build(con_nodes), encoding="utf-8"
+    # )
 
-    logger.info("KG 构建流程结束；产物已输出至 %s", out_dir.resolve())
+    logger.info("KG 构建流程结束")
 
 
 if __name__ == "__main__":  # pragma: no cover

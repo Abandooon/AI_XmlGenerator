@@ -859,3 +859,49 @@
 2025-06-18 17:30:18 INFO [smt_exporter.py:34] 已生成 SMT-LIB2 约束：1468 行
 2025-06-18 17:30:18 INFO [schema_exporter.py:33] GBNF 生成完成，1 条规则
 2025-06-18 17:30:18 INFO [cli.py:136] KG 构建流程结束；产物已输出至 D:\PycharmProjects\AI_XmlGenerator\src\kg_builder\output
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:55:01 DEBUG [config.py:83] 最终配置合并结果: {'graph_backend': 'neo4j', 'neo4j': {'uri': 'neo4j://127.0.0.1:7687', 'user': 'neo4j', 'password': 'autosar4.2.2'}, 'metadata_path': 'data/unified_metadata_with_inlines.json', 'constraints_path': 'data/constraints_linked.json', 'domain': 'AUTOSAR', 'version': 'UNSPECIFIED', 'output_dir': 'output', 'export': {'shacl': 'output\\shapes.ttl', 'smt': 'output\\constraints.smt2', 'gbnf': 'output\\autosar.gbnf'}}
+2025-06-18 19:55:01 INFO [loader.py:37] 加载元模型文件: data/unified_metadata_with_inlines.json
+2025-06-18 19:55:01 INFO [normalizer.py:79] 元数据规范化完成 (domain=AUTOSAR, version=UNSPECIFIED)
+2025-06-18 19:55:01 INFO [loader.py:84] 加载约束文件: data/constraints_linked.json
+2025-06-18 19:55:01 INFO [ontology_builder.py:63] 开始构建本体层图
+2025-06-18 19:55:03 INFO [ontology_builder.py:76] 本体层节点 11419，边 16324
+2025-06-18 19:55:03 INFO [constraint_parser.py:46] 开始解析约束 (1161 条)
+2025-06-18 19:55:03 INFO [constraint_parser.py:51] 约束节点构建完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:46 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [logger.py:41] Logger 初始化完成
+2025-06-18 19:56:47 DEBUG [config.py:83] 最终配置合并结果: {'graph_backend': 'neo4j', 'neo4j': {'uri': 'neo4j://127.0.0.1:7687', 'user': 'neo4j', 'password': 'autosar4.2.2'}, 'metadata_path': 'data/unified_metadata_with_inlines.json', 'constraints_path': 'data/constraints_linked.json', 'domain': 'AUTOSAR', 'version': 'UNSPECIFIED', 'output_dir': 'output', 'export': {'shacl': 'output\\shapes.ttl', 'smt': 'output\\constraints.smt2', 'gbnf': 'output\\autosar.gbnf'}}
+2025-06-18 19:56:47 INFO [loader.py:37] 加载元模型文件: data/unified_metadata_with_inlines.json
+2025-06-18 19:56:47 INFO [normalizer.py:79] 元数据规范化完成 (domain=AUTOSAR, version=UNSPECIFIED)
+2025-06-18 19:56:47 INFO [loader.py:84] 加载约束文件: data/constraints_linked.json
+2025-06-18 19:56:47 INFO [ontology_builder.py:62] 开始构建本体层图 (v1.1)
+2025-06-18 19:56:48 INFO [ontology_builder.py:75] 本体层节点 11419，边 16324
+2025-06-18 19:56:48 INFO [constraint_parser.py:46] 开始解析约束 (1161 条)
+2025-06-18 19:56:48 INFO [constraint_parser.py:51] 约束节点构建完成
+2025-06-18 19:56:48 INFO [edge_builder.py:66] EdgeAssembler 生成边 5676 条
+2025-06-18 19:59:34 INFO [graph_exporter.py:35] Neo4j 导入完成: nodes=12580 edges=22000
+2025-06-18 19:59:34 INFO [shacl_generator.py:47] SHACL 生成完成，总计 1422 triples
+2025-06-18 19:59:34 INFO [smt_exporter.py:34] 已生成 SMT-LIB2 约束：1468 行
+2025-06-18 19:59:34 INFO [schema_exporter.py:33] GBNF 生成完成，1 条规则
+2025-06-18 19:59:34 INFO [cli.py:136] KG 构建流程结束；产物已输出至 D:\PycharmProjects\AI_XmlGenerator\src\kg_builder\output
