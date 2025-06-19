@@ -232,6 +232,12 @@ class OntologyGraphBuilder:
         if not attr:
             return
         attr_iri = attr.get("iri") or f"attr:{slug(attr.get('qualifiedName', attr['name']))}"
+
+        # 检查是否已存在该属性节点
+        if attr_iri in self._nodes:
+            # 如果已经存在，则不创建新节点，而是更新现有节点
+            return
+
         local_name = attr.get("qualifiedName", attr["name"]).split(".")[-1]
 
         # ---- 取父节点名称供 parentClass ----
@@ -267,5 +273,9 @@ class OntologyGraphBuilder:
 
         # link attr type to Enum (if any)
         typ = attr.get("type")
-        if typ and typ in self._enum_idx:
+        # 如果类型是枚举类型，则建立类型与枚举的连接
+        if typ in self._enum_idx:
             self._add_edge(attr_iri, "TYPE_OF", self._enum_idx[typ])
+        # 如果类型是复杂类型（complex type），则建立类型与类的连接
+        elif typ in self._class_idx:
+            self._add_edge(attr_iri, "TYPE_OF", self._class_idx[typ])

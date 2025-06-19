@@ -1,6 +1,7 @@
-"""smt_exporter.py
------------------
-Emit SMT‑LIB2 constraints from canonical constraints list.
+"""smt_exporter.py (v1.2)
+-----------------------
+Add support for range, existence, mutuallyExclusive.
+Regex skipped (Z3-str3 optional).
 """
 from __future__ import annotations
 
@@ -16,21 +17,56 @@ class SmtExporter:
         self.var_declared: set[str] = set()
 
     # ------------------------------------------------------------
-    def export(self, constraints: List[Dict[str, any]]) -> pathlib.Path:
-        for c in constraints:
-            if c["type"] == "cardinality" and c["maxOccurs"] == 1 and c["enum"]:
-                self._emit_enum_once(c)
+    def export(self, cons: List[Dict[str, any]]) -> pathlib.Path:
+        for c in cons:
+            ty = c["type"]
+            if ty == "cardinality" and c.get("maxOccurs") == 1 and c.get("enum"):
+                self._enum_once(c)
+            elif ty == "range":
+                self._range(c)
+            elif ty == "existence":
+                self._existence(c)
+            elif ty == "relationship" and c.get("mutuallyExclusive"):
+                self._mutex(c)
         self.lines.append("(check-sat)")
         path = self.out_dir / "constraints.smt2"
         path.write_text("\n".join(self.lines), encoding="utf-8")
         return path
 
     # ------------------------------------------------------------
-    def _emit_enum_once(self, c: Dict[str, any]):
-        var = c["targets"][0].replace(".", "_")  # rough mangling
+    def _declare(self, var: str):
         if var not in self.var_declared:
             self.lines.append(f"(declare-const {var} String)")
             self.var_declared.add(var)
+
+    def _mangle(self, tgt: str) -> str:
+        return tgt.replace(".", "_")
+
+    def _enum_once(self, c: Dict[str, any]):
+        var = self._mangle(c["targets"][0])
+        self._declare(var)
         ors = " ".join(f'(= {var} "{v}")' for v in c["enum"])
-        self.lines.append(f"; {c['cid']}")
-        self.lines.append(f"(assert (or {ors}))")
+        self.lines += [f"; {c['cid']}", f"(assert (or {ors}))"]
+
+    def _range(self, c: Dict[str, any]):
+        var = self._mangle(c["targets"][0])
+        self._declare(var)
+        if "rangeMin" in c:
+            self.lines.append(f"(assert (<= {c['rangeMin']} (str.to_int {var})))")
+        if "rangeMax" in c:
+            self.lines.append(f"(assert (<= (str.to_int {var}) {c['rangeMax']}))")
+
+    def _existence(self, c: Dict[str, any]):
+        var = self._mangle(c["targets"][0])
+        self._declare(var)
+        if c.get("mustNotExist"):
+            self.lines.append(f"(assert (= {var} \"\"))")
+        else:
+            self.lines.append(f"(assert (distinct {var} \"\"))")
+
+    def _mutex(self, c: Dict[str, any]):
+        vars_ = [self._mangle(t) for t in c["mutuallyExclusive"]]
+        for v in vars_:
+            self._declare(v)
+        if len(vars_) >= 2:
+            self.lines.append("(assert (not (and {} {})))".format(vars_[0], vars_[1]))

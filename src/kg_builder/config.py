@@ -37,7 +37,7 @@ _DEFAULT_CFG: dict[str, Any] = {
     "constraints_path": "data/constraints_linked.json",
     # 域与版本
     "domain": "AUTOSAR",
-    "version": "UNSPECIFIED",
+    "version": "4-2-2",
     # 统一导出目录
     "output_dir": "output",
 }

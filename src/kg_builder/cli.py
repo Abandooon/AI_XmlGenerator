@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from neo4j import GraphDatabase
+
 from config import load_config
 from loader import MetadataLoader, ConstraintLoader
 from normalizer import normalize_metadata
@@ -19,9 +21,6 @@ from ontology_builder import OntologyGraphBuilder
 from constraint_parser import ConstraintGraphBuilder
 from edge_builder import EdgeAssembler
 from graph_exporter import Neo4jExporter, RdfExporter
-from shacl_generator import ShapeEmitter
-from smt_exporter import SmtEmitter
-from schema_exporter import GbnfMaker
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -33,11 +32,23 @@ def _parse_args() -> argparse.Namespace:
     ap.add_argument("--cfg", default="config.yaml", help="配置 YAML 路径")
     return ap.parse_args()
 
+# 定义清空Neo4j数据库的函数
+def clear_neo4j_database(uri: str, user: str, password: str) -> None:
+    driver = GraphDatabase.driver(uri, auth=(user, password))
+    with driver.session() as session:
+        # 清空所有节点及边
+        session.run("MATCH (n) DETACH DELETE n")
+    driver.close()
+
 
 # ----------------------------------------------------------------------
 def main() -> None:  # pragma: no cover
     args = _parse_args()
     cfg  = load_config(args.cfg)
+
+    # ---------- 0. 清空 Neo4j 数据库 ----------
+    if cfg["graph_backend"] == "neo4j":
+        clear_neo4j_database(cfg["neo4j"]["uri"], cfg["neo4j"]["user"], cfg["neo4j"]["password"])
 
     # ---------- 1. 加载 & 规范化元数据 ----------
     mdata = MetadataLoader().load(cfg["metadata_path"])

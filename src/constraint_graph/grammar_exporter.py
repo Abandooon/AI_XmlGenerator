@@ -18,7 +18,7 @@ class GrammarExporter:
     def export(self, constraints: List[Dict[str, any]]) -> pathlib.Path:
         self.lines = ["; Auto‑generated GBNF"]
         for c in constraints:
-            if c["type"] == "cardinality" and c["maxOccurs"] == 1 and c["enum"]:
+            if c.get("type") == "cardinality" and c.get("maxOccurs") == 1 and c.get("enum"):
                 self._emit_once_enum_rule(c)
         path = self.out_dir / "autosar.gbnf"
         path.write_text("\n".join(self.lines), encoding="utf-8")
