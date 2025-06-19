@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import pathlib
 from typing import Dict, List
+import re
 
 
 class SmtExporter:
@@ -39,8 +40,11 @@ class SmtExporter:
             self.lines.append(f"(declare-const {var} String)")
             self.var_declared.add(var)
 
+    # _mangle()
+
     def _mangle(self, tgt: str) -> str:
-        return tgt.replace(".", "_")
+        # 把 '.' '/' 都替成 '_'，免得 Z3 变量非法
+        return re.sub(r"[./]", "_", tgt)
 
     def _enum_once(self, c: Dict[str, any]):
         var = self._mangle(c["targets"][0])

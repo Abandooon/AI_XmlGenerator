@@ -21,14 +21,17 @@ class ConstraintEnricher:
                 continue
 
             tgt = c["targets"][0]
-            if "." not in tgt:  # → 类级 / 枚举级约束，属性信息不存在
-                # 确保后续访问安全
-                c.setdefault("maxOccurs", None)
-                c.setdefault("minOccurs", None)
+            # enrich() 里解析 class / attr
+            if "." in tgt:
+                cls, attr = tgt.split(".", 1)
+            elif "/" in tgt:
+                cls, attr = tgt.split("/", 1)  # 容错分支
+            else:
                 continue
+            # 构造查表 key – 统一用 '.'
+            key = f"{cls}.{attr}"
+            meta = self.attr_idx.get(key)
 
-            cls, attr = tgt.split(".", 1)
-            meta = self.attr_idx.get(f"{cls}/{attr}")
             if not meta:  # 找不到属性索引，同样补 None
                 c.setdefault("maxOccurs", None)
                 c.setdefault("minOccurs", None)

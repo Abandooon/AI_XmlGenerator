@@ -35,8 +35,9 @@ class ShaclExporter:
         return path
 
     # ------------------------------------------------------------
-    def _shape_header(self, c: Dict[str, any]) -> str:
-        prop = c["targets"][0].split(".")[-1]
+    def _shape_header(self, c):
+        prop_full = c["targets"][0]
+        prop = prop_full.split(".", 1)[-1] if "." in prop_full else prop_full.split("/", 1)[-1]
         return f"ex:{c['cid']} a sh:PropertyShape ;\n    sh:path autosar:{prop} ;"
 
     def _emit_enum_max1(self, c: Dict[str, any]):

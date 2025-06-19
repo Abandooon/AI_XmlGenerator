@@ -90,7 +90,7 @@ class ConstraintLoader:
                 nodes.setdefault(tid, {"id": tid, "qualifiedName": tgt_name, "name": tgt_name})
                 edges.append((cid, "CONSTRAINS", tid))
             for r in sess.run(q2):
-                key = f"{r['cls']}/{r['attr']}"
+                key = f"{r['cls']}.{r['attr']}"
                 self.attr_idx[key] = {"minOccurs": r["minO"], "maxOccurs": r["maxO"], "type": r["typ"]}
             for r in sess.run(q3):
                 self.enum_idx.setdefault(r["ename"], []).append({"value": r["val"]})
@@ -103,10 +103,10 @@ class ConstraintLoader:
         # build from JSON nodes
         for n in nodes.values():
             if n.get("label") == "Attribute":
-                parent = self._find_parent_class(n["id"], edges)
+                parent = self._find_parent_class(n["id"], edges, nodes)
                 if not parent:
                     continue
-                key = f"{parent}/{n['name']}"
+                key = f"{parent}.{n['name']}"
                 self.attr_idx[key] = {
                     "minOccurs": n.get("minOccurs"),
                     "maxOccurs": n.get("maxOccurs"),
@@ -121,10 +121,15 @@ class ConstraintLoader:
                 lit_val = nodes[e].get("value")
                 self.enum_idx.setdefault(en, []).append({"value": lit_val})
 
-    def _find_parent_class(self, attr_id: str, edges: List[tuple[str, str, str]]) -> str | None:
+    def _find_parent_class(
+            self,
+            attr_id: str,
+            edges: List[tuple[str, str, str]],
+            nodes: Dict[str, Dict[str, Any]],  # 新参数
+    ) -> str | None:
         for s, rel, e in edges:
             if rel == "HAS_ATTRIBUTE" and e == attr_id:
-                return s.split("/")[-1] if s else None
+                return nodes[s]["name"]  # ← 用 nodes 查真正类名
         return None
 
     # ------------------------------------------------------------
@@ -137,6 +142,6 @@ class ConstraintLoader:
             t_node = nodes[e]
             cid = c_node["id"]
             record = constraints.setdefault(cid, {**c_node, "targets": []})
-            target_name = t_node.get("qualifiedName") or t_node.get("name")
+            target_name = (t_node.get("qualifiedName") or t_node.get("name") or "").replace("/", ".")
             record["targets"].append(target_name)
         return list(constraints.values())
