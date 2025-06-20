@@ -99,12 +99,18 @@ class KGLoader:
             # 1) Class nodes ------------------------------------------------
             cy_cls = """
             MATCH (c:Class)
-            RETURN id(c) AS cid, c.xml_tag AS tag, c.xml_wrapper_tag AS wrapper
+            RETURN id(c) AS cid,
+                   c.xml_tag         AS tag,
+                   c.name            AS name,
+                   c.xml_wrapper_tag AS wrapper,
+                   coalesce(c.isAttribute,false) AS isAttr
             """
             for rec in sess.run(cy_cls):
                 self.cls_nodes[rec["cid"]] = {
                     "xml_tag": rec["tag"],
+                    "name": rec["name"],
                     "wrapper": rec["wrapper"],
+                    "isAttribute": bool(rec["isAttr"]),
                 }
 
             # 2) Attribute nodes + HAS_ATTRIBUTE ---------------------------
@@ -120,13 +126,23 @@ class KGLoader:
             """
             for rec in sess.run(cy_attr):
                 aid = rec["aid"]
+                raw = rec["isAttr"]
+                is_attr = False  # 默认
+                if isinstance(raw, bool):
+                    is_attr = raw
+                elif isinstance(raw, (int, float)):
+                    is_attr = bool(raw)
+                elif isinstance(raw, str):
+                    is_attr = raw.lower() not in {"false", "0", ""}
+
                 self.attr_nodes[aid] = {
                     "xml_tag": rec["tag"],
                     "wrapper": rec["wrapper"],
-                    "isXmlAttr": bool(rec["isAttr"]),
+                    "isXmlAttr": is_attr,  # ← 用转换后的值
                     "minOccurs": int(rec["lo"]) if rec["lo"] is not None else None,
                     "maxOccurs": int(rec["hi"]) if rec["hi"] is not None else None,
                 }
+
                 self.cls_attrs[rec["cid"]].append(aid)
 
             # 3) TYPE_OF ----------------------------------------------------
@@ -179,6 +195,16 @@ class KGLoader:
 
         # --- Node payloads ----------------------------------------------
         for n in nodes:
+            raw = n["properties"].get("isXmlAttr")
+            if isinstance(raw, bool):
+                is_attr = raw
+            elif isinstance(raw, (int, float)):
+                is_attr = bool(raw)
+            elif isinstance(raw, str):
+                is_attr = raw.lower() not in {"false", "0", ""}
+            else:
+                is_attr = False
+
             labels = set(n["labels"] if isinstance(n["labels"], list) else [n["labels"]])
             if "Class" in labels:
                 self.cls_nodes[n["id"]] = {
@@ -189,7 +215,7 @@ class KGLoader:
                 self.attr_nodes[n["id"]] = {
                     "xml_tag": n["properties"].get("xml_tag"),
                     "wrapper": n["properties"].get("xml_wrapper_tag"),
-                    "isXmlAttr": bool(n["properties"].get("isXmlAttr")),
+                    "isXmlAttr": is_attr,
                     "minOccurs": n["properties"].get("minOccurs"),
                     "maxOccurs": n["properties"].get("maxOccurs"),
                 }

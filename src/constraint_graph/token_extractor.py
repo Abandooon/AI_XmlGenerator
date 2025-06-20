@@ -54,13 +54,17 @@ class TokenExtractor:
                 continue
             reachable.add(cid)
 
-            # Traverse child element attributes only (isXmlAttr == False)
-            for aid in kg.cls_attrs.get(cid, []):
-                attr_meta = kg.attr_nodes.get(aid)
-                if attr_meta and not attr_meta["isXmlAttr"]:
-                    typ = kg.attr_type.get(aid)
-                    if typ is not None and typ in kg.cls_nodes:
-                        q.append(typ)
+            # -------- 用聚合函数 --------------
+            for aid in self.aggregate_attributes(cid):
+                meta = kg.attr_nodes[aid]
+                if not meta["isXmlAttr"]:
+                    tid = kg.attr_type.get(aid)
+                    if (
+                        tid
+                        and tid in kg.cls_nodes
+                        and not kg.cls_nodes[tid].get("isAttribute", False)
+                    ):
+                        q.append(tid)
         self._serialisable = reachable
         return reachable
 
@@ -117,6 +121,7 @@ class TokenExtractor:
                 meta = kg.cls_nodes[cid]
                 f.write(json.dumps({
                     "classId": cid,
+                    "className": meta["name"],
                     "xml_tag": meta["xml_tag"],
                     "xml_wrapper_tag": meta["wrapper"],
                 }, ensure_ascii=False) + "\n")
@@ -127,6 +132,11 @@ class TokenExtractor:
             for cid in sorted(serial):
                 for aid in self.aggregate_attributes(cid):
                     meta = kg.attr_nodes[aid]
+                    type_id = kg.attr_type.get(aid)
+                    is_attr_cls = (
+                        type_id in kg.cls_nodes
+                        and kg.cls_nodes[type_id].get("isAttribute", False)
+                    )
                     f_attr.write(json.dumps({
                         "classId": cid,
                         "attrId": aid,
@@ -135,7 +145,8 @@ class TokenExtractor:
                         "isXmlAttr": meta["isXmlAttr"],
                         "minOccurs": meta["minOccurs"],
                         "maxOccurs": meta["maxOccurs"],
-                        "typeId": kg.attr_type.get(aid),
+                        "typeId": type_id,
+                        "attributeClass": is_attr_cls  # << 新增
                     }, ensure_ascii=False) + "\n")
 
         # 3) enum literals -------------------------------------------------
@@ -177,3 +188,22 @@ class TokenExtractor:
                 except KeyError as err:
                     raise KeyError(f"root class xml_tag '{r}' not found in KG") from err
         return out
+
+    # todo: # -----------------啦约束---kg.constraint_nodes显然不对，要先loader吧----------------------------------------------
+    def _collect_value_restrictions(self) -> Dict[int, List[str]]:
+        kg = self._kg
+        out = defaultdict(set)
+        for cid, cn in kg.constraint_nodes.items():
+            if cn.get("constraint_type") != "value_restriction":
+                continue
+            val = cn.get("value")
+            if not val:
+                continue
+            for aid in kg.constrains_attr.get(cid, []):
+                tid = kg.attr_type.get(aid)
+                if tid in kg.enum_idx or (
+                        tid in kg.cls_nodes and kg.cls_nodes[tid].get("isAttribute", False)
+                ):
+                    out[aid].add(val)
+        return {k: sorted(v) for k, v in out.items()}
+

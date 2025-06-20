@@ -72,6 +72,8 @@ class OntologyGraphBuilder:
         self._wire_complex_relationships(meta.get("complexTypes", {}))
         self._wire_inline_expands(meta.get("groups", {}))
 
+        self._wire_attr_type_edges()
+
         logger.info("本体层节点 %d，边 %d", len(self._nodes), len(self._edges))
         return list(self._nodes.values()), self._edges
 
@@ -92,7 +94,7 @@ class OntologyGraphBuilder:
         self._edges.append((s, r, e))
 
     # ------------------------------------------------------------
-    # pass-1  class / attribute / attr-group / package
+    # pass-1  group / complex / inner classes -----> CLASS nodes
     # ------------------------------------------------------------
     def _pass_class_nodes(self, classes: Dict[str, Any], *, source: str, meta: Dict[str, Any]) -> None:
         for cls in classes.values():
@@ -100,7 +102,7 @@ class OntologyGraphBuilder:
             self._class_idx[cls["name"]] = iri
             self._add_node(iri, "Class", {
                 "name": cls["name"],
-                "annotation": cls.get("annotation", ""),
+                "xml_tag": cls.get("xml_tag", ""),
                 "description": cls.get("description", ""),
                 "isComplexType": source == "ctype",
                 "isInnerClassType": source == "inner",
@@ -216,7 +218,7 @@ class OntologyGraphBuilder:
                 "baseType": st.get("base"),
                 "isPrimitive": st.get("isPrimitiveType", False),
                 "pattern": st.get("pattern", ""),
-                "annotation": st.get("annotation", ""),
+                "xml_tag": st.get("xml_tag", ""),
             })
             for lit in ensure_iter(st.get("enumerations")):
                 lit_iri = lit["iri"]
@@ -279,3 +281,19 @@ class OntologyGraphBuilder:
         # 如果类型是复杂类型（complex type），则建立类型与类的连接
         elif typ in self._class_idx:
             self._add_edge(attr_iri, "TYPE_OF", self._class_idx[typ])
+
+    def _wire_attr_type_edges(self):
+        for n in self._nodes.values():
+            if n["label"] != "Attribute":
+                continue
+            typ = n.get("type")
+            if not typ:
+                continue
+            src = n["id"]
+
+            if typ in self._enum_idx and not self._edge_exists(src, "TYPE_OF", self._enum_idx[typ]):
+                self._add_edge(src, "TYPE_OF", self._enum_idx[typ])
+
+            if typ in self._class_idx and not self._edge_exists(src, "TYPE_OF", self._class_idx[typ]):
+                self._add_edge(src, "TYPE_OF", self._class_idx[typ])
+
