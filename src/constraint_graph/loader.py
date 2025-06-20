@@ -1,147 +1,239 @@
-"""loader.py (v1.2)
-===================
-Support JSON *and* Neo4j input **and** expose `attr_idx` / `enum_idx` for Enricher.
+# loader.py
+"""Unified KG loader that now exposes all indices required by the token‑export
+pipeline.
+
+The class supports **two back‑ends**:
+    1. Live Neo4j instance (bolt/neo4j/http URI)
+    2. Local JSON dump consisting of ``nodes.json`` + ``edges.json``
+
+It returns four public dictionaries that downstream components rely on:
+
+    cls_nodes     : classId           -> {"xml_tag", "wrapper"}
+    attr_nodes    : attrId            -> {meta on Attribute}
+    cls_attrs     : classId           -> [attrId, ...]           # HAS_ATTRIBUTE
+    attr_type     : attrId            -> typeId | None           # TYPE_OF
+    subcls        : classId           -> set[parentId]           # SUBCLASS_OF
+    inline        : classId           -> set[groupClsId]        # INLINE_EXPANDS
+    enum_idx      : enumId            -> list[str]              # enum literals
+
+A minimal set of fields is fetched so that higher layers do *zero* further
+queries.
 """
 from __future__ import annotations
 
 import json
-import os
 import pathlib
-from typing import Any, Dict, List
+from collections import defaultdict
+from typing import Dict, List, Set, Tuple
 
+# Neo4j driver is an optional dependency; import lazily so local‑json mode works
 try:
-    from neo4j import GraphDatabase  # type: ignore
-except ModuleNotFoundError:
-    GraphDatabase = None  # type: ignore
+    from neo4j import GraphDatabase, Driver
+except ModuleNotFoundError:  # pragma: no cover – still allow json mode without neo4j
+    Driver = object  # type: ignore
 
-__all__ = ["ConstraintLoader"]
+__all__ = [
+    "KGLoader",
+]
 
 
-class ConstraintLoader:
-    def __init__(self, kg_uri: str | pathlib.Path):
-        self.kg_uri = str(kg_uri)
-        self.mode = "bolt" if self.kg_uri.startswith("neo4j://") else "json"
-        if self.mode == "json":
-            kg_path = pathlib.Path(self.kg_uri)
-            self.nodes_file = kg_path / "kg_nodes.json"
-            self.edges_file = kg_path / "kg_edges.json"
-            if not (self.nodes_file.exists() and self.edges_file.exists()):
-                raise FileNotFoundError("kg_nodes.json / kg_edges.json missing in " + str(kg_path))
+class KGLoader:
+    """Load just enough of the KG to support token extraction and constraint
+    canonicalisation.  The *entire* graph is **not** pulled – only the handful of
+    labels + edge types required.
+    """
+
+    # --- Construction -----------------------------------------------------
+
+    def __init__(
+        self,
+        source: str | pathlib.Path,
+        user: str | None = None,
+        password: str | None = None,
+    ) -> None:
+        """``source`` may be either
+            * a *str* ``bolt://`` / ``neo4j://`` / ``http://`` URI or
+            * a directory containing ``nodes.json`` + ``edges.json``.
+        """
+        self._is_neo4j = isinstance(source, str) and source.startswith(("bolt://", "neo4j://", "http://", "https://"))
+        self._driver: Driver | None = None
+        self._json_dir: pathlib.Path | None = None
+
+        if self._is_neo4j:
+            # Neo4j back‑end -------------------------------------------------
+            self._driver = GraphDatabase.driver(source, auth=(user, password))
         else:
-            if GraphDatabase is None:
-                raise ImportError("neo4j-driver not installed – pip install neo4j")
+            # Local JSON back‑end -------------------------------------------
+            self._json_dir = pathlib.Path(source)
+            if not (self._json_dir / "nodes.json").exists():
+                raise FileNotFoundError("nodes.json not found in " + str(source))
 
-        # public indexes for Enricher
-        self.attr_idx: Dict[str, Dict[str, Any]] = {}
-        self.enum_idx: Dict[str, List[Dict[str, Any]]] = {}
+        # Public indices (filled by `load()`)
+        self.cls_nodes: Dict[int, Dict[str, str | None]] = {}
+        self.attr_nodes: Dict[int, Dict[str, str | int | bool | None]] = {}
+        self.cls_attrs: Dict[int, List[int]] = defaultdict(list)
+        self.attr_type: Dict[int, int] = {}
+        self.subcls: Dict[int, Set[int]] = defaultdict(set)
+        self.inline: Dict[int, Set[int]] = defaultdict(set)
+        self.enum_idx: Dict[int, List[str]] = {}
 
-    # ------------------------------------------------------------
-    def load(self) -> List[Dict[str, Any]]:
-        if self.mode == "json":
-            nodes, edges = self._load_json_nodes_edges()
+        # Kick off data load -------------------------------------------------
+        self._load()
+
+    # ---------------------------------------------------------------------
+    # Internal helpers (Neo4j)
+    # ---------------------------------------------------------------------
+
+    def _load(self) -> None:
+        if self._is_neo4j:
+            self._load_neo4j()
         else:
-            nodes, edges = self._load_bolt_nodes_edges()
-        self._build_indexes(nodes, edges)
-        return self._collect_constraints(nodes, edges)
+            self._load_json()
 
-    # ------------------------------------------------------------
-    def _load_json_nodes_edges(self) -> tuple[Dict[str, Dict[str, Any]], List[tuple[str, str, str]]]:
-        with open(self.nodes_file, "r", encoding="utf-8") as f:
-            nodes = {n["id"]: n for n in json.load(f)}
-        with open(self.edges_file, "r", encoding="utf-8") as f:
-            edges = [tuple(e) for e in json.load(f)]
-        return nodes, edges
+    # ---------------- Neo4j branch ---------------------------------------
 
-    # ------------------------------------------------------------
-    def _load_bolt_nodes_edges(self) -> tuple[Dict[str, Dict[str, Any]], List[tuple[str, str, str]]]:
-        user = os.getenv("NEO4J_USER", "neo4j")
-        pwd = os.getenv("NEO4J_PASS", "autosar4.2.2")
-        driver = GraphDatabase.driver(self.kg_uri, auth=(user, pwd))
-        nodes: Dict[str, Dict[str, Any]] = {}
-        edges: List[tuple[str, str, str]] = []
+    def _load_neo4j(self) -> None:  # noqa: C901 – a bit long but linear
+        assert self._driver is not None, "driver not initialised"
 
-        # 1) constraint triples
-        q1 = (
-            "MATCH (c:Constraint)-[:CONSTRAINS]->(t) "
-            "RETURN c.id AS cid, c.constraint_type AS ctype, c.value AS val, "
-            "c.expression AS expr, t.qualifiedName AS qname, t.name AS tname"
-        )
-        # 2) attribute meta
-        q2 = (
-            "MATCH (cls)-[:HAS_ATTRIBUTE]->(a:Attribute) "
-            "RETURN cls.name AS cls, a.name AS attr, a.minOccurs AS minO, a.maxOccurs AS maxO, a.type AS typ"
-        )
-        # 3) enum literals
-        q3 = (
-            "MATCH (e:Enum)-[:HAS_LITERAL]->(l:EnumLiteral) "
-            "RETURN e.name AS ename, l.value AS val"
-        )
-        with driver.session() as sess:
-            for r in sess.run(q1):
-                cid = r["cid"]
-                nodes.setdefault(cid, {
-                    "id": cid,
-                    "constraint_type": r.get("ctype"),
-                    "value": r.get("val"),
-                    "expression": r.get("expr"),
-                })
-                tgt_name = r.get("qname") or r.get("tname")
-                tid = f"attr:{tgt_name}"
-                nodes.setdefault(tid, {"id": tid, "qualifiedName": tgt_name, "name": tgt_name})
-                edges.append((cid, "CONSTRAINS", tid))
-            for r in sess.run(q2):
-                key = f"{r['cls']}.{r['attr']}"
-                self.attr_idx[key] = {"minOccurs": r["minO"], "maxOccurs": r["maxO"], "type": r["typ"]}
-            for r in sess.run(q3):
-                self.enum_idx.setdefault(r["ename"], []).append({"value": r["val"]})
-        return nodes, edges
-
-    # ------------------------------------------------------------
-    def _build_indexes(self, nodes: Dict[str, Dict[str, Any]], edges: List[tuple[str, str, str]]) -> None:
-        if self.attr_idx:
-            return  # already built (bolt branch)
-        # build from JSON nodes
-        for n in nodes.values():
-            if n.get("label") == "Attribute":
-                parent = self._find_parent_class(n["id"], edges, nodes)
-                if not parent:
-                    continue
-                key = f"{parent}.{n['name']}"
-                self.attr_idx[key] = {
-                    "minOccurs": n.get("minOccurs"),
-                    "maxOccurs": n.get("maxOccurs"),
-                    "type": n.get("type"),
+        with self._driver.session() as sess:
+            # 1) Class nodes ------------------------------------------------
+            cy_cls = """
+            MATCH (c:Class)
+            RETURN id(c) AS cid, c.xml_tag AS tag, c.xml_wrapper_tag AS wrapper
+            """
+            for rec in sess.run(cy_cls):
+                self.cls_nodes[rec["cid"]] = {
+                    "xml_tag": rec["tag"],
+                    "wrapper": rec["wrapper"],
                 }
-            elif n.get("label") == "EnumLiteral":
-                pass  # handled via edge
-        # enum literals via edges
-        for s, rel, e in edges:
-            if rel == "HAS_LITERAL":
-                en = nodes[s]["name"]
-                lit_val = nodes[e].get("value")
-                self.enum_idx.setdefault(en, []).append({"value": lit_val})
 
-    def _find_parent_class(
-            self,
-            attr_id: str,
-            edges: List[tuple[str, str, str]],
-            nodes: Dict[str, Dict[str, Any]],  # 新参数
-    ) -> str | None:
-        for s, rel, e in edges:
-            if rel == "HAS_ATTRIBUTE" and e == attr_id:
-                return nodes[s]["name"]  # ← 用 nodes 查真正类名
-        return None
+            # 2) Attribute nodes + HAS_ATTRIBUTE ---------------------------
+            cy_attr = """
+            MATCH (c:Class)-[:HAS_ATTRIBUTE]->(a:Attribute)
+            RETURN id(a) AS aid,
+                   id(c) AS cid,
+                   a.xml_tag   AS tag,
+                   a.xml_wrapper_tag AS wrapper,
+                   a.isXmlAttr AS isAttr,
+                   a.minOccurs AS lo,
+                   a.maxOccurs AS hi
+            """
+            for rec in sess.run(cy_attr):
+                aid = rec["aid"]
+                self.attr_nodes[aid] = {
+                    "xml_tag": rec["tag"],
+                    "wrapper": rec["wrapper"],
+                    "isXmlAttr": bool(rec["isAttr"]),
+                    "minOccurs": int(rec["lo"]) if rec["lo"] is not None else None,
+                    "maxOccurs": int(rec["hi"]) if rec["hi"] is not None else None,
+                }
+                self.cls_attrs[rec["cid"]].append(aid)
 
-    # ------------------------------------------------------------
-    def _collect_constraints(self, nodes: Dict[str, Dict[str, Any]], edges: List[tuple[str, str, str]]) -> List[Dict[str, Any]]:
-        constraints: Dict[str, Dict[str, Any]] = {}
-        for s, rel, e in edges:
-            if rel != "CONSTRAINS":
-                continue
-            c_node = nodes[s]
-            t_node = nodes[e]
-            cid = c_node["id"]
-            record = constraints.setdefault(cid, {**c_node, "targets": []})
-            target_name = (t_node.get("qualifiedName") or t_node.get("name") or "").replace("/", ".")
-            record["targets"].append(target_name)
-        return list(constraints.values())
+            # 3) TYPE_OF ----------------------------------------------------
+            cy_type = """
+            MATCH (a:Attribute)-[:TYPE_OF]->(t)
+            RETURN id(a) AS aid, id(t) AS tid
+            """
+            for rec in sess.run(cy_type):
+                self.attr_type[rec["aid"]] = rec["tid"]
+
+            # 4) SUBCLASS_OF ----------------------------------------------
+            cy_sub = """
+            MATCH (c:Class)-[:SUBCLASS_OF]->(p:Class)
+            RETURN id(c) AS cid, id(p) AS pid
+            """
+            for rec in sess.run(cy_sub):
+                self.subcls[rec["cid"]].add(rec["pid"])
+
+            # 5) INLINE_EXPANDS -------------------------------------------
+            cy_inline = """
+            MATCH (c:Class)-[:INLINE_EXPANDS]->(g:Class)
+            RETURN id(c) AS cid, id(g) AS gid
+            """
+            for rec in sess.run(cy_inline):
+                self.inline[rec["cid"]].add(rec["gid"])
+
+            # 6) Enum literals --------------------------------------------
+            cy_enum = """
+            MATCH (e:Enum)-[:HAS_LITERAL]->(lit:EnumLiteral)
+            WITH id(e) AS eid, collect(lit.value) AS vals
+            RETURN eid, vals
+            """
+            for rec in sess.run(cy_enum):
+                self.enum_idx[rec["eid"]] = rec["vals"]
+
+    # ---------------- JSON branch ---------------------------------------
+
+    def _load_json(self) -> None:  # noqa: C901 – similar linear loader
+        assert self._json_dir is not None
+        nodes_fp = self._json_dir / "nodes.json"
+        edges_fp = self._json_dir / "edges.json"
+
+        with open(nodes_fp, "r", encoding="utf-8") as f:
+            nodes = json.load(f)
+        with open(edges_fp, "r", encoding="utf-8") as f:
+            edges = json.load(f)
+
+        # Build node index: id → node
+        node_map = {n["id"]: n for n in nodes}
+
+        # --- Node payloads ----------------------------------------------
+        for n in nodes:
+            labels = set(n["labels"] if isinstance(n["labels"], list) else [n["labels"]])
+            if "Class" in labels:
+                self.cls_nodes[n["id"]] = {
+                    "xml_tag": n["properties"].get("xml_tag"),
+                    "wrapper": n["properties"].get("xml_wrapper_tag"),
+                }
+            elif "Attribute" in labels:
+                self.attr_nodes[n["id"]] = {
+                    "xml_tag": n["properties"].get("xml_tag"),
+                    "wrapper": n["properties"].get("xml_wrapper_tag"),
+                    "isXmlAttr": bool(n["properties"].get("isXmlAttr")),
+                    "minOccurs": n["properties"].get("minOccurs"),
+                    "maxOccurs": n["properties"].get("maxOccurs"),
+                }
+            elif "EnumLiteral" in labels:
+                # handled when reading edges HAS_LITERAL
+                pass
+
+        # --- Edge payloads ----------------------------------------------
+        for e in edges:
+            typ = e["type"]
+            if typ == "HAS_ATTRIBUTE":
+                self.cls_attrs[e["start"]].append(e["end"])
+            elif typ == "TYPE_OF":
+                self.attr_type[e["start"]] = e["end"]
+            elif typ == "SUBCLASS_OF":
+                self.subcls[e["start"]].add(e["end"])
+            elif typ == "INLINE_EXPANDS":
+                self.inline[e["start"]].add(e["end"])
+            elif typ == "HAS_LITERAL":
+                enum_id = e["start"]
+                lit_node = node_map[e["end"]]
+                self.enum_idx.setdefault(enum_id, []).append(lit_node["properties"]["value"])
+
+        # Deduplicate enum literal order deterministically
+        for k, v in self.enum_idx.items():
+            self.enum_idx[k] = sorted(set(v))
+
+    # ------------------------------------------------------------------
+    # Convenience helpers
+    # ------------------------------------------------------------------
+
+    def class_name_index(self) -> Dict[str, int]:
+        """Return mapping *xml_tag → classId* (for root name resolution)."""
+        return {v["xml_tag"]: cid for cid, v in self.cls_nodes.items() if v["xml_tag"]}
+
+    # ----------------------------------------------
+    # Context‑manager sugar for session lifecycle
+    # ----------------------------------------------
+    def close(self):
+        if self._driver is not None:
+            self._driver.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()

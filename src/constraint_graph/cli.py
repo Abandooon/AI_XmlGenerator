@@ -1,88 +1,51 @@
-"""constraint_graph/cli.py  (v1.3)
-------------------------------------------------
-High‑level CLI & importable export() function **with Enricher stage**.
-"""
-from __future__ import annotations
-
 import argparse
-import os
 import pathlib
-import sys
-from typing import List, Optional
 
-from loader import ConstraintLoader
-from canonicalizer import Canonicalizer
-from enricher import ConstraintEnricher  # NEW
-from grammar_exporter import GrammarExporter
-from dfa_compiler import compile_gbnf
-from shacl_exporter import ShaclExporter
-from smt_exporter import SmtExporter
+from loader import KGLoader
+from token_extractor import TokenExtractor
 
-__all__ = ["export"]
-
-# ------------------------------------------------------------
-# Public callable (PyCharm can call directly)
-# ------------------------------------------------------------
-
-def export(kg: str, out: str = "out/cg") -> None:
-    ns = argparse.Namespace(kg=kg, out=out)
-    _export_cmd(ns)
+__all__ = ["build_arg_parser"]
 
 
-# ------------------------------------------------------------
-# internal main logic
-# ------------------------------------------------------------
+def _export_tokens(ns: argparse.Namespace) -> None:
+    """CLI entry: `export-tokens`"""
+    kg = KGLoader(ns.kg, user=ns.user, password=ns.password)
+    roots = _read_roots(ns.roots)
 
-def _export_cmd(ns: argparse.Namespace) -> None:
-    kg_uri = str(ns.kg)
-    out_dir = pathlib.Path(ns.out)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    extractor = TokenExtractor(kg, roots)
+    extractor.dump(ns.out)
 
-    # 0. load raw + canonicalize
-    loader = ConstraintLoader(kg_uri)
-    raw_constraints = loader.load()
-    canonical = Canonicalizer().canonicalize(raw_constraints)
-
-    # 1. enrich with Attribute/Enum meta
-    enricher = ConstraintEnricher(loader.attr_idx, loader.enum_idx)
-    constraints = enricher.enrich(canonical)
-
-    # 2. Grammar & DFA
-    g_path = GrammarExporter(out_dir).export(constraints)
-    compile_gbnf(g_path)
-
-    # 3. SHACL / SMT
-    ShaclExporter(out_dir).export(constraints)
-    SmtExporter(out_dir).export(constraints)
-
-    print("✅ Constraint artefacts exported to", out_dir)
+    print("✅ Token source tables written to", ns.out)
 
 
-# ------------------------------------------------------------
-# CLI wrapper
-# ------------------------------------------------------------
+def _read_roots(path: str | None) -> list[str | int]:
+    if path is None:
+        raise SystemExit("--roots JSON file is required")
+    import json, os
 
-def _build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser("constraint_graph", add_help=True)
+    with open(os.fspath(path), "r", encoding="utf-8") as f:
+        roots = json.load(f)
+    if not isinstance(roots, list):
+        raise ValueError("roots json must be a list")
+    return roots
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser("constraint-graph utils")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    exp = sub.add_parser("export", help="export artefacts from KG (bolt URI or dir)")
-    exp.add_argument("--kg", required=True)
-    exp.add_argument("--out", default="out/cg")
-    exp.set_defaults(func=_export_cmd)
+    # -------------------------------------------------------------
+    t = sub.add_parser("export-tokens", help="dump raw tables for token build")
+    t.add_argument("--kg", required=True, help="bolt:// or directory with nodes.json")
+    t.add_argument("--user", help="neo4j user")
+    t.add_argument("--password", help="neo4j password")
+    t.add_argument("--roots", required=True, help="JSON file listing root class xml_tag or ids")
+    t.add_argument("--out", type=pathlib.Path, default=pathlib.Path("out/token-src"))
+    t.set_defaults(func=_export_tokens)
+
     return p
 
 
-def main(argv: Optional[List[str]] = None):
-    if argv is None and len(sys.argv) == 1:  # called bare → env fallback
-        kg_uri = os.getenv("KG_URI", "neo4j://127.0.0.1:7687")
-        out_dir = os.getenv("OUT_DIR", "out/cg")
-        export(kg_uri, out_dir)
-        return
-    parser = _build_parser()
-    ns = parser.parse_args(argv)
-    ns.func(ns)
-
-
 if __name__ == "__main__":
-    main()
+    ns = build_arg_parser().parse_args()
+    ns.func(ns)

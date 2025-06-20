@@ -150,7 +150,7 @@ python -m constraint_graph.cli export --kg out/kg --out out/cg
 ### **allowed-tokens 子系统补充设计（聚焦“逐 step 可采样 token 集”硬约束）**
 
 
-# “allowed-tokens”子系统设计文档
+# “allowed-tokens”子系统设计文档v1
 > 本节替换并细化 *§3 生成流程* 和 *§4 allowed() 运行协议*，确保 **XML 标签、属性名、有限字面量** 在 **每一步采样** 时都被硬性屏蔽到位。
 
 ---
@@ -276,5 +276,205 @@ out/cg/
 这样形成 **“生成时硬护栏 → 生成后轻验 → 深验”** 三段防线，职责清晰、无重复计算。
 
 ---
+
+# “allowed-tokens”子系统设计文档v2
+下面把 **“从 KG 抽取 → 生成终端 token 所需一切原始数据”** 的完整流程写成一份 **可直接落地的操作手册**。
+— 不含代码实现，而是精确说明 **要走哪些节点 / 边、用哪些字段、按什么顺序合并**。
+
+---
+
+## 0. 输入与输出
+
+| 阶段    | 产出文件                                                                                | 用途（后续阶段）         |
+| ----- | ----------------------------------------------------------------------------------- | ---------------- |
+| KG 抽取 | `raw_classes.json`, `raw_attributes.json`, `raw_enums.json`, `raw_constraints.json` | 供 *语义封闭 & 终端集提取* |
+
+---
+
+## 1. 抽取思路总览
+
+```
+(A) 获取 AUTOSAR 顶层类列表
+      │
+(B) 广度递归 attribute.type → class    # 收集所有会出现在 XML 的 Class
+      │
+(C) 对每个 Class 汇聚“最终属性”        # 自身 + 父类 + inline-group
+      │
+(D) 补充属性的数据类型/取值信息
+      │
+(E) 拉取约束并折叠成 canonical 结构
+      │
+(F) 导出四张扁平表 (JSONL/CSV 均可)
+```
+
+---
+
+## 2. KG 元素与字段清单
+
+| KG Label        | 用到字段                                                                                     | 备注           |
+| --------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| **Class**       | `id`, `xml_tag`, `xml_wrapper_tag`                                                       | wrapper 允许为空 |
+| **Attribute**   | `id`, `xml_tag`, `xml_wrapper_tag`, `isXmlAttr`, `minOccurs`, `maxOccurs`                |              |
+| **Enum**        | `id`                                                                                     |              |
+| **EnumLiteral** | `value`                                                                                  |              |
+| **Constraint**  | `id`, `constraint_type`, `value`, `range`, `regex`, `minOccurs`, `maxOccurs`             |              |
+| **关系**          | `HAS_ATTRIBUTE`, `TYPE_OF`, `SUBCLASS_OF`, `INLINE_EXPANDS`, `HAS_LITERAL`, `CONSTRAINS` |              |
+
+---
+
+## 3. 详细操作步骤
+
+### 3-A 确定「可序列化实体类」集合 `S_class`
+
+1. **起点**：配置中列出的顶层 AUTOSAR 类 ID 列表 `ROOTS`.
+2. **队列 `Q` 初值 = ROOTS**
+3. **循环**
+
+   ```
+   while Q not empty:
+       C ← Q.pop()
+       if C 已加入 S_class: continue
+       S_class ← S_class ∪ {C}
+
+       for A in (C)-[:HAS_ATTRIBUTE]->(Attribute):
+           if A.isXmlAttr == false:              # 只有子元素才形成嵌套
+               T ← (A)-[:TYPE_OF]->()
+               if T: Q.push(T)                   # T 若是 Class，进入下一层
+   ```
+
+   *最终得到* **所有可能在 XML 中出现为元素标签的 Class**。
+
+### 3-B 为每个 Class 聚合“最终可见属性” `Attr*(C)`
+
+**目标**：自身属性 + 父类继承属性 + inline-expand 进来的属性
+（子类同名 xml\_tag 优先生效）
+
+```
+function effective_attrs(C):
+    seen = {}                     # xml_tag → Attribute
+    stack = [C]                   # 用来走 SUBCLASS_OF 链
+    while stack not empty:
+        cur = stack.pop()
+        for A in (cur)-[:HAS_ATTRIBUTE]->():
+            if A.xml_tag not in seen:
+                seen[A.xml_tag] = A
+        for P in (cur)-[:SUBCLASS_OF]->():
+            stack.push(P)
+
+    queue = list((C)-[:INLINE_EXPANDS]->())
+    while queue not empty:
+        ex_cls = queue.pop()
+        for A in (ex_cls)-[:HAS_ATTRIBUTE]->():
+            if A.xml_tag not in seen:
+                seen[A.xml_tag] = A
+        queue.extend((ex_cls)-[:INLINE_EXPANDS]->())
+
+    return seen.values()          # Attribute 列表
+```
+
+> **结果缓存**：写 `raw_attributes.jsonl`，字段：
+> `class_id`, `attr_id`, `xml_tag`, `xml_wrapper_tag`, `isXmlAttr`, `minOccurs`, `maxOccurs`, `type_id`
+
+### 3-C 拉取属性的数据类型与可枚举值
+
+| 情形                       | 操作                         | 需写入的导出字段      |
+| ------------------------ | -------------------------- | ------------- |
+| `TYPE_OF(A) → Enum E`    | 取 `EnumLiteral.value` 集合   | `enum_values` |
+| `TYPE_OF(A) → Primitive` | 留空，后面靠约束                   |               |
+| `TYPE_OF(A) → Class`     | 仅记录 `type_class_id`，值不在文本层 |               |
+
+写入 `raw_enums.jsonl`：`enum_id`, `values[]`
+
+### 3-D 抽取约束并 canonical 化
+
+1. **目标集合**：
+
+   * 约束直接作用到 Attribute 的 (`CONSTRAINS -> Attribute`)
+   * 约束作用到 Class 的，但约束字段指向某属性名 —— 后继阶段再解析
+2. **读取字段**：`constraint_type`, `value`, `range`, `regex`, `minOccurs`, `maxOccurs`
+3. **Canonical 规则**（与前述阶段 B 一致）
+
+   * `VALUE-IN` → 字面量数组
+   * `RANGE` → `[min,max]` 两端闭区间
+   * `Regex` 原样保留；若可静态展开，另产出枚举
+4. 写 `raw_constraints.jsonl`：
+   `constr_id`, `target_id`, `target_kind`, `ctype`, `enum[]`, `range[]`, `regex`, `minOccurs`, `maxOccurs`
+
+### 3-E 导出 Class 表
+
+* 仅导出 `S_class` 内的实体：
+  `class_id`, `xml_tag`, `xml_wrapper_tag`
+
+---
+
+## 4. 建议的 Cypher 查询模板
+
+> 下面查询假设 Neo4j。若 KG 已导出为 JSON/Parquet，可在 Pandas 中改写为过滤、拼接。
+
+```cypher
+// 1. 所有顶层类（由外部给 ID 列表）
+UNWIND $rootIds AS rid
+MATCH (c:Class) WHERE id(c)=rid RETURN id(c) AS cid, c.xml_tag, c.xml_wrapper_tag;
+
+// 2. 扫描 attribute.type 递归可达类
+MATCH (c:Class)-[:HAS_ATTRIBUTE]->(a:Attribute)-[:TYPE_OF]->(t:Class)
+WHERE id(c) IN $allSerializableClassIds
+RETURN DISTINCT id(t);
+
+// 3. 聚合属性（示例取子 + 父）
+MATCH (c:Class)-[:SUBCLASS_OF*0..]->(sup:Class)
+MATCH (sup)-[:HAS_ATTRIBUTE]->(a:Attribute)
+WHERE id(c) IN $allSerializableClassIds
+WITH c, a ORDER BY length(shortestPath((c)-[:SUBCLASS_OF*0..]->(sup))) ASC
+WITH c, collect(a)[0] AS picked    // 同名 xml_tag 去重时可用 apoc.map.latest
+RETURN id(c) AS cid,
+       id(picked) AS aid,
+       picked.xml_tag,
+       picked.xml_wrapper_tag,
+       picked.isXmlAttr,
+       picked.minOccurs,
+       picked.maxOccurs,
+       id( (picked)-[:TYPE_OF]->() ) AS typeId;
+
+// 4. INLINE_EXPANDS 补充
+MATCH (c:Class)-[:INLINE_EXPANDS*1..]->(gx:Class)
+MATCH (gx)-[:HAS_ATTRIBUTE]->(a:Attribute)
+... 同上 ...
+
+// 5. Enum literals
+MATCH (e:Enum)-[:HAS_LITERAL]->(lit:EnumLiteral)
+RETURN id(e) AS eid, collect(lit.value) AS vals;
+
+// 6. 约束
+MATCH (con:Constraint)-[:CONSTRAINS]->(t)
+WHERE id(t) IN $targetIds      // Attribute 或 Class
+RETURN id(con) AS id,
+       id(t) AS target,
+       labels(t)[0] AS targetKind,
+       con.constraint_type AS ctype,
+       con.value,
+       con.range,
+       con.regex,
+       con.minOccurs,
+       con.maxOccurs;
+```
+
+---
+
+## 5. 抽取输出的消费方式
+
+* **语义封闭器** 读取四张原始表 → 生成 `canonical_constraints.json`, `terminals.json`
+* **后续** GBNF 生成、DFA 编译、allowed-tokens 构造均使用这两份文件
+* 若 KG 更新，仅需重跑本阶段，后面阶段凭文件哈希做增量
+
+---
+
+## 6. 关键点回顾
+
+1. **从 root class 出发，“Attribute ·type→Class” 向下遍历**，不再使用 `HAS_CHILD`。
+2. **聚合属性** = *自身* ∪ *父类* ∪ *INLINE\_EXPANDS*，子类覆盖父类同名属性。
+3. **约束层** 只抽取与 Attribute（或含属性名的 Class 级）相关的、能影响 **token 枚举** 的部分；出现次数之类留给 DFA。
+4. **所有需要用于 token 的字段** 均已在四张导出表中出现；后续阶段无需再访问 KG。
+
 
 
