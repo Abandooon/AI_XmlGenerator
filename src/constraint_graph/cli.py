@@ -16,6 +16,7 @@ import pathlib
 import sys
 from typing import Optional
 import json
+from argparse import BooleanOptionalAction
 
 # ── Hard‑coded defaults ───────────────────────────────────────────────────────
 
@@ -85,7 +86,10 @@ def _cmd_enrich(args: argparse.Namespace) -> None:
 def _cmd_export_grammar(args: argparse.Namespace) -> None:
     from grammar_exporter import GrammarExporter
     _print_step("Exporting GBNF grammar & allowed‑tokens stub")
-    GrammarExporter(args.out).run(args.enriched)
+    roots = _load_roots(args.roots)  # ← 复用同一加载函数
+    GrammarExporter.run(args.enriched,
+                        args.out,
+                        roots = roots)  # ← 传列表而非路径
     print("✅  Grammar artifacts →", args.out)
 
 
@@ -100,8 +104,15 @@ def _cmd_export_shacl(args: argparse.Namespace) -> None:
 def _cmd_compile_dfa(args: argparse.Namespace) -> None:
     from dfa_compiler import compile_gbnf
 
-    _print_step("Compiling prefix DFA (stub)")
-    compile_gbnf(args.gbnf)
+    _print_step("Compiling prefix DFA")
+    roots = _load_roots(args.roots)
+    compile_gbnf(
+        args.gbnf,
+        compress = args.compress,
+        on_demand = args.on_demand,
+        progress = args.progress,
+        roots=roots,
+    )
     print("✅  DFA compiled next to GBNF")
 
 # ── One‑stop build ────────────────────────────────────────────────────────────
@@ -149,13 +160,21 @@ def _cmd_build(args: argparse.Namespace) -> None:
     gbnf_file = grammar_dir / "autosar.gbnf"
 
     _print_step("Exporting GBNF grammar & allowed-tokens stub")
-    GrammarExporter.run(enriched_file, grammar_dir)  # ① 用本地变量
+    GrammarExporter.run(enriched_file,
+                        grammar_dir,
+                        roots = roots)  # ← 把前面读到的 roots 列表传进来
 
     _print_step("Exporting SHACL shapes")
     ShaclExporter.run(enriched_file, shapes_dir)  # ② 同上
 
-    _print_step("Compiling prefix DFA (stub)")
-    compile_gbnf(gbnf_file)                              # ③ 路径已正确
+    _print_step("Compiling prefix DFA")
+    compile_gbnf(
+        gbnf_file,
+        compress=True,  # 开启 Hopcroft + path-compression
+        on_demand=True,  # 只写根≤3层，其余运行时懒解析
+        progress=True,  # 定期打印编译进度
+        roots=roots
+    )
     SmtExporter.run(enriched_file, root / "smt")
     print("✅  SMT constraints →", root / "smt")
 
@@ -200,8 +219,31 @@ def _build_parser() -> argparse.ArgumentParser:
     sexp.set_defaults(func=_cmd_export_shacl)
 
     # dfa ----------------------------------------------------------------
-    dfa = sub.add_parser("compile_dfa", help="GBNF → DFA stub")
+    dfa = sub.add_parser("compile_dfa", help="GBNF → DFA")
     dfa.add_argument("gbnf")
+
+    # 特定roottag开关
+    dfa.add_argument("--roots", help="path to roots.json (override auto-detect)")
+
+    # ① 压缩开关：默认 ON，可 --no-compress 关闭
+    dfa.add_argument(
+    "--compress",
+        dest = "compress",
+        action = BooleanOptionalAction,
+        default = True,
+        help = "Hopcroft+chain compression (default: ON)",
+    )
+
+    # ② 懒加载开关：默认 ON，可 --no-on-demand 关闭
+    dfa.add_argument(
+    "--on-demand",
+        dest = "on_demand",
+        action = BooleanOptionalAction,
+        default = True,
+        help = "emit lazy runtime helper (default: ON)",
+    )
+    dfa.add_argument("--progress", action="store_true",
+                    help = "periodically print DFA compile progress")
     dfa.set_defaults(func=_cmd_compile_dfa)
 
     # build --------------------------------------------------------------
