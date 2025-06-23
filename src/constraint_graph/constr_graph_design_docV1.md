@@ -391,14 +391,9 @@ function effective_attrs(C):
 
    * 约束直接作用到 Attribute 的 (`CONSTRAINS -> Attribute`)
    * 约束作用到 Class 的，但约束字段指向某属性名 —— 后继阶段再解析
-2. **读取字段**：`constraint_type`, `value`, `range`, `regex`, `minOccurs`, `maxOccurs`
-3. **Canonical 规则**（与前述阶段 B 一致）
+2. **读取字段**：`constraint_type`, `value`, 
+3. 当value_restriction约束，目标属性类型 1. 类"isAttribute": true 时且类名以Enum结尾；2. 或目标为枚举时，约束应加入allow-tokens
 
-   * `VALUE-IN` → 字面量数组
-   * `RANGE` → `[min,max]` 两端闭区间
-   * `Regex` 原样保留；若可静态展开，另产出枚举
-4. 写 `raw_constraints.jsonl`：
-   `constr_id`, `target_id`, `target_kind`, `ctype`, `enum[]`, `range[]`, `regex`, `minOccurs`, `maxOccurs`
 
 ### 3-E 导出 Class 表
 

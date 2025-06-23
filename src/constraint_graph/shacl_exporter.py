@@ -4,7 +4,7 @@ Emit SHACL for range / regex / existence / enum≤1 constraints.
 """
 from __future__ import annotations
 
-import pathlib
+import json, pathlib
 from typing import Dict, List
 
 
@@ -37,8 +37,22 @@ class ShaclExporter:
     # ------------------------------------------------------------
     def _shape_header(self, c):
         prop_full = c["targets"][0]
-        prop = prop_full.split(".", 1)[-1] if "." in prop_full else prop_full.split("/", 1)[-1]
-        return f"ex:{c['cid']} a sh:PropertyShape ;\n    sh:path autosar:{prop} ;"
+        # -------- 1) 解析属性 local-name -------------------------
+        if isinstance(prop_full, int) or str(prop_full).isdigit():
+            # enriched 里还有 xml_tag，可直接用；否则兜底 ATTR_<id>
+            prop = c.get("xml_tag", f"ATTR_{prop_full}")
+        else:  # str
+            if "." in prop_full:
+                prop = prop_full.split(".", 1)[-1]
+            elif "/" in prop_full:
+                prop = prop_full.split("/", 1)[-1]
+            else:
+                prop = prop_full
+          # -------- 2) 生成合法 shape 名 --------------------------
+        cid_raw = c["cid"]
+        shape_id = f"CID_{cid_raw}" if isinstance(cid_raw, int) else str(cid_raw)
+
+        return f"ex:{shape_id} a sh:PropertyShape ;\n    sh:path autosar:{prop} ;"
 
     def _emit_enum_max1(self, c: Dict[str, any]):
         in_list = " ".join(f'"{v}"' for v in c["enum"])
@@ -65,3 +79,13 @@ class ShaclExporter:
             self.lines.append(f"{hdr}\n    sh:maxCount 0 .\n")
         else:
             self.lines.append(f"{hdr}\n    sh:minCount 1 .\n")
+
+    @staticmethod
+    def run(enriched_path: str | pathlib.Path,
+            out_path: str | pathlib.Path):
+        """读取 enriched_constraints.json → 写 autosar_shapes.ttl"""
+        enriched_path, out_path = map(pathlib.Path, (enriched_path, out_path))
+        cons = json.loads(enriched_path.read_text(encoding="utf-8"))
+        out_dir = out_path if out_path.suffix == "" else out_path.parent
+        return ShaclExporter(out_dir).export(cons)
+

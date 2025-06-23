@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import urllib
 from collections import defaultdict
 from typing import Dict, List, Set, Tuple
 
@@ -61,7 +62,25 @@ class KGLoader:
 
         if self._is_neo4j:
             # Neo4j back‑end -------------------------------------------------
-            self._driver = GraphDatabase.driver(source, auth=(user, password))
+            parsed = urllib.parse.urlparse(source)
+            uri_user = parsed.username
+            uri_pwd = parsed.password
+
+            # 重组 **不含凭证** 的 URI
+            clean_netloc = parsed.hostname or ""
+
+            if parsed.port:
+                clean_netloc += f":{parsed.port}"
+            clean_uri = urllib.parse.urlunparse(
+                (parsed.scheme, clean_netloc, parsed.path, "", "", "")
+            )
+
+             # ❷ 取优先级：CLI 显式参数 > URI 内嵌 > None
+            auth_user = user or uri_user
+            auth_pwd = password or uri_pwd
+
+            self._driver = GraphDatabase.driver(clean_uri,
+                                            auth = (auth_user, auth_pwd))
         else:
             # Local JSON back‑end -------------------------------------------
             self._json_dir = pathlib.Path(source)
@@ -76,6 +95,8 @@ class KGLoader:
         self.subcls: Dict[int, Set[int]] = defaultdict(set)
         self.inline: Dict[int, Set[int]] = defaultdict(set)
         self.enum_idx: Dict[int, List[str]] = {}
+        self.constraint_nodes: Dict[int, Dict[str, str | None]] = {}
+        self.constrains_attr: Dict[int, List[int]] = defaultdict(list)
 
         # Kick off data load -------------------------------------------------
         self._load()
@@ -178,6 +199,24 @@ class KGLoader:
             for rec in sess.run(cy_enum):
                 self.enum_idx[rec["eid"]] = rec["vals"]
 
+            # 7) Constraints (value_restriction) ---------------------------
+            cy_con = """
+            MATCH (c:Constraint)-[:CONSTRAINS]->(a:Attribute)
+            RETURN id(c) AS cid,
+                   c.constraint_type AS ctype,
+                   c.value           AS val,
+                   c.expression      AS expression,
+                   id(a)             AS aid
+            """
+            for rec in sess.run(cy_con):
+                cid = rec["cid"]
+                self.constraint_nodes[cid] = {
+                   "constraint_type": rec["ctype"],
+                   "value": rec["val"],
+                   "expression": rec["expression"],
+                }
+                self.constrains_attr[cid].append(rec["aid"])
+
     # ---------------- JSON branch ---------------------------------------
 
     def _load_json(self) -> None:  # noqa: C901 – similar linear loader
@@ -222,6 +261,12 @@ class KGLoader:
             elif "EnumLiteral" in labels:
                 # handled when reading edges HAS_LITERAL
                 pass
+            elif "Constraint" in labels:
+                self.constraint_nodes[n["id"]] = {
+                    "constraint_type": n["properties"].get("constraint_type"),
+                    "value": n["properties"].get("value"),
+                    "expression": n["properties"].get("expression", ""),
+            }
 
         # --- Edge payloads ----------------------------------------------
         for e in edges:
@@ -238,6 +283,8 @@ class KGLoader:
                 enum_id = e["start"]
                 lit_node = node_map[e["end"]]
                 self.enum_idx.setdefault(enum_id, []).append(lit_node["properties"]["value"])
+            elif typ == "CONSTRAINS":
+                 self.constrains_attr[e["start"]].append(e["end"])
 
         # Deduplicate enum literal order deterministically
         for k, v in self.enum_idx.items():

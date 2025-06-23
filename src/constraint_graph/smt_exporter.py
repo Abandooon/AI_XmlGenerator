@@ -41,10 +41,16 @@ class SmtExporter:
             self.var_declared.add(var)
 
     # _mangle()
-
-    def _mangle(self, tgt: str) -> str:
-        # 把 '.' '/' 都替成 '_'，免得 Z3 变量非法
-        return re.sub(r"[./]", "_", tgt)
+    def _mangle(self, tgt) -> str:
+        """
+        Convert any target (attrId | "Class.attr" | "Class/attr")
+        into a valid SMT variable name, e.g. 1234 → A_1234,
+        "Pkg.Class.attr" → Pkg_Class_attr.
+        """
+        if isinstance(tgt, int) or str(tgt).isdigit():
+            return f"A_{tgt}"  # ensure it starts with a letter
+        else:
+            return re.sub(r"[./]", "_", str(tgt))
 
     def _enum_once(self, c: Dict[str, any]):
         var = self._mangle(c["targets"][0])
@@ -74,3 +80,16 @@ class SmtExporter:
             self._declare(v)
         if len(vars_) >= 2:
             self.lines.append("(assert (not (and {} {})))".format(vars_[0], vars_[1]))
+    # -------- CLI-friendly wrapper ---------------------------------
+    @staticmethod
+    def run(enriched_path: str | pathlib.Path,
+            out_dir: str | pathlib.Path) -> pathlib.Path:
+        """
+        Convenience wrapper so CLI can simply call
+            SmtExporter.run("enriched_constraints.json", "smt")
+        """
+        import json, pathlib
+
+        enriched_path, out_dir = map(pathlib.Path, (enriched_path, out_dir))
+        cons = json.loads(enriched_path.read_text(encoding="utf-8"))
+        return SmtExporter(out_dir).export(cons)

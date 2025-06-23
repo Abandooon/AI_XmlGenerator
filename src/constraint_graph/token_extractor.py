@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 from collections import deque, defaultdict
 from typing import Dict, Iterable, List, Set
 
@@ -26,6 +27,46 @@ class TokenExtractor:
     roots : list[str | int]
         *Either* a list of class **xml_tag** strings *or* explicit class IDs.
     """
+    @classmethod
+    def from_connection(
+        cls,
+        host: str,
+        user: str | None,
+        password: str | None,
+        *,
+        roots: List[str | int] | None = None,
+    ) -> "TokenExtractor":
+        """根据明确的连接参数返回实例。"""
+        kg = KGLoader(host, user, password)
+        if roots is None:
+            if roots is None:
+                raise ValueError(
+                    "roots must be provided (either --roots FILE or roots.json); "
+                    "auto-discovery has been disabled by design."
+                )
+        return cls(kg, roots)
+
+    @classmethod
+    def from_kg(cls, kg_url: str, roots: List[str | int] | None = None) -> "TokenExtractor":
+        """一行完成：连接 Neo4j → 构建 **KGLoader** → 创建 TokenExtractor。
+
+        参数
+        ----
+        kg_url : str
+            Neo4j Bolt/neo4j 协议连接串，例如：
+            ``bolt://neo4j:autosar4.2.2@127.0.0.1:7687``
+        roots : list[str | int] | None
+            根类 xml_tag 或节点 ID；若为 ``None`` 表示自动发现所有
+            **没有任何 SUBCLASS_OF 入边** 的类，作为 XML 顶层根。
+        """
+        # 1) 创建 KGLoader（你的 Loader 类名是 KGLoader）
+        kg = KGLoader(kg_url)
+        if roots is None:
+            raise ValueError(
+                "roots must be provided (either --roots FILE or roots.json); "
+                "auto-discovery has been disabled by design."
+            )
+        return cls(kg, roots)
 
     # ------------------------------------------------------------------
     def __init__(self, loader: KGLoader, roots: List[str | int]):
@@ -113,6 +154,7 @@ class TokenExtractor:
 
         kg = self._kg
         serial = self.serialisable_classes()
+        restrictions = self._collect_value_restrictions()
 
         # 1) classes ------------------------------------------------------
         cls_fp = out_path / "raw_classes.jsonl"
@@ -137,6 +179,7 @@ class TokenExtractor:
                         type_id in kg.cls_nodes
                         and kg.cls_nodes[type_id].get("isAttribute", False)
                     )
+                    allowed = restrictions.get(aid)
                     f_attr.write(json.dumps({
                         "classId": cid,
                         "attrId": aid,
@@ -146,7 +189,8 @@ class TokenExtractor:
                         "minOccurs": meta["minOccurs"],
                         "maxOccurs": meta["maxOccurs"],
                         "typeId": type_id,
-                        "attributeClass": is_attr_cls  # << 新增
+                        "attributeClass": is_attr_cls,
+                        "allowedValues": allowed or None
                     }, ensure_ascii=False) + "\n")
 
         # 3) enum literals -------------------------------------------------
@@ -162,6 +206,18 @@ class TokenExtractor:
                 f_enum.write(json.dumps({
                     "enumId": eid,
                     "values": kg.enum_idx[eid],
+                }, ensure_ascii=False) + "\n")
+
+        # 4) constraints snapshot -----------------------------------------
+        con_fp = out_path / "raw_constraints.jsonl"
+        with con_fp.open("w", encoding="utf-8") as f_con:
+            for cid, node in kg.constraint_nodes.items():
+                f_con.write(json.dumps({
+                        "cid": cid,
+                        "constraint_type": node.get("constraint_type"),
+                        "value": node.get("value"),
+                        "expression": node.get("expression"),
+                        "targets": kg.constrains_attr.get(cid, []),
                 }, ensure_ascii=False) + "\n")
 
         # 4) save roots for provenance ------------------------------------
@@ -189,7 +245,7 @@ class TokenExtractor:
                     raise KeyError(f"root class xml_tag '{r}' not found in KG") from err
         return out
 
-    # todo: # -----------------啦约束---kg.constraint_nodes显然不对，要先loader吧----------------------------------------------
+    # 啦约束 ----------------------------------------------
     def _collect_value_restrictions(self) -> Dict[int, List[str]]:
         kg = self._kg
         out = defaultdict(set)
@@ -199,11 +255,14 @@ class TokenExtractor:
             val = cn.get("value")
             if not val:
                 continue
+            # 支持多枚举拆分（逗号 / 中文顿号 / 空格 / 分号）
+            parts = [p.strip() for p in re.split(r"[，,、;；\s]+", val) if p.strip()]
             for aid in kg.constrains_attr.get(cid, []):
                 tid = kg.attr_type.get(aid)
                 if tid in kg.enum_idx or (
-                        tid in kg.cls_nodes and kg.cls_nodes[tid].get("isAttribute", False)
+                    tid in kg.cls_nodes and kg.cls_nodes[tid].get("isAttribute", False)
+                    and kg.cls_nodes[tid].get("name", "").endswith("Enum")
                 ):
-                    out[aid].add(val)
+                    out[aid].update(parts)
         return {k: sorted(v) for k, v in out.items()}
 

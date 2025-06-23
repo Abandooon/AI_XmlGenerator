@@ -1,122 +1,236 @@
-"""cli.py – run token‑extraction either via hard‑coded defaults (so you can
-just **right‑click → Run** in PyCharm) *or* via command‑line arguments if you
-prefer flexibility.
+"""cli.py — one‑click KG → XML pipeline
+================================================
+Right‑click / double‑click to run without any command‑line arguments.
+Internal constants define the KG connection and output directory.
 
-If **no CLI arguments** are supplied, the script falls back to the constants
-in the section *"Default configuration (PyCharm friendly)"* below.
+* Default KG (Bolt) : bolt://neo4j:mySecretPwd@localhost:7687
+* Output artifacts  : ./artifacts/
 
-Typical usage patterns
-----------------------
-
-* **PyCharm** – right‑click this file → *Run 'cli'* → it will connect to the
-  KG specified by the constants and dump tables to the output directory.
-* **Terminal** – `python cli.py --kg bolt://... --roots roots.json` etc. to
-  override those defaults without editing the file.
+You *can* still pass CLI args to override these defaults, e.g.
+    python -m cli build --kg bolt://user:pwd@remote:7687 --out /tmp/out
 """
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import pathlib
 import sys
-from typing import List, Union
+from typing import Optional
+import json
 
-from loader import KGLoader
-from token_extractor import TokenExtractor
+# ── Hard‑coded defaults ───────────────────────────────────────────────────────
 
-__all__ = ["main"]
+DEFAULT_KG = "bolt://neo4j:autosar4.2.2@127.0.0.1:7687"
+DEFAULT_OUT_DIR = "artifacts"
 
-# ---------------------------------------------------------------------------
-# Default configuration (PyCharm friendly)
-# ---------------------------------------------------------------------------
-KG_SOURCE: str | pathlib.Path = "neo4j://127.0.0.1:7687"  # or path to KG dump dir
-KG_USER: str | None = "neo4j"
-KG_PASSWORD: str | None = "autosar4.2.2"
-ROOTS_PATH: str | pathlib.Path = "roots.json"            # list of xml_tag / id
-OUT_DIR: pathlib.Path = pathlib.Path("out/token-src")
+# ── Utility helpers ───────────────────────────────────────────────────────────
 
-
-# ---------------------------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------------------------
-
-def _read_roots(path: str | os.PathLike) -> List[Union[str, int]]:
-    with open(os.fspath(path), "r", encoding="utf-8") as f:
-        roots = json.load(f)
-    if not isinstance(roots, list):
-        raise ValueError("roots json must be a list")
-    return roots
-
-
-# ---------------------------------------------------------------------------
-# Core execution
-# ---------------------------------------------------------------------------
-
-def run(kg: Union[str, pathlib.Path], roots_file: Union[str, pathlib.Path], out: pathlib.Path,
-        user: str | None = None, password: str | None = None) -> None:
-    """Shared logic – used by both *main()* and argparse entry."""
-    loader = KGLoader(kg, user=user, password=password)
-    roots = _read_roots(roots_file)
-
-    extractor = TokenExtractor(loader, roots)
-    extractor.dump(out)
-
-    print("✅ Token source tables written to", out)
-
-
-# ---------------------------------------------------------------------------
-# Command‑line interface (optional)
-# ---------------------------------------------------------------------------
-
-def _build_arg_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser("constraint‑graph utils")
-    p.add_argument("--kg", help="bolt:// uri or directory with nodes.json")
-    p.add_argument("--user", help="neo4j user")
-    p.add_argument("--password", help="neo4j password")
-    p.add_argument("--roots", help="JSON file listing root class xml_tag or ids")
-    p.add_argument("--out", type=pathlib.Path, help="output directory for raw tables")
+def _ensure_dir(p: pathlib.Path) -> pathlib.Path:
+    p.mkdir(parents=True, exist_ok=True)
     return p
 
 
-def main() -> None:  # noqa: D401 – imperative mood
-    parser = _build_arg_parser()
-    ns, unknown = parser.parse_known_args()
+def _print_step(msg: str) -> None:
+    print(f"\n🛠️  {msg} …", flush=True)
 
-    if len(sys.argv) == 1:  # === No CLI arguments – use defaults ============
-        run(
-            kg=KG_SOURCE,
-            roots_file=ROOTS_PATH,
-            out=OUT_DIR,
-            user=KG_USER,
-            password=KG_PASSWORD,
-        )
-    else:  # === CLI path =====================================================
-        if unknown:
-            parser.error("unrecognised arguments: " + " ".join(unknown))
-        run(
-            kg=ns.kg or KG_SOURCE,
-            roots_file=ns.roots or ROOTS_PATH,
-            out=ns.out or OUT_DIR,
-            user=ns.user or KG_USER,
-            password=ns.password or KG_PASSWORD,
-        )
-
-
-# ---------------------------------------------------------------------------
-# Backward‑compat: alias for older imports expecting ConstraintLoader
-# ---------------------------------------------------------------------------
-class ConstraintLoader(KGLoader):
-    """Alias so that existing `from loader import ConstraintLoader` keeps working.
-    Only `.attr_idx` / `.enum_idx` are used downstream; `.load()` remains to be
-    implemented if your old pipeline needs it.
+def _load_roots(explicit: str | None = None) -> list[str | int] | None:
     """
+    * 若显式传入 `--roots <file>` 就读那个文件
+    * 否则依次尝试：
+        ① 与 cli.py 同目录的 roots.json
+        ② 当前工作目录的 roots.json
+    * 全部找不到则返回 ``None``（由 TokenExtractor 自动推断）
+    """
+    candidates = (
+        [pathlib.Path(explicit)] if explicit else []
+    ) + [
+        pathlib.Path(__file__).with_name("roots.json"),
+        pathlib.Path.cwd() / "roots.json",
+    ]
+    for fp in candidates:
+        if fp.is_file():
+            return json.loads(fp.read_text(encoding="utf-8"))
+    return None
 
-    def load(self):  # pylint: disable=method-hidden
-        raise NotImplementedError(
-            "Constraint loading is not implemented in the rewritten KGLoader."
-        )
+
+# ── Sub‑command implementations ───────────────────────────────────────────────
 
 
-if __name__ == "__main__":
+def _cmd_dump_raw(args: argparse.Namespace) -> None:
+    """KG → raw_*.jsonl"""
+    from token_extractor import TokenExtractor  # lazy import
+
+    _print_step("Dumping raw tables from KG")
+    roots = _load_roots(args.roots)
+    TokenExtractor.from_kg(args.kg, roots=roots).dump(_ensure_dir(pathlib.Path(args.out)))
+    print("✅  raw tables written to", args.out)
+
+
+def _cmd_canonicalize(args: argparse.Namespace) -> None:
+    from canonicalizer import Canonicalizer
+
+    _print_step("Canonicalizing constraints")
+    Canonicalizer.run(args.raw_constraints, args.out)
+    print("✅  canonical_constraints.json →", args.out)
+
+
+def _cmd_enrich(args: argparse.Namespace) -> None:
+    from enricher import ConstraintEnricher
+
+    _print_step("Enriching constraints with schema info")
+    ConstraintEnricher.run(args.raw_attr, args.raw_enum,
+                        args.canonical, args.out)
+    print("✅  enriched_constraints.json →", args.out)
+
+
+def _cmd_export_grammar(args: argparse.Namespace) -> None:
+    from grammar_exporter import GrammarExporter
+    _print_step("Exporting GBNF grammar & allowed‑tokens stub")
+    GrammarExporter(args.out).run(args.enriched)
+    print("✅  Grammar artifacts →", args.out)
+
+
+def _cmd_export_shacl(args: argparse.Namespace) -> None:
+    from shacl_exporter import ShaclExporter
+
+    _print_step("Exporting SHACL shapes")
+    ShaclExporter(args.out).run(args.enriched)
+    print("✅  SHACL shapes →", args.out)
+
+
+def _cmd_compile_dfa(args: argparse.Namespace) -> None:
+    from dfa_compiler import compile_gbnf
+
+    _print_step("Compiling prefix DFA (stub)")
+    compile_gbnf(args.gbnf)
+    print("✅  DFA compiled next to GBNF")
+
+# ── One‑stop build ────────────────────────────────────────────────────────────
+
+
+def _cmd_build(args: argparse.Namespace) -> None:
+    """End‑to‑end pipeline: KG → all artifacts"""
+
+    root = pathlib.Path(args.out)
+    raw_dir = _ensure_dir(root / "raw")
+    grammar_dir = _ensure_dir(root / "grammar")
+    shapes_dir = _ensure_dir(root / "shapes")
+
+    # 1) KG → raw
+    from token_extractor import TokenExtractor
+
+    _print_step("Dumping raw tables from KG")
+    roots = _load_roots(getattr(args, "roots", None))
+    TokenExtractor.from_kg(args.kg, roots=roots).dump(raw_dir)
+
+    raw_constraints = raw_dir / "raw_constraints.jsonl"
+
+    # 2) canonicalize + enrich
+    from canonicalizer import Canonicalizer
+    from enricher import ConstraintEnricher
+
+    canonical_file = root / "canonical_constraints.json"
+    enriched_file = root / "enriched_constraints.json"
+
+    _print_step("Canonicalizing constraints")
+    Canonicalizer.run(raw_constraints, canonical_file)
+
+    _print_step("Enriching constraints with schema info")
+    ConstraintEnricher.run(raw_dir / "raw_attributes.jsonl",
+                           raw_dir / "raw_enums.jsonl",
+                           canonical_file,
+                           enriched_file)
+
+    # 3) exports
+    from grammar_exporter import GrammarExporter
+    from shacl_exporter import ShaclExporter
+    from dfa_compiler import compile_gbnf
+    from smt_exporter import SmtExporter
+
+    gbnf_file = grammar_dir / "autosar.gbnf"
+
+    _print_step("Exporting GBNF grammar & allowed-tokens stub")
+    GrammarExporter.run(enriched_file, grammar_dir)  # ① 用本地变量
+
+    _print_step("Exporting SHACL shapes")
+    ShaclExporter.run(enriched_file, shapes_dir)  # ② 同上
+
+    _print_step("Compiling prefix DFA (stub)")
+    compile_gbnf(gbnf_file)                              # ③ 路径已正确
+    SmtExporter.run(enriched_file, root / "smt")
+    print("✅  SMT constraints →", root / "smt")
+
+    print("\n🎉  Pipeline completed →", root)
+
+# ── CLI parser wiring ─────────────────────────────────────────────────────────
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser("constraint‑graph toolkit")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    # dump_raw -----------------------------------------------------------
+    dump = sub.add_parser("dump_raw", help="KG → raw_*.jsonl")
+    dump.add_argument("--kg", default=DEFAULT_KG, help="Neo4j bolt URL")
+    dump.add_argument("--out", default="data/raw", help="output dir")
+    dump.add_argument("--roots", help="path to roots.json")
+    dump.set_defaults(func=_cmd_dump_raw)
+
+    # canonicalize -------------------------------------------------------
+    canon = sub.add_parser("canonicalize", help="raw_constraints → canonical_constraints.json")
+    canon.add_argument("raw_constraints")
+    canon.add_argument("--out", default="canonical_constraints.json")
+    canon.set_defaults(func=_cmd_canonicalize)
+
+    # enrich -------------------------------------------------------------
+    enr = sub.add_parser("enrich", help="canonical_constraints → enriched_constraints.json")
+    enr.add_argument("canonical")
+    enr.add_argument("--out", default="enriched_constraints.json")
+    enr.set_defaults(func=_cmd_enrich)
+
+    # grammar ------------------------------------------------------------
+    gexp = sub.add_parser("export_grammar", help="enriched → Grammar artifacts")
+    gexp.add_argument("enriched")
+    gexp.add_argument("--out", default="grammar")
+    gexp.set_defaults(func=_cmd_export_grammar)
+
+    # shacl --------------------------------------------------------------
+    sexp = sub.add_parser("export_shacl", help="enriched → SHACL TTL")
+    sexp.add_argument("enriched")
+    sexp.add_argument("--out", default="shapes")
+    sexp.set_defaults(func=_cmd_export_shacl)
+
+    # dfa ----------------------------------------------------------------
+    dfa = sub.add_parser("compile_dfa", help="GBNF → DFA stub")
+    dfa.add_argument("gbnf")
+    dfa.set_defaults(func=_cmd_compile_dfa)
+
+    # build --------------------------------------------------------------
+    build = sub.add_parser("build", help="End‑to‑end pipeline (KG → all artifacts)")
+    build.add_argument("--kg", default=DEFAULT_KG, help="Neo4j bolt URL")
+    build.add_argument("--out", default=DEFAULT_OUT_DIR, help="output root directory")
+    build.add_argument("--roots", help="path to roots.json (override auto-detect)")
+
+    build.set_defaults(func=_cmd_build)
+
+    return p
+
+# ── main entry ───────────────────────────────────────────────────────────────
+
+
+def main(argv: Optional[list[str]] = None) -> None:
+    """If no CLI args are supplied, run full pipeline with built‑in defaults."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    if not argv:  # double‑click / right‑click run
+        print("(no arguments) → running full build with embedded defaults")
+        _cmd_build(argparse.Namespace(kg=DEFAULT_KG, out=DEFAULT_OUT_DIR))
+        return
+
+    parser = _build_parser()
+    ns = parser.parse_args(argv)
+    ns.func(ns)  # type: ignore[attr-defined]
+
+
+if __name__ == "__main__":  # pragma: no cover
     main()

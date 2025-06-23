@@ -14,6 +14,7 @@ import hashlib
 import json
 import re
 from typing import Any, Dict, List
+import pathlib
 
 __all__ = ["Canonicalizer"]
 
@@ -72,8 +73,13 @@ class Canonicalizer:
                 if nums:
                     rec["maxOccurs"] = int(nums[-1])
                     rec["minOccurs"] = 0
-            if rec["type"] == "value_restriction" and val:
-                rec["enum"] = [v.strip() for v in val.split(",") if v.strip()]
+            if rec["type"] == "value_restriction":
+                if val:
+                    splitter = re.compile(r"[，,、;；\s]+")
+                    rec["enum"] = [v for v in splitter.split(val) if v]
+                # 如果仍为空，再尝试从 expression 推断
+                if not rec.get("enum") and expr:
+                    rec["enum"] = self._parse_enum_from_expression(expr)
 
             rec["hash"] = self._hash(rec)
             res.append(rec)
@@ -103,3 +109,20 @@ class Canonicalizer:
     def _hash(self, record: Dict[str, Any]) -> str:
         blob = json.dumps(record, sort_keys=True, default=str).encode()
         return hashlib.md5(blob).hexdigest()[:12]
+
+    @ staticmethod
+    def _parse_enum_from_expression(expr: str) -> List[str]:
+        """Very naïve extraction of 'one of A|B|C' style lists."""
+        m = re.search(r"one of ([A-Za-z0-9_,\s]+)", expr)
+        if m:
+            return [x.strip() for x in re.split(r"[,\s]+", m.group(1)) if x.strip()]
+        return []
+
+    @staticmethod
+    def run(raw_path: str | pathlib.Path,
+            out_path: str | pathlib.Path) -> pathlib.Path:
+        raw_path, out_path = map(pathlib.Path, (raw_path, out_path))
+        raw = [json.loads(l) for l in raw_path.read_text(encoding="utf-8").splitlines() if l.strip()]
+        canonical = Canonicalizer().canonicalize(raw)
+        out_path.write_text(json.dumps(canonical, ensure_ascii=False, indent=2), encoding="utf-8")
+        return out_path
