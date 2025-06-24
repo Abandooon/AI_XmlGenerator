@@ -14,9 +14,13 @@ from __future__ import annotations
 import argparse
 import pathlib
 import sys
-from typing import Optional
+from typing import Optional, Any
 import json
 from argparse import BooleanOptionalAction
+import tomllib
+
+from src.constraint_graph import cfg
+from src.constraint_graph.dfa_compiler import compile_raw
 
 # ── Hard‑coded defaults ───────────────────────────────────────────────────────
 
@@ -24,6 +28,27 @@ DEFAULT_KG = "bolt://neo4j:autosar4.2.2@127.0.0.1:7687"
 DEFAULT_OUT_DIR = "artifacts"
 
 # ── Utility helpers ───────────────────────────────────────────────────────────
+
+# 单例缓存，任何模块可 from cli import BUILD_CFG 引用
+def _load_build_cfg(path: str | pathlib.Path | None = None) -> dict[str, Any]:
+    """
+    查找并解析 build.toml：
+        ① --config 指定
+        ② CWD 下
+        ③ 与 cli.py 同目录
+    """
+    candidates = (
+        [pathlib.Path(path)] if path else []
+    ) + [pathlib.Path.cwd() / "build.toml",
+         pathlib.Path(__file__).with_name("build.toml")]
+    for fp in candidates:
+        if fp.is_file():
+            with fp.open("rb") as f:
+                return tomllib.load(f)
+    return {}     # 没找到：落回空 dict
+
+# 保持 module-level 全局
+BUILD_CFG: dict[str, Any] = _load_build_cfg()
 
 def _ensure_dir(p: pathlib.Path) -> pathlib.Path:
     p.mkdir(parents=True, exist_ok=True)
@@ -87,8 +112,8 @@ def _cmd_export_grammar(args: argparse.Namespace) -> None:
     from grammar_exporter import GrammarExporter
     _print_step("Exporting GBNF grammar & allowed‑tokens stub")
     roots = _load_roots(args.roots)  # ← 复用同一加载函数
-    GrammarExporter.run(args.enriched,
-                        args.out,
+    GrammarExporter.run(raw_dir=args.raw,
+                        out_path=args.out,
                         roots = roots)  # ← 传列表而非路径
     print("✅  Grammar artifacts →", args.out)
 
@@ -114,6 +139,19 @@ def _cmd_compile_dfa(args: argparse.Namespace) -> None:
         roots=roots,
     )
     print("✅  DFA compiled next to GBNF")
+
+# ── 新增命令处理函数 --------------------------------------------------
+def _cmd_compile_fsm(ns):
+    from dfa_compiler import compile_raw
+    roots = _load_roots(ns.roots)
+    compile_raw(
+        ns.raw,
+        roots=roots,
+        compress=ns.compress,
+        on_demand=ns.on_demand,
+        progress=ns.progress,
+    )
+
 
 # ── One‑stop build ────────────────────────────────────────────────────────────
 
@@ -160,20 +198,20 @@ def _cmd_build(args: argparse.Namespace) -> None:
     gbnf_file = grammar_dir / "autosar.gbnf"
 
     _print_step("Exporting GBNF grammar & allowed-tokens stub")
-    GrammarExporter.run(enriched_file,
-                        grammar_dir,
+    GrammarExporter.run(raw_dir=raw_dir,
+                        out_path=grammar_dir,
                         roots = roots)  # ← 把前面读到的 roots 列表传进来
 
     _print_step("Exporting SHACL shapes")
     ShaclExporter.run(enriched_file, shapes_dir)  # ② 同上
 
     _print_step("Compiling prefix DFA")
-    compile_gbnf(
-        gbnf_file,
-        compress=True,  # 开启 Hopcroft + path-compression
-        on_demand=True,  # 只写根≤3层，其余运行时懒解析
-        progress=True,  # 定期打印编译进度
-        roots=roots
+    compile_raw(
+        raw_dir,
+        roots=roots,
+        compress=True,
+        on_demand=True,
+        progress=True,
     )
     SmtExporter.run(enriched_file, root / "smt")
     print("✅  SMT constraints →", root / "smt")
@@ -208,8 +246,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # grammar ------------------------------------------------------------
     gexp = sub.add_parser("export_grammar", help="enriched → Grammar artifacts")
-    gexp.add_argument("enriched")
+    gexp.add_argument("--raw", required=True, help="directory containing raw_*.jsonl")
     gexp.add_argument("--out", default="grammar")
+    gexp.add_argument("--roots", required=True, help="path to roots.json")
+
     gexp.set_defaults(func=_cmd_export_grammar)
 
     # shacl --------------------------------------------------------------
@@ -246,11 +286,21 @@ def _build_parser() -> argparse.ArgumentParser:
                     help = "periodically print DFA compile progress")
     dfa.set_defaults(func=_cmd_compile_dfa)
 
+    # ── _build_parser()：新增 compile_fsm 子命令 ───────────────────────
+    fsm = sub.add_parser("compile_fsm", help="raw → FSM (V4)")
+    fsm.add_argument("--raw", required=True, help="raw_* 目录")
+    fsm.add_argument("--roots", required=True, help="roots.json 或逗号分隔列表")
+    fsm.add_argument("--compress", action=argparse.BooleanOptionalAction, default=True)
+    fsm.add_argument("--on-demand", action=argparse.BooleanOptionalAction, default=True)
+    fsm.add_argument("--progress", action=argparse.BooleanOptionalAction, default=False)
+    fsm.set_defaults(func=_cmd_compile_fsm)
+
     # build --------------------------------------------------------------
-    build = sub.add_parser("build", help="End‑to‑end pipeline (KG → all artifacts)")
+    build = sub.add_parser("build", help="End-to-end pipeline (KG → all artifacts)")
     build.add_argument("--kg", default=DEFAULT_KG, help="Neo4j bolt URL")
     build.add_argument("--out", default=DEFAULT_OUT_DIR, help="output root directory")
     build.add_argument("--roots", help="path to roots.json (override auto-detect)")
+    build.add_argument("--config", help="override build.toml path")
 
     build.set_defaults(func=_cmd_build)
 
@@ -271,7 +321,14 @@ def main(argv: Optional[list[str]] = None) -> None:
 
     parser = _build_parser()
     ns = parser.parse_args(argv)
-    ns.func(ns)  # type: ignore[attr-defined]
+
+    # 若 --config 重新加载 build.toml
+    if getattr(ns, "config", None):
+        cfg.BUILD_CFG.clear()
+        cfg.BUILD_CFG.update(cfg._load_build_cfg(ns.config))
+    # 延迟导入，避免循环
+    from dfa_compiler import compile_raw
+    ns.func(ns, compile_raw=compile_raw)
 
 
 if __name__ == "__main__":  # pragma: no cover

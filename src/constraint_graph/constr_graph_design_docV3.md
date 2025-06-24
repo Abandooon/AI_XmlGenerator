@@ -127,3 +127,73 @@ while frontier:
 ---
 
 *v3.1 完*
+
+# constraint_graph v3.1 → v3.1.1 补丁说明  
+_2025-06-24_
+
+> v3.1.1 = **「同一蓝图，消除状态爆炸 & 空 FSM 问题」**  
+> 仅涉及 **GrammarExporter / DFA Compiler / build 参数**，其余模块与接口 **向后兼容**。
+
+---
+
+## 1 为什么需要 v3.1.1
+
+| v3.1 现象 | 影响 |
+|-----------|------|
+| GBNF 中无显式 **TOKEN**，Lark 解析时 `terminals=[]` → `states=[]` | DFA 编译退化为 stub，allowed-tokens 失效 |
+| **根标签**（XML 大写）与 GBNF 终结符名不一致 | 首层 token 被全部过滤 → 状态爆炸或空 FSM |
+| 默认 `MAX_DEPTH=15 / MAX_ENUM=256` | AUTOSAR 级文法常膨胀至千万级状态 |
+
+---
+
+## 2 关键增强
+
+| # | 变动 | 说明 |
+|---|------|------|
+| **2-1** | **标签规范化** `normalize(tag)` | `lower()` ＋ 连字符/点/空格→`_`<br>`"APPLICATION-SW-COMPONENT-TYPE"` → `application_sw_component_type` |
+| **2-2** | **根标签双写** | ```bnf<br>APPLICATION_SW_COMPONENT_TYPE: "APPLICATION-SW-COMPONENT-TYPE"<br><application_sw_component_type> ::= APPLICATION_SW_COMPONENT_TYPE<br>``` |
+| **2-3** | **唯一 `start` 行** | 写 GBNF 时先移除旧 `start`，只保一条<br>`start ::= <application_sw_component_type> | …` |
+| **2-4** | **roots.json 过滤改进** | roots 支持写“原始标签”；编译期 `normalize+upper()` 后与 TOKEN 比对 |
+| **2-5** | **默认参数收紧** | `MAX_DEPTH = 10`, `MAX_ENUM = 64`, `compress = on`, `on_demand = on` |
+| **2-6** | **编译期进度日志** | 每处理 10 k 状态输出 `… N states explored` |
+
+---
+
+# constraint_graph v3.1 → v3.1.2 补丁说明  ———— 修改grammer来源规则——raw制品
+下面给出 **基于 `constr_graph_design_doc v3.1.1` 的最小补丁**（*unified-diff* 语法，直接 `patch -p0` 或手工替换均可）。
+补丁仅触及两处：
+
+1. **§3 “文件与约束类型映射”** — 重申 *GBNF* 只含 **标签 + 单值枚举字面量**；
+2. **§2 架构图下方的说明** — 明确 *raw\_enums* 服务 DFA，*raw\_constraints* 仅给 SHACL/SMT。
+
+```diff
+@@  ## 2 总体架构（v3.1.1）
+   L --> RE[raw_enums.jsonl]
+   end
+   subgraph Canonical
+@@
+ 
+-      EN --> G[GrammarExporter] --> GB[autosar.gbnf]
++      EN --> G[GrammarExporter] --> GB[autosar.gbnf]   %% 只写 TOKEN / 单值枚举
+       GB --> D[dfa_compiler] --> FSM[autosar.fsm]
+ 
+@@  ### 3 文件与约束类型映射
+-| **autosar.gbnf**                | `enum`, `(maxOccurs==1 ∧ enum=None)`        | GrammarExporter → LLM 解析器强语法                               |
+-| **autosar.fsm**                 | GBNF 全量终端                                   | dfa\_compiler → 前缀 DFA 状态机                                 |
++| **autosar.gbnf**                | `xml_tag`<br>`allowedValues ≤ 64` **或** `Enum.values ≤ 64` | **仅** 生成 TOKEN 与枚举字面量；不含嵌套/基数<br>GrammarExporter → LLM 词法表 |
++| **autosar.fsm**                 | GBNF 全量终端                                   | dfa\_compiler → **负责嵌套/顺序** 的前缀 DFA                     |
+ | **autosar\_allowed\_tokens.py** | 同上                                          | dfa\_compiler → 推理期 `allowed(prefix)`                      |
+ | **autosar\_shapes.ttl**         | `range`, `regex`, `min/maxOccurs`           | ShaclExporter → 生成后轻量验证 (pySHACL)                          |
+-| **constraints.smt2**            | `range`, `relation`, `implies`, `cross-ref` | SmtExporter → Z3/CVC5 深度验证；关系型约束以 `=>`, `and`, `exists` 编译 |
+-| **raw\_\*.jsonl**               | KG 原生属性                                     | 所有下游导出基线；支持行级哈希增量                                          |
++| **constraints.smt2**            | `range`, `relation`, `implies`, `cross-ref` | SmtExporter → Z3/CVC5 深度验证；**取自 raw_constraints**        |
++| **raw_enums.jsonl**             | `EnumId → values` (≤ 64)                    | 供 GrammarExporter / DFA 生成 **枚举 TOKEN**                      |
++| **raw_classes.jsonl / raw_attributes.jsonl** | KG 元素 & 子元素标签                          | DFA 结构基线；属性行若带 `allowedValues`≤64 亦前置到 GBNF          |
++| **raw_constraints.jsonl**       | regex / range / cross-entity                | **仅供 SHACL / SMT** — 不再参与 GBNF / DFA                     |
+```
+
+> **要点重述**
+>
+> * **GBNF** = *标签 + 单值枚举字面量*（来自 `raw_attributes.allowedValues` 或 `raw_enums`），不含父-子层级；
+> * **FSM** 才是嵌套/顺序真护栏；
+> * 深层数值、区间、关系等全部保留在 `raw_constraints.jsonl` → SHACL / SMT。

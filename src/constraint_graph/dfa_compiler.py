@@ -23,15 +23,15 @@ import textwrap
 from collections import defaultdict, deque
 from typing import Dict, List, MutableMapping, Set, Tuple
 from utils import normalize
+from cfg import BUILD_CFG
 
 from lark import Lark
 
 
-# ── Parameters (could be CLI-tuned) ───────────────────────────────────────────
-MAX_DEPTH = 10                      # stop BFS after this many tokens
-CHAIN_COMPRESS_THRESHOLD = 1        # “linear” means ≤1 outgoing edge
-LRU_CACHE_SIZE = 10_000             # on-demand runtime
-PROGRESS_STEP = 10_000
+MAX_DEPTH              = BUILD_CFG.get("limits", {}).get("max_depth", 10)
+CHAIN_COMPRESS_THRESHOLD = BUILD_CFG.get("limits", {}).get("compress_threshold", 1)
+LRU_CACHE_SIZE         = BUILD_CFG.get("limits", {}).get("lru_cache", 10_000)
+PROGRESS_STEP = BUILD_CFG.get("limits", {}).get("progress_step", 1000)
 
 
 # ── DFA helpers ──────────────────────────────────────────────────────────────
@@ -59,7 +59,8 @@ def _build_prefix_dfa(parser: Lark, all_terms: List[str], *, progress: bool = Fa
             continue
 
         # follow-set
-        next_terms = parser.parse_interactive(" ".join(toks)).accepts()
+        next_terms = _follow_set(parser, tuple(toks))
+
         allowed_all = [_sym_name(t) for t in next_terms]
         # 如果在起始状态且给定 roots → 过滤
         if not toks and roots is not None:
@@ -72,13 +73,27 @@ def _build_prefix_dfa(parser: Lark, all_terms: List[str], *, progress: bool = Fa
 
         transitions[state] = {}
         for t in allowed:
-            nxt = " ".join(toks + [t])
+            nxt_toks = toks + [t]
+            nxt = " ".join(nxt_toks)
             transitions[state][t] = nxt
-            if nxt not in transitions:
-                q.append((nxt, toks + [t]))
+            # 仅在还 **没触顶** 时才继续 BFS，避免产生悬空节点
+
+            if len(nxt_toks) < MAX_DEPTH and nxt not in transitions:
+                q.append((nxt, nxt_toks))
+
         processed += 1
         if progress and processed % PROGRESS_STEP == 0:
             print(f"   … {processed:,} states explored (queue={len(q):,})")
+
+    # ── Post-pass：补全深度触顶但被引用的叶节点 ───────────────────
+    # 这样 Hopcroft/压缩阶段就永远不会遇到“悬空目标状态”
+
+    for edges in list(transitions.values()):
+        for nxt in edges.values():
+            if nxt not in transitions:
+                transitions[nxt] = {}  # dead-end
+                accepting.add(nxt)  # 视作可终态
+
     return transitions, accepting
 
 
@@ -87,6 +102,11 @@ def _hopcroft_minimise(trans: EdgeTable, accepting: Set[State]) -> Tuple[EdgeTab
     Classic Hopcroft partition-refinement algorithm.
     Returns a *new* transitions dict whose keys are representative states.
     """
+    # Make sure every target state exists in `trans`
+    for edges in list(trans.values()):
+        for s2 in edges.values():
+            trans.setdefault(s2, {})
+
     # Build Σ
     sigma: Set[str] = {tok for edges in trans.values() for tok in edges}
 
@@ -135,33 +155,33 @@ def _path_compress(trans: EdgeTable, accepting: Set[State]) -> Tuple[EdgeTable, 
     out: EdgeTable = {}
     skip: Set[State] = set()
 
-    for s in trans:
+    for s in list(trans.keys()):
         if s in skip:
             continue
         cur = s
         chain: List[str] = []
+        # 1) collect a maximal linear chain (degree ≤1)
         while (
-            cur not in accepting
-            and len(trans[cur]) == 1
-            and list(trans[cur].values())[0] not in accepting
-            and len(trans[list(trans[cur].values())[0]]) == 1
+                cur not in accepting
+                and len(trans[cur]) == 1
+                and len(chain) < MAX_DEPTH  # ← 防止极端深链
         ):
             tok, nxt = next(iter(trans[cur].items()))
+            if len(trans[nxt]) > 1 or nxt in accepting:
+                break  # nxt 已分叉 → 停
             chain.append(tok)
             skip.add(cur)
             cur = nxt
-        # store edge
-        if chain:
-            edge_key = "|".join(chain)
-            out.setdefault(s, {})[edge_key] = cur
-        # copy remaining edges
-        for a, t in trans[cur].items():
-            out.setdefault(cur, {})[a] = t
 
-    # plus states that never appear as src
+        # 2) 写 super-edge / copy 终端节点所有边
+        if chain:
+            out.setdefault(s, {})["|".join(chain)] = cur
+        if cur not in out:
+            out[cur] = dict(trans[cur])  # 深拷贝防止后续修改
+
+        # 3) 补遗漏
     for s, edges in trans.items():
-        if s not in out:
-            out[s] = edges
+        out.setdefault(s, {}).update(edges)
     return out, accepting
 
 
@@ -174,10 +194,23 @@ def compile_gbnf(
     progress: bool = False,
     roots: list[str] | None = None,
 ) -> pathlib.Path:
+    """
+    Compile a GBNF file into a prefix-closed DFA (.fsm) and an
+    `autosar_allowed_tokens.py` helper.
 
-    roots_set = None
+    Args:
+        gbnf_path : Path to *.gbnf*
+        compress  : Hopcroft + path compression
+        on_demand : emit lazy runtime helper
+        progress  : print BFS progress every PROGRESS_STEP states
+        roots     : list of **original XML tags** to keep as DFA roots
+                    (e.g. "APPLICATION-SW-COMPONENT-TYPE")
+    """
+    # ------------------------------------------------------------------ fix ↓
+    roots_set: set[str] | None = None
     if roots:
-        # 统一成小写+下划线，便于匹配 Terminal 名
+        # keep exactly the same form produced by normalize(a) in _build_prefix_dfa
+        #   "APPLICATION-SW-COMPONENT-TYPE" → "application_sw_component_type"
         roots_set = {normalize(r) for r in roots}
 
     """Main entry: build DFA, write .fsm & runtime helper; return .fsm Path."""
@@ -345,3 +378,92 @@ if __name__ == "__main__":  # pragma: no cover
 def _sym_name(sym) -> str:
     """Return the textual name of a terminal, whatever Lark gives us."""
     return sym.name if hasattr(sym, "name") else str(sym)
+
+# --- 优化 _build_prefix_dfa() ------------------------------------------------
+# 缓存 follow-set：同一前缀别反复调 Lark
+@functools.lru_cache(maxsize=50_000)
+def _follow_set(parser: Lark, toks: Tuple[str, ...]) -> List[str]:
+    return [_sym_name(t) for t in parser.parse_interactive(" ".join(toks)).accepts()]
+
+# ── 新增：直接从 raw 快照编译 FSM ─────────────────────────────────
+def compile_raw(
+    raw_dir: str | pathlib.Path,
+    *,
+    roots: list[str],
+    compress: bool = False,
+    on_demand: bool = False,
+    progress: bool = False,
+) -> pathlib.Path:
+    """
+    V4 版：raw_classes / raw_attributes → FSM。
+    输出 <raw_dir>/autosar.fsm；返回其路径。
+    """
+    import collections, json, pathlib, utils
+
+    raw_dir = pathlib.Path(raw_dir)
+    c_path, a_path = raw_dir / "raw_classes.jsonl", raw_dir / "raw_attributes.jsonl"
+    if not (c_path.is_file() and a_path.is_file()):
+        raise FileNotFoundError("raw_dir 必须包含 raw_classes.jsonl 与 raw_attributes.jsonl")
+
+    # --- ① 预索引 -------------------------------------------------------
+    tag2cid, id2tag, wrappers = {}, {}, {}  # ← 新增 id2tag
+    children: dict[int, list[int]] = collections.defaultdict(list)
+
+    # ----- classes -------------------------------------------------------
+    with c_path.open(encoding="utf-8") as fp:
+        for ln in fp:
+            row = json.loads(ln)
+            cid = row["classId"]
+            norm_tag = utils.normalize(row["xml_tag"])  # ← snake_case
+            tag2cid[norm_tag] = cid
+            id2tag[cid] = norm_tag
+
+    # ----- attributes ----------------------------------------------------
+    with a_path.open(encoding="utf-8") as fp:
+        for ln in fp:
+            row = json.loads(ln)
+            pid = row["classId"]  # ← parent = classId
+            if w := row.get("xml_wrapper_tag"):  # ← snake_case
+                wrappers[pid] = utils.normalize(w)
+            child_cid = row.get("typeId")  # ← 下钻目标
+            if child_cid and child_cid in id2tag:  # ← 只保存在 cls 表里的
+                children[pid].append(child_cid)
+
+    # --- ② BFS 构建迁移表 ----------------------------------------------
+    start = [utils.normalize(r) for r in roots]
+    trans, accepting = {}, set()
+    q = collections.deque([(t, 0) for t in start])  # ← tuple(tag, depth)
+
+    while q:
+        tag, depth = q.popleft()  # ← 正常解包
+        if depth >= MAX_DEPTH:
+            continue
+        cid = tag2cid[tag]
+        trans.setdefault(tag, {})
+
+        # wrapper → item
+        if cid in wrappers:
+            w_tag = wrappers[cid]
+            trans[tag][w_tag] = w_tag
+            trans.setdefault(w_tag, {})[tag] = tag
+            tag = w_tag  # 子元素挂在 wrapper 下
+
+        # children
+        for child_cid in children.get(cid, []):
+            child_tag = id2tag[child_cid]
+            trans[tag][child_tag] = child_tag
+            if child_tag not in trans:
+                q.append((child_tag, depth + 1))  # ← 深度 +1
+
+    accepting = set(trans)
+
+    # --- ③ 可选压缩 / 最小化 --------------------------------------------
+    if compress:
+        trans, accepting = _path_compress(trans, accepting)
+    if on_demand:
+        trans, accepting = _hopcroft_minimise(trans, accepting)
+
+    # --- ④ 输出 ---------------------------------------------------------
+    out = raw_dir / "autosar.fsm"
+    out.write_text(json.dumps({"trans": trans, "accepting": list(accepting)}, indent=2))
+    return out
