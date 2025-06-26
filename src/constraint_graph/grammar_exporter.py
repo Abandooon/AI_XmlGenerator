@@ -117,31 +117,51 @@ class GrammarExporter:
             if tag := rec.get("xml_tag"):
                 _emit_tag(tag)
 
-        # 2b. attributes (& allowedValues / enum literals)
-        for rec in _iter_jsonl(self.raw_dir / "raw_attributes.jsonl"):
-            # ---------- A1: 先处理 wrapper -----------------------------
-            if (wtag := rec.get("xml_wrapper_tag")):
-                _emit_tag(wtag)
+            # 2b. attributes (& allowedValues / enum literals)
+            for rec in _iter_jsonl(self.raw_dir / "raw_attributes.jsonl"):
+                # ---------- A1: wrapper 处理 -----------------------------
+                if (wtag := rec.get("xml_wrapper_tag")):
+                    _emit_tag(wtag)
 
-            tag = rec.get("xml_tag")
-            if not tag or rec.get("isXmlAttr"):  # 真 @属性 跳过
-                continue
-            slug = _emit_tag(tag)
+                tag = rec.get("xml_tag")
+                if not tag:
+                    continue
 
-            # ---------- A2: 合法枚举判定：只看元素数量，不再检查 maxOccurs ----
-            vals: list[str] = []
-            if rec.get("allowedValues") and len(rec["allowedValues"]) <= MAX_ENUM:
-                vals = rec["allowedValues"]
-            else:
-                try:
-                    tid = int(rec.get("typeId", -1))
-                except (TypeError, ValueError):
-                    tid = -1
-                if tid in enum_map:
-                    vals = enum_map[tid]
+                # XML 属性处理
+                is_xml_attr = rec.get("isXmlAttr", False)
+                if is_xml_attr:
+                    slug = f"attr_{normalize(tag)}"
+                    tok = f"ATTR_{normalize(tag).upper()}"
+                else:
+                    slug = _emit_tag(tag)
+                    tok = slug.upper()
 
-            if vals:
-                self._add_value_rule(slug, vals)
+                # ---------- A2: 枚举值处理（优先 allowedValues）----
+                vals: list[str] = []
+
+                # 优先使用 allowedValues
+                if rec.get("allowedValues") and len(rec["allowedValues"]) <= MAX_ENUM:
+                    vals = rec["allowedValues"]
+                # 如果没有 allowedValues，再尝试从 enum 表查找
+                elif not rec.get("allowedValues"):
+                    try:
+                        tid = int(rec.get("typeId", -1))
+                    except (TypeError, ValueError):
+                        tid = -1
+                    if tid in enum_map:
+                        vals = enum_map[tid]
+
+                if vals:
+                    if is_xml_attr:
+                        # XML 属性的枚举值规则
+                        value_rule = f"<{slug}_value>"
+                        alts = " | ".join(f'"{v}"' for v in sorted(vals))
+                        self.lines.append(f'{tok}: "@{tag}"')  # @DEST
+                        self.lines.append(f"<{slug}> ::= {tok}")
+                        self.lines.append(f"{value_rule} ::= {alts}")
+                    else:
+                        # 普通元素的枚举值规则
+                        self._add_value_rule(slug, vals)
 
         # --- 枚举规则（已去重） ------------------------------------
         for rule_name, literals in self.value_rules.items():

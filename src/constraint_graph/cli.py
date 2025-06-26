@@ -19,8 +19,8 @@ import json
 from argparse import BooleanOptionalAction
 import tomllib
 
-from src.constraint_graph import cfg
-from src.constraint_graph.dfa_compiler import compile_raw
+import cfg
+from dfa_compiler import compile_raw
 
 # ── Hard‑coded defaults ───────────────────────────────────────────────────────
 
@@ -143,13 +143,26 @@ def _cmd_compile_dfa(args: argparse.Namespace) -> None:
 # ── 新增命令处理函数 --------------------------------------------------
 def _cmd_compile_fsm(ns):
     from dfa_compiler import compile_raw
-    roots = _load_roots(ns.roots)
+    # 修改 roots 处理逻辑
+    if isinstance(ns.roots, str):
+        # 如果是文件路径
+        if ns.roots.endswith('.json'):
+            roots = _load_roots(ns.roots)
+        else:
+            # 如果是逗号分隔的字符串
+            roots = [r.strip() for r in ns.roots.split(',')]
+    else:
+        roots = ns.roots or []
+
+    if not roots:
+        raise ValueError("必须指定 roots 参数")
+
     compile_raw(
         ns.raw,
         roots=roots,
-        compress=ns.compress,
-        on_demand=ns.on_demand,
-        progress=ns.progress,
+        compress=False,
+        on_demand=False,
+        progress=True,
     )
 
 
@@ -287,9 +300,12 @@ def _build_parser() -> argparse.ArgumentParser:
     dfa.set_defaults(func=_cmd_compile_dfa)
 
     # ── _build_parser()：新增 compile_fsm 子命令 ───────────────────────
+    # 修改 compile_fsm 子命令的参数定义
     fsm = sub.add_parser("compile_fsm", help="raw → FSM (V4)")
     fsm.add_argument("--raw", required=True, help="raw_* 目录")
-    fsm.add_argument("--roots", required=True, help="roots.json 或逗号分隔列表")
+    # 修改 roots 参数：可以是文件路径或逗号分隔的标签列表
+    fsm.add_argument("--roots", required=True,
+                     help="roots.json 文件路径 或 逗号分隔的XML标签列表 (如 'APPLICATION-SW-COMPONENT-TYPE,FIBEX-ELEMENT')")
     fsm.add_argument("--compress", action=argparse.BooleanOptionalAction, default=True)
     fsm.add_argument("--on-demand", action=argparse.BooleanOptionalAction, default=True)
     fsm.add_argument("--progress", action=argparse.BooleanOptionalAction, default=False)
@@ -328,7 +344,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         cfg.BUILD_CFG.update(cfg._load_build_cfg(ns.config))
     # 延迟导入，避免循环
     from dfa_compiler import compile_raw
-    ns.func(ns, compile_raw=compile_raw)
+    ns.func(ns)
 
 
 if __name__ == "__main__":  # pragma: no cover

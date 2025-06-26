@@ -193,7 +193,7 @@ def compile_gbnf(
     on_demand: bool = False,
     progress: bool = False,
     roots: list[str] | None = None,
-) -> pathlib.Path:
+    ) -> pathlib.Path:
     """
     Compile a GBNF file into a prefix-closed DFA (.fsm) and an
     `autosar_allowed_tokens.py` helper.
@@ -299,11 +299,10 @@ def _render_runtime_stub(
     fsm_name: str,
     compress: bool,
     on_demand: bool,
-    root_edges: EdgeTable,
+    root_edges: Dict[str, Dict[str, str]],  # 改回原来的类型
     grammar: str,
-) -> str:
+    ) -> str:
     root_json = json.dumps(root_edges, ensure_ascii=False, indent=2)
-    grammar_repr = textwrap.indent(json.dumps(grammar), " " * 4) if on_demand else "    ''"
     lru_size = LRU_CACHE_SIZE
     return textwrap.dedent(
         f'''\
@@ -314,49 +313,56 @@ def _render_runtime_stub(
         • On-demand: {on_demand}
         """
         from __future__ import annotations
-        import functools
+        import json
+        import pathlib
         from typing import List, Optional
 
-        _ROOT_DFA = {root_json}
-        _GRAMMAR = (
-{grammar_repr}
-        )
+        # 加载完整的 FSM
+        _FSM_PATH = pathlib.Path(__file__).parent / "{fsm_name}"
+        with _FSM_PATH.open(encoding="utf-8") as f:
+            _FSM_DATA = json.load(f)
 
-        {"from lark import Lark" if on_demand else ""}
-        {"_PARSER = Lark(_GRAMMAR, parser='lalr', maybe_placeholders=False)" if on_demand else ""}
+        _TRANSITIONS = _FSM_DATA["edges"]
+        _ACCEPTING = set(_FSM_DATA["accept"])
 
-        _CACHE_SIZE = {lru_size}
-
-        def _calc_follow(prefix_tokens: List[str]) -> List[str]:
-            """Lazy follow-set using Lark when not in _ROOT_DFA."""
-            {"return []  # disabled" if not on_demand else "return [t.value for t in _PARSER.parse_interactive(' '.join(prefix_tokens)).accepts()]"}
-        
-        @functools.lru_cache(maxsize=_CACHE_SIZE)
-        def _allowed(prefix: str) -> Optional[List[int]]:
-            toks = prefix.split() if prefix else []
-            state = ' '.join(toks)
-            if state in _ROOT_DFA:
-                # stored subset
-                return _ROOT_DFA[state]
-            follow = _calc_follow(toks)
-            return follow
-
-        # vLLM entry point -------------------------------------------------
-        def allowed(prefix_ids, tokenizer) -> Optional[List[int]]:
+        def allowed(prefix_tokens: List[str]) -> Optional[List[str]]:
             """
             Args:
-                prefix_ids : list[int] – already emitted *token ids*
-                tokenizer  : tokenizer with decode()
+                prefix_tokens: 已生成的 token 序列
             Returns:
-                *list[int]* of *token ids* allowed next, or None to disable
+                允许的下一个 token 列表，或 None 表示不限制
             """
+            state = " ".join(prefix_tokens)
+            if state in _TRANSITIONS:
+                return list(_TRANSITIONS[state].keys())
+            return None
+
+        # vLLM 兼容接口
+        def allowed_token_ids(prefix_ids, tokenizer) -> Optional[List[int]]:
+            """vLLM 兼容的接口"""
             if not prefix_ids or not tokenizer:
-                return None  # disable filter for degenerate cases
-            prefix_txt = tokenizer.decode(prefix_ids, skip_special_tokens=True).strip()
-            follow_terms = _allowed(prefix_txt)
-            if follow_terms is None:
                 return None
-            return [tokenizer.encode(t, add_special_tokens=False)[0] for t in follow_terms]
+
+            # 将 token IDs 转换为文本
+            prefix_text = tokenizer.decode(prefix_ids, skip_special_tokens=True).strip()
+            tokens = prefix_text.split() if prefix_text else []
+
+            # 获取允许的 tokens
+            allowed_tokens = allowed(tokens)
+            if allowed_tokens is None:
+                return None
+
+            # 转换为 token IDs
+            token_ids = []
+            for token in allowed_tokens:
+                try:
+                    ids = tokenizer.encode(token, add_special_tokens=False)
+                    if ids:
+                        token_ids.append(ids[0])
+                except:
+                    continue
+
+            return token_ids if token_ids else None
         '''
     )
 
@@ -385,85 +391,533 @@ def _sym_name(sym) -> str:
 def _follow_set(parser: Lark, toks: Tuple[str, ...]) -> List[str]:
     return [_sym_name(t) for t in parser.parse_interactive(" ".join(toks)).accepts()]
 
-# ── 新增：直接从 raw 快照编译 FSM ─────────────────────────────────
+
 def compile_raw(
-    raw_dir: str | pathlib.Path,
-    *,
-    roots: list[str],
-    compress: bool = False,
-    on_demand: bool = False,
-    progress: bool = False,
+        raw_dir: str | pathlib.Path,
+        *,
+        roots: list[str],
+        compress: bool = False,
+        on_demand: bool = False,
+        progress: bool = False,
 ) -> pathlib.Path:
-    """
-    V4 版：raw_classes / raw_attributes → FSM。
-    输出 <raw_dir>/autosar.fsm；返回其路径。
-    """
-    import collections, json, pathlib, utils
+    import collections, json, pathlib, utils, re
 
     raw_dir = pathlib.Path(raw_dir)
     c_path, a_path = raw_dir / "raw_classes.jsonl", raw_dir / "raw_attributes.jsonl"
     if not (c_path.is_file() and a_path.is_file()):
         raise FileNotFoundError("raw_dir 必须包含 raw_classes.jsonl 与 raw_attributes.jsonl")
 
+    # 从配置文件读取限制
+    MAX_STATES = BUILD_CFG.get("limits", {}).get("max_states", 50_000)
+    MAX_QUEUE = BUILD_CFG.get("limits", {}).get("max_queue", 10_000)
+    MAX_ENUM = BUILD_CFG.get("limits", {}).get("max_enum", 64)
+    PROGRESS_STEP = BUILD_CFG.get("limits", {}).get("progress_step", 1000)
+
     # --- ① 预索引 -------------------------------------------------------
-    tag2cid, id2tag, wrappers = {}, {}, {}  # ← 新增 id2tag
-    children: dict[int, list[int]] = collections.defaultdict(list)
+    tag2cid, id2tag = {}, {}
+    cid2classname = {}
+    children: dict[int, list[dict]] = collections.defaultdict(list)
+
+    # **新增：上下文相关映射**
+    contextual_tag2cid = {}  # "parent_cid:xml_tag" -> child_cid
+
+    # 全局标签映射（无上下文冲突的）
+    global_tag2cid = {}
 
     # ----- classes -------------------------------------------------------
     with c_path.open(encoding="utf-8") as fp:
         for ln in fp:
+            if not ln.strip():
+                continue
             row = json.loads(ln)
             cid = row["classId"]
-            norm_tag = utils.normalize(row["xml_tag"])  # ← snake_case
-            tag2cid[norm_tag] = cid
-            id2tag[cid] = norm_tag
 
-    # ----- attributes ----------------------------------------------------
+            # 记录类名
+            class_name = row.get("className", f"class_{cid}")
+            cid2classname[cid] = class_name
+
+            xml_tag = row.get("xml_tag")
+            if xml_tag:
+                norm_tag = utils.normalize(xml_tag)
+                global_tag2cid[norm_tag] = cid
+                id2tag[cid] = norm_tag
+
+    # ----- 枚举映射 -------------------------------------------------------
+    enum_map = {}
+    enum_path = raw_dir / "raw_enums.jsonl"
+    if enum_path.exists():
+        with enum_path.open(encoding="utf-8") as fp:
+            for ln in fp:
+                if not ln.strip():
+                    continue
+                row = json.loads(ln)
+                enum_id = row.get("enumId") or row.get("enum_id")
+                values = row.get("values", [])
+                if enum_id and values and len(values) <= MAX_ENUM:
+                    try:
+                        enum_map[int(enum_id)] = values
+                    except (TypeError, ValueError):
+                        continue
+
+    # ----- attributes（构建上下文相关映射和children关系）-------------------------------------------------------
+    if progress:
+        print("🔍 构建上下文相关映射和children关系...")
+
     with a_path.open(encoding="utf-8") as fp:
         for ln in fp:
+            if not ln.strip():
+                continue
             row = json.loads(ln)
-            pid = row["classId"]  # ← parent = classId
-            if w := row.get("xml_wrapper_tag"):  # ← snake_case
-                wrappers[pid] = utils.normalize(w)
-            child_cid = row.get("typeId")  # ← 下钻目标
-            if child_cid and child_cid in id2tag:  # ← 只保存在 cls 表里的
-                children[pid].append(child_cid)
+            pid = row["classId"]
+
+            # **关键修复：严格过滤XML属性**
+            if row.get("isXmlAttr", False):
+                continue
+
+            xml_tag = row.get("xml_tag")
+            type_id = row.get("typeId")
+            attribute_class = row.get("attributeClass", False)
+
+            if not xml_tag or not type_id:
+                continue
+
+            norm_tag = utils.normalize(xml_tag)
+
+            # **上下文相关映射**
+            context_key = f"{pid}:{norm_tag}"
+            contextual_tag2cid[context_key] = type_id
+
+            # **检查全局映射冲突**
+            if norm_tag in global_tag2cid:
+                if global_tag2cid[norm_tag] != type_id:
+                    if progress:
+                        print(f"   上下文冲突：标签 '{norm_tag}' 在不同上下文中映射到不同类")
+                        print(f"     全局: {global_tag2cid[norm_tag]}")
+                        print(f"     上下文 {pid}: {type_id}")
+            else:
+                # 无冲突，可以作为全局映射
+                global_tag2cid[norm_tag] = type_id
+                if type_id not in id2tag:
+                    id2tag[type_id] = norm_tag
+
+            # **处理枚举值**
+            allowed_values = row.get("allowedValues", [])
+            if not allowed_values and type_id in enum_map:
+                allowed_values = enum_map[type_id]
+
+            child_info = {
+                'child_cid': type_id,
+                'xml_tag': norm_tag,
+                'xml_wrapper_tag': utils.normalize(row.get("xml_wrapper_tag", "")) if row.get(
+                    "xml_wrapper_tag") else None,
+                'max_occurs': row.get("maxOccurs", 1),
+                'min_occurs': row.get("minOccurs", 1),
+                'attribute_class': attribute_class,
+                'allowed_values': allowed_values if allowed_values and len(allowed_values) <= MAX_ENUM else None
+            }
+            children[pid].append(child_info)
+
+    # **构建最终的tag2cid映射表**
+    tag2cid = global_tag2cid.copy()
+
+    if progress:
+        print(f"✓ 映射统计:")
+        print(f"   全局tag映射: {len(global_tag2cid)}")
+        print(f"   上下文映射: {len(contextual_tag2cid)}")
 
     # --- ② BFS 构建迁移表 ----------------------------------------------
-    start = [utils.normalize(r) for r in roots]
-    trans, accepting = {}, set()
-    q = collections.deque([(t, 0) for t in start])  # ← tuple(tag, depth)
+    if not roots:
+        raise ValueError("必须指定 roots 参数")
+
+    start_tags = []
+    for r in roots:
+        norm_tag = utils.normalize(r)
+        if norm_tag not in tag2cid:
+            print(f"警告：根节点 '{r}' (normalized: '{norm_tag}') 不存在于 tag2cid 中")
+            continue
+        start_tags.append(norm_tag)
+
+    if not start_tags:
+        raise ValueError("没有有效的根节点")
+
+    # 初始化状态机
+    trans = {}
+    accepting = set()
+    q = collections.deque()
+    visited = set()
+    state_depth = {}
+
+    # 添加空起始状态
+    trans[""] = {tag: tag for tag in start_tags}
+    accepting.add("")
+
+    # 初始化队列
+    for tag in start_tags:
+        q.append((tag, 1))
+        state_depth[tag] = 1
+
+    processed = 0
+    if progress:
+        print(f"🔍 开始构建DFA，起始标签: {start_tags}")
+        print(f"   MAX_DEPTH={MAX_DEPTH}, MAX_STATES={MAX_STATES}")
+
+    def is_autosar_type_constraint(values: list[str]) -> bool:
+        """判断枚举值是否为AUTOSAR类型约束"""
+        if not values:
+            return False
+        # AUTOSAR类型名通常是大写+连字符的格式
+        type_pattern = re.compile(r'^[A-Z][A-Z0-9-]*[A-Z0-9]$')
+        return all(type_pattern.match(v) for v in values)
+
+    def resolve_child_cid(parent_cid: int, child_tag: str) -> int:
+        """解析子元素的类ID，优先使用上下文映射"""
+        context_key = f"{parent_cid}:{child_tag}"
+        if context_key in contextual_tag2cid:
+            return contextual_tag2cid[context_key]
+        return tag2cid.get(child_tag, -1)
 
     while q:
-        tag, depth = q.popleft()  # ← 正常解包
-        if depth >= MAX_DEPTH:
+        # 安全检查
+        if len(trans) > MAX_STATES:
+            print(f"⚠️  状态数超过限制 {MAX_STATES:,}，停止扩展")
+            break
+        if len(q) > MAX_QUEUE:
+            print(f"⚠️  队列过长 {len(q):,}，截断队列")
+            q = collections.deque(sorted(q, key=lambda x: x[1])[:MAX_QUEUE // 2])
+
+        state, depth = q.popleft()
+        processed += 1
+
+        if progress and processed % PROGRESS_STEP == 0:
+            print(f"   … 已处理 {processed:,} 个状态，队列剩余 {len(q):,} 个，"
+                  f"当前深度 {depth}，总状态数 {len(trans):,}")
+
+        # 检查深度限制
+        if depth > MAX_DEPTH:
             continue
-        cid = tag2cid[tag]
-        trans.setdefault(tag, {})
 
-        # wrapper → item
-        if cid in wrappers:
-            w_tag = wrappers[cid]
-            trans[tag][w_tag] = w_tag
-            trans.setdefault(w_tag, {})[tag] = tag
-            tag = w_tag  # 子元素挂在 wrapper 下
+        if state in visited:
+            continue
+        visited.add(state)
 
-        # children
-        for child_cid in children.get(cid, []):
-            child_tag = id2tag[child_cid]
-            trans[tag][child_tag] = child_tag
-            if child_tag not in trans:
-                q.append((child_tag, depth + 1))  # ← 深度 +1
+        # 获取当前状态对应的类
+        parts = state.split() if state else []
+        current_tag = parts[-1] if parts else ""
 
-    accepting = set(trans)
+        if not current_tag or current_tag not in tag2cid:
+            accepting.add(state)
+            continue
+
+        cid = tag2cid[current_tag]
+        trans.setdefault(state, {})
+
+        # 获取该类的所有子元素
+        child_list = children.get(cid, [])
+        if not child_list:
+            accepting.add(state)
+            continue
+
+        state_has_children = False
+
+        for child_info in child_list:
+            wrapper = child_info['xml_wrapper_tag']
+            child_tag = child_info['xml_tag']
+            max_occurs = child_info['max_occurs']
+            allowed_values = child_info.get('allowed_values')
+
+            # **使用上下文相关映射解析子类ID**
+            resolved_child_cid = resolve_child_cid(cid, child_tag)
+
+            # 检查子元素是否可以继续展开
+            can_expand = (
+                    resolved_child_cid in children or
+                    child_tag in tag2cid
+            )
+
+            if wrapper:
+                # 有wrapper的情况
+                wrapper_state = f"{state} {wrapper}" if state else wrapper
+
+                if wrapper not in trans[state]:
+                    trans[state][wrapper] = wrapper_state
+                    state_depth[wrapper_state] = depth + 1
+                    state_has_children = True
+
+                trans.setdefault(wrapper_state, {})
+
+                if allowed_values:
+                    if is_autosar_type_constraint(allowed_values):
+                        # **类型约束枚举：在FSM中处理**
+                        for type_constraint in allowed_values:
+                            norm_type = utils.normalize(type_constraint)
+                            type_state = f"{wrapper_state} {norm_type}"
+                            if norm_type not in trans[wrapper_state]:
+                                trans[wrapper_state][norm_type] = type_state
+                                state_depth[type_state] = depth + 2
+                                # **关键修复：确保状态存在于trans中**
+                                trans.setdefault(type_state, {})
+                                accepting.add(type_state)
+
+                                # 检查类型约束指向的类是否还能展开
+                                type_cid = tag2cid.get(norm_type)
+                                if type_cid and type_cid in children and depth + 2 < MAX_DEPTH:
+                                    q.append((type_state, depth + 2))
+                    else:
+                        # **值约束枚举：交给GBNF处理**
+                        accepting.add(wrapper_state)
+                        continue
+                else:
+                    # 普通子元素
+                    child_state = f"{wrapper_state} {child_tag}"
+                    if child_tag not in trans[wrapper_state]:
+                        trans[wrapper_state][child_tag] = child_state
+                        state_depth[child_state] = depth + 2
+
+                        # 自环处理
+                        if max_occurs != 1:
+                            trans.setdefault(child_state, {})[child_tag] = child_state
+
+                        # 继续展开条件
+                        if can_expand and depth + 2 < MAX_DEPTH and child_state not in visited:
+                            q.append((child_state, depth + 2))
+            else:
+                # 没有wrapper的直接连接
+                if allowed_values:
+                    if is_autosar_type_constraint(allowed_values):
+                        # **类型约束枚举：在FSM中处理**
+                        for type_constraint in allowed_values:
+                            norm_type = utils.normalize(type_constraint)
+                            type_state = f"{state} {norm_type}" if state else norm_type
+                            if norm_type not in trans[state]:
+                                trans[state][norm_type] = type_state
+                                state_depth[type_state] = depth + 1
+                                # **关键修复：确保状态存在于trans中**
+                                trans.setdefault(type_state, {})
+                                accepting.add(type_state)
+                                state_has_children = True
+
+                                # 检查类型约束指向的类是否还能展开
+                                type_cid = tag2cid.get(norm_type)
+                                if type_cid and type_cid in children and depth + 1 < MAX_DEPTH:
+                                    q.append((type_state, depth + 1))
+                    else:
+                        # **值约束枚举：交给GBNF处理**
+                        accepting.add(state)
+                        state_has_children = True
+                        continue
+                else:
+                    # 普通子元素
+                    child_state = f"{state} {child_tag}" if state else child_tag
+                    if child_tag not in trans[state]:
+                        trans[state][child_tag] = child_state
+                        state_depth[child_state] = depth + 1
+                        state_has_children = True
+
+                        # 自环处理
+                        if max_occurs != 1:
+                            trans.setdefault(child_state, {})[child_tag] = child_state
+
+                        # 继续展开条件
+                        if can_expand and depth + 1 < MAX_DEPTH and child_state not in visited:
+                            q.append((child_state, depth + 1))
+
+        # 如果状态有子元素，也将其标记为接受态（前缀闭包）
+        if state_has_children:
+            accepting.add(state)
+
+    # 确保所有状态都是接受态
+    accepting.update(trans.keys())
+
+    if progress:
+        print(f"✓ BFS完成: 共生成 {len(trans):,} 个状态")
+        depth_dist = collections.Counter(state_depth.values())
+        print(f"   深度分布: {dict(sorted(depth_dist.items()))}")
+
+    # 验证修复效果
+    if BUILD_CFG.get("debug", {}).get("enable_validation", False):
+        print("🔍 验证状态一致性...")
+        validate_state_consistency(trans, progress)
 
     # --- ③ 可选压缩 / 最小化 --------------------------------------------
     if compress:
-        trans, accepting = _path_compress(trans, accepting)
-    if on_demand:
+        original_size = len(trans)
+        if progress:
+            print(f"🔬 开始Hopcroft最小化...")
         trans, accepting = _hopcroft_minimise(trans, accepting)
+        if progress:
+            print(f"   最小化后: {original_size:,} → {len(trans):,} 个状态")
 
-    # --- ④ 输出 ---------------------------------------------------------
-    out = raw_dir / "autosar.fsm"
-    out.write_text(json.dumps({"trans": trans, "accepting": list(accepting)}, indent=2))
-    return out
+        if progress:
+            print(f"🗜️  开始路径压缩...")
+        trans, accepting = _path_compress(trans, accepting)
+        if progress:
+            print(f"   路径压缩后: {len(trans):,} 个状态")
+
+    # --- ④ 输出 FSM 和 runtime stub ----------------------------------------
+    fsm_obj = {
+        "version": 2,
+        "compressed": compress,
+        "states": list(trans.keys()),
+        "edges": trans,
+        "accept": list(accepting),
+    }
+
+    out_fsm = raw_dir / "autosar.fsm"
+    out_fsm.write_text(json.dumps(fsm_obj, ensure_ascii=False, indent=2))
+
+    stub_path = raw_dir / "autosar_allowed_tokens.py"
+    stub_code = _render_runtime_stub(
+        fsm_name=out_fsm.name,
+        compress=compress,
+        on_demand=on_demand,
+        root_edges=trans,
+        grammar=""
+    )
+    stub_path.write_text(stub_code, encoding="utf-8")
+
+    print(f"✅ FSM 输出到: {out_fsm}")
+    print(f"✅ Runtime stub 输出到: {stub_path}")
+
+    return out_fsm
+
+def find_concrete_children(abstract_class_id: int, attributes_path: pathlib.Path) -> list[dict]:
+    """查找抽象类的所有具体实现"""
+    concrete_children = []
+
+    with attributes_path.open(encoding="utf-8") as fp:
+        for ln in fp:
+            if not ln.strip():
+                continue
+            row = json.loads(ln)
+
+            # 查找以该抽象类为父类的所有属性
+            if (row.get("classId") == abstract_class_id and
+                    not row.get("isXmlAttr", False) and
+                    row.get("xml_tag") and
+                    row.get("typeId")):
+                concrete_children.append({
+                    'xml_tag': row['xml_tag'],
+                    'typeId': row['typeId'],
+                    'maxOccurs': row.get("maxOccurs", 1),
+                    'minOccurs': row.get("minOccurs", 1)
+                })
+
+    return concrete_children
+
+
+def validate_state_consistency(trans, progress=True):
+    """验证状态一致性"""
+    from collections import defaultdict
+
+    issues = []
+
+    # 检查目标状态是否存在
+    for source, edges in trans.items():
+        for token, target in edges.items():
+            if target not in trans and target not in [""]:  # 空字符串状态可能不在trans中
+                issues.append(f"状态 '{source}' 通过 '{token}' 到达不存在的状态 '{target}'")
+
+    # 检查是否有过度共享的状态
+    target_to_sources = defaultdict(list)
+    for source, edges in trans.items():
+        for token, target in edges.items():
+            target_to_sources[target].append((source, token))
+
+    suspicious_states = []
+    for target, sources in target_to_sources.items():
+        if len(sources) > 10:  # 如果一个状态被超过10个不同路径到达，可能有问题
+            unique_tokens = set(token for _, token in sources)
+            if len(unique_tokens) > 5:  # 且通过超过5个不同token到达
+                suspicious_states.append((target, len(sources), len(unique_tokens)))
+
+    if progress:
+        if issues:
+            print("❌ 发现状态引用问题:")
+            for issue in issues[:5]:
+                print(f"   {issue}")
+
+        if suspicious_states:
+            print("⚠️ 发现可疑的状态共享:")
+            for state, source_count, token_count in suspicious_states[:3]:
+                print(f"   状态 '{state}' 被 {source_count} 个路径到达，通过 {token_count} 个不同token")
+
+    return len(issues) == 0 and len(suspicious_states) == 0
+
+
+def visualize_fsm_structure_dict(trans, max_depth=5):
+    """可视化FSM结构"""
+    from collections import defaultdict, Counter
+
+    print("🔍 FSM结构分析:")
+    print(f"   总状态数: {len(trans)}")
+
+    # 按深度分组
+    depth_groups = defaultdict(list)
+    for state in trans.keys():
+        depth = state.count(" ") if state else 0
+        if depth <= max_depth:
+            depth_groups[depth].append(state)
+
+    for depth in sorted(depth_groups.keys()):
+        states = depth_groups[depth]
+        print(f"   深度 {depth}: {len(states)} 个状态")
+
+        # 显示该深度的token分布
+        if depth > 0 and states:
+            tokens_at_depth = []
+            for state in states:
+                if state:
+                    last_token = state.split()[-1]
+                    tokens_at_depth.append(last_token)
+
+            token_freq = Counter(tokens_at_depth)
+            common_tokens = token_freq.most_common(5)
+            print(f"     常见token: {common_tokens}")
+
+        # 显示示例状态
+        for state in states[:3]:
+            out_degree = len(trans.get(state, {}))
+            print(f"     - '{state}' (出度: {out_degree})")
+        if len(states) > 3:
+            print(f"     ... 还有 {len(states) - 3} 个")
+
+
+def debug_unresolved_paths(children, tag2cid, cid2classname, progress=True):
+    """分析无法展开的路径"""
+    if not progress:
+        return
+
+    print("🔍 分析展开阻塞点...")
+
+    blocked_classes = []
+    for cid, child_list in children.items():
+        class_name = cid2classname.get(cid, f"unknown_{cid}")
+        has_expandable_children = False
+
+        for child_info in child_list:
+            child_cid = child_info['child_cid']
+            if child_cid in children or child_cid in tag2cid.values():
+                has_expandable_children = True
+                break
+
+        if not has_expandable_children and child_list:
+            blocked_classes.append({
+                'cid': cid,
+                'class_name': class_name,
+                'child_count': len(child_list),
+                'children': [
+                    {
+                        'xml_tag': child['xml_tag'],
+                        'child_cid': child['child_cid'],
+                        'child_class': cid2classname.get(child['child_cid'], f"unknown_{child['child_cid']}")
+                    }
+                    for child in child_list[:3]  # 只显示前3个
+                ]
+            })
+
+    if blocked_classes:
+        print(f"   发现 {len(blocked_classes)} 个可能的阻塞类:")
+        for blocked in blocked_classes[:5]:  # 只显示前5个
+            print(f"   - {blocked['class_name']} (CID: {blocked['cid']}, {blocked['child_count']} 个子元素)")
+            for child in blocked['children']:
+                print(f"     └─ {child['xml_tag']} -> {child['child_class']}")
