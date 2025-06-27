@@ -1,0 +1,193 @@
+2025-06-27 16:56:53,064 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-27 16:56:53,072 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-27 16:56:53,073 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-27 16:56:53,073 - src.client.constraint_preparer - INFO - Prepared constraint info for level: full
+2025-06-27 16:56:53,073 - src.client.constraint_sender - INFO - Built enhanced request dc9bf115-40af-4ade-a585-8b231d0d1fcf with constraint level: full
+2025-06-27 16:56:53,073 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.189.102:8000
+2025-06-27 16:57:34,753 - src.client.full_client - INFO - Received generation result: 8034 chars
+2025-06-27 16:57:34,791 - src.validation.local_validator - WARNING - XML wellformed validation failed: not well-formed (invalid token): line 2, column 1
+2025-06-27 16:57:34,791 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.04s
+2025-06-27 16:57:34,792 - __main__ - ERROR - Test case 1 failed: 'ValidationResult' object has no attribute 'get'
+2025-06-27 16:57:34,792 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 16:57:34,792 - src.client.constraint_sender - INFO - Built enhanced request aa036e5f-3db5-4d20-b6d3-3a93aa9b4323 with constraint level: mixed
+2025-06-27 16:57:34,792 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.189.102:8000
+2025-06-27 16:58:02,654 - src.client.full_client - INFO - Received generation result: 1548 chars
+2025-06-27 16:58:02,654 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 16:58:02,655 - __main__ - ERROR - Test case 2 failed: 'ValidationResult' object has no attribute 'get'
+2025-06-27 18:04:21,491 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-27 18:04:21,494 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-27 18:04:21,494 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-27 18:04:21,494 - src.client.constraint_preparer - INFO - Prepared constraint info for level: full
+2025-06-27 18:04:21,494 - src.client.constraint_sender - INFO - Built enhanced request b6bc184e-6ae8-4c6b-92b5-ad1b8959c7fe with constraint level: full
+2025-06-27 18:04:21,494 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8001
+2025-06-27 18:04:26,513 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 18:04:26,513 - src.client.constraint_sender - INFO - Built enhanced request 6a654152-b98c-4f31-9343-2e9884c44887 with constraint level: mixed
+2025-06-27 18:04:26,513 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8001
+2025-06-27 19:45:20,069 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-27 19:45:20,076 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-27 19:45:20,081 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-27 19:45:20,081 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:45:20,081 - src.client.constraint_sender - INFO - Built enhanced request 4b4e77d9-69fa-4d32-95fb-c3f7ce56005a with constraint level: mixed
+2025-06-27 19:45:20,081 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:45:22,239 - src.client.full_client - INFO - Received generation result: 159 chars
+2025-06-27 19:45:22,240 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 19:45:22,241 - __main__ - ERROR - Generation 1 exception: 'ValidationResult' object has no attribute 'errors'
+Traceback (most recent call last):
+  File "D:\PycharmProjects\AI_XmlGenerator\main.py", line 167, in main
+    "error_count": len(response.validation.errors),
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda\Lib\site-packages\pydantic\main.py", line 892, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'ValidationResult' object has no attribute 'errors'
+2025-06-27 19:45:22,265 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:45:22,265 - src.client.constraint_sender - INFO - Built enhanced request 0eac9c3b-7990-437d-b19a-a82f5dfec31f with constraint level: mixed
+2025-06-27 19:45:22,265 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:45:23,971 - src.client.full_client - INFO - Received generation result: 103 chars
+2025-06-27 19:45:23,971 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 19:45:23,972 - __main__ - ERROR - Generation 2 exception: 'ValidationResult' object has no attribute 'errors'
+Traceback (most recent call last):
+  File "D:\PycharmProjects\AI_XmlGenerator\main.py", line 167, in main
+    "error_count": len(response.validation.errors),
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda\Lib\site-packages\pydantic\main.py", line 892, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'ValidationResult' object has no attribute 'errors'
+2025-06-27 19:47:12,718 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-27 19:47:12,720 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-27 19:47:12,721 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-27 19:47:12,721 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:47:12,721 - src.client.constraint_sender - INFO - Built enhanced request 397df170-221c-449a-9efb-00baaeaa372c with constraint level: mixed
+2025-06-27 19:47:12,721 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:47:22,006 - src.client.full_client - INFO - Received generation result: 896 chars
+2025-06-27 19:47:22,006 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 19:47:22,007 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:47:22,007 - src.client.constraint_sender - INFO - Built enhanced request 98d997f6-85bc-4546-a4b1-c6a0aacc10ce with constraint level: mixed
+2025-06-27 19:47:22,007 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:47:23,729 - src.client.full_client - INFO - Received generation result: 120 chars
+2025-06-27 19:47:23,729 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 19:48:45,664 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-27 19:48:45,668 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-27 19:48:45,668 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-27 19:48:45,668 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:48:45,668 - src.client.constraint_sender - INFO - Built enhanced request a7f1f5d5-dc24-474e-a532-f74146d89a6d with constraint level: mixed
+2025-06-27 19:48:45,668 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:48:48,434 - src.client.full_client - INFO - Received generation result: 194 chars
+2025-06-27 19:48:48,434 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-27 19:48:48,435 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-27 19:48:48,435 - src.client.constraint_sender - INFO - Built enhanced request e22b2561-0287-4c9d-a019-dcc5373a4287 with constraint level: mixed
+2025-06-27 19:48:48,436 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-27 19:49:46,562 - src.client.full_client - INFO - Received generation result: 6586 chars
+2025-06-27 19:49:46,563 - src.validation.local_validator - WARNING - XML wellformed validation failed: not well-formed (invalid token): line 74, column 15
+2025-06-27 19:49:46,563 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-28 00:51:25,138 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 00:51:25,142 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 00:51:25,142 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-28 00:51:25,142 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 00:51:25,142 - src.client.constraint_sender - INFO - Built enhanced request 32bb35c2-ce23-4a70-b6fd-b92952716e0b with constraint level: mixed
+2025-06-28 00:51:25,142 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 00:51:25,632 - src.client.full_client - INFO - Received generation result: 0 chars
+2025-06-28 00:51:25,633 - src.validation.local_validator - WARNING - XML wellformed validation failed: no element found: line 1, column 0
+2025-06-28 00:51:25,633 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-28 00:51:25,634 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 00:51:25,634 - src.client.constraint_sender - INFO - Built enhanced request e8d79fec-5cd8-4316-ae7b-50c2fca620c9 with constraint level: mixed
+2025-06-28 00:51:25,634 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 00:51:27,955 - src.client.full_client - INFO - Received generation result: 144 chars
+2025-06-28 00:51:27,956 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-28 00:56:20,564 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 00:56:20,567 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 00:56:20,567 - src.client.constraint_preparer - WARNING - Allowed tokens file not found: src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+2025-06-28 00:56:20,567 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 00:56:20,567 - src.client.constraint_sender - INFO - Built enhanced request b006a92d-84cf-4011-b244-c8afbc7e3d3c with constraint level: mixed
+2025-06-28 00:56:20,567 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 00:56:21,017 - src.client.full_client - INFO - Received generation result: 1 chars
+2025-06-28 00:56:21,017 - src.validation.local_validator - WARNING - XML wellformed validation failed: unclosed token: line 1, column 0
+2025-06-28 00:56:21,017 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-28 00:56:21,018 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 00:56:21,019 - src.client.constraint_sender - INFO - Built enhanced request 067eb958-64ce-4532-922b-b1789ce59dd4 with constraint level: mixed
+2025-06-28 00:56:21,019 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 00:56:23,242 - src.client.full_client - INFO - Received generation result: 154 chars
+2025-06-28 00:56:23,242 - src.validation.local_validator - INFO - Validation completed: valid=False, time=0.00s
+2025-06-28 01:05:07,714 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:05:07,717 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:05:07,717 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:05:07,717 - src.client.constraint_sender - INFO - Built enhanced request 26002ca1-2c0b-49b4-b3c9-14f5e0b265b0 with constraint level: mixed
+2025-06-28 01:05:07,717 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:05:07,744 - src.client.cloud_client - WARNING - Large grammar detected, using simplified version
+2025-06-28 01:05:07,747 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1211 chars
+2025-06-28 01:05:07,747 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:05:08,086 - __main__ - ERROR - Generation 1 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:05:08,086 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:05:08,086 - src.client.constraint_sender - INFO - Built enhanced request 9c2bdf28-89c7-46a2-8b1b-e7ca5113c328 with constraint level: mixed
+2025-06-28 01:05:08,086 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:05:08,114 - src.client.cloud_client - WARNING - Large grammar detected, using simplified version
+2025-06-28 01:05:08,118 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1211 chars
+2025-06-28 01:05:08,118 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:05:08,383 - __main__ - ERROR - Generation 2 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:06:41,261 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:06:41,264 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:06:41,265 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:06:41,265 - src.client.constraint_sender - INFO - Built enhanced request c433d477-e21b-433f-8cba-c04094ed25e2 with constraint level: mixed
+2025-06-28 01:06:41,265 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:06:41,293 - src.client.cloud_client - WARNING - Large grammar detected, using simplified version
+2025-06-28 01:06:41,295 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1211 chars
+2025-06-28 01:06:41,295 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:06:41,597 - __main__ - ERROR - Generation 1 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:06:41,597 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:06:41,597 - src.client.constraint_sender - INFO - Built enhanced request ff00e7f9-e905-4f4c-a5f3-20cb50a00d82 with constraint level: mixed
+2025-06-28 01:06:41,598 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:06:41,625 - src.client.cloud_client - WARNING - Large grammar detected, using simplified version
+2025-06-28 01:06:41,628 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1211 chars
+2025-06-28 01:06:41,628 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:06:41,959 - __main__ - ERROR - Generation 2 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:10:46,011 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:10:46,014 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:10:46,015 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:10:46,015 - src.client.constraint_sender - INFO - Built enhanced request 34506835-7b15-4d6a-8d28-03e9e7e270b6 with constraint level: mixed
+2025-06-28 01:10:46,015 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:10:46,015 - src.client.cloud_client - INFO - Using fixed simple GBNF grammar without zero-width patterns
+2025-06-28 01:10:46,015 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1705 chars
+2025-06-28 01:10:46,015 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:10:46,298 - __main__ - ERROR - Generation 1 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:10:46,298 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:10:46,298 - src.client.constraint_sender - INFO - Built enhanced request d0d85478-6c71-4a85-937a-267fe314f930 with constraint level: mixed
+2025-06-28 01:10:46,298 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:10:46,298 - src.client.cloud_client - INFO - Using fixed simple GBNF grammar without zero-width patterns
+2025-06-28 01:10:46,298 - src.client.cloud_client - INFO - ✅ Applied GBNF grammar constraint: 1705 chars
+2025-06-28 01:10:46,298 - src.client.cloud_client - INFO - 🔄 Sending vLLM request with constraints: {'gbnf': True, 'fsm': False}
+2025-06-28 01:10:46,548 - __main__ - ERROR - Generation 2 failed: vLLM HTTP 500: Internal Server Error
+2025-06-28 01:17:26,633 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:17:26,636 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:17:26,636 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:17:26,636 - src.client.constraint_sender - INFO - Built enhanced request 7841d805-9bc4-49dc-9d81-f05bad34e706 with constraint level: mixed
+2025-06-28 01:17:26,637 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:17:26,637 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:17:26,641 - __main__ - ERROR - Generation 1 failed: vLLM Error: bad escape \s at position 10
+2025-06-28 01:17:26,641 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:17:26,641 - src.client.constraint_sender - INFO - Built enhanced request 1a430669-fff7-4494-b815-82563fd078ad with constraint level: mixed
+2025-06-28 01:17:26,641 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:17:26,642 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:17:26,646 - __main__ - ERROR - Generation 2 failed: vLLM Error: bad escape \s at position 10
+2025-06-28 01:17:37,683 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:17:37,686 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:17:37,686 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:17:37,686 - src.client.constraint_sender - INFO - Built enhanced request 0011bb94-8c9c-4534-a04b-bbbe4f44bdd7 with constraint level: mixed
+2025-06-28 01:17:37,686 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:17:37,687 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:17:37,691 - __main__ - ERROR - Generation 1 failed: vLLM Error: bad escape \s at position 10
+2025-06-28 01:17:37,691 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:17:37,691 - src.client.constraint_sender - INFO - Built enhanced request ad170c42-766c-4d06-af9b-8b9feaf4b7e8 with constraint level: mixed
+2025-06-28 01:17:37,692 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:17:37,692 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:17:37,696 - __main__ - ERROR - Generation 2 failed: vLLM Error: bad escape \s at position 10
+2025-06-28 01:24:36,072 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 4859443 characters
+2025-06-28 01:24:36,075 - src.client.constraint_preparer - INFO - Loaded FSM data with 695 states
+2025-06-28 01:24:36,076 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:24:36,076 - src.client.constraint_sender - INFO - Built enhanced request 1f14310f-0657-4984-a6d7-205bbcbd9609 with constraint level: mixed
+2025-06-28 01:24:36,076 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:24:36,076 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:24:36,081 - __main__ - ERROR - Generation 1 failed: vLLM Error: bad escape \s at position 10
+2025-06-28 01:24:36,081 - src.client.constraint_preparer - INFO - Prepared constraint info for level: mixed
+2025-06-28 01:24:36,081 - src.client.constraint_sender - INFO - Built enhanced request db971a43-d7b3-42dd-ace5-3ed376c5aba6 with constraint level: mixed
+2025-06-28 01:24:36,081 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.190.248:8000 (API: vllm_native)
+2025-06-28 01:24:36,081 - src.client.cloud_client - INFO - 🔧 Fixing GBNF grammar: 4859443 chars
+2025-06-28 01:24:36,086 - __main__ - ERROR - Generation 2 failed: vLLM Error: bad escape \s at position 10

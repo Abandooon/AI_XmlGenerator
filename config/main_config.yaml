@@ -1,0 +1,67 @@
+# config/main_config.yaml - 支持真实约束传输
+project:
+  name: "AUTOSAR vLLM Client with Real Constraints"
+  version: "2.0.0"
+  description: "Local client for AUTOSAR XML generation with real-time constraints"
+
+# 云端服务配置 - 使用增强代理
+cloud_service:
+  internal_endpoint: "http://117.50.190.248:8000"  # 直接使用vLLM
+  api_type: "vllm_native"  # 改为原生vLLM API
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+  timeout: 120
+  max_retries: 2
+  retry_delay: 2
+
+# 本地约束和验证配置
+local_validation:
+  enabled: true
+  validation_level: "full"
+  artifacts_dir: "./src/constraint_graph/artifacts"
+
+# 约束传输配置 - 优化参数
+constraint_transmission:
+  include_fsm: true
+  include_gbnf: true
+  include_allowed_tokens: true
+  max_tokens_per_request: 200  # 优化性能
+  compress_constraints: true
+  gbnf_compression_threshold: 50000  # 50KB
+
+# 约束级别配置
+constraint_levels:
+  simple:
+    gbnf_enabled: false
+    fsm_enabled: false
+    description: "No constraints, fastest generation"
+  
+  mixed:
+    gbnf_enabled: true
+    fsm_enabled: true
+    description: "Balanced constraints and performance"
+  
+  full:
+    gbnf_enabled: true
+    fsm_enabled: true
+    domain_constraints: true
+    description: "Maximum constraint enforcement"
+
+# 性能配置
+performance:
+  concurrent_requests: 2
+  request_timeout: 120
+  constraint_cache_size: 50
+  
+# 监控配置
+monitoring:
+  enabled: true
+  metrics_file: "./logs/constraint_metrics.json"
+  track_constraint_effectiveness: true
+  detailed_timing: true
+
+# 日志配置
+logging:
+  level: "INFO"
+  file: "./logs/autosar_constraints.log"
+  console: true
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

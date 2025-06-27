@@ -39,26 +39,6 @@
 
 ### 2.1 目录结构
 ```
-autosar_vllm_system/
-├── generation/                 # 生成阶段模块
-│   ├── constraints/           # 约束处理
-│   ├── processors/            # 文本处理
-│   ├── services/              # 服务层
-│   └── models/                # 数据模型
-├── validation/                # 验证阶段模块
-│   ├── structure/             # 结构验证
-│   ├── semantic/              # 语义验证
-│   ├── constraints/           # 约束验证
-│   └── orchestrator/          # 验证编排
-├── core/                      # 核心模块
-│   ├── config/                # 配置管理
-│   ├── cache/                 # 缓存管理
-│   └── utils/                 # 工具函数
-├── deployment/                # 部署模块
-│   ├── cloud/                 # 云端服务
-│   ├── proxy/                 # 本地代理
-│   └── monitoring/            # 监控组件
-└── tests/                     # 测试模块
 ```
 
 ---
