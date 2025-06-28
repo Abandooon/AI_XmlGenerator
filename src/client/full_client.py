@@ -33,7 +33,6 @@ class FullAutosarClient:
             config["local_validation"]["artifacts_dir"]
         )
 
-    # src/client/full_client.py - 关键部分修改
     async def generate_and_validate_full(
             self,
             prompt: str,
@@ -45,14 +44,34 @@ class FullAutosarClient:
         """完整的生成和验证流程"""
         start_time = time.time()
 
-        # 构建增强请求
-        enhanced_request = self.constraint_sender.build_enhanced_request(
-            prompt=prompt,
-            autosar_context=autosar_context,
-            xml_context=xml_context,
-            constraint_level=constraint_level,
-            **generation_params
-        )
+        # 🔥 修改这里：优先使用引用模式
+        try:
+            # 尝试引用模式（推荐）
+            enhanced_request = self.constraint_sender.build_enhanced_request(
+                prompt=prompt,
+                autosar_context=autosar_context,
+                xml_context=xml_context,
+                constraint_level=constraint_level,
+                use_references=True,  # 🔥 新增参数
+                **generation_params
+            )
+
+            logger.info(f"Using constraint mode: {enhanced_request.constraint_info.constraint_source}")
+            logger.info(
+                f"FSM ref: {enhanced_request.constraint_info.fsm_ref}, GBNF ref: {enhanced_request.constraint_info.gbnf_ref}")
+
+        except Exception as e:
+            logger.warning(f"Reference mode failed, falling back to transmission mode: {e}")
+
+            # Fallback到传统模式
+            enhanced_request = self.constraint_sender.build_enhanced_request(
+                prompt=prompt,
+                autosar_context=autosar_context,
+                xml_context=xml_context,
+                constraint_level=constraint_level,
+                use_references=False,  # 🔥 Fallback参数
+                **generation_params
+            )
 
         response = ClientResponse(
             request=enhanced_request,

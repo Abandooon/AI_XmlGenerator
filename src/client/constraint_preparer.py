@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ..models.constraint_models import ConstraintInfo
 from ..utils.logger import get_logger
+from importlib.machinery import SourceFileLoader
 
 logger = get_logger(__name__)
 
@@ -52,27 +53,27 @@ class ConstraintPreparer:
             logger.error(f"Failed to load FSM data: {e}")
             return {}
 
+
+
     def _load_allowed_tokens(self) -> List[str]:
-        """加载允许的tokens - 修复版本"""
+        """加载 autosar_allowed_tokens.py 里的 ALLOWED_TOKENS 列表"""
         tokens_file = self.artifacts_dir / "raw" / "autosar_allowed_tokens.py"
 
-        # 如果文件不存在，返回预定义的基础tokens
         if not tokens_file.exists():
-            logger.warning(f"Allowed tokens file not found: {tokens_file}, using default tokens")
+            logger.warning(f"Allowed-tokens file not found: {tokens_file}, using default set")
             return self._get_default_autosar_tokens()
 
         try:
-            with open(tokens_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-
-            # 简单解析ALLOWED_TOKENS变量
-            if "ALLOWED_TOKENS" in content:
+            # 动态加载模块而不污染 sys.modules
+            mod = SourceFileLoader("autosar_tokens_stub", str(tokens_file)).load_module()
+            if hasattr(mod, "ALLOWED_TOKENS") and isinstance(mod.ALLOWED_TOKENS, list):
+                logger.info(f"Loaded {len(mod.ALLOWED_TOKENS)} allowed tokens from stub")
+                return mod.ALLOWED_TOKENS
+            else:
+                logger.warning("ALLOWED_TOKENS not found in stub, falling back to default")
                 return self._get_default_autosar_tokens()
-
-            return self._get_default_autosar_tokens()
-
         except Exception as e:
-            logger.error(f"Failed to load allowed tokens: {e}")
+            logger.error(f"Failed to import allowed tokens: {e}")
             return self._get_default_autosar_tokens()
 
     def _get_default_autosar_tokens(self) -> List[str]:
@@ -99,22 +100,58 @@ class ConstraintPreparer:
         ]
 
     def prepare_constraint_info(self, constraint_level: str = "mixed",
-                                current_state: str = "START") -> ConstraintInfo:
-        """准备约束信息"""
+                                current_state: str = "START",
+                                use_references: bool = True) -> ConstraintInfo:
+        """准备约束信息 - 支持引用和传统模式"""
 
         constraint_info = ConstraintInfo()
 
-        # 根据约束级别配置
-        if constraint_level in ["simple", "mixed", "full"]:
-            constraint_info.gbnf_enabled = True
-            constraint_info.grammar_rules = self.gbnf_grammar
+        if use_references:
+            # 🔥 新模式：使用预加载引用（优先）
+            logger.info("Using constraint reference mode (zero transmission)")
 
-        if constraint_level in ["mixed", "full"]:
-            constraint_info.fsm_enabled = True
-            constraint_info.allowed_tokens = self.allowed_tokens_list
-            constraint_info.current_state = current_state
+            if constraint_level in ["mixed", "full"]:
+                # FSM优先策略
+                constraint_info.fsm_ref = "autosar"  # 引用云端预加载的autosar.fsm
+                constraint_info.gbnf_ref = None  # FSM优先，不使用GBNF
+                logger.info("Applied FSM reference constraint: autosar")
 
-        # 添加域特定约束
+            elif constraint_level == "gbnf_only":
+                # 仅GBNF模式（用于对比测试）
+                constraint_info.fsm_ref = None
+                constraint_info.gbnf_ref = "autosar"  # 引用云端预加载的autosar.gbnf
+                logger.info("Applied GBNF reference constraint: autosar")
+
+            else:
+                # simple级别 - 无约束
+                constraint_info.fsm_ref = None
+                constraint_info.gbnf_ref = None
+                logger.info("No constraints applied (simple level)")
+
+        else:
+            # 🔄 传统模式：直接传输（兼容性保留）
+            logger.info("Using traditional transmission mode")
+
+            # 修正：只有mixed和full级别才启用GBNF
+            if constraint_level in ["mixed", "full"]:
+                constraint_info.gbnf_enabled = True
+                constraint_info.grammar_rules = self.gbnf_grammar
+            else:
+                # simple级别不使用约束
+                constraint_info.gbnf_enabled = False
+                constraint_info.grammar_rules = ""
+
+            if constraint_level in ["mixed", "full"]:
+                constraint_info.fsm_enabled = True
+                constraint_info.allowed_tokens = self.allowed_tokens_list
+                constraint_info.current_state = current_state
+            else:
+                # simple级别不使用FSM
+                constraint_info.fsm_enabled = False
+                constraint_info.allowed_tokens = []
+                constraint_info.current_state = None
+
+        # 添加域特定约束（不变）
         if constraint_level == "full":
             constraint_info.domain_constraints = {
                 "required_elements": [
@@ -126,7 +163,12 @@ class ConstraintPreparer:
                 }
             }
 
-        logger.info(f"Prepared constraint info for level: {constraint_level}")
+        # 添加版本信息
+        constraint_info.constraint_version = "4.0.0"
+        constraint_info.constraint_source = "reference" if use_references else "transmission"
+
+        logger.info(
+            f"Prepared constraint info: level={constraint_level}, mode={'reference' if use_references else 'transmission'}")
         return constraint_info
 
     def get_constraint_summary(self) -> Dict[str, Any]:

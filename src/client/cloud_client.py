@@ -52,17 +52,81 @@ class CloudServiceClient:
     async def _enhanced_generate(self, request: EnhancedGenerationRequest) -> CloudGenerationResponse:
         """调用增强服务接口（原有逻辑）"""
         try:
+            # 添加调试信息
+            print(f"🔍 Debug: request type = {type(request)}")
+            print(f"🔍 Debug: request.constraint_info type = {type(request.constraint_info)}")
+            if hasattr(request.constraint_info, 'grammar_rules'):
+                print(f"🔍 Debug: grammar_rules type = {type(request.constraint_info.grammar_rules)}")
+            if hasattr(request.constraint_info, 'allowed_tokens'):
+                print(f"🔍 Debug: allowed_tokens type = {type(request.constraint_info.allowed_tokens)}")
+
+            # 🔥 新增：调试请求序列化
+            print(f"🔍 Debug: About to serialize request...")
+            try:
+                request_dict = request.dict()
+                print(f"🔍 Debug: Request serialized successfully")
+                print(f"🔍 Debug: Request dict keys: {list(request_dict.keys())}")
+
+                # 检查constraint_info的内容
+                if 'constraint_info' in request_dict:
+                    constraint_info = request_dict['constraint_info']
+                    print(f"🔍 Debug: constraint_info keys: {list(constraint_info.keys())}")
+
+                    if 'allowed_tokens' in constraint_info:
+                        tokens = constraint_info['allowed_tokens']
+                        print(
+                            f"🔍 Debug: allowed_tokens in dict = {type(tokens)}, length = {len(tokens) if tokens else 0}")
+                        if tokens and len(tokens) > 0:
+                            print(f"🔍 Debug: First few tokens: {tokens[:3]}")
+
+                    if 'grammar_rules' in constraint_info:
+                        rules = constraint_info['grammar_rules']
+                        print(f"🔍 Debug: grammar_rules in dict = {type(rules)}, length = {len(rules) if rules else 0}")
+
+            except Exception as e:
+                print(f"❌ Debug: Error serializing request: {e}")
+                import traceback
+                traceback.print_exc()
+                raise
+
+            print(f"🔍 Debug: About to send HTTP request to {self.endpoint}/enhanced_generate")
+
             async with self.session.post(
                     f"{self.endpoint}/enhanced_generate",
-                    json=request.dict(),
+                    json=request_dict,  # 使用已经序列化的字典
                     headers={"Content-Type": "application/json"}
             ) as response:
 
+                print(f"🔍 Debug: HTTP response status: {response.status}")
+
                 if response.status == 200:
                     response_data = await response.json()
-                    return CloudGenerationResponse(**response_data)
+                    print(f"🔍 Debug: Response received successfully")
+                    print(f"🔍 Debug: Response data keys: {list(response_data.keys())}")
+
+                    # 检查每个字段的类型
+                    for key, value in response_data.items():
+                        print(f"🔍 Debug: response_data['{key}'] = {type(value)}")
+                        if isinstance(value, list) and len(value) > 0:
+                            print(f"🔍 Debug: First item in {key}: {type(value[0])}")
+
+                    try:
+                        return CloudGenerationResponse(**response_data)
+                    except Exception as e:
+                        print(f"❌ Debug: Error creating CloudGenerationResponse: {e}")
+                        print(f"❌ Debug: Error type: {type(e)}")
+                        import traceback
+                        traceback.print_exc()
+
+                        # 尝试手动创建响应对象
+                        return CloudGenerationResponse(
+                            request_id=response_data.get('request_id', request.request_id),
+                            success=response_data.get('success', False),
+                            error_message=f"Response parsing error: {str(e)}"
+                        )
                 else:
                     error_text = await response.text()
+                    print(f"❌ Debug: HTTP error response: {error_text}")
                     return CloudGenerationResponse(
                         request_id=request.request_id,
                         success=False,
@@ -70,6 +134,10 @@ class CloudServiceClient:
                     )
 
         except Exception as e:
+            print(f"❌ Debug: Exception in _enhanced_generate: {e}")
+            print(f"❌ Debug: Exception type: {type(e)}")
+            import traceback
+            traceback.print_exc()
             return CloudGenerationResponse(
                 request_id=request.request_id,
                 success=False,
@@ -102,13 +170,30 @@ class CloudServiceClient:
 
             # 应用GBNF语法约束
             if (request.constraint_info.gbnf_enabled and
-                    request.constraint_info.grammar_rules and
-                    len(request.constraint_info.grammar_rules.strip()) > 0):
+                    request.constraint_info.grammar_rules):
 
-                corrected_grammar = self._fix_gbnf_syntax(request.constraint_info.grammar_rules)
-                vllm_request["guided_grammar"] = corrected_grammar
-                constraints_applied["gbnf"] = True
-                logger.info(f"✅ Applied GBNF grammar constraint: {len(corrected_grammar)} chars")
+                try:
+                    logger.info(f"🔍 Grammar rules type: {type(request.constraint_info.grammar_rules)}")
+                    logger.info(f"🔍 Grammar rules length: {len(request.constraint_info.grammar_rules)}")
+
+                    # 安全检查grammar_rules
+                    if hasattr(request.constraint_info.grammar_rules, 'strip'):
+                        stripped_length = len(request.constraint_info.grammar_rules.strip())
+                        logger.info(f"🔍 Stripped length: {stripped_length}")
+
+                        if stripped_length > 0:
+                            corrected_grammar = self._fix_gbnf_syntax(request.constraint_info.grammar_rules)
+                            vllm_request["guided_grammar"] = corrected_grammar
+                            constraints_applied["gbnf"] = True
+                            logger.info(f"✅ Applied GBNF grammar constraint: {len(corrected_grammar)} chars")
+                        else:
+                            logger.warning("Grammar rules empty after strip, skipping GBNF")
+                    else:
+                        logger.error(f"❌ Grammar rules is not a string: {type(request.constraint_info.grammar_rules)}")
+
+                except Exception as e:
+                    logger.error(f"❌ Error processing GBNF grammar: {e}")
+                    logger.error(f"Grammar rules type: {type(request.constraint_info.grammar_rules)}")
 
             # 应用FSM Token约束
             elif (request.constraint_info.fsm_enabled and
@@ -290,7 +375,7 @@ class CloudServiceClient:
             if '/[' in line and len(line) > 100:
                 # 将复杂正则替换为简单内容匹配
                 if 'content' in line.lower():
-                    line = '?content: /[\\w\\s\\-<>\/=".:;,(){}\\[\\]]+/'
+                    line = r'?content: /[\w\s\-<>/=".:;,(){}\[\]]+/'
 
             # 限制单行长度
             if len(line) > 200:

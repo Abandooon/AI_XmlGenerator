@@ -72,7 +72,7 @@ async def main():
 
             start_time = time.time()
 
-            # 简单调用
+            # 在main.py的生成调用中添加constraint_level参数
             response = await client.generate_and_validate_full(
                 prompt=case["prompt"],
                 autosar_context=case["autosar_context"],
@@ -80,7 +80,8 @@ async def main():
                 temperature=0.3,
                 top_p=0.9,
                 frequency_penalty=0.1,
-                presence_penalty=0.1
+                presence_penalty=0.1,
+                constraint_level="mixed"  # 添加这一行
             )
 
             generation_time = time.time() - start_time

@@ -1639,3 +1639,81 @@ class DiagnosticTools:
 ---
 
 *本设计文档基于当前项目实际架构，为"本地客户端 → 云端vLLM → 本地验证"工作流提供了完整的技术方案和实施指导。*
+
+
+当前问题
+
+📊 当前技术状况分析
+✅ 已验证可行的技术
+
+guided_choice (FSM约束) - ✅ 正常工作
+简单guided_grammar (GBNF) - ✅ 小规模语法可以工作
+基础生成流程 - ✅ 端到端管道正常
+
+❌ 当前的技术瓶颈
+
+GBNF文件过大 (65KB) - 导致HTTP请求失败
+复杂GBNF语法 - vLLM解析器可能无法处理完整的AUTOSAR元模型语法
+
+🎯 实现策略讨论
+策略A: 分层约束架构 (推荐)
+Level 1: FSM Token约束 (轻量级，always work)
+Level 2: 简化GBNF (核心结构约束)
+Level 3: 完整GBNF (理想状态，需要优化)
+优势:
+
+渐进式实现，降低风险
+FSM可以立即验证LLM推理能力
+为完整GBNF做技术准备
+
+策略B: 约束文件优化
+1. GBNF分块传输 (chunk-based)
+2. 云端预置约束库
+3. 动态约束组合
+优势:
+
+保持完整约束能力
+解决传输瓶颈问题
+
+策略C: 混合约束模式
+- 结构约束: 简化GBNF (保证XML well-formed)
+- 内容约束: FSM Token (保证AUTOSAR合规)
+- 语义约束: 后处理验证
+🔍 关键技术问题
+Q1: FSM约束效果如何？
+从你的测试看，guided_choice工作正常。关键是:
+
+FSM能否有效约束AUTOSAR标签选择？
+Token级约束对XML结构生成的影响？
+
+Q2: GBNF优化路径？
+
+压缩策略: 移除冗余规则，保留核心约束
+分层策略: 分为structure.gbnf + content.gbnf
+动态策略: 根据prompt类型选择不同的语法子集
+
+Q3: 推理能力测试设计？
+既然要测试LLM推理能力，需要设计:
+
+无约束baseline: 纯prompt生成
+FSM约束: 测试token级引导效果
+GBNF约束: 测试结构级引导效果
+
+💡 我的建议策略
+Phase 1: FSM约束深度测试 (立即可做)
+
+扩展allowed_tokens到更完整的AUTOSAR词汇
+测试不同粒度的token约束效果
+量化评估: 合规性提升 vs 创造性保持
+
+Phase 2: GBNF优化实验 (技术攻关)
+
+分析65KB GBNF文件，识别核心vs冗余规则
+构建"精简版"GBNF (目标<5KB)
+A/B测试: 完整约束 vs 精简约束
+
+Phase 3: 混合约束架构 (最终目标)
+
+FSM处理词汇选择
+精简GBNF处理结构
+SMT solver处理语义约束

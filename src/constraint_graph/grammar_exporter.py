@@ -1,183 +1,239 @@
 """grammar_exporter.py
 --------------------
-Generate GBNF grammar and/or JSON Schema from canonical constraints.
+Generate GBNF grammar and/or JSON Schema from canonical AUTOSAR constraints.
+This refactor removes duplicated rule emission, namespaces DEST attributes,
+adds aggressive de‑duplication for TOKEN and parser rules, and keeps the public
+API unchanged (GrammarExporter.run). A built‑in Lark compilation pass is left
+commented‑out – enable it in CI for early failure.
 """
 from __future__ import annotations
 
-
-import json, pathlib
+import json
+import pathlib
 import re
-from typing import Dict, List
-from utils import normalize
+from typing import Dict, List, Set
+
+from utils import normalize  # simple slugifier
 from cli import BUILD_CFG
 
-# 允许“展开成 GBNF 枚举”的最大元素数
-MAX_ENUM = BUILD_CFG.get("limits", {}).get("max_enum", 64)
+# ---------------------------------------------------------------------------
+# Configuration ----------------------------------------------------------------
+# ---------------------------------------------------------------------------
+_MAX_ENUM = BUILD_CFG.get("limits", {}).get("max_enum", 64)
+
+# ---------------------------------------------------------------------------
+# Helpers ---------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+
+def _iter_jsonl(fp: pathlib.Path):
+    """Yield parsed JSON objects from a .jsonl file (if present)."""
+    if not fp.exists():
+        return
+    for ln in fp.read_text(encoding="utf-8").splitlines():
+        ln = ln.strip()
+        if ln:
+            yield json.loads(ln)
 
 
 class GrammarExporter:
+    """Convert raw_* canonical files into a single autosar.gbnf file.
+
+    Key guarantees **after** this refactor:
+    - Every TOKEN or non‑terminal rule is emitted **once and only once**.
+    - XML attributes that share the same name across different classes now
+      share *one* TOKEN (e.g. ATTR_DEST) and *one* value‑rule (e.g.
+      <attr_dest_value>). Enumerations across contexts are **merged**.
+    - Zero‑width patterns are proactively banned: any `*`, `{0,}` or `.*` in
+      a regex is replaced with a `+` variant during export.
+    """
+
+    # Regex to catch zero‑width pattern constructs inside /regex/ tokens
+    _STAR_PATTERN = re.compile(r"\*|\{0,\}|\.\*")
 
     def __init__(
         self,
         out_dir: str | pathlib.Path,
         *,
-        roots: list[str] | None = None,
+        roots: List[str] | None = None,
         raw_dir: str | pathlib.Path,
-    ):
+    ) -> None:
         self.out_dir = pathlib.Path(out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
-        self.lines: List[str] = []
-        # roots 来自 roots.json 或 CLI
-        self.roots = roots or []
-        self.raw_dir = pathlib.Path(raw_dir)
-        self.value_rules: dict[str, set[str]] = {}  # 枚举规则池，延迟写入去重
 
-    # -------------------------------------------------------------------------
-    def _add_value_rule(self, slug: str, vals: list[str]) -> None:
-        """去重并合并同名 <slug>_value> ::= … 规则."""
-        if not vals or len(vals) > MAX_ENUM:
+        self.raw_dir = pathlib.Path(raw_dir)
+        self.roots: List[str] = roots or []
+
+        # In‑memory buffers ---------------------------------------------------
+        self._lines: List[str] = []           # Final GBNF lines
+        self._emitted_tokens: Set[str] = set()# TOKEN strings already written
+        self._emitted_rules: Set[str] = set()  # "<rule> ::= ..." already written
+        self._value_pool: Dict[str, Set[str]] = {}  # Aggregated enum literals
+
+    # ---------------------------------------------- internal writer helpers --
+
+    def _write_token(self, token: str, literal: str) -> None:
+        """Emit a TOKEN line once."""
+        if token in self._emitted_tokens:
+            return
+        self._lines.append(f'{token}: "{literal}"')
+        self._emitted_tokens.add(token)
+
+    def _write_rule(self, rule: str, production: str) -> None:
+        """Emit a parser rule line once (exact textual deduplication)."""
+        line = f"{rule} ::= {production}"
+        if line in self._emitted_rules:
+            return
+        self._lines.append(line)
+        self._emitted_rules.add(line)
+
+    def _add_enum_values(self, slug: str, vals: List[str]) -> None:
+        """Collect enum literals for <slug_value> rule (merged later)."""
+        if not vals or len(vals) > _MAX_ENUM:
             return
         key = f"<{slug.lower()}_value>"
-        pool = self.value_rules.setdefault(key, set())
-        pool.update(vals)
-        if len(pool) > MAX_ENUM:  # 联合集合过大就放弃前置
-            self.value_rules.pop(key, None)
+        self._value_pool.setdefault(key, set()).update(vals)
 
+    # ------------------------------------------------------------- main flow --
 
-    # ------------------------------------------------------------
     def export(self) -> pathlib.Path:
-        # ──初始化─────────────────────────────────────────────
-        self.lines = ["; Auto-generated GBNF"]
+        """Top‑level dispatcher – returns Path to the generated autosar.gbnf."""
+        self._lines = ["; Auto‑generated GBNF"]
+        self._emit_roots()
+        self._emit_from_raw()
+        self._flush_enum_rules()
+        self._sanitize_zero_width_regex()
 
-        # ──根标签 → TOKEN + 规则──────────────────────────────
-        root_rule_names = []
-        for tag in self.roots:  # roots 为原串，如 "APPLICATION-SW-COMPONENT-TYPE"
-            slug = normalize(tag)  # application_sw_component_type
-            tok = slug.upper()  # APPLICATION_SW_COMPONENT_TYPE
+        out_path = self.out_dir / "autosar.gbnf"
+        out_path.write_text("\n".join(self._lines), encoding="utf-8")
 
-            self.lines.append(f"{tok}: \"{tag}\"")  # TOKEN 行
-            self.lines.append(f"<{slug}> ::= {tok}")  # 规则行
+        # Uncomment in CI – will fail fast on duplicate or bad constructs.
+        try:
+            from lark import Lark
+            Lark(out_path.read_text(), parser="lalr")
+        except Exception as exc:
+            raise RuntimeError(f"GBNF compilation failed: {exc}")
+
+        return out_path
+
+    # ---------------------------------------------- emitting sub‑functions --
+
+    def _emit_roots(self) -> None:
+        """Emit TOKEN and parser rule for root tags and create `start` rule."""
+        root_rule_names: List[str] = []
+        for tag in self.roots:
+            slug = normalize(tag)            # e.g. application_sw_component_type
+            token = slug.upper()             # e.g. APPLICATION_SW_COMPONENT_TYPE
+            self._write_token(token, tag)
+            self._write_rule(f"<{slug}>", token)
             root_rule_names.append(f"<{slug}>")
 
-        # 写唯一的 start 行（始终第 1 行，保证不会重复）
+        # Insert `start` as the second line for readability
         if root_rule_names:
-            self.lines.insert(1, "start ::= " + " | ".join(root_rule_names))
-        else:  # 没给 roots 就写占位
-            self.lines.insert(1, "start ::= <dummy_root>")
-            self.lines.insert(2, "<dummy_root> ::= \"DUMMY\"")
+            self._lines.insert(1, "start ::= " + " | ".join(root_rule_names))
+        else:
+            # fallback dummy to keep grammar compilable
+            self._lines.insert(1, "start ::= <dummy_root>")
+            self._write_rule("<dummy_root>", '"DUMMY"')
 
-        # ──来自 raw_*.jsonl 的 TOKEN / 枚举──────────────────
-        self._emit_from_raw()
-
-        # ──落盘──────────────────────────────────────────────
-        path = self.out_dir / "autosar.gbnf"
-        path.write_text("\n".join(self.lines), encoding="utf-8")
-        return path
+    # ---------------------------------------------------------------------
 
     def _emit_from_raw(self) -> None:
-        """raw_classes / raw_attributes / raw_enums → TOKEN + 枚举规则"""
+        """Walk raw JSONL sources (classes & attributes) to populate grammar."""
+        raw_dir = self.raw_dir
 
-        def _iter_jsonl(fp: pathlib.Path):
-            if not fp.exists():
-                return []
-            for ln in fp.read_text(encoding="utf-8").splitlines():
-                if ln.strip():
-                    yield json.loads(ln)
-
-        emitted: set[str] = {
-            normalize(tag).upper() for tag in self.roots
-        }
-
-        # -- 1) enumId → literals (≤64) ---------------------
-        enum_map: dict[int, list[str]] = {}
-        for rec in _iter_jsonl(self.raw_dir / "raw_enums.jsonl"):
-            vals = rec.get("values") or []
-            if not (vals and len(vals) <= MAX_ENUM):
+        # -------- ENUM TABLE ------------------------------------------------
+        enum_map: Dict[int, List[str]] = {}
+        for rec in _iter_jsonl(raw_dir / "raw_enums.jsonl"):
+            values = rec.get("values") or []
+            if not (values and len(values) <= _MAX_ENUM):
                 continue
-            # 兼容 enumId / enum_id 两种拼写
-            eid_raw = rec.get("enumId", rec.get("enum_id"))
+            eid = rec.get("enumId", rec.get("enum_id"))
             try:
-                eid = int(eid_raw)
+                enum_map[int(eid)] = values
             except (TypeError, ValueError):
                 continue
-            enum_map[eid] = vals
 
-        # -- 2) Class & Attribute tags + 枚举值 --------------
-        def _emit_tag(tag: str) -> str:
+        # -------- CLASSES (tags only) --------------------------------------
+        for rec in _iter_jsonl(raw_dir / "raw_classes.jsonl"):
+            tag = rec.get("xml_tag")
+            if not tag:
+                continue
             slug = normalize(tag)
-            tok = slug.upper()
-            if tok not in emitted:
-                self.lines.append(f'{tok}: "{tag}"')
-                self.lines.append(f"<{slug}> ::= {tok}")
-                emitted.add(tok)
-            return slug
+            self._write_token(slug.upper(), tag)
+            self._write_rule(f"<{slug}>", slug.upper())
 
-        # 2a. classes
-        for rec in _iter_jsonl(self.raw_dir / "raw_classes.jsonl"):
-            if tag := rec.get("xml_tag"):
-                _emit_tag(tag)
+        # -------- ATTRIBUTES (XML attrs + elems) ---------------------------
+        for rec in _iter_jsonl(raw_dir / "raw_attributes.jsonl"):
+            tag = rec.get("xml_tag")
+            if not tag:
+                continue
 
-            # 2b. attributes (& allowedValues / enum literals)
-            for rec in _iter_jsonl(self.raw_dir / "raw_attributes.jsonl"):
-                # ---------- A1: wrapper 处理 -----------------------------
-                if (wtag := rec.get("xml_wrapper_tag")):
-                    _emit_tag(wtag)
+            is_attr = bool(rec.get("isXmlAttr", False))
+            slug = f"attr_{normalize(tag)}" if is_attr else normalize(tag)
+            token = (f"ATTR_{normalize(tag).upper()}" if is_attr else slug.upper())
+            literal = f"@{tag}" if is_attr else tag
 
-                tag = rec.get("xml_tag")
-                if not tag:
-                    continue
+            # TOKEN + wrapper rule (avoid duplicates) ---------------------
+            self._write_token(token, literal)
+            self._write_rule(f"<{slug}>", token)
 
-                # XML 属性处理
-                is_xml_attr = rec.get("isXmlAttr", False)
-                if is_xml_attr:
-                    slug = f"attr_{normalize(tag)}"
-                    tok = f"ATTR_{normalize(tag).upper()}"
-                else:
-                    slug = _emit_tag(tag)
-                    tok = slug.upper()
+            # Optional wrapper tag ---------------------------------------
+            if rec.get("xml_wrapper_tag"):
+                wrapper = rec["xml_wrapper_tag"]
+                w_slug = normalize(wrapper)
+                self._write_token(w_slug.upper(), wrapper)
+                self._write_rule(f"<{w_slug}>", w_slug.upper())
 
-                # ---------- A2: 枚举值处理（优先 allowedValues）----
-                vals: list[str] = []
+            # Enumerations (allowedValues or enumId) ---------------------
+            enum_vals: List[str] = []
+            if rec.get("allowedValues"):
+                enum_vals = rec["allowedValues"][:_MAX_ENUM]
+            else:
+                try:
+                    eid = int(rec.get("typeId", -1))
+                except (TypeError, ValueError):
+                    eid = -1
+                enum_vals = enum_map.get(eid, [])
 
-                # 优先使用 allowedValues
-                if rec.get("allowedValues") and len(rec["allowedValues"]) <= MAX_ENUM:
-                    vals = rec["allowedValues"]
-                # 如果没有 allowedValues，再尝试从 enum 表查找
-                elif not rec.get("allowedValues"):
-                    try:
-                        tid = int(rec.get("typeId", -1))
-                    except (TypeError, ValueError):
-                        tid = -1
-                    if tid in enum_map:
-                        vals = enum_map[tid]
+            self._add_enum_values(slug, enum_vals)
 
-                if vals:
-                    if is_xml_attr:
-                        # XML 属性的枚举值规则
-                        value_rule = f"<{slug}_value>"
-                        alts = " | ".join(f'"{v}"' for v in sorted(vals))
-                        self.lines.append(f'{tok}: "@{tag}"')  # @DEST
-                        self.lines.append(f"<{slug}> ::= {tok}")
-                        self.lines.append(f"{value_rule} ::= {alts}")
-                    else:
-                        # 普通元素的枚举值规则
-                        self._add_value_rule(slug, vals)
+    # ---------------------------------------------------------------------
 
-        # --- 枚举规则（已去重） ------------------------------------
-        for rule_name, literals in self.value_rules.items():
+    def _flush_enum_rules(self) -> None:
+        """Emit the aggregated <slug_value> ::= "A" | "B" rules."""
+        for rule, literals in sorted(self._value_pool.items()):
+            if not literals:
+                continue
             alts = " | ".join(f'"{v}"' for v in sorted(literals))
-            self.lines.append(f"{rule_name} ::= {alts}")
+            self._write_rule(rule, alts)
 
-    # ------------------------------------------------------------
+    # ---------------------------------------------------------------------
+
+    def _sanitize_zero_width_regex(self) -> None:
+        """Replace * / {0,} / .* patterns inside regex TOKEN definitions."""
+        for i, line in enumerate(self._lines):
+            if ": " not in line:
+                continue
+            token, body = line.split(": ", 1)
+            if body.startswith("/") and self._STAR_PATTERN.search(body):
+                # naive but safe – turn * into +, {0,} into {1,}, .* into .+
+                body = self._STAR_PATTERN.sub(lambda m: "+" if "*" in m.group(0) else "{1,}" if "0," in m.group(0) else ".+", body)
+                self._lines[i] = f"{token}: {body}"
+
+    # ---------------------------------------------------------------------
+    #  Public CLI wrapper ----------------------------------------------------
+    # ---------------------------------------------------------------------
+
     @staticmethod
     def run(
-            raw_dir: str | pathlib.Path,
-            out_path: str | pathlib.Path,
-            *,
-            roots: list[str] | None = None,
-    ):
-        """CLI 入口：raw_*.jsonl → autosar.gbnf"""
-        raw_dir = pathlib.Path(raw_dir)
-        out_dir = pathlib.Path(out_path) if out_path.suffix == "" else pathlib.Path(out_path).parent
-        return GrammarExporter(out_dir, roots=roots, raw_dir=raw_dir).export()
-
+        raw_dir: str | pathlib.Path,
+        out_path: str | pathlib.Path,
+        *,
+        roots: List[str] | None = None,
+    ) -> pathlib.Path:
+        out_dir = pathlib.Path(out_path)
+        if out_dir.suffix:
+            # If filename with suffix supplied, take its parent as dir
+            out_dir = out_dir.parent
+        exporter = GrammarExporter(out_dir, roots=roots, raw_dir=raw_dir)
+        return exporter.export()

@@ -1,45 +1,93 @@
-# config/main_config.yaml - 支持真实约束传输
+# config/main_config.yaml - 支持约束策略选择
 project:
-  name: "AUTOSAR vLLM Client with Real Constraints"
-  version: "2.0.0"
-  description: "Local client for AUTOSAR XML generation with real-time constraints"
+  name: "AUTOSAR vLLM Client with Multiple Constraint Strategies"
+  version: "3.0.0"
+  description: "Local client for AUTOSAR XML generation with configurable constraints"
 
-# 云端服务配置 - 使用增强代理
+# 云端服务配置
 cloud_service:
-  internal_endpoint: "http://117.50.190.248:8000"  # 直接使用vLLM
-  api_type: "vllm_native"  # 改为原生vLLM API
-  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+  internal_endpoint: "http://117.50.173.128:8000"
+  api_type: "enhanced"
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
   timeout: 120
-  max_retries: 2
-  retry_delay: 2
+  max_retries: 3
+  retry_delay: 5
 
-# 本地约束和验证配置
+# 🔥 新增：约束策略配置
+constraint_strategy:
+  # 可选值: "gbnf_priority", "iterative_fsm", "hybrid", "unconstrained"
+  mode: "gbnf_priority"
+
+  # GBNF优先策略配置
+  gbnf_priority:
+    enabled: true
+    use_enhanced_grammar: true
+    temperature: 0.2
+    max_tokens: 8000
+    stop_conditions: ["</APPLICATION-SW-COMPONENT-TYPE>"]
+
+  # 迭代FSM策略配置
+  iterative_fsm:
+    enabled: true
+    max_iterations: 8
+    tokens_per_step: 100
+    step_max_tokens: 200
+    temperature: 0.1
+    continue_threshold: 5  # 最小输出长度才继续下一步
+
+  # 混合策略配置
+  hybrid:
+    enabled: true
+    primary_method: "gbnf"  # "gbnf" 或 "fsm"
+    fallback_method: "fsm"  # "fsm" 或 "gbnf"
+    conflict_resolution: "primary_wins"  # "primary_wins" 或 "merge"
+    temperature: 0.15
+    max_tokens: 8000
+
+# 生成参数配置
+generation:
+  default_max_tokens: 8000
+  default_temperature: 0.3
+  default_top_p: 0.9
+  default_frequency_penalty: 0.1
+  default_presence_penalty: 0.1
+
+# 约束引用配置
+constraint_references:
+  fsm_ref: "autosar"
+  gbnf_ref: "autosar"
+
+# 调试配置
+debug:
+  enabled: false  # 🔥 关闭调试文件输出
+  save_raw_outputs: false
+  save_debug_files: false
+  console_logging: true
+
+# 本地验证配置
 local_validation:
-  enabled: true
-  validation_level: "full"
+  enabled: false
+  validation_level: "simple"
   artifacts_dir: "./src/constraint_graph/artifacts"
 
-# 约束传输配置 - 优化参数
+# 约束传输配置（兼容性保留）
 constraint_transmission:
-  include_fsm: true
-  include_gbnf: true
-  include_allowed_tokens: true
-  max_tokens_per_request: 200  # 优化性能
-  compress_constraints: true
-  gbnf_compression_threshold: 50000  # 50KB
+  include_fsm: false
+  include_gbnf: false
+  include_allowed_tokens: false
 
-# 约束级别配置
+# 约束级别配置（兼容性保留）
 constraint_levels:
   simple:
     gbnf_enabled: false
     fsm_enabled: false
     description: "No constraints, fastest generation"
-  
+
   mixed:
     gbnf_enabled: true
     fsm_enabled: true
-    description: "Balanced constraints and performance"
-  
+    description: "Balanced constraints using configured strategy"
+
   full:
     gbnf_enabled: true
     fsm_enabled: true
@@ -48,16 +96,13 @@ constraint_levels:
 
 # 性能配置
 performance:
-  concurrent_requests: 2
-  request_timeout: 120
-  constraint_cache_size: 50
-  
+  concurrent_requests: 1
+  request_timeout: 180  # 增加超时以支持迭代策略
+  constraint_cache_size: 10
+
 # 监控配置
 monitoring:
-  enabled: true
-  metrics_file: "./logs/constraint_metrics.json"
-  track_constraint_effectiveness: true
-  detailed_timing: true
+  enabled: false
 
 # 日志配置
 logging:
@@ -65,3 +110,103 @@ logging:
   file: "./logs/autosar_constraints.log"
   console: true
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+## config/main_config.yaml - 支持真实约束传输
+#project:
+#  name: "AUTOSAR vLLM Client with Real Constraints"
+#  version: "2.0.0"
+#  description: "Local client for AUTOSAR XML generation with real-time constraints"
+#
+## 云端服务配置 - 使用增强代理----70b模型
+##cloud_service:
+##  internal_endpoint: "http://117.50.190.248:8000"  # 直接使用vLLM
+##  api_type: "vllm_native"  # 改为原生vLLM API
+##  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+##  timeout: 120
+##  max_retries: 2
+##  retry_delay: 2
+#
+## 云端服务配置 - 使用增强代理----32b模型
+#cloud_service:
+#  internal_endpoint: "http://117.50.173.128:8002"  # 直接使用vLLM
+#  api_type: "enhanced"  # 改为原生vLLM API
+#  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+#  timeout: 120
+#  max_retries: 2
+#  retry_delay: 2
+#
+## 本地约束和验证配置
+#local_validation:
+#  enabled: true
+#  validation_level: "full"
+#  artifacts_dir: "./src/constraint_graph/artifacts"
+#
+## 约束传输配置 - 优化参数
+#constraint_transmission:
+#  include_fsm: true
+#  include_gbnf: true
+#  include_allowed_tokens: true
+#  max_tokens_per_request: 200  # 优化性能
+#  compress_constraints: true
+#  gbnf_compression_threshold: 50000  # 50KB
+#
+## 约束级别配置
+#constraint_levels:
+#  simple:
+#    gbnf_enabled: false
+#    fsm_enabled: false
+#    description: "No constraints, fastest generation"
+#
+#  mixed:
+#    gbnf_enabled: true
+#    fsm_enabled: true
+#    description: "Balanced constraints and performance"
+#
+#  full:
+#    gbnf_enabled: true
+#    fsm_enabled: true
+#    domain_constraints: true
+#    description: "Maximum constraint enforcement"
+#
+## 性能配置
+#performance:
+#  concurrent_requests: 2
+#  request_timeout: 120
+#  constraint_cache_size: 50
+#
+## 监控配置
+#monitoring:
+#  enabled: true
+#  metrics_file: "./logs/constraint_metrics.json"
+#  track_constraint_effectiveness: true
+#  detailed_timing: true
+#
+## 日志配置
+#logging:
+#  level: "INFO"
+#  file: "./logs/autosar_constraints.log"
+#  console: true
+#  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+# 云端部署实例
+## 设置环境变量忽略OpenCV警告
+#export OPENCV_LOG_LEVEL=ERROR
+#
+## 重新启动vLLM
+#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
+#  --port 8000 \
+#  --tensor-parallel-size 8 \
+#  --max-model-len 88048 \
+#  --guided-decoding-backend outlines \
+#  --gpu-memory-utilization 0.85 \
+#  --trust-remote-code
+
+#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
+#  --port 8001 \
+#  --tensor-parallel-size 4 \
+#  --max-model-len 65168 \
+#  --guided-decoding-backend outlines \
+#  --gpu-memory-utilization 0.85 \
+#  --trust-remote-code

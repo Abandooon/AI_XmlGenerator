@@ -470,8 +470,9 @@ def compile_raw(
             row = json.loads(ln)
             pid = row["classId"]
 
-            # **关键修复：严格过滤XML属性**
-            if row.get("isXmlAttr", False):
+            # -- 新逻辑：除 DEST 以外的属性继续跳过 -------------------
+            is_dest_attr = bool(row.get("isXmlAttr")) and row["xml_tag"] == "DEST"
+            if row.get("isXmlAttr", False) and not is_dest_attr:
                 continue
 
             xml_tag = row.get("xml_tag")
@@ -502,7 +503,11 @@ def compile_raw(
 
             # **处理枚举值**
             allowed_values = row.get("allowedValues", [])
-            if not allowed_values and type_id in enum_map:
+            if is_dest_attr and not allowed_values:
+                # DEST 枚举来自 typeId → raw_enums
+                allowed_values = enum_map.get(type_id, [])
+            elif not is_dest_attr and not allowed_values and type_id in enum_map:
+                # 普通文本节点可选值（用于 GBNF 约束）
                 allowed_values = enum_map[type_id]
 
             child_info = {
@@ -513,7 +518,8 @@ def compile_raw(
                 'max_occurs': row.get("maxOccurs", 1),
                 'min_occurs': row.get("minOccurs", 1),
                 'attribute_class': attribute_class,
-                'allowed_values': allowed_values if allowed_values and len(allowed_values) <= MAX_ENUM else None
+                'is_dest_attr': is_dest_attr,     # ← ★ 新增
+                'allowed_values': allowed_values if allowed_values and 0 < len(allowed_values) <= MAX_ENUM else None
             }
             children[pid].append(child_info)
 
@@ -645,11 +651,12 @@ def compile_raw(
 
                 trans.setdefault(wrapper_state, {})
 
+                is_dest_attr = child_info.get('is_dest_attr', False)
                 if allowed_values:
-                    if is_autosar_type_constraint(allowed_values):
+                    if is_dest_attr:                 # ← 只对 DEST 枚举建 edge
                         # **类型约束枚举：在FSM中处理**
-                        for type_constraint in allowed_values:
-                            norm_type = utils.normalize(type_constraint)
+                        for literal in allowed_values:
+                            norm_type = utils.normalize(literal)
                             type_state = f"{wrapper_state} {norm_type}"
                             if norm_type not in trans[wrapper_state]:
                                 trans[wrapper_state][norm_type] = type_state
@@ -663,7 +670,7 @@ def compile_raw(
                                 if type_cid and type_cid in children and depth + 2 < MAX_DEPTH:
                                     q.append((type_state, depth + 2))
                     else:
-                        # **值约束枚举：交给GBNF处理**
+                        # 普通文本枚举：交给 GBNF，FSM 不扩展
                         accepting.add(wrapper_state)
                         continue
                 else:
@@ -672,6 +679,7 @@ def compile_raw(
                     if child_tag not in trans[wrapper_state]:
                         trans[wrapper_state][child_tag] = child_state
                         state_depth[child_state] = depth + 2
+                        trans.setdefault(child_state, {})
 
                         # 自环处理
                         if max_occurs != 1:
@@ -682,11 +690,12 @@ def compile_raw(
                             q.append((child_state, depth + 2))
             else:
                 # 没有wrapper的直接连接
+                is_dest_attr = child_info.get('is_dest_attr', False)
                 if allowed_values:
-                    if is_autosar_type_constraint(allowed_values):
+                    if is_dest_attr:
                         # **类型约束枚举：在FSM中处理**
-                        for type_constraint in allowed_values:
-                            norm_type = utils.normalize(type_constraint)
+                        for literal  in allowed_values:
+                            norm_type = utils.normalize(literal)
                             type_state = f"{state} {norm_type}" if state else norm_type
                             if norm_type not in trans[state]:
                                 trans[state][norm_type] = type_state
@@ -712,6 +721,7 @@ def compile_raw(
                         trans[state][child_tag] = child_state
                         state_depth[child_state] = depth + 1
                         state_has_children = True
+                        trans.setdefault(child_state, {})
 
                         # 自环处理
                         if max_occurs != 1:
