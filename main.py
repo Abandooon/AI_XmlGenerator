@@ -76,7 +76,7 @@ async def main():
             response = await client.generate_and_validate_full(
                 prompt=case["prompt"],
                 autosar_context=case["autosar_context"],
-                max_tokens=2500,
+                max_tokens=8000,
                 temperature=0.3,
                 top_p=0.9,
                 frequency_penalty=0.1,

@@ -1,4 +1,4 @@
-# config/main_config.yaml - 支持约束策略选择
+# config/main_config.yaml - 支持约束策略选择和提示词配置
 project:
   name: "AUTOSAR vLLM Client with Multiple Constraint Strategies"
   version: "3.0.0"
@@ -13,10 +13,170 @@ cloud_service:
   max_retries: 3
   retry_delay: 5
 
-# 🔥 新增：约束策略配置
+# 🔥 新增：提示词配置 - 便于调试和实验
+prompts:
+  # 基础组件级生成提示词
+  component_level: |
+    Generate XML based on the following AUTOSAR APPLICATION-SW-COMPONENT-TYPE example. 
+    Note that the tags may not match the actual ones. Align the tags and correct them according to your allowtoken. 
+    They must be consistent with the design concept and values of the example XML and must comply with the tokens specified by guided_grammar and guided_choice.
+    If there are no errors in the tags, generate them as is without modification. 
+    Requirements:
+    - Start with <APPLICATION-SW-COMPONENT-TYPE> tag
+    - End with </APPLICATION-SW-COMPONENT-TYPE>
+
+    Example XML: 
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>ASW_COM</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE UUID="9291d2d6-7dd8-4794-8dc5-562c275f9661">
+              <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE UUID="2a195d0d-008f-4a55-b98f-64963b9ca4f5">
+              <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE UUID="62c54b76-8040-4b43-9744-d1cdfe01d436">
+              <SHORT-NAME>PPort_MCU03_NRF_IdcSamp</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE UUID="7b1a7fbc-00e6-4b56-8184-2fee13611496">
+              <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>
+              <REQUIRED-COM-SPECS>
+                <NONQUEUED-RECEIVER-COM-SPEC>
+                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd</DATA-ELEMENT-REF>
+                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
+                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
+                </NONQUEUED-RECEIVER-COM-SPEC>
+              </REQUIRED-COM-SPECS>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_TqCmd</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE UUID="15f7188e-ec5b-4256-9459-6442d0995495">
+              <SHORT-NAME>RPort_HCU01_Shift</SHORT-NAME>
+              <REQUIRED-COM-SPECS>
+                <NONQUEUED-RECEIVER-COM-SPEC>
+                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift</DATA-ELEMENT-REF>
+                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
+                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
+                </NONQUEUED-RECEIVER-COM-SPEC>
+              </REQUIRED-COM-SPECS>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_Shift</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE UUID="705f7fa6-1d61-43f7-9166-f1abbf8542fb">
+              <SHORT-NAME>RPort_HCU02_Poweroff</SHORT-NAME>
+              <REQUIRED-COM-SPECS>
+                <NONQUEUED-RECEIVER-COM-SPEC>
+                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff</DATA-ELEMENT-REF>
+                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
+                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
+                </NONQUEUED-RECEIVER-COM-SPEC>
+              </REQUIRED-COM-SPECS>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU02_Poweroff</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>SwcInternalBehavior</SHORT-NAME>
+              <EVENTS>
+                <TIMING-EVENT UUID="9d816fd8-a6fb-4e66-afa0-2e9954576bf1">
+                  <SHORT-NAME>TE_SWC_COM_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/COM_SWC/ASW_COM/SwcInternalBehavior/RE_COM_SWC</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY UUID="679af6ce-2509-43d9-8c5d-1ec0e2075cb3">
+                  <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
+                  <DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                    <VARIABLE-ACCESS UUID="36937116-7e5e-4b25-b88a-72b37c43ae29">
+                      <SHORT-NAME>DRPA_HCU01_Shift_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS UUID="d9a7cd2f-0afd-44b6-a48d-cb7ff83342d2">
+                      <SHORT-NAME>DRPA_MCU01_CurCntTor_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_TqCmd</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS UUID="8202214a-a31c-4802-a9f1-55ec3026a385">
+                      <SHORT-NAME>DRPA_HCU01_SpeedCmd_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU02_Poweroff</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS UUID="7ae1444a-006b-405f-9d2d-632941debf07">
+                      <SHORT-NAME>DSP_MCU01_CurCntTor_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU03_NRF_IdcSamp</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS UUID="44ae5e27-5dd4-4e3b-ae5e-ffc77363d7dc">
+                      <SHORT-NAME>DSP_MCU01_EmergShutDown_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU01_EmergShutDown</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS UUID="92a46fc8-7e94-4a94-8a67-86654249869d">
+                      <SHORT-NAME>DSP_MCU01_Motorspd_0</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU02_MaxTor</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <SYMBOL>RE_COM_SWC_func</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+    
+    Generate complete XML now:
+
+  # 实验性：带示例XML的提示词
+  with_example_xml: |
+    Based on the following task: {task}
+    
+    Use FSM and GBNF constraints to align and correct the XML structure.
+    Focus on tag alignment and structural correction.
+    
+    Expected XML example:
+    {example_xml}
+    
+    Generate corrected AUTOSAR component:
+
+  # 调试用简化提示词
+  debug_simple: |
+    Task: {task}
+    Generate AUTOSAR APPLICATION-SW-COMPONENT-TYPE with proper structure.
+    Use constraints for tag alignment and correction.
+
+# 🔥 约束策略配置
 constraint_strategy:
   # 可选值: "gbnf_priority", "iterative_fsm", "hybrid", "unconstrained"
-  mode: "gbnf_priority"
+  mode: "unconstrained"
 
   # GBNF优先策略配置
   gbnf_priority:
@@ -33,14 +193,14 @@ constraint_strategy:
     tokens_per_step: 100
     step_max_tokens: 200
     temperature: 0.1
-    continue_threshold: 5  # 最小输出长度才继续下一步
+    continue_threshold: 5
 
   # 混合策略配置
   hybrid:
     enabled: true
-    primary_method: "gbnf"  # "gbnf" 或 "fsm"
-    fallback_method: "fsm"  # "fsm" 或 "gbnf"
-    conflict_resolution: "primary_wins"  # "primary_wins" 或 "merge"
+    primary_method: "gbnf"
+    fallback_method: "fsm"
+    conflict_resolution: "primary_wins"
     temperature: 0.15
     max_tokens: 8000
 
@@ -57,10 +217,17 @@ constraint_references:
   fsm_ref: "autosar"
   gbnf_ref: "autosar"
 
+# 🔥 输出配置
+output:
+  save_raw_outputs: true
+  outputs_dir: "./outputs"
+  create_timestamp_dirs: true
+  save_intermediate_steps: false
+
 # 调试配置
 debug:
-  enabled: false  # 🔥 关闭调试文件输出
-  save_raw_outputs: false
+  enabled: false
+  save_raw_outputs: true  # 🔥 强制保存原始输出
   save_debug_files: false
   console_logging: true
 
@@ -69,6 +236,13 @@ local_validation:
   enabled: false
   validation_level: "simple"
   artifacts_dir: "./src/constraint_graph/artifacts"
+
+# 🔥 移除后处理配置
+post_processing:
+  enabled: false  # 🔥 禁用所有后处理
+  xml_wrapping: false
+  fallback_templates: false
+  structure_completion: false
 
 # 约束传输配置（兼容性保留）
 constraint_transmission:
@@ -97,7 +271,7 @@ constraint_levels:
 # 性能配置
 performance:
   concurrent_requests: 1
-  request_timeout: 180  # 增加超时以支持迭代策略
+  request_timeout: 180
   constraint_cache_size: 10
 
 # 监控配置

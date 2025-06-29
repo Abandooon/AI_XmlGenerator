@@ -738,3 +738,171 @@ constraints_applied.method
 2025-06-29 00:54:25,111 - src.client.full_client - INFO - FSM ref: None, GBNF ref: autosar
 2025-06-29 00:54:25,111 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
 2025-06-29 00:54:27,879 - src.client.full_client - INFO - Received generation result: 415 chars
+2025-06-29 22:41:25,314 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 22:41:25,322 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 22:41:25,325 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-29 22:41:25,326 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-29 22:41:25,326 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - Built enhanced request e1e71d6e-203f-403e-a0ad-e83a7e911f3a with strategy: gbnf_priority
+2025-06-29 22:41:25,326 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:41:25,326 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:41:25,326 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:41:31,922 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:41:31,924 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:41:31,925 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-29 22:41:31,925 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:41:31,925 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-29 22:41:31,925 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:41:31,925 - src.client.constraint_sender - INFO - Built enhanced request 738103d3-4102-4571-9273-532d244ed1bf with strategy: gbnf_priority
+2025-06-29 22:41:31,925 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:41:31,925 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:41:31,925 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:41:32,107 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:41:32,107 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:41:32,108 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-29 22:44:24,790 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 22:44:24,793 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 22:44:24,796 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-29 22:44:24,796 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-29 22:44:24,796 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - Built enhanced request 9fba1c8c-6340-48b8-ad30-397402f2fb55 with strategy: unconstrained
+2025-06-29 22:44:24,796 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:44:24,796 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:44:24,797 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:44:24,876 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:44:24,877 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:44:24,877 - __main__ - ERROR - Generation 1 failed: Original GBNF engine not available for gbnf_priority strategy
+2025-06-29 22:44:24,877 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:44:24,877 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:44:24,877 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:44:24,877 - src.client.constraint_sender - INFO - Built enhanced request 96c3f255-88d3-4560-9370-98e64d349e35 with strategy: unconstrained
+2025-06-29 22:44:24,877 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:44:24,878 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:44:24,878 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:44:24,958 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:44:24,958 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:44:24,958 - __main__ - ERROR - Generation 2 failed: Original GBNF engine not available for gbnf_priority strategy
+2025-06-29 22:44:50,566 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 22:44:50,569 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 22:44:50,572 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-29 22:44:50,572 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-29 22:44:50,572 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - Built enhanced request cced0af1-966d-4415-b8a0-cb78e93c9069 with strategy: unconstrained
+2025-06-29 22:44:50,572 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:44:50,573 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:44:50,573 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:44:50,652 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:44:50,652 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:44:50,652 - __main__ - ERROR - Generation 1 failed: Original GBNF engine not available for gbnf_priority strategy
+2025-06-29 22:44:50,653 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:44:50,653 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:44:50,653 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:44:50,653 - src.client.constraint_sender - INFO - Built enhanced request 4e40228e-3d8a-4fa2-9880-4aed0b92a4a8 with strategy: unconstrained
+2025-06-29 22:44:50,653 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:44:50,653 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:44:50,653 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:44:50,831 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:44:50,831 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:44:50,831 - __main__ - ERROR - Generation 2 failed: Original GBNF engine not available for gbnf_priority strategy
+2025-06-29 22:50:41,720 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 22:50:41,723 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 22:50:41,726 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 22:50:41,726 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-29 22:50:41,726 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-29 22:50:41,726 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 22:50:41,726 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:50:41,726 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:50:41,727 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:50:41,727 - src.client.constraint_sender - INFO - Built enhanced request c13f08fb-fa99-48af-8860-17d1e4a68c4c with strategy: unconstrained
+2025-06-29 22:50:41,727 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:50:41,727 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:50:41,727 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:51:12,965 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:51:12,966 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:51:12,966 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_225112_c13f08fb\raw_output_c13f08fb.txt
+2025-06-29 22:51:12,967 - src.client.full_client - INFO - Generation successful: 3451 chars
+2025-06-29 22:51:12,967 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-29 22:51:12,970 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:51:12,970 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:51:12,970 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 2500, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:51:12,970 - src.client.constraint_sender - INFO - Built enhanced request 4c35facf-6573-4adb-98b9-dbb1f909a92c with strategy: unconstrained
+2025-06-29 22:51:12,970 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:51:12,970 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:51:12,970 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:51:44,815 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:51:44,815 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:51:44,815 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_225144_4c35facf\raw_output_4c35facf.txt
+2025-06-29 22:51:44,816 - src.client.full_client - INFO - Generation successful: 3528 chars
+2025-06-29 22:51:44,816 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-29 22:55:14,344 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 22:55:14,347 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 22:55:14,351 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-29 22:55:14,351 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-29 22:55:14,351 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - Built enhanced request bbfbe955-9ec6-4e85-9e8d-25142d1db5c1 with strategy: unconstrained
+2025-06-29 22:55:14,351 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:55:14,351 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:55:14,351 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:55:57,631 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:55:57,632 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:55:57,633 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_225557_bbfbe955\raw_output_bbfbe955.txt
+2025-06-29 22:55:57,633 - src.client.full_client - INFO - Generation successful: 5125 chars
+2025-06-29 22:55:57,633 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-29 22:55:57,635 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 22:55:57,635 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 22:55:57,635 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 22:55:57,635 - src.client.constraint_sender - INFO - Built enhanced request 288a254d-afae-4ad3-9545-3b30367b7c3c with strategy: unconstrained
+2025-06-29 22:55:57,635 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8337
+2025-06-29 22:55:57,635 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 22:55:57,636 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 22:57:03,218 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 22:57:03,286 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 22:57:03,324 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_225703_288a254d\raw_output_288a254d.txt
+2025-06-29 22:57:03,324 - src.client.full_client - INFO - Generation successful: 7895 chars
+2025-06-29 22:57:03,324 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-29 23:03:05,271 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 65434 characters
+2025-06-29 23:03:05,274 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-29 23:03:05,278 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-29 23:03:05,278 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-29 23:03:05,278 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - Built enhanced request 26029a23-2de8-431b-9f2e-35ebee4572d1 with strategy: unconstrained
+2025-06-29 23:03:05,278 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-29 23:03:05,278 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 23:03:05,278 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 23:04:03,392 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 23:04:03,486 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 23:04:03,487 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_230403_26029a23\raw_output_26029a23.txt
+2025-06-29 23:04:03,487 - src.client.full_client - INFO - Generation successful: 7261 chars
+2025-06-29 23:04:03,487 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-29 23:04:03,489 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-29 23:04:03,489 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-29 23:04:03,489 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-29 23:04:03,489 - src.client.constraint_sender - INFO - Built enhanced request 820b5d8b-9520-4099-8aa3-2d16e6c5ebc5 with strategy: unconstrained
+2025-06-29 23:04:03,489 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-29 23:04:03,489 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-29 23:04:03,489 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-29 23:04:36,876 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-29 23:04:36,876 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-29 23:04:36,876 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_230436_820b5d8b\raw_output_820b5d8b.txt
+2025-06-29 23:04:36,876 - src.client.full_client - INFO - Generation successful: 3726 chars
+2025-06-29 23:04:36,877 - src.client.full_client - INFO - Strategy used: unconstrained
