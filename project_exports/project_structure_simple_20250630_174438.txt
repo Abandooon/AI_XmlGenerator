@@ -1,0 +1,55 @@
+AI_XmlGenerator/
+├── config/
+│   └── main_config.yaml (16KB)
+├── examples/
+│   ├── complex_autosar.xml (2KB)
+│   └── sample_autosar.xml (1KB)
+├── src/
+│   ├── client/
+│   │   ├── cloud_client.py (6KB)
+│   │   ├── constraint_preparer.py (7KB)
+│   │   ├── constraint_sender.py (8KB)
+│   │   └── full_client.py (8KB)
+│   │   ├── vllm_adapter.py (6KB)
+│   ├── constraint_graph/
+│   │   ├── artifacts/
+│   │   │   ├── grammar/
+│   │   │   │   ├── autosar.gbnf (53KB)
+│   │   │   ├── raw/
+│   │   │   │   ├── autosar.fsm (1086KB)
+│   │   │   │   ├── autosar_allowed_tokens.py (1KB)
+│   │   │   │   ├── meta_roots.json (13B)
+│   │   │   │   ├── raw_attributes.jsonl (635KB)
+│   │   │   │   ├── raw_classes.jsonl (39KB)
+│   │   │   │   └── raw_constraints.jsonl (340KB)
+│   │   │   │   ├── raw_enums.jsonl (75KB)
+│   │   │   ├── schema/
+│   │   │   │   └── AUTOSAR_4-2-2.xsd (4755KB)
+│   │   │   ├── shapes/
+│   │   │   │   └── autosar_shapes.ttl (7KB)
+│   │   │   ├── smt/
+│   │   │   │   └── constraints.smt2 (4KB)
+│   ├── kg_builder/
+│   ├── utils/
+│   │   ├── logger.py (1KB)
+│   └── validation/
+│       ├── constraints/
+│       │   └── __init__.py (0B)
+│       │   ├── smt_validator.py (6KB)
+│       ├── orchestrator/
+│       │   └── __init__.py (0B)
+│       │   ├── validation_orchestrator.py (13KB)
+│       ├── semantic/
+│       │   └── __init__.py (0B)
+│       │   ├── shacl_validator.py (4KB)
+│       ├── structure/
+│       │   └── __init__.py (0B)
+│       │   ├── xsd_validator.py (12KB)
+│       ├── __init__.py (0B)
+│       └── install_z3.py (8KB)
+│       ├── local_validator.py (12KB)
+├── xml_instance/
+│   └── ASW_COM.arxml (8KB)
+├── main.py (9KB)
+└── setup_validation.py (7KB)
+├── validation_main.py (5KB)

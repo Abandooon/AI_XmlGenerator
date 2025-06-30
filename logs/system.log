@@ -906,3 +906,945 @@ constraints_applied.method
 2025-06-29 23:04:36,876 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250629_230436_820b5d8b\raw_output_820b5d8b.txt
 2025-06-29 23:04:36,876 - src.client.full_client - INFO - Generation successful: 3726 chars
 2025-06-29 23:04:36,877 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-30 08:47:07,955 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:47:07,959 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:47:07,963 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:47:07,963 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: unconstrained
+2025-06-30 08:47:07,963 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: unconstrained
+2025-06-30 08:47:07,963 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:47:07,964 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:47:07,964 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-30 08:47:07,964 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:47:07,964 - src.client.constraint_sender - INFO - Built enhanced request e5d634a2-5924-449b-8564-1ce1a96afb3a with strategy: unconstrained
+2025-06-30 08:47:07,964 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:47:07,964 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:47:07,964 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:48:13,273 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:48:16,390 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:48:16,391 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_084816_e5d634a2\raw_output_e5d634a2.txt
+2025-06-30 08:48:16,426 - src.client.full_client - INFO - Generation successful: 7329 chars
+2025-06-30 08:48:16,426 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-30 08:48:16,429 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:48:16,429 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-06-30 08:48:16,429 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:48:16,429 - src.client.constraint_sender - INFO - Built enhanced request 6f1c9101-a3d7-4f40-a8ec-941dc6b984a8 with strategy: unconstrained
+2025-06-30 08:48:16,429 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:48:16,430 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:48:16,430 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:48:50,279 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:48:50,301 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:48:50,302 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_084850_6f1c9101\raw_output_6f1c9101.txt
+2025-06-30 08:48:50,302 - src.client.full_client - INFO - Generation successful: 3721 chars
+2025-06-30 08:48:50,302 - src.client.full_client - INFO - Strategy used: unconstrained
+2025-06-30 08:50:53,944 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:50:53,947 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:50:53,950 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:50:53,950 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 08:50:53,950 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 08:50:53,950 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:50:53,950 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:50:53,950 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:50:53,950 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:50:53,951 - src.client.constraint_sender - INFO - Built enhanced request c098e56b-7a2d-4f23-b422-bc432d116d68 with strategy: gbnf_priority
+2025-06-30 08:50:53,951 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:50:53,951 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:50:53,951 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:53:22,069 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:53:22,072 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:53:22,075 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 08:53:22,075 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 08:53:22,075 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - Built enhanced request bb7219d4-84ef-4559-9f28-a01393164542 with strategy: gbnf_priority
+2025-06-30 08:53:22,075 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:53:22,075 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:53:22,075 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:53:23,173 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:53:23,173 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:53:23,173 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 08:53:23,173 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:53:23,174 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:53:23,174 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:53:23,174 - src.client.constraint_sender - INFO - Built enhanced request 1e1adf02-411e-4b1f-8da2-4780073211af with strategy: gbnf_priority
+2025-06-30 08:53:23,174 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:53:23,174 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:53:23,174 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:53:24,197 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:53:24,197 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:53:24,197 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 08:54:37,471 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:54:37,474 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:54:37,478 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 08:54:37,478 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 08:54:37,478 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - Built enhanced request 36898168-96d3-4da3-a38b-187d5fee2984 with strategy: iterative_fsm
+2025-06-30 08:54:37,478 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:54:37,478 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:54:37,478 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:54:53,547 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:54:53,547 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:54:53,548 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_085453_36898168\raw_output_36898168.txt
+2025-06-30 08:54:53,548 - src.client.full_client - INFO - Generation successful: 29 chars
+2025-06-30 08:54:53,548 - src.client.full_client - INFO - Strategy used: iterative_fsm
+2025-06-30 08:54:53,550 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:54:53,550 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 08:54:53,550 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:54:53,550 - src.client.constraint_sender - INFO - Built enhanced request 9f2caf51-e486-49b7-b300-7d891826b62a with strategy: iterative_fsm
+2025-06-30 08:54:53,550 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:54:53,550 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:54:53,550 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:54:54,930 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:54:54,930 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:54:54,967 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_085454_9f2caf51\raw_output_9f2caf51.txt
+2025-06-30 08:54:54,967 - src.client.full_client - INFO - Generation successful: 29 chars
+2025-06-30 08:54:54,967 - src.client.full_client - INFO - Strategy used: iterative_fsm
+2025-06-30 08:59:00,587 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:59:00,590 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:59:00,593 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:59:00,593 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 08:59:00,594 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 08:59:00,594 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:59:00,594 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:59:00,594 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:59:00,594 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:59:00,594 - src.client.constraint_sender - INFO - Built enhanced request e96d3339-c29b-4ddf-b193-0a05ba0ff539 with strategy: gbnf_priority
+2025-06-30 08:59:00,594 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:59:00,594 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:59:00,594 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:59:01,051 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:59:01,051 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:59:01,051 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 08:59:01,052 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:59:01,052 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:59:01,052 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:59:01,052 - src.client.constraint_sender - INFO - Built enhanced request 2254f490-f42c-4669-a87f-106e227afdd3 with strategy: gbnf_priority
+2025-06-30 08:59:01,052 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:59:01,052 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:59:01,052 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:59:01,715 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:59:01,716 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:59:01,716 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 08:59:11,802 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 08:59:11,805 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 08:59:11,808 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 08:59:11,808 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 08:59:11,808 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - Built enhanced request 0eab0a27-65f8-41b4-8069-a169163f4574 with strategy: gbnf_priority
+2025-06-30 08:59:11,808 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:59:11,809 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:59:11,809 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:59:12,693 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:59:12,694 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:59:12,694 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 08:59:12,694 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 08:59:12,694 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 08:59:12,694 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 08:59:12,694 - src.client.constraint_sender - INFO - Built enhanced request da86caef-01b1-432c-b06a-6821c3d6ec6c with strategy: gbnf_priority
+2025-06-30 08:59:12,694 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 08:59:12,695 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 08:59:12,695 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 08:59:13,602 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 08:59:13,602 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 08:59:13,603 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:02:27,714 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:02:27,717 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:02:27,721 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:02:27,721 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:02:27,721 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - Built enhanced request d20219d0-3ff5-4bf7-997c-ea96879f1003 with strategy: gbnf_priority
+2025-06-30 09:02:27,721 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:02:27,721 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:02:27,721 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:02:28,029 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:02:28,029 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:02:28,030 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:02:28,030 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:02:28,030 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:02:28,030 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:02:28,030 - src.client.constraint_sender - INFO - Built enhanced request 86983149-a510-4a98-880c-80398291fd76 with strategy: gbnf_priority
+2025-06-30 09:02:28,030 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:02:28,030 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:02:28,030 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:02:28,266 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:02:28,267 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:02:28,267 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:07:18,458 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:07:18,460 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:07:18,464 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:07:18,464 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:07:18,464 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:07:18,464 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:07:18,464 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:07:18,465 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:07:18,465 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:07:18,465 - src.client.constraint_sender - INFO - Built enhanced request 737a46ab-cd98-4289-a1ba-69e673b137fc with strategy: gbnf_priority
+2025-06-30 09:07:18,465 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:07:18,465 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:07:18,465 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:07:18,774 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:07:18,774 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:07:18,775 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:07:18,775 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:07:18,775 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:07:18,775 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:07:18,775 - src.client.constraint_sender - INFO - Built enhanced request 136e9135-0ecd-4320-bbb7-75345f8fb5df with strategy: gbnf_priority
+2025-06-30 09:07:18,775 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:07:18,775 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:07:18,775 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:07:19,036 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:07:19,036 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:07:19,036 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:07:54,261 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:07:54,264 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:07:54,267 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:07:54,267 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:07:54,267 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - Built enhanced request 0c4f1163-54c2-4650-90dd-f602fd047d8d with strategy: gbnf_priority
+2025-06-30 09:07:54,267 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:07:54,268 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:07:54,268 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:07:54,584 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:07:54,585 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:07:54,585 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:07:54,585 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:07:54,585 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:07:54,585 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:07:54,585 - src.client.constraint_sender - INFO - Built enhanced request cf58dff9-8b50-4a02-8ec1-259d41cfe1d9 with strategy: gbnf_priority
+2025-06-30 09:07:54,585 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:07:54,586 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:07:54,586 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:07:54,819 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:07:54,819 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:07:54,819 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:08:21,983 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:08:21,986 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:08:21,989 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:08:21,989 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:08:21,989 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:08:21,989 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:08:21,989 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:08:21,989 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:08:21,990 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:08:21,990 - src.client.constraint_sender - INFO - Built enhanced request a9b35054-2303-43eb-bdd7-3b36b7bf072c with strategy: gbnf_priority
+2025-06-30 09:08:21,990 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:08:21,990 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:08:21,990 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:08:22,379 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:08:22,379 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:08:22,379 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:08:22,379 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:08:22,379 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:08:22,379 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:08:22,379 - src.client.constraint_sender - INFO - Built enhanced request 51d05c96-2467-479d-94c1-b22b1aa398e4 with strategy: gbnf_priority
+2025-06-30 09:08:22,379 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:08:22,380 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:08:22,380 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:08:22,635 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:08:22,646 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:08:22,646 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:10:00,234 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:10:00,237 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:10:00,240 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:10:00,240 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:10:00,240 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:10:00,240 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:10:00,240 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:10:00,241 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:10:00,241 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:10:00,241 - src.client.constraint_sender - INFO - Built enhanced request 835c8eb1-292c-403c-8ff0-9b376fd973af with strategy: gbnf_priority
+2025-06-30 09:10:00,241 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:10:00,241 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:10:00,241 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:10:00,613 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:10:00,613 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:10:00,614 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:10:00,614 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:10:00,614 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:10:00,614 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:10:00,614 - src.client.constraint_sender - INFO - Built enhanced request 2119486a-bbe0-4630-a17f-7d24bf859c45 with strategy: gbnf_priority
+2025-06-30 09:10:00,614 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:10:00,614 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:10:00,614 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:10:00,857 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:10:00,857 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:10:00,858 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:11:56,003 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:11:56,005 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:11:56,009 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:11:56,009 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:11:56,009 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - Built enhanced request a7f01343-c7df-4415-9019-b152a2cc8da1 with strategy: gbnf_priority
+2025-06-30 09:11:56,009 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:11:56,009 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:11:56,009 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:11:56,355 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:11:56,356 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:11:56,356 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:11:56,356 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:11:56,356 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:11:56,356 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:11:56,356 - src.client.constraint_sender - INFO - Built enhanced request 99afabc1-5c2e-4555-8800-0b3249f7d894 with strategy: gbnf_priority
+2025-06-30 09:11:56,356 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:11:56,357 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:11:56,357 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:11:56,608 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:11:56,608 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:11:56,609 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:12:36,635 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:12:36,638 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:12:36,642 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:12:36,643 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:12:36,643 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - Built enhanced request 08b8703f-d657-4cee-917f-5386d16e8542 with strategy: gbnf_priority
+2025-06-30 09:12:36,643 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:12:36,643 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:12:36,643 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:12:36,977 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:12:36,977 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:12:36,978 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:12:36,978 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:12:36,978 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:12:36,978 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:12:36,978 - src.client.constraint_sender - INFO - Built enhanced request 44ab8eef-f35c-48fe-89cc-d911de74776e with strategy: gbnf_priority
+2025-06-30 09:12:36,978 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:12:36,978 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:12:36,978 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:12:37,243 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:12:37,243 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:12:37,243 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:12:59,485 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:12:59,488 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:12:59,492 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:12:59,492 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:12:59,492 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - Built enhanced request cafd6434-06ba-407f-b3ea-83f682794180 with strategy: gbnf_priority
+2025-06-30 09:12:59,492 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:12:59,492 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:12:59,492 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:12:59,778 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:12:59,778 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:12:59,779 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:12:59,779 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:12:59,779 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:12:59,779 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:12:59,779 - src.client.constraint_sender - INFO - Built enhanced request 2860e160-161a-4d19-b063-2998df1e565f with strategy: gbnf_priority
+2025-06-30 09:12:59,779 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:12:59,779 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:12:59,779 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:13:00,056 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:13:00,056 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:13:00,056 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:14:11,195 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:14:11,198 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:14:11,201 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:14:11,201 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:14:11,202 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:14:11,202 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:14:11,202 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:14:11,202 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:14:11,202 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:14:11,202 - src.client.constraint_sender - INFO - Built enhanced request 0384d032-59cc-448e-a73c-6105985474d5 with strategy: gbnf_priority
+2025-06-30 09:14:11,202 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:14:11,202 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:14:11,202 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:14:11,561 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:14:11,561 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:14:11,561 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:14:11,562 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:14:11,562 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:14:11,562 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:14:11,562 - src.client.constraint_sender - INFO - Built enhanced request cd0a87ad-113a-4005-9845-3b6b6d79185c with strategy: gbnf_priority
+2025-06-30 09:14:11,562 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:14:11,562 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:14:11,562 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:14:11,825 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:14:11,825 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:14:11,825 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:15:03,085 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:15:03,088 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:15:03,091 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:15:03,091 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:15:03,091 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:15:03,092 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:15:03,092 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:15:03,092 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:15:03,092 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:15:03,092 - src.client.constraint_sender - INFO - Built enhanced request 397afe85-9398-40ed-8d48-b32121932e9d with strategy: gbnf_priority
+2025-06-30 09:15:03,092 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:15:03,092 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:15:03,092 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:15:03,400 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:15:03,400 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:15:03,400 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:15:03,400 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:15:03,400 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:15:03,400 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:15:03,400 - src.client.constraint_sender - INFO - Built enhanced request 45c30df7-cdbf-433e-9501-e5bde0f7c6a5 with strategy: gbnf_priority
+2025-06-30 09:15:03,400 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:15:03,401 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:15:03,401 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:15:03,682 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:15:03,682 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:15:03,682 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:16:28,214 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:16:28,217 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:16:28,220 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:16:28,220 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:16:28,220 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - Built enhanced request 7e60b251-5217-4054-94a9-1356d1ce05ad with strategy: gbnf_priority
+2025-06-30 09:16:28,220 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:16:28,221 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:16:28,221 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:16:28,489 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:16:28,490 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:16:28,490 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 09:16:28,490 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:16:28,490 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:16:28,490 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:16:28,490 - src.client.constraint_sender - INFO - Built enhanced request e1ddd1a3-05f3-4a84-b663-f1221dd9afcc with strategy: gbnf_priority
+2025-06-30 09:16:28,490 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:16:28,491 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:16:28,491 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:16:28,750 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:16:28,751 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:16:28,751 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 09:33:05,819 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:33:05,822 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:33:05,825 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:33:05,825 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:33:05,825 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:33:05,825 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:33:05,825 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:33:05,825 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:33:05,825 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:33:05,826 - src.client.constraint_sender - INFO - Built enhanced request a090dbcf-e7ff-49ca-8ee8-d72384787ee3 with strategy: gbnf_priority
+2025-06-30 09:33:05,826 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:33:05,826 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:33:05,826 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:34:05,046 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:34:05,046 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:34:05,047 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_093405_a090dbcf\raw_output_a090dbcf.txt
+2025-06-30 09:34:05,047 - src.client.full_client - INFO - Generation successful: 540 chars
+2025-06-30 09:34:05,047 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 09:34:05,048 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:34:05,048 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:34:05,048 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:34:05,048 - src.client.constraint_sender - INFO - Built enhanced request e50da913-306e-49fc-b21f-2ef28460ad15 with strategy: gbnf_priority
+2025-06-30 09:34:05,048 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:34:05,048 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:34:05,048 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:34:26,592 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:34:26,593 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:34:26,604 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_093426_e50da913\raw_output_e50da913.txt
+2025-06-30 09:34:26,605 - src.client.full_client - INFO - Generation successful: 540 chars
+2025-06-30 09:34:26,605 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 09:37:34,237 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 09:37:34,240 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 09:37:34,243 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 09:37:34,243 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 09:37:34,243 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 09:37:34,243 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 09:37:34,244 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:37:34,244 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:37:34,244 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:37:34,244 - src.client.constraint_sender - INFO - Built enhanced request eee785a0-74c3-45be-a824-ce1cee13d0a5 with strategy: gbnf_priority
+2025-06-30 09:37:34,244 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:37:34,244 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:37:34,244 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:37:57,456 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:37:57,456 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:37:57,457 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_093757_eee785a0\raw_output_eee785a0.txt
+2025-06-30 09:37:57,457 - src.client.full_client - INFO - Generation successful: 119 chars
+2025-06-30 09:37:57,457 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 09:37:57,458 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 09:37:57,458 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 09:37:57,458 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 09:37:57,459 - src.client.constraint_sender - INFO - Built enhanced request f55fe361-2dcb-497d-811c-5ad8eef22149 with strategy: gbnf_priority
+2025-06-30 09:37:57,459 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 09:37:57,459 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 09:37:57,459 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 09:38:02,444 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 09:38:02,444 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 09:38:02,482 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_093802_f55fe361\raw_output_f55fe361.txt
+2025-06-30 09:38:02,482 - src.client.full_client - INFO - Generation successful: 119 chars
+2025-06-30 09:38:02,482 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 10:18:29,064 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:18:29,067 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:18:29,070 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:18:29,070 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:18:29,070 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - Built enhanced request 086b79c4-18ef-42be-91bb-d43deb0788c0 with strategy: gbnf_priority
+2025-06-30 10:18:29,070 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:18:29,071 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:18:29,071 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:18:35,743 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:18:35,743 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:18:35,744 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 10:18:35,744 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:18:35,744 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:18:35,744 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:18:35,744 - src.client.constraint_sender - INFO - Built enhanced request d4b1ee2d-2cb7-4271-9384-30b8234a8dc6 with strategy: gbnf_priority
+2025-06-30 10:18:35,744 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:18:35,744 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:18:35,744 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:18:35,993 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:18:35,993 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:18:35,994 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 10:20:25,081 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:20:25,083 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:20:25,087 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:20:25,087 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:20:25,087 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - Built enhanced request 95ac1cd9-400c-4a63-88da-3540de520bef with strategy: gbnf_priority
+2025-06-30 10:20:25,087 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:20:25,087 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:20:25,087 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:20:25,484 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:20:25,485 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:20:25,485 - __main__ - ERROR - Generation 1 failed: vLLM error: Internal Server Error
+2025-06-30 10:20:25,485 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:20:25,485 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:20:25,485 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:20:25,485 - src.client.constraint_sender - INFO - Built enhanced request df59d3bb-9a58-46ab-931f-95a2c2f8d112 with strategy: gbnf_priority
+2025-06-30 10:20:25,485 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:20:25,486 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:20:25,486 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:20:25,768 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:20:25,768 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:20:25,768 - __main__ - ERROR - Generation 2 failed: vLLM error: Internal Server Error
+2025-06-30 10:31:01,146 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:31:01,148 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:31:01,152 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:31:01,152 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:31:01,152 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - Built enhanced request d6f201dc-96eb-48a6-9691-74598cf10f72 with strategy: gbnf_priority
+2025-06-30 10:31:01,152 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:31:01,152 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:31:01,152 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:32:25,443 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:32:25,443 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:32:25,444 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_103225_d6f201dc\raw_output_d6f201dc.txt
+2025-06-30 10:32:25,444 - src.client.full_client - INFO - Generation successful: 999 chars
+2025-06-30 10:32:25,444 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 10:32:25,445 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:32:25,445 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:32:25,446 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:32:25,446 - src.client.constraint_sender - INFO - Built enhanced request f8144b6e-d1de-4b2f-8c18-b6e1ba7cd873 with strategy: gbnf_priority
+2025-06-30 10:32:25,446 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:32:25,446 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:32:25,446 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:32:57,013 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:32:57,014 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:32:57,050 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_103257_f8144b6e\raw_output_f8144b6e.txt
+2025-06-30 10:32:57,050 - src.client.full_client - INFO - Generation successful: 999 chars
+2025-06-30 10:32:57,050 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 10:39:23,087 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:39:23,090 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:39:23,094 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:39:23,094 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:39:23,094 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - Built enhanced request 2e44dd4b-8e1e-4572-800c-2ecf1e9afedc with strategy: gbnf_priority
+2025-06-30 10:39:23,094 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:39:23,094 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:39:23,094 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:40:37,965 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:40:37,965 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:40:37,965 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_104037_2e44dd4b\raw_output_2e44dd4b.txt
+2025-06-30 10:40:37,966 - src.client.full_client - INFO - Generation successful: 938 chars
+2025-06-30 10:40:37,966 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 10:40:37,967 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:40:37,967 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:40:37,967 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:40:37,967 - src.client.constraint_sender - INFO - Built enhanced request 0fc4b901-136e-4b03-8c62-32d8e0ce157b with strategy: gbnf_priority
+2025-06-30 10:40:37,967 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:40:37,967 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:40:37,967 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:41:22,039 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 10:41:22,039 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 10:41:22,040 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_104122_0fc4b901\raw_output_0fc4b901.txt
+2025-06-30 10:41:22,040 - src.client.full_client - INFO - Generation successful: 1025 chars
+2025-06-30 10:41:22,040 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 10:47:35,663 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:47:35,666 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:47:35,669 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:47:35,669 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:47:35,669 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - Built enhanced request 3153d395-f707-4125-8ef8-d76152d01416 with strategy: gbnf_priority
+2025-06-30 10:47:35,669 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:47:35,669 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:47:35,669 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:49:35,740 - src.client.cloud_client - ERROR - ❌ Exception in enhanced_generate: 
+2025-06-30 10:49:35,793 - __main__ - ERROR - Generation 1 failed: Client Error: 
+2025-06-30 10:49:35,793 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:49:35,793 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:49:35,793 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:49:35,793 - src.client.constraint_sender - INFO - Built enhanced request 9a8c0cb8-9a0d-4d0b-8f5d-c4843807106d with strategy: gbnf_priority
+2025-06-30 10:49:35,793 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:49:35,793 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:49:35,793 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:51:36,739 - src.client.cloud_client - ERROR - ❌ Exception in enhanced_generate: 
+2025-06-30 10:51:36,741 - __main__ - ERROR - Generation 2 failed: Client Error: 
+2025-06-30 10:52:47,006 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 10:52:47,009 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 10:52:47,012 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 10:52:47,012 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 10:52:47,012 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 10:52:47,012 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 10:52:47,013 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:52:47,013 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:52:47,013 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:52:47,013 - src.client.constraint_sender - INFO - Built enhanced request a203a94d-47be-4a16-a4e6-2bc39e30de9f with strategy: gbnf_priority
+2025-06-30 10:52:47,013 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:52:47,013 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:52:47,013 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:54:47,739 - src.client.cloud_client - ERROR - ❌ Exception in enhanced_generate: 
+2025-06-30 10:54:47,742 - __main__ - ERROR - Generation 1 failed: Client Error: 
+2025-06-30 10:54:47,742 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 10:54:47,742 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 10:54:47,742 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 10:54:47,742 - src.client.constraint_sender - INFO - Built enhanced request 4dad6cfc-15cd-479f-9d30-fefe41968ffd with strategy: gbnf_priority
+2025-06-30 10:54:47,742 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 10:54:47,742 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 10:54:47,742 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 10:56:48,739 - src.client.cloud_client - ERROR - ❌ Exception in enhanced_generate: 
+2025-06-30 10:56:48,741 - __main__ - ERROR - Generation 2 failed: Client Error: 
+2025-06-30 11:04:01,799 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 11:04:01,802 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 11:04:01,805 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 11:04:01,805 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 11:04:01,805 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - Built enhanced request 9a092b69-cb33-430b-b542-72db16b2f120 with strategy: gbnf_priority
+2025-06-30 11:04:01,805 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 11:04:01,806 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 11:04:01,806 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 11:09:02,222 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 11:09:02,222 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 11:09:02,223 - __main__ - ERROR - Generation 1 failed: 
+2025-06-30 11:09:02,223 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 11:09:02,223 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 11:09:02,223 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 11:09:02,223 - src.client.constraint_sender - INFO - Built enhanced request 11c914e6-3690-423c-8067-d9088a9584a2 with strategy: gbnf_priority
+2025-06-30 11:09:02,223 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 11:09:02,224 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 11:09:02,224 - src.client.cloud_client - INFO - 🚀 Sending single request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 11:14:02,740 - src.client.cloud_client - ERROR - ❌ Exception in enhanced_generate: 
+2025-06-30 11:14:02,744 - __main__ - ERROR - Generation 2 failed: Client Error: 
+2025-06-30 11:20:48,780 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 11:20:48,783 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 11:20:48,787 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gbnf_priority
+2025-06-30 11:20:48,787 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gbnf_priority
+2025-06-30 11:20:48,787 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - Built enhanced request d069a20d-1390-4186-a948-462c85bb08f9 with strategy: gbnf_priority
+2025-06-30 11:20:48,787 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 11:20:48,787 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 11:20:48,787 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 11:20:48,787 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 11:20:48,787 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 11:23:11,843 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 11:23:11,930 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 11:23:11,931 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_112311_d069a20d\raw_output_d069a20d.txt
+2025-06-30 11:23:11,932 - src.client.full_client - INFO - Generation successful: 5905 chars
+2025-06-30 11:23:11,932 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 11:23:11,940 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 11:23:11,940 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=autosar
+2025-06-30 11:23:11,940 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 11:23:11,940 - src.client.constraint_sender - INFO - Built enhanced request 2317562d-9f98-43ec-8764-dc1a7ed76b2e with strategy: gbnf_priority
+2025-06-30 11:23:11,940 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 11:23:11,941 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.173.128:8000 (API: enhanced)
+2025-06-30 11:23:11,941 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 11:23:11,941 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.173.128:8000/enhanced_generate
+2025-06-30 11:23:11,941 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 11:25:38,516 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 11:25:38,578 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 11:25:38,579 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_112538_2317562d\raw_output_2317562d.txt
+2025-06-30 11:25:38,580 - src.client.full_client - INFO - Generation successful: 5905 chars
+2025-06-30 11:25:38,580 - src.client.full_client - INFO - Strategy used: gbnf_priority
+2025-06-30 15:12:53,744 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 15:12:53,747 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 15:12:53,750 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 15:12:53,750 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 15:12:53,750 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 15:12:53,750 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 15:12:53,750 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:12:53,751 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:12:53,751 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:12:53,751 - src.client.constraint_sender - INFO - Built enhanced request 2b90baf0-734c-4c56-9fab-832e9b5af7a5 with strategy: iterative_fsm
+2025-06-30 15:12:53,751 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:12:53,751 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:12:53,751 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:12:53,751 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:12:53,751 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:13:27,224 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:13:27,224 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:13:27,225 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_151327_2b90baf0\raw_output_2b90baf0.txt
+2025-06-30 15:13:27,225 - src.client.full_client - INFO - Generation successful: 87 chars
+2025-06-30 15:13:27,225 - src.client.full_client - INFO - Strategy used: iterative_fsm
+2025-06-30 15:13:27,226 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:13:27,226 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:13:27,226 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:13:27,226 - src.client.constraint_sender - INFO - Built enhanced request dc377561-e1c5-4a1a-9898-df06bc63ccfe with strategy: iterative_fsm
+2025-06-30 15:13:27,226 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:13:27,226 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:13:27,226 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:13:27,226 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:13:27,226 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:13:30,458 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:13:30,458 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:13:30,459 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_151330_dc377561\raw_output_dc377561.txt
+2025-06-30 15:13:30,459 - src.client.full_client - INFO - Generation successful: 87 chars
+2025-06-30 15:13:30,459 - src.client.full_client - INFO - Strategy used: iterative_fsm
+2025-06-30 15:37:05,405 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 15:37:05,409 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 15:37:05,413 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 15:37:05,413 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 15:37:05,413 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - Built enhanced request 7eb7b12a-f902-4014-9b06-0ffd298f0cb7 with strategy: iterative_fsm
+2025-06-30 15:37:05,413 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:37:05,413 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:37:05,413 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:37:05,413 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:37:05,414 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:37:48,268 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:37:48,268 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:37:48,269 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_153748_7eb7b12a\raw_output_7eb7b12a.txt
+2025-06-30 15:37:48,269 - src.client.full_client - INFO - Generation successful: 268 chars
+2025-06-30 15:37:48,269 - src.client.full_client - INFO - Strategy used: true_iterative_fsm
+2025-06-30 15:37:48,270 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:37:48,270 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:37:48,270 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:37:48,270 - src.client.constraint_sender - INFO - Built enhanced request d2f5c32c-3d94-4c9a-9d9a-2f92f2a073eb with strategy: iterative_fsm
+2025-06-30 15:37:48,270 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:37:48,270 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:37:48,270 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:37:48,270 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:37:48,270 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:37:53,580 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:37:53,581 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:37:53,581 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_153753_d2f5c32c\raw_output_d2f5c32c.txt
+2025-06-30 15:37:53,581 - src.client.full_client - INFO - Generation successful: 268 chars
+2025-06-30 15:37:53,581 - src.client.full_client - INFO - Strategy used: true_iterative_fsm
+2025-06-30 15:43:00,898 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 15:43:00,901 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 15:43:00,905 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 15:43:00,905 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 15:43:00,905 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - Built enhanced request d711779e-26b0-4144-934f-a740678bb9f8 with strategy: iterative_fsm
+2025-06-30 15:43:00,905 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:43:00,906 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:43:00,906 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:43:00,906 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:43:00,906 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:43:05,793 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:43:05,793 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:43:05,794 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_154305_d711779e\raw_output_d711779e.txt
+2025-06-30 15:43:05,794 - src.client.full_client - INFO - Generation successful: 227 chars
+2025-06-30 15:43:05,794 - src.client.full_client - INFO - Strategy used: improved_iterative_fsm
+2025-06-30 15:43:05,795 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 15:43:05,795 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 15:43:05,795 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 15:43:05,795 - src.client.constraint_sender - INFO - Built enhanced request 6b0576ec-3529-4c23-af76-a00e3cde27f8 with strategy: iterative_fsm
+2025-06-30 15:43:05,795 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 15:43:05,795 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 15:43:05,795 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 15:43:05,795 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 15:43:05,795 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 15:43:07,065 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 15:43:07,066 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 15:43:07,067 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_154307_6b0576ec\raw_output_6b0576ec.txt
+2025-06-30 15:43:07,067 - src.client.full_client - INFO - Generation successful: 227 chars
+2025-06-30 15:43:07,067 - src.client.full_client - INFO - Strategy used: improved_iterative_fsm
+2025-06-30 16:01:02,054 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 16:01:02,057 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 16:01:02,060 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 16:01:02,061 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 16:01:02,061 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - Built enhanced request e4187d71-6d4c-4bb6-9c29-c73afe20e438 with strategy: iterative_fsm
+2025-06-30 16:01:02,061 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 16:01:02,061 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 16:01:02,061 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 16:01:02,061 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 16:01:02,061 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 16:01:14,294 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 16:01:14,295 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 16:01:14,296 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_160114_e4187d71\raw_output_e4187d71.txt
+2025-06-30 16:01:14,296 - src.client.full_client - INFO - Generation successful: 234 chars
+2025-06-30 16:01:14,296 - src.client.full_client - INFO - Strategy used: real_autosar_fsm
+2025-06-30 16:01:14,297 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 16:01:14,297 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 16:01:14,297 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 16:01:14,297 - src.client.constraint_sender - INFO - Built enhanced request 9f56a006-8cad-4fa0-9aa3-69cd4515a3ff with strategy: iterative_fsm
+2025-06-30 16:01:14,297 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 16:01:14,298 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 16:01:14,298 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 16:01:14,298 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 16:01:14,298 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 16:01:16,108 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 16:01:16,109 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 16:01:16,109 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250630_160116_9f56a006\raw_output_9f56a006.txt
+2025-06-30 16:01:16,109 - src.client.full_client - INFO - Generation successful: 234 chars
+2025-06-30 16:01:16,109 - src.client.full_client - INFO - Strategy used: real_autosar_fsm
+2025-06-30 17:31:10,436 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 17:31:10,439 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 17:31:10,442 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 17:31:10,442 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 17:31:10,442 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 17:31:10,442 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 17:31:10,442 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:31:10,442 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:31:10,443 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:31:10,443 - src.client.constraint_sender - INFO - Built enhanced request 70188fe8-b336-4880-86b3-156f0c183fe2 with strategy: iterative_fsm
+2025-06-30 17:31:10,443 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:31:10,443 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:31:10,443 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:31:10,443 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:31:10,443 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:31:10,728 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:31:10,728 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:31:10,729 - __main__ - ERROR - Generation 1 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'
+2025-06-30 17:31:10,729 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:31:10,729 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:31:10,729 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:31:10,729 - src.client.constraint_sender - INFO - Built enhanced request 4342c3d9-dd80-4bd4-98ec-8bd43409d05a with strategy: iterative_fsm
+2025-06-30 17:31:10,729 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:31:10,729 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:31:10,729 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:31:10,729 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:31:10,729 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:31:10,937 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:31:10,946 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:31:10,946 - __main__ - ERROR - Generation 2 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'
+2025-06-30 17:38:54,031 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 17:38:54,033 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 17:38:54,039 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 17:38:54,039 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 17:38:54,039 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - Built enhanced request ef126260-fa98-4d1a-828d-488ecf4e16e4 with strategy: iterative_fsm
+2025-06-30 17:38:54,039 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:38:54,040 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:38:54,040 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:38:54,040 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:38:54,040 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:38:54,131 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:38:54,131 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:38:54,132 - __main__ - ERROR - Generation 1 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'
+2025-06-30 17:38:54,132 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:38:54,132 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:38:54,132 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:38:54,132 - src.client.constraint_sender - INFO - Built enhanced request 0c7a2dfc-9265-41f7-bdb4-396062235bae with strategy: iterative_fsm
+2025-06-30 17:38:54,132 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:38:54,132 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:38:54,132 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:38:54,132 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:38:54,132 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:38:54,212 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:38:54,212 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:38:54,212 - __main__ - ERROR - Generation 2 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'
+2025-06-30 17:40:20,151 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-06-30 17:40:20,154 - src.client.constraint_preparer - INFO - Loaded FSM data with 714 states
+2025-06-30 17:40:20,159 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-06-30 17:40:20,159 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: iterative_fsm
+2025-06-30 17:40:20,159 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: iterative_fsm
+2025-06-30 17:40:20,159 - src.client.full_client - INFO - Post-processing: disabled
+2025-06-30 17:40:20,160 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:40:20,160 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:40:20,160 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:40:20,160 - src.client.constraint_sender - INFO - Built enhanced request ea40f817-eb15-4be8-afb4-4a4a70954738 with strategy: iterative_fsm
+2025-06-30 17:40:20,160 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:40:20,160 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:40:20,160 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:40:20,160 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:40:20,160 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:40:20,245 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:40:20,245 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:40:20,246 - __main__ - ERROR - Generation 1 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'
+2025-06-30 17:40:20,246 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-06-30 17:40:20,246 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=autosar, gbnf_ref=None
+2025-06-30 17:40:20,246 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-06-30 17:40:20,246 - src.client.constraint_sender - INFO - Built enhanced request db210d9b-6cce-4424-9ffb-2543c97b2141 with strategy: iterative_fsm
+2025-06-30 17:40:20,246 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 8415
+2025-06-30 17:40:20,246 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.179.35:8000 (API: enhanced)
+2025-06-30 17:40:20,246 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-06-30 17:40:20,246 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.179.35:8000/enhanced_generate
+2025-06-30 17:40:20,246 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-06-30 17:40:20,319 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-06-30 17:40:20,319 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-06-30 17:40:20,319 - __main__ - ERROR - Generation 2 failed: 'FixedAutosarXMLBuilder' object has no attribute 'simple_hierarchy'

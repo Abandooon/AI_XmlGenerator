@@ -54,6 +54,8 @@ async def main():
     print(f"🌐 Endpoint: {config['cloud_service']['internal_endpoint']}")
     print(f"🤖 Model: {config['cloud_service']['model_name']}")
     print(f"🔧 API Type: {config['cloud_service']['api_type']}")
+    print(f"⏱️ Configured timeout: {config['cloud_service']['timeout']}s")
+    print(f"⏱️ Request timeout: {config['performance']['request_timeout']}s")
 
     # 初始化完整客户端
     client = FullAutosarClient(config)

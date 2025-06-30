@@ -6,10 +6,10 @@ project:
 
 # 云端服务配置
 cloud_service:
-  internal_endpoint: "http://117.50.173.128:8000"
+  internal_endpoint: "http://117.50.179.35:8000"
   api_type: "enhanced"
   model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
-  timeout: 120
+  timeout: 600
   max_retries: 3
   retry_delay: 5
 
@@ -176,7 +176,7 @@ prompts:
 # 🔥 约束策略配置
 constraint_strategy:
   # 可选值: "gbnf_priority", "iterative_fsm", "hybrid", "unconstrained"
-  mode: "unconstrained"
+  mode: "iterative_fsm"
 
   # GBNF优先策略配置
   gbnf_priority:
@@ -189,10 +189,10 @@ constraint_strategy:
   # 迭代FSM策略配置
   iterative_fsm:
     enabled: true
-    max_iterations: 8
+    max_iterations: 20
     tokens_per_step: 100
     step_max_tokens: 200
-    temperature: 0.1
+    temperature: 0.0
     continue_threshold: 5
 
   # 混合策略配置
@@ -271,7 +271,7 @@ constraint_levels:
 # 性能配置
 performance:
   concurrent_requests: 1
-  request_timeout: 180
+  request_timeout: 300
   constraint_cache_size: 10
 
 # 监控配置
@@ -284,6 +284,74 @@ logging:
   file: "./logs/autosar_constraints.log"
   console: true
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+# 文件路径配置 - 从配置中读取，避免硬编码
+file_paths:
+  # XML实例文件
+  xml_instances:
+    - "xml_instance/ASW_COM.arxml"
+
+  # 验证相关文件
+  xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
+  shacl_shapes: "src/constraint_graph/artifacts/shapes/autosar_shapes.ttl"
+  smt_template: "src/constraint_graph/artifacts/smt/constraints.smt2"
+
+  # 输出目录
+  output_dir: "logs"
+  report_dir: "reports"
+
+# 验证器配置
+validators:
+  structure:
+    enabled: true
+    timeout: 30
+    fallback_to_basic: true  # XSD验证失败时降级到基本XML验证
+
+  semantic:
+    enabled: true
+    timeout: 60
+    inference_type: "rdfs"
+    max_violations_display: 5
+
+  constraint:
+    enabled: true
+    timeout: 120
+    solver: "z3"
+    max_constraints_display: 5
+
+# 验证级别配置
+validation_modes:
+  quick: ["structure"]  # 只进行结构验证
+  standard: ["structure", "semantic"]  # 结构+语义验证
+  full: ["structure", "semantic", "constraint"]  # 三段式完整验证
+
+# 默认验证模式
+default_mode: "full"
+
+# 报告配置
+reporting:
+  format: "text"  # 可选: text, json, html
+  detailed_errors: true
+  save_reports: true
+  console_output: true
+
+# 依赖检查配置
+dependencies:
+  required_packages:
+    - "xmlschema"
+    - "rdflib"
+    - "pyshacl"
+    - "pyyaml"
+  optional_packages:
+    - "z3-solver"  # SMT验证需要
+
+# 自动安装配置
+auto_setup:
+  create_missing_directories: true
+  install_missing_packages: false  # 在PyCharm中手动安装
+  download_z3_if_missing: false    # 在PyCharm中手动安装
+
 
 
 ## config/main_config.yaml - 支持真实约束传输

@@ -1,15 +1,9 @@
 AI_XmlGenerator/
 ├── config/
 │   └── main_config.yaml (1KB)
-├── scripts/
-│   ├── start_cloud_service.py (1KB)
 ├── src/
 │   ├── client/
 │   │   ├── cloud_client.py (9KB)
-│   │   ├── constraint_preparer.py (4KB)
-│   │   ├── constraint_sender.py (2KB)
-│   │   └── full_client.py (5KB)
-│   │   ├── vllm_adapter.py (6KB)
 │   ├── constraint_graph/
 │   │   ├── artifacts/
 │   │   │   ├── grammar/
@@ -22,12 +16,7 @@ AI_XmlGenerator/
 │   │   │   ├── smt/
 │   │   │   │   └── constraints.smt2 (4KB)
 │   ├── generation/
-│   │   ├── processors/
-│   │   │   ├── prompt_enhancer.py (467B)
-│   │   │   └── xml_postprocessor.py (295B)
 │   ├── models/
-│   │   └── constraint_models.py (1KB)
-│   │   ├── data_models.py (827B)
 │   ├── utils/
 │   │   ├── logger.py (1KB)
 │   └── validation/
@@ -37,10 +26,6 @@ AI_XmlGenerator/
 │       │   └── validation_orchestrator.py (5KB)
 │       ├── semantic/
 │       │   └── shacl_validator.py (4KB)
-│       ├── structure/
-│       │   └── gbnf_validator.py (2KB)
 │       └── __init__.py (0B)
 │       ├── local_validator.py (3KB)
-├── cloud_connection_check.py (1KB)
 └── main.py (9KB)
-├── vllm_direct.py (10KB)

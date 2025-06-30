@@ -1,0 +1,77 @@
+验证文件: D:\PycharmProjects\AI_XmlGenerator\xml_instance\ASW_COM.arxml
+验证时间: 2025-07-01 00:12:25
+================================================================================
+============================================================
+AUTOSAR XML Validation Report
+============================================================
+Overall Status: ❌ FAILED
+Validation Level: full
+Execution Time: 0.004s
+Stages Passed: 0/1
+Failed at: structure stage
+
+Structure (XSD) Validation: ❌ FAILED
+  Error: failed validating <Element '{http://autosar.org/schema/r4.0}APPLICATION-SW-COMPONENT-TYPE' at 0x0000013B44DE9350> with XsdGroup(model='sequence', occurs=[1, 1]):
+
+Reason: Unexpected child with tag '{http://autosar.org/schema/r4.0}ADMIN-DATA' at position 1. Tag 'AR:SHORT-NAME' expected.
+
+Schema component:
+
+  <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema" abstract="false" mixed="false" name="APPLICATION-SW-COMPONENT-TYPE">
+     <xsd:annotation>
+        <xsd:documentation>The ApplicationSwComponentType is used to represent the application software.</xsd:documentation>
+        <xsd:appinfo source="tags">atp.recommendedPackage="SwComponentTypes";mmt.qualifiedName="ApplicationSwComponentType"</xsd:appinfo>
+        <xsd:appinfo source="stereotypes">atpObject</xsd:appinfo>
+     </xsd:annotation>
+     <xsd:sequence>
+        <xsd:group ref="AR:AR-OBJECT" />
+        <xsd:group ref="AR:REFERRABLE" />
+        <xsd:group ref="AR:MULTILANGUAGE-REFERRABLE" />
+        <xsd:group ref="AR:IDENTIFIABLE" />
+        <xsd:group ref="AR:COLLECTABLE-ELEMENT" />
+        <xsd:group ref="AR:PACKAGEABLE-ELEMENT" />
+        <xsd:group ref="AR:AR-ELEMENT" />
+        <xsd:group ref="AR:ATP-BLUEPRINT" />
+        <xsd:group ref="AR:ATP-BLUEPRINTABLE" />
+        <xsd:group ref="AR:ATP-CLASSIFIER" />
+        <xsd:group ref="AR:ATP-TYPE" />
+        <xsd:group ref="AR:SW-COMPONENT-TYPE" />
+        <xsd:group ref="AR:ATOMIC-SW-COMPONENT-TYPE" />
+     ...
+     ...
+  </xsd:complexType>
+
+Instance type: <class 'xml.etree.ElementTree.Element'>
+
+Instance:
+
+  <APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0">
+    <ADMIN-DATA>
+      <SDGS>
+        <SDG GID="Master">
+          <SD>true</SD>
+        </SDG>
+      </SDGS>
+    </ADMIN-DATA>
+    <PORTS>
+      <P-PORT-PROTOTYPE UUID="9291d2d6-7dd8-4794-8dc5-562c275f9661">
+        <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
+        <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
+      </P-PORT-PROTOTYPE>
+      <P-PORT-PROTOTYPE UUID="2a195d0d-008f-4a55-b98f-64963b9ca4f5">
+        <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
+        <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
+      </P-PORT-PROTOTYPE>
+      <P-PORT-PROTOTYPE UUID="62c54b76-8040-4b43-9744-d1cdfe01d436">
+        <SHORT-NAME>PPort_MCU03_NRF_IdcSamp</SHORT-NAME>
+        <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
+    ...
+    ...
+  </APPLICATION-SW-COMPONENT-TYPE>
+
+Path: /AUTOSAR/AR-PACKAGES/AR-PACKAGE/ELEMENTS/APPLICATION-SW-COMPONENT-TYPE
+
+
+Recommendations:
+  - Check XML syntax and schema compliance
+  - Verify element names and attributes
