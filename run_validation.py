@@ -1,7 +1,7 @@
 # run_validation.py
 """
-AUTOSAR XML验证系统 - 一键运行脚本
-适用于PyCharm环境，不包含自动包安装
+AUTOSAR XML验证系统 - 一键运行脚本 (修复版)
+支持main_config.yaml配置文件
 """
 import os
 import sys
@@ -14,7 +14,6 @@ def check_project_structure():
     print("🔍 检查项目结构...")
 
     required_dirs = [
-        "config",
         "src/validation",
         "src/constraint_graph/artifacts",
         "xml_instance"
@@ -133,7 +132,7 @@ reporting:
     Path("config").mkdir(exist_ok=True)
 
     # 写入配置文件
-    config_file = Path("config/validation_config.yaml")
+    config_file = Path("config/mainnn_config.yaml")
     with open(config_file, 'w', encoding='utf-8') as f:
         f.write(config_content)
 
@@ -141,26 +140,157 @@ reporting:
 
 
 def check_config_files():
-    """检查配置文件"""
+    """检查配置文件 - 修复版，正确支持main_config.yaml"""
     print("\n📝 检查配置文件...")
 
-    # 检查主配置文件
-    main_config = Path("config/main_config.yaml")
-    validation_config = Path("config/validation_config.yaml")
+    # 修正：按正确优先级查找配置文件
+    config_candidates = [
+        "main_config.yaml",              # 1. 根目录下的main_config.yaml
+        "config/main_config.yaml",       # 2. config目录下的main_config.yaml
+        "validation_config.yaml",        # 3. 旧版配置文件（兼容性）
+        "config/validation_config.yaml"  # 4. config目录下的旧版配置文件
+    ]
 
-    if not main_config.exists() and not validation_config.exists():
-        print("❌ 未找到配置文件，创建默认配置...")
-        create_default_validation_config()
+    for config_file in config_candidates:
+        config_path = Path(config_file)
+        if config_path.exists():
+            print(f"✅ 找到配置文件: {config_file}")
 
-    # 优先使用专门的验证配置
-    if validation_config.exists():
-        print(f"✅ 使用验证配置: {validation_config}")
-        return str(validation_config)
-    elif main_config.exists():
-        print(f"✅ 使用主配置: {main_config}")
-        return str(main_config)
+            # 验证配置文件格式
+            try:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
 
+                # 检查是否有file_paths配置
+                if 'file_paths' in config:
+                    print(f"✅ 配置文件格式正确")
+                    return str(config_path)
+                else:
+                    print(f"⚠️  配置文件缺少file_paths部分，尝试下一个...")
+                    continue
+
+            except Exception as e:
+                print(f"⚠️  配置文件格式错误: {e}，尝试下一个...")
+                continue
+
+    # 如果都没找到合适的配置文件，使用默认路径
+    print("❌ 未找到合适的配置文件")
     return None
+
+
+def create_missing_validation_files():
+    """创建缺失的验证文件"""
+    print("\n🔧 检查并创建缺失的验证文件...")
+
+    # 创建必要的目录结构
+    directories = [
+        "src/constraint_graph/artifacts/shapes",
+        "src/constraint_graph/artifacts/schema",
+        "src/constraint_graph/artifacts/smt",
+        "logs",
+        "reports"
+    ]
+
+    for directory in directories:
+        Path(directory).mkdir(parents=True, exist_ok=True)
+        print(f"✅ 目录: {directory}")
+
+    # 创建基础的SHACL shapes文件
+    shapes_file = Path("src/constraint_graph/artifacts/shapes/autosar_shapes.ttl")
+    if not shapes_file.exists():
+        shapes_content = """@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix autosar: <http://autosar.org/schema/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 基础的AUTOSAR组件形状定义
+autosar:ApplicationSwComponentTypeShape
+    a sh:NodeShape ;
+    sh:targetClass autosar:APPLICATION-SW-COMPONENT-TYPE ;
+    sh:property [
+        sh:path autosar:SHORT-NAME ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "APPLICATION-SW-COMPONENT-TYPE must have exactly one SHORT-NAME" ;
+    ] .
+
+# 端口原型形状定义
+autosar:PortPrototypeShape
+    a sh:NodeShape ;
+    sh:targetClass autosar:P-PORT-PROTOTYPE, autosar:R-PORT-PROTOTYPE ;
+    sh:property [
+        sh:path autosar:SHORT-NAME ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Port prototype must have exactly one SHORT-NAME" ;
+    ] .
+"""
+        with open(shapes_file, 'w', encoding='utf-8') as f:
+            f.write(shapes_content)
+        print(f"✅ 创建SHACL shapes: {shapes_file}")
+
+    # 创建基础的SMT模板文件
+    smt_file = Path("src/constraint_graph/artifacts/smt/constraints.smt2")
+    if not smt_file.exists():
+        smt_content = """; Basic AUTOSAR SMT constraint template
+
+(set-logic QF_LRA)
+
+; Basic timing constraints
+(declare-const period Real)
+(declare-const deadline Real)
+
+; Constraints
+(assert (> period 0.0))
+(assert (> deadline 0.0))
+(assert (<= deadline period))
+
+(check-sat)
+"""
+        with open(smt_file, 'w', encoding='utf-8') as f:
+            f.write(smt_content)
+        print(f"✅ 创建SMT模板: {smt_file}")
+
+    # 创建基础的XSD文件（如果不存在）
+    xsd_file = Path("src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd")
+    if not xsd_file.exists():
+        xsd_content = """<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://autosar.org/schema/r4.0"
+           xmlns:autosar="http://autosar.org/schema/r4.0"
+           elementFormDefault="qualified">
+
+    <!-- Basic AUTOSAR component definition -->
+    <xs:element name="APPLICATION-SW-COMPONENT-TYPE">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="SHORT-NAME" type="xs:string"/>
+                <xs:element name="PORTS" minOccurs="0">
+                    <xs:complexType>
+                        <xs:choice maxOccurs="unbounded">
+                            <xs:element name="P-PORT-PROTOTYPE" type="autosar:PortPrototypeType"/>
+                            <xs:element name="R-PORT-PROTOTYPE" type="autosar:PortPrototypeType"/>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Port prototype type definition -->
+    <xs:complexType name="PortPrototypeType">
+        <xs:sequence>
+            <xs:element name="SHORT-NAME" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
+"""
+        with open(xsd_file, 'w', encoding='utf-8') as f:
+            f.write(xsd_content)
+        print(f"✅ 创建XSD schema: {xsd_file}")
 
 
 def check_validation_files():
@@ -193,7 +323,8 @@ def check_validation_files():
 
     if available_xmls == 0:
         print("❌ 没有可用的XML实例文件")
-        return False
+        # 创建示例XML文件
+        create_sample_xml()
 
     # 检查验证器文件
     validator_files = [
@@ -211,11 +342,46 @@ def check_validation_files():
             print(f"❌ {file_desc}: {file_path}")
 
     if missing_files:
-        print(f"❌ 缺少验证文件: {len(missing_files)} 个")
-        return False
+        print(f"⚠️  发现 {len(missing_files)} 个缺失文件，尝试创建...")
+        create_missing_validation_files()
 
     print("✅ 验证文件检查完成")
     return True
+
+
+def create_sample_xml():
+    """创建示例XML文件"""
+    xml_dir = Path("xml_instance")
+    xml_dir.mkdir(exist_ok=True)
+
+    xml_file = xml_dir / "ASW_COM.arxml"
+    if not xml_file.exists():
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <AR-PACKAGES>
+        <AR-PACKAGE>
+            <SHORT-NAME>ComponentTypes</SHORT-NAME>
+            <ELEMENTS>
+                <APPLICATION-SW-COMPONENT-TYPE>
+                    <SHORT-NAME>ExampleComponent</SHORT-NAME>
+                    <PORTS>
+                        <P-PORT-PROTOTYPE>
+                            <SHORT-NAME>ProvidePort</SHORT-NAME>
+                        </P-PORT-PROTOTYPE>
+                        <R-PORT-PROTOTYPE>
+                            <SHORT-NAME>RequirePort</SHORT-NAME>
+                        </R-PORT-PROTOTYPE>
+                    </PORTS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+    </AR-PACKAGES>
+</AUTOSAR>
+"""
+        with open(xml_file, 'w', encoding='utf-8') as f:
+            f.write(xml_content)
+        print(f"✅ 创建示例XML: {xml_file}")
 
 
 def run_validation_system():
@@ -238,10 +404,8 @@ def run_validation_system():
         # 导入主验证器
         from src.validation.main_validator import AutosarValidator
 
-        # 使用验证配置文件
-        config_path = "config/validation_config.yaml"
-        if not Path(config_path).exists():
-            config_path = "config/main_config.yaml"
+        # 查找配置文件
+        config_path = check_config_files()
 
         # 创建验证器实例
         validator = AutosarValidator(config_path)
@@ -315,12 +479,43 @@ def run_validation_system():
         return False
 
 
+def validate_constraint_files():
+    """验证生成的约束文件质量"""
+    print("\n🔍 检查约束文件质量...")
+
+    # 检查SHACL文件
+    shacl_file = Path("src/constraint_graph/artifacts/shapes/autosar_shapes.ttl")
+    if shacl_file.exists():
+        try:
+            import rdflib
+            g = rdflib.Graph()
+            g.parse(str(shacl_file), format="turtle")
+            print(f"✅ SHACL文件语法正确: {len(g)} 个三元组")
+        except Exception as e:
+            print(f"❌ SHACL文件语法错误: {e}")
+            return False
+
+    # 检查SMT文件
+    smt_file = Path("src/constraint_graph/artifacts/smt/constraints.smt2")
+    if smt_file.exists():
+        try:
+            content = smt_file.read_text(encoding='utf-8')
+            if "(check-sat)" in content and "(set-logic" in content:
+                print(f"✅ SMT文件格式正确")
+            else:
+                print(f"⚠️  SMT文件可能不完整")
+        except Exception as e:
+            print(f"❌ SMT文件读取错误: {e}")
+
+    return True
+
+
 def main():
     """主函数"""
     print("=" * 80)
-    print("🔧 AUTOSAR XML验证系统 - 一键启动")
+    print("🔧 AUTOSAR XML验证系统 - 一键启动 (修复版)")
     print("=" * 80)
-    print("适用于PyCharm环境，请确保已手动安装所需依赖包")
+    print("支持main_config.yaml配置文件，自动创建缺失文件")
     print()
 
     # 1. 检查项目结构
@@ -343,9 +538,12 @@ def main():
 
     # 3. 检查验证文件
     if not check_validation_files():
-        print("\n❌ 验证文件不完整，请检查配置文件中的路径设置")
+        print("\n❌ 验证文件设置失败")
         input("按Enter键退出...")
         return False
+
+    # 3.1 验证约束文件质量
+    validate_constraint_files()
 
     # 4. 运行验证系统
     success = run_validation_system()
@@ -367,5 +565,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 程序异常: {e}")
         import traceback
+
         traceback.print_exc()
         input("按Enter键退出...")

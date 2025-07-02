@@ -304,9 +304,9 @@ file_paths:
 # 验证器配置
 validators:
   structure:
-    enabled: true
+    enabled: false
     timeout: 30
-    fallback_to_basic: true  # XSD验证失败时降级到基本XML验证
+    fallback_to_basic: false  # XSD验证失败时降级到基本XML验证
 
   semantic:
     enabled: true

@@ -88,25 +88,17 @@ class XSDValidator:
                     "validation_type": "XSD"
                 }
 
+
             except Exception as xsd_error:
                 error_msg = str(xsd_error)
                 print(f"❌ XSD验证失败: {error_msg[:200]}...")
-
-                # 检查是否是命名空间问题
-                if any(keyword in error_msg.lower() for keyword in ["namespace", "target", "schema"]):
-                    print("🔍 检测到可能的Schema兼容性问题，降级到基础验证...")
-                    basic_result = self._basic_xml_validation(xml_content)
-                    basic_result["xsd_error"] = error_msg[:500]
-                    basic_result["note"] = "XSD验证失败但XML格式正确"
-                    return basic_result
-
                 return {
                     "valid": False,
                     "error_info": error_msg,
                     "schema_file": self.xsd_file,
-                    "validation_type": "XSD"
+                    "validation_type": "XSD",
+                    "failed_reason": "Schema validation failed"
                 }
-
             finally:
                 try:
                     os.unlink(temp_xml_path)

@@ -1,6 +1,6 @@
 # src/validation/orchestrator/config_driven_orchestrator.py
 """
-配置驱动的验证编排器 - 增强版（详细输出）
+配置驱动的验证编排器 - 增强版（支持映射文件传递）
 """
 from typing import Dict, Optional
 import time
@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 class ConfigDrivenOrchestrator:
-    """配置驱动的验证编排器"""
+    """配置驱动的验证编排器 - 支持增强功能"""
 
     def __init__(self, config: Dict):
         """初始化验证编排器"""
@@ -22,45 +22,103 @@ class ConfigDrivenOrchestrator:
         validator_config = self.config.get("validators", {})
         file_paths = self.config.get("file_paths", {})
 
+        # 修正：获取项目根目录
+        project_root = Path(self.config.get("project_root", "."))
+
+        # 获取映射文件路径 (可选)
+        raw_attributes_file = file_paths.get("raw_attributes")
+        enriched_constraints_file = file_paths.get("enriched_constraints")
+
+        # 修正：解析映射文件的完整路径
+        if raw_attributes_file:
+            raw_attributes_path = project_root / raw_attributes_file if not Path(
+                raw_attributes_file).is_absolute() else Path(raw_attributes_file)
+            raw_attributes_file = str(raw_attributes_path) if raw_attributes_path.exists() else None
+
+        if enriched_constraints_file:
+            enriched_constraints_path = project_root / enriched_constraints_file if not Path(
+                enriched_constraints_file).is_absolute() else Path(enriched_constraints_file)
+            enriched_constraints_file = str(enriched_constraints_path) if enriched_constraints_path.exists() else None
+
         # 初始化结构验证器
         if validator_config.get("structure", {}).get("enabled", True):
             try:
                 from ..structure.xsd_validator import XSDValidator
                 xsd_path = file_paths.get("xsd_schema")
-                if xsd_path and Path(xsd_path).exists():
-                    print(f"📄 加载XSD Schema: {xsd_path}")
-                    self.validators['structure'] = XSDValidator(xsd_path)
-                    print("✅ XSD结构验证器初始化成功")
+                if xsd_path:
+                    # 修正：解析XSD文件的完整路径
+                    xsd_full_path = project_root / xsd_path if not Path(xsd_path).is_absolute() else Path(xsd_path)
+                    if xsd_full_path.exists():
+                        print(f"📄 加载XSD Schema: {xsd_full_path}")
+                        self.validators['structure'] = XSDValidator(str(xsd_full_path))
+                        print("✅ XSD结构验证器初始化成功")
+                    else:
+                        print(f"⚠️  XSD文件未找到: {xsd_full_path}")
                 else:
-                    print(f"⚠️  XSD文件未找到: {xsd_path}")
+                    print("⚠️  配置中未指定XSD Schema路径")
             except Exception as e:
                 print(f"⚠️  XSD验证器初始化失败: {e}")
 
-        # 初始化语义验证器
+        # 初始化语义验证器 (支持映射文件)
         if validator_config.get("semantic", {}).get("enabled", True):
             try:
                 from ..semantic.shacl_validator import SHACLValidator
                 shacl_path = file_paths.get("shacl_shapes")
-                if shacl_path and Path(shacl_path).exists():
-                    print(f"📄 加载SHACL Shapes: {shacl_path}")
-                    self.validators['semantic'] = SHACLValidator(shacl_path)
-                    print("✅ SHACL语义验证器初始化成功")
+                if shacl_path:
+                    # 修正：解析SHACL文件的完整路径
+                    shacl_full_path = project_root / shacl_path if not Path(shacl_path).is_absolute() else Path(
+                        shacl_path)
+                    if shacl_full_path.exists():
+                        print(f"📄 加载SHACL Shapes: {shacl_full_path}")
+
+                        # 检查是否有映射文件
+                        if raw_attributes_file and Path(raw_attributes_file).exists():
+                            print(f"📄 启用映射功能: {raw_attributes_file}")
+                            self.validators['semantic'] = SHACLValidator(
+                                str(shacl_full_path),
+                                raw_attributes_file,
+                                enriched_constraints_file
+                            )
+                            print("✅ SHACL语义验证器初始化成功 (增强模式)")
+                        else:
+                            print("📝 使用标准模式")
+                            self.validators['semantic'] = SHACLValidator(str(shacl_full_path))
+                            print("✅ SHACL语义验证器初始化成功 (标准模式)")
+                    else:
+                        print(f"⚠️  SHACL文件未找到: {shacl_full_path}")
                 else:
-                    print(f"⚠️  SHACL文件未找到: {shacl_path}")
+                    print("⚠️  配置中未指定SHACL Shapes路径")
             except Exception as e:
                 print(f"⚠️  SHACL验证器初始化失败: {e}")
 
-        # 初始化约束验证器
+        # 初始化约束验证器 (支持映射文件)
         if validator_config.get("constraint", {}).get("enabled", True):
             try:
                 from ..constraints.smt_validator import SMTValidator
                 smt_path = file_paths.get("smt_template")
-                if smt_path and Path(smt_path).exists():
-                    print(f"📄 加载SMT Template: {smt_path}")
-                    self.validators['constraint'] = SMTValidator(smt_path)
-                    print("✅ SMT约束验证器初始化成功")
+                if smt_path:
+                    # 修正：解析SMT文件的完整路径
+                    smt_full_path = project_root / smt_path if not Path(smt_path).is_absolute() else Path(smt_path)
+                    if smt_full_path.exists():
+                        print(f"📄 加载SMT Template: {smt_full_path}")
+
+                        # 检查是否有映射文件
+                        if raw_attributes_file and Path(raw_attributes_file).exists():
+                            print(f"📄 启用约束映射功能: {raw_attributes_file}")
+                            self.validators['constraint'] = SMTValidator(
+                                str(smt_full_path),
+                                raw_attributes_file,
+                                enriched_constraints_file
+                            )
+                            print("✅ SMT约束验证器初始化成功 (增强模式)")
+                        else:
+                            print("📝 使用标准模式")
+                            self.validators['constraint'] = SMTValidator(str(smt_full_path))
+                            print("✅ SMT约束验证器初始化成功 (标准模式)")
+                    else:
+                        print(f"⚠️  SMT文件未找到: {smt_full_path}")
                 else:
-                    print(f"⚠️  SMT文件未找到: {smt_path}")
+                    print("⚠️  配置中未指定SMT Template路径")
             except Exception as e:
                 print(f"⚠️  SMT验证器初始化失败: {e}")
 
@@ -209,68 +267,6 @@ class ConfigDrivenOrchestrator:
             return {"valid": False, "error_info": f"未知验证阶段: {stage}"}
 
     def _print_stage_details(self, stage: str, result: Dict):
-        """打印验证阶段的详细信息"""
-        if stage == "structure":
-            validation_type = result.get("validation_type", "Unknown")
-            schema_file = result.get("schema_file", "N/A")
-            print(f"   📄 验证类型: {validation_type}")
-            if schema_file != "N/A":
-                print(f"   📁 Schema文件: {Path(schema_file).name}")
-
-        elif stage == "semantic":
-            rdf_triples = result.get("rdf_triples", 0)
-            shapes_applied = result.get("shapes_applied", 0)
-            print(f"   🔗 RDF三元组: {rdf_triples}")
-            print(f"   📐 应用的形状: {shapes_applied}")
-
-        elif stage == "constraint":
-            satisfied = result.get("satisfied_count", 0)
-            total = result.get("constraint_count", 0)
-            if total > 0:
-                print(f"   ✅ 约束满足: {satisfied}/{total}")
-                satisfaction_rate = (satisfied / total) * 100
-                print(f"   📈 满足率: {satisfaction_rate:.1f}%")
-            else:
-                print(f"   📝 未检测到约束条件")
-
-    def _print_failure_details(self, stage: str, result: Dict):
-        """打印验证失败的详细信息"""
-        error_info = result.get("error_info")
-        if error_info:
-            print(f"   ❌ 错误: {error_info}")
-
-        if stage == "semantic":
-            violations = result.get("violations", [])
-            if violations:
-                print(f"   📋 违规详情:")
-                for i, violation in enumerate(violations[:3], 1):
-                    severity = violation.get("severity", "Error")
-                    message = violation.get("message", "Unknown")
-                    focus_node = violation.get("focus_node", "N/A")
-                    print(f"      {i}. [{severity}] {message}")
-                    if focus_node != "N/A":
-                        print(f"         🎯 节点: {focus_node}")
-
-                if len(violations) > 3:
-                    print(f"      ... 还有 {len(violations) - 3} 个违规")
-
-        elif stage == "constraint":
-            unsat_constraints = result.get("unsat_constraints", [])
-            if unsat_constraints:
-                print(f"   📋 未满足约束:")
-                for i, unsat in enumerate(unsat_constraints[:3], 1):
-                    status = unsat.get("status", "unknown")
-                    output = unsat.get("output", "").strip()
-                    print(f"      {i}. 状态: {status}")
-                    if output:
-                        print(f"         详情: {output[:100]}...")
-
-                if len(unsat_constraints) > 3:
-                    print(f"      ... 还有 {len(unsat_constraints) - 3} 个")
-
-    # 修复验证编排器中的详细输出 - 添加到 config_driven_orchestrator.py
-
-    def _print_stage_details(self, stage: str, result: Dict):
         """打印验证阶段的详细信息 - 增强版"""
 
         if stage == "structure":
@@ -298,6 +294,14 @@ class ConfigDrivenOrchestrator:
             print(f"   🔗 RDF三元组: {rdf_triples}")
             print(f"   📐 SHACL形状: {shapes_applied}")
 
+            # 显示映射功能状态
+            mapping_stats = result.get("mapping_stats", {})
+            if mapping_stats.get("mapping_enabled", False):
+                print(f"   🔧 映射功能: 已启用")
+                print(f"   📊 映射数量: {mapping_stats.get('xml_to_attr_mappings', 0)}")
+            else:
+                print(f"   📝 映射功能: 标准模式")
+
             violation_count = result.get("violation_count", 0)
             if violation_count == 0:
                 print(f"   ✅ 语义约束: 全部满足")
@@ -307,9 +311,19 @@ class ConfigDrivenOrchestrator:
         elif stage == "constraint":
             satisfied = result.get("satisfied_count", 0)
             total = result.get("constraint_count", 0)
-            data_points = result.get("data_points", 0)
 
-            print(f"   📊 提取数据: {data_points} 个约束数据点")
+            # 检查是否为增强模式
+            if "constraint_breakdown" in result:
+                print(f"   🔧 验证模式: 增强约束验证")
+                breakdown = result.get("constraint_breakdown", {})
+                print(f"   📊 约束分类:")
+                for category, count in breakdown.items():
+                    if count > 0:
+                        print(f"      {category}: {count}")
+            else:
+                data_points = result.get("data_points", 0)
+                print(f"   📝 验证模式: 标准约束验证")
+                print(f"   📊 数据点: {data_points}")
 
             if total > 0:
                 satisfaction_rate = result.get("satisfaction_rate", 0)
@@ -355,6 +369,11 @@ class ConfigDrivenOrchestrator:
                     if focus_node != "N/A":
                         print(f"         🎯 节点: {focus_node}")
 
+                    # 显示XML元素映射（如果可用）
+                    xml_element = violation.get("xml_element")
+                    if xml_element:
+                        print(f"         🏷️  XML元素: {xml_element}")
+
                     # 显示约束类型
                     constraint_type = violation.get("constraint_component", "")
                     if constraint_type:
@@ -366,9 +385,19 @@ class ConfigDrivenOrchestrator:
         elif stage == "constraint":
             satisfied = result.get("satisfied_count", 0)
             total = result.get("constraint_count", 0)
-            data_points = result.get("data_points", 0)
 
-            print(f"   📊 约束数据: {data_points} 个数据点")
+            # 检查验证模式
+            if "constraint_breakdown" in result:
+                print(f"   🔧 增强约束验证失败")
+                breakdown = result.get("constraint_breakdown", {})
+                print(f"   📊 约束统计:")
+                for category, count in breakdown.items():
+                    print(f"      {category}: {count}")
+            else:
+                data_points = result.get("data_points", 0)
+                print(f"   📝 标准约束验证失败")
+                print(f"   📊 约束数据: {data_points} 个数据点")
+
             print(f"   📋 SMT约束: {satisfied}/{total} 满足")
 
             unsat_constraints = result.get("unsat_constraints", [])
@@ -377,8 +406,9 @@ class ConfigDrivenOrchestrator:
                 for i, unsat in enumerate(unsat_constraints[:3], 1):
                     status = unsat.get("status", "unknown")
                     error = unsat.get("error", "")
+                    constraint_type = unsat.get("constraint_type", "unknown")
 
-                    print(f"      {i}. 状态: {status}")
+                    print(f"      {i}. 类型: {constraint_type}, 状态: {status}")
                     if error:
                         print(f"         原因: {error[:100]}...")
 
@@ -394,7 +424,6 @@ class ConfigDrivenOrchestrator:
                 else:
                     print(f"   💡 建议: 检查时序参数和数值约束设置")
 
-    # 在 generate_validation_report 方法中也要更新
     def generate_validation_report(self, validation_results: Dict) -> str:
         """生成超详细的验证报告"""
 
@@ -475,6 +504,14 @@ class ConfigDrivenOrchestrator:
                     report_lines.append(f"   RDF转换: {rdf_triples} 个三元组")
                     report_lines.append(f"   SHACL形状: {shapes_applied} 个")
 
+                    # 映射功能状态
+                    mapping_stats = result.get("mapping_stats", {})
+                    if mapping_stats.get("mapping_enabled", False):
+                        report_lines.append(
+                            f"   映射功能: 已启用 ({mapping_stats.get('xml_to_attr_mappings', 0)} 个映射)")
+                    else:
+                        report_lines.append(f"   映射功能: 标准模式")
+
                     violation_count = result.get("violation_count", 0)
                     if violation_count == 0:
                         report_lines.append(f"   约束满足: 所有语义约束通过")
@@ -487,13 +524,28 @@ class ConfigDrivenOrchestrator:
                             message = violation.get("message", "No message")
                             report_lines.append(f"     {i}. [{severity}] {message}")
 
+                            # 显示XML元素信息（如果可用）
+                            xml_element = violation.get("xml_element")
+                            if xml_element:
+                                report_lines.append(f"        XML元素: {xml_element}")
+
                 # 约束验证详细信息
                 elif stage_key == "constraint":
-                    data_points = result.get("data_points", 0)
                     satisfied = result.get("satisfied_count", 0)
                     total_constraints = result.get("constraint_count", 0)
 
-                    report_lines.append(f"   数据提取: {data_points} 个约束数据点")
+                    # 检查验证模式
+                    if "constraint_breakdown" in result:
+                        report_lines.append(f"   验证模式: 增强约束验证")
+                        breakdown = result.get("constraint_breakdown", {})
+                        report_lines.append(f"   约束分类:")
+                        for category, count in breakdown.items():
+                            if count > 0:
+                                report_lines.append(f"     {category}: {count}")
+                    else:
+                        data_points = result.get("data_points", 0)
+                        report_lines.append(f"   验证模式: 标准约束验证")
+                        report_lines.append(f"   数据提取: {data_points} 个约束数据点")
 
                     if total_constraints > 0:
                         satisfaction_rate = result.get("satisfaction_rate", 0)
@@ -529,9 +581,20 @@ class ConfigDrivenOrchestrator:
                 report_lines.append("   🧠 语义问题: 检查业务逻辑和数据关系")
                 report_lines.append("   📐 参考: SHACL形状定义文件")
 
+                # 检查是否有映射功能建议
+                semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
+                mapping_stats = semantic_result.get("mapping_stats", {})
+                if not mapping_stats.get("mapping_enabled", False):
+                    report_lines.append("   💡 建议: 启用映射功能以获得更精确的验证")
+
             elif failed_stage == "constraint":
                 report_lines.append("   🔢 约束问题: 检查时序参数和数值设置")
                 report_lines.append("   ⏰ 建议: 确保deadline < period，timeout > period")
+
+                # 检查是否有增强功能建议
+                constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
+                if "constraint_breakdown" not in constraint_result:
+                    report_lines.append("   💡 建议: 启用增强约束验证以获得详细分析")
 
             report_lines.append("")
 
@@ -543,4 +606,38 @@ class ConfigDrivenOrchestrator:
                 report_lines.append(f"   - {warning}")
             report_lines.append("")
 
+        # 功能使用统计
+        report_lines.append("🔧 功能使用统计:")
+
+        semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
+        constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
+
+        # 语义验证功能
+        mapping_stats = semantic_result.get("mapping_stats", {})
+        if mapping_stats.get("mapping_enabled", False):
+            report_lines.append(f"   ✅ SHACL映射功能: 已启用")
+        else:
+            report_lines.append(f"   📝 SHACL映射功能: 标准模式")
+
+        # 约束验证功能
+        if "constraint_breakdown" in constraint_result:
+            report_lines.append(f"   ✅ SMT增强验证: 已启用")
+        else:
+            report_lines.append(f"   📝 SMT增强验证: 标准模式")
+
         return "\n".join(report_lines)
+
+    def execute_full_validation(self, xml_content: str, validation_level: str = "full") -> Dict:
+        """为兼容性提供的方法，调用execute_validation"""
+
+        # 根据validation_level确定验证阶段
+        if validation_level == "structure":
+            validation_stages = ["structure"]
+        elif validation_level == "semantic":
+            validation_stages = ["structure", "semantic"]
+        elif validation_level == "constraint":
+            validation_stages = ["constraint"]
+        else:  # full
+            validation_stages = ["structure", "semantic", "constraint"]
+
+        return self.execute_validation(xml_content, validation_stages)

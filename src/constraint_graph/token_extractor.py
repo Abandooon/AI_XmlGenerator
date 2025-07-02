@@ -176,8 +176,8 @@ class TokenExtractor:
                     meta = kg.attr_nodes[aid]
                     type_id = kg.attr_type.get(aid)
                     is_attr_cls = (
-                        type_id in kg.cls_nodes
-                        and kg.cls_nodes[type_id].get("isAttribute", False)
+                            type_id in kg.cls_nodes
+                            and kg.cls_nodes[type_id].get("isAttribute", False)
                     )
                     allowed = restrictions.get(aid)
                     f_attr.write(json.dumps({
@@ -194,7 +194,6 @@ class TokenExtractor:
                     }, ensure_ascii=False) + "\n")
 
         # 3) enum literals -------------------------------------------------
-        # Collect enums reachable via any attribute returned above
         referenced_enums: Set[int] = set()
         for aid, tid in kg.attr_type.items():
             if tid in kg.enum_idx:
@@ -208,19 +207,91 @@ class TokenExtractor:
                     "values": kg.enum_idx[eid],
                 }, ensure_ascii=False) + "\n")
 
-        # 4) constraints snapshot -----------------------------------------
+        # 4) 🔧 修复：正确提取约束信息，保持完整的CID溯源 -----------------------------------------
         con_fp = out_path / "raw_constraints.jsonl"
         with con_fp.open("w", encoding="utf-8") as f_con:
-            for cid, node in kg.constraint_nodes.items():
-                f_con.write(json.dumps({
-                        "cid": cid,
-                        "constraint_type": node.get("constraint_type"),
-                        "value": node.get("value"),
-                        "expression": node.get("expression"),
-                        "targets": kg.constrains_attr.get(cid, []),
-                }, ensure_ascii=False) + "\n")
+            print("🔍 开始提取约束信息...")
+            constraint_count = 0
 
-        # 4) save roots for provenance ------------------------------------
+            for constraint_node_id, constraint_data in kg.constraint_nodes.items():
+                # 🔧 关键修复：从KG节点数据中正确提取字段
+
+                # 获取约束的基本信息
+                constraint_cid = constraint_data.get("cid")  # 约束ID，如 "TPS_SWCT_01085"
+                autosar_id = constraint_data.get("id")  # AUTOSAR完整ID，如 "autosar:4-2-2/constr/TPS_SWCT_01085"
+                constraint_type = constraint_data.get("constraint_type")
+                expression = constraint_data.get("expression", "")
+                title = constraint_data.get("title", "")
+                value = constraint_data.get("value", "")
+                is_active = constraint_data.get("is_active", True)
+                references = constraint_data.get("references", [])
+                scope_path = constraint_data.get("scope_path", [])
+                id_type = constraint_data.get("id_type", "")
+
+                # 🔧 确保CID字段正确
+                if not constraint_cid and autosar_id:
+                    # 从AUTOSAR ID中提取CID
+                    if "/" in autosar_id:
+                        constraint_cid = autosar_id.split("/")[-1]
+                    else:
+                        constraint_cid = autosar_id
+
+                if not constraint_cid:
+                    # 使用节点ID作为后备
+                    constraint_cid = f"CONSTRAINT_{constraint_node_id}"
+                    print(f"⚠️  约束节点 {constraint_node_id} 缺少CID，使用: {constraint_cid}")
+
+                # 获取约束目标（属性ID列表）
+                target_attr_ids = kg.constrains_attr.get(constraint_node_id, [])
+
+                # 🔧 处理targets_json字段（如果存在）
+                targets_data = []
+                targets_json = constraint_data.get("targets_json")
+                if targets_json:
+                    try:
+                        targets_data = json.loads(targets_json) if isinstance(targets_json, str) else targets_json
+                        if not isinstance(targets_data, list):
+                            targets_data = [targets_data]
+                    except (json.JSONDecodeError, TypeError) as e:
+                        print(f"⚠️  约束 {constraint_cid} 的targets_json解析失败: {e}")
+                        targets_data = []
+
+                # 构建完整的约束记录
+                constraint_record = {
+                    # 🔧 CID相关字段 - 正确的字段映射
+                    "cid": constraint_cid,  # 约束ID（主要标识符）
+                    "autosar_id": autosar_id,  # AUTOSAR完整ID
+                    "neo4j_node_id": constraint_node_id,  # Neo4j节点ID（用于调试）
+
+                    # 🔧 约束内容
+                    "constraint_type": constraint_type,
+                    "expression": expression,
+                    "title": title,
+                    "value": value,
+                    "is_active": is_active,
+                    "references": references if isinstance(references, list) else [],
+                    "scope_path": scope_path if isinstance(scope_path, list) else [],
+                    "id_type": id_type,
+
+                    # 🔧 目标信息
+                    "targets": target_attr_ids,  # 简化的属性ID列表（向后兼容）
+                    "targets_data": targets_data,  # 完整的目标数据结构
+
+                    # 🔧 溯源信息
+                    "kg_source": True,
+                    "extraction_timestamp": None  # 可以添加时间戳
+                }
+
+                f_con.write(json.dumps(constraint_record, ensure_ascii=False) + "\n")
+                constraint_count += 1
+
+                # 调试：显示前几个约束的CID
+                if constraint_count <= 5:
+                    print(f"   ✅ 约束 {constraint_count}: CID={constraint_cid}, Type={constraint_type}")
+
+            print(f"📊 提取约束完成: {constraint_count} 个")
+
+        # 5) save roots for provenance ------------------------------------
         meta_fp = out_path / "meta_roots.json"
         meta_fp.write_text(json.dumps(self.root_ids, ensure_ascii=False, indent=2))
 
