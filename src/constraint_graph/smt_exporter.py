@@ -1,7 +1,4 @@
-"""smt_exporter.py (v3.0) - 支持约束严重性分级
------------------------
-支持结构约束和语义约束的分级导出，使用不同的严重性级别
-"""
+
 from __future__ import annotations
 
 import pathlib
@@ -21,8 +18,13 @@ class SmtExporter:
         self.class_id_to_xml_mapping = {}
         self.attr_id_to_xml_mapping = {}
 
+        # 🔧 新增：跳过约束统计
+        self.skipped_constraints = []
+        self.processed_count = 0
+        self.skipped_count = 0
+
     def export(self, constraints: List[Dict[str, Any]]) -> pathlib.Path:
-        """导出所有约束为SMT求解实例 - 支持严重性分级"""
+        """导出所有约束为SMT求解实例 - 支持严重性分级和约束跳过统计"""
 
         # 先构建映射表
         self._build_xml_mappings(constraints)
@@ -48,10 +50,188 @@ class SmtExporter:
         # 添加检查命令
         self._add_check_commands()
 
+        # 🔧 生成统计报告
+        self._generate_skip_report()
+
         # 保存文件
         path = self.out_dir / "constraints.smt2"
         path.write_text("\n".join(self.lines), encoding="utf-8")
+        print(f"✅ SMT文件已保存: {path}")
+        print(f"📊 处理统计: 成功 {self.processed_count} 个，跳过 {self.skipped_count} 个")
         return path
+
+    def _should_skip_constraint(self, constraint: Dict[str, Any]) -> bool:
+        """检查约束是否应该被跳过（目标类缺失）"""
+        targets = constraint.get("enriched_targets", [])
+        
+        if not targets:
+            return True  # 没有目标则跳过
+        
+        for target in targets:
+            if target["target_type"] != "attribute":
+                continue
+                
+            # 检查是否能解析到有效的类名和属性名
+            entity_name = self._try_get_entity_name(target.get("class_id"))
+            attr_name = self._try_get_attribute_name(target.get("attr_id"))
+            
+            if entity_name.startswith("class_") or attr_name.startswith("attr_"):
+                return True  # 无法解析到实际名称，跳过
+                
+        return False  # 所有目标都有效，不跳过
+
+    def _try_get_entity_name(self, class_id: int) -> str:
+        """尝试获取实体名称，用于检查是否应该跳过"""
+        if class_id and class_id in self.class_id_to_xml_mapping:
+            mapped_name = self.class_id_to_xml_mapping[class_id]
+            if mapped_name and mapped_name != "unknown":
+                return mapped_name
+        return f"class_{class_id}" if class_id else "class_unknown"
+
+    def _try_get_attribute_name(self, attr_id: int) -> str:
+        """尝试获取属性名称，用于检查是否应该跳过"""
+        if attr_id and attr_id in self.attr_id_to_xml_mapping:
+            xml_tag = self.attr_id_to_xml_mapping[attr_id]
+            if xml_tag and xml_tag != "unknown":
+                smt_attr_name = self._to_smt_identifier(xml_tag)
+                return smt_attr_name
+        return f"attr_{attr_id}" if attr_id else "attr_unknown"
+
+    def _record_skipped_constraint(self, constraint: Dict[str, Any], constraint_category: str, reason: str):
+        """记录被跳过的约束"""
+        self.skipped_count += 1
+
+        # 提取约束的关键信息
+        cid = constraint.get("cid", "unknown")
+        constraint_type = constraint.get("type", "unknown")
+        title = constraint.get("title", "")
+
+        # 分析目标信息
+        targets_info = []
+        for target in constraint.get("enriched_targets", []):
+            target_info = {
+                "target_type": target.get("target_type", "unknown"),
+                "class_id": target.get("class_id"),
+                "class_name": target.get("class_name"),
+                "class_xml_tag": target.get("class_xml_tag"),
+                "attr_id": target.get("attr_id"),
+                "xml_tag": target.get("xml_tag"),
+                "resolved_entity": self._try_get_entity_name(target.get("class_id")),
+                "resolved_attr": self._try_get_attribute_name(target.get("attr_id"))
+            }
+            targets_info.append(target_info)
+
+        skipped_record = {
+            "cid": cid,
+            "constraint_type": constraint_type,
+            "constraint_category": constraint_category,
+            "title": title[:100] if title else "",  # 限制长度
+            "reason": reason,
+            "targets_count": len(constraint.get("enriched_targets", [])),
+            "targets_info": targets_info,
+            "original_constraint": {
+                "is_structural": constraint.get("is_structural", False),
+                "is_semantic": constraint.get("is_semantic", False),
+                "severity": constraint.get("severity"),
+                "source": constraint.get("source", "unknown")
+            }
+        }
+
+        self.skipped_constraints.append(skipped_record)
+
+    def _generate_skip_report(self):
+        """生成跳过约束的详细报告"""
+        if not self.skipped_constraints:
+            print("✅ 所有约束都成功处理，无跳过约束")
+            return
+
+        # 🔧 生成JSON格式的详细报告
+        report = {
+            "summary": {
+                "total_constraints": self.processed_count + self.skipped_count,
+                "processed_constraints": self.processed_count,
+                "skipped_constraints": self.skipped_count,
+                "skip_rate": round(self.skipped_count / (self.processed_count + self.skipped_count) * 100, 2) if (
+                                                                                                                             self.processed_count + self.skipped_count) > 0 else 0
+            },
+            "skip_reasons": {},
+            "skip_by_category": {},
+            "skip_by_type": {},
+            "skipped_details": self.skipped_constraints
+        }
+
+        # 统计跳过原因
+        for record in self.skipped_constraints:
+            reason = record["reason"]
+            category = record["constraint_category"]
+            constraint_type = record["constraint_type"]
+
+            report["skip_reasons"][reason] = report["skip_reasons"].get(reason, 0) + 1
+            report["skip_by_category"][category] = report["skip_by_category"].get(category, 0) + 1
+            report["skip_by_type"][constraint_type] = report["skip_by_type"].get(constraint_type, 0) + 1
+
+        # 保存详细报告
+        report_path = self.out_dir / "smt_skipped_constraints.json"
+        with open(report_path, 'w', encoding='utf-8') as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+
+        # 🔧 生成人类可读的摘要报告
+        summary_lines = [
+            "# SMT约束跳过统计报告",
+            f"生成时间: {pathlib.Path().absolute()}",
+            "",
+            "## 总体统计",
+            f"- 总约束数: {report['summary']['total_constraints']}",
+            f"- 成功处理: {report['summary']['processed_constraints']}",
+            f"- 跳过约束: {report['summary']['skipped_constraints']}",
+            f"- 跳过率: {report['summary']['skip_rate']}%",
+            "",
+            "## 按跳过原因分类",
+        ]
+
+        for reason, count in report["skip_reasons"].items():
+            summary_lines.append(f"- {reason}: {count} 个")
+
+        summary_lines.extend([
+            "",
+            "## 按约束类别分类",
+        ])
+
+        for category, count in report["skip_by_category"].items():
+            summary_lines.append(f"- {category}: {count} 个")
+
+        summary_lines.extend([
+            "",
+            "## 按约束类型分类",
+        ])
+
+        for constraint_type, count in report["skip_by_type"].items():
+            summary_lines.append(f"- {constraint_type}: {count} 个")
+
+        summary_lines.extend([
+            "",
+            "## SMT特定问题诊断",
+            "",
+            "### SMT约束生成的特殊要求：",
+            "1. 实体名称必须是有效的SMT标识符",
+            "2. 属性名称必须能转换为SMT函数名",
+            "3. 类映射关系必须完整，支持SMT类型推理",
+            "",
+            "### 常见SMT约束失败原因：",
+            "- 实体类型无法映射到SMT Sort",
+            "- 属性名称包含SMT不支持的字符",
+            "- 缺少数值类型的约束信息",
+            "",
+            f"详细信息请查看: {report_path.name}"
+        ])
+
+        summary_path = self.out_dir / "smt_skip_summary.md"
+        summary_path.write_text("\n".join(summary_lines), encoding="utf-8")
+
+        print(f"📋 SMT跳过约束报告已生成:")
+        print(f"   - 详细报告: {report_path}")
+        print(f"   - 摘要报告: {summary_path}")
+        print(f"⚠️  跳过了 {self.skipped_count} 个约束 ({report['summary']['skip_rate']}%)")
 
     def _export_structural_constraints_section(self, structural_constraints: List[Dict[str, Any]]):
         """导出结构约束部分"""
@@ -79,9 +259,18 @@ class SmtExporter:
         structural_valid_assertions = []
 
         for constraint in structural_constraints:
-            constraint_assertions = self._export_structural_constraint_smt(constraint)
-            if constraint_assertions:
-                structural_valid_assertions.extend(constraint_assertions)
+            try:
+                if self._should_skip_constraint(constraint):
+                    self._record_skipped_constraint(constraint, "structural", "Missing target class mapping")
+                    continue
+
+                constraint_assertions = self._export_structural_constraint_smt(constraint)
+                if constraint_assertions:
+                    structural_valid_assertions.extend(constraint_assertions)
+                    self.processed_count += 1
+            except Exception as e:
+                self._record_skipped_constraint(constraint, "structural", f"Export error: {str(e)}")
+                continue
 
         # 🔧 结构约束必须全部满足
         if structural_valid_assertions:
@@ -118,9 +307,18 @@ class SmtExporter:
         semantic_constraint_names = []
 
         for constraint in semantic_constraints:
-            constraint_name = self._export_semantic_constraint_smt(constraint)
-            if constraint_name:
-                semantic_constraint_names.append(constraint_name)
+            try:
+                if self._should_skip_constraint(constraint):
+                    self._record_skipped_constraint(constraint, "semantic", "Missing target class mapping")
+                    continue
+
+                constraint_name = self._export_semantic_constraint_smt(constraint)
+                if constraint_name:
+                    semantic_constraint_names.append(constraint_name)
+                    self.processed_count += 1
+            except Exception as e:
+                self._record_skipped_constraint(constraint, "semantic", f"Export error: {str(e)}")
+                continue
 
         # 🔧 语义约束使用软约束机制 - 最大化满足的约束数量
         if semantic_constraint_names:
@@ -137,7 +335,7 @@ class SmtExporter:
 
             # 计算总分数
             score_terms = [f"(ite (semantic_satisfied \"{name}\") (semantic_weight \"{name}\") 0)"
-                          for name in semantic_constraint_names]
+                           for name in semantic_constraint_names]
             score_sum = " ".join(score_terms)
             self.lines.append(f"(assert (= semantic_score (+ {score_sum})))")
 
@@ -283,12 +481,14 @@ class SmtExporter:
 
             if len(enum_values) == 1:
                 self.lines.append(f"(assert (= (semantic_satisfied \"{constraint_name}\")")
-                self.lines.append(f"    (=> (and (instanceOf {entity_var} {class_const}) (distinct (stringAttr {entity_var} \"{attr_name}\") \"\"))")
+                self.lines.append(
+                    f"    (=> (and (instanceOf {entity_var} {class_const}) (distinct (stringAttr {entity_var} \"{attr_name}\") \"\"))")
                 self.lines.append(f"        (= (stringAttr {entity_var} \"{attr_name}\") \"{enum_values[0]}\"))))")
             else:
                 value_options = " ".join(f'(= (stringAttr {entity_var} \"{attr_name}\") "{v}")' for v in enum_values)
                 self.lines.append(f"(assert (= (semantic_satisfied \"{constraint_name}\")")
-                self.lines.append(f"    (=> (and (instanceOf {entity_var} {class_const}) (distinct (stringAttr {entity_var} \"{attr_name}\") \"\"))")
+                self.lines.append(
+                    f"    (=> (and (instanceOf {entity_var} {class_const}) (distinct (stringAttr {entity_var} \"{attr_name}\") \"\"))")
                 self.lines.append(f"        (or {value_options}))))")
 
     def _export_cardinality_constraint_soft(self, constraint: Dict[str, Any], constraint_name: str):
@@ -356,7 +556,8 @@ class SmtExporter:
                 for char in constraint["forbidden_chars"]:
                     self.lines.append(f"(assert (= (semantic_satisfied \"{constraint_name}_{char}\")")
                     self.lines.append(f"    (=> (instanceOf {entity_var} {class_const})")
-                    self.lines.append(f"        (not (str.contains (stringAttr {entity_var} \"{attr_name}\") \"{char}\")))))")
+                    self.lines.append(
+                        f"        (not (str.contains (stringAttr {entity_var} \"{attr_name}\") \"{char}\")))))")
 
     def _export_behavioral_constraint_soft(self, constraint: Dict[str, Any], constraint_name: str):
         """导出行为约束为软约束"""
@@ -396,8 +597,8 @@ class SmtExporter:
         """将严重性转换为权重分数"""
         weight_mapping = {
             "Warning": 10,  # 警告级别约束权重较高
-            "Info": 5,      # 信息级别约束权重较低
-            "Error": 20     # 错误级别（备用）
+            "Info": 5,  # 信息级别约束权重较低
+            "Error": 20  # 错误级别（备用）
         }
         return weight_mapping.get(severity, 10)
 
@@ -435,7 +636,7 @@ class SmtExporter:
                     xml_tag = target.get("xml_tag")
 
                     # 🔧 关键修复：使用 enricher 传递的实际类信息
-                    class_name = target.get("class_name")        # 如: "RPortPrototype"
+                    class_name = target.get("class_name")  # 如: "RPortPrototype"
                     class_xml_tag = target.get("class_xml_tag")  # 如: "R-PORT-PROTOTYPE"
 
                     # 属性映射
@@ -452,7 +653,8 @@ class SmtExporter:
                             smt_class_name = self._to_smt_identifier(class_name)
                             self.class_id_to_xml_mapping[class_id] = smt_class_name
 
-        print(f"✅ SMT映射表构建完成: {len(self.class_id_to_xml_mapping)} 个类映射, {len(self.attr_id_to_xml_mapping)} 个属性映射")
+        print(
+            f"✅ SMT映射表构建完成: {len(self.class_id_to_xml_mapping)} 个类映射, {len(self.attr_id_to_xml_mapping)} 个属性映射")
 
     def _to_smt_identifier(self, name: str) -> str:
         """将XML名称转换为SMT友好的标识符"""
@@ -497,8 +699,8 @@ class SmtExporter:
     def _add_header(self):
         """添加SMT文件头部"""
         self.lines.extend([
-            "; AUTOSAR Constraint Validation SMT Instance (v3.0)",
-            "; Generated with constraint severity classification",
+            "; AUTOSAR Constraint Validation SMT Instance (v3.1)",
+            "; Generated with constraint severity classification and skip tracking",
             "; - Structural constraints: HARD (must be satisfied)",
             "; - Semantic constraints: SOFT (recommendations, maximize satisfaction)",
             "; Supports Z3 SMT solver with optimization",

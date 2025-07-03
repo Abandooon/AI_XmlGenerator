@@ -1,6 +1,8 @@
-# loader.py
+# loader.py (修复版)
 """Unified KG loader that now exposes all indices required by the token‑export
 pipeline.
+
+修复：更新所有Neo4j查询使用elementId()替代已弃用的id()函数
 
 The class supports **two back‑ends**:
     1. Live Neo4j instance (bolt/neo4j/http URI)
@@ -15,6 +17,8 @@ It returns four public dictionaries that downstream components rely on:
     subcls        : classId           -> set[parentId]           # SUBCLASS_OF
     inline        : classId           -> set[groupClsId]        # INLINE_EXPANDS
     enum_idx      : enumId            -> list[str]              # enum literals
+    constraint_nodes : constraintId  -> {constraint metadata}   # Constraint info
+    constrains_attr  : constraintId  -> [attrId, ...]          # CONSTRAINS
 
 A minimal set of fields is fetched so that higher layers do *zero* further
 queries.
@@ -47,10 +51,10 @@ class KGLoader:
     # --- Construction -----------------------------------------------------
 
     def __init__(
-        self,
-        source: str | pathlib.Path,
-        user: str | None = None,
-        password: str | None = None,
+            self,
+            source: str | pathlib.Path,
+            user: str | None = None,
+            password: str | None = None,
     ) -> None:
         """``source`` may be either
             * a *str* ``bolt://`` / ``neo4j://`` / ``http://`` URI or
@@ -75,12 +79,12 @@ class KGLoader:
                 (parsed.scheme, clean_netloc, parsed.path, "", "", "")
             )
 
-             # ❷ 取优先级：CLI 显式参数 > URI 内嵌 > None
+            # ❷ 取优先级：CLI 显式参数 > URI 内嵌 > None
             auth_user = user or uri_user
             auth_pwd = password or uri_pwd
 
             self._driver = GraphDatabase.driver(clean_uri,
-                                            auth = (auth_user, auth_pwd))
+                                                auth=(auth_user, auth_pwd))
         else:
             # Local JSON back‑end -------------------------------------------
             self._json_dir = pathlib.Path(source)
@@ -117,17 +121,23 @@ class KGLoader:
         assert self._driver is not None, "driver not initialised"
 
         with self._driver.session() as sess:
+            # 🔧 修复：检查Neo4j版本并选择合适的ID函数
+            id_function = self._get_id_function(sess)
+            print(f"📋 使用Neo4j ID函数: {id_function}")
+
             # 1) Class nodes ------------------------------------------------
-            cy_cls = """
+            cy_cls = f"""
             MATCH (c:Class)
-            RETURN id(c) AS cid,
+            RETURN {id_function}(c) AS cid,
                    c.xml_tag         AS tag,
                    c.name            AS name,
                    c.xml_wrapper_tag AS wrapper,
                    coalesce(c.isAttribute,false) AS isAttr
             """
             for rec in sess.run(cy_cls):
-                self.cls_nodes[rec["cid"]] = {
+                # 🔧 修复：确保ID为整数类型
+                cid = self._normalize_id(rec["cid"])
+                self.cls_nodes[cid] = {
                     "xml_tag": rec["tag"],
                     "name": rec["name"],
                     "wrapper": rec["wrapper"],
@@ -135,10 +145,10 @@ class KGLoader:
                 }
 
             # 2) Attribute nodes + HAS_ATTRIBUTE ---------------------------
-            cy_attr = """
+            cy_attr = f"""
             MATCH (c:Class)-[:HAS_ATTRIBUTE]->(a:Attribute)
-            RETURN id(a) AS aid,
-                   id(c) AS cid,
+            RETURN {id_function}(a) AS aid,
+                   {id_function}(c) AS cid,
                    a.xml_tag   AS tag,
                    a.xml_wrapper_tag AS wrapper,
                    a.isXmlAttr AS isAttr,
@@ -146,7 +156,10 @@ class KGLoader:
                    a.maxOccurs AS hi
             """
             for rec in sess.run(cy_attr):
-                aid = rec["aid"]
+                # 🔧 修复：确保ID为整数类型
+                aid = self._normalize_id(rec["aid"])
+                cid = self._normalize_id(rec["cid"])
+
                 raw = rec["isAttr"]
                 is_attr = False  # 默认
                 if isinstance(raw, bool):
@@ -164,58 +177,117 @@ class KGLoader:
                     "maxOccurs": int(rec["hi"]) if rec["hi"] is not None else None,
                 }
 
-                self.cls_attrs[rec["cid"]].append(aid)
+                self.cls_attrs[cid].append(aid)
 
             # 3) TYPE_OF ----------------------------------------------------
-            cy_type = """
+            cy_type = f"""
             MATCH (a:Attribute)-[:TYPE_OF]->(t)
-            RETURN id(a) AS aid, id(t) AS tid
+            RETURN {id_function}(a) AS aid, {id_function}(t) AS tid
             """
             for rec in sess.run(cy_type):
-                self.attr_type[rec["aid"]] = rec["tid"]
+                aid = self._normalize_id(rec["aid"])
+                tid = self._normalize_id(rec["tid"])
+                self.attr_type[aid] = tid
 
             # 4) SUBCLASS_OF ----------------------------------------------
-            cy_sub = """
+            cy_sub = f"""
             MATCH (c:Class)-[:SUBCLASS_OF]->(p:Class)
-            RETURN id(c) AS cid, id(p) AS pid
+            RETURN {id_function}(c) AS cid, {id_function}(p) AS pid
             """
             for rec in sess.run(cy_sub):
-                self.subcls[rec["cid"]].add(rec["pid"])
+                cid = self._normalize_id(rec["cid"])
+                pid = self._normalize_id(rec["pid"])
+                self.subcls[cid].add(pid)
 
             # 5) INLINE_EXPANDS -------------------------------------------
-            cy_inline = """
+            cy_inline = f"""
             MATCH (c:Class)-[:INLINE_EXPANDS]->(g:Class)
-            RETURN id(c) AS cid, id(g) AS gid
+            RETURN {id_function}(c) AS cid, {id_function}(g) AS gid
             """
             for rec in sess.run(cy_inline):
-                self.inline[rec["cid"]].add(rec["gid"])
+                cid = self._normalize_id(rec["cid"])
+                gid = self._normalize_id(rec["gid"])
+                self.inline[cid].add(gid)
 
             # 6) Enum literals --------------------------------------------
-            cy_enum = """
+            cy_enum = f"""
             MATCH (e:Enum)-[:HAS_LITERAL]->(lit:EnumLiteral)
-            WITH id(e) AS eid, collect(lit.value) AS vals
+            WITH {id_function}(e) AS eid, collect(lit.value) AS vals
             RETURN eid, vals
             """
             for rec in sess.run(cy_enum):
-                self.enum_idx[rec["eid"]] = rec["vals"]
+                eid = self._normalize_id(rec["eid"])
+                self.enum_idx[eid] = rec["vals"]
 
-            # 7) Constraints (value_restriction) ---------------------------
-            cy_con = """
-            MATCH (c:Constraint)-[:CONSTRAINS]->(a:Attribute)
-            RETURN id(c) AS cid,
+            # 7) 🔧 修复：约束节点 - 提取完整的约束信息 ---------------------------
+            cy_constraints = f"""
+            MATCH (c:Constraint)
+            RETURN {id_function}(c) AS cid,
                    c.constraint_type AS ctype,
                    c.value           AS val,
                    c.expression      AS expression,
-                   id(a)             AS aid
+                   c.title           AS title,
+                   c.cid             AS constraint_cid,
+                   c.id              AS autosar_id,
+                   c.id_type         AS id_type,
+                   c.is_active       AS is_active,
+                   c.references      AS references,
+                   c.scope_path      AS scope_path,
+                   c.targets_json    AS targets_json
             """
-            for rec in sess.run(cy_con):
-                cid = rec["cid"]
+            for rec in sess.run(cy_constraints):
+                cid = self._normalize_id(rec["cid"])
                 self.constraint_nodes[cid] = {
-                   "constraint_type": rec["ctype"],
-                   "value": rec["val"],
-                   "expression": rec["expression"],
+                    "constraint_type": rec["ctype"],
+                    "value": rec["val"],
+                    "expression": rec["expression"] or "",
+                    "title": rec["title"] or "",
+                    "cid": rec["constraint_cid"],  # 约束的实际CID
+                    "id": rec["autosar_id"],  # AUTOSAR ID
+                    "id_type": rec["id_type"] or "",
+                    "is_active": rec["is_active"] if rec["is_active"] is not None else True,
+                    "references": rec["references"] or [],
+                    "scope_path": rec["scope_path"] or [],
+                    "targets_json": rec["targets_json"],
                 }
-                self.constrains_attr[cid].append(rec["aid"])
+
+            # 8) 🔧 修复：约束关系 CONSTRAINS ----------------------------------
+            cy_constrains = f"""
+            MATCH (c:Constraint)-[:CONSTRAINS]->(a:Attribute)
+            RETURN {id_function}(c) AS cid, {id_function}(a) AS aid
+            """
+            for rec in sess.run(cy_constrains):
+                cid = self._normalize_id(rec["cid"])
+                aid = self._normalize_id(rec["aid"])
+                self.constrains_attr[cid].append(aid)
+
+    def _get_id_function(self, session) -> str:
+        """🔧 检测Neo4j版本并返回合适的ID函数"""
+        try:
+            # 尝试使用elementId()函数（Neo4j 5.0+）
+            test_query = "MATCH (n) RETURN elementId(n) AS id LIMIT 1"
+            result = session.run(test_query)
+            result.single()  # 如果成功，说明支持elementId()
+            return "elementId"
+        except Exception:
+            # 如果失败，回退到id()函数（Neo4j 4.x及以下）
+            print("⚠️  Neo4j版本不支持elementId()，使用传统id()函数")
+            return "id"
+
+    def _normalize_id(self, node_id) -> int:
+        """🔧 标准化节点ID为整数"""
+        if isinstance(node_id, int):
+            return node_id
+        elif isinstance(node_id, str):
+            # elementId()返回字符串，尝试转换为整数
+            if node_id.isdigit():
+                return int(node_id)
+            else:
+                # 对于字符串ID，使用hash生成稳定的整数ID
+                return abs(hash(node_id)) % (2 ** 31)
+        else:
+            # 其他类型，转换为字符串再处理
+            return abs(hash(str(node_id))) % (2 ** 31)
 
     # ---------------- JSON branch ---------------------------------------
 
@@ -248,7 +320,9 @@ class KGLoader:
             if "Class" in labels:
                 self.cls_nodes[n["id"]] = {
                     "xml_tag": n["properties"].get("xml_tag"),
+                    "name": n["properties"].get("name"),
                     "wrapper": n["properties"].get("xml_wrapper_tag"),
+                    "isAttribute": n["properties"].get("isAttribute", False),
                 }
             elif "Attribute" in labels:
                 self.attr_nodes[n["id"]] = {
@@ -262,11 +336,21 @@ class KGLoader:
                 # handled when reading edges HAS_LITERAL
                 pass
             elif "Constraint" in labels:
+                # 🔧 修复：提取完整的约束信息
+                props = n["properties"]
                 self.constraint_nodes[n["id"]] = {
-                    "constraint_type": n["properties"].get("constraint_type"),
-                    "value": n["properties"].get("value"),
-                    "expression": n["properties"].get("expression", ""),
-            }
+                    "constraint_type": props.get("constraint_type"),
+                    "value": props.get("value"),
+                    "expression": props.get("expression", ""),
+                    "title": props.get("title", ""),
+                    "cid": props.get("cid"),
+                    "id": props.get("id"),
+                    "id_type": props.get("id_type", ""),
+                    "is_active": props.get("is_active", True),
+                    "references": props.get("references", []),
+                    "scope_path": props.get("scope_path", []),
+                    "targets_json": props.get("targets_json"),
+                }
 
         # --- Edge payloads ----------------------------------------------
         for e in edges:
@@ -284,7 +368,7 @@ class KGLoader:
                 lit_node = node_map[e["end"]]
                 self.enum_idx.setdefault(enum_id, []).append(lit_node["properties"]["value"])
             elif typ == "CONSTRAINS":
-                 self.constrains_attr[e["start"]].append(e["end"])
+                self.constrains_attr[e["start"]].append(e["end"])
 
         # Deduplicate enum literal order deterministically
         for k, v in self.enum_idx.items():

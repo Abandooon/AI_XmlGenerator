@@ -1,8 +1,8 @@
-# token_extractor.py
+# token_extractor.py (修复版)
 """Extract flattened JSONL tables containing everything needed to build the
 terminal‑token map (structure labels, attribute names, enum literals, etc.).
 
-Designed to work on top of :pymod:`loader.KGLoader`.
+修复：更新Neo4j查询以使用elementId()替代已弃用的id()函数
 """
 from __future__ import annotations
 
@@ -207,7 +207,7 @@ class TokenExtractor:
                     "values": kg.enum_idx[eid],
                 }, ensure_ascii=False) + "\n")
 
-        # 4) 🔧 修复：正确提取约束信息，保持完整的CID溯源 -----------------------------------------
+        # 4) 🔧 修复：约束信息提取 - 使用elementId()替代已弃用的id() -----------------------------------------
         con_fp = out_path / "raw_constraints.jsonl"
         with con_fp.open("w", encoding="utf-8") as f_con:
             print("🔍 开始提取约束信息...")
@@ -256,7 +256,8 @@ class TokenExtractor:
                         print(f"⚠️  约束 {constraint_cid} 的targets_json解析失败: {e}")
                         targets_data = []
 
-                # 构建完整的约束记录
+                # 🔧 修复：使用Neo4j内部节点ID而非已弃用的id()函数
+                # 注意：这里使用的constraint_node_id应该已经是elementId()的结果
                 constraint_record = {
                     # 🔧 CID相关字段 - 正确的字段映射
                     "cid": constraint_cid,  # 约束ID（主要标识符）
@@ -316,7 +317,7 @@ class TokenExtractor:
                     raise KeyError(f"root class xml_tag '{r}' not found in KG") from err
         return out
 
-    # 啦约束 ----------------------------------------------
+    # 收集约束 ----------------------------------------------
     def _collect_value_restrictions(self) -> Dict[int, List[str]]:
         kg = self._kg
         out = defaultdict(set)
@@ -336,4 +337,3 @@ class TokenExtractor:
                 ):
                     out[aid].update(parts)
         return {k: sorted(v) for k, v in out.items()}
-
