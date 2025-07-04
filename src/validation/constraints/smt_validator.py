@@ -1,19 +1,19 @@
-"""smt_validator.py (v3.1) - 修复约束数据提取，使用结构化信息
+"""smt_validator.py (v4.0) - 修复XML到SMT的实际连接
 --------------------------------------------
-高优先级修复：使用enriched_constraints中的结构化信息，而非硬编码XML解析
+核心修复：将实际XML数据转换为SMT事实，实现非抽象的约束验证
 """
 import subprocess
 import tempfile
 import json
 import re
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Set
 import xml.etree.ElementTree as ET
 import os
 from pathlib import Path
 
 
 class SMTValidator:
-    """SMT约束验证器 - 支持严重性分级和结构化约束提取"""
+    """SMT约束验证器 - 实现XML数据到SMT模型的完整映射"""
 
     def __init__(self, smt_template_file: str,
                  raw_attributes_file: Optional[str] = None,
@@ -30,11 +30,15 @@ class SMTValidator:
         self.smt_template = self._load_smt_template(smt_template_file)
         self.z3_available = self._check_z3_availability()
 
-        # 🔧 高优先级修复：优先使用结构化约束数据
+        # 🔧 核心修复：完整的约束和映射数据
         self.enriched_constraints = []
         self.structural_constraints = []
         self.semantic_constraints = []
         self.xml_to_attr_mapping = {}
+
+        # 🔧 新增：XML元素到SMT实体的映射
+        self.xml_element_registry = {}  # tag -> List[Element]
+        self.smt_entity_counter = 0
 
         # 加载约束定义
         if enriched_constraints_file:
@@ -48,8 +52,8 @@ class SMTValidator:
             self._build_mapping_tables(raw_attributes_file)
 
     def validate_constraints(self, xml_content: str) -> Dict:
-        """SMT约束验证 - 支持严重性分级"""
-        print("🔍 开始SMT分级约束验证...")
+        """SMT约束验证 - 🔧 核心修复：使用实际XML数据生成具体SMT实例"""
+        print("🔍 开始SMT完整约束验证...")
 
         if not xml_content or not xml_content.strip():
             print("❌ XML内容为空")
@@ -60,13 +64,16 @@ class SMTValidator:
             return self._create_skip_result("Z3 solver not available")
 
         try:
-            # 🔧 高优先级修复：根据是否有结构化约束选择验证方式
-            if self.enriched_constraints:
-                print("   🔧 使用结构化约束验证")
-                return self._validate_with_enriched_constraints(xml_content)
-            else:
-                print("   📝 使用传统XML解析验证")
-                return self._validate_constraints_as_recommendations(xml_content)
+            # 🔧 步骤1：解析XML并建立完整的元素注册表
+            print("📝 步骤1: 解析XML并建立元素注册表...")
+            xml_model = self._build_complete_xml_model(xml_content)
+
+            if not xml_model:
+                return self._create_error_result("Failed to parse XML")
+
+            # 🔧 步骤2：为每个约束生成具体的SMT验证实例
+            print("📝 步骤2: 生成具体SMT验证实例...")
+            return self._validate_with_concrete_smt_instances(xml_model)
 
         except Exception as e:
             print(f"❌ SMT验证错误: {e}")
@@ -74,45 +81,124 @@ class SMTValidator:
             traceback.print_exc()
             return self._create_error_result(str(e))
 
-    def _validate_with_enriched_constraints(self, xml_content: str) -> Dict:
-        """🔧 高优先级修复：使用结构化约束进行验证"""
-        print("🔍 开始结构化约束验证...")
-
+    def _build_complete_xml_model(self, xml_content: str) -> Optional[Dict]:
+        """🔧 核心修复：构建完整的XML模型，包含实体映射"""
         try:
-            # 解析XML文档
-            xml_data = self._parse_xml_document(xml_content)
+            root = ET.fromstring(xml_content)
+            print(f"📋 解析XML根元素: {root.tag}")
 
-            # 分别验证结构约束和语义约束
-            structural_results = self._validate_structural_constraints_structured(xml_data)
-            semantic_results = self._validate_semantic_constraints_structured(xml_data)
+            # 🔧 构建完整的XML元素模型
+            xml_model = {
+                "root": root,
+                "entities": {},  # tag -> List[XMLEntity]
+                "entity_facts": [],  # SMT事实列表
+                "attribute_facts": [],  # 属性事实列表
+                "element_counts": {},  # tag -> count
+                "wrapper_relationships": {},  # wrapper_tag -> item_tag
+                "parent_child_map": {}  # child_element -> parent_element
+            }
 
-            # 🔧 分析结果
-            return self._analyze_validation_results(structural_results, semantic_results)
+            # 🔧 首先建立父子关系映射
+            def build_parent_map(element, parent=None):
+                """递归建立父子关系映射"""
+                xml_model["parent_child_map"][element] = parent
+                for child in element:
+                    build_parent_map(child, element)
 
+            build_parent_map(root)
+
+            # 🔧 遍历所有元素，建立完整映射
+            entity_id = 0
+            for elem in root.iter():
+                clean_tag = self._clean_xml_tag(elem.tag)
+
+                # 🔧 修复：使用parent_child_map获取父元素
+                parent_elem = xml_model["parent_child_map"].get(elem)
+                parent_tag = self._clean_xml_tag(parent_elem.tag) if parent_elem is not None else None
+
+                # 创建XML实体
+                xml_entity = {
+                    "id": f"entity_{entity_id}",
+                    "tag": clean_tag,
+                    "element": elem,
+                    "text": elem.text.strip() if elem.text and elem.text.strip() else None,
+                    "attributes": dict(elem.attrib),
+                    "parent_tag": parent_tag,
+                    "children_tags": [self._clean_xml_tag(child.tag) for child in elem]
+                }
+
+                # 注册实体
+                if clean_tag not in xml_model["entities"]:
+                    xml_model["entities"][clean_tag] = []
+                xml_model["entities"][clean_tag].append(xml_entity)
+
+                # 统计元素数量
+                xml_model["element_counts"][clean_tag] = xml_model["element_counts"].get(clean_tag, 0) + 1
+
+                entity_id += 1
+
+            # 🔧 检测wrapper关系
+            xml_model["wrapper_relationships"] = self._detect_wrapper_relationships(xml_model)
+
+            print(f"✅ XML模型构建完成:")
+            print(f"   📊 总元素: {entity_id} 个")
+            print(f"   🏷️  标签类型: {len(xml_model['entities'])} 种")
+            print(f"   📦 Wrapper关系: {len(xml_model['wrapper_relationships'])} 对")
+
+            return xml_model
+
+        except ET.ParseError as e:
+            print(f"❌ XML解析错误: {e}")
+            return None
         except Exception as e:
-            print(f"❌ 结构化约束验证错误: {e}")
+            print(f"❌ XML模型构建错误: {e}")
             import traceback
             traceback.print_exc()
-            return self._create_error_result(str(e))
+            return None
 
-    def _validate_structural_constraints_structured(self, xml_data: Dict) -> List[Dict]:
-        """验证结构约束 - 使用enriched_constraints中的结构化信息"""
-        print("🔧 验证结构约束（结构化）...")
+    def _detect_wrapper_relationships(self, xml_model: Dict) -> Dict[str, str]:
+        """🔧 检测wrapper标签关系"""
+        wrapper_relationships = {}
 
-        results = []
+        # 已知的wrapper模式
+        known_wrappers = {
+            'RUNNABLES': 'RUNNABLE-ENTITY',
+            'INTERNAL-BEHAVIORS': 'SWC-INTERNAL-BEHAVIOR',
+            'PORTS': 'P-PORT-PROTOTYPE',
+            'PROVIDED-PORTS': 'P-PORT-PROTOTYPE',
+            'REQUIRED-PORTS': 'R-PORT-PROTOTYPE'
+        }
 
+        # 从XML结构中检测wrapper关系
+        for tag, entities in xml_model["entities"].items():
+            for entity in entities:
+                children_tags = entity["children_tags"]
+
+                # 如果一个元素只有一种类型的子元素，且数量>1，可能是wrapper
+                if len(set(children_tags)) == 1 and len(children_tags) > 0:
+                    child_tag = children_tags[0]
+                    if tag not in wrapper_relationships:
+                        wrapper_relationships[tag] = child_tag
+
+                # 应用已知wrapper模式
+                if tag in known_wrappers:
+                    wrapper_relationships[tag] = known_wrappers[tag]
+
+        return wrapper_relationships
+
+    def _validate_with_concrete_smt_instances(self, xml_model: Dict) -> Dict:
+        """🔧 核心修复：使用具体XML数据验证约束"""
+        structural_results = []
+        semantic_results = []
+
+        # 🔧 验证结构约束 - 使用实际XML数据
+        print("📝 步骤3: 验证结构约束...")
         for constraint in self.structural_constraints:
             try:
-                # 🔧 从enriched_targets获取结构化信息
-                for target in constraint.get("enriched_targets", []):
-                    if target["target_type"] != "attribute":
-                        continue
-
-                    result = self._validate_single_structural_constraint(constraint, target, xml_data)
-                    results.append(result)
-
+                result = self._validate_structural_constraint_concrete(constraint, xml_model)
+                structural_results.append(result)
             except Exception as e:
-                results.append({
+                structural_results.append({
                     "status": "error",
                     "constraint_type": "structural",
                     "constraint_id": constraint.get("cid", "unknown"),
@@ -120,74 +206,14 @@ class SMTValidator:
                     "severity": "violation"
                 })
 
-        print(f"   🔧 结构约束验证完成: {len(results)} 个")
-        return results
-
-    def _validate_single_structural_constraint(self, constraint: Dict, target: Dict, xml_data: Dict) -> Dict:
-        """验证单个结构约束"""
-        constraint_id = constraint.get("cid", "unknown")
-        xml_tag = target.get("xml_tag", "unknown")
-        class_xml_tag = target.get("class_xml_tag", "unknown")
-        min_occurs = target.get("minOccurs", 0)
-        max_occurs = target.get("maxOccurs", -1)
-
-        # 🔧 从实际XML数据中计算出现次数
-        actual_count = self._count_element_occurrences(xml_data, class_xml_tag, xml_tag)
-
-        # 生成结构约束的SMT实例
-        smt_instance = self._generate_structural_smt(constraint_id, xml_tag, actual_count, min_occurs, max_occurs)
-
-        # 求解
-        solve_result = self.solve_smt_instance(smt_instance)
-
-        # 增强结果信息
-        solve_result.update({
-            "constraint_type": "structural_cardinality",
-            "constraint_id": constraint_id,
-            "element": xml_tag,
-            "class_element": class_xml_tag,
-            "actual_count": actual_count,
-            "min_occurs": min_occurs,
-            "max_occurs": max_occurs,
-            "severity": "violation"
-        })
-
-        if solve_result.get("status") != "sat":
-            solve_result["message"] = f"STRUCTURAL ERROR: {xml_tag} count {actual_count} violates range [{min_occurs}, {max_occurs if max_occurs != -1 else '∞'}]"
-        else:
-            solve_result["message"] = f"Structural constraint satisfied: {xml_tag} count {actual_count}"
-
-        return solve_result
-
-    def _validate_semantic_constraints_structured(self, xml_data: Dict) -> List[Dict]:
-        """验证语义约束 - 使用enriched_constraints中的结构化信息"""
-        print("💡 验证语义约束（结构化）...")
-
-        results = []
-
+        # 🔧 验证语义约束 - 使用实际XML数据
+        print("📝 步骤4: 验证语义约束...")
         for constraint in self.semantic_constraints:
             try:
-                constraint_type = constraint.get("type", "other")
-
-                if constraint_type == "existence":
-                    result = self._validate_existence_constraint_structured(constraint, xml_data)
-                elif constraint_type == "value_restriction":
-                    result = self._validate_value_restriction_structured(constraint, xml_data)
-                elif constraint_type == "cardinality":
-                    result = self._validate_cardinality_constraint_structured(constraint, xml_data)
-                elif constraint_type == "format":
-                    result = self._validate_format_constraint_structured(constraint, xml_data)
-                elif constraint_type == "behavioral":
-                    result = self._validate_behavioral_constraint_structured(constraint, xml_data)
-                elif constraint_type == "relationship":
-                    result = self._validate_relationship_constraint_structured(constraint, xml_data)
-                else:
-                    result = self._validate_basic_constraint_structured(constraint, xml_data)
-
-                results.append(result)
-
+                result = self._validate_semantic_constraint_concrete(constraint, xml_model)
+                semantic_results.append(result)
             except Exception as e:
-                results.append({
+                semantic_results.append({
                     "status": "error",
                     "constraint_type": constraint.get("type", "unknown"),
                     "constraint_id": constraint.get("cid", "unknown"),
@@ -195,11 +221,312 @@ class SMTValidator:
                     "severity": "warning"
                 })
 
-        print(f"   💡 语义约束验证完成: {len(results)} 个")
-        return results
+        return self._analyze_validation_results(structural_results, semantic_results)
 
-    def _validate_existence_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证存在性约束 - 结构化版本"""
+    def _validate_structural_constraint_concrete(self, constraint: Dict, xml_model: Dict) -> Dict:
+        """🔧 验证单个结构约束 - 使用具体XML数据"""
+        constraint_id = constraint.get("cid", "unknown")
+
+        for target in constraint.get("enriched_targets", []):
+            if target["target_type"] != "attribute":
+                continue
+
+            xml_tag = target.get("xml_tag", "unknown")
+            class_xml_tag = target.get("class_xml_tag", "unknown")
+            min_occurs = target.get("minOccurs", 0)
+            max_occurs = target.get("maxOccurs", -1)
+
+            # 🔧 关键修复：从实际XML模型计算出现次数
+            actual_count = self._count_actual_occurrences(xml_model, class_xml_tag, xml_tag)
+
+            # 🔧 生成具体的SMT验证实例
+            smt_instance = self._generate_concrete_structural_smt(
+                constraint_id, xml_tag, class_xml_tag, actual_count, min_occurs, max_occurs, xml_model
+            )
+
+            # 🔧 求解具体实例
+            solve_result = self.solve_smt_instance(smt_instance)
+
+            # 增强结果信息
+            solve_result.update({
+                "constraint_type": "structural_cardinality",
+                "constraint_id": constraint_id,
+                "element": xml_tag,
+                "class_element": class_xml_tag,
+                "actual_count": actual_count,
+                "min_occurs": min_occurs,
+                "max_occurs": max_occurs,
+                "severity": "violation"
+            })
+
+            # 🔧 正确的违规判定逻辑
+            constraint_violated = False
+            if min_occurs is not None and actual_count < min_occurs:
+                constraint_violated = True
+            if max_occurs is not None and max_occurs != -1 and actual_count > max_occurs:
+                constraint_violated = True
+
+            if constraint_violated:
+                solve_result["status"] = "unsat"
+                solve_result["message"] = f"STRUCTURAL ERROR: {xml_tag} count {actual_count} violates range [{min_occurs}, {max_occurs if max_occurs != -1 else '∞'}] in {class_xml_tag}"
+            else:
+                solve_result["status"] = "sat"
+                solve_result["message"] = f"Structural constraint satisfied: {xml_tag} count {actual_count} in {class_xml_tag}"
+
+            print(f"   🔧 结构约束 {constraint_id}: {xml_tag} = {actual_count} ({'✅ 通过' if not constraint_violated else '❌ 违反'})")
+            return solve_result
+
+        # 默认返回
+        return {
+            "status": "sat",
+            "constraint_type": "structural_cardinality",
+            "constraint_id": constraint_id,
+            "message": "No valid targets for structural constraint",
+            "severity": "violation"
+        }
+
+    def _count_actual_occurrences(self, xml_model: Dict, class_tag: str, attr_tag: str) -> int:
+        """🔧 核心修复：从实际XML模型计算元素出现次数"""
+        total_count = 0
+
+        # 🔧 处理wrapper关系
+        wrapper_relationships = xml_model.get("wrapper_relationships", {})
+
+        # 情况1：直接查找属性标签
+        if attr_tag in xml_model["entities"]:
+            direct_count = len(xml_model["entities"][attr_tag])
+            print(f"   📊 直接找到 {attr_tag}: {direct_count} 个")
+            total_count += direct_count
+
+        # 情况2：在指定类的上下文中查找
+        if class_tag in xml_model["entities"]:
+            for class_entity in xml_model["entities"][class_tag]:
+                # 检查直接子元素
+                if attr_tag in class_entity["children_tags"]:
+                    count = class_entity["children_tags"].count(attr_tag)
+                    total_count += count
+                    print(f"   📊 在 {class_tag} 中找到 {attr_tag}: {count} 个")
+
+                # 🔧 检查通过wrapper间接包含的元素
+                for child_tag in class_entity["children_tags"]:
+                    if child_tag in wrapper_relationships:
+                        expected_item = wrapper_relationships[child_tag]
+                        if expected_item == attr_tag:
+                            # 计算wrapper内的实际item数量
+                            if child_tag in xml_model["entities"]:
+                                for wrapper_entity in xml_model["entities"][child_tag]:
+                                    wrapper_count = wrapper_entity["children_tags"].count(attr_tag)
+                                    total_count += wrapper_count
+                                    print(f"   📦 通过wrapper {child_tag} 找到 {attr_tag}: {wrapper_count} 个")
+
+        print(f"   📈 {attr_tag} 在 {class_tag} 中总计: {total_count} 个")
+        return total_count
+
+    def _generate_concrete_structural_smt(self, constraint_id: str, attr_tag: str, class_tag: str,
+                                        actual_count: int, min_occurs: int, max_occurs: int,
+                                        xml_model: Dict) -> str:
+        """🔧 生成具体的结构约束SMT实例"""
+        lines = [
+            "(set-logic QF_LIA)",
+            f"; Concrete structural constraint {constraint_id}",
+            f"; Element: {attr_tag} in {class_tag}",
+            f"; Actual count from XML: {actual_count}",
+            f"; Required range: [{min_occurs}, {max_occurs if max_occurs != -1 else '∞'}]",
+            ""
+        ]
+
+        # 🔧 声明具体的变量
+        var_name = re.sub(r'[^a-zA-Z0-9_]', '_', f"{class_tag}_{attr_tag}")
+        lines.extend([
+            f"(declare-const {var_name}_actual_count Int)",
+            f"(declare-const {var_name}_min_required Int)",
+            f"(declare-const {var_name}_max_allowed Int)",
+            f"(declare-const {var_name}_constraint_satisfied Bool)",
+            ""
+        ])
+
+        # 🔧 设置实际值
+        lines.extend([
+            f"(assert (= {var_name}_actual_count {actual_count}))",
+            f"(assert (= {var_name}_min_required {min_occurs}))",
+        ])
+
+        if max_occurs == -1:
+            lines.append(f"(assert (= {var_name}_max_allowed 999999))")  # 无限制用大数
+        else:
+            lines.append(f"(assert (= {var_name}_max_allowed {max_occurs}))")
+
+        lines.append("")
+
+        # 🔧 定义约束满足条件
+        lines.extend([
+            f"(assert (= {var_name}_constraint_satisfied",
+            f"    (and (>= {var_name}_actual_count {var_name}_min_required)",
+            f"         (<= {var_name}_actual_count {var_name}_max_allowed))))",
+            ""
+        ])
+
+        # 🔧 关键：断言约束必须满足（如果违反，SMT将返回unsat）
+        lines.extend([
+            f"(assert {var_name}_constraint_satisfied)",
+            "(check-sat)",
+            "(get-model)"
+        ])
+
+        return "\n".join(lines)
+
+    def _solve_with_python_z3(self, smt_instance: str) -> Dict:
+        """🔧 改进的Python z3求解器 - 更准确的约束处理"""
+        try:
+            import z3
+
+            solver = z3.Solver()
+            variables = {}
+
+            # 🔧 改进的SMT解析 - 处理更复杂的约束
+            lines = smt_instance.strip().split('\n')
+
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith(';'):
+                    continue
+
+                if line.startswith('(declare-const'):
+                    # 解析变量声明
+                    try:
+                        parts = line.split()
+                        if len(parts) >= 3:
+                            var_name = parts[1]
+                            var_type = parts[2].rstrip(')')
+
+                            if var_type == "Real":
+                                variables[var_name] = z3.Real(var_name)
+                            elif var_type == "Int":
+                                variables[var_name] = z3.Int(var_name)
+                            elif var_type == "Bool":
+                                variables[var_name] = z3.Bool(var_name)
+                            elif var_type == "String":
+                                variables[var_name] = z3.String(var_name)
+                    except Exception as e:
+                        print(f"⚠️ 变量声明解析失败: {line} - {e}")
+                        continue
+
+                elif line.startswith('(assert'):
+                    # 🔧 改进的断言解析
+                    try:
+                        # 🔧 关键修复：正确解析复杂的布尔表达式
+                        if '(= ' in line and '_constraint_satisfied' in line:
+                            # 处理约束满足条件的定义
+                            # 例如: (assert (= var_constraint_satisfied (and (>= var_actual_count var_min_required) (<= var_actual_count var_max_allowed))))
+
+                            # 提取变量名
+                            for var_name in variables:
+                                if f'{var_name}_constraint_satisfied' in line:
+                                    constraint_var = variables[f'{var_name}_constraint_satisfied']
+                                    actual_var = variables.get(f'{var_name}_actual_count')
+                                    min_var = variables.get(f'{var_name}_min_required')
+                                    max_var = variables.get(f'{var_name}_max_allowed')
+
+                                    if actual_var and min_var and max_var:
+                                        # 定义约束满足条件
+                                        constraint_expr = z3.And(actual_var >= min_var, actual_var <= max_var)
+                                        solver.add(constraint_var == constraint_expr)
+                                    break
+
+                        elif '(= ' in line:
+                            # 处理简单等式断言
+                            for var_name, var_obj in variables.items():
+                                if var_name in line:
+                                    # 提取数值或布尔值
+                                    if 'true' in line:
+                                        solver.add(var_obj == True)
+                                        break
+                                    elif 'false' in line:
+                                        solver.add(var_obj == False)
+                                        break
+                                    else:
+                                        numbers = re.findall(r'-?\d+\.?\d*', line)
+                                        if numbers:
+                                            try:
+                                                if isinstance(var_obj, z3.ArithRef):
+                                                    value = int(numbers[-1]) if '.' not in numbers[-1] else float(numbers[-1])
+                                                    solver.add(var_obj == value)
+                                                    break
+                                            except (ValueError, TypeError):
+                                                continue
+
+                        # 🔧 处理简单布尔断言（约束必须满足）
+                        elif line.startswith("(assert ") and line.endswith(")"):
+                            # 提取变量名
+                            assert_content = line[8:-1]  # 移除 "(assert " 和 ")"
+                            if assert_content in variables:
+                                var_obj = variables[assert_content]
+                                if isinstance(var_obj, z3.BoolRef):
+                                    solver.add(var_obj)
+                                    print(f"   添加断言: {assert_content} 必须为真")
+
+                    except Exception as e:
+                        print(f"⚠️ 断言解析失败: {line} - {e}")
+                        continue
+
+            # 🔧 求解
+            print(f"   🧮 求解SMT实例，包含 {len(variables)} 个变量，{len(solver.assertions())} 个断言")
+            result = solver.check()
+
+            solve_result = {
+                "status": str(result),
+                "output": str(result),
+                "method": "python_z3",
+                "variables": list(variables.keys()),
+                "solver_assertions": len(solver.assertions())
+            }
+
+            # 🔧 如果sat，获取模型值
+            if result == z3.sat:
+                model = solver.model()
+                model_values = {}
+                for var_name, var_obj in variables.items():
+                    try:
+                        value = model[var_obj]
+                        if value is not None:
+                            model_values[var_name] = str(value)
+                    except Exception:
+                        pass
+                solve_result["model_values"] = model_values
+
+            return solve_result
+
+        except Exception as e:
+            print(f"❌ Z3求解失败: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "method": "python_z3"
+            }
+
+    def _validate_semantic_constraint_concrete(self, constraint: Dict, xml_model: Dict) -> Dict:
+        """🔧 验证语义约束 - 使用具体XML数据"""
+        constraint_id = constraint.get("cid", "unknown")
+        constraint_type = constraint.get("type", "other")
+
+        if constraint_type == "existence":
+            return self._validate_existence_constraint_concrete(constraint, xml_model)
+        elif constraint_type == "value_restriction":
+            return self._validate_value_restriction_concrete(constraint, xml_model)
+        elif constraint_type == "cardinality":
+            return self._validate_cardinality_constraint_concrete(constraint, xml_model)
+        else:
+            # 其他语义约束简化处理
+            return {
+                "status": "sat",
+                "constraint_type": f"{constraint_type}_recommendation",
+                "constraint_id": constraint_id,
+                "message": f"Semantic recommendation: {constraint.get('title', constraint_type)}",
+                "severity": "warning"
+            }
+
+    def _validate_existence_constraint_concrete(self, constraint: Dict, xml_model: Dict) -> Dict:
+        """🔧 验证存在性约束 - 具体版本"""
         constraint_id = constraint.get("cid", "unknown")
         must_exist = constraint.get("mustExist", False)
         must_not_exist = constraint.get("mustNotExist", False)
@@ -211,36 +538,45 @@ class SMTValidator:
             xml_tag = target.get("xml_tag", "unknown")
             class_xml_tag = target.get("class_xml_tag", "unknown")
 
-            # 🔧 从实际XML数据检查存在性
-            exists = self._check_element_exists(xml_data, class_xml_tag, xml_tag)
+            # 🔧 从实际XML检查存在性
+            actual_exists = self._check_element_exists_concrete(xml_model, class_xml_tag, xml_tag)
 
-            # 生成存在性约束的SMT实例
-            smt_instance = self._generate_existence_smt(constraint_id, xml_tag, exists, must_exist, must_not_exist)
+            # 生成具体的存在性SMT实例
+            smt_instance = self._generate_concrete_existence_smt(
+                constraint_id, xml_tag, actual_exists, must_exist, must_not_exist
+            )
 
             solve_result = self.solve_smt_instance(smt_instance)
             solve_result.update({
                 "constraint_type": "existence_recommendation",
                 "constraint_id": constraint_id,
                 "element": xml_tag,
-                "exists": exists,
+                "exists": actual_exists,
                 "must_exist": must_exist,
                 "must_not_exist": must_not_exist,
                 "severity": "warning"
             })
 
-            if solve_result.get("status") == "sat":
-                solve_result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} existence requirement met"
-            else:
-                if must_exist and not exists:
-                    solve_result["message"] = f"RECOMMENDATION: {xml_tag} should exist but was not found"
-                elif must_not_exist and exists:
-                    solve_result["message"] = f"RECOMMENDATION: {xml_tag} should not exist but was found"
-                else:
-                    solve_result["message"] = f"RECOMMENDATION: Review {xml_tag} existence"
+            # 🔧 正确的推荐判定逻辑
+            recommendation_violated = False
+            if must_exist and not actual_exists:
+                recommendation_violated = True
+            elif must_not_exist and actual_exists:
+                recommendation_violated = True
 
+            if recommendation_violated:
+                solve_result["status"] = "unsat"
+                if must_exist and not actual_exists:
+                    solve_result["message"] = f"RECOMMENDATION: {xml_tag} should exist but was not found"
+                elif must_not_exist and actual_exists:
+                    solve_result["message"] = f"RECOMMENDATION: {xml_tag} should not exist but was found"
+            else:
+                solve_result["status"] = "sat"
+                solve_result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} existence requirement met"
+
+            print(f"   💡 存在性约束 {constraint_id}: {xml_tag} = {'存在' if actual_exists else '不存在'} ({'✅ 符合推荐' if not recommendation_violated else '⚠️ 不符合推荐'})")
             return solve_result
 
-        # 如果没有有效目标，返回默认结果
         return {
             "status": "sat",
             "constraint_type": "existence_recommendation",
@@ -249,8 +585,8 @@ class SMTValidator:
             "severity": "warning"
         }
 
-    def _validate_value_restriction_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证值限制约束 - 结构化版本"""
+    def _validate_value_restriction_concrete(self, constraint: Dict, xml_model: Dict) -> Dict:
+        """🔧 验证值限制约束 - 具体版本"""
         constraint_id = constraint.get("cid", "unknown")
         enum_values = constraint.get("enum", [])
 
@@ -261,28 +597,31 @@ class SMTValidator:
             xml_tag = target.get("xml_tag", "unknown")
             class_xml_tag = target.get("class_xml_tag", "unknown")
 
-            # 🔧 从实际XML数据获取属性值
-            actual_values = self._get_element_values(xml_data, class_xml_tag, xml_tag)
+            # 🔧 从实际XML获取属性值
+            actual_values = self._get_element_values_concrete(xml_model, class_xml_tag, xml_tag)
 
-            # 生成值限制约束的SMT实例
-            smt_instance = self._generate_value_restriction_smt(constraint_id, xml_tag, actual_values, enum_values)
+            # 检查值是否在推荐列表中
+            values_compliant = True
+            if enum_values and actual_values:
+                values_compliant = all(val in enum_values for val in actual_values)
 
-            solve_result = self.solve_smt_instance(smt_instance)
-            solve_result.update({
+            result = {
+                "status": "sat" if values_compliant else "unsat",
                 "constraint_type": "value_restriction_recommendation",
                 "constraint_id": constraint_id,
                 "element": xml_tag,
                 "actual_values": actual_values,
                 "allowed_values": enum_values,
                 "severity": "info"
-            })
+            }
 
-            if solve_result.get("status") == "sat":
-                solve_result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} values are acceptable"
+            if values_compliant:
+                result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} values {actual_values} are acceptable"
             else:
-                solve_result["message"] = f"RECOMMENDATION: {xml_tag} values {actual_values} should prefer {enum_values}"
+                result["message"] = f"RECOMMENDATION: {xml_tag} values {actual_values} should prefer {enum_values}"
 
-            return solve_result
+            print(f"   📝 值限制约束 {constraint_id}: {xml_tag} = {actual_values} ({'✅ 符合推荐' if values_compliant else '⚠️ 建议调整'})")
+            return result
 
         return {
             "status": "sat",
@@ -292,8 +631,8 @@ class SMTValidator:
             "severity": "info"
         }
 
-    def _validate_cardinality_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证基数约束 - 结构化版本（语义级别）"""
+    def _validate_cardinality_constraint_concrete(self, constraint: Dict, xml_model: Dict) -> Dict:
+        """🔧 验证基数约束 - 具体版本（语义级别）"""
         constraint_id = constraint.get("cid", "unknown")
         semantic_min = constraint.get("minOccurs")
         semantic_max = constraint.get("maxOccurs")
@@ -306,13 +645,17 @@ class SMTValidator:
             class_xml_tag = target.get("class_xml_tag", "unknown")
 
             # 🔧 从实际XML数据计算出现次数
-            actual_count = self._count_element_occurrences(xml_data, class_xml_tag, xml_tag)
+            actual_count = self._count_actual_occurrences(xml_model, class_xml_tag, xml_tag)
 
-            # 生成语义基数约束的SMT实例
-            smt_instance = self._generate_semantic_cardinality_smt(constraint_id, xml_tag, actual_count, semantic_min, semantic_max)
+            # 检查是否符合语义推荐
+            recommendation_satisfied = True
+            if semantic_min is not None and actual_count < semantic_min:
+                recommendation_satisfied = False
+            if semantic_max is not None and semantic_max != -1 and actual_count > semantic_max:
+                recommendation_satisfied = False
 
-            solve_result = self.solve_smt_instance(smt_instance)
-            solve_result.update({
+            result = {
+                "status": "sat" if recommendation_satisfied else "unsat",
                 "constraint_type": "cardinality_recommendation",
                 "constraint_id": constraint_id,
                 "element": xml_tag,
@@ -320,14 +663,15 @@ class SMTValidator:
                 "recommended_min": semantic_min,
                 "recommended_max": semantic_max,
                 "severity": "warning"
-            })
+            }
 
-            if solve_result.get("status") == "sat":
-                solve_result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} count {actual_count} is reasonable"
+            if recommendation_satisfied:
+                result["message"] = f"RECOMMENDATION SATISFIED: {xml_tag} count {actual_count} is reasonable"
             else:
-                solve_result["message"] = f"RECOMMENDATION: {xml_tag} count {actual_count} outside recommended range"
+                result["message"] = f"RECOMMENDATION: {xml_tag} count {actual_count} outside recommended range [{semantic_min}, {semantic_max if semantic_max != -1 else '∞'}]"
 
-            return solve_result
+            print(f"   📊 基数约束 {constraint_id}: {xml_tag} = {actual_count} ({'✅ 符合推荐' if recommendation_satisfied else '⚠️ 建议调整'})")
+            return result
 
         return {
             "status": "sat",
@@ -337,247 +681,76 @@ class SMTValidator:
             "severity": "warning"
         }
 
-    def _validate_format_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证格式约束 - 结构化版本"""
-        constraint_id = constraint.get("cid", "unknown")
-        pattern = constraint.get("pattern", "")
-        forbidden_chars = constraint.get("forbidden_chars", [])
+    def _check_element_exists_concrete(self, xml_model: Dict, class_tag: str, attr_tag: str) -> bool:
+        """🔧 从具体XML模型检查元素是否存在"""
+        # 直接检查
+        if attr_tag in xml_model["entities"]:
+            return len(xml_model["entities"][attr_tag]) > 0
 
-        # 简化处理：检查格式约束的一般合规性
-        return {
-            "status": "sat",
-            "constraint_type": "format_recommendation",
-            "constraint_id": constraint_id,
-            "message": f"Format recommendation: {constraint.get('title', 'Format constraint')}",
-            "severity": "info"
-        }
-
-    def _validate_behavioral_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证行为约束 - 结构化版本"""
-        constraint_id = constraint.get("cid", "unknown")
-
-        # 简化处理：行为约束通常需要更复杂的逻辑分析
-        return {
-            "status": "sat",
-            "constraint_type": "behavioral_recommendation",
-            "constraint_id": constraint_id,
-            "message": f"Behavioral recommendation: {constraint.get('title', 'Behavioral constraint')}",
-            "severity": "warning"
-        }
-
-    def _validate_relationship_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证关系约束 - 结构化版本"""
-        constraint_id = constraint.get("cid", "unknown")
-
-        # 简化处理：关系约束需要跨元素的引用检查
-        return {
-            "status": "sat",
-            "constraint_type": "relationship_recommendation",
-            "constraint_id": constraint_id,
-            "message": f"Relationship recommendation: {constraint.get('title', 'Relationship constraint')}",
-            "severity": "warning"
-        }
-
-    def _validate_basic_constraint_structured(self, constraint: Dict, xml_data: Dict) -> Dict:
-        """验证基础约束 - 结构化版本"""
-        constraint_id = constraint.get("cid", "unknown")
-        constraint_type = constraint.get("type", "other")
-
-        return {
-            "status": "sat",
-            "constraint_type": f"{constraint_type}_recommendation",
-            "constraint_id": constraint_id,
-            "message": f"General recommendation: {constraint.get('title', 'Basic constraint')}",
-            "severity": "info"
-        }
-
-    def _parse_xml_document(self, xml_content: str) -> Dict:
-        """解析XML文档为结构化数据"""
-        try:
-            root = ET.fromstring(xml_content)
-
-            # 🔧 构建元素索引，支持快速查找
-            elements_by_tag = {}
-            element_values = {}
-            element_counts = {}
-
-            for elem in root.iter():
-                # 清理标签名
-                tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
-
-                # 索引元素
-                if tag not in elements_by_tag:
-                    elements_by_tag[tag] = []
-                elements_by_tag[tag].append(elem)
-
-                # 统计数量
-                element_counts[tag] = element_counts.get(tag, 0) + 1
-
-                # 收集值
-                if elem.text and elem.text.strip():
-                    if tag not in element_values:
-                        element_values[tag] = []
-                    element_values[tag].append(elem.text.strip())
-
-            return {
-                "root": root,
-                "elements_by_tag": elements_by_tag,
-                "element_values": element_values,
-                "element_counts": element_counts
-            }
-
-        except ET.ParseError as e:
-            print(f"❌ XML解析错误: {e}")
-            return {}
-
-    def _count_element_occurrences(self, xml_data: Dict, class_tag: str, attr_tag: str) -> int:
-        """计算特定元素的出现次数"""
-        if not xml_data:
-            return 0
-
-        element_counts = xml_data.get("element_counts", {})
-
-        # 🔧 优先查找精确的属性标签
-        if attr_tag in element_counts:
-            return element_counts[attr_tag]
-
-        # 备用：查找类级别的标签
-        if class_tag in element_counts:
-            return element_counts[class_tag]
-
-        return 0
-
-    def _check_element_exists(self, xml_data: Dict, class_tag: str, attr_tag: str) -> bool:
-        """检查元素是否存在"""
-        if not xml_data:
-            return False
-
-        elements_by_tag = xml_data.get("elements_by_tag", {})
-
-        # 检查属性标签是否存在
-        if attr_tag in elements_by_tag and len(elements_by_tag[attr_tag]) > 0:
-            return True
-
-        # 检查类标签是否存在
-        if class_tag in elements_by_tag and len(elements_by_tag[class_tag]) > 0:
-            return True
+        # 在类上下文中检查
+        if class_tag in xml_model["entities"]:
+            for entity in xml_model["entities"][class_tag]:
+                if attr_tag in entity["children_tags"]:
+                    return True
 
         return False
 
-    def _get_element_values(self, xml_data: Dict, class_tag: str, attr_tag: str) -> List[str]:
-        """获取元素的值列表"""
-        if not xml_data:
-            return []
+    def _get_element_values_concrete(self, xml_model: Dict, class_tag: str, attr_tag: str) -> List[str]:
+        """🔧 从具体XML模型获取元素值"""
+        values = []
 
-        element_values = xml_data.get("element_values", {})
+        # 直接获取值
+        if attr_tag in xml_model["entities"]:
+            for entity in xml_model["entities"][attr_tag]:
+                if entity["text"]:
+                    values.append(entity["text"])
 
-        # 🔧 优先返回属性标签的值
-        if attr_tag in element_values:
-            return element_values[attr_tag]
+        return values
 
-        # 备用：返回类标签的值
-        if class_tag in element_values:
-            return element_values[class_tag]
-
-        return []
-
-    def _generate_structural_smt(self, constraint_id: str, element: str, actual_count: int, min_occurs: int, max_occurs: int) -> str:
-        """生成结构约束的SMT实例"""
+    def _generate_concrete_existence_smt(self, constraint_id: str, element: str, exists: bool,
+                                       must_exist: bool, must_not_exist: bool) -> str:
+        """🔧 生成具体的存在性SMT实例"""
         var_name = re.sub(r'[^a-zA-Z0-9_]', '_', element)
 
         lines = [
             "(set-logic QF_LIA)",
-            f"; Structural constraint {constraint_id} for {element}",
-            f"(declare-const {var_name}_count Int)",
-            f"(assert (= {var_name}_count {actual_count}))",
+            f"; Concrete existence constraint {constraint_id} for {element}",
+            f"; Actual existence: {exists}",
+            f"; Must exist: {must_exist}",
+            f"; Must not exist: {must_not_exist}",
+            ""
         ]
 
-        if min_occurs > 0:
-            lines.append(f"(assert (>= {var_name}_count {min_occurs}))")
-
-        if max_occurs >= 0:
-            lines.append(f"(assert (<= {var_name}_count {max_occurs}))")
-
-        lines.append("(check-sat)")
-        return "\n".join(lines)
-
-    def _generate_existence_smt(self, constraint_id: str, element: str, exists: bool, must_exist: bool, must_not_exist: bool) -> str:
-        """生成存在性约束的SMT实例"""
-        var_name = re.sub(r'[^a-zA-Z0-9_]', '_', element)
-
-        lines = [
-            "(set-logic QF_LIA)",
-            f"; Existence recommendation {constraint_id} for {element}",
+        lines.extend([
             f"(declare-const {var_name}_exists Bool)",
+            f"(declare-const {var_name}_recommendation_satisfied Bool)",
             f"(assert (= {var_name}_exists {'true' if exists else 'false'}))",
-        ]
+            ""
+        ])
 
-        # 🔧 软约束：推荐存在性，但不强制
+        # 🔧 定义推荐满足条件
         if must_exist:
-            lines.append(f"; Recommendation: {element} should exist")
-            if not exists:
-                lines.append("(assert false)")  # 不满足推荐
+            lines.append(f"(assert (= {var_name}_recommendation_satisfied {var_name}_exists))")
         elif must_not_exist:
-            lines.append(f"; Recommendation: {element} should not exist")
-            if exists:
-                lines.append("(assert false)")  # 不满足推荐
-
-        lines.append("(check-sat)")
-        return "\n".join(lines)
-
-    def _generate_value_restriction_smt(self, constraint_id: str, element: str, actual_values: List[str], allowed_values: List[str]) -> str:
-        """生成值限制约束的SMT实例"""
-        var_name = re.sub(r'[^a-zA-Z0-9_]', '_', element)
-
-        lines = [
-            "(set-logic QF_S)",
-            f"; Value restriction recommendation {constraint_id} for {element}",
-        ]
-
-        # 🔧 检查实际值是否在推荐值列表中
-        if actual_values and allowed_values:
-            satisfies_restriction = any(val in allowed_values for val in actual_values)
-            lines.extend([
-                f"(declare-const {var_name}_valid Bool)",
-                f"(assert (= {var_name}_valid {'true' if satisfies_restriction else 'false'}))",
-                f"; Recommendation: values should be from {allowed_values}",
-                f"(assert {var_name}_valid)"
-            ])
+            lines.append(f"(assert (= {var_name}_recommendation_satisfied (not {var_name}_exists)))")
         else:
-            lines.append("(assert true)")  # 没有足够信息，默认通过
+            lines.append(f"(assert (= {var_name}_recommendation_satisfied true))")
 
-        lines.append("(check-sat)")
+        # 🔧 断言推荐应该满足（如果违反，返回unsat）
+        lines.extend([
+            f"(assert {var_name}_recommendation_satisfied)",
+            "(check-sat)"
+        ])
+
         return "\n".join(lines)
 
-    def _generate_semantic_cardinality_smt(self, constraint_id: str, element: str, actual_count: int, min_rec: Optional[int], max_rec: Optional[int]) -> str:
-        """生成语义基数约束的SMT实例"""
-        var_name = re.sub(r'[^a-zA-Z0-9_]', '_', element)
+    def _clean_xml_tag(self, tag: str) -> str:
+        """清理XML标签名"""
+        if '}' in tag:
+            return tag.split('}')[1]
+        return tag
 
-        lines = [
-            "(set-logic QF_LIA)",
-            f"; Semantic cardinality recommendation {constraint_id} for {element}",
-            f"(declare-const {var_name}_count Int)",
-            f"(assert (= {var_name}_count {actual_count}))",
-        ]
-
-        # 🔧 语义基数约束：更宽松的推荐范围
-        constraints = []
-        if min_rec is not None and min_rec > 0:
-            constraints.append(f"(>= {var_name}_count {min_rec})")
-
-        if max_rec is not None and max_rec >= 0:
-            constraints.append(f"(<= {var_name}_count {max_rec})")
-
-        if constraints:
-            if len(constraints) == 1:
-                lines.append(f"(assert {constraints[0]})")
-            else:
-                lines.append(f"(assert (and {' '.join(constraints)}))")
-        else:
-            lines.append("(assert true)")  # 没有推荐范围，默认通过
-
-        lines.append("(check-sat)")
-        return "\n".join(lines)
+    # ==================== 原有方法保持不变 ====================
 
     def _analyze_validation_results(self, structural_results: List[Dict], semantic_results: List[Dict]) -> Dict:
         """分析验证结果"""
@@ -609,7 +782,7 @@ class SMTValidator:
         total_count = structural_count + semantic_count
         total_satisfied = structural_satisfied + semantic_satisfied
 
-        print(f"📊 结构化验证结果:")
+        print(f"📊 SMT验证结果:")
         print(f"   🔧 结构约束: {structural_satisfied}/{structural_count} {'✅ 通过' if structural_valid else '❌ 失败'}")
         print(f"   💡 语义约束: {semantic_satisfied}/{semantic_count} ({semantic_compliance})")
         print(f"   📈 总体: {total_satisfied}/{total_count}")
@@ -635,7 +808,7 @@ class SMTValidator:
                     "warnings": len(semantic_warnings)
                 }
             },
-            "mode": "structured_constraints"
+            "mode": "concrete_xml_validation"
         }
 
     def _load_enriched_constraints(self, enriched_constraints_file: str):
@@ -673,265 +846,6 @@ class SMTValidator:
         except Exception as e:
             print(f"⚠️  加载约束文件失败: {e}")
 
-    def _validate_constraints_as_recommendations(self, xml_content: str) -> Dict:
-        """标准验证模式：将所有约束降级为推荐（保持原有逻辑）"""
-        print("🔍 开始推荐级SMT约束验证...")
-
-        try:
-            # 提取约束数据
-            constraint_data = self._extract_constraint_data_standard(xml_content)
-
-            total_data_points = (len(constraint_data.get('timing_events', [])) +
-                                 len(constraint_data.get('periods', [])) +
-                                 len(constraint_data.get('timeouts', [])))
-
-            if total_data_points == 0:
-                print("⚠️  未找到约束数据，跳过SMT验证")
-                return {
-                    "valid": True,
-                    "structural_valid": True,
-                    "semantic_compliance": "NONE",
-                    "constraint_count": 0,
-                    "satisfied_count": 0,
-                    "structural_violations": [],
-                    "semantic_warnings": [],
-                    "detailed_results": [],
-                    "message": "No constraints found in standard mode"
-                }
-
-            # 生成SMT实例（作为推荐）
-            print("📝 生成推荐级SMT约束实例...")
-            smt_instances = self._generate_smt_instances_as_recommendations(constraint_data)
-
-            if not smt_instances:
-                print("⚠️  未生成SMT实例")
-                return {
-                    "valid": True,
-                    "structural_valid": True,
-                    "semantic_compliance": "NONE",
-                    "constraint_count": 0,
-                    "satisfied_count": 0,
-                    "structural_violations": [],
-                    "semantic_warnings": [],
-                    "detailed_results": [],
-                    "message": "No SMT instances generated"
-                }
-
-            # 求解SMT实例（作为推荐验证）
-            print(f"🧮 验证 {len(smt_instances)} 个推荐级约束...")
-            results = []
-            satisfied_count = 0
-
-            for i, smt_instance in enumerate(smt_instances, 1):
-                print(f"   验证推荐 {i}/{len(smt_instances)}...")
-                result = self.solve_smt_instance(smt_instance)
-
-                # 🔧 标记为推荐级别
-                result["severity"] = "recommendation"
-                result["is_recommendation"] = True
-
-                results.append(result)
-
-                status = result.get("status", "unknown")
-                if status == "sat":
-                    satisfied_count += 1
-                elif status == "unsat":
-                    print(f"   💡 推荐不满足（可接受）")
-
-            # 🔧 所有约束都作为语义推荐处理
-            constraint_count = len(smt_instances)
-            semantic_warnings = [r for r in results if r.get("status") == "unsat"]
-
-            satisfaction_rate = satisfied_count / constraint_count if constraint_count > 0 else 1.0
-
-            # 语义合规性评级
-            if satisfaction_rate >= 0.8:
-                semantic_compliance = "HIGH"
-            elif satisfaction_rate >= 0.5:
-                semantic_compliance = "PARTIAL"
-            else:
-                semantic_compliance = "LOW"
-
-            print(f"📊 推荐级SMT验证结果:")
-            print(f"   💡 推荐满足: {satisfied_count}/{constraint_count}")
-            print(f"   📈 满足率: {satisfaction_rate:.1%}")
-            print(f"   🎯 合规级别: {semantic_compliance}")
-
-            # 🔧 标准模式下，结构约束总是通过（没有硬性结构约束）
-            return {
-                "valid": True,  # 总是通过，因为没有硬性约束
-                "structural_valid": True,  # 没有结构约束检查
-                "semantic_compliance": semantic_compliance,
-                "constraint_count": constraint_count,
-                "satisfied_count": satisfied_count,
-                "structural_violations": [],  # 没有结构违规
-                "semantic_warnings": semantic_warnings,
-                "detailed_results": results,
-                "data_points": total_data_points,
-                "mode": "recommendations_only"
-            }
-
-        except Exception as e:
-            print(f"❌ 推荐级SMT验证错误: {e}")
-            import traceback
-            traceback.print_exc()
-            return {
-                "valid": True,  # 推荐模式下仍然通过
-                "structural_valid": True,
-                "semantic_compliance": "ERROR",
-                "constraint_count": 0,
-                "satisfied_count": 0,
-                "structural_violations": [],
-                "semantic_warnings": [],
-                "detailed_results": [],
-                "error": str(e)
-            }
-
-    def _generate_smt_instances_as_recommendations(self, constraint_data: Dict) -> List[str]:
-        """生成SMT实例作为推荐（更宽松的约束）"""
-        smt_instances = []
-        print("🏗️  生成推荐级SMT约束实例...")
-
-        try:
-            # 🔧 为时序事件生成推荐级约束
-            for event in constraint_data.get("timing_events", []):
-                event_id = event.get('id', 'unknown')
-
-                if event.get("period") is not None:
-                    period = event["period"]
-                    instance_id = len(smt_instances)
-                    # 🔧 更宽松的推荐范围
-                    smt_instance = f"""(declare-const period_{instance_id} Real)
-(assert (= period_{instance_id} {period}))
-(assert (and (>= period_{instance_id} 0.0001) (<= period_{instance_id} 60.0)))
-(check-sat)
-; Recommendation: Period should be between 0.1ms and 60s
-"""
-                    smt_instances.append(smt_instance)
-                    print(f"   💡 生成周期推荐: {period}s")
-
-            # 🔧 为超时生成推荐级约束
-            for i, timeout in enumerate(constraint_data.get("timeouts", [])):
-                # 🔧 更宽松的超时范围
-                smt_instance = f"""(declare-const timeout_{i} Real)
-(assert (= timeout_{i} {timeout}))
-(assert (and (>= timeout_{i} 0.0) (<= timeout_{i} 3600.0)))
-(check-sat)
-; Recommendation: Timeout should be between 0s and 1hour
-"""
-                smt_instances.append(smt_instance)
-                print(f"   💡 生成超时推荐: {timeout}s")
-
-            print(f"📊 总共生成 {len(smt_instances)} 个推荐级SMT约束实例")
-
-        except Exception as e:
-            print(f"❌ 生成推荐级SMT实例失败: {e}")
-
-        return smt_instances
-
-    def _extract_constraint_data_standard(self, xml_content: str) -> Dict:
-        """标准约束数据提取 - 保持原有逻辑"""
-        print("🔍 开始提取约束数据...")
-
-        constraint_data = {
-            "timing_events": [],
-            "periods": [],
-            "deadlines": [],
-            "priorities": [],
-            "timeouts": [],
-            "relationships": []
-        }
-
-        try:
-            root = ET.fromstring(xml_content)
-            print(f"📋 解析XML根元素: {root.tag}")
-
-            def clean_tag(tag):
-                if '}' in tag:
-                    return tag.split('}')[1]
-                return tag
-
-            # 查找时序事件
-            timing_events = []
-            for elem in root.iter():
-                if clean_tag(elem.tag) == "TIMING-EVENT":
-                    timing_events.append(elem)
-
-            print(f"📊 找到 {len(timing_events)} 个TIMING-EVENT元素")
-
-            for timing_event in timing_events:
-                event_data = {
-                    "id": timing_event.get("UUID") or timing_event.get(
-                        "ID") or f"event_{len(constraint_data['timing_events'])}",
-                    "period": None,
-                    "deadline": None,
-                    "priority": None
-                }
-
-                # 提取周期
-                for child in timing_event.iter():
-                    if clean_tag(child.tag) == "PERIOD":
-                        if child.text and child.text.strip():
-                            try:
-                                event_data["period"] = float(child.text.strip())
-                                constraint_data["periods"].append(event_data["period"])
-                                print(f"   ⏰ 提取周期: {event_data['period']}")
-                            except ValueError:
-                                print(f"   ⚠️  周期值转换失败: {child.text}")
-                        break
-
-                # 提取截止时间
-                for child in timing_event.iter():
-                    if clean_tag(child.tag) == "DEADLINE":
-                        if child.text and child.text.strip():
-                            try:
-                                event_data["deadline"] = float(child.text.strip())
-                                constraint_data["deadlines"].append(event_data["deadline"])
-                                print(f"   ⏰ 提取截止时间: {event_data['deadline']}")
-                            except ValueError:
-                                print(f"   ⚠️  截止时间值转换失败: {child.text}")
-                        break
-
-                constraint_data["timing_events"].append(event_data)
-                print(f"   ✅ 时序事件: {event_data['id']}")
-
-            # 提取超时设置
-            timeout_elements = []
-            for elem in root.iter():
-                if clean_tag(elem.tag) == "ALIVE-TIMEOUT":
-                    timeout_elements.append(elem)
-
-            print(f"📊 找到 {len(timeout_elements)} 个ALIVE-TIMEOUT元素")
-
-            for timeout_elem in timeout_elements:
-                if timeout_elem.text and timeout_elem.text.strip():
-                    try:
-                        timeout_value = float(timeout_elem.text.strip())
-                        constraint_data["timeouts"].append(timeout_value)
-                        print(f"   ⏰ 提取超时: {timeout_value}")
-                    except ValueError:
-                        print(f"   ⚠️  超时值转换失败: {timeout_elem.text}")
-
-            # 总结
-            total_constraints = (len(constraint_data["timing_events"]) +
-                                 len(constraint_data["periods"]) +
-                                 len(constraint_data["timeouts"]))
-
-            print(f"📊 约束数据提取总结:")
-            print(f"   时序事件: {len(constraint_data['timing_events'])}")
-            print(f"   周期数据: {len(constraint_data['periods'])}")
-            print(f"   超时设置: {len(constraint_data['timeouts'])}")
-            print(f"   总计: {total_constraints} 个约束数据点")
-
-        except ET.ParseError as e:
-            print(f"❌ XML解析错误: {e}")
-        except Exception as e:
-            print(f"❌ 约束提取错误: {e}")
-            import traceback
-            traceback.print_exc()
-
-        return constraint_data
-
     def _create_error_result(self, error_message: str) -> Dict:
         """创建错误结果"""
         return {
@@ -960,7 +874,8 @@ class SMTValidator:
             "message": message
         }
 
-    # 保持原有的其他方法不变
+    # ==================== 原有辅助方法 ====================
+
     def _check_z3_availability(self):
         """检查Z3求解器可用性"""
         # 优先尝试Python z3包
@@ -1042,7 +957,7 @@ class SMTValidator:
             solver = z3.Solver()
             variables = {}
 
-            # 简化的解析 - 处理基本的SMT语句
+            # 🔧 改进的SMT解析 - 处理更复杂的约束
             lines = smt_instance.strip().split('\n')
 
             for line in lines:
@@ -1070,32 +985,68 @@ class SMTValidator:
                         continue
 
                 elif line.startswith('(assert'):
-                    # 简化的断言解析
+                    # 🔧 改进的断言解析
                     try:
-                        # 处理简单的数值比较
-                        if any(op in line for op in ['>', '<', '>=', '<=', '=']):
+                        # 处理等式断言
+                        if '(= ' in line:
+                            # 提取变量名和值
                             for var_name, var_obj in variables.items():
                                 if var_name in line:
-                                    # 提取数值
+                                    # 提取数值或布尔值
+                                    if 'true' in line:
+                                        solver.add(var_obj == True)
+                                        break
+                                    elif 'false' in line:
+                                        solver.add(var_obj == False)
+                                        break
+                                    else:
+                                        numbers = re.findall(r'-?\d+\.?\d*', line)
+                                        if numbers:
+                                            try:
+                                                if isinstance(var_obj, z3.IntRef):
+                                                    value = int(numbers[-1])  # 取最后一个数字
+                                                else:
+                                                    value = float(numbers[-1])
+                                                solver.add(var_obj == value)
+                                                break
+                                            except ValueError:
+                                                continue
+
+                        # 处理比较断言
+                        elif any(op in line for op in ['>= ', '<= ', '> ', '< ']):
+                            for var_name, var_obj in variables.items():
+                                if var_name in line:
                                     numbers = re.findall(r'\d+\.?\d*', line)
                                     if numbers:
-                                        value = float(numbers[0])
+                                        try:
+                                            value = float(numbers[0])
+                                            if '>=' in line:
+                                                solver.add(var_obj >= value)
+                                            elif '<=' in line:
+                                                solver.add(var_obj <= value)
+                                            elif '>' in line:
+                                                solver.add(var_obj > value)
+                                            elif '<' in line:
+                                                solver.add(var_obj < value)
+                                            break
+                                        except ValueError:
+                                            continue
 
-                                        if '(>' in line and not '>=' in line:
-                                            solver.add(var_obj > value)
-                                        elif '(>=' in line:
-                                            solver.add(var_obj >= value)
-                                        elif '(<=' in line:
-                                            solver.add(var_obj <= value)
-                                        elif '(= ' in line and not '(>=' in line and not '(<=' in line:
-                                            solver.add(var_obj == value)
-                                    break
-
-                        # 处理布尔断言
-                        if 'false' in line and len(variables) > 0:
+                        # 处理简单布尔断言
+                        elif line == "(assert false)":
                             solver.add(False)
-                        elif 'true' in line and len(variables) > 0:
+                        elif line == "(assert true)":
                             solver.add(True)
+                        else:
+                            # 处理复杂表达式
+                            for var_name, var_obj in variables.items():
+                                if var_name in line:
+                                    if isinstance(var_obj, z3.BoolRef):
+                                        if f"(assert {var_name})" in line:
+                                            solver.add(var_obj)
+                                        elif f"(assert (not {var_name})" in line:
+                                            solver.add(z3.Not(var_obj))
+                                    break
 
                     except Exception:
                         continue
@@ -1107,7 +1058,8 @@ class SMTValidator:
                 "status": str(result),
                 "output": str(result),
                 "method": "python_z3",
-                "variables": list(variables.keys())
+                "variables": list(variables.keys()),
+                "solver_assertions": len(solver.assertions())
             }
 
         except Exception as e:
@@ -1171,3 +1123,127 @@ class SMTValidator:
         except Exception as e:
             print(f"⚠️  SMT模板加载失败: {e}")
             return ""
+
+    # ==================== 向后兼容的传统验证方法 ====================
+
+    def _validate_constraints_as_recommendations(self, xml_content: str) -> Dict:
+        """传统验证模式：保持原有逻辑作为后备"""
+        print("🔍 开始传统SMT约束验证...")
+
+        try:
+            # 🔧 即使没有enriched_constraints，也尝试基础的XML解析验证
+            xml_model = self._build_complete_xml_model(xml_content)
+
+            if not xml_model:
+                return {
+                    "valid": True,
+                    "structural_valid": True,
+                    "semantic_compliance": "NONE",
+                    "constraint_count": 0,
+                    "satisfied_count": 0,
+                    "structural_violations": [],
+                    "semantic_warnings": [],
+                    "detailed_results": [],
+                    "message": "Traditional validation mode - failed to parse XML"
+                }
+
+            # 🔧 基础验证：检查常见的必需元素
+            basic_results = self._perform_basic_validation(xml_model)
+
+            return {
+                "valid": len(basic_results['violations']) == 0,
+                "structural_valid": len(basic_results['violations']) == 0,
+                "semantic_compliance": "BASIC" if len(basic_results['violations']) == 0 else "LOW",
+                "constraint_count": len(basic_results['checks']),
+                "satisfied_count": len(basic_results['checks']) - len(basic_results['violations']),
+                "structural_violations": basic_results['violations'],
+                "semantic_warnings": [],
+                "detailed_results": basic_results['checks'],
+                "message": "Traditional validation mode - basic XML structure checks"
+            }
+
+        except Exception as e:
+            print(f"❌ 传统验证模式错误: {e}")
+            return {
+                "valid": True,
+                "structural_valid": True,
+                "semantic_compliance": "ERROR",
+                "constraint_count": 0,
+                "satisfied_count": 0,
+                "structural_violations": [],
+                "semantic_warnings": [],
+                "detailed_results": [],
+                "error": str(e)
+            }
+
+    def _perform_basic_validation(self, xml_model: Dict) -> Dict:
+        """🔧 执行基础验证 - 检查常见的XML结构问题"""
+        checks = []
+        violations = []
+
+        # 🔧 基础检查1：根元素应该有SHORT-NAME
+        root_tags = list(xml_model["entities"].keys())
+        if root_tags:
+            root_tag = root_tags[0]  # 假设第一个是根标签
+
+            # 检查是否有SHORT-NAME
+            short_name_count = xml_model["element_counts"].get("SHORT-NAME", 0)
+
+            check_result = {
+                "constraint_id": "basic_short_name_check",
+                "constraint_type": "basic_structural",
+                "element": "SHORT-NAME",
+                "class_element": root_tag,
+                "actual_count": short_name_count,
+                "severity": "violation"
+            }
+
+            if short_name_count == 0:
+                check_result.update({
+                    "status": "unsat",
+                    "message": f"BASIC CHECK: ROOT element {root_tag} should contain SHORT-NAME"
+                })
+                violations.append(check_result)
+            else:
+                check_result.update({
+                    "status": "sat",
+                    "message": f"BASIC CHECK: ROOT element {root_tag} contains SHORT-NAME"
+                })
+
+            checks.append(check_result)
+
+        # 🔧 基础检查2：检查wrapper关系
+        wrapper_relationships = xml_model.get("wrapper_relationships", {})
+        for wrapper_tag, item_tag in wrapper_relationships.items():
+            wrapper_count = xml_model["element_counts"].get(wrapper_tag, 0)
+            item_count = xml_model["element_counts"].get(item_tag, 0)
+
+            check_result = {
+                "constraint_id": f"basic_wrapper_check_{wrapper_tag}",
+                "constraint_type": "basic_wrapper",
+                "element": item_tag,
+                "class_element": wrapper_tag,
+                "actual_count": item_count,
+                "severity": "info"
+            }
+
+            if wrapper_count > 0 and item_count == 0:
+                check_result.update({
+                    "status": "unsat",
+                    "message": f"BASIC CHECK: {wrapper_tag} exists but contains no {item_tag}"
+                })
+                # 这只是警告，不算违规
+            else:
+                check_result.update({
+                    "status": "sat",
+                    "message": f"BASIC CHECK: {wrapper_tag} wrapper structure is reasonable"
+                })
+
+            checks.append(check_result)
+
+        print(f"   📊 基础验证完成: {len(checks)} 项检查, {len(violations)} 个违规")
+
+        return {
+            "checks": checks,
+            "violations": violations
+        }
