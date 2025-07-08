@@ -51,7 +51,7 @@ class CloudGenerationResponse(BaseModel):
     timestamp: Optional[float] = None
     generated_xml: Optional[str] = None
     raw_output: Optional[str] = None
-    constraints_applied: Dict[str, bool] = {}
+    constraints_applied: Dict[str, Any] = {}  # 🔥 支持复杂数据结构
     constraint_violations: List[str] = []
     generation_time: float = 0.0
     model_info: Dict[str, Any] = {}

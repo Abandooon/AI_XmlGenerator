@@ -4,14 +4,40 @@ project:
   version: "3.0.0"
   description: "Local client for AUTOSAR XML generation with configurable constraints"
 
-# 云端服务配置
+# vllm云端服务配置----------------------------------------------------------------------------------------------------------------------------------
+
+#cloud_service:
+#  internal_endpoint: "http://117.50.179.35:8000"
+#  api_type: "enhanced"
+#  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+#  timeout: 600
+#  max_retries: 3
+#  retry_delay: 5
+
 cloud_service:
-  internal_endpoint: "http://117.50.179.35:8000"
+  internal_endpoint: "http://117.50.191.3:8000"
   api_type: "enhanced"
-  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
   timeout: 600
   max_retries: 3
   retry_delay: 5
+
+#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
+#  --port 8001 \
+#  --tensor-parallel-size 4 \
+#  --max-model-len 65168 \
+#  --guided-decoding-backend outlines \
+#  --gpu-memory-utilization 0.85 \
+#  --trust-remote-code
+
+vllm_config:
+  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
+    --port 8001 \
+    --tensor-parallel-size 8 \
+    --max-model-len 88048 \
+    --guided-decoding-backend outlines \
+    --gpu-memory-utilization 0.85 \
+    --trust-remote-code
 
 # 🔥 新增：提示词配置 - 便于调试和实验
 prompts:
@@ -27,126 +53,51 @@ prompts:
 
     Example XML: 
         <APPLICATION-SW-COMPONENT-TYPE>
-          <SHORT-NAME>ASW_COM</SHORT-NAME>
+          <SHORT-NAME>ASW_COM_STD</SHORT-NAME>
           <PORTS>
-            <P-PORT-PROTOTYPE UUID="9291d2d6-7dd8-4794-8dc5-562c275f9661">
+            <!-- 2 Provided -->
+            <P-PORT-PROTOTYPE>
               <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                /Interface/SR_Interface_MCU01_EmergShutDown
+              </PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE UUID="2a195d0d-008f-4a55-b98f-64963b9ca4f5">
+            <P-PORT-PROTOTYPE>
               <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                /Interface/SR_Interface_MCU02_MaxTor
+              </PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE UUID="62c54b76-8040-4b43-9744-d1cdfe01d436">
-              <SHORT-NAME>PPort_MCU03_NRF_IdcSamp</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
-            </P-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="7b1a7fbc-00e6-4b56-8184-2fee13611496">
+            <!-- 1 Required -->
+            <R-PORT-PROTOTYPE>
               <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
-                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd</DATA-ELEMENT-REF>
+                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">
+                    /Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd
+                  </DATA-ELEMENT-REF>
                   <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
                   <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
                 </NONQUEUED-RECEIVER-COM-SPEC>
               </REQUIRED-COM-SPECS>
-              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_TqCmd</REQUIRED-INTERFACE-TREF>
-            </R-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="15f7188e-ec5b-4256-9459-6442d0995495">
-              <SHORT-NAME>RPort_HCU01_Shift</SHORT-NAME>
-              <REQUIRED-COM-SPECS>
-                <NONQUEUED-RECEIVER-COM-SPEC>
-                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift</DATA-ELEMENT-REF>
-                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
-                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
-                </NONQUEUED-RECEIVER-COM-SPEC>
-              </REQUIRED-COM-SPECS>
-              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_Shift</REQUIRED-INTERFACE-TREF>
-            </R-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="705f7fa6-1d61-43f7-9166-f1abbf8542fb">
-              <SHORT-NAME>RPort_HCU02_Poweroff</SHORT-NAME>
-              <REQUIRED-COM-SPECS>
-                <NONQUEUED-RECEIVER-COM-SPEC>
-                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff</DATA-ELEMENT-REF>
-                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
-                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
-                </NONQUEUED-RECEIVER-COM-SPEC>
-              </REQUIRED-COM-SPECS>
-              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU02_Poweroff</REQUIRED-INTERFACE-TREF>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                /Interface/SR_Interface_HCU01_TqCmd
+              </REQUIRED-INTERFACE-TREF>
             </R-PORT-PROTOTYPE>
           </PORTS>
           <INTERNAL-BEHAVIORS>
             <SWC-INTERNAL-BEHAVIOR>
-              <SHORT-NAME>SwcInternalBehavior</SHORT-NAME>
+              <SHORT-NAME>IB_ASW_COM_STD</SHORT-NAME>
               <EVENTS>
-                <TIMING-EVENT UUID="9d816fd8-a6fb-4e66-afa0-2e9954576bf1">
-                  <SHORT-NAME>TE_SWC_COM_10ms</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/COM_SWC/ASW_COM/SwcInternalBehavior/RE_COM_SWC</START-ON-EVENT-REF>
-                  <PERIOD>0.01</PERIOD>
+                <TIMING-EVENT>
+                  <SHORT-NAME>TE_RE_COM_SWC</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/RUNNABLES/RE_COM_SWC</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD> <!-- 10 ms -->
                 </TIMING-EVENT>
               </EVENTS>
               <RUNNABLES>
-                <RUNNABLE-ENTITY UUID="679af6ce-2509-43d9-8c5d-1ec0e2075cb3">
+                <RUNNABLE-ENTITY>
                   <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
-                  <DATA-RECEIVE-POINT-BY-ARGUMENTS>
-                    <VARIABLE-ACCESS UUID="36937116-7e5e-4b25-b88a-72b37c43ae29">
-                      <SHORT-NAME>DRPA_HCU01_Shift_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="d9a7cd2f-0afd-44b6-a48d-cb7ff83342d2">
-                      <SHORT-NAME>DRPA_MCU01_CurCntTor_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_TqCmd</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="8202214a-a31c-4802-a9f1-55ec3026a385">
-                      <SHORT-NAME>DRPA_HCU01_SpeedCmd_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU02_Poweroff</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                  </DATA-RECEIVE-POINT-BY-ARGUMENTS>
-                  <DATA-SEND-POINTS>
-                    <VARIABLE-ACCESS UUID="7ae1444a-006b-405f-9d2d-632941debf07">
-                      <SHORT-NAME>DSP_MCU01_CurCntTor_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU03_NRF_IdcSamp</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="44ae5e27-5dd4-4e3b-ae5e-ffc77363d7dc">
-                      <SHORT-NAME>DSP_MCU01_EmergShutDown_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU01_EmergShutDown</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="92a46fc8-7e94-4a94-8a67-86654249869d">
-                      <SHORT-NAME>DSP_MCU01_Motorspd_0</SHORT-NAME>
-                      <ACCESSED-VARIABLE>
-                        <AUTOSAR-VARIABLE-IREF>
-                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/COM_SWC/ASW_COM/PPort_MCU02_MaxTor</PORT-PROTOTYPE-REF>
-                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>
-                        </AUTOSAR-VARIABLE-IREF>
-                      </ACCESSED-VARIABLE>
-                    </VARIABLE-ACCESS>
-                  </DATA-SEND-POINTS>
-                  <SYMBOL>RE_COM_SWC_func</SYMBOL>
                 </RUNNABLE-ENTITY>
               </RUNNABLES>
             </SWC-INTERNAL-BEHAVIOR>
@@ -175,8 +126,35 @@ prompts:
 
 # 🔥 约束策略配置
 constraint_strategy:
-  # 可选值: "gbnf_priority", "iterative_fsm", "hybrid", "unconstrained"
-  mode: "iterative_fsm"
+  # 可选值: "gbnf_priority", "enhanced_fsm", "gad_enhanced_fsm"
+  mode: "gad_enhanced_fsm"  # 使用GAD策略
+
+  # GAD增强FSM策略配置
+  gad_enhanced_fsm:
+    enabled: true
+    efg_threshold: 0.35              # EFG最低阈值
+    max_candidates: 15              # 最大候选token数
+    adaptive_threshold: true        # 自适应阈值
+    temperature_scaling: 0.6        # 温度缩放
+
+    efg_weights:                    # EFG权重配置
+      gbnf: 0.3                   # GBNF语法权重
+      complexity: 0.3              # 复杂度权重
+      structural: 0.4              # 结构权重
+
+    fusion_strategy: "multiplicative"  # 融合策略
+    cache_size: 10000              # 缓存大小
+    cache_decay: 0.95              # 缓存衰减因子
+    max_iterations: 25             # 最大迭代次数
+
+  enhanced_fsm:
+    enabled: true
+    max_iterations: 100        # 迭代次数
+    max_tokens_per_step: 600  # 每步生成量
+    temperature: 0.4          # 创造性水平
+    top_p: 0.85
+    thinking_enabled: true    # 启用vLLM思考
+    choice_range: 30          # 每次给vLLM的选择数量
 
   # GBNF优先策略配置
   gbnf_priority:
@@ -186,25 +164,7 @@ constraint_strategy:
     max_tokens: 8000
     stop_conditions: ["</APPLICATION-SW-COMPONENT-TYPE>"]
 
-  # 迭代FSM策略配置
-  iterative_fsm:
-    enabled: true
-    max_iterations: 20
-    tokens_per_step: 100
-    step_max_tokens: 200
-    temperature: 0.0
-    continue_threshold: 5
-
-  # 混合策略配置
-  hybrid:
-    enabled: true
-    primary_method: "gbnf"
-    fallback_method: "fsm"
-    conflict_resolution: "primary_wins"
-    temperature: 0.15
-    max_tokens: 8000
-
-# 生成参数配置
+## 生成参数配置-------------------
 generation:
   default_max_tokens: 8000
   default_temperature: 0.3
@@ -268,7 +228,7 @@ constraint_levels:
     domain_constraints: true
     description: "Maximum constraint enforcement"
 
-# 性能配置
+# 性能配置---v1
 performance:
   concurrent_requests: 1
   request_timeout: 300
@@ -286,7 +246,7 @@ logging:
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 
-# 文件路径配置 - 从配置中读取，避免硬编码
+# 形式化验证模块配置-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 file_paths:
   # XML实例文件
   xml_instances:
@@ -297,6 +257,9 @@ file_paths:
   shacl_shapes: "src/constraint_graph/artifacts/shapes/autosar_shapes.ttl"
   smt_template: "src/constraint_graph/artifacts/smt/constraints.smt2"
 
+  enriched_constraints: "src/constraint_graph/artifacts/enriched_constraints.json"
+  raw_attributes: "src/constraint_graph/artifacts/raw/raw_attributes.jsonl"  # 确保路径正确
+
   # 输出目录
   output_dir: "logs"
   report_dir: "reports"
@@ -304,15 +267,12 @@ file_paths:
 # 验证器配置
 validators:
   structure:
-    enabled: false
-    timeout: 30
-    fallback_to_basic: false  # XSD验证失败时降级到基本XML验证
+    enabled: true
+    strict_mode: true
 
   semantic:
     enabled: false
-    timeout: 60
-    inference_type: "rdfs"
-    max_violations_display: 5
+    inference: true
 
   constraint:
     enabled: true
@@ -320,21 +280,74 @@ validators:
     solver: "z3"
     max_constraints_display: 5
 
-# 验证级别配置
-validation_modes:
-  quick: ["structure"]  # 只进行结构验证
-  standard: ["structure", "semantic"]  # 结构+语义验证
-  full: ["structure", "semantic", "constraint"]  # 三段式完整验证
+    # 🔧 新增：约束验证细粒度控制
+    validation_scope:
+      # 约束来源控制
+      structural_constraints: false      # 来自XSD/Schema的结构约束
+      semantic_constraints: true        # 来自业务逻辑的语义约束
 
-# 默认验证模式
-default_mode: "full"
+      # 语义约束类型细分控制
+      semantic_types:
+        existence: true                 # 存在性约束 (元素必须/不得存在)
+        value_restriction: true         # 值限制约束 (枚举值、格式等)
+        cardinality: true              # 基数约束 (出现次数限制)
+        dependency: true               # 依赖关系约束 (if-then逻辑)
+        mutual_exclusion: true         # 互斥约束 (不能同时存在)
+        format: true                   # 格式约束 (正则表达式等)
+        range: true                    # 范围约束 (数值范围)
+        behavioral: true               # 行为约束 (时序、状态等)
+        other: false                   # 其他未分类约束
+
+    # 🔧 新增：约束验证策略
+    validation_strategy:
+      # 验证模式
+      mode: "hybrid"                   # "structural_only", "semantic_only", "hybrid"
+
+      # 失败策略
+      fail_fast: false                  # 遇到第一个结构约束失败就停止
+      continue_on_semantic_fail: true  # 语义约束失败时继续验证
+
+      # 严重性过滤
+      severity_filter:
+        structural: ["violation"]      # 结构约束: 只处理违规
+        semantic: ["violation", "warning", "info"]  # 语义约束: 处理所有级别
+
+    # 🔧 新增：性能和输出控制
+    performance:
+      parallel_execution: false        # 并行执行约束验证
+      max_parallel_constraints: 4      # 最大并行约束数
+      memory_limit_mb: 512             # 内存限制
+
+    output:
+      detailed_breakdown: true         # 详细的约束类型分解
+      show_satisfied_constraints: false # 是否显示满足的约束
+      group_by_type: true             # 按类型分组显示结果
+      include_smt_code: false         # 是否包含生成的SMT代码
+
+# 验证模式定义
+validation_modes:
+  quick: ["structure"]
+  standard: ["structure", "semantic"]
+  full: ["structure", "semantic", "constraint"]
+
+  # 🔧 新增：约束专用模式
+  constraint_only: ["constraint"]
+  semantic_constraint: ["constraint"]  # 将通过constraint配置控制只验证semantic
+  structural_constraint: ["constraint"] # 将通过constraint配置控制只验证structural
 
 # 报告配置
 reporting:
-  format: "text"  # 可选: text, json, html
-  detailed_errors: true
-  save_reports: true
   console_output: true
+  save_reports: true
+  format: "text"  # "text", "json", "both"
+
+  # 🔧 新增：约束验证报告配置
+  constraint_reporting:
+    summary_only: false              # 只显示摘要
+    include_smt_details: false       # 包含SMT求解细节
+    breakdown_by_type: true          # 按类型分解报告
+    show_constraint_source: true     # 显示约束来源
+    max_violations_per_type: 20      # 每种类型最多显示的违规数
 
 # 依赖检查配置
 dependencies:
@@ -353,102 +366,3 @@ auto_setup:
   download_z3_if_missing: false    # 在PyCharm中手动安装
 
 
-
-## config/main_config.yaml - 支持真实约束传输
-#project:
-#  name: "AUTOSAR vLLM Client with Real Constraints"
-#  version: "2.0.0"
-#  description: "Local client for AUTOSAR XML generation with real-time constraints"
-#
-## 云端服务配置 - 使用增强代理----70b模型
-##cloud_service:
-##  internal_endpoint: "http://117.50.190.248:8000"  # 直接使用vLLM
-##  api_type: "vllm_native"  # 改为原生vLLM API
-##  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
-##  timeout: 120
-##  max_retries: 2
-##  retry_delay: 2
-#
-## 云端服务配置 - 使用增强代理----32b模型
-#cloud_service:
-#  internal_endpoint: "http://117.50.173.128:8002"  # 直接使用vLLM
-#  api_type: "enhanced"  # 改为原生vLLM API
-#  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
-#  timeout: 120
-#  max_retries: 2
-#  retry_delay: 2
-#
-## 本地约束和验证配置
-#local_validation:
-#  enabled: true
-#  validation_level: "full"
-#  artifacts_dir: "./src/constraint_graph/artifacts"
-#
-## 约束传输配置 - 优化参数
-#constraint_transmission:
-#  include_fsm: true
-#  include_gbnf: true
-#  include_allowed_tokens: true
-#  max_tokens_per_request: 200  # 优化性能
-#  compress_constraints: true
-#  gbnf_compression_threshold: 50000  # 50KB
-#
-## 约束级别配置
-#constraint_levels:
-#  simple:
-#    gbnf_enabled: false
-#    fsm_enabled: false
-#    description: "No constraints, fastest generation"
-#
-#  mixed:
-#    gbnf_enabled: true
-#    fsm_enabled: true
-#    description: "Balanced constraints and performance"
-#
-#  full:
-#    gbnf_enabled: true
-#    fsm_enabled: true
-#    domain_constraints: true
-#    description: "Maximum constraint enforcement"
-#
-## 性能配置
-#performance:
-#  concurrent_requests: 2
-#  request_timeout: 120
-#  constraint_cache_size: 50
-#
-## 监控配置
-#monitoring:
-#  enabled: true
-#  metrics_file: "./logs/constraint_metrics.json"
-#  track_constraint_effectiveness: true
-#  detailed_timing: true
-#
-## 日志配置
-#logging:
-#  level: "INFO"
-#  file: "./logs/autosar_constraints.log"
-#  console: true
-#  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
-
-# 云端部署实例
-## 设置环境变量忽略OpenCV警告
-#export OPENCV_LOG_LEVEL=ERROR
-#
-## 重新启动vLLM
-#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
-#  --port 8000 \
-#  --tensor-parallel-size 8 \
-#  --max-model-len 88048 \
-#  --guided-decoding-backend outlines \
-#  --gpu-memory-utilization 0.85 \
-#  --trust-remote-code
-
-#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
-#  --port 8001 \
-#  --tensor-parallel-size 4 \
-#  --max-model-len 65168 \
-#  --guided-decoding-backend outlines \
-#  --gpu-memory-utilization 0.85 \
-#  --trust-remote-code

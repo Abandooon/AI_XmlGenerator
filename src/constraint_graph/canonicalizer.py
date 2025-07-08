@@ -129,8 +129,24 @@ class Canonicalizer:
                 if rec["type"] == "cardinality":
                     nums = _NUM_RE.findall(expr) if expr else []
                     if nums:
-                        rec["maxOccurs"] = int(nums[-1])
+                        # 🔧 修复：确保基数值始终是整数
+                        try:
+                            max_val = int(nums[-1])
+                            rec["maxOccurs"] = max_val
+                            rec["minOccurs"] = 0
+                        except (ValueError, IndexError):
+                            # 如果解析失败，使用默认值
+                            rec["maxOccurs"] = -1  # 无限制
+                            rec["minOccurs"] = 0
+                    else:
+                        # 没有找到数字，使用默认值
+                        rec["maxOccurs"] = -1
                         rec["minOccurs"] = 0
+
+                # 🔧 新增：统一处理所有可能的基数字段，确保类型安全
+                for occurs_field in ["minOccurs", "maxOccurs", "rangeMin", "rangeMax"]:
+                    if occurs_field in rec:
+                        rec[occurs_field] = self._ensure_integer(rec[occurs_field])
 
                 # 🔧 修复：value_restriction处理 - 确保val不为None
                 if rec["type"] == "value_restriction":
@@ -247,6 +263,13 @@ class Canonicalizer:
             # 后备：使用原有逻辑
             return self._hash(record)
 
+    def _ensure_integer(self, value: Any) -> int:
+        """确保值为整数类型"""
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return 0
+
     # ------------------------------------------------------------
     def _infer_type(self, c: Dict[str, Any]) -> str:
         """推断约束类型 - 修复None值处理"""
@@ -345,9 +368,10 @@ class Canonicalizer:
             result_json = json.dumps(canonical, ensure_ascii=False, indent=2)
             out_path.write_text(result_json, encoding="utf-8")
 
-            print(f"✅ 标准化结果已保存到: {out_path}")
+            print(f"✅ 标准化结果已��存到: {out_path}")
             return out_path
 
         except Exception as e:
             print(f"❌ 标准化过程失败: {e}")
             raise
+

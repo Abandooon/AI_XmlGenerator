@@ -140,34 +140,55 @@ def validate_xml_fixed(xml_content: str, attr_tag: str, class_tag: str, min_occu
         "smt_status": "unsat" if constraint_violated else "sat"
     }
 
+
 def count_with_wrapper_support(element_counts, class_tag, attr_tag, wrapper_relationships, root):
     """🔧 支持wrapper的智能计数"""
 
-    # 直接计数
-    direct_count = element_counts.get(attr_tag, 0)
-    print(f"      📊 直接找到 {attr_tag}: {direct_count} 个")
-
-    # 🔧 通过wrapper计数
-    wrapper_count = 0
+    # 使用集合避免重复计数
+    counted_elements = set()
+    total_count = 0
 
     # 查找class_tag元素
     for elem in root.iter():
         elem_tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
         if elem_tag == class_tag:
-            # 检查其子元素是否有wrapper
+            # 计算直接子元素
+            direct_count = 0
+            for child in elem:
+                child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                if child_tag == attr_tag and id(child) not in counted_elements:
+                    counted_elements.add(id(child))
+                    direct_count += 1
+
+            if direct_count > 0:
+                print(f"      📊 在 {class_tag} 中直接找到 {attr_tag}: {direct_count} 个")
+                total_count += direct_count
+
+            # 检查通过wrapper的元素
             for child in elem:
                 child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
                 if child_tag in wrapper_relationships:
                     expected_item = wrapper_relationships[child_tag]
                     if expected_item == attr_tag:
                         # 计算wrapper内的item数量
+                        wrapper_count = 0
                         for grandchild in child:
                             grandchild_tag = grandchild.tag.split('}')[-1] if '}' in grandchild.tag else grandchild.tag
-                            if grandchild_tag == attr_tag:
+                            if grandchild_tag == attr_tag and id(grandchild) not in counted_elements:
+                                counted_elements.add(id(grandchild))
                                 wrapper_count += 1
-                        print(f"      📦 通过wrapper {child_tag} 找到 {attr_tag}: {wrapper_count} 个")
 
-    total_count = direct_count + wrapper_count
+                        if wrapper_count > 0:
+                            print(f"      📦 通过wrapper {child_tag} 找到 {attr_tag}: {wrapper_count} 个")
+                            total_count += wrapper_count
+
+    # 如果在类上下文中没找到，才进行全局查找
+    if total_count == 0:
+        global_count = element_counts.get(attr_tag, 0)
+        if global_count > 0:
+            print(f"      📊 全局查找 {attr_tag}: {global_count} 个")
+            total_count = global_count
+
     print(f"      📈 总计: {total_count} 个")
 
     return total_count
