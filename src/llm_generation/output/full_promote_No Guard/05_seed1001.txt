@@ -1,53 +1,258 @@
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+<AUTOSAR xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd" xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <AR-PACKAGES>
     <AR-PACKAGE>
-      <SHORT-NAME>ASW_COM_Package</SHORT-NAME>
+      <SHORT-NAME>ASWC</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>ASW_COM</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>P_MCU01_EmergShutDown</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>P_MCU02_MaxTor</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>P_MCU03_NRF_IdcSamp</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>R_HCU01_TqCmd</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_TqCmd</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>R_HCU01_Shift</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_Shift</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>R_HCU02_Poweroff</SHORT-NAME>
+              <REQUIRED-COM-SPECS>
+                <NONQUEUED-RECEIVER-COM-SPEC>
+                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/DE_HCU02_Poweroff</DATA-ELEMENT-REF>
+                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
+                  <ENABLE-UPDATE>false</ENABLE-UPDATE>
+                  <FILTER>
+                    <ALWAYS/>
+                  </FILTER>
+                  <HANDLE-NEVER-RECEIVED>false</HANDLE-NEVER-RECEIVED>
+                  <INIT-VALUE>
+                    <NUMERICAL-VALUE-SPECIFICATION>
+                      <VALUE>0</VALUE>
+                    </NUMERICAL-VALUE-SPECIFICATION>
+                  </INIT-VALUE>
+                </NONQUEUED-RECEIVER-COM-SPEC>
+              </REQUIRED-COM-SPECS>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU02_Poweroff</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+                <SHORT-NAME>RP_EcuM_Mode</SHORT-NAME>
+                <REQUIRED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/COM_Interface/MSI_EcuM_Mode</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>IB_ASW_COM</SHORT-NAME>
+              <EVENTS>
+                <TIMING-EVENT>
+                  <SHORT-NAME>TE_RE_COM_SWC_10ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ASWC/ASW_COM/IB_ASW_COM/RE_COM_SWC</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+                <DATA-RECEIVE-ERROR-EVENT>
+                  <SHORT-NAME>DREE_R_HCU02_Poweroff</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ASWC/ASW_COM/IB_ASW_COM/RE_COM_SWC</START-ON-EVENT-REF>
+                  <DATA-IREF>
+                    <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/ASWC/ASW_COM/R_HCU02_Poweroff</CONTEXT-R-PORT-REF>
+                    <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/DE_HCU02_Poweroff</TARGET-DATA-PROTOTYPE-REF>
+                  </DATA-IREF>
+                </DATA-RECEIVE-ERROR-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESS-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_READ_HCU01_TqCmd</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASWC/ASW_COM/R_HCU01_TqCmd</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_TqCmd/DE_HCU01_TqCmd</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_READ_HCU01_Shift</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASWC/ASW_COM/R_HCU01_Shift</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU01_Shift/DE_HCU01_Shift</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_READ_HCU02_Poweroff</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASWC/ASW_COM/R_HCU02_Poweroff</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_HCU02_Poweroff/DE_HCU02_Poweroff</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-READ-ACCESS-POINTS>
+                  <DATA-WRITE-ACCESS-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_WRITE_MCU01_EmergShutDown</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASWC/ASW_COM/P_MCU01_EmergShutDown</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU01_EmergShutDown/DE_MCU01_EmergShutDown</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_WRITE_MCU02_MaxTor</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASWC/ASW_COM/P_MCU02_MaxTor</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/DE_MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>VA_WRITE_MCU03_NRF_IdcSamp</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASWC/ASW_COM/P_MCU03_NRF_IdcSamp</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/DE_MCU03_NRF_IdcSamp</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-WRITE-ACCESS-POINTS>
+                  <MODE-ACCESS-POINTS>
+                    <MODE-ACCESS-POINT>
+                        <SHORT-NAME>VA_MODE_SLEEP</SHORT-NAME>
+                        <MODE-GROUP-IREF>
+                            <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/ASWC/ASW_COM/RP_EcuM_Mode</CONTEXT-R-PORT-REF>
+                            <TARGET-MODE-GROUP-REF DEST="MODE-DECLARATION-GROUP-PROTOTYPE">/COM_Interface/MSI_EcuM_Mode/EcuM_Mode</TARGET-MODE-GROUP-REF>
+                        </MODE-GROUP-IREF>
+                    </MODE-ACCESS-POINT>
+                  </MODE-ACCESS-POINTS>
+                  <SYMBOL>RE_COM_SWC</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+              <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+    <AR-PACKAGE>
+      <SHORT-NAME>COM_Interface</SHORT-NAME>
+      <ELEMENTS>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_MCU01_EmergShutDown</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_MCU01_EmergShutDown</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/boolean</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_MCU02_MaxTor</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_MCU02_MaxTor</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/float32</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_MCU03_NRF_IdcSamp</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_MCU03_NRF_IdcSamp</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/float32</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_HCU01_TqCmd</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_HCU01_TqCmd</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/float32</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_HCU01_Shift</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_HCU01_Shift</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/uint8</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <SENDER-RECEIVER-INTERFACE>
+          <SHORT-NAME>SR_Interface_HCU02_Poweroff</SHORT-NAME>
+          <DATA-ELEMENTS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>DE_HCU02_Poweroff</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/ImplementationDataTypes/boolean</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </DATA-ELEMENTS>
+        </SENDER-RECEIVER-INTERFACE>
+        <MODE-SWITCH-INTERFACE>
+          <SHORT-NAME>MSI_EcuM_Mode</SHORT-NAME>
+          <MODE-GROUP>
+            <SHORT-NAME>EcuM_Mode</SHORT-NAME>
+            <TYPE-TREF DEST="MODE-DECLARATION-GROUP">/DataTypes/ModeDeclarationGroups/MDG_EcuM_State</TYPE-TREF>
+          </MODE-GROUP>
+        </MODE-SWITCH-INTERFACE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+    <AR-PACKAGE>
+      <SHORT-NAME>DataTypes</SHORT-NAME>
       <AR-PACKAGES>
         <AR-PACKAGE>
-          <SHORT-NAME>DataTypes</SHORT-NAME>
+          <SHORT-NAME>ImplementationDataTypes</SHORT-NAME>
           <ELEMENTS>
             <IMPLEMENTATION-DATA-TYPE>
-              <SHORT-NAME>dt_boolean</SHORT-NAME>
+              <SHORT-NAME>boolean</SHORT-NAME>
               <CATEGORY>VALUE</CATEGORY>
               <SW-DATA-DEF-PROPS>
                 <SW-DATA-DEF-PROPS-VARIANTS>
                   <SW-DATA-DEF-PROPS-CONDITIONAL>
-                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/SwBaseTypes/boolean</BASE-TYPE-REF>
                   </SW-DATA-DEF-PROPS-CONDITIONAL>
                 </SW-DATA-DEF-PROPS-VARIANTS>
               </SW-DATA-DEF-PROPS>
             </IMPLEMENTATION-DATA-TYPE>
             <IMPLEMENTATION-DATA-TYPE>
-              <SHORT-NAME>dt_uint16</SHORT-NAME>
+              <SHORT-NAME>float32</SHORT-NAME>
               <CATEGORY>VALUE</CATEGORY>
               <SW-DATA-DEF-PROPS>
                 <SW-DATA-DEF-PROPS-VARIANTS>
                   <SW-DATA-DEF-PROPS-CONDITIONAL>
-                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/SwBaseTypes/float32</BASE-TYPE-REF>
                   </SW-DATA-DEF-PROPS-CONDITIONAL>
                 </SW-DATA-DEF-PROPS-VARIANTS>
               </SW-DATA-DEF-PROPS>
             </IMPLEMENTATION-DATA-TYPE>
             <IMPLEMENTATION-DATA-TYPE>
-              <SHORT-NAME>dt_float32</SHORT-NAME>
+              <SHORT-NAME>uint8</SHORT-NAME>
               <CATEGORY>VALUE</CATEGORY>
               <SW-DATA-DEF-PROPS>
                 <SW-DATA-DEF-PROPS-VARIANTS>
                   <SW-DATA-DEF-PROPS-CONDITIONAL>
-                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/float32</BASE-TYPE-REF>
-                  </SW-DATA-DEF-PROPS-CONDITIONAL>
-                </SW-DATA-DEF-PROPS-VARIANTS>
-              </SW-DATA-DEF-PROPS>
-            </IMPLEMENTATION-DATA-TYPE>
-            <IMPLEMENTATION-DATA-TYPE>
-              <SHORT-NAME>dt_uint8</SHORT-NAME>
-              <CATEGORY>VALUE</CATEGORY>
-              <SW-DATA-DEF-PROPS>
-                <SW-DATA-DEF-PROPS-VARIANTS>
-                  <SW-DATA-DEF-PROPS-CONDITIONAL>
-                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                    <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/SwBaseTypes/uint8</BASE-TYPE-REF>
                   </SW-DATA-DEF-PROPS-CONDITIONAL>
                 </SW-DATA-DEF-PROPS-VARIANTS>
               </SW-DATA-DEF-PROPS>
@@ -55,74 +260,11 @@
           </ELEMENTS>
         </AR-PACKAGE>
         <AR-PACKAGE>
-          <SHORT-NAME>COM_Interface</SHORT-NAME>
+          <SHORT-NAME>ModeDeclarationGroups</SHORT-NAME>
           <ELEMENTS>
-            <!-- Sender-Receiver Interfaces -->
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_MCU01_EmergShutDown</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>EmergShutDown</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_boolean</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_MCU02_MaxTor</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>MaxTor</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_uint16</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_MCU03_NRF_IdcSamp</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>NRF_IdcSamp</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_float32</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_HCU01_TqCmd</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>TqCmd</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_uint16</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_HCU01_Shift</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>Shift</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_uint8</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <SENDER-RECEIVER-INTERFACE>
-              <SHORT-NAME>SR_Interface_HCU02_Poweroff</SHORT-NAME>
-              <DATA-ELEMENTS>
-                <VARIABLE-DATA-PROTOTYPE>
-                  <SHORT-NAME>Poweroff</SHORT-NAME>
-                  <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/ASW_COM_Package/DataTypes/dt_boolean</TYPE-TREF>
-                </VARIABLE-DATA-PROTOTYPE>
-              </DATA-ELEMENTS>
-            </SENDER-RECEIVER-INTERFACE>
-            <!-- Mode-Switch Interface -->
-            <MODE-SWITCH-INTERFACE>
-              <SHORT-NAME>PowerMode_IF</SHORT-NAME>
-              <MODE-GROUP>
-                <SHORT-NAME>PowerMode</SHORT-NAME>
-                <TYPE-TREF DEST="MODE-DECLARATION-GROUP">/ASW_COM_Package/COM_Interface/PowerMode_MDG</TYPE-TREF>
-              </MODE-GROUP>
-            </MODE-SWITCH-INTERFACE>
             <MODE-DECLARATION-GROUP>
-              <SHORT-NAME>PowerMode_MDG</SHORT-NAME>
-              <INITIAL-MODE-REF DEST="MODE-DECLARATION">/ASW_COM_Package/COM_Interface/PowerMode_MDG/RUN</INITIAL-MODE-REF>
+              <SHORT-NAME>MDG_EcuM_State</SHORT-NAME>
+              <INITIAL-MODE-REF DEST="MODE-DECLARATION">/DataTypes/ModeDeclarationGroups/MDG_EcuM_State/RUN</INITIAL-MODE-REF>
               <MODE-DECLARATIONS>
                 <MODE-DECLARATION>
                   <SHORT-NAME>RUN</SHORT-NAME>
@@ -132,200 +274,6 @@
                 </MODE-DECLARATION>
               </MODE-DECLARATIONS>
             </MODE-DECLARATION-GROUP>
-          </ELEMENTS>
-        </AR-PACKAGE>
-        <AR-PACKAGE>
-          <SHORT-NAME>SWC</SHORT-NAME>
-          <ELEMENTS>
-            <APPLICATION-SW-COMPONENT-TYPE>
-              <SHORT-NAME>ASW_COM</SHORT-NAME>
-              <PORTS>
-                <!-- Provided Ports -->
-                <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>MCU01_EmergShutDown</SHORT-NAME>
-                  <PROVIDED-COM-SPECS>
-                    <NONQUEUED-SENDER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU01_EmergShutDown/EmergShutDown</DATA-ELEMENT-REF>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-SENDER-COM-SPEC>
-                  </PROVIDED-COM-SPECS>
-                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
-                </P-PORT-PROTOTYPE>
-                <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>MCU02_MaxTor</SHORT-NAME>
-                  <PROVIDED-COM-SPECS>
-                    <NONQUEUED-SENDER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU02_MaxTor/MaxTor</DATA-ELEMENT-REF>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-SENDER-COM-SPEC>
-                  </PROVIDED-COM-SPECS>
-                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
-                </P-PORT-PROTOTYPE>
-                <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>MCU03_NRF_IdcSamp</SHORT-NAME>
-                  <PROVIDED-COM-SPECS>
-                    <NONQUEUED-SENDER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/NRF_IdcSamp</DATA-ELEMENT-REF>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-SENDER-COM-SPEC>
-                  </PROVIDED-COM-SPECS>
-                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
-                </P-PORT-PROTOTYPE>
-                <!-- Required Ports -->
-                <R-PORT-PROTOTYPE>
-                  <SHORT-NAME>HCU01_TqCmd</SHORT-NAME>
-                  <REQUIRED-COM-SPECS>
-                    <NONQUEUED-RECEIVER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_TqCmd/TqCmd</DATA-ELEMENT-REF>
-                      <ALIVE-TIMEOUT>0</ALIVE-TIMEOUT>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-RECEIVER-COM-SPEC>
-                  </REQUIRED-COM-SPECS>
-                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_TqCmd</REQUIRED-INTERFACE-TREF>
-                </R-PORT-PROTOTYPE>
-                <R-PORT-PROTOTYPE>
-                  <SHORT-NAME>HCU01_Shift</SHORT-NAME>
-                  <REQUIRED-COM-SPECS>
-                    <NONQUEUED-RECEIVER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_Shift/Shift</DATA-ELEMENT-REF>
-                      <ALIVE-TIMEOUT>0</ALIVE-TIMEOUT>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-RECEIVER-COM-SPEC>
-                  </REQUIRED-COM-SPECS>
-                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_Shift</REQUIRED-INTERFACE-TREF>
-                </R-PORT-PROTOTYPE>
-                <R-PORT-PROTOTYPE>
-                  <SHORT-NAME>HCU02_Poweroff</SHORT-NAME>
-                  <REQUIRED-COM-SPECS>
-                    <NONQUEUED-RECEIVER-COM-SPEC>
-                      <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU02_Poweroff/Poweroff</DATA-ELEMENT-REF>
-                      <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
-                      <INIT-VALUE>
-                        <NUMERICAL-VALUE-SPECIFICATION>
-                          <VALUE>0</VALUE>
-                        </NUMERICAL-VALUE-SPECIFICATION>
-                      </INIT-VALUE>
-                    </NONQUEUED-RECEIVER-COM-SPEC>
-                  </REQUIRED-COM-SPECS>
-                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU02_Poweroff</REQUIRED-INTERFACE-TREF>
-                </R-PORT-PROTOTYPE>
-                <!-- Mode-Switch Port -->
-                <P-PORT-PROTOTYPE>
-                  <SHORT-NAME>MSPort_PowerMode</SHORT-NAME>
-                  <PROVIDED-INTERFACE-TREF DEST="MODE-SWITCH-INTERFACE">/ASW_COM_Package/COM_Interface/PowerMode_IF</PROVIDED-INTERFACE-TREF>
-                </P-PORT-PROTOTYPE>
-              </PORTS>
-              <INTERNAL-BEHAVIORS>
-                <SWC-INTERNAL-BEHAVIOR>
-                  <SHORT-NAME>IB_ASW_COM</SHORT-NAME>
-                  <EVENTS>
-                    <TIMING-EVENT>
-                      <SHORT-NAME>TE_RE_COM_SWC_10ms</SHORT-NAME>
-                      <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ASW_COM_Package/SWC/ASW_COM/IB_ASW_COM/RE_COM_SWC</START-ON-EVENT-REF>
-                      <PERIOD>0.01</PERIOD>
-                    </TIMING-EVENT>
-                  </EVENTS>
-                  <RUNNABLES>
-                    <RUNNABLE-ENTITY>
-                      <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
-                      <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
-                      <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
-                      <!-- Variable Accesses (6) -->
-                      <DATA-READ-ACCESSS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>RA_HCU01_TqCmd</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/HCU01_TqCmd</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_TqCmd/TqCmd</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>RA_HCU01_Shift</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/HCU01_Shift</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU01_Shift/Shift</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>RA_HCU02_Poweroff</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/HCU02_Poweroff</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_HCU02_Poweroff/Poweroff</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                      </DATA-READ-ACCESSS>
-                      <DATA-WRITE-ACCESSS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>WA_MCU01_EmergShutDown</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/MCU01_EmergShutDown</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU01_EmergShutDown/EmergShutDown</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>WA_MCU02_MaxTor</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/MCU02_MaxTor</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU02_MaxTor/MaxTor</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                        <VARIABLE-ACCESS>
-                          <SHORT-NAME>WA_MCU03_NRF_IdcSamp</SHORT-NAME>
-                          <ACCESSED-VARIABLE>
-                            <AUTOSAR-VARIABLE-IREF>
-                              <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/MCU03_NRF_IdcSamp</PORT-PROTOTYPE-REF>
-                              <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/ASW_COM_Package/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/NRF_IdcSamp</TARGET-DATA-PROTOTYPE-REF>
-                            </AUTOSAR-VARIABLE-IREF>
-                          </ACCESSED-VARIABLE>
-                        </VARIABLE-ACCESS>
-                      </DATA-WRITE-ACCESSS>
-                      <!-- Mode Switch Access -->
-                      <MODE-SWITCH-POINTS>
-                        <MODE-SWITCH-POINT>
-                          <SHORT-NAME>MSP_PowerMode</SHORT-NAME>
-                          <MODE-GROUP-IREF>
-                            <P-PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/ASW_COM_Package/SWC/ASW_COM/MSPort_PowerMode</P-PORT-PROTOTYPE-REF>
-                            <MODE-GROUP-PROTOTYPE-REF DEST="MODE-GROUP">/ASW_COM_Package/COM_Interface/PowerMode_IF/PowerMode</MODE-GROUP-PROTOTYPE-REF>
-                          </MODE-GROUP-IREF>
-                        </MODE-SWITCH-POINT>
-                      </MODE-SWITCH-POINTS>
-                      <SYMBOL>RE_COM_SWC</SYMBOL>
-                    </RUNNABLE-ENTITY>
-                  </RUNNABLES>
-                  <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
-                </SWC-INTERNAL-BEHAVIOR>
-              </INTERNAL-BEHAVIORS>
-            </APPLICATION-SW-COMPONENT-TYPE>
           </ELEMENTS>
         </AR-PACKAGE>
       </AR-PACKAGES>

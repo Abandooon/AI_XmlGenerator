@@ -4282,3 +4282,453 @@ constraints_applied.config_used
 2025-07-07 15:36:22,622 - src.client.cloud_client - INFO - ✅ Response received successfully
 2025-07-07 15:36:22,623 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250707_153622_81b61d06\raw_output_81b61d06.txt
 2025-07-07 15:36:22,623 - src.client.full_client - INFO - Generation successful: 397 chars
+2025-07-08 14:48:13,782 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 14:48:13,790 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 14:48:13,794 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 14:48:13,794 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:48:13,794 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 14:48:13,794 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:48:13,794 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 14:48:13,794 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 14:48:13,794 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:48:13,794 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:48:13,794 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:48:13,795 - src.client.constraint_sender - INFO - Built enhanced request da9f2d03-336d-42e2-bf22-e5b68df430b9 with strategy: gad_enhanced_fsm
+2025-07-08 14:48:13,795 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:48:13,795 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:48:13,795 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:48:13,795 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:48:13,795 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:48:13,795 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:48:13,924 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:48:13,924 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:48:13,925 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144813_da9f2d03\raw_output_da9f2d03.txt
+2025-07-08 14:48:13,925 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - Built enhanced request 54421466-d835-4959-b91a-af3d6ba18347 with strategy: gad_enhanced_fsm
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:48:13,926 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:48:13,926 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:48:13,926 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:48:13,926 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:48:13,926 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:48:14,044 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:48:14,044 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:48:14,045 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144814_54421466\raw_output_54421466.txt
+2025-07-08 14:48:14,046 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:49:10,408 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 14:49:10,411 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 14:49:10,414 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:49:10,415 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 14:49:10,415 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:49:10,415 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 14:49:10,415 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - Built enhanced request 88d0a3ab-4f06-4e17-b119-7d80f2f666bc with strategy: gad_enhanced_fsm
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:49:10,415 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:49:10,415 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:49:10,415 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:49:10,415 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:49:10,415 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:49:10,605 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:49:10,606 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:49:10,606 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144910_88d0a3ab\raw_output_88d0a3ab.txt
+2025-07-08 14:49:10,606 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - Built enhanced request 7f4f5a0e-1e8b-48a4-8a61-3f9a2f334c04 with strategy: gad_enhanced_fsm
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:49:10,608 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:49:10,608 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:49:10,608 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:49:10,608 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:49:10,608 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:49:10,745 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:49:10,745 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:49:10,787 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144910_7f4f5a0e\raw_output_7f4f5a0e.txt
+2025-07-08 14:49:10,787 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:49:29,339 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 14:49:29,343 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 14:49:29,346 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:49:29,346 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 14:49:29,346 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:49:29,346 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 14:49:29,346 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - Built enhanced request 23a1930f-c648-4c73-bdd1-2d0d2405038d with strategy: gad_enhanced_fsm
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:49:29,346 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:49:29,346 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:49:29,346 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:49:29,346 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:49:29,346 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:49:29,478 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:49:29,479 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:49:29,479 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144929_23a1930f\raw_output_23a1930f.txt
+2025-07-08 14:49:29,479 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:49:29,480 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:49:29,480 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:49:29,481 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:49:29,481 - src.client.constraint_sender - INFO - Built enhanced request 039f0107-ddd8-466e-ab38-2056c4951672 with strategy: gad_enhanced_fsm
+2025-07-08 14:49:29,481 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:49:29,481 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:49:29,481 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:49:29,481 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:49:29,481 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:49:29,481 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:49:29,613 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:49:29,614 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:49:29,614 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_144929_039f0107\raw_output_039f0107.txt
+2025-07-08 14:49:29,615 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 14:52:42,397 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 14:52:42,400 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 14:52:42,403 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:52:42,403 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 14:52:42,403 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 14:52:42,403 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 14:52:42,403 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - Built enhanced request 96641159-01e5-4c27-991a-3a272a950a30 with strategy: gad_enhanced_fsm
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:52:42,403 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:52:42,403 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:52:42,403 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:52:42,403 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:52:42,403 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:53:13,362 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:53:13,363 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:53:13,363 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_145313_96641159\raw_output_96641159.txt
+2025-07-08 14:53:13,363 - src.client.full_client - INFO - Generation successful: 473 chars
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - Built enhanced request a988566e-1b14-47d4-a9c2-63dc291de9a8 with strategy: gad_enhanced_fsm
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 14:53:13,365 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 14:53:13,366 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 14:53:13,366 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 14:53:13,366 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 14:53:13,366 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 14:53:15,164 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 14:53:15,164 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 14:53:15,201 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_145315_a988566e\raw_output_a988566e.txt
+2025-07-08 14:53:15,201 - src.client.full_client - INFO - Generation successful: 191 chars
+2025-07-08 15:36:25,329 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 15:36:25,332 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 15:36:25,335 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 15:36:25,335 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 15:36:25,335 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 15:36:25,335 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 15:36:25,335 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 15:36:25,335 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - Built enhanced request 9fbd4228-a5e9-4a42-9f21-98458a40d4c7 with strategy: gad_enhanced_fsm
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 15:36:25,336 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 15:36:25,336 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 15:36:25,336 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 15:36:25,336 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 15:36:25,336 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 15:36:27,634 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 15:36:27,634 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 15:36:27,635 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_153627_9fbd4228\raw_output_9fbd4228.txt
+2025-07-08 15:36:27,636 - src.client.full_client - INFO - Generation successful: 308 chars
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - Built enhanced request 6ae68caa-c9d1-4f27-b5e6-195eecccd8ef with strategy: gad_enhanced_fsm
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 2634
+2025-07-08 15:36:27,637 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 15:36:27,637 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 15:36:27,637 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 15:36:27,637 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 15:36:27,637 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 15:36:30,205 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 15:36:30,206 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 15:36:30,206 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_153630_6ae68caa\raw_output_6ae68caa.txt
+2025-07-08 15:36:30,206 - src.client.full_client - INFO - Generation successful: 325 chars
+2025-07-08 21:45:14,566 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 21:45:14,574 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 21:45:14,578 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:45:14,578 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 21:45:14,578 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:45:14,578 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 21:45:14,578 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - Built enhanced request 0029e8d6-c1f6-4f07-963a-32b611f9eb38 with strategy: gad_enhanced_fsm
+2025-07-08 21:45:14,578 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:45:14,579 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:45:14,579 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:45:14,579 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:45:14,579 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:45:14,579 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:45:14,652 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:45:14,652 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:45:14,652 - src.client.full_client - ERROR - ❌ Cloud generation failed: name 'FixedGenericGADEnhancedFSMStrategy' is not defined
+2025-07-08 21:45:14,653 - __main__ - ERROR - Generation 1 failed: name 'FixedGenericGADEnhancedFSMStrategy' is not defined
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - Built enhanced request 5231ff3a-eb56-45b1-8b2e-d6d34accdcc7 with strategy: gad_enhanced_fsm
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:45:14,653 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:45:14,653 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:45:14,653 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:45:14,653 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:45:14,653 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:45:14,714 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:45:14,715 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:45:14,715 - src.client.full_client - ERROR - ❌ Cloud generation failed: name 'FixedGenericGADEnhancedFSMStrategy' is not defined
+2025-07-08 21:45:14,715 - __main__ - ERROR - Generation 2 failed: name 'FixedGenericGADEnhancedFSMStrategy' is not defined
+2025-07-08 21:46:44,964 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 21:46:44,968 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 21:46:44,972 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 21:46:44,972 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:46:44,972 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 21:46:44,972 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:46:44,972 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 21:46:44,972 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 21:46:44,972 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:46:44,973 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:46:44,973 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:46:44,973 - src.client.constraint_sender - INFO - Built enhanced request f8d09372-54ca-4d1e-a626-dbd6a0261448 with strategy: gad_enhanced_fsm
+2025-07-08 21:46:44,973 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:46:44,973 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:46:44,973 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:46:44,973 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:46:44,974 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:46:44,974 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:46:46,412 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 21:46:46,415 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 21:46:46,419 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:46:46,419 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 21:46:46,419 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:46:46,419 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 21:46:46,419 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - Built enhanced request 63c596f1-72fd-4284-aac1-519afa9a9ca6 with strategy: gad_enhanced_fsm
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:46:46,419 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:46:46,419 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:46:46,419 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:46:46,419 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:46:46,419 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:46:46,494 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:46:46,494 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:46:46,494 - src.client.full_client - ERROR - ❌ Cloud generation failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:46:46,494 - __main__ - ERROR - Generation 1 failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:46:46,494 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:46:46,494 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:46:46,495 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:46:46,495 - src.client.constraint_sender - INFO - Built enhanced request 46a18c02-081a-4416-b4c3-8673cd7a76bd with strategy: gad_enhanced_fsm
+2025-07-08 21:46:46,495 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:46:46,495 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:46:46,495 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:46:46,495 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:46:46,495 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:46:46,495 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:46:46,557 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:46:46,557 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:46:46,558 - src.client.full_client - ERROR - ❌ Cloud generation failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:46:46,558 - __main__ - ERROR - Generation 2 failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:48:34,598 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 21:48:34,601 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 21:48:34,604 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:48:34,605 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 21:48:34,605 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 21:48:34,605 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 21:48:34,605 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - Built enhanced request dcea163d-5c88-4a55-a615-1ca3a4fa8ff9 with strategy: gad_enhanced_fsm
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:48:34,605 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:48:34,605 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:48:34,605 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:48:34,605 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:48:34,605 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:48:34,675 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:48:34,675 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:48:34,676 - src.client.full_client - ERROR - ❌ Cloud generation failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:48:34,676 - __main__ - ERROR - Generation 1 failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - Built enhanced request 6df1d857-734b-414c-add7-726187b63219 with strategy: gad_enhanced_fsm
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 21:48:34,676 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 21:48:34,676 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 21:48:34,676 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 21:48:34,676 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 21:48:34,676 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 21:48:34,738 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 21:48:34,738 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 21:48:34,739 - src.client.full_client - ERROR - ❌ Cloud generation failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 21:48:34,739 - __main__ - ERROR - Generation 2 failed: FixedGenericGADEnhancedFSMStrategy() takes no arguments
+2025-07-08 22:02:28,537 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 22:02:28,544 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 22:02:28,548 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:02:28,548 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 22:02:28,548 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:02:28,548 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 22:02:28,548 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - Built enhanced request 74fba616-7264-4494-a0bd-42c32559fe41 with strategy: gad_enhanced_fsm
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 22:02:28,548 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:02:28,548 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:02:28,548 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:02:28,548 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:02:28,548 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:04:11,960 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:04:12,014 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:04:12,014 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_220412_74fba616\raw_output_74fba616.txt
+2025-07-08 22:04:12,015 - src.client.full_client - INFO - Generation successful: 15001 chars
+2025-07-08 22:04:12,018 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:04:12,019 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:04:12,019 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:04:12,019 - src.client.constraint_sender - INFO - Built enhanced request d586c0db-035c-4711-bdac-265788c1128a with strategy: gad_enhanced_fsm
+2025-07-08 22:04:12,019 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 22:04:12,019 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:04:12,019 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:04:12,019 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:04:12,019 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:04:12,019 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:05:53,770 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:05:53,821 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:05:53,822 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_220553_d586c0db\raw_output_d586c0db.txt
+2025-07-08 22:05:53,822 - src.client.full_client - INFO - Generation successful: 14492 chars
+2025-07-08 22:18:29,757 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 22:18:29,760 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 22:18:29,763 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:18:29,763 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 22:18:29,763 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:18:29,763 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 22:18:29,763 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - Built enhanced request 5824ada4-51fa-44a9-a921-97d5ff4bdd05 with strategy: gad_enhanced_fsm
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 22:18:29,763 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:18:29,763 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:18:29,763 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:18:29,763 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:18:29,763 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:20:21,227 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:20:21,255 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:20:21,256 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_222021_5824ada4\raw_output_5824ada4.txt
+2025-07-08 22:20:21,256 - src.client.full_client - INFO - Generation successful: 2467 chars
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - Built enhanced request 2d90e03b-53e3-4c59-a51e-9240862f60be with strategy: gad_enhanced_fsm
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 798
+2025-07-08 22:20:21,258 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:20:21,258 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:20:21,259 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:20:21,259 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:20:21,259 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:21:30,872 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:21:30,898 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:21:30,899 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_222130_2d90e03b\raw_output_2d90e03b.txt
+2025-07-08 22:21:30,899 - src.client.full_client - INFO - Generation successful: 2400 chars
+2025-07-08 22:25:56,725 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 22:25:56,728 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 22:25:56,731 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:25:56,731 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 22:25:56,731 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: gad_enhanced_fsm
+2025-07-08 22:25:56,731 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 22:25:56,731 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - Built enhanced request 8eee7831-9563-4980-ba42-c6f90e679a16 with strategy: gad_enhanced_fsm
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 1033
+2025-07-08 22:25:56,731 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:25:56,732 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:25:56,732 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:25:56,732 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:25:56,732 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:27:36,279 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:27:36,306 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:27:36,307 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_222736_8eee7831\raw_output_8eee7831.txt
+2025-07-08 22:27:36,307 - src.client.full_client - INFO - Generation successful: 3160 chars
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - Built enhanced request efbac065-918c-4b10-a7ca-3276a928fed8 with strategy: gad_enhanced_fsm
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 1033
+2025-07-08 22:27:36,324 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:27:36,325 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:27:36,325 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:27:36,325 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:27:36,325 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:29:05,432 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:29:05,459 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:29:05,460 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_222905_efbac065\raw_output_efbac065.txt
+2025-07-08 22:29:05,460 - src.client.full_client - INFO - Generation successful: 3341 chars
+2025-07-08 22:36:23,666 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-08 22:36:23,669 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-08 22:36:23,672 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-08 22:36:23,672 - src.client.constraint_sender - INFO - ConstraintSender initialized with strategy: enhanced_fsm
+2025-07-08 22:36:23,672 - src.client.full_client - INFO - ℹ️ Local validation disabled in config
+2025-07-08 22:36:23,672 - src.client.full_client - INFO - FullAutosarClient initialized with strategy: enhanced_fsm
+2025-07-08 22:36:23,672 - src.client.full_client - INFO - Post-processing: disabled
+2025-07-08 22:36:23,672 - src.client.full_client - INFO - Local validation: disabled
+2025-07-08 22:36:23,672 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:36:23,672 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:36:23,673 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:36:23,673 - src.client.constraint_sender - INFO - Built enhanced request 69cd64f0-a988-401e-bcf9-986024158057 with strategy: enhanced_fsm
+2025-07-08 22:36:23,673 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 1033
+2025-07-08 22:36:23,673 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:36:23,673 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:36:23,673 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:36:23,673 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:36:23,673 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:36:25,327 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:36:25,327 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:36:25,328 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_223625_69cd64f0\raw_output_69cd64f0.txt
+2025-07-08 22:36:25,328 - src.client.full_client - INFO - Generation successful: 95 chars
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - ✅ Prompt built from config template: component_level
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - Constraint info built: fsm_ref=None, gbnf_ref=None
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.3, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - Built enhanced request 43aec536-2453-4e16-96ff-920d775f10ac with strategy: enhanced_fsm
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - Prompt type: component_level, length: 1033
+2025-07-08 22:36:25,329 - src.client.constraint_sender - INFO - 🎯 Prompt config included: 3 templates
+2025-07-08 22:36:25,330 - src.client.cloud_client - INFO - Connected to cloud service at http://117.50.217.52:8000 (API: enhanced)
+2025-07-08 22:36:25,330 - src.client.cloud_client - INFO - ⏱️ Timeout configured: 600s
+2025-07-08 22:36:25,330 - src.client.cloud_client - INFO - 🚀 Sending request to http://117.50.217.52:8000/enhanced_generate
+2025-07-08 22:36:25,330 - src.client.cloud_client - INFO - ⏱️ Request timeout: 600s for complex GBNF generation
+2025-07-08 22:36:26,847 - src.client.cloud_client - INFO - 📡 HTTP response status: 200
+2025-07-08 22:36:26,847 - src.client.cloud_client - INFO - ✅ Response received successfully
+2025-07-08 22:36:26,848 - src.client.cloud_client - INFO - 📁 Raw output saved to: outputs\20250708_223626_43aec536\raw_output_43aec536.txt
+2025-07-08 22:36:26,848 - src.client.full_client - INFO - Generation successful: 95 chars

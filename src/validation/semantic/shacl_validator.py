@@ -1,4 +1,4 @@
-# src/validation/semantic/shacl_validator.py (修正版 - 解决Wrapper和文本内容问题)
+# src/validation/semantic/shacl_validator.py (增强版 - 支持细粒度控制)
 from typing import Dict, List, Optional
 import rdflib
 from pyshacl import validate
@@ -8,11 +8,12 @@ from pathlib import Path
 
 
 class SHACLValidator:
-    """SHACL语义约束验证器 - 修正版（修复Wrapper标签和文本内容问题）"""
+    """SHACL语义约束验证器 - 增强版（支持细粒度控制）"""
 
     def __init__(self, shapes_file: str,
                  raw_attributes_file: Optional[str] = None,
-                 enriched_constraints_file: Optional[str] = None):
+                 enriched_constraints_file: Optional[str] = None,
+                 semantic_config: Optional[Dict] = None):
         """
         初始化SHACL验证器
 
@@ -20,8 +21,39 @@ class SHACLValidator:
             shapes_file: SHACL形状文件路径 (autosar_shapes.ttl)
             raw_attributes_file: raw_attributes.jsonl文件路径 (可选，启用映射功能)
             enriched_constraints_file: enriched_constraints.json文件路径 (可选，增强映射)
+            semantic_config: 语义验证配置 (新增)
         """
+        print("🔧 初始化SHACL验证器...")
+
         self.shapes_file = shapes_file
+
+        # 🔧 语义验证配置处理
+        self.semantic_config = semantic_config or {}
+        self.validation_scope = self.semantic_config.get('validation_scope', {})
+        self.validation_strategy = self.semantic_config.get('validation_strategy', {})
+        self.performance_config = self.semantic_config.get('performance', {})
+        self.output_config = self.semantic_config.get('output', {})
+
+        # 解析验证模式和范围
+        self.validation_mode = self.validation_strategy.get('mode', 'hybrid')
+        self.severity_filter = self.validation_strategy.get('severity_filter', {})
+        self.semantic_types_enabled = self.validation_scope.get('semantic_types', {})
+
+        print(f"📋 SHACL验证配置:")
+        print(f"   验证模式: {self.validation_mode}")
+        print(f"   结构验证: {'启用' if self.validation_scope.get('structural_validation', True) else '禁用'}")
+        print(f"   语义验证: {'启用' if self.validation_scope.get('semantic_validation', True) else '禁用'}")
+
+        # 显示启用的约束类型
+        if self.semantic_types_enabled:
+            enabled_types = [k for k, v in self.semantic_types_enabled.items() if v]
+            disabled_types = [k for k, v in self.semantic_types_enabled.items() if not v]
+            if enabled_types:
+                print(f"   启用类型: {', '.join(enabled_types)}")
+            if disabled_types:
+                print(f"   禁用类型: {', '.join(disabled_types)}")
+
+        # 加载SHACL形状
         self.shapes_graph = self._load_shapes(shapes_file)
 
         # 映射机制 - 向后兼容
@@ -30,9 +62,9 @@ class SHACLValidator:
         self.attr_to_xml_mapping = {}
         self.class_context_mapping = {}
 
-        # 🔧 新增：Wrapper标签映射表
-        self.wrapper_mappings = {}  # wrapper_tag -> actual_item_tag
-        self.text_content_mappings = {}  # element_tag -> expected_attr_name for text content
+        # Wrapper标签映射表
+        self.wrapper_mappings = {}
+        self.text_content_mappings = {}
 
         if self.mapping_enabled:
             print("🔧 启用增强映射功能（包含Wrapper处理）")
@@ -43,6 +75,481 @@ class SHACLValidator:
         else:
             print("📝 使用标准验证模式")
 
+        print("✅ SHACL验证器初始化完成")
+
+    def validate_semantics(self, xml_content: str) -> Dict:
+        """执行SHACL语义验证 - 支持细粒度控制的版本"""
+        print(f"\n🔍 开始SHACL语义验证 ({self.validation_mode} 模式)...")
+
+        try:
+            if len(self.shapes_graph) == 0:
+                print("❌ SHACL shapes为空，无法执行验证")
+                return self._create_error_result("SHACL shapes文件为空或加载失败")
+
+            # 🔧 根据验证模式决定验证范围
+            if self.validation_mode == "structural_only":
+                print("🔧 仅进行结构性SHACL验证")
+                return self._validate_structural_only(xml_content)
+            elif self.validation_mode == "semantic_only":
+                print("🔧 仅进行语义性SHACL验证")
+                return self._validate_semantic_only(xml_content)
+            else:  # hybrid mode
+                print("🔧 混合SHACL验证模式")
+                return self._validate_hybrid_mode(xml_content)
+
+        except Exception as e:
+            print(f"❌ SHACL验证过程出错: {e}")
+            import traceback
+            traceback.print_exc()
+            return self._create_error_result(str(e))
+
+    def _validate_structural_only(self, xml_content: str) -> Dict:
+        """🔧 新增：仅验证结构性SHACL约束"""
+        print("📝 执行结构性SHACL验证...")
+
+        # XML转RDF
+        rdf_graph = self._xml_to_rdf_with_config(xml_content)
+        if len(rdf_graph) == 0:
+            return self._create_error_result("XML转RDF失败")
+
+        # 执行SHACL验证，重点关注结构约束
+        validation_result = self._execute_shacl_validation(rdf_graph)
+
+        # 过滤结果，只保留结构性违规
+        filtered_violations = self._filter_structural_violations(validation_result['violations'])
+
+        # 构建结果
+        result = self._build_validation_result(
+            validation_result,
+            filtered_violations,
+            mode="structural_only"
+        )
+
+        return result
+
+    def _validate_semantic_only(self, xml_content: str) -> Dict:
+        """🔧 新增：仅验证语义性SHACL约束"""
+        print("📝 执行语义性SHACL验证...")
+
+        # XML转RDF
+        rdf_graph = self._xml_to_rdf_with_config(xml_content)
+        if len(rdf_graph) == 0:
+            return self._create_error_result("XML转RDF失败")
+
+        # 执行SHACL验证
+        validation_result = self._execute_shacl_validation(rdf_graph)
+
+        # 过滤结果，只保留语义性违规，并按类型过滤
+        filtered_violations = self._filter_semantic_violations(validation_result['violations'])
+
+        # 构建结果
+        result = self._build_validation_result(
+            validation_result,
+            filtered_violations,
+            mode="semantic_only"
+        )
+
+        return result
+
+    def _validate_hybrid_mode(self, xml_content: str) -> Dict:
+        """🔧 新增：混合验证模式"""
+        print("📝 执行混合SHACL验证...")
+
+        # XML转RDF
+        rdf_graph = self._xml_to_rdf_with_config(xml_content)
+        if len(rdf_graph) == 0:
+            return self._create_error_result("XML转RDF失败")
+
+        # 执行SHACL验证
+        validation_result = self._execute_shacl_validation(rdf_graph)
+
+        # 应用配置的过滤器
+        filtered_violations = self._filter_violations_by_config(validation_result['violations'])
+
+        # 构建结果
+        result = self._build_validation_result(
+            validation_result,
+            filtered_violations,
+            mode="hybrid"
+        )
+
+        return result
+
+    def _xml_to_rdf_with_config(self, xml_content: str) -> rdflib.Graph:
+        """🔧 根据配置转换XML到RDF"""
+        if self.mapping_enabled:
+            return self._xml_to_rdf_enhanced_fixed(xml_content)
+        else:
+            return self._xml_to_rdf_standard_fixed(xml_content)
+
+    def _execute_shacl_validation(self, rdf_graph: rdflib.Graph) -> Dict:
+        """🔧 执行SHACL验证核心逻辑"""
+        try:
+            print(f"✅ RDF图生成成功，包含 {len(rdf_graph)} 个三元组")
+            print("📝 执行SHACL约束验证...")
+
+            # 执行pyshacl验证
+            validation_result = validate(
+                data_graph=rdf_graph,
+                shacl_graph=self.shapes_graph,
+                inference='rdfs',
+                abort_on_first=False,
+                debug=False
+            )
+
+            # 处理验证结果
+            if isinstance(validation_result, tuple):
+                if len(validation_result) >= 3:
+                    conforms, results_graph, results_text = validation_result[:3]
+                elif len(validation_result) == 2:
+                    conforms, results_graph = validation_result
+                    results_text = "No detailed results available"
+                else:
+                    conforms = validation_result[0] if validation_result else False
+                    results_graph = rdflib.Graph()
+                    results_text = "Unexpected validation result format"
+            else:
+                print(f"⚠️  非标准验证结果类型: {type(validation_result)}")
+                conforms = False
+                results_graph = None
+                results_text = str(validation_result)
+
+            print(f"✅ SHACL验证完成，整体符合性: {conforms}")
+
+            # 提取违规信息
+            violations = []
+            if not conforms:
+                if results_graph is not None and hasattr(results_graph, 'subjects'):
+                    try:
+                        if self.mapping_enabled:
+                            violations = self._extract_violations_enhanced(results_graph)
+                        else:
+                            violations = self._extract_violations_standard(results_graph)
+                    except Exception as extract_error:
+                        print(f"⚠️  从RDF图提取违规信息失败: {extract_error}")
+                        violations = self._extract_violations_from_text(results_text)
+                else:
+                    print("⚠️  results_graph无效，尝试从文本提取违规信息")
+                    violations = self._extract_violations_from_text(results_text)
+
+            return {
+                'conforms': conforms,
+                'violations': violations,
+                'results_text': results_text,
+                'rdf_triples': len(rdf_graph)
+            }
+
+        except Exception as e:
+            print(f"❌ SHACL验证执行失败: {e}")
+            return {
+                'conforms': False,
+                'violations': [{"message": f"SHACL验证执行失败: {str(e)}", "severity": "Error"}],
+                'results_text': str(e),
+                'rdf_triples': 0
+            }
+
+    def _filter_structural_violations(self, violations: List[Dict]) -> List[Dict]:
+        """🔧 过滤结构性违规"""
+        # 结构性约束通常涉及：基数、必需属性、数据类型等
+        structural_indicators = [
+            'cardinality', 'mincount', 'maxcount', 'required', 'datatype',
+            'exists', 'presence', 'mandatory', 'MinCountConstraintComponent',
+            'MaxCountConstraintComponent', 'DatatypeConstraintComponent'
+        ]
+
+        filtered = []
+        for violation in violations:
+            # 检查约束组件是否为结构性
+            constraint_component = violation.get('constraint_component', '').lower()
+            message = violation.get('message', '').lower()
+
+            is_structural = any(indicator in constraint_component or indicator in message
+                                for indicator in structural_indicators)
+
+            if is_structural:
+                violation['violation_category'] = 'structural'
+                filtered.append(violation)
+
+        print(f"📊 过滤结构性违规: {len(filtered)}/{len(violations)} 个")
+        return filtered
+
+    def _filter_semantic_violations(self, violations: List[Dict]) -> List[Dict]:
+        """🔧 过滤语义性违规并按类型分类"""
+        # 语义性约束通常涉及：值限制、格式、依赖关系等
+        semantic_type_indicators = {
+            'value_restriction': ['pattern', 'enum', 'in', 'hasvalue', 'value'],
+            'format': ['pattern', 'regex', 'format', 'PatternConstraintComponent'],
+            'dependency': ['qualified', 'if', 'then', 'conditional', 'QualifiedConstraintComponent'],
+            'range': ['min', 'max', 'range', 'MinInclusiveConstraintComponent', 'MaxInclusiveConstraintComponent'],
+            'existence': ['exists', 'not', 'NotConstraintComponent'],
+            'mutual_exclusion': ['xone', 'or', 'ExclusiveOr'],
+            'other': []
+        }
+
+        filtered = []
+        for violation in violations:
+            constraint_component = violation.get('constraint_component', '').lower()
+            message = violation.get('message', '').lower()
+            result_path = violation.get('result_path', '').lower()
+
+            # 确定语义约束类型
+            semantic_type = 'other'
+            for type_name, indicators in semantic_type_indicators.items():
+                if any(indicator in constraint_component or indicator in message or indicator in result_path
+                       for indicator in indicators):
+                    semantic_type = type_name
+                    break
+
+            # 检查该类型是否被启用
+            if self.semantic_types_enabled.get(semantic_type, True):
+                violation['violation_category'] = 'semantic'
+                violation['semantic_type'] = semantic_type
+                filtered.append(violation)
+
+        print(f"📊 过滤语义性违规: {len(filtered)}/{len(violations)} 个")
+
+        # 按类型统计
+        type_counts = {}
+        for violation in filtered:
+            semantic_type = violation.get('semantic_type', 'other')
+            type_counts[semantic_type] = type_counts.get(semantic_type, 0) + 1
+
+        for type_name, count in type_counts.items():
+            status = "启用" if self.semantic_types_enabled.get(type_name, True) else "禁用"
+            print(f"   {type_name}: {count} 个 ({status})")
+
+        return filtered
+
+    def _filter_violations_by_config(self, violations: List[Dict]) -> List[Dict]:
+        """🔧 根据配置过滤违规"""
+        filtered = []
+
+        # 应用严重性过滤
+        semantic_severities = self.severity_filter.get('semantic', ['violation', 'warning', 'info'])
+        structural_severities = self.severity_filter.get('structural', ['violation'])
+
+        for violation in violations:
+            severity = violation.get('severity', 'violation').lower()
+
+            # 确定违规类别
+            is_structural = self._is_structural_violation(violation)
+            is_semantic = not is_structural
+
+            # 应用过滤规则
+            should_include = False
+
+            if is_structural and self.validation_scope.get('structural_validation', True):
+                should_include = severity in [s.lower() for s in structural_severities]
+                violation['violation_category'] = 'structural'
+            elif is_semantic and self.validation_scope.get('semantic_validation', True):
+                # 进一步检查语义类型过滤
+                semantic_type = self._determine_semantic_type(violation)
+                type_enabled = self.semantic_types_enabled.get(semantic_type, True)
+                severity_allowed = severity in [s.lower() for s in semantic_severities]
+
+                should_include = type_enabled and severity_allowed
+                violation['violation_category'] = 'semantic'
+                violation['semantic_type'] = semantic_type
+
+            if should_include:
+                filtered.append(violation)
+
+        print(f"📊 配置过滤后违规: {len(filtered)}/{len(violations)} 个")
+        return filtered
+
+    def _is_structural_violation(self, violation: Dict) -> bool:
+        """🔧 判断是否为结构性违规"""
+        structural_indicators = [
+            'cardinality', 'mincount', 'maxcount', 'required', 'datatype',
+            'exists', 'presence', 'mandatory', 'MinCountConstraintComponent',
+            'MaxCountConstraintComponent', 'DatatypeConstraintComponent'
+        ]
+
+        constraint_component = violation.get('constraint_component', '').lower()
+        message = violation.get('message', '').lower()
+
+        return any(indicator in constraint_component or indicator in message
+                   for indicator in structural_indicators)
+
+    def _determine_semantic_type(self, violation: Dict) -> str:
+        """🔧 确定语义违规类型"""
+        semantic_type_indicators = {
+            'value_restriction': ['pattern', 'enum', 'in', 'hasvalue', 'value'],
+            'format': ['pattern', 'regex', 'format', 'PatternConstraintComponent'],
+            'dependency': ['qualified', 'if', 'then', 'conditional', 'QualifiedConstraintComponent'],
+            'range': ['min', 'max', 'range', 'MinInclusiveConstraintComponent', 'MaxInclusiveConstraintComponent'],
+            'existence': ['exists', 'not', 'NotConstraintComponent'],
+            'mutual_exclusion': ['xone', 'or', 'ExclusiveOr'],
+            'cardinality': ['count', 'cardinality', 'occurs'],
+            'behavioral': ['order', 'sequence', 'state', 'temporal']
+        }
+
+        constraint_component = violation.get('constraint_component', '').lower()
+        message = violation.get('message', '').lower()
+        result_path = violation.get('result_path', '').lower()
+
+        for type_name, indicators in semantic_type_indicators.items():
+            if any(indicator in constraint_component or indicator in message or indicator in result_path
+                   for indicator in indicators):
+                return type_name
+
+        return 'other'
+
+    def _build_validation_result(self, validation_result: Dict, filtered_violations: List[Dict], mode: str) -> Dict:
+        """🔧 构建验证结果"""
+        conforms = validation_result['conforms']
+
+        # 按严重性分类统计
+        violation_stats = self._categorize_violations(filtered_violations)
+
+        # 🔧 构建详细的违规分解
+        violation_breakdown = self._build_violation_breakdown(filtered_violations)
+
+        # 判断验证结果
+        structural_valid = violation_stats['violations'] == 0
+
+        if violation_stats['warnings'] == 0:
+            semantic_compliance = "FULL"
+        elif violation_stats['warnings'] <= len(filtered_violations) * 0.2:
+            semantic_compliance = "HIGH"
+        elif violation_stats['warnings'] <= len(filtered_violations) * 0.5:
+            semantic_compliance = "PARTIAL"
+        else:
+            semantic_compliance = "LOW"
+
+        # 根据验证模式调整整体有效性
+        if mode == "structural_only":
+            overall_valid = structural_valid
+        elif mode == "semantic_only":
+            overall_valid = semantic_compliance in ["FULL", "HIGH"]
+        else:  # hybrid
+            overall_valid = structural_valid and (semantic_compliance in ["FULL", "HIGH"])
+
+        print(f"📊 SHACL验证结果 ({mode} 模式):")
+        print(f"   🔧 结构有效性: {'✅ 通过' if structural_valid else '❌ 失败'}")
+        print(f"   💡 语义合规性: {semantic_compliance}")
+        print(f"   📈 总体: {'✅ 通过' if overall_valid else '❌ 失败'}")
+
+        result = {
+            "valid": overall_valid,
+            "structural_valid": structural_valid,
+            "semantic_compliance": semantic_compliance,
+            "violation_count": len(filtered_violations),
+            "violation_stats": violation_stats,
+            "violations": filtered_violations,
+            "violation_breakdown": violation_breakdown,
+            "results_text": validation_result['results_text'],
+            "rdf_triples": validation_result['rdf_triples'],
+            "shapes_applied": len(self.shapes_graph),
+            "validation_mode": mode
+        }
+
+        # 增强模式下添加额外信息
+        if self.mapping_enabled:
+            result["mapping_stats"] = {
+                "xml_to_attr_mappings": len(self.xml_to_attr_mapping),
+                "attr_to_xml_mappings": len(self.attr_to_xml_mapping),
+                "wrapper_mappings": len(self.wrapper_mappings),
+                "text_content_mappings": len(self.text_content_mappings),
+                "mapping_enabled": True
+            }
+        else:
+            result["mapping_stats"] = {"mapping_enabled": False}
+
+        # 🔧 新增：配置信息
+        result["validation_config"] = {
+            "structural_enabled": self.validation_scope.get('structural_validation', True),
+            "semantic_enabled": self.validation_scope.get('semantic_validation', True),
+            "semantic_types_config": self.semantic_types_enabled,
+            "severity_filter": self.severity_filter,
+            "mode": mode
+        }
+
+        return result
+
+    def _build_violation_breakdown(self, violations: List[Dict]) -> Dict:
+        """🔧 构建详细的违规类型分解"""
+        breakdown = {
+            "summary": {
+                "total_violations": len(violations),
+                "validation_mode": self.validation_mode
+            },
+            "structural": {},
+            "semantic": {}
+        }
+
+        # 分析结构违规
+        structural_violations = [v for v in violations if v.get('violation_category') == 'structural']
+        structural_type_stats = {}
+        for violation in structural_violations:
+            constraint_type = violation.get('constraint_component', 'unknown')
+            if constraint_type not in structural_type_stats:
+                structural_type_stats[constraint_type] = {
+                    "total": 0,
+                    "violations": 0,
+                    "enabled": True
+                }
+            structural_type_stats[constraint_type]["total"] += 1
+            structural_type_stats[constraint_type]["violations"] += 1
+
+        breakdown["structural"] = structural_type_stats
+
+        # 分析语义违规
+        semantic_violations = [v for v in violations if v.get('violation_category') == 'semantic']
+        semantic_type_stats = {}
+        for violation in semantic_violations:
+            semantic_type = violation.get('semantic_type', 'other')
+            severity = violation.get('severity', 'violation').lower()
+
+            if semantic_type not in semantic_type_stats:
+                semantic_type_stats[semantic_type] = {
+                    "total": 0,
+                    "violations": 0,
+                    "warnings": 0,
+                    "info": 0,
+                    "enabled": self.semantic_types_enabled.get(semantic_type, True)
+                }
+
+            semantic_type_stats[semantic_type]["total"] += 1
+            if severity in ['violation', 'error']:
+                semantic_type_stats[semantic_type]["violations"] += 1
+            elif severity == 'warning':
+                semantic_type_stats[semantic_type]["warnings"] += 1
+            elif severity == 'info':
+                semantic_type_stats[semantic_type]["info"] += 1
+
+        breakdown["semantic"] = semantic_type_stats
+
+        # 🔧 配置信息
+        breakdown["configuration"] = {
+            "structural_enabled": self.validation_scope.get('structural_validation', True),
+            "semantic_enabled": self.validation_scope.get('semantic_validation', True),
+            "semantic_types_config": self.semantic_types_enabled,
+            "severity_filter": self.severity_filter
+        }
+
+        return breakdown
+
+    def _create_error_result(self, error_message: str) -> Dict:
+        """创建错误结果"""
+        return {
+            "valid": False,
+            "structural_valid": False,
+            "semantic_compliance": "ERROR",
+            "violation_count": 1,
+            "violation_stats": {"violations": 1, "warnings": 0, "info": 0},
+            "violations": [{"message": error_message, "severity": "Error"}],
+            "violation_breakdown": {},
+            "results_text": error_message,
+            "rdf_triples": 0,
+            "shapes_applied": 0,
+            "validation_mode": self.validation_mode,
+            "error": error_message
+        }
+
+    # ==================== 原有方法保持不变 ====================
+    # 以下方法保持原有实现，只需要确保它们被正确调用
+
     def _load_shapes(self, shapes_file: str) -> rdflib.Graph:
         """加载SHACL形状文件"""
         try:
@@ -52,27 +559,21 @@ class SHACLValidator:
                 print(f"⚠️  SHACL shapes文件不存在: {shapes_file}")
                 return shapes_graph
 
-            # 🔧 修复：更安全的TTL文件解析
             try:
                 shapes_graph.parse(shapes_file, format="turtle")
             except Exception as parse_error:
                 print(f"❌ TTL解析错误: {parse_error}")
-                # 尝试基础错误修复
                 try:
                     with open(shapes_file, 'r', encoding='utf-8') as f:
                         content = f.read()
 
-                    # 基础修复：移除可能的问题字符
                     content = self._fix_ttl_content(content)
-
-                    # 尝试重新解析
                     shapes_graph.parse(data=content, format="turtle")
                     print("✅ TTL文件经修复后成功解析")
                 except Exception as retry_error:
                     print(f"❌ TTL修复后仍无法解析: {retry_error}")
                     return rdflib.Graph()
 
-            # 统计shapes信息
             SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
             node_shapes = len(list(shapes_graph.subjects(rdflib.RDF.type, SH.NodeShape)))
             property_shapes = len(list(shapes_graph.subjects(rdflib.RDF.type, SH.PropertyShape)))
@@ -88,60 +589,38 @@ class SHACLValidator:
             return rdflib.Graph()
 
     def _fix_ttl_content(self, content: str) -> str:
-        """彻底修复TTL内容 - 解决所有已知问题"""
+        """修复TTL内容"""
         import re
 
-        # 🔧 第一步：移除所有控制字符表示（这是主要问题）
-        # 移除 ^a, ^b, ^c 等控制字符表示
+        # 移除控制字符表示
         content = re.sub(r'\^[a-zA-Z@\[\\\]^_]', '', content)
-
-        # 移除实际的控制字符（二进制）
         content = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', content)
-
-        # 移除十六进制转义序列
         content = re.sub(r'\\x[0-9a-fA-F]{2}', '', content)
-
-        # 🔧 第二步：处理bytes字面量表示
-        # 移除 b' 前缀（如果出现在错误的地方）
         content = re.sub(r"b'([^']*)'", r'\1', content)
 
-        # 🔧 第三步：替换特殊Unicode字符
+        # 替换特殊Unicode字符
         replacements = {
-            '•': 'bullet',
-            '"': '"',
-            '"': '"',
-            ''': "'",
-            ''': "'",
-            '–': '-',
-            '—': '-',
-            '…': '...',
+            '•': 'bullet', '"': '"', '"': '"', ''': "'", ''': "'",
+            '–': '-', '—': '-', '…': '...',
         }
 
         for old_char, new_char in replacements.items():
             content = content.replace(old_char, new_char)
 
-        # 🔧 第四步：修复正则表达式转义问题
         lines = content.split('\n')
         fixed_lines = []
 
         for line in lines:
-            # 检查是否是sh:pattern行
             if 'sh:pattern' in line:
-                # 提取模式部分
                 match = re.search(r'sh:pattern\s+"([^"]*)"', line)
                 if match:
                     pattern = match.group(1)
-                    # 简化正则表达式，移除可能有问题的转义
-                    # 特别处理管道符等特殊字符
                     simplified_pattern = pattern.replace('\\|', 'pipe')
                     simplified_pattern = simplified_pattern.replace('\\\\', '\\')
-                    # 重构这一行
                     line = re.sub(r'sh:pattern\s+"[^"]*"', f'sh:pattern "{simplified_pattern}"', line)
 
-            # 检查未闭合的引号
             quote_count = line.count('"')
             if quote_count % 2 != 0:
-                # 如果是消息、标签或注释行，尝试修复
                 if any(keyword in line for keyword in ['sh:message', 'rdfs:label', 'rdfs:comment']):
                     if line.endswith(' ;'):
                         line = line[:-2] + '" ;'
@@ -150,23 +629,17 @@ class SHACLValidator:
                     elif not line.endswith('"'):
                         line = line + '"'
 
-            # 移除任何剩余的问题字符
             line = re.sub(r'[^\x20-\x7E\r\n]', '', line)
-
             fixed_lines.append(line)
 
-        # 🔧 第五步：重新组合并最终清理
         fixed_content = '\n'.join(fixed_lines)
-
-        # 确保没有连续的反斜杠问题
         fixed_content = re.sub(r'\\{3,}', '\\\\', fixed_content)
 
         return fixed_content
 
     def _build_mapping_tables(self, raw_attributes_file: str):
-        """从raw_attributes.jsonl构建映射表 - 🔧 增强版本包含Wrapper处理"""
+        """从raw_attributes.jsonl构建映射表"""
         try:
-            # 🔧 新增：已知的wrapper标签模式
             known_wrappers = {
                 'RUNNABLES': 'RUNNABLE-ENTITY',
                 'INTERNAL-BEHAVIORS': 'SWC-INTERNAL-BEHAVIOR',
@@ -176,7 +649,7 @@ class SHACLValidator:
                 'REQUIRED-PORTS': 'R-PORT-PROTOTYPE',
                 'SW-COMPONENTS': 'APPLICATION-SW-COMPONENT-TYPE',
                 'DATA-ELEMENTS': 'VARIABLE-DATA-PROTOTYPE',
-                'ELEMENTS': 'AUTOSAR-ELEMENT',  # 通用wrapper
+                'ELEMENTS': 'AUTOSAR-ELEMENT',
                 'CONNECTORS': 'ASSEMBLY-SW-CONNECTOR',
                 'MAPPINGS': 'DATA-MAPPING',
                 'CONSTRAINTS': 'CONSTRAINT',
@@ -184,9 +657,8 @@ class SHACLValidator:
                 'COMPOSITIONS': 'COMPOSITION-SW-COMPONENT-TYPE'
             }
 
-            # 🔧 新增：文本内容映射（用于解决VALUE问题）
             text_content_elements = {
-                'SD': 'VALUE',  # <SD>true</SD> -> SD should have VALUE attribute
+                'SD': 'VALUE',
                 'VALUE': 'VALUE',
                 'SHORT-NAME': 'VALUE',
                 'CATEGORY': 'VALUE',
@@ -205,36 +677,27 @@ class SHACLValidator:
                         xml_tag = attr_record["xml_tag"]
                         xml_wrapper_tag = attr_record.get("xml_wrapper_tag")
 
-                        # 🔧 处理wrapper映射
                         if xml_wrapper_tag:
                             self.wrapper_mappings[xml_wrapper_tag] = xml_tag
                             print(f"🔗 发现Wrapper映射: {xml_wrapper_tag} -> {xml_tag}")
 
-                        # 构建原有映射关系
                         attr_uri = f"ATTR_{attr_id}"
-
-                        # 上下文相关映射：classId:xml_tag -> ATTR_ID
                         context_key = f"{class_id}:{xml_tag}"
                         self.xml_to_attr_mapping[context_key] = attr_uri
 
-                        # 全局映射作为后备
                         if xml_tag not in self.xml_to_attr_mapping:
                             self.xml_to_attr_mapping[xml_tag] = attr_uri
 
-                        # 反向映射：ATTR_ID -> xml_tag
                         self.attr_to_xml_mapping[attr_uri] = xml_tag
 
-                        # 类上下文映射
                         if class_id not in self.class_context_mapping:
                             self.class_context_mapping[class_id] = {}
                         self.class_context_mapping[class_id][xml_tag] = attr_uri
 
-            # 🔧 合并已知wrapper模式
             for wrapper, item in known_wrappers.items():
                 if wrapper not in self.wrapper_mappings:
                     self.wrapper_mappings[wrapper] = item
 
-            # 🔧 设置文本内容映射
             self.text_content_mappings = text_content_elements
 
             print(f"✅ 构建映射表成功:")
@@ -258,7 +721,6 @@ class SHACLValidator:
                     xml_tag = mapping_info["xml_tag"]
                     context_path = mapping_info["context_path"]
 
-                    # 更新映射表
                     self.xml_to_attr_mapping[context_path] = attr_key
                     self.xml_to_attr_mapping[xml_tag] = attr_key
                     self.attr_to_xml_mapping[attr_key] = xml_tag
@@ -268,176 +730,25 @@ class SHACLValidator:
         except Exception as e:
             print(f"⚠️  加载约束映射失败: {e}")
 
-    def validate_semantics(self, xml_content: str) -> Dict:
-        """执行SHACL语义验证 - 修正版（修复ValidationFailure问题）"""
-        print("\n🔍 开始SHACL分级验证...")
+    def _categorize_violations(self, violations: List[Dict]) -> Dict[str, int]:
+        """按严重性对违规进行分类统计"""
+        stats = {"violations": 0, "warnings": 0, "info": 0}
 
-        try:
-            if len(self.shapes_graph) == 0:
-                print("❌ SHACL shapes为空，无法执行验证")
-                return {
-                    "valid": False,
-                    "structural_valid": False,
-                    "semantic_compliance": "NONE",
-                    "violation_count": 1,
-                    "violation_stats": {"violations": 1, "warnings": 0, "info": 0},
-                    "violations": [{"message": "SHACL shapes文件为空或加载失败", "severity": "Error"}],
-                    "results_text": "No SHACL shapes available for validation"
-                }
-
-            # 1. XML转RDF - 🔧 使用修正版本
-            print("📝 步骤1: 将XML转换为RDF图（增强Wrapper处理）...")
-            if self.mapping_enabled:
-                rdf_graph = self._xml_to_rdf_enhanced_fixed(xml_content)
+        for violation in violations:
+            severity = violation.get("severity", "Violation").lower()
+            if severity in ['violation', 'error']:
+                stats["violations"] += 1
+            elif severity == "warning":
+                stats["warnings"] += 1
+            elif severity == "info":
+                stats["info"] += 1
             else:
-                rdf_graph = self._xml_to_rdf_standard_fixed(xml_content)
+                stats["violations"] += 1
 
-            if len(rdf_graph) == 0:
-                print("❌ XML转RDF失败")
-                return {
-                    "valid": False,
-                    "structural_valid": False,
-                    "semantic_compliance": "NONE",
-                    "violation_count": 1,
-                    "violation_stats": {"violations": 1, "warnings": 0, "info": 0},
-                    "violations": [{"message": "XML转RDF失败，无法进行SHACL验证", "severity": "Error"}],
-                    "results_text": "Failed to convert XML to RDF"
-                }
-
-            print(f"✅ RDF图生成成功，包含 {len(rdf_graph)} 个三元组")
-
-            # 2. 执行SHACL验证 - 🔧 修正验证结果处理
-            print("📝 步骤2: 执行SHACL约束验证...")
-
-            try:
-                # 🔧 关键修复：更安全的pyshacl调用
-                validation_result = validate(
-                    data_graph=rdf_graph,
-                    shacl_graph=self.shapes_graph,
-                    inference='rdfs',
-                    abort_on_first=False,
-                    debug=False
-                )
-
-                # 🔧 修复：正确处理不同类型的验证结果
-                if isinstance(validation_result, tuple):
-                    # 标准情况：(conforms, results_graph, results_text)
-                    if len(validation_result) >= 3:
-                        conforms, results_graph, results_text = validation_result[:3]
-                    elif len(validation_result) == 2:
-                        conforms, results_graph = validation_result
-                        results_text = "No detailed results available"
-                    else:
-                        conforms = validation_result[0] if validation_result else False
-                        results_graph = rdflib.Graph()
-                        results_text = "Unexpected validation result format"
-                else:
-                    # 非标准情况：可能是ValidationFailure对象或其他
-                    print(f"⚠️  非标准验证结果类型: {type(validation_result)}")
-                    conforms = False
-                    results_graph = None
-                    results_text = str(validation_result)
-
-            except Exception as validation_error:
-                print(f"❌ SHACL验证执行失败: {validation_error}")
-                return {
-                    "valid": False,
-                    "structural_valid": False,
-                    "semantic_compliance": "ERROR",
-                    "violation_count": 1,
-                    "violation_stats": {"violations": 1, "warnings": 0, "info": 0},
-                    "violations": [{"message": f"SHACL验证执行失败: {str(validation_error)}", "severity": "Error"}],
-                    "results_text": str(validation_error)
-                }
-
-            print(f"✅ SHACL验证完成，整体符合性: {conforms}")
-
-            # 3. 分级分析验证结果 - 🔧 修正违规信息提取
-            violations = []
-            violation_stats = {"violations": 0, "warnings": 0, "info": 0}
-
-            if not conforms:
-                print("📝 步骤3: 分级分析违规信息...")
-
-                # 🔧 修复：检查results_graph类型并选择合适的提取方法
-                if results_graph is not None and hasattr(results_graph, 'subjects'):
-                    # 正常的RDF图对象
-                    try:
-                        if self.mapping_enabled:
-                            violations = self._extract_violations_enhanced(results_graph)
-                        else:
-                            violations = self._extract_violations_standard(results_graph)
-                    except Exception as extract_error:
-                        print(f"⚠️  从RDF图提取违规信息失败: {extract_error}")
-                        violations = self._extract_violations_from_text(results_text)
-                else:
-                    # results_graph无效，从文本提取
-                    print("⚠️  results_graph无效，尝试从文本提取违规信息")
-                    violations = self._extract_violations_from_text(results_text)
-
-                # 🔧 按严重性分类统计
-                violation_stats = self._categorize_violations(violations)
-
-                print(f"📊 违规统计:")
-                print(f"   ❌ 结构错误 (Violation): {violation_stats['violations']} 个")
-                print(f"   ⚠️  语义警告 (Warning): {violation_stats['warnings']} 个")
-                print(f"   ℹ️  格式建议 (Info): {violation_stats['info']} 个")
-
-                # 显示关键违规
-                critical_violations = [v for v in violations if v.get('severity') in ['Violation', 'Error']]
-                if critical_violations:
-                    print(f"\n❌ 关键结构错误（必须修复）:")
-                    for i, violation in enumerate(critical_violations[:3], 1):
-                        print(f"   {i}. {violation.get('message', 'Unknown violation')}")
-                        if violation.get('focus_node'):
-                            print(f"      📍 节点: {violation['focus_node']}")
-
-            else:
-                print("✅ 所有SHACL约束都满足")
-
-            # 🔧 构建分级验证结果
-            result = {
-                "valid": conforms,
-                "structural_valid": violation_stats['violations'] == 0,  # 结构是否有效
-                "semantic_compliance": "FULL" if violation_stats['warnings'] == 0 else "PARTIAL",
-                "violation_count": len(violations),
-                "violation_stats": violation_stats,
-                "violations": violations,
-                "results_text": results_text if isinstance(results_text, str) else str(results_text),
-                "rdf_triples": len(rdf_graph),
-                "shapes_applied": len(self.shapes_graph)
-            }
-
-            # 增强模式下添加额外信息
-            if self.mapping_enabled:
-                result["mapping_stats"] = {
-                    "xml_to_attr_mappings": len(self.xml_to_attr_mapping),
-                    "attr_to_xml_mappings": len(self.attr_to_xml_mapping),
-                    "wrapper_mappings": len(self.wrapper_mappings),
-                    "text_content_mappings": len(self.text_content_mappings),
-                    "mapping_enabled": True
-                }
-            else:
-                result["mapping_stats"] = {"mapping_enabled": False}
-
-            return result
-
-        except Exception as e:
-            print(f"❌ SHACL验证过程出错: {e}")
-            import traceback
-            traceback.print_exc()
-            return {
-                "valid": False,
-                "structural_valid": False,
-                "semantic_compliance": "ERROR",
-                "violation_count": 1,
-                "violation_stats": {"violations": 1, "warnings": 0, "info": 0},
-                "violations": [{"message": f"SHACL验证错误: {str(e)}", "severity": "Error"}],
-                "results_text": str(e)
-            }
+        return stats
 
     def _extract_violations_from_text(self, results_text: str) -> List[Dict]:
-        """🔧 新增：从验证结果文本提取违规信息"""
+        """从验证结果文本提取违规信息"""
         violations = []
 
         if not results_text:
@@ -449,10 +760,7 @@ class SHACLValidator:
             }]
 
         try:
-            # 尝试解析文本格式的违规信息
             text_str = str(results_text)
-
-            # 查找常见的违规关键词
             if "violation" in text_str.lower() or "constraint" in text_str.lower():
                 lines = text_str.split('\n')
                 for line in lines:
@@ -460,12 +768,11 @@ class SHACLValidator:
                             keyword in line.lower() for keyword in ['violation', 'constraint', 'failed', 'error']):
                         violations.append({
                             "severity": "Violation",
-                            "message": line.strip()[:200],  # 限制长度
+                            "message": line.strip()[:200],
                             "focus_node": "unknown",
                             "result_path": "unknown"
                         })
 
-            # 如果没有找到具体违规，创建通用记录
             if not violations:
                 violations.append({
                     "severity": "Violation",
@@ -484,26 +791,8 @@ class SHACLValidator:
 
         return violations
 
-    def _categorize_violations(self, violations: List[Dict]) -> Dict[str, int]:
-        """按严重性对违规进行分类统计"""
-        stats = {"violations": 0, "warnings": 0, "info": 0}
-
-        for violation in violations:
-            severity = violation.get("severity", "Violation")
-            if severity == "Violation" or severity == "Error":
-                stats["violations"] += 1
-            elif severity == "Warning":
-                stats["warnings"] += 1
-            elif severity == "Info":
-                stats["info"] += 1
-            else:
-                # 未知严重性默认为violations
-                stats["violations"] += 1
-
-        return stats
-
     def _xml_to_rdf_enhanced_fixed(self, xml_content: str) -> rdflib.Graph:
-        """🔧 修正版：增强的XML到RDF转换，正确处理Wrapper标签和文本内容"""
+        """增强的XML到RDF转换"""
         graph = rdflib.Graph()
         element_count = 0
 
@@ -511,37 +800,32 @@ class SHACLValidator:
             root = ET.fromstring(xml_content)
             print(f"📋 解析XML根元素: {root.tag}")
 
-            # 统一使用 http://autosar.org/ 命名空间
             AUTOSAR = rdflib.Namespace("http://autosar.org/")
             graph.bind("autosar", AUTOSAR)
 
             def clean_element_name(tag):
-                """清理元素名称，移除命名空间前缀"""
                 if '}' in tag:
                     return tag.split('}')[1]
                 return tag
 
             def is_wrapper_element(tag_name: str) -> bool:
-                """🔧 判断是否为wrapper元素"""
                 return tag_name in self.wrapper_mappings
 
             def get_expected_item_tag(wrapper_tag: str) -> str:
-                """🔧 获取wrapper包含的实际item标签"""
                 return self.wrapper_mappings.get(wrapper_tag, wrapper_tag)
 
             def should_treat_as_text_content(element) -> bool:
-                """🔧 判断元素是否应被视为文本内容"""
                 clean_tag = clean_element_name(element.tag)
                 return (
                         element.text and element.text.strip() and
-                        len(element) == 0 and  # 没有子元素
+                        len(element) == 0 and
                         clean_tag in self.text_content_mappings
                 )
 
             def xml_to_triples_enhanced_fixed(element, subject_uri=None, parent_class_id=None, depth=0):
                 nonlocal element_count
 
-                if depth > 20:  # 限制递归深度
+                if depth > 20:
                     return
 
                 element_count += 1
@@ -552,52 +836,40 @@ class SHACLValidator:
 
                 subject = rdflib.URIRef(subject_uri)
 
-                # 🔧 关键修改1：处理wrapper元素的透明化
                 if is_wrapper_element(clean_tag):
                     print(f"🔗 处理Wrapper元素: {clean_tag}")
-
-                    # 对于wrapper元素，我们不为wrapper本身创建类型声明
-                    # 而是直接处理其子元素，让它们直接连接到wrapper的父元素
 
                     expected_item_tag = get_expected_item_tag(clean_tag)
 
                     for i, child in enumerate(element):
                         clean_child_tag = clean_element_name(child.tag)
 
-                        # 如果子元素是期望的item类型，直接连接到wrapper的父节点
                         if clean_child_tag == expected_item_tag:
-                            # 使用期望的标签名作为属性路径
                             child_uri = f"{subject_uri.rsplit('/', 1)[0]}/{expected_item_tag}_{i}"
                             child_subject = rdflib.URIRef(child_uri)
 
-                            # 关键：使用期望的item标签作为从父元素到子元素的属性
                             parent_subject = rdflib.URIRef(subject_uri.rsplit('/', 1)[0])
                             predicate = AUTOSAR[expected_item_tag]
                             graph.add((parent_subject, predicate, child_subject))
 
                             print(f"   🔗 透明连接: {parent_subject} --{expected_item_tag}--> {child_subject}")
 
-                            # 递归处理实际的item元素
                             xml_to_triples_enhanced_fixed(child, child_uri, parent_class_id, depth)
                         else:
-                            # 非期望的子元素，正常处理
                             child_uri = f"{subject_uri}/{clean_child_tag}_{i}"
                             predicate = AUTOSAR[clean_child_tag]
                             child_subject = rdflib.URIRef(child_uri)
                             graph.add((subject, predicate, child_subject))
                             xml_to_triples_enhanced_fixed(child, child_uri, None, depth + 1)
 
-                    return  # wrapper元素处理完毕，不继续下面的正常处理
+                    return
 
-                # 🔧 关键修改2：处理文本内容元素
                 if should_treat_as_text_content(element):
                     print(f"📝 处理文本内容元素: {clean_tag} = '{element.text.strip()}'")
 
-                    # 为文本内容元素创建类型声明
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))
 
-                    # 🔧 关键修改：使用期望的属性名而不是通用的hasValue
                     expected_attr = self.text_content_mappings[clean_tag]
                     predicate = AUTOSAR[expected_attr]
                     obj = rdflib.Literal(element.text.strip())
@@ -606,16 +878,12 @@ class SHACLValidator:
                     print(f"   📝 文本映射: {clean_tag}.{expected_attr} = '{element.text.strip()}'")
                     return
 
-                # 正常元素处理
                 element_type_uri = AUTOSAR[clean_tag]
                 graph.add((subject, rdflib.RDF.type, element_type_uri))
 
-                # 处理属性 - 使用映射表
                 for attr_name, attr_value in element.attrib.items():
                     clean_attr = clean_element_name(attr_name)
-
-                    # 查找属性映射
-                    current_class_id = hash(clean_tag) % 10000  # 简化的类ID推断
+                    current_class_id = hash(clean_tag) % 10000
                     attr_uri_key = self._resolve_attr_mapping(clean_attr, current_class_id)
 
                     if attr_uri_key:
@@ -623,35 +891,27 @@ class SHACLValidator:
                         obj = rdflib.Literal(attr_value)
                         graph.add((subject, predicate, obj))
                     else:
-                        # 后备：直接使用属性名
                         predicate = AUTOSAR[clean_attr]
                         obj = rdflib.Literal(attr_value)
                         graph.add((subject, predicate, obj))
 
-                # 🔧 处理普通文本内容（非文本内容元素）
                 if element.text and element.text.strip() and len(element) > 0:
-                    # 有子元素但也有文本内容，使用hasValue
                     predicate = AUTOSAR["hasValue"]
                     obj = rdflib.Literal(element.text.strip())
                     graph.add((subject, predicate, obj))
 
-                # 处理子元素 - 正常处理（非wrapper）
                 for i, child in enumerate(element):
                     clean_child_tag = clean_element_name(child.tag)
                     child_uri = f"{subject_uri}/{clean_child_tag}_{i}"
 
-                    # 直接使用XML标签作为属性路径
                     predicate = AUTOSAR[clean_child_tag]
                     child_subject = rdflib.URIRef(child_uri)
                     graph.add((subject, predicate, child_subject))
 
-                    # 递归处理子元素
                     xml_to_triples_enhanced_fixed(child, child_uri, None, depth + 1)
 
             xml_to_triples_enhanced_fixed(root)
             print(f"📊 处理了 {element_count} 个XML元素")
-            print(
-                f"🔗 识别了 {len([e for e in [root] + list(root.iter()) if clean_element_name(e.tag) in self.wrapper_mappings])} 个Wrapper元素")
 
         except ET.ParseError as e:
             print(f"❌ XML解析错误: {e}")
@@ -661,7 +921,7 @@ class SHACLValidator:
         return graph
 
     def _xml_to_rdf_standard_fixed(self, xml_content: str) -> rdflib.Graph:
-        """🔧 修正版：标准的XML到RDF转换，基础wrapper和文本处理"""
+        """标准的XML到RDF转换"""
         graph = rdflib.Graph()
         element_count = 0
 
@@ -669,34 +929,29 @@ class SHACLValidator:
             root = ET.fromstring(xml_content)
             print(f"📋 解析XML根元素: {root.tag}")
 
-            # 统一使用 http://autosar.org/ 命名空间
             AUTOSAR = rdflib.Namespace("http://autosar.org/")
             graph.bind("autosar", AUTOSAR)
 
             def clean_element_name(tag):
-                """清理元素名称，移除命名空间前缀"""
                 if '}' in tag:
                     return tag.split('}')[1]
                 return tag
 
             def is_likely_wrapper(element) -> bool:
-                """🔧 基础wrapper检测（标准模式）"""
                 clean_tag = clean_element_name(element.tag)
-                # 简单的wrapper检测规则
                 wrapper_patterns = ['RUNNABLES', 'INTERNAL-BEHAVIORS', 'PORTS', 'ELEMENTS', 'CONNECTORS']
                 return clean_tag in wrapper_patterns and len(element) > 0
 
             def should_treat_as_text_content(element) -> bool:
-                """🔧 基础文本内容检测"""
                 return (
                         element.text and element.text.strip() and
-                        len(element) == 0  # 没有子元素
+                        len(element) == 0
                 )
 
             def xml_to_triples_fixed(element, subject_uri=None, depth=0):
                 nonlocal element_count
 
-                if depth > 20:  # 限制递归深度
+                if depth > 20:
                     return
 
                 element_count += 1
@@ -707,69 +962,55 @@ class SHACLValidator:
 
                 subject = rdflib.URIRef(subject_uri)
 
-                # 🔧 基础wrapper处理（标准模式）
                 if is_likely_wrapper(element):
                     print(f"🔗 检测到可能的Wrapper: {clean_tag}")
 
-                    # 为wrapper创建类型声明
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))
 
-                    # 处理wrapper的子元素，同时创建直接连接
                     for i, child in enumerate(element):
                         clean_child_tag = clean_element_name(child.tag)
                         child_uri = f"{subject_uri}/{clean_child_tag}_{i}"
                         child_subject = rdflib.URIRef(child_uri)
 
-                        # 正常的wrapper->child连接
                         predicate = AUTOSAR[clean_child_tag]
                         graph.add((subject, predicate, child_subject))
 
-                        # 🔧 额外创建parent->child的直接连接（绕过wrapper）
                         if '/' in subject_uri:
                             parent_uri = subject_uri.rsplit('/', 1)[0]
                             parent_subject = rdflib.URIRef(parent_uri)
                             direct_predicate = AUTOSAR[clean_child_tag]
                             graph.add((parent_subject, direct_predicate, child_subject))
-                            print(
-                                f"   🔗 创建直接连接: {parent_uri.split('/')[-1]} --{clean_child_tag}--> {child_subject}")
 
-                        # 递归处理子元素
                         xml_to_triples_fixed(child, child_uri, depth + 1)
 
                     return
 
-                # 🔧 文本内容处理
                 if should_treat_as_text_content(element):
                     print(f"📝 处理文本内容: {clean_tag} = '{element.text.strip()}'")
 
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))
 
-                    # 🔧 使用VALUE作为文本内容的属性名
                     predicate = AUTOSAR["VALUE"]
                     obj = rdflib.Literal(element.text.strip())
                     graph.add((subject, predicate, obj))
                     return
 
-                # 正常元素处理
                 element_type_uri = AUTOSAR[clean_tag]
                 graph.add((subject, rdflib.RDF.type, element_type_uri))
 
-                # 处理属性
                 for attr_name, attr_value in element.attrib.items():
                     clean_attr = clean_element_name(attr_name)
                     predicate = AUTOSAR[clean_attr]
                     obj = rdflib.Literal(attr_value)
                     graph.add((subject, predicate, obj))
 
-                # 处理普通文本内容
                 if element.text and element.text.strip() and len(element) > 0:
                     predicate = AUTOSAR["hasValue"]
                     obj = rdflib.Literal(element.text.strip())
                     graph.add((subject, predicate, obj))
 
-                # 处理子元素
                 for i, child in enumerate(element):
                     clean_child_tag = clean_element_name(child.tag)
                     child_uri = f"{subject_uri}/{clean_child_tag}_{i}"
@@ -790,37 +1031,30 @@ class SHACLValidator:
 
     def _resolve_attr_mapping(self, xml_tag: str, class_id: int = None) -> Optional[str]:
         """解析XML标签到属性URI的映射"""
-        # 1. 优先使用上下文相关映射
         if class_id:
             context_key = f"{class_id}:{xml_tag}"
             if context_key in self.xml_to_attr_mapping:
                 return self.xml_to_attr_mapping[context_key]
 
-            # 检查类上下文映射
             if class_id in self.class_context_mapping:
                 class_mappings = self.class_context_mapping[class_id]
                 if xml_tag in class_mappings:
                     return class_mappings[xml_tag]
 
-        # 2. 后备：使用全局映射
         if xml_tag in self.xml_to_attr_mapping:
             return self.xml_to_attr_mapping[xml_tag]
 
-        # 3. 最后后备：返回None，使用原始标签
         return None
 
     def _extract_violations_enhanced(self, results_graph: rdflib.Graph) -> List[Dict]:
-        """增强的违规信息提取，包含XML元素映射 - 修正版"""
+        """增强的违规信息提取"""
         violations = []
 
         try:
-            # 🔧 修复：检查results_graph的有效性
             if not results_graph or not hasattr(results_graph, 'subjects'):
                 raise ValueError("Invalid results_graph object")
 
             SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
-
-            # 🔧 修复：安全地获取ValidationResult
             validation_results = list(results_graph.subjects(rdflib.RDF.type, SH.ValidationResult))
 
             if not validation_results:
@@ -839,7 +1073,6 @@ class SHACLValidator:
                     "xml_attribute": None
                 }
 
-                # 🔧 修复：安全地遍历谓词对象
                 try:
                     for pred, obj in results_graph.predicate_objects(violation):
                         if pred == SH.resultSeverity:
@@ -865,7 +1098,6 @@ class SHACLValidator:
                             else:
                                 violation_info["result_path"] = result_path
 
-                            # 尝试将ATTR_ID映射回XML元素
                             if result_path.startswith("http://autosar.org/ATTR_"):
                                 attr_key = result_path.split("/")[-1]
                                 xml_element = self.attr_to_xml_mapping.get(attr_key)
@@ -886,7 +1118,6 @@ class SHACLValidator:
 
                 except Exception as pred_error:
                     print(f"⚠️  处理违规谓词时出错: {pred_error}")
-                    # 继续处理下一个违规，而不是完全失败
                     continue
 
                 if not violation_info["message"]:
@@ -898,7 +1129,6 @@ class SHACLValidator:
 
         except Exception as e:
             print(f"⚠️  提取违规信息时出错: {e}")
-            # 创建一个错误违规记录而不是抛出异常
             violations.append({
                 "severity": "Error",
                 "message": f"提取违规详情失败: {str(e)}",
@@ -909,17 +1139,14 @@ class SHACLValidator:
         return violations
 
     def _extract_violations_standard(self, results_graph: rdflib.Graph) -> List[Dict]:
-        """标准违规信息提取 - 修正版"""
+        """标准违规信息提取"""
         violations = []
 
         try:
-            # 🔧 修复：检查results_graph的有效性
             if not results_graph or not hasattr(results_graph, 'subjects'):
                 raise ValueError("Invalid results_graph object")
 
             SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
-
-            # 🔧 修复：安全地获取ValidationResult
             validation_results = list(results_graph.subjects(rdflib.RDF.type, SH.ValidationResult))
 
             if not validation_results:
@@ -936,7 +1163,6 @@ class SHACLValidator:
                     "constraint_component": None
                 }
 
-                # 🔧 修复：安全地遍历谓词对象
                 try:
                     for pred, obj in results_graph.predicate_objects(violation):
                         if pred == SH.resultSeverity:
@@ -976,7 +1202,6 @@ class SHACLValidator:
 
                 except Exception as pred_error:
                     print(f"⚠️  处理违规谓词时出错: {pred_error}")
-                    # 继续处理下一个违规，而不是完全失败
                     continue
 
                 if not violation_info["message"]:
@@ -987,7 +1212,6 @@ class SHACLValidator:
 
         except Exception as e:
             print(f"⚠️  提取违规信息时出错: {e}")
-            # 创建一个错误违规记录而不是抛出异常
             violations.append({
                 "severity": "Error",
                 "message": f"提取违规详情失败: {str(e)}",

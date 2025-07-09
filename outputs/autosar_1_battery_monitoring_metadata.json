@@ -1,25 +1,25 @@
 {
-  "request_id": "95cacc35-1ebc-4b92-bf07-5dc0a94dc88f",
-  "generation_time": 0.14243268966674805,
+  "request_id": "a44fb78f-d493-42b8-8ed1-663d53da5087",
+  "generation_time": 1.655766487121582,
   "prompt_used": "detailed_prompt_from_cloud_client",
-  "output_length": 397,
+  "output_length": 95,
   "autosar_context": {
     "domain": "battery_monitoring",
     "component_type": "APPLICATION-SW-COMPONENT-TYPE",
     "prompt_config": {
-      "component_level": "Generate XML based on the following AUTOSAR APPLICATION-SW-COMPONENT-TYPE example. \nNote that the tags may not match the actual ones. Align the tags and correct them according to your allowtoken. \nThey must be consistent with the design concept and values of the example XML and must comply with the tokens specified by guided_grammar and guided_choice.\nIf there are no errors in the tags, generate them as is without modification. \nRequirements:\n- Start with <APPLICATION-SW-COMPONENT-TYPE> tag\n- End with </APPLICATION-SW-COMPONENT-TYPE>\n\nExample XML: \n    <APPLICATION-SW-COMPONENT-TYPE>\n      <SHORT-NAME>ASW_COM_STD</SHORT-NAME>\n      <PORTS>\n        <!-- 2 Provided -->\n        <P-PORT-PROTOTYPE>\n          <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>\n          <PROVIDED-INTERFACE-TREF DEST=\"SENDER-RECEIVER-INTERFACE\">\n            /Interface/SR_Interface_MCU01_EmergShutDown\n          </PROVIDED-INTERFACE-TREF>\n        </P-PORT-PROTOTYPE>\n        <P-PORT-PROTOTYPE>\n          <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>\n          <PROVIDED-INTERFACE-TREF DEST=\"SENDER-RECEIVER-INTERFACE\">\n            /Interface/SR_Interface_MCU02_MaxTor\n          </PROVIDED-INTERFACE-TREF>\n        </P-PORT-PROTOTYPE>\n        <!-- 1 Required -->\n        <R-PORT-PROTOTYPE>\n          <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>\n          <REQUIRED-COM-SPECS>\n            <NONQUEUED-RECEIVER-COM-SPEC>\n              <DATA-ELEMENT-REF DEST=\"VARIABLE-DATA-PROTOTYPE\">\n                /Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd\n              </DATA-ELEMENT-REF>\n              <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>\n              <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>\n            </NONQUEUED-RECEIVER-COM-SPEC>\n          </REQUIRED-COM-SPECS>\n          <REQUIRED-INTERFACE-TREF DEST=\"SENDER-RECEIVER-INTERFACE\">\n            /Interface/SR_Interface_HCU01_TqCmd\n          </REQUIRED-INTERFACE-TREF>\n        </R-PORT-PROTOTYPE>\n      </PORTS>\n      <INTERNAL-BEHAVIORS>\n        <SWC-INTERNAL-BEHAVIOR>\n          <SHORT-NAME>IB_ASW_COM_STD</SHORT-NAME>\n          <EVENTS>\n            <TIMING-EVENT>\n              <SHORT-NAME>TE_RE_COM_SWC</SHORT-NAME>\n              <START-ON-EVENT-REF DEST=\"RUNNABLE-ENTITY\">/RUNNABLES/RE_COM_SWC</START-ON-EVENT-REF>\n              <PERIOD>0.01</PERIOD> <!-- 10 ms -->\n            </TIMING-EVENT>\n          </EVENTS>\n          <RUNNABLES>\n            <RUNNABLE-ENTITY>\n              <SHORT-NAME>RE_COM_SWC</SHORT-NAME>\n            </RUNNABLE-ENTITY>\n          </RUNNABLES>\n        </SWC-INTERNAL-BEHAVIOR>\n      </INTERNAL-BEHAVIORS>\n    </APPLICATION-SW-COMPONENT-TYPE>\n\nGenerate complete XML now:\n",
+      "component_level": "Generate XML based on the following AUTOSAR APPLICATION-SW-COMPONENT-TYPE example. \nNote that the tags may not match the actual ones. Align the tags and correct them according to your allowtoken. \nThey must be consistent with the design concept and values of the example XML and must comply with the tokens specified by guided_grammar and guided_choice.\nIf there are no errors in the tags, generate them as is without modification. \nRequirements:\n- Start with <APPLICATION-SW-COMPONENT-TYPE> tag\n- End with </APPLICATION-SW-COMPONENT-TYPE>\n\nExample XML: \n    <APPLICATION-SW-COMPONENT-TYPE>\n      <SHORT-NAME>ASW_COM_MIN</SHORT-NAME>\n      <PORTS>\n        <P-PORT-PROTOTYPE>\n          <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>\n          <PROVIDED-INTERFACE-TREF DEST=\"SENDER-RECEIVER-INTERFACE\">/Interface/SR_Interface_MCU01_EmergShutDown\n          </PROVIDED-INTERFACE-TREF>\n        </P-PORT-PROTOTYPE>\n      </PORTS>\n    </APPLICATION-SW-COMPONENT-TYPE>\n\n\nGenerate complete XML now:\n\nCreate complete, well-structured XML:\n",
       "with_example_xml": "Based on the following task: {task}\n\nUse FSM and GBNF constraints to align and correct the XML structure.\nFocus on tag alignment and structural correction.\n\nExpected XML example:\n{example_xml}\n\nGenerate corrected AUTOSAR component:\n",
       "debug_simple": "Task: {task}\nGenerate AUTOSAR APPLICATION-SW-COMPONENT-TYPE with proper structure.\nUse constraints for tag alignment and correction.\n"
     },
     "used_prompt_type": "component_level"
   },
-  "validation_score": 22.22222222222222,
+  "validation_score": 11.11111111111111,
   "detailed_validation": {
     "has_xml_declaration": false,
     "has_autosar": false,
     "has_component_type": true,
     "has_rport": false,
-    "has_pport": true,
+    "has_pport": false,
     "has_runnable": false,
     "has_timing_event": false,
     "has_internal_behavior": false,

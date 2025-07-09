@@ -6,35 +6,28 @@ project:
 
 # vllm云端服务配置----------------------------------------------------------------------------------------------------------------------------------
 
-#cloud_service:
-#  internal_endpoint: "http://117.50.179.35:8000"
-#  api_type: "enhanced"
-#  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
-#  timeout: 600
-#  max_retries: 3
-#  retry_delay: 5
-
 cloud_service:
-  internal_endpoint: "http://117.50.191.3:8000"
+  internal_endpoint: "http://117.50.217.52:8000"
   api_type: "enhanced"
-  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
   timeout: 600
   max_retries: 3
   retry_delay: 5
 
-#vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
-#  --port 8001 \
-#  --tensor-parallel-size 4 \
-#  --max-model-len 65168 \
-#  --guided-decoding-backend outlines \
-#  --gpu-memory-utilization 0.85 \
-#  --trust-remote-code
+#vllm_config:
+#  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
+#    --port 8001 \
+#    --tensor-parallel-size 8 \
+#    --max-model-len 88048 \
+#    --guided-decoding-backend outlines \
+#    --gpu-memory-utilization 0.85 \
+#    --trust-remote-code
 
 vllm_config:
-  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
+  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B \
     --port 8001 \
-    --tensor-parallel-size 8 \
-    --max-model-len 88048 \
+    --tensor-parallel-size 2 \
+    --max-model-len 40000 \
     --guided-decoding-backend outlines \
     --gpu-memory-utilization 0.85 \
     --trust-remote-code
@@ -53,59 +46,20 @@ prompts:
 
     Example XML: 
         <APPLICATION-SW-COMPONENT-TYPE>
-          <SHORT-NAME>ASW_COM_STD</SHORT-NAME>
+          <SHORT-NAME>ASW_COM_MIN</SHORT-NAME>
           <PORTS>
-            <!-- 2 Provided -->
             <P-PORT-PROTOTYPE>
               <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
-                /Interface/SR_Interface_MCU01_EmergShutDown
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interface/SR_Interface_MCU01_EmergShutDown
               </PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE>
-              <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
-                /Interface/SR_Interface_MCU02_MaxTor
-              </PROVIDED-INTERFACE-TREF>
-            </P-PORT-PROTOTYPE>
-            <!-- 1 Required -->
-            <R-PORT-PROTOTYPE>
-              <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>
-              <REQUIRED-COM-SPECS>
-                <NONQUEUED-RECEIVER-COM-SPEC>
-                  <DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">
-                    /Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd
-                  </DATA-ELEMENT-REF>
-                  <ALIVE-TIMEOUT>0.3</ALIVE-TIMEOUT>
-                  <HANDLE-TIMEOUT-TYPE>NONE</HANDLE-TIMEOUT-TYPE>
-                </NONQUEUED-RECEIVER-COM-SPEC>
-              </REQUIRED-COM-SPECS>
-              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
-                /Interface/SR_Interface_HCU01_TqCmd
-              </REQUIRED-INTERFACE-TREF>
-            </R-PORT-PROTOTYPE>
           </PORTS>
-          <INTERNAL-BEHAVIORS>
-            <SWC-INTERNAL-BEHAVIOR>
-              <SHORT-NAME>IB_ASW_COM_STD</SHORT-NAME>
-              <EVENTS>
-                <TIMING-EVENT>
-                  <SHORT-NAME>TE_RE_COM_SWC</SHORT-NAME>
-                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/RUNNABLES/RE_COM_SWC</START-ON-EVENT-REF>
-                  <PERIOD>0.01</PERIOD> <!-- 10 ms -->
-                </TIMING-EVENT>
-              </EVENTS>
-              <RUNNABLES>
-                <RUNNABLE-ENTITY>
-                  <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
-                </RUNNABLE-ENTITY>
-              </RUNNABLES>
-            </SWC-INTERNAL-BEHAVIOR>
-          </INTERNAL-BEHAVIORS>
         </APPLICATION-SW-COMPONENT-TYPE>
+
     
     Generate complete XML now:
 
+    Create complete, well-structured XML:
   # 实验性：带示例XML的提示词
   with_example_xml: |
     Based on the following task: {task}
@@ -127,25 +81,97 @@ prompts:
 # 🔥 约束策略配置
 constraint_strategy:
   # 可选值: "gbnf_priority", "enhanced_fsm", "gad_enhanced_fsm"
-  mode: "gad_enhanced_fsm"  # 使用GAD策略
+  mode: "enhanced_fsm"  # 使用GAD策略
+
+  # 块级FSM策略配置
+  block_level_fsm:
+    # 最大块数限制
+    max_blocks: 10
+
+    # LLM生成参数
+    temperature: 0.3        # 较低的温度保证稳定性
+    top_p: 0.9             # 采样参数
+
+    # 验证和重试
+    block_validation: true  # 启用块验证
+    retry_on_failure: true  # 失败时重试
+
+    # 结构规划
+    structure_planning: true  # 启用智能结构规划
+
+    # 块定义优先级和必需性
+    block_definitions:
+      header_block:
+        priority: 1
+        required: true
+        description: "组件头部信息，包括名称和管理数据"
+
+      ports_block:
+        priority: 2
+        required: false
+        description: "端口定义块，包括P-PORT和R-PORT"
+
+      behaviors_block:
+        priority: 3
+        required: false
+        description: "内部行为定义，包括事件和可运行实体"
+
+    # 块生成策略
+    generation_strategy:
+      # 是否并行生成独立块
+      parallel_blocks: false
+
+      # 块间依赖处理
+      handle_dependencies: true
+
+      # 上下文窗口大小（用于块生成时的上下文）
+      context_window: 500
+
+      # 最大重试次数
+      max_retries: 2
+
+    # 性能优化
+    optimization:
+      # 缓存已生成的块模板
+      cache_templates: true
+
+      # 预测下一个块
+      predictive_generation: true
+
+      # 自适应块大小
+      adaptive_block_size: true
+      min_block_size: 100    # 字符
+      max_block_size: 1000   # 字符
 
   # GAD增强FSM策略配置
   gad_enhanced_fsm:
     enabled: true
-    efg_threshold: 0.35              # EFG最低阈值
-    max_candidates: 15              # 最大候选token数
+    efg_threshold: 0.25              # EFG最低阈值
+    max_candidates: 25              # 最大候选token数
     adaptive_threshold: true        # 自适应阈值
-    temperature_scaling: 0.6        # 温度缩放
+    temperature_scaling: 0.7        # 温度缩放
 
-    efg_weights:                    # EFG权重配置
-      gbnf: 0.3                   # GBNF语法权重
-      complexity: 0.3              # 复杂度权重
-      structural: 0.4              # 结构权重
+    # 🔥 调整EFG权重 - 降低结构权重，提高语法权重
+    efg_weights:
+      structural: 0.3              # 降低FSM结构权重
+      grammatical: 0.5             # 提高GBNF语法权重
+      contextual: 0.2              # 保持上下文权重
 
-    fusion_strategy: "multiplicative"  # 融合策略
-    cache_size: 10000              # 缓存大小
-    cache_decay: 0.95              # 缓存衰减因子
-    max_iterations: 25             # 最大迭代次数
+    # 🔥 新增：重复检测配置
+    repetition_control:
+      enabled: true
+      semantic_analysis: true        # 启用语义分析
+      default_allow_repetition: true # 默认允许重复
+
+    # 🔥 新增：完成条件配置
+    completion_control:
+      min_xml_length: 200           # 最小XML长度
+      min_depth_reached: 3          # 最小路径深度
+      require_multiple_elements: true # 要求多个元素
+
+    fusion_strategy: "weighted_sum"   # 🔥 改为加权求和
+    cache_size: 15000                # 增加缓存
+    cache_decay: 0.97                # 减少衰减
 
   enhanced_fsm:
     enabled: true
@@ -251,6 +277,7 @@ file_paths:
   # XML实例文件
   xml_instances:
     - "xml_instance/ASW_COM.arxml"
+    - "xml_instance/test.arxml"
 
   # 验证相关文件
   xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
@@ -266,103 +293,140 @@ file_paths:
 
 # 验证器配置
 validators:
+  # XSD 验证配置
   structure:
     enabled: true
-    strict_mode: true
+    strict_mode: true #严格按照xsd定义
 
+  # SHACL 🔧 增强的语义验证配置
   semantic:
-    enabled: false
+    enabled: true
     inference: true
+    timeout: 180
+    max_violations_display: 10
 
+    # 🔧 新增：语义验证细粒度控制
+    validation_scope:
+      # 验证层面控制
+      structural_validation: false      # SHACL结构性验证 (基数、必需属性等)
+      semantic_validation: true        # SHACL语义性验证 (值限制、依赖等)
+
+      # 语义约束类型细分控制 - 与SMT对齐
+      semantic_types:
+        existence: false                 # 存在性约束 (sh:not, sh:exists)
+        value_restriction: true         # 值限制约束 (sh:in, sh:hasValue)
+        cardinality: true              # 基数约束 (sh:minCount, sh:maxCount)
+        dependency: true               # 依赖关系约束 (sh:qualified, conditional)
+        mutual_exclusion: true         # 互斥约束 (sh:xone, exclusive)
+        format: true                   # 格式约束 (sh:pattern, sh:datatype)
+        range: true                    # 范围约束 (sh:minInclusive, sh:maxInclusive)
+        behavioral: false              # 行为约束 (时序、状态相关)
+        other: true                    # 其他未分类约束
+
+    # 🔧 新增：验证策略
+    validation_strategy:
+      # 验证模式
+      mode: "hybrid"                   # "structural_only", "semantic_only", "hybrid"
+
+      # 失败策略
+      fail_fast: false                # SHACL通常不需要快速失败
+      continue_on_violation: true      # 结构违规时继续验证
+
+      # 严重性过滤
+      severity_filter:
+        structural: ["violation"]      # 结构验证: 只处理违规
+        semantic: ["violation", "warning", "info"]  # 语义验证: 处理所有级别
+
+    # 🔧 新增：性能和输出控制
+    performance:
+      parallel_shapes: false           # 并行形状验证
+      max_parallel_shapes: 2           # 最大并行形状数
+      memory_limit_mb: 1024           # 内存限制
+      inference_timeout: 60           # 推理超时
+
+    output:
+      detailed_breakdown: true         # 详细的违规类型分解
+      show_satisfied_shapes: false     # 是否显示满足的形状
+      group_by_type: true             # 按类型分组显示结果
+      include_rdf_triples: false      # 是否包含RDF三元组信息
+      xml_element_mapping: true       # 显示XML元素映射
+
+  # SMT 约束验证配置 - 与SHACL配置对齐
   constraint:
     enabled: true
     timeout: 120
     solver: "z3"
     max_constraints_display: 5
 
-    # 🔧 新增：约束验证细粒度控制
     validation_scope:
-      # 约束来源控制
-      structural_constraints: false      # 来自XSD/Schema的结构约束
-      semantic_constraints: true        # 来自业务逻辑的语义约束
+      structural_constraints: true     # SMT结构约束
+      semantic_constraints: true       # SMT语义约束
 
-      # 语义约束类型细分控制
+      # 与SHACL语义类型保持一致
       semantic_types:
-        existence: true                 # 存在性约束 (元素必须/不得存在)
-        value_restriction: true         # 值限制约束 (枚举值、格式等)
-        cardinality: true              # 基数约束 (出现次数限制)
-        dependency: true               # 依赖关系约束 (if-then逻辑)
-        mutual_exclusion: true         # 互斥约束 (不能同时存在)
-        format: true                   # 格式约束 (正则表达式等)
-        range: true                    # 范围约束 (数值范围)
-        behavioral: true               # 行为约束 (时序、状态等)
-        other: false                   # 其他未分类约束
+        existence: true
+        value_restriction: true
+        cardinality: true
+        dependency: true
+        mutual_exclusion: true
+        format: true
+        range: true
+        behavioral: true
+        other: false
 
-    # 🔧 新增：约束验证策略
     validation_strategy:
-      # 验证模式
-      mode: "hybrid"                   # "structural_only", "semantic_only", "hybrid"
+      mode: "hybrid"                  # 与SHACL模式保持一致
+      fail_fast: true
+      continue_on_semantic_fail: true
 
-      # 失败策略
-      fail_fast: false                  # 遇到第一个结构约束失败就停止
-      continue_on_semantic_fail: true  # 语义约束失败时继续验证
-
-      # 严重性过滤
       severity_filter:
-        structural: ["violation"]      # 结构约束: 只处理违规
-        semantic: ["violation", "warning", "info"]  # 语义约束: 处理所有级别
+        structural: ["violation"]
+        semantic: ["violation", "warning"]
 
-    # 🔧 新增：性能和输出控制
-    performance:
-      parallel_execution: false        # 并行执行约束验证
-      max_parallel_constraints: 4      # 最大并行约束数
-      memory_limit_mb: 512             # 内存限制
-
-    output:
-      detailed_breakdown: true         # 详细的约束类型分解
-      show_satisfied_constraints: false # 是否显示满足的约束
-      group_by_type: true             # 按类型分组显示结果
-      include_smt_code: false         # 是否包含生成的SMT代码
-
-# 验证模式定义
+# 🔧 新增：验证模式定义 - 支持细粒度控制
 validation_modes:
   quick: ["structure"]
   standard: ["structure", "semantic"]
   full: ["structure", "semantic", "constraint"]
 
-  # 🔧 新增：约束专用模式
-  constraint_only: ["constraint"]
-  semantic_constraint: ["constraint"]  # 将通过constraint配置控制只验证semantic
-  structural_constraint: ["constraint"] # 将通过constraint配置控制只验证structural
+  # 结构验证专用模式
+  structure_only: ["structure"]
 
-# 报告配置
-reporting:
-  console_output: true
-  save_reports: true
-  format: "text"  # "text", "json", "both"
+  # 语义验证专用模式
+  semantic_structural: ["semantic"]   # 仅SHACL结构验证
+  semantic_content: ["semantic"]      # 仅SHACL语义验证
+  semantic_full: ["semantic"]         # 完整SHACL验证
 
-  # 🔧 新增：约束验证报告配置
-  constraint_reporting:
-    summary_only: false              # 只显示摘要
-    include_smt_details: false       # 包含SMT求解细节
-    breakdown_by_type: true          # 按类型分解报告
-    show_constraint_source: true     # 显示约束来源
-    max_violations_per_type: 20      # 每种类型最多显示的违规数
+  # 约束验证专用模式
+  constraint_structural: ["constraint"]  # 仅SMT结构约束
+  constraint_semantic: ["constraint"]    # 仅SMT语义约束
+  constraint_full: ["constraint"]        # 完整SMT约束验证
 
-# 依赖检查配置
-dependencies:
-  required_packages:
-    - "xmlschema"
-    - "rdflib"
-    - "pyshacl"
-    - "pyyaml"
-  optional_packages:
-    - "z3-solver"  # SMT验证需要
+  # 混合模式
+  structural_focus: ["structure", "semantic", "constraint"]  # 结构重点模式
+  semantic_focus: ["semantic", "constraint"]                 # 语义重点模式
 
-# 自动安装配置
-auto_setup:
-  create_missing_directories: true
-  install_missing_packages: false  # 在PyCharm中手动安装
-  download_z3_if_missing: false    # 在PyCharm中手动安装
+  # 🔧 增强的报告配置
+  reporting:
+    console_output: true
+    save_reports: true
+    format: "text"  # "text", "json", "both"
+
+    # SHACL验证报告配置
+    semantic_reporting:
+      summary_only: false              # 只显示摘要
+      include_rdf_details: false       # 包含RDF转换细节
+      breakdown_by_type: true          # 按约束类型分解报告
+      show_shape_source: true          # 显示SHACL形状来源
+      max_violations_per_type: 10      # 每种类型最多显示的违规数
+      xml_element_tracing: true        # XML元素追踪
+
+    # SMT约束验证报告配置
+    constraint_reporting:
+      summary_only: false              # 只显示摘要
+      include_smt_details: false       # 包含SMT求解细节
+      breakdown_by_type: true          # 按类型分解报告
+      show_constraint_source: true     # 显示约束来源
+      max_violations_per_type: 10      # 每种类型最多显示的违规数
 
 
