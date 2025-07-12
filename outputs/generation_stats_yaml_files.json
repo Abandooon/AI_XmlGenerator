@@ -1,0 +1,49 @@
+{
+  "session_info": {
+    "source": "YAML files",
+    "total_prompts": 1,
+    "successful": 1,
+    "failed": 0,
+    "success_rate": "100.0%",
+    "total_time": "181.37s",
+    "average_time_per_prompt": "181.37s",
+    "total_characters": 28222,
+    "total_tokens": 0,
+    "total_memory_mb": "0.00",
+    "average_chars_per_prompt": 28222,
+    "average_tokens_per_prompt": 0,
+    "strategy": "block_level_fsm",
+    "seeds_used": [
+      42,
+      1001,
+      20250701
+    ],
+    "seed_generation_enabled": true
+  },
+  "prompts_details": [
+    {
+      "prompt_index": 1,
+      "prompt_preview": "根据以下业务需求生成完整 AUTOSAR 4.2 ARXML：\n组件 `ASW_COM`\nProvided 信号：`MCU01_EmergShutDown`, `MCU02_MaxTor`, `MCU...",
+      "source": "YAML files",
+      "total_processing_time": 0,
+      "vllm_generation_time": 0,
+      "xml_length": 28222,
+      "token_usage": {},
+      "memory_usage": {},
+      "success": true
+    }
+  ],
+  "seed_files": {
+    "xml_files": [
+      "outputs\\generated_1_seed_1001_yaml_files.xml",
+      "outputs\\generated_1_seed_20250701_yaml_files.xml",
+      "outputs\\generated_1_seed_42_yaml_files.xml"
+    ],
+    "stats_files": [
+      "outputs\\stats_1_seed_1001_yaml_files.json",
+      "outputs\\stats_1_seed_20250701_yaml_files.json",
+      "outputs\\stats_1_seed_42_yaml_files.json"
+    ],
+    "total_seed_files": 3
+  }
+}

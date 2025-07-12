@@ -7,10 +7,10 @@ project:
 # vllm云端服务配置----------------------------------------------------------------------------------------------------------------------------------
 
 cloud_service:
-  internal_endpoint: "http://117.50.217.52:8000"
+  internal_endpoint: "http://117.50.172.64:8000"
   api_type: "enhanced"
   model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
-  timeout: 600
+  timeout: 10000
   max_retries: 3
   retry_delay: 5
 
@@ -35,31 +35,7 @@ vllm_config:
 # 🔥 新增：提示词配置 - 便于调试和实验
 prompts:
   # 基础组件级生成提示词
-  component_level: |
-    Generate XML based on the following AUTOSAR APPLICATION-SW-COMPONENT-TYPE example. 
-    Note that the tags may not match the actual ones. Align the tags and correct them according to your allowtoken. 
-    They must be consistent with the design concept and values of the example XML and must comply with the tokens specified by guided_grammar and guided_choice.
-    If there are no errors in the tags, generate them as is without modification. 
-    Requirements:
-    - Start with <APPLICATION-SW-COMPONENT-TYPE> tag
-    - End with </APPLICATION-SW-COMPONENT-TYPE>
-
-    Example XML: 
-        <APPLICATION-SW-COMPONENT-TYPE>
-          <SHORT-NAME>ASW_COM_MIN</SHORT-NAME>
-          <PORTS>
-            <P-PORT-PROTOTYPE>
-              <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
-              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interface/SR_Interface_MCU01_EmergShutDown
-              </PROVIDED-INTERFACE-TREF>
-            </P-PORT-PROTOTYPE>
-          </PORTS>
-        </APPLICATION-SW-COMPONENT-TYPE>
-
-    
-    Generate complete XML now:
-
-    Create complete, well-structured XML:
+  component_level:
   # 实验性：带示例XML的提示词
   with_example_xml: |
     Based on the following task: {task}
@@ -80,115 +56,86 @@ prompts:
 
 # 🔥 约束策略配置
 constraint_strategy:
-  # 可选值: "gbnf_priority", "enhanced_fsm", "gad_enhanced_fsm"
-  mode: "enhanced_fsm"  # 使用GAD策略
+  # 可选值: "block_level_fsm", "dynamic_gbnf"
+  mode: "block_level_fsm"  # 使用动态GBNF策略
+
+  dynamic_gbnf:
+    # 需求提取配置
+    extract_requirements: false          # 自动从prompt提取需求
+    use_prompt_mapper: true            # 使用prompt映射器（新增）
+    extraction_temperature: 0.1         # LLM提取时的温度（低温度更准确）
+    extraction_max_tokens: 1000         # 提取响应的最大token数
+    max_extraction_attempts: 2          # 提取失败时的最大重试次数
+    # Prompt映射配置（新增）
+    prompt_mapping:
+      enabled: true                     # 启用原始prompt到结构化prompt的映射
+      preserve_original_intent: true    # 保留原始prompt的意图
+      enhance_with_structure: true      # 添加结构化指导
+      fallback_on_error: true          # 映射失败时使用原始prompt
+    # GBNF生成配置
+    cache_generated_gbnf: true          # 缓存生成的GBNF以提高性能
+    cache_size: 100                     # 缓存大小
+    template_path: "autosar_template.gbnf"  # GBNF模板文件路径
+    # 回退策略
+    fallback_to_default: true           # 提取失败时使用默认配置
+    fallback_strategy: "enhanced_fsm"   # 动态GBNF失败时的备用策略
+    # 验证配置
+    validation_enabled: true            # 启用生成结果验证
+    validate_xml_structure: true        # 验证XML结构完整性
+    validate_against_requirements: true # 验证是否满足提取的需求
+    # 自适应配置
+    adaptive_temperature: true          # 根据复杂度自适应调整温度
+    min_temperature: 0.1                # 最小温度
+    max_temperature: 0.7                # 最大温度
+    # 默认需求配置（用于回退）
+    default_requirements:
+      min_p_ports: 1                   # 最少P端口数
+      max_p_ports: 5                   # 最多P端口数
+      min_r_ports: 1                   # 最少R端口数
+      max_r_ports: 5                   # 最多R端口数
+      default_alive_timeout: "0.3"     # 默认存活超时
+      default_handle_timeout: "NONE"   # 默认超时处理类型
+      default_period: "0.01"           # 默认事件周期
+    # 提取模板（用于指导LLM提取）
+    extraction_template: |
+      Analyze the AUTOSAR component request and extract:
+      1. Component name
+      2. Number and names of P-ports (provided ports)
+      3. Number and names of R-ports (required ports)
+      4. Interface references
+      5. Timing requirements
+      6. Runnable configurations
+      The request may be in Chinese or English.
+      Focus on explicit requirements in the prompt.
+      If not specified, use reasonable defaults.
+  
 
   # 块级FSM策略配置
   block_level_fsm:
-    # 最大块数限制
-    max_blocks: 10
+    # 基础生成参数
+    max_blocks: 15  # 增加最大块数以支持复杂结构
+    temperature: 0.3
+    top_p: 0.9
+    block_validation: true
 
-    # LLM生成参数
-    temperature: 0.3        # 较低的温度保证稳定性
-    top_p: 0.9             # 采样参数
+    # 动态块识别参数
+    min_block_size: 2  # 每个块至少包含2个token
+    max_block_size: 8  # 每个块最多包含8个token
+    branch_threshold: 3  # 超过3个分支视为分支点
 
-    # 验证和重试
-    block_validation: true  # 启用块验证
-    retry_on_failure: true  # 失败时重试
+    # 路径探索参数
+    max_paths_per_block: 30  # 平衡探索深度和性能
+    path_clustering: true
 
-    # 结构规划
-    structure_planning: true  # 启用智能结构规划
+    # 成本优化参数
+    completion_cost_factor: 0.5  # 鼓励完成
+    branch_cost_factor: 1.2
+    loop_cost_factor: 1.5
 
-    # 块定义优先级和必需性
-    block_definitions:
-      header_block:
-        priority: 1
-        required: true
-        description: "组件头部信息，包括名称和管理数据"
-
-      ports_block:
-        priority: 2
-        required: false
-        description: "端口定义块，包括P-PORT和R-PORT"
-
-      behaviors_block:
-        priority: 3
-        required: false
-        description: "内部行为定义，包括事件和可运行实体"
-
-    # 块生成策略
-    generation_strategy:
-      # 是否并行生成独立块
-      parallel_blocks: false
-
-      # 块间依赖处理
-      handle_dependencies: true
-
-      # 上下文窗口大小（用于块生成时的上下文）
-      context_window: 500
-
-      # 最大重试次数
-      max_retries: 2
-
-    # 性能优化
-    optimization:
-      # 缓存已生成的块模板
-      cache_templates: true
-
-      # 预测下一个块
-      predictive_generation: true
-
-      # 自适应块大小
-      adaptive_block_size: true
-      min_block_size: 100    # 字符
-      max_block_size: 1000   # 字符
-
-  # GAD增强FSM策略配置
-  gad_enhanced_fsm:
-    enabled: true
-    efg_threshold: 0.25              # EFG最低阈值
-    max_candidates: 25              # 最大候选token数
-    adaptive_threshold: true        # 自适应阈值
-    temperature_scaling: 0.7        # 温度缩放
-
-    # 🔥 调整EFG权重 - 降低结构权重，提高语法权重
-    efg_weights:
-      structural: 0.3              # 降低FSM结构权重
-      grammatical: 0.5             # 提高GBNF语法权重
-      contextual: 0.2              # 保持上下文权重
-
-    # 🔥 新增：重复检测配置
-    repetition_control:
-      enabled: true
-      semantic_analysis: true        # 启用语义分析
-      default_allow_repetition: true # 默认允许重复
-
-    # 🔥 新增：完成条件配置
-    completion_control:
-      min_xml_length: 200           # 最小XML长度
-      min_depth_reached: 3          # 最小路径深度
-      require_multiple_elements: true # 要求多个元素
-
-    fusion_strategy: "weighted_sum"   # 🔥 改为加权求和
-    cache_size: 15000                # 增加缓存
-    cache_decay: 0.97                # 减少衰减
-
-  enhanced_fsm:
-    enabled: true
-    max_iterations: 100        # 迭代次数
-    max_tokens_per_step: 600  # 每步生成量
-    temperature: 0.4          # 创造性水平
-    top_p: 0.85
-    thinking_enabled: true    # 启用vLLM思考
-    choice_range: 30          # 每次给vLLM的选择数量
-
-  # GBNF优先策略配置
-  gbnf_priority:
-    enabled: true
-    use_enhanced_grammar: true
-    temperature: 0.2
-    max_tokens: 8000
-    stop_conditions: ["</APPLICATION-SW-COMPONENT-TYPE>"]
+    # 高级选项
+    use_global_analysis: true  # 启用全局路径分析
+    adaptive_block_size: true  # 根据FSM结构自适应调整块大小
+    strict_fsm_compliance: true  # 严格遵循FSM路径
 
 ## 生成参数配置-------------------
 generation:
@@ -198,7 +145,7 @@ generation:
   default_frequency_penalty: 0.1
   default_presence_penalty: 0.1
 
-# 约束引用配置
+# 云端约束引用配置文件----需传给云服务脚本
 constraint_references:
   fsm_ref: "autosar"
   gbnf_ref: "autosar"
@@ -278,6 +225,7 @@ file_paths:
   xml_instances:
     - "xml_instance/ASW_COM.arxml"
     - "xml_instance/test.arxml"
+    - "xml_instance/generated_1_yaml_files.arxml"
 
   # 验证相关文件
   xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"

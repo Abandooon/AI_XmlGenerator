@@ -1,9 +1,9 @@
 # src/client/constraint_preparer.py
 import json
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from pathlib import Path
 
-from ..models.constraint_models import ConstraintInfo
+from src.client.constraint_models import ConstraintInfo
 from ..utils.logger import get_logger
 from importlib.machinery import SourceFileLoader
 

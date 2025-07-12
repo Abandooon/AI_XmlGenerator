@@ -1,10 +1,9 @@
 # src/client/constraint_sender.py - 支持配置化提示词
-import json
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from src.client.constraint_preparer import ConstraintPreparer
-from src.models.constraint_models import ConstraintInfo, EnhancedGenerationRequest
+from src.client.constraint_models import ConstraintInfo, EnhancedGenerationRequest
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -86,42 +85,63 @@ class ConstraintSender:
             prompt_type: str,
             example_xml: str = None
     ) -> str:
-        """🔥 根据配置构建提示词"""
+        """🔥 修复：根据配置构建提示词 - 处理列表和字符串模板"""
 
         # 获取提示词模板
         prompt_template = self.prompts_config.get(prompt_type)
-        if not prompt_template:
-            logger.warning(f"Prompt type '{prompt_type}' not found, using component_level")
-            prompt_template = self.prompts_config.get("component_level", "")
 
-        if not prompt_template:
-            # 使用默认提示词
-            logger.warning("No prompt template found in config, using default")
-            return self._get_default_prompt(task, autosar_context)
+        # 🔥 修复：处理空值情况
+        if not prompt_template or (isinstance(prompt_template, str) and not prompt_template.strip()):
+            logger.warning(f"Prompt type '{prompt_type}' is empty or not found, using task directly")
+            return task  # 直接使用原始task
 
-        # 构建上下文信息
-        context = self._build_context_string(autosar_context)
-
-        # 填充模板
-        try:
-            if prompt_type == "with_example_xml" and example_xml:
-                enhanced_prompt = prompt_template.format(
-                    task=task,
-                    context=context,
-                    example_xml=example_xml
-                )
+        # 如果是列表格式（通常是YAML批量处理）
+        if isinstance(prompt_template, list):
+            logger.info(f"Found list format prompt with {len(prompt_template)} items")
+            # 如果task就是列表中的一个，直接返回
+            if task in prompt_template:
+                logger.info("✅ Using exact match from prompt list")
+                return task
             else:
-                enhanced_prompt = prompt_template.format(
-                    task=task,
-                    context=context
-                )
+                # 否则直接返回task
+                logger.info("Using task as-is for list format")
+                return task
 
-            logger.info(f"✅ Prompt built from config template: {prompt_type}")
-            return enhanced_prompt
+        # 字符串模板处理
+        if isinstance(prompt_template, str):
+            # 检查是否包含格式占位符
+            if '{task}' in prompt_template or '{context}' in prompt_template:
+                # 构建上下文信息
+                context = self._build_context_string(autosar_context)
 
-        except KeyError as e:
-            logger.error(f"❌ Template formatting error: {e}")
-            return self._get_default_prompt(task, autosar_context)
+                # 填充模板
+                try:
+                    if prompt_type == "with_example_xml" and example_xml:
+                        enhanced_prompt = prompt_template.format(
+                            task=task,
+                            context=context,
+                            example_xml=example_xml
+                        )
+                    else:
+                        enhanced_prompt = prompt_template.format(
+                            task=task,
+                            context=context
+                        )
+
+                    logger.info(f"✅ Prompt built from string template: {prompt_type}")
+                    return enhanced_prompt
+
+                except KeyError as e:
+                    logger.error(f"❌ Template formatting error: {e}")
+                    return task  # 返回原始task
+            else:
+                # 如果是普通字符串且不包含占位符，直接返回
+                logger.info("✅ Using string template as-is")
+                return prompt_template
+
+        # 兜底逻辑：直接返回task
+        logger.warning("Unknown prompt template format, using task as-is")
+        return task
 
     def _build_context_string(self, autosar_context: Dict) -> str:
         """构建上下文字符串"""
@@ -142,18 +162,18 @@ class ConstraintSender:
 
         return f"""Generate complete AUTOSAR APPLICATION-SW-COMPONENT-TYPE content.
 
-Context: {context}
-Task: {task}
+            Context: {context}
+            Task: {task}
 
-Requirements:
-- Start with <APPLICATION-SW-COMPONENT-TYPE> tag
-- Include SHORT-NAME element with descriptive name
-- Add PORTS section with both R-PORT-PROTOTYPE and P-PORT-PROTOTYPE
-- Include INTERNAL-BEHAVIOR with RUNNABLES and EVENTS
-- Use proper AUTOSAR R4.0 structure
-- End with </APPLICATION-SW-COMPONENT-TYPE>
+            Requirements:
+            - Start with <APPLICATION-SW-COMPONENT-TYPE> tag
+            - Include SHORT-NAME element with descriptive name
+            - Add PORTS section with both R-PORT-PROTOTYPE and P-PORT-PROTOTYPE
+            - Include INTERNAL-BEHAVIOR with RUNNABLES and EVENTS
+            - Use proper AUTOSAR R4.0 structure
+            - End with </APPLICATION-SW-COMPONENT-TYPE>
 
-Generate complete component XML:"""
+            Generate complete component XML:"""
 
     def _build_constraint_info_from_config(self, constraint_level: str, xml_context: List[str]) -> ConstraintInfo:
         """根据配置构建约束信息"""
@@ -162,18 +182,36 @@ Generate complete component XML:"""
         # 根据约束级别和策略模式设置引用
         strategy_mode = self.strategy_config.get("mode", "gbnf_priority")
 
-        if constraint_level in ["mixed", "full"]:
+        # 🔥 修复：专门处理 dynamic_gbnf 策略
+        if strategy_mode == "dynamic_gbnf":
+            # 动态GBNF策略需要GBNF引用
+            constraint_info.gbnf_ref = self.constraint_refs.get("gbnf_ref", "autosar")
+            constraint_info.gbnf_enabled = True
+            logger.info(f"🎯 Setting GBNF ref for dynamic_gbnf: {constraint_info.gbnf_ref}")
+
+        # 🔥 处理 block_level_fsm 策略
+        elif strategy_mode == "block_level_fsm":
+            constraint_info.fsm_ref = self.constraint_refs.get("fsm_ref", "autosar")
+            constraint_info.fsm_enabled = True
+            logger.info(f"🎯 Setting FSM ref for block_level_fsm: {constraint_info.fsm_ref}")
+
+        # 原有的mixed/full逻辑
+        elif constraint_level in ["mixed", "full"]:
             # 根据策略模式决定启用哪些约束
             if strategy_mode in ["gbnf_priority", "hybrid"]:
                 constraint_info.gbnf_ref = self.constraint_refs.get("gbnf_ref", "autosar")
+                constraint_info.gbnf_enabled = True
 
             if strategy_mode in ["iterative_fsm", "hybrid"]:
                 constraint_info.fsm_ref = self.constraint_refs.get("fsm_ref", "autosar")
+                constraint_info.fsm_enabled = True
 
-            if strategy_mode == "unconstrained":
-                # 无约束模式
-                constraint_info.gbnf_ref = None
-                constraint_info.fsm_ref = None
+        # 无约束模式
+        if strategy_mode == "unconstrained":
+            constraint_info.gbnf_ref = None
+            constraint_info.fsm_ref = None
+            constraint_info.fsm_enabled = False
+            constraint_info.gbnf_enabled = False
 
         # 设置约束源信息
         constraint_info.constraint_version = "7.0.0"
@@ -183,7 +221,10 @@ Generate complete component XML:"""
         current_state = self._extract_current_state(xml_context)
         constraint_info.current_state = current_state
 
-        logger.info(f"Constraint info built: fsm_ref={constraint_info.fsm_ref}, gbnf_ref={constraint_info.gbnf_ref}")
+        logger.info(
+            f"✅ Constraint info built for {strategy_mode}: fsm_ref={constraint_info.fsm_ref}, gbnf_ref={constraint_info.gbnf_ref}")
+        logger.info(f"   fsm_enabled={constraint_info.fsm_enabled}, gbnf_enabled={constraint_info.gbnf_enabled}")
+
         return constraint_info
 
     def _merge_generation_params(self, generation_params: Dict) -> Dict:
