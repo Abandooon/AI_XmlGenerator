@@ -226,6 +226,13 @@ file_paths:
     - "experimental_data/llm/min_promote_No Guard"
     - "experimental_data/llm/mid_promote_No Guard"
     - "experimental_data/llm/full_promote_No Guard"
+#      - "experimental_data/vllm/gbnf/wrap_arxml"
+#    - "experimental_data/llm/min_promote_rag/output"
+#    - "experimental_data/llm/mid_promote_rag/output"
+#    - "experimental_data/llm/full_promote_rag/output"
+
+
+
 
 
   # 验证相关文件
@@ -244,7 +251,7 @@ file_paths:
 validators:
   # XSD 验证配置
   structure:
-    enabled: true
+    enabled: false
     strict_mode: true #严格按照xsd定义
 
   # SHACL 🔧 增强的语义验证配置
@@ -257,19 +264,19 @@ validators:
     # 🔧 新增：语义验证细粒度控制
     validation_scope:
       # 验证层面控制
-      structural_validation: false      # SHACL结构性验证 (基数、必需属性等)
+      structural_validation: true      # SHACL结构性验证 (基数、必需属性等)
       semantic_validation: true        # SHACL语义性验证 (值限制、依赖等)
 
       # 语义约束类型细分控制 - 与SMT对齐
       semantic_types:
-        existence: false                 # 存在性约束 (sh:not, sh:exists)
+        existence: true                 # 存在性约束 (sh:not, sh:exists)
         value_restriction: true         # 值限制约束 (sh:in, sh:hasValue)
-        cardinality: false              # 基数约束 (sh:minCount, sh:maxCount)
+        cardinality: true              # 基数约束 (sh:minCount, sh:maxCount)
         dependency: true               # 依赖关系约束 (sh:qualified, conditional)
         mutual_exclusion: true         # 互斥约束 (sh:xone, exclusive)
         format: true                   # 格式约束 (sh:pattern, sh:datatype)
         range: true                    # 范围约束 (sh:minInclusive, sh:maxInclusive)
-        behavioral: false              # 行为约束 (时序、状态相关)
+        behavioral: true              # 行为约束 (时序、状态相关)
         other: true                    # 其他未分类约束
 
     # 🔧 新增：验证策略
@@ -296,13 +303,13 @@ validators:
     output:
       detailed_breakdown: true         # 详细的违规类型分解
       show_satisfied_shapes: false     # 是否显示满足的形状
-      group_by_type: true             # 按类型分组显示结果
+      group_by_type: false             # 按类型分组显示结果
       include_rdf_triples: false      # 是否包含RDF三元组信息
-      xml_element_mapping: true       # 显示XML元素映射
+      xml_element_mapping: false       # 显示XML元素映射
 
   # SMT 约束验证配置 - 与SHACL配置对齐
   constraint:
-    enabled: true
+    enabled: false
     timeout: 120
     solver: "z3"
     max_constraints_display: 5
@@ -315,13 +322,13 @@ validators:
       semantic_types:
         existence: false
         value_restriction: false
-        cardinality: true
+        cardinality: false
         dependency: true
         mutual_exclusion: true
         format: true
         range: false
         behavioral: true
-        other: false
+        other: true
 
     validation_strategy:
       mode: "hybrid"                  # 与SHACL模式保持一致
