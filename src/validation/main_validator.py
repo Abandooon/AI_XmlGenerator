@@ -27,6 +27,224 @@ class AutosarValidator:
         # 验证配置和环境
         self._validate_environment()
 
+    # 1. 修改 main_validator.py 中的 _save_report 方法
+
+    def _save_report(self, xml_file: str, report: str, results: Dict):
+        """保存验证报告 - 修复保存逻辑"""
+
+        # 🔧 修复1: 确保启用报告保存
+        reporting_config = self.config.get('reporting', {})
+        save_reports = reporting_config.get('save_reports', True)  # 默认启用
+
+        # 🔧 修复：强制保存重要报告
+        if not save_reports:
+            print("⚠️  配置中禁用了报告保存，但仍将保存重要验证报告")
+            save_reports = True
+
+        if not save_reports:
+            print("📝 报告保存已禁用")
+            return
+
+        try:
+            # 生成报告文件名
+            xml_name = Path(xml_file).stem
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+            # 🔧 修复：确保报告目录存在
+            report_dir = project_root / self.config['file_paths'].get('report_dir', 'reports')
+            report_dir.mkdir(parents=True, exist_ok=True)  # 确保创建父目录
+
+            report_file = report_dir / f"validation_report_{xml_name}_{timestamp}.txt"
+
+            # 🔧 修复：保存文本报告
+            print(f"📝 正在保存报告到: {report_file}")
+
+            with open(report_file, 'w', encoding='utf-8') as f:
+                f.write(f"验证文件: {xml_file}\n")
+                f.write(f"验证时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("=" * 80 + "\n")
+                f.write(report)
+
+            # 🔧 验证文件是否成功创建
+            if report_file.exists():
+                file_size = report_file.stat().st_size
+                print(f"✅ 报告已保存: {report_file} ({file_size} bytes)")
+            else:
+                print(f"❌ 报告保存失败: 文件未创建")
+                return
+
+            # 🔧 修复：JSON格式保存逻辑
+            report_format = reporting_config.get('format', 'text')
+            if report_format in ['json', 'both']:
+                import json
+                json_file = report_file.with_suffix('.json')
+
+                print(f"📝 正在保存JSON报告到: {json_file}")
+
+                # 🔧 确保results可序列化
+                serializable_results = self._make_serializable(results)
+
+                with open(json_file, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        'xml_file': xml_file,
+                        'validation_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'results': serializable_results
+                    }, f, indent=2, ensure_ascii=False)
+
+                if json_file.exists():
+                    json_size = json_file.stat().st_size
+                    print(f"✅ JSON报告已保存: {json_file} ({json_size} bytes)")
+                else:
+                    print(f"❌ JSON报告保存失败")
+
+            # 🔧 新增：生成SHACL专门报告（如果有违规）
+            if hasattr(self.orchestrator, 'generate_shacl_violation_summary_report'):
+                semantic_result = results.get("stages", {}).get("semantic", {}).get("result", {})
+                violation_count = semantic_result.get("violation_count", 0)
+
+                if violation_count > 0:
+                    shacl_report_file = report_dir / f"shacl_violations_{xml_name}_{timestamp}.txt"
+                    shacl_report = self.orchestrator.generate_shacl_violation_summary_report(results)
+
+                    with open(shacl_report_file, 'w', encoding='utf-8') as f:
+                        f.write(f"SHACL违规专门报告\n")
+                        f.write(f"验证文件: {xml_file}\n")
+                        f.write(f"生成时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write("=" * 80 + "\n")
+                        f.write(shacl_report)
+
+                    print(f"📄 SHACL专门报告已保存: {shacl_report_file}")
+
+        except Exception as e:
+            print(f"❌ 保存报告失败: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _make_serializable(self, obj):
+        """将对象转换为可JSON序列化的格式"""
+        if isinstance(obj, dict):
+            return {k: self._make_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._make_serializable(item) for item in obj]
+        elif isinstance(obj, (str, int, float, bool, type(None))):
+            return obj
+        elif hasattr(obj, '__dict__'):
+            return str(obj)
+        else:
+            return str(obj)
+
+    # 2. 修改 main_validator.py 中的 _validate_environment 方法
+
+    def _validate_environment(self):
+        """验证环境和文件完整性 - 支持文件夹扫描"""
+        print("正在验证环境...")
+
+        # 修正：使用project_root解析所有相对路径
+        file_paths = self.config.get('file_paths', {})
+
+        # XSD文件检查
+        xsd_path = file_paths.get('xsd_schema', '')
+        if xsd_path:
+            xsd_full_path = project_root / xsd_path if not Path(xsd_path).is_absolute() else Path(xsd_path)
+            if xsd_full_path.exists():
+                print(f"✅ XSD Schema: {xsd_full_path}")
+            else:
+                print(f"❌ XSD Schema文件未找到: {xsd_full_path}")
+        else:
+            print("⚠️  配置中未指定XSD Schema路径")
+
+        # SHACL文件检查
+        shacl_path = file_paths.get('shacl_shapes', '')
+        if shacl_path:
+            shacl_full_path = project_root / shacl_path if not Path(shacl_path).is_absolute() else Path(shacl_path)
+            if shacl_full_path.exists():
+                print(f"✅ SHACL Shapes: {shacl_full_path}")
+            else:
+                print(f"❌ SHACL Shapes文件未找到: {shacl_full_path}")
+        else:
+            print("⚠️  配置中未指定SHACL Shapes路径")
+
+        # SMT文件检查
+        smt_path = file_paths.get('smt_template', '')
+        if smt_path:
+            smt_full_path = project_root / smt_path if not Path(smt_path).is_absolute() else Path(smt_path)
+            if smt_full_path.exists():
+                print(f"✅ SMT Template: {smt_full_path}")
+            else:
+                print(f"❌ SMT Template文件未找到: {smt_full_path}")
+        else:
+            print("⚠️  配置中未指定SMT Template路径")
+
+        # 🔧 修复2: 增强的XML实例文件扫描逻辑
+        xml_instances_config = file_paths.get('xml_instances', [])
+        available_xmls = []
+
+        print("🔍 扫描XML实例文件...")
+
+        for xml_config in xml_instances_config:
+            xml_path = Path(xml_config)
+
+            # 如果是相对路径，转换为绝对路径
+            if not xml_path.is_absolute():
+                xml_path = project_root / xml_config
+
+            if xml_path.is_file():
+                # 单个文件
+                if xml_path.suffix.lower() in ['.xml', '.arxml']:
+                    available_xmls.append(str(xml_path))
+                    print(f"✅ XML文件: {xml_path}")
+                else:
+                    print(f"⚠️  非XML文件: {xml_path}")
+
+            elif xml_path.is_dir():
+                # 🔧 新增：文件夹扫描逻辑
+                print(f"📁 扫描文件夹: {xml_path}")
+                folder_xmls = self._scan_xml_folder(xml_path)
+                available_xmls.extend(folder_xmls)
+
+            else:
+                print(f"⚠️  路径不存在: {xml_path}")
+
+        # 🔧 去重并排序
+        available_xmls = sorted(list(set(available_xmls)))
+
+        if not available_xmls:
+            print("❌ 没有找到可用的XML实例文件")
+            print("💡 请检查配置文件中的xml_instances路径，支持:")
+            print("   - 单个文件: xml_instance/test.arxml")
+            print("   - 文件夹: xml_instance/ (自动扫描所有.xml/.arxml文件)")
+            sys.exit(1)
+
+        print(f"📊 总共找到 {len(available_xmls)} 个XML文件")
+        self.available_xml_files = available_xmls
+
+        # 创建输出目录
+        self._create_output_directories()
+
+    def _scan_xml_folder(self, folder_path: Path) -> List[str]:
+        """🔧 新增：扫描文件夹中的XML文件"""
+        xml_files = []
+
+        try:
+            # 支持的XML文件扩展名
+            xml_extensions = ['.xml', '.arxml']
+
+            # 递归扫描文件夹
+            for file_path in folder_path.rglob('*'):
+                if file_path.is_file() and file_path.suffix.lower() in xml_extensions:
+                    xml_files.append(str(file_path))
+                    print(f"   📄 发现: {file_path.relative_to(folder_path)}")
+
+            if not xml_files:
+                print(f"   ⚠️  文件夹 {folder_path} 中未找到XML文件")
+            else:
+                print(f"   ✅ 在 {folder_path} 中找到 {len(xml_files)} 个XML文件")
+
+        except Exception as e:
+            print(f"   ❌ 扫描文件夹失败: {e}")
+
+        return xml_files
+
     def _load_config(self) -> Dict:
         """加载配置文件"""
         try:
@@ -43,81 +261,7 @@ class AutosarValidator:
             print(f"❌ 配置文件加载失败: {e}")
             sys.exit(1)
 
-    def _validate_environment(self):
-        """验证环境和文件完整性"""
-        print("正在验证环境...")
 
-        # 修正：使用project_root解析所有相对路径
-        file_paths = self.config.get('file_paths', {})
-
-        # XSD文件检查
-        xsd_path = file_paths.get('xsd_schema', '')
-        if xsd_path:
-            # 修正：正确处理相对路径
-            xsd_full_path = project_root / xsd_path if not Path(xsd_path).is_absolute() else Path(xsd_path)
-            if xsd_full_path.exists():
-                print(f"✅ XSD Schema: {xsd_full_path}")
-            else:
-                print(f"❌ XSD Schema文件未找到: {xsd_full_path}")
-        else:
-            print("⚠️  配置中未指定XSD Schema路径")
-
-        # SHACL文件检查
-        shacl_path = file_paths.get('shacl_shapes', '')
-        if shacl_path:
-            # 修正：正确处理相对路径
-            shacl_full_path = project_root / shacl_path if not Path(shacl_path).is_absolute() else Path(shacl_path)
-            if shacl_full_path.exists():
-                print(f"✅ SHACL Shapes: {shacl_full_path}")
-            else:
-                print(f"❌ SHACL Shapes文件未找到: {shacl_full_path}")
-        else:
-            print("⚠️  配置中未指定SHACL Shapes路径")
-
-        # SMT文件检查
-        smt_path = file_paths.get('smt_template', '')
-        if smt_path:
-            # 修正：正确处理相对路径
-            smt_full_path = project_root / smt_path if not Path(smt_path).is_absolute() else Path(smt_path)
-            if smt_full_path.exists():
-                print(f"✅ SMT Template: {smt_full_path}")
-            else:
-                print(f"❌ SMT Template文件未找到: {smt_full_path}")
-        else:
-            print("⚠️  配置中未指定SMT Template路径")
-
-        # 检查XML实例文件
-        xml_instances = file_paths.get('xml_instances', [])
-        available_xmls = []
-        for xml_file in xml_instances:
-            # 修正：正确处理相对路径
-            xml_full_path = project_root / xml_file if not Path(xml_file).is_absolute() else Path(xml_file)
-            if xml_full_path.exists():
-                available_xmls.append(str(xml_full_path))
-                print(f"✅ XML实例: {xml_full_path}")
-            else:
-                print(f"⚠️  XML实例未找到: {xml_full_path}")
-
-        if not available_xmls:
-            print("❌ 没有找到可用的XML实例文件")
-            sys.exit(1)
-
-        self.available_xml_files = available_xmls
-        # 创建输出目录
-        self._create_output_directories()
-
-    def _create_output_directories(self):
-        """创建输出目录"""
-        file_paths = self.config.get('file_paths', {})
-
-        output_dir = project_root / file_paths.get('output_dir', 'logs')
-        report_dir = project_root / file_paths.get('report_dir', 'reports')
-
-        output_dir.mkdir(exist_ok=True)
-        report_dir.mkdir(exist_ok=True)
-
-        print(f"✅ 输出目录: {output_dir}")
-        print(f"✅ 报告目录: {report_dir}")
 
     def _initialize_orchestrator(self):
         """初始化验证编排器"""
@@ -246,38 +390,6 @@ class AutosarValidator:
 
         return results
 
-    def _save_report(self, xml_file: str, report: str, results: Dict):
-        """保存验证报告"""
-        if not self.config.get('reporting', {}).get('save_reports', True):
-            return
-
-        try:
-            # 生成报告文件名
-            xml_name = Path(xml_file).stem
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-
-            report_dir = project_root / self.config['file_paths'].get('report_dir', 'reports')
-            report_file = report_dir / f"validation_report_{xml_name}_{timestamp}.txt"
-
-            # 保存文本报告
-            with open(report_file, 'w', encoding='utf-8') as f:
-                f.write(f"验证文件: {xml_file}\n")
-                f.write(f"验证时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write("=" * 80 + "\n")
-                f.write(report)
-
-            print(f"📄 报告已保存: {report_file}")
-
-            # 如果配置了JSON格式，也保存JSON
-            if self.config.get('reporting', {}).get('format') == 'json':
-                import json
-                json_file = report_file.with_suffix('.json')
-                with open(json_file, 'w', encoding='utf-8') as f:
-                    json.dump(results, f, indent=2, ensure_ascii=False)
-                print(f"📄 JSON报告已保存: {json_file}")
-
-        except Exception as e:
-            print(f"⚠️  保存报告失败: {e}")
 
     def run_interactive(self):
         """交互式运行模式"""
@@ -332,11 +444,63 @@ class AutosarValidator:
             self.validate_all_files()
 
     def _show_available_files(self):
-        """显示可用文件"""
-        print("\n可用的XML文件:")
+        """显示可用文件 - 增强显示"""
+        print("\n📁 可用的XML文件:")
+
+        # 按文件夹分组显示
+        files_by_folder = {}
         for xml_file in self.available_xml_files:
-            size = Path(xml_file).stat().st_size
-            print(f"  📄 {xml_file} ({size} bytes)")
+            folder = str(Path(xml_file).parent)
+            if folder not in files_by_folder:
+                files_by_folder[folder] = []
+            files_by_folder[folder].append(xml_file)
+
+        total_size = 0
+        for folder, files in files_by_folder.items():
+            print(f"  📂 {folder}:")
+            for xml_file in sorted(files):
+                try:
+                    size = Path(xml_file).stat().st_size
+                    size_str = f"{size:,} bytes" if size < 1024 * 1024 else f"{size / (1024 * 1024):.1f} MB"
+                    print(f"    📄 {Path(xml_file).name} ({size_str})")
+                    total_size += size
+                except Exception as e:
+                    print(f"    📄 {Path(xml_file).name} (无法获取大小: {e})")
+
+        total_size_str = f"{total_size:,} bytes" if total_size < 1024 * 1024 else f"{total_size / (1024 * 1024):.1f} MB"
+        print(f"\n📊 总计: {len(self.available_xml_files)} 个文件, {total_size_str}")
+
+    # 5. 增强输出目录创建逻辑
+
+    def _create_output_directories(self):
+        """创建输出目录 - 增强版"""
+        file_paths = self.config.get('file_paths', {})
+        reporting_config = self.config.get('reporting', {})
+
+        # 基础输出目录
+        output_dir = project_root / file_paths.get('output_dir', 'logs')
+        report_dir = project_root / file_paths.get('report_dir', 'reports')
+
+        # 创建目录
+        output_dir.mkdir(parents=True, exist_ok=True)
+        report_dir.mkdir(parents=True, exist_ok=True)
+
+        print(f"✅ 输出目录: {output_dir}")
+        print(f"✅ 报告目录: {report_dir}")
+
+        # 🔧 新增：创建时间戳子目录（可选）
+        if reporting_config.get('create_timestamp_dirs', False):
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            timestamp_report_dir = report_dir / timestamp
+            timestamp_report_dir.mkdir(exist_ok=True)
+            print(f"✅ 时间戳报告目录: {timestamp_report_dir}")
+
+        # 🔧 新增：创建分类子目录
+        for subdir in ['semantic_reports', 'constraint_reports', 'structure_reports']:
+            sub_path = report_dir / subdir
+            sub_path.mkdir(exist_ok=True)
+
+        print(f"📁 报告子目录已创建完成")
 
     def _change_validation_mode(self):
         """更改验证模式"""

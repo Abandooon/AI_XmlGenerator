@@ -7,30 +7,30 @@ project:
 # vllm云端服务配置----------------------------------------------------------------------------------------------------------------------------------
 
 cloud_service:
-  internal_endpoint: "http://117.50.172.64:8000"
+  internal_endpoint: "http://117.50.205.153:8000"
   api_type: "enhanced"
-  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
   timeout: 10000
   max_retries: 3
   retry_delay: 5
 
-#vllm_config:
-#  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B \
-#    --port 8001 \
-#    --tensor-parallel-size 8 \
-#    --max-model-len 88048 \
-#    --guided-decoding-backend outlines \
-#    --gpu-memory-utilization 0.85 \
-#    --trust-remote-code
-
 vllm_config:
-  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B \
+  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
     --port 8001 \
-    --tensor-parallel-size 2 \
-    --max-model-len 40000 \
+    --tensor-parallel-size 4 \
+    --max-model-len 65168 \
     --guided-decoding-backend outlines \
     --gpu-memory-utilization 0.85 \
     --trust-remote-code
+
+#vllm_config:
+#  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B \
+#    --port 8001 \
+#    --tensor-parallel-size 2 \
+#    --max-model-len 40000 \
+#    --guided-decoding-backend outlines \
+#    --gpu-memory-utilization 0.85 \
+#    --trust-remote-code
 
 # 🔥 新增：提示词配置 - 便于调试和实验
 prompts:
@@ -57,7 +57,7 @@ prompts:
 # 🔥 约束策略配置
 constraint_strategy:
   # 可选值: "block_level_fsm", "dynamic_gbnf"
-  mode: "block_level_fsm"  # 使用动态GBNF策略
+  mode: "dynamic_gbnf"  # 使用动态GBNF策略
 
   dynamic_gbnf:
     # 需求提取配置
@@ -223,9 +223,10 @@ logging:
 file_paths:
   # XML实例文件
   xml_instances:
-    - "xml_instance/ASW_COM.arxml"
-    - "xml_instance/test.arxml"
-    - "xml_instance/generated_1_yaml_files.arxml"
+    - "experimental_data/llm/min_promote_No Guard"
+    - "experimental_data/llm/mid_promote_No Guard"
+    - "experimental_data/llm/full_promote_No Guard"
+
 
   # 验证相关文件
   xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
@@ -263,7 +264,7 @@ validators:
       semantic_types:
         existence: false                 # 存在性约束 (sh:not, sh:exists)
         value_restriction: true         # 值限制约束 (sh:in, sh:hasValue)
-        cardinality: true              # 基数约束 (sh:minCount, sh:maxCount)
+        cardinality: false              # 基数约束 (sh:minCount, sh:maxCount)
         dependency: true               # 依赖关系约束 (sh:qualified, conditional)
         mutual_exclusion: true         # 互斥约束 (sh:xone, exclusive)
         format: true                   # 格式约束 (sh:pattern, sh:datatype)
@@ -307,18 +308,18 @@ validators:
     max_constraints_display: 5
 
     validation_scope:
-      structural_constraints: true     # SMT结构约束
+      structural_constraints: false     # SMT结构约束
       semantic_constraints: true       # SMT语义约束
 
       # 与SHACL语义类型保持一致
       semantic_types:
-        existence: true
-        value_restriction: true
+        existence: false
+        value_restriction: false
         cardinality: true
         dependency: true
         mutual_exclusion: true
         format: true
-        range: true
+        range: false
         behavioral: true
         other: false
 
@@ -356,9 +357,15 @@ validation_modes:
 
   # 🔧 增强的报告配置
   reporting:
-    console_output: true
-    save_reports: true
-    format: "text"  # "text", "json", "both"
+    console_output: true          # 控制台输出
+    save_reports: true           # 🔧 确保启用报告保存
+    format: "both"               # "text", "json", "both" - 保存两种格式
+    detailed_errors: true        # 详细错误信息
+
+    # 🔧 新增：报告保存配置
+    auto_save: true              # 自动保存报告
+    create_timestamp_dirs: false # 是否创建时间戳目录
+    compress_old_reports: false  # 是否压缩旧报告
 
     # SHACL验证报告配置
     semantic_reporting:
@@ -366,8 +373,9 @@ validation_modes:
       include_rdf_details: false       # 包含RDF转换细节
       breakdown_by_type: true          # 按约束类型分解报告
       show_shape_source: true          # 显示SHACL形状来源
-      max_violations_per_type: 10      # 每种类型最多显示的违规数
+      max_violations_per_type: 50      # 🔧 增加每种类型最多显示的违规数
       xml_element_tracing: true        # XML元素追踪
+      save_detailed_violations: true   # 保存详细违规报告
 
     # SMT约束验证报告配置
     constraint_reporting:
@@ -375,6 +383,6 @@ validation_modes:
       include_smt_details: false       # 包含SMT求解细节
       breakdown_by_type: true          # 按类型分解报告
       show_constraint_source: true     # 显示约束来源
-      max_violations_per_type: 10      # 每种类型最多显示的违规数
+      max_violations_per_type: 50      # 🔧 增加每种类型最多显示的违规数
 
 

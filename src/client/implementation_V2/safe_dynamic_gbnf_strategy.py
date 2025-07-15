@@ -414,23 +414,15 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
         print(f"✅ Selected template: {template_key} ({len(selected_template)} chars)")
         return selected_template
 
-
     def _get_generation_params(self, index: int, total: int) -> Dict[str, Any]:
-        """🎯 为不同prompt生成不同的参数组合"""
-        # 循环使用不同的种子
+        """🔥 修改：生成参数配置，不进行微调"""
         seed = self.SEEDS[index % len(self.SEEDS)]
 
-        # 设置随机种子以确保可重复性
-        random.seed(seed)
-
-        # 在指定范围内生成参数变化
-        temperature_variation = random.uniform(-0.1, 0.1)  # ±0.1的变化
-        top_p_variation = random.uniform(-0.05, 0.05)  # ±0.05的变化
-
+        # 🔥 修改：直接使用原始参数，不添加随机变化
         params = {
             "seed": seed,
-            "temperature": max(0.1, min(1.0, self.TEMPERATURE + temperature_variation)),
-            "top_p": max(0.1, min(1.0, self.TOP_P + top_p_variation)),
+            "temperature": self.TEMPERATURE,  # 保持原始参数
+            "top_p": self.TOP_P,  # 保持原始参数
             "index": index,
             "total": total
         }
@@ -454,7 +446,7 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
 
     async def _generate_single_xml(self, vllm_endpoint: str, request: Any, gbnf: str, params: Dict[str, Any] = None) -> \
     Tuple[str, Dict[str, Any]]:
-        """🎯 生成单个XML - 增加资源监控"""
+        """🔥 修改：生成单个XML - 增加GPU资源监控"""
         if params is None:
             params = {
                 "temperature": self.TEMPERATURE,
@@ -462,14 +454,28 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
                 "seed": self.SEEDS[0]
             }
 
-        # 🎯 开始监控
+        # 🔥 开始监控 - 包含GPU
         start_time = time.time()
         process = psutil.Process()
         memory_before = process.memory_info().rss / 1024 / 1024  # MB
 
+        # 🔥 新增：GPU监控
+        gpu_memory_before = 0
+        gpu_peak_memory = 0
+        try:
+            import GPUtil
+            gpus = GPUtil.getGPUs()
+            if gpus:
+                gpu_memory_before = gpus[0].memoryUsed  # MB
+                gpu_peak_memory = gpu_memory_before
+        except ImportError:
+            print("⚠️ GPUtil not available, skipping GPU monitoring")
+        except Exception as e:
+            print(f"⚠️ GPU monitoring error: {e}")
+
         vllm_request = {
-            "model": "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
-            "prompt": "Generate AUTOSAR component XML",
+            "model": "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+            "prompt": request.prompt,  # 🔥 修改：使用原始prompt而不是固定文本
             "max_tokens": request.max_tokens,
             "temperature": params["temperature"],
             "top_p": params["top_p"],
@@ -490,12 +496,23 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
                 if resp.status == 200:
                     response = await resp.json()
 
-                    # 🎯 结束监控
+                    # 🔥 结束监控
                     end_time = time.time()
                     memory_after = process.memory_info().rss / 1024 / 1024  # MB
                     generation_time = end_time - start_time
 
-                    # 🎯 提取token信息
+                    # 🔥 新增：GPU监控结束
+                    gpu_memory_after = 0
+                    try:
+                        if 'GPUtil' in globals():
+                            gpus = GPUtil.getGPUs()
+                            if gpus:
+                                gpu_memory_after = gpus[0].memoryUsed
+                                gpu_peak_memory = max(gpu_peak_memory, gpu_memory_after)
+                    except:
+                        pass
+
+                    # 🔥 提取token信息
                     usage_info = response.get("usage", {})
                     prompt_tokens = usage_info.get("prompt_tokens", 0)
                     completion_tokens = usage_info.get("completion_tokens", 0)
@@ -503,13 +520,20 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
 
                     xml_output = response["choices"][0]["text"]
 
-                    # 🎯 资源统计
+                    # 🔥 资源统计 - 包含GPU
                     resource_stats = {
                         "generation_time_seconds": round(generation_time, 3),
                         "memory_usage_mb": {
                             "before": round(memory_before, 2),
                             "after": round(memory_after, 2),
                             "delta": round(memory_after - memory_before, 2)
+                        },
+                        # 🔥 新增：GPU资源统计
+                        "gpu_usage_mb": {
+                            "before": round(gpu_memory_before, 2),
+                            "after": round(gpu_memory_after, 2),
+                            "peak": round(gpu_peak_memory, 2),
+                            "delta": round(gpu_memory_after - gpu_memory_before, 2)
                         },
                         "token_usage": {
                             "prompt_tokens": prompt_tokens,
@@ -663,16 +687,21 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
 
         return xml_outputs, constraints_applied
 
-
-
     async def generate(self, vllm_endpoint: str, request: Any) -> Tuple[str, Dict[str, Any]]:
         """主生成方法 - 修改：返回每个种子的独立结果"""
         print("🎯 Using Enhanced Safe Dynamic GBNF Strategy")
 
-        # 检测是否为批量模式
-        is_batch = ("- |" in request.prompt or
-                    request.prompt.strip().startswith("-") or
-                    request.prompt.count('\n') > 5)
+        # 🔥 修改：更精确的批量检测，避免误判 min_promote
+        is_batch = False
+
+        # 检查是否真的是 YAML 列表格式
+        if ("- |" in request.prompt and request.prompt.count("- |") >= 2) or \
+                (request.prompt.strip().startswith("- ") and request.prompt.count('\n-') >= 1):
+            is_batch = True
+
+        # 额外检查：如果包含 min_promote、mid_promote、full_promote 等关键词，视为批量
+        if any(keyword in request.prompt for keyword in ["min_promote:", "mid_promote:", "full_promote:"]):
+            is_batch = True
 
         if is_batch:
             # 批量模式保持不变
@@ -681,12 +710,12 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
             combined_xml = "\n\n<!-- === BATCH SEPARATOR === -->\n\n".join(xml_outputs)
             return combined_xml, constraints_applied
         else:
-            # 单个prompt模式 - 修改为返回每个种子的独立结果
+            # 单个prompt模式 - 确保生成多种子结果
             print(f"📋 Single prompt mode - generating {len(self.SEEDS)} versions with different seeds")
 
             single_start_time = time.time()
 
-            # 步骤1-3保持不变...
+            # 步骤1-3：需求解析和GBNF生成
             try:
                 requirements = self.prompt_mapper._extract_all_info(request.prompt)
                 print(
@@ -699,24 +728,30 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
 
             try:
                 safe_gbnf = self.generate_gbnf_from_requirements(requirements)
+                print(f"✅ Selected GBNF template: {len(safe_gbnf)} characters")
             except Exception as e:
                 print(f"❌ Template selection failed: {e}")
                 safe_gbnf = self.safe_gbnf_templates["standard_format"]
 
-            # 修改：收集每个种子的独立结果
-            seed_results = []  # 新增：存储每个种子的完整结果
+            # 🔥 修改：收集每个种子的独立结果，确保都生成
+            seed_results = []
 
             for i, seed in enumerate(self.SEEDS):
                 print(f"🎲 Generating version {i + 1}/{len(self.SEEDS)} with seed {seed}")
 
-                params = self._get_generation_params(i, len(self.SEEDS))
-                params["seed"] = seed
+                # 🔥 修改：使用固定参数，不微调
+                params = {
+                    "seed": seed,
+                    "temperature": self.TEMPERATURE,  # 直接使用原始参数
+                    "top_p": self.TOP_P,  # 直接使用原始参数
+                    "index": i,
+                    "total": len(self.SEEDS)
+                }
 
                 try:
                     xml_output, resource_stats = await self._generate_single_xml(vllm_endpoint, request, safe_gbnf,
                                                                                  params)
 
-                    # 新增：存储每个种子的完整信息
                     seed_result = {
                         "seed": seed,
                         "xml": xml_output,
@@ -738,6 +773,7 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
                         "resource_stats": {
                             "generation_time_seconds": 0,
                             "memory_usage_mb": {"before": 0, "after": 0, "delta": 0},
+                            "gpu_usage_mb": {"before": 0, "after": 0, "peak": 0, "delta": 0},
                             "token_usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
                         },
                         "success": False,
@@ -751,7 +787,7 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
             # 计算汇总统计
             successful_versions = len([r for r in seed_results if r["success"]])
 
-            # 修改：返回第一个成功的XML作为主要输出（保持向后兼容）
+            # 返回第一个成功的XML作为主要输出（保持向后兼容）
             primary_xml = next((r["xml"] for r in seed_results if r["success"]), seed_results[0]["xml"])
 
             constraints_applied = {
@@ -761,8 +797,8 @@ target_data_prototype_ref_special: "<TARGET-DATA-PROTOTYPE-REF" " " "DEST=\\"VAR
                 "requirements_extracted": requirements,
                 "gbnf_customized": True,
                 "template_used": "static_safe",
-                # 修改：添加每个种子的详细结果
-                "seed_results": seed_results,  # 新增：包含每个种子的完整信息
+                # 🔥 确保包含种子结果
+                "seed_results": seed_results,
                 "multi_seed_stats": {
                     "total_versions": len(self.SEEDS),
                     "successful_versions": successful_versions,

@@ -2,7 +2,7 @@
 """
 配置驱动的验证编排器 - 增强版（支持映射文件传递）
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import time
 from pathlib import Path
 
@@ -15,6 +15,903 @@ class ConfigDrivenOrchestrator:
         self.config = config
         self.validators = {}
         self._init_validators()
+
+    # config_driven_orchestrator.py 中的修改函数
+
+    def _print_stage_details(self, stage: str, result: Dict):
+        """打印验证阶段的详细信息 - 增强SHACL详细违规显示"""
+
+        if stage == "structure":
+            validation_type = result.get("validation_type", "Unknown")
+            print(f"   📄 验证类型: {validation_type}")
+
+            if validation_type == "Basic XML":
+                element_count = result.get("element_count", 0)
+                root_element = result.get("root_element", "Unknown")
+                print(f"   📊 XML元素数: {element_count}")
+                print(f"   🏷️  根元素: {root_element}")
+
+                if result.get("xsd_error"):
+                    print(f"   ⚠️  XSD问题: Schema版本不兼容")
+                    print(f"   ✅ 降级策略: 基础XML验证通过")
+
+            elif validation_type == "XSD":
+                schema_file = result.get("schema_file", "N/A")
+                if schema_file != "N/A":
+                    print(f"   📁 Schema: {Path(schema_file).name}")
+
+        elif stage == "semantic":
+            rdf_triples = result.get("rdf_triples", 0)
+            shapes_applied = result.get("shapes_applied", 0)
+            validation_mode = result.get("validation_mode", "hybrid")
+
+            print(f"   🔧 验证模式: {validation_mode}")
+            print(f"   🔗 RDF三元组: {rdf_triples}")
+            print(f"   📐 SHACL形状: {shapes_applied}")
+
+            # 🔧 增强：显示详细的SHACL违规分解
+            violation_breakdown = result.get("violation_breakdown", {})
+            if violation_breakdown and isinstance(violation_breakdown, dict):
+                # 显示总体配置
+                config = violation_breakdown.get("configuration", {})
+                if config:
+                    struct_enabled = config.get("structural_enabled", True)
+                    semantic_enabled = config.get("semantic_enabled", True)
+                    print(f"   📋 验证范围: 结构{'✅' if struct_enabled else '❌'} 语义{'✅' if semantic_enabled else '❌'}")
+
+                    # 显示严重性过滤配置
+                    severity_filter = config.get("severity_filter", {})
+                    if severity_filter:
+                        print(f"   🔍 严重性过滤:")
+                        for category, levels in severity_filter.items():
+                            print(f"      {category}: {', '.join(levels)}")
+
+                # 显示结构验证详情
+                structural = violation_breakdown.get("structural", {})
+                if structural:
+                    print(f"   🔧 结构验证详情:")
+                    for constraint_type, stats in structural.items():
+                        if isinstance(stats, dict) and stats.get("total", 0) > 0:
+                            total_count = stats.get("total", 0)
+                            violations = stats.get("violations", 0)
+                            status = "✅" if violations == 0 else f"❌({violations})"
+                            print(f"      {constraint_type}: {total_count} 个 {status}")
+
+                # 🔧 显示语义验证详情 - 按类型细分
+                semantic = violation_breakdown.get("semantic", {})
+                if semantic:
+                    print(f"   💡 语义验证详情:")
+
+                    # 按约束类型分组显示
+                    constraint_types = {
+                        "existence": "存在性约束",
+                        "value_restriction": "值限制约束",
+                        "cardinality": "基数约束",
+                        "dependency": "依赖关系约束",
+                        "mutual_exclusion": "互斥约束",
+                        "format": "格式约束",
+                        "range": "范围约束",
+                        "behavioral": "行为约束",
+                        "other": "其他约束"
+                    }
+
+                    for constraint_type, type_name in constraint_types.items():
+                        if constraint_type in semantic:
+                            stats = semantic[constraint_type]
+                            if isinstance(stats, dict) and stats.get("total", 0) > 0:
+                                total_count = stats.get("total", 0)
+                                violations = stats.get("violations", 0)
+                                warnings = stats.get("warnings", 0)
+                                info = stats.get("info", 0)
+                                enabled = stats.get("enabled", True)
+
+                                # 状态显示
+                                if violations > 0:
+                                    status = f"❌({violations})"
+                                elif warnings > 0:
+                                    status = f"⚠️({warnings})"
+                                elif info > 0:
+                                    status = f"ℹ️({info})"
+                                else:
+                                    status = "✅"
+
+                                enable_status = "" if enabled else " [禁用]"
+                                print(f"      {type_name}: {total_count} 个 {status}{enable_status}")
+
+            # 显示映射功能状态
+            mapping_stats = result.get("mapping_stats", {})
+            if mapping_stats.get("mapping_enabled", False):
+                print(f"   🔧 映射功能: 已启用")
+                print(f"   📊 映射统计:")
+                print(f"      XML->属性映射: {mapping_stats.get('xml_to_attr_mappings', 0)}")
+                print(f"      Wrapper映射: {mapping_stats.get('wrapper_mappings', 0)}")
+                print(f"      文本内容映射: {mapping_stats.get('text_content_mappings', 0)}")
+            else:
+                print(f"   📝 映射功能: 标准模式")
+
+            # 🔧 关键增强：显示所有SHACL违规的详细信息
+            violation_count = result.get("violation_count", 0)
+            if violation_count == 0:
+                print(f"   ✅ SHACL约束: 全部满足")
+            else:
+                print(f"   📊 违规发现: {violation_count} 个")
+
+                # 🔧 新增：显示完整的违规统计
+                violation_stats = result.get("violation_stats", {})
+                violations = violation_stats.get("violations", 0)
+                warnings = violation_stats.get("warnings", 0)
+                info = violation_stats.get("info", 0)
+
+                print(f"   📈 违规统计分解:")
+                if violations > 0:
+                    print(f"      ❌ 结构错误: {violations} 个")
+                if warnings > 0:
+                    print(f"      ⚠️  语义警告: {warnings} 个")
+                if info > 0:
+                    print(f"      ℹ️  格式建议: {info} 个")
+
+                # 🔧 新增：显示所有违规的详细信息
+                self._print_all_shacl_violations(result)
+
+            # 显示验证配置
+            validation_config = result.get("validation_config", {})
+            if validation_config:
+                print(f"   ⚙️  验证配置:")
+                print(f"      模式: {validation_config.get('mode', 'hybrid')}")
+                semantic_types_config = validation_config.get('semantic_types_config', {})
+                if semantic_types_config:
+                    enabled_count = sum(1 for v in semantic_types_config.values() if v)
+                    total_count = len(semantic_types_config)
+                    print(f"      启用类型: {enabled_count}/{total_count}")
+
+        elif stage == "constraint":
+            # ... 保持原有的约束验证显示逻辑 ...
+            satisfied = result.get("satisfied_count", 0)
+            total = result.get("constraint_count", 0)
+            validation_mode = result.get("validation_mode", "hybrid")
+
+            print(f"   🔧 验证模式: {validation_mode}")
+
+            # 显示详细的约束类型分解
+            breakdown = result.get("constraint_breakdown", {})
+            if breakdown and isinstance(breakdown, dict):
+                # 显示总体配置
+                config = breakdown.get("configuration", {})
+                if config:
+                    struct_enabled = config.get("structural_enabled", True)
+                    semantic_enabled = config.get("semantic_enabled", True)
+                    print(f"   📋 约束范围: 结构{'✅' if struct_enabled else '❌'} 语义{'✅' if semantic_enabled else '❌'}")
+
+                    if config.get("fail_fast", True):
+                        print(f"   ⚡ 失败策略: 快速失败")
+
+                # 显示结构约束详情
+                structural = breakdown.get("structural", {})
+                if structural:
+                    print(f"   🔧 结构约束详情:")
+                    for constraint_type, stats in structural.items():
+                        if isinstance(stats, dict):
+                            total_count = stats.get("total", 0)
+                            satisfied_count = stats.get("satisfied", 0)
+                            violations = stats.get("violations", 0)
+                            status = "✅" if violations == 0 else "❌"
+                            print(f"      {constraint_type}: {satisfied_count}/{total_count} {status}")
+
+                # 显示语义约束详情 - 按类型细分
+                semantic = breakdown.get("semantic", {})
+                if semantic:
+                    print(f"   💡 语义约束详情:")
+
+                    constraint_types = {
+                        "existence": "存在性约束",
+                        "value_restriction": "值限制约束",
+                        "cardinality": "基数约束",
+                        "dependency": "依赖关系约束",
+                        "mutual_exclusion": "互斥约束",
+                        "format": "格式约束",
+                        "range": "范围约束",
+                        "behavioral": "行为约束",
+                        "other": "其他约束"
+                    }
+
+                    for constraint_type, type_name in constraint_types.items():
+                        if constraint_type in semantic:
+                            stats = semantic[constraint_type]
+                            if isinstance(stats, dict):
+                                total_count = stats.get("total", 0)
+                                satisfied_count = stats.get("satisfied", 0)
+                                warnings = stats.get("warnings", 0)
+                                enabled = stats.get("enabled", True)
+
+                                if total_count > 0:
+                                    status = "✅" if warnings == 0 else "⚠️"
+                                    enable_status = "启用" if enabled else "禁用"
+                                    print(
+                                        f"      {type_name}: {satisfied_count}/{total_count} {status} ({enable_status})")
+
+            # 显示总体统计
+            if total > 0:
+                satisfaction_rate = result.get("satisfaction_rate", 0)
+                print(f"   📈 总体满足率: {satisfied}/{total} ({satisfaction_rate:.1%})")
+
+                if satisfied == total:
+                    print(f"   🎯 验证结果: 所有约束验证通过")
+                elif satisfaction_rate >= 0.8:
+                    print(f"   🎯 验证结果: 大部分约束满足")
+                else:
+                    print(f"   ❌ 验证结果: 需要关注约束违规")
+            else:
+                print(f"   📝 验证结果: 无约束需要验证")
+
+    def _print_all_shacl_violations(self, result: Dict):
+        """🔧 新增：打印所有SHACL违规的详细信息"""
+        violations = result.get("violations", [])
+
+        if not violations:
+            return
+
+        print(f"   📋 详细违规信息:")
+
+        # 按严重性分组
+        violations_by_severity = {}
+        for violation in violations:
+            severity = violation.get('severity', 'Unknown').lower()
+            if severity not in violations_by_severity:
+                violations_by_severity[severity] = []
+            violations_by_severity[severity].append(violation)
+
+        # 定义严重性显示顺序和图标
+        severity_display = {
+            'violation': {'icon': '❌', 'name': '结构错误'},
+            'error': {'icon': '❌', 'name': '结构错误'},
+            'warning': {'icon': '⚠️', 'name': '语义警告'},
+            'info': {'icon': 'ℹ️', 'name': '格式建议'}
+        }
+
+        violation_index = 1
+
+        for severity in ['violation', 'error', 'warning', 'info']:
+            if severity in violations_by_severity:
+                severity_violations = violations_by_severity[severity]
+                severity_info = severity_display.get(severity, {'icon': '❓', 'name': severity})
+
+                print(f"      {severity_info['icon']} {severity_info['name']} ({len(severity_violations)} 个):")
+
+                for violation in severity_violations:
+                    # 提取详细信息
+                    message = violation.get('message', 'No message available')
+                    focus_node = violation.get('focus_node', 'Unknown')
+                    result_path = violation.get('result_path', 'Unknown')
+                    constraint_component = violation.get('constraint_component', 'Unknown')
+                    source_constraint = violation.get('source_constraint', 'Unknown')
+                    xml_element = violation.get('xml_element', '')
+                    semantic_type = violation.get('semantic_type', '')
+
+                    # 显示基本信息
+                    print(f"        {violation_index}. {message}")
+
+                    # 显示详细的上下文信息
+                    if focus_node and focus_node != 'Unknown':
+                        print(f"           🎯 焦点节点: {focus_node}")
+
+                    if result_path and result_path != 'Unknown':
+                        print(f"           📍 结果路径: {result_path}")
+
+                    if xml_element:
+                        print(f"           🏷️  XML元素: {xml_element}")
+
+                    if constraint_component and constraint_component != 'Unknown':
+                        print(f"           📏 约束组件: {constraint_component}")
+
+                    if source_constraint and source_constraint != 'Unknown':
+                        print(f"           📐 源约束: {source_constraint}")
+
+                    if semantic_type:
+                        print(f"           💡 语义类型: {semantic_type}")
+
+                    # 添加分隔线（除了最后一个）
+                    if violation_index < len(violations):
+                        print(f"           {'-' * 50}")
+
+                    violation_index += 1
+
+        # 显示违规模式统计
+        print(f"   📊 违规模式分析:")
+        constraint_components = {}
+        xml_elements = {}
+
+        for violation in violations:
+            # 统计约束组件
+            comp = violation.get('constraint_component', 'Unknown')
+            constraint_components[comp] = constraint_components.get(comp, 0) + 1
+
+            # 统计XML元素
+            elem = violation.get('xml_element', violation.get('focus_node', 'Unknown'))
+            if elem and elem != 'Unknown':
+                xml_elements[elem] = xml_elements.get(elem, 0) + 1
+
+        # 显示最常见的约束组件
+        if constraint_components:
+            print(f"      🔧 最常见约束组件:")
+            sorted_components = sorted(constraint_components.items(), key=lambda x: x[1], reverse=True)
+            for comp, count in sorted_components[:5]:  # 显示前5个
+                print(f"         {comp}: {count} 次")
+
+        # 显示最常违规的XML元素
+        if xml_elements:
+            print(f"      🏷️  最常违规元素:")
+            sorted_elements = sorted(xml_elements.items(), key=lambda x: x[1], reverse=True)
+            for elem, count in sorted_elements[:5]:  # 显示前5个
+                print(f"         {elem}: {count} 次")
+
+    def generate_validation_report(self, validation_results: Dict) -> str:
+        """生成超详细的验证报告 - 增强SHACL违规详情"""
+
+        report_lines = []
+        report_lines.append("=" * 80)
+        report_lines.append("AUTOSAR XML 超详细验证报告")
+        report_lines.append("=" * 80)
+
+        # XML文档信息
+        xml_info = validation_results['summary'].get('xml_info', {})
+        if xml_info:
+            report_lines.append(f"📋 XML文档信息:")
+            report_lines.append(f"   根元素: {xml_info.get('root_element', 'Unknown')}")
+            report_lines.append(f"   文档大小: {xml_info.get('xml_size_kb', 0):.2f} KB")
+            report_lines.append(f"   元素总数: {xml_info.get('total_elements', 0)}")
+            report_lines.append(f"   元素类型: {xml_info.get('element_types', 0)} 种")
+            report_lines.append("")
+
+        # 验证结果摘要
+        overall_status = "✅ 通过" if validation_results["overall_valid"] else "❌ 失败"
+        exec_time = validation_results['summary']['execution_time']
+
+        report_lines.append(f"🎯 验证结果: {overall_status}")
+        report_lines.append(f"⏱️  执行时间: {exec_time:.3f}秒")
+
+        passed = validation_results['summary']['passed_stages']
+        total = validation_results['summary']['total_stages']
+        stages = validation_results['summary'].get('validation_stages', [])
+
+        report_lines.append(f"📊 验证进度: {passed}/{total} 阶段通过")
+        report_lines.append(f"🔄 验证流程: {' → '.join(stages)}")
+
+        if validation_results['summary'].get('failed_stage'):
+            failed_stage = validation_results['summary']['failed_stage']
+            report_lines.append(f"🛑 失败阶段: {failed_stage}")
+
+        report_lines.append("")
+
+        # 各阶段超详细信息
+        stage_names = {
+            "structure": "🏗️  结构验证 (XSD Schema)",
+            "semantic": "🧠 语义验证 (SHACL Shapes)",
+            "constraint": "🔢 约束验证 (SMT Solver)"
+        }
+
+        for stage_key, stage_info in validation_results["stages"].items():
+            if stage_info["executed"]:
+                stage_name = stage_names.get(stage_key, stage_key.title())
+                result = stage_info["result"]
+                exec_time = result.get("execution_time", 0)
+
+                status = "✅ 通过" if result.get("valid", False) else "❌ 失败"
+                report_lines.append(f"{stage_name}: {status} ({exec_time:.3f}s)")
+
+                # 🔧 增强语义验证报告 - 显示所有违规详情
+                if stage_key == "semantic":
+                    rdf_triples = result.get("rdf_triples", 0)
+                    shapes_applied = result.get("shapes_applied", 0)
+                    validation_mode = result.get("validation_mode", "hybrid")
+
+                    report_lines.append(f"   🔧 验证模式: {validation_mode}")
+                    report_lines.append(f"   🔗 RDF三元组: {rdf_triples}")
+                    report_lines.append(f"   📐 SHACL形状: {shapes_applied}")
+
+                    # 映射功能状态
+                    mapping_stats = result.get("mapping_stats", {})
+                    if mapping_stats.get("mapping_enabled", False):
+                        report_lines.append(
+                            f"   🔧 映射功能: 已启用 ({mapping_stats.get('xml_to_attr_mappings', 0)} 个映射)")
+                    else:
+                        report_lines.append(f"   📝 映射功能: 标准模式")
+
+                    violation_count = result.get("violation_count", 0)
+                    if violation_count == 0:
+                        report_lines.append(f"   ✅ SHACL约束: 全部满足")
+                    else:
+                        report_lines.append(f"   📊 违规发现: {violation_count} 个")
+
+                        # 🔧 新增：添加完整的违规详情到报告
+                        report_lines.extend(self._generate_detailed_shacl_violation_report(result))
+
+                # 其他阶段的处理保持原样...
+                elif stage_key == "structure":
+                    val_type = result.get("validation_type", "Unknown")
+                    report_lines.append(f"   验证方式: {val_type}")
+
+                    if val_type == "Basic XML":
+                        element_count = result.get("element_count", 0)
+                        report_lines.append(f"   XML元素: {element_count} 个")
+
+                        if result.get("xsd_error"):
+                            report_lines.append(f"   XSD兼容: Schema版本不匹配，已降级")
+                            report_lines.append(f"   降级结果: 基础XML验证通过")
+
+                    elif val_type == "XSD":
+                        schema_file = result.get("schema_file", "")
+                        if schema_file:
+                            report_lines.append(f"   Schema: {Path(schema_file).name}")
+
+                elif stage_key == "constraint":
+                    satisfied = result.get("satisfied_count", 0)
+                    total_constraints = result.get("constraint_count", 0)
+
+                    breakdown = result.get("constraint_breakdown", {})
+                    if breakdown and isinstance(breakdown, dict):
+                        report_lines.append(f"   验证模式: 增强约束验证")
+                        report_lines.append(f"   约束分类:")
+
+                        for category, count_data in breakdown.items():
+                            try:
+                                if isinstance(count_data, dict):
+                                    total_count = self._safe_int_conversion(count_data.get("total", 0), 0)
+                                    satisfied_count = self._safe_int_conversion(count_data.get("satisfied", 0), 0)
+                                    violations_count = self._safe_int_conversion(count_data.get("violations", 0), 0)
+
+                                    if total_count > 0:
+                                        report_lines.append(f"     {category}: {satisfied_count}/{total_count} 满足")
+                                        if violations_count > 0:
+                                            report_lines.append(f"       违规: {violations_count} 个")
+                                else:
+                                    count = self._safe_int_conversion(count_data, 0)
+                                    if count > 0:
+                                        report_lines.append(f"     {category}: {count}")
+                            except Exception as breakdown_error:
+                                report_lines.append(f"     {category}: 数据解析错误")
+                                continue
+                    else:
+                        data_points = result.get("data_points", 0)
+                        report_lines.append(f"   验证模式: 标准约束验证")
+                        report_lines.append(f"   数据提取: {data_points} 个约束数据点")
+
+                    if total_constraints > 0:
+                        satisfaction_rate = result.get("satisfaction_rate", 0)
+                        try:
+                            if isinstance(satisfaction_rate, (int, float)):
+                                rate_percent = satisfaction_rate * 100 if satisfaction_rate <= 1 else satisfaction_rate
+                                report_lines.append(
+                                    f"   约束求解: {satisfied}/{total_constraints} 满足 ({rate_percent:.1f}%)")
+                            else:
+                                report_lines.append(f"   约束求解: {satisfied}/{total_constraints} 满足")
+                        except Exception:
+                            report_lines.append(f"   约束求解: {satisfied}/{total_constraints} 满足")
+
+                        if satisfied == total_constraints:
+                            report_lines.append(f"   验证结果: 所有SMT约束满足")
+                        elif satisfaction_rate >= 0.8:
+                            report_lines.append(f"   验证结果: 大部分约束满足，通过验证")
+                        else:
+                            report_lines.append(f"   验证结果: 约束违反，需要调整")
+                    else:
+                        report_lines.append(f"   验证结果: 无约束数据，跳过验证")
+
+                # 错误信息
+                error_info = result.get("error_info") or result.get("error")
+                if error_info:
+                    try:
+                        error_str = str(error_info)
+                        if len(error_str) > 100:
+                            error_str = error_str[:100] + "..."
+                        report_lines.append(f"   错误详情: {error_str}")
+                    except Exception:
+                        report_lines.append(f"   错误详情: [错误信息解析失败]")
+
+                report_lines.append("")
+
+        # 验证建议
+        if not validation_results["overall_valid"]:
+            report_lines.append("💡 验证建议:")
+            failed_stage = validation_results['summary'].get('failed_stage')
+
+            if failed_stage == "structure":
+                report_lines.append("   🔧 结构问题: 检查XML元素名称和属性")
+                report_lines.append("   📚 参考: AUTOSAR 4.2.2 规范文档")
+
+            elif failed_stage == "semantic":
+                report_lines.append("   🧠 语义问题: 检查业务逻辑和数据关系")
+                report_lines.append("   📐 参考: SHACL形状定义文件")
+
+                # 检查是否有映射功能建议
+                semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
+                mapping_stats = semantic_result.get("mapping_stats", {})
+                if not mapping_stats.get("mapping_enabled", False):
+                    report_lines.append("   💡 建议: 启用映射功能以获得更精确的验证")
+
+            elif failed_stage == "constraint":
+                report_lines.append("   🔢 约束问题: 检查时序参数和数值设置")
+                report_lines.append("   ⏰ 建议: 确保deadline < period，timeout > period")
+
+                # 检查是否有增强功能建议
+                constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
+                if "constraint_breakdown" not in constraint_result:
+                    report_lines.append("   💡 建议: 启用增强约束验证以获得详细分析")
+
+            report_lines.append("")
+
+        # 技术统计
+        warnings = validation_results['summary'].get('warnings', [])
+        if warnings:
+            report_lines.append("⚠️  警告信息:")
+            for warning in warnings:
+                report_lines.append(f"   - {warning}")
+            report_lines.append("")
+
+        # 功能使用统计
+        report_lines.append("🔧 功能使用统计:")
+
+        semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
+        constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
+
+        # 语义验证功能
+        mapping_stats = semantic_result.get("mapping_stats", {})
+        if mapping_stats.get("mapping_enabled", False):
+            report_lines.append(f"   ✅ SHACL映射功能: 已启用")
+        else:
+            report_lines.append(f"   📝 SHACL映射功能: 标准模式")
+
+        # 约束验证功能
+        if "constraint_breakdown" in constraint_result:
+            report_lines.append(f"   ✅ SMT增强验证: 已启用")
+        else:
+            report_lines.append(f"   📝 SMT增强验证: 标准模式")
+
+        return "\n".join(report_lines)
+
+    def _generate_detailed_shacl_violation_report(self, result: Dict) -> List[str]:
+        """🔧 新增：生成详细的SHACL违规报告行"""
+
+        violations = result.get("violations", [])
+        if not violations:
+            return ["     ✅ 无违规发现"]
+
+        report_lines = []
+
+        # 按严重性分组
+        violations_by_severity = {}
+        for violation in violations:
+            severity = violation.get('severity', 'Unknown').lower()
+            if severity not in violations_by_severity:
+                violations_by_severity[severity] = []
+            violations_by_severity[severity].append(violation)
+
+        # 定义严重性显示顺序
+        severity_display = {
+            'violation': {'icon': '❌', 'name': '结构错误'},
+            'error': {'icon': '❌', 'name': '结构错误'},
+            'warning': {'icon': '⚠️', 'name': '语义警告'},
+            'info': {'icon': 'ℹ️', 'name': '格式建议'}
+        }
+
+        violation_index = 1
+
+        for severity in ['violation', 'error', 'warning', 'info']:
+            if severity in violations_by_severity:
+                severity_violations = violations_by_severity[severity]
+                severity_info = severity_display.get(severity, {'icon': '❓', 'name': severity})
+
+                report_lines.append(
+                    f"     {severity_info['icon']} {severity_info['name']} ({len(severity_violations)} 个):")
+
+                for violation in severity_violations:
+                    # 提取详细信息
+                    message = violation.get('message', 'No message available')
+                    focus_node = violation.get('focus_node', '')
+                    result_path = violation.get('result_path', '')
+                    constraint_component = violation.get('constraint_component', '')
+                    source_constraint = violation.get('source_constraint', '')
+                    xml_element = violation.get('xml_element', '')
+                    semantic_type = violation.get('semantic_type', '')
+
+                    # 显示基本信息
+                    report_lines.append(f"       {violation_index}. {message}")
+
+                    # 显示详细的上下文信息
+                    detail_lines = []
+                    if focus_node and focus_node != 'Unknown':
+                        detail_lines.append(f"焦点节点: {focus_node}")
+
+                    if result_path and result_path != 'Unknown':
+                        detail_lines.append(f"结果路径: {result_path}")
+
+                    if xml_element:
+                        detail_lines.append(f"XML元素: {xml_element}")
+
+                    if constraint_component and constraint_component != 'Unknown':
+                        detail_lines.append(f"约束组件: {constraint_component}")
+
+                    if source_constraint and source_constraint != 'Unknown':
+                        detail_lines.append(f"源约束: {source_constraint}")
+
+                    if semantic_type:
+                        detail_lines.append(f"语义类型: {semantic_type}")
+
+                    # 将详细信息添加到报告中
+                    if detail_lines:
+                        report_lines.append(f"          详情: {' | '.join(detail_lines)}")
+
+                    violation_index += 1
+
+        # 添加违规模式统计
+        report_lines.append(f"     📊 违规模式分析:")
+        constraint_components = {}
+        xml_elements = {}
+        semantic_types = {}
+
+        for violation in violations:
+            # 统计约束组件
+            comp = violation.get('constraint_component', 'Unknown')
+            if comp and comp != 'Unknown':
+                constraint_components[comp] = constraint_components.get(comp, 0) + 1
+
+            # 统计XML元素
+            elem = violation.get('xml_element', violation.get('focus_node', ''))
+            if elem and elem != 'Unknown':
+                xml_elements[elem] = xml_elements.get(elem, 0) + 1
+
+            # 统计语义类型
+            sem_type = violation.get('semantic_type', '')
+            if sem_type:
+                semantic_types[sem_type] = semantic_types.get(sem_type, 0) + 1
+
+        # 显示最常见的约束组件
+        if constraint_components:
+            report_lines.append(f"       🔧 约束组件分布:")
+            sorted_components = sorted(constraint_components.items(), key=lambda x: x[1], reverse=True)
+            for comp, count in sorted_components[:3]:  # 显示前3个
+                percentage = (count / len(violations)) * 100
+                report_lines.append(f"         {comp}: {count} 次 ({percentage:.1f}%)")
+
+        # 显示最常违规的XML元素
+        if xml_elements:
+            report_lines.append(f"       🏷️  元素违规分布:")
+            sorted_elements = sorted(xml_elements.items(), key=lambda x: x[1], reverse=True)
+            for elem, count in sorted_elements[:3]:  # 显示前3个
+                percentage = (count / len(violations)) * 100
+                report_lines.append(f"         {elem}: {count} 次 ({percentage:.1f}%)")
+
+        # 显示语义类型分布
+        if semantic_types:
+            report_lines.append(f"       💡 语义类型分布:")
+            sorted_types = sorted(semantic_types.items(), key=lambda x: x[1], reverse=True)
+            for sem_type, count in sorted_types[:3]:  # 显示前3个
+                percentage = (count / len(violations)) * 100
+                report_lines.append(f"         {sem_type}: {count} 次 ({percentage:.1f}%)")
+
+        return report_lines
+
+    def generate_shacl_violation_summary_report(self, validation_results: Dict) -> str:
+        """🔧 新增：生成专门的SHACL违规摘要报告"""
+
+        semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
+        if not semantic_result:
+            return "SHACL语义验证未执行或失败"
+
+        lines = []
+        lines.append("📊 SHACL违规详细分析报告")
+        lines.append("=" * 60)
+
+        violation_count = semantic_result.get("violation_count", 0)
+        validation_mode = semantic_result.get("validation_mode", "hybrid")
+
+        lines.append(f"验证模式: {validation_mode}")
+        lines.append(f"违规总数: {violation_count}")
+        lines.append("")
+
+        if violation_count == 0:
+            lines.append("✅ 未发现任何SHACL违规")
+            return "\n".join(lines)
+
+        violations = semantic_result.get("violations", [])
+
+        # 按严重性统计
+        violation_stats = semantic_result.get("violation_stats", {})
+        violations_count = violation_stats.get("violations", 0)
+        warnings_count = violation_stats.get("warnings", 0)
+        info_count = violation_stats.get("info", 0)
+
+        lines.append("📈 严重性分布:")
+        if violations_count > 0:
+            lines.append(f"  ❌ 结构错误: {violations_count} 个 ({violations_count / violation_count * 100:.1f}%)")
+        if warnings_count > 0:
+            lines.append(f"  ⚠️  语义警告: {warnings_count} 个 ({warnings_count / violation_count * 100:.1f}%)")
+        if info_count > 0:
+            lines.append(f"  ℹ️  格式建议: {info_count} 个 ({info_count / violation_count * 100:.1f}%)")
+        lines.append("")
+
+        # 详细违规列表
+        lines.append("📋 详细违规列表:")
+        lines.extend(self._generate_detailed_shacl_violation_report(semantic_result))
+        lines.append("")
+
+        # 修复建议
+        lines.append("💡 修复建议:")
+        if violations_count > 0:
+            lines.append("  1. 优先修复结构错误，这些会影响XML的基本合规性")
+            lines.append("  2. 检查元素的必需属性和基数约束")
+        if warnings_count > 0:
+            lines.append("  3. 关注语义警告，这些涉及业务逻辑的正确性")
+            lines.append("  4. 验证跨元素的关系和依赖约束")
+        if info_count > 0:
+            lines.append("  5. 考虑格式建议，提升文档的规范性")
+
+        return "\n".join(lines)
+
+    def _print_failure_details(self, stage: str, result: Dict):
+        """打印验证失败的详细信息 - 增强SHACL失败详情显示"""
+
+        if stage == "structure":
+            error_info = result.get("error_info")
+            if error_info:
+                print(f"   ❌ XSD错误: {error_info[:150]}...")
+
+            validation_type = result.get("validation_type", "Unknown")
+            if validation_type == "Basic XML":
+                print(f"   📋 XML格式检查: 通过")
+                print(f"   ⚠️  XSD Schema兼容性问题")
+
+        elif stage == "semantic":
+            violations = result.get("violations", [])
+            violation_count = result.get("violation_count", 0)
+            validation_mode = result.get("validation_mode", "hybrid")
+
+            print(f"   🔧 SHACL验证模式: {validation_mode}")
+            print(f"   📋 违规总数: {violation_count}")
+
+            # 🔧 增强：按类型显示SHACL违规详情
+            violation_breakdown = result.get("violation_breakdown", {})
+            if violation_breakdown and isinstance(violation_breakdown, dict):
+
+                # 显示结构验证失败
+                structural = violation_breakdown.get("structural", {})
+                if structural:
+                    print(f"   🔧 结构验证失败:")
+                    for constraint_type, stats in structural.items():
+                        if isinstance(stats, dict):
+                            violations_count = stats.get("violations", 0)
+                            total_count = stats.get("total", 0)
+                            if violations_count > 0:
+                                print(f"      {constraint_type}: {violations_count}/{total_count} 失败")
+
+                # 显示语义验证警告
+                semantic = violation_breakdown.get("semantic", {})
+                if semantic:
+                    print(f"   💡 语义验证问题:")
+
+                    constraint_types = {
+                        "existence": "存在性",
+                        "value_restriction": "值限制",
+                        "cardinality": "基数",
+                        "dependency": "依赖关系",
+                        "mutual_exclusion": "互斥",
+                        "format": "格式",
+                        "range": "范围",
+                        "behavioral": "行为"
+                    }
+
+                    for constraint_type, type_name in constraint_types.items():
+                        if constraint_type in semantic:
+                            stats = semantic[constraint_type]
+                            if isinstance(stats, dict):
+                                violations_count = stats.get("violations", 0)
+                                warnings_count = stats.get("warnings", 0)
+                                total_count = stats.get("total", 0)
+                                enabled = stats.get("enabled", True)
+
+                                issues = violations_count + warnings_count
+                                if issues > 0:
+                                    status = "禁用" if not enabled else "问题"
+                                    print(f"      {type_name}约束: {issues}/{total_count} {status}")
+
+            # 🔧 增强：显示所有违规的详细信息（失败时）
+            if violations:
+                print(f"   📋 完整违规详情:")
+                self._print_all_shacl_violations(result)
+
+            # 显示建议
+            validation_config = result.get("validation_config", {})
+            mode = validation_config.get('mode', 'hybrid')
+            if mode == "semantic_only":
+                print(f"   💡 建议: 检查语义约束配置，考虑调整约束类型启用状态")
+            elif mode == "structural_only":
+                print(f"   💡 建议: 检查SHACL结构约束，确保必需属性和基数要求")
+            else:
+                semantic_compliance = result.get('semantic_compliance', 'UNKNOWN')
+                if semantic_compliance in ['HIGH', 'PARTIAL']:
+                    print(f"   💡 建议: 主要约束已满足，关注剩余的语义警告")
+                else:
+                    print(f"   💡 建议: 检查SHACL形状定义和XML数据的匹配度")
+
+        elif stage == "constraint":
+            # 保持原有的约束验证失败显示逻辑
+            satisfied = result.get("satisfied_count", 0)
+            total = result.get("constraint_count", 0)
+            validation_mode = result.get("validation_mode", "hybrid")
+
+            print(f"   🔧 约束验证模式: {validation_mode}")
+
+            # 显示失败的约束类型统计
+            breakdown = result.get("constraint_breakdown", {})
+            if breakdown and isinstance(breakdown, dict):
+
+                # 显示结构约束失败
+                structural = breakdown.get("structural", {})
+                if structural:
+                    print(f"   🔧 结构约束失败:")
+                    for constraint_type, stats in structural.items():
+                        if isinstance(stats, dict):
+                            violations = stats.get("violations", 0)
+                            total_count = stats.get("total", 0)
+                            if violations > 0:
+                                print(f"      {constraint_type}: {violations}/{total_count} 失败")
+
+                # 显示语义约束警告
+                semantic = breakdown.get("semantic", {})
+                if semantic:
+                    print(f"   💡 语义约束警告:")
+
+                    constraint_types = {
+                        "existence": "存在性",
+                        "value_restriction": "值限制",
+                        "cardinality": "基数",
+                        "dependency": "依赖关系",
+                        "mutual_exclusion": "互斥",
+                        "format": "格式",
+                        "range": "范围",
+                        "behavioral": "行为"
+                    }
+
+                    for constraint_type, type_name in constraint_types.items():
+                        if constraint_type in semantic:
+                            stats = semantic[constraint_type]
+                            if isinstance(stats, dict):
+                                warnings = stats.get("warnings", 0)
+                                total_count = stats.get("total", 0)
+                                if warnings > 0:
+                                    print(f"      {type_name}约束: {warnings}/{total_count} 不符合推荐")
+
+            # 显示具体违规
+            structural_violations = result.get("structural_violations", [])
+            semantic_warnings = result.get("semantic_warnings", [])
+
+            max_display = 5  # 增加显示数量
+
+            if structural_violations:
+                print(f"   📋 结构违规详情:")
+                for i, violation in enumerate(structural_violations[:max_display], 1):
+                    constraint_id = violation.get("constraint_id", "unknown")
+                    message = violation.get("message", "No message")
+                    print(f"      {i}. [{constraint_id}] {message[:100]}...")
+
+            if semantic_warnings:
+                print(f"   📋 语义警告详情:")
+                for i, warning in enumerate(semantic_warnings[:max_display], 1):
+                    constraint_id = warning.get("constraint_id", "unknown")
+                    constraint_type = warning.get("constraint_type", "unknown")
+                    message = warning.get("message", "No message")
+                    print(f"      {i}. [{constraint_type}] {message[:100]}...")
+
+            # 显示建议
+            satisfaction_rate = result.get("satisfaction_rate", 0)
+            if validation_mode == "semantic_only":
+                print(f"   💡 建议: 检查语义约束配置，考虑调整约束类型启用状态")
+            elif validation_mode == "structural_only":
+                print(f"   💡 建议: 检查XML结构合规性，确保必需元素存在")
+            else:
+                if satisfaction_rate >= 0.8:
+                    print(f"   💡 建议: 主要约束已满足，关注剩余的边界条件")
+                else:
+                    print(f"   💡 建议: 检查约束配置和XML数据的匹配度")
 
     def _init_validators(self):
         """根据配置初始化验证器 - 支持SHACL和SMT细粒度控制"""
@@ -385,423 +1282,6 @@ class ConfigDrivenOrchestrator:
         else:
             return {"valid": False, "error_info": f"未知验证阶段: {stage}"}
 
-    def _print_stage_details(self, stage: str, result: Dict):
-        """打印验证阶段的详细信息 - 支持SHACL细粒度控制"""
-
-        if stage == "structure":
-            validation_type = result.get("validation_type", "Unknown")
-            print(f"   📄 验证类型: {validation_type}")
-
-            if validation_type == "Basic XML":
-                element_count = result.get("element_count", 0)
-                root_element = result.get("root_element", "Unknown")
-                print(f"   📊 XML元素数: {element_count}")
-                print(f"   🏷️  根元素: {root_element}")
-
-                if result.get("xsd_error"):
-                    print(f"   ⚠️  XSD问题: Schema版本不兼容")
-                    print(f"   ✅ 降级策略: 基础XML验证通过")
-
-            elif validation_type == "XSD":
-                schema_file = result.get("schema_file", "N/A")
-                if schema_file != "N/A":
-                    print(f"   📁 Schema: {Path(schema_file).name}")
-
-        elif stage == "semantic":
-            rdf_triples = result.get("rdf_triples", 0)
-            shapes_applied = result.get("shapes_applied", 0)
-            validation_mode = result.get("validation_mode", "hybrid")
-
-            print(f"   🔧 验证模式: {validation_mode}")
-            print(f"   🔗 RDF三元组: {rdf_triples}")
-            print(f"   📐 SHACL形状: {shapes_applied}")
-
-            # 🔧 增强：显示详细的SHACL违规分解
-            violation_breakdown = result.get("violation_breakdown", {})
-            if violation_breakdown and isinstance(violation_breakdown, dict):
-
-                # 显示总体配置
-                config = violation_breakdown.get("configuration", {})
-                if config:
-                    struct_enabled = config.get("structural_enabled", True)
-                    semantic_enabled = config.get("semantic_enabled", True)
-                    print(f"   📋 验证范围: 结构{'✅' if struct_enabled else '❌'} 语义{'✅' if semantic_enabled else '❌'}")
-
-                    # 显示严重性过滤配置
-                    severity_filter = config.get("severity_filter", {})
-                    if severity_filter:
-                        print(f"   🔍 严重性过滤:")
-                        for category, levels in severity_filter.items():
-                            print(f"      {category}: {', '.join(levels)}")
-
-                # 显示结构验证详情
-                structural = violation_breakdown.get("structural", {})
-                if structural:
-                    print(f"   🔧 结构验证详情:")
-                    for constraint_type, stats in structural.items():
-                        if isinstance(stats, dict) and stats.get("total", 0) > 0:
-                            total_count = stats.get("total", 0)
-                            violations = stats.get("violations", 0)
-                            status = "✅" if violations == 0 else f"❌({violations})"
-                            print(f"      {constraint_type}: {total_count} 个 {status}")
-
-                # 🔧 显示语义验证详情 - 按类型细分
-                semantic = violation_breakdown.get("semantic", {})
-                if semantic:
-                    print(f"   💡 语义验证详情:")
-
-                    # 按约束类型分组显示
-                    constraint_types = {
-                        "existence": "存在性约束",
-                        "value_restriction": "值限制约束",
-                        "cardinality": "基数约束",
-                        "dependency": "依赖关系约束",
-                        "mutual_exclusion": "互斥约束",
-                        "format": "格式约束",
-                        "range": "范围约束",
-                        "behavioral": "行为约束",
-                        "other": "其他约束"
-                    }
-
-                    for constraint_type, type_name in constraint_types.items():
-                        if constraint_type in semantic:
-                            stats = semantic[constraint_type]
-                            if isinstance(stats, dict) and stats.get("total", 0) > 0:
-                                total_count = stats.get("total", 0)
-                                violations = stats.get("violations", 0)
-                                warnings = stats.get("warnings", 0)
-                                info = stats.get("info", 0)
-                                enabled = stats.get("enabled", True)
-
-                                # 状态显示
-                                if violations > 0:
-                                    status = f"❌({violations})"
-                                elif warnings > 0:
-                                    status = f"⚠️({warnings})"
-                                elif info > 0:
-                                    status = f"ℹ️({info})"
-                                else:
-                                    status = "✅"
-
-                                enable_status = "" if enabled else " [禁用]"
-                                print(f"      {type_name}: {total_count} 个 {status}{enable_status}")
-
-            # 显示映射功能状态
-            mapping_stats = result.get("mapping_stats", {})
-            if mapping_stats.get("mapping_enabled", False):
-                print(f"   🔧 映射功能: 已启用")
-                print(f"   📊 映射统计:")
-                print(f"      XML->属性映射: {mapping_stats.get('xml_to_attr_mappings', 0)}")
-                print(f"      Wrapper映射: {mapping_stats.get('wrapper_mappings', 0)}")
-                print(f"      文本内容映射: {mapping_stats.get('text_content_mappings', 0)}")
-            else:
-                print(f"   📝 映射功能: 标准模式")
-
-            # 显示验证配置
-            validation_config = result.get("validation_config", {})
-            if validation_config:
-                print(f"   ⚙️  验证配置:")
-                print(f"      模式: {validation_config.get('mode', 'hybrid')}")
-                semantic_types_config = validation_config.get('semantic_types_config', {})
-                if semantic_types_config:
-                    enabled_count = sum(1 for v in semantic_types_config.values() if v)
-                    total_count = len(semantic_types_config)
-                    print(f"      启用类型: {enabled_count}/{total_count}")
-
-            violation_count = result.get("violation_count", 0)
-            if violation_count == 0:
-                print(f"   ✅ SHACL约束: 全部满足")
-            else:
-                violation_stats = result.get("violation_stats", {})
-                violations = violation_stats.get("violations", 0)
-                warnings = violation_stats.get("warnings", 0)
-                info = violation_stats.get("info", 0)
-
-                print(f"   📊 违规统计:")
-                if violations > 0:
-                    print(f"      ❌ 结构错误: {violations} 个")
-                if warnings > 0:
-                    print(f"      ⚠️  语义警告: {warnings} 个")
-                if info > 0:
-                    print(f"      ℹ️  格式建议: {info} 个")
-
-        elif stage == "constraint":
-            satisfied = result.get("satisfied_count", 0)
-            total = result.get("constraint_count", 0)
-            validation_mode = result.get("validation_mode", "hybrid")
-
-            print(f"   🔧 验证模式: {validation_mode}")
-
-            # 显示详细的约束类型分解
-            breakdown = result.get("constraint_breakdown", {})
-            if breakdown and isinstance(breakdown, dict):
-
-                # 显示总体配置
-                config = breakdown.get("configuration", {})
-                if config:
-                    struct_enabled = config.get("structural_enabled", True)
-                    semantic_enabled = config.get("semantic_enabled", True)
-                    print(f"   📋 约束范围: 结构{'✅' if struct_enabled else '❌'} 语义{'✅' if semantic_enabled else '❌'}")
-
-                    if config.get("fail_fast", True):
-                        print(f"   ⚡ 失败策略: 快速失败")
-
-                # 显示结构约束详情
-                structural = breakdown.get("structural", {})
-                if structural:
-                    print(f"   🔧 结构约束详情:")
-                    for constraint_type, stats in structural.items():
-                        if isinstance(stats, dict):
-                            total_count = stats.get("total", 0)
-                            satisfied_count = stats.get("satisfied", 0)
-                            violations = stats.get("violations", 0)
-                            status = "✅" if violations == 0 else "❌"
-                            print(f"      {constraint_type}: {satisfied_count}/{total_count} {status}")
-
-                # 显示语义约束详情 - 按类型细分
-                semantic = breakdown.get("semantic", {})
-                if semantic:
-                    print(f"   💡 语义约束详情:")
-
-                    constraint_types = {
-                        "existence": "存在性约束",
-                        "value_restriction": "值限制约束",
-                        "cardinality": "基数约束",
-                        "dependency": "依赖关系约束",
-                        "mutual_exclusion": "互斥约束",
-                        "format": "格式约束",
-                        "range": "范围约束",
-                        "behavioral": "行为约束",
-                        "other": "其他约束"
-                    }
-
-                    for constraint_type, type_name in constraint_types.items():
-                        if constraint_type in semantic:
-                            stats = semantic[constraint_type]
-                            if isinstance(stats, dict):
-                                total_count = stats.get("total", 0)
-                                satisfied_count = stats.get("satisfied", 0)
-                                warnings = stats.get("warnings", 0)
-                                enabled = stats.get("enabled", True)
-
-                                if total_count > 0:
-                                    status = "✅" if warnings == 0 else "⚠️"
-                                    enable_status = "启用" if enabled else "禁用"
-                                    print(
-                                        f"      {type_name}: {satisfied_count}/{total_count} {status} ({enable_status})")
-
-            # 显示总体统计
-            if total > 0:
-                satisfaction_rate = result.get("satisfaction_rate", 0)
-                print(f"   📈 总体满足率: {satisfied}/{total} ({satisfaction_rate:.1%})")
-
-                if satisfied == total:
-                    print(f"   🎯 验证结果: 所有约束验证通过")
-                elif satisfaction_rate >= 0.8:
-                    print(f"   🎯 验证结果: 大部分约束满足")
-                else:
-                    print(f"   ❌ 验证结果: 需要关注约束违规")
-            else:
-                print(f"   📝 验证结果: 无约束需要验证")
-
-    def _print_failure_details(self, stage: str, result: Dict):
-        """打印验证失败的详细信息 - 支持SHACL细粒度控制"""
-
-        if stage == "structure":
-            error_info = result.get("error_info")
-            if error_info:
-                print(f"   ❌ XSD错误: {error_info[:150]}...")
-
-            validation_type = result.get("validation_type", "Unknown")
-            if validation_type == "Basic XML":
-                print(f"   📋 XML格式检查: 通过")
-                print(f"   ⚠️  XSD Schema兼容性问题")
-
-        elif stage == "semantic":
-            violations = result.get("violations", [])
-            violation_count = result.get("violation_count", 0)
-            validation_mode = result.get("validation_mode", "hybrid")
-
-            print(f"   🔧 SHACL验证模式: {validation_mode}")
-            print(f"   📋 违规总数: {violation_count}")
-
-            # 🔧 增强：按类型显示SHACL违规详情
-            violation_breakdown = result.get("violation_breakdown", {})
-            if violation_breakdown and isinstance(violation_breakdown, dict):
-
-                # 显示结构验证失败
-                structural = violation_breakdown.get("structural", {})
-                if structural:
-                    print(f"   🔧 结构验证失败:")
-                    for constraint_type, stats in structural.items():
-                        if isinstance(stats, dict):
-                            violations_count = stats.get("violations", 0)
-                            total_count = stats.get("total", 0)
-                            if violations_count > 0:
-                                print(f"      {constraint_type}: {violations_count}/{total_count} 失败")
-
-                # 显示语义验证警告
-                semantic = violation_breakdown.get("semantic", {})
-                if semantic:
-                    print(f"   💡 语义验证问题:")
-
-                    constraint_types = {
-                        "existence": "存在性",
-                        "value_restriction": "值限制",
-                        "cardinality": "基数",
-                        "dependency": "依赖关系",
-                        "mutual_exclusion": "互斥",
-                        "format": "格式",
-                        "range": "范围",
-                        "behavioral": "行为"
-                    }
-
-                    for constraint_type, type_name in constraint_types.items():
-                        if constraint_type in semantic:
-                            stats = semantic[constraint_type]
-                            if isinstance(stats, dict):
-                                violations_count = stats.get("violations", 0)
-                                warnings_count = stats.get("warnings", 0)
-                                total_count = stats.get("total", 0)
-                                enabled = stats.get("enabled", True)
-
-                                issues = violations_count + warnings_count
-                                if issues > 0:
-                                    status = "禁用" if not enabled else "问题"
-                                    print(f"      {type_name}约束: {issues}/{total_count} {status}")
-
-            # 显示具体违规详情
-            if violations:
-                print(f"   📋 违规详情:")
-                max_display = 3
-
-                # 按严重性分类显示
-                critical_violations = [v for v in violations if v.get('severity') in ['Violation', 'Error']]
-                warnings = [v for v in violations if v.get('severity') == 'Warning']
-
-                if critical_violations:
-                    print(f"      ❌ 关键违规:")
-                    for i, violation in enumerate(critical_violations[:max_display], 1):
-                        message = violation.get('message', 'Unknown violation')
-                        focus_node = violation.get('focus_node', 'N/A')
-                        constraint_component = violation.get('constraint_component', '')
-                        xml_element = violation.get('xml_element', '')
-
-                        print(f"        {i}. {message[:80]}...")
-                        if focus_node != 'N/A':
-                            print(f"           🎯 节点: {focus_node}")
-                        if xml_element:
-                            print(f"           🏷️  XML元素: {xml_element}")
-                        if constraint_component:
-                            print(f"           📏 约束类型: {constraint_component}")
-
-                    if len(critical_violations) > max_display:
-                        print(f"        ... 还有 {len(critical_violations) - max_display} 个关键违规")
-
-                if warnings:
-                    print(f"      ⚠️  语义警告:")
-                    for i, warning in enumerate(warnings[:max_display], 1):
-                        message = warning.get('message', 'Unknown warning')
-                        semantic_type = warning.get('semantic_type', 'unknown')
-
-                        print(f"        {i}. [{semantic_type}] {message[:80]}...")
-
-                    if len(warnings) > max_display:
-                        print(f"        ... 还有 {len(warnings) - max_display} 个语义警告")
-
-            # 显示建议
-            validation_config = result.get("validation_config", {})
-            mode = validation_config.get('mode', 'hybrid')
-            if mode == "semantic_only":
-                print(f"   💡 建议: 检查语义约束配置，考虑调整约束类型启用状态")
-            elif mode == "structural_only":
-                print(f"   💡 建议: 检查SHACL结构约束，确保必需属性和基数要求")
-            else:
-                semantic_compliance = result.get('semantic_compliance', 'UNKNOWN')
-                if semantic_compliance in ['HIGH', 'PARTIAL']:
-                    print(f"   💡 建议: 主要约束已满足，关注剩余的语义警告")
-                else:
-                    print(f"   💡 建议: 检查SHACL形状定义和XML数据的匹配度")
-
-        elif stage == "constraint":
-            satisfied = result.get("satisfied_count", 0)
-            total = result.get("constraint_count", 0)
-            validation_mode = result.get("validation_mode", "hybrid")
-
-            print(f"   🔧 约束验证模式: {validation_mode}")
-
-            # 显示失败的约束类型统计
-            breakdown = result.get("constraint_breakdown", {})
-            if breakdown and isinstance(breakdown, dict):
-
-                # 显示结构约束失败
-                structural = breakdown.get("structural", {})
-                if structural:
-                    print(f"   🔧 结构约束失败:")
-                    for constraint_type, stats in structural.items():
-                        if isinstance(stats, dict):
-                            violations = stats.get("violations", 0)
-                            total_count = stats.get("total", 0)
-                            if violations > 0:
-                                print(f"      {constraint_type}: {violations}/{total_count} 失败")
-
-                # 显示语义约束警告
-                semantic = breakdown.get("semantic", {})
-                if semantic:
-                    print(f"   💡 语义约束警告:")
-
-                    constraint_types = {
-                        "existence": "存在性",
-                        "value_restriction": "值限制",
-                        "cardinality": "基数",
-                        "dependency": "依赖关系",
-                        "mutual_exclusion": "互斥",
-                        "format": "格式",
-                        "range": "范围",
-                        "behavioral": "行为"
-                    }
-
-                    for constraint_type, type_name in constraint_types.items():
-                        if constraint_type in semantic:
-                            stats = semantic[constraint_type]
-                            if isinstance(stats, dict):
-                                warnings = stats.get("warnings", 0)
-                                total_count = stats.get("total", 0)
-                                if warnings > 0:
-                                    print(f"      {type_name}约束: {warnings}/{total_count} 不符合推荐")
-
-            # 显示具体违规
-            structural_violations = result.get("structural_violations", [])
-            semantic_warnings = result.get("semantic_warnings", [])
-
-            max_display = 3
-
-            if structural_violations:
-                print(f"   📋 结构违规详情:")
-                for i, violation in enumerate(structural_violations[:max_display], 1):
-                    constraint_id = violation.get("constraint_id", "unknown")
-                    message = violation.get("message", "No message")
-                    print(f"      {i}. [{constraint_id}] {message[:80]}...")
-
-            if semantic_warnings:
-                print(f"   📋 语义警告详情:")
-                for i, warning in enumerate(semantic_warnings[:max_display], 1):
-                    constraint_id = warning.get("constraint_id", "unknown")
-                    constraint_type = warning.get("constraint_type", "unknown")
-                    message = warning.get("message", "No message")
-                    print(f"      {i}. [{constraint_type}] {message[:80]}...")
-
-            # 显示建议
-            satisfaction_rate = result.get("satisfaction_rate", 0)
-            if validation_mode == "semantic_only":
-                print(f"   💡 建议: 检查语义约束配置，考虑调整约束类型启用状态")
-            elif validation_mode == "structural_only":
-                print(f"   💡 建议: 检查XML结构合规性，确保必需元素存在")
-            else:
-                if satisfaction_rate >= 0.8:
-                    print(f"   💡 建议: 主要约束已满足，关注剩余的边界条件")
-                else:
-                    print(f"   💡 建议: 检查约束配置和XML数据的匹配度")
 
     def generate_semantic_summary_report(self, validation_results: Dict) -> str:
         """🔧 新增：生成语义验证专用摘要报告"""
@@ -1067,244 +1547,6 @@ class ConfigDrivenOrchestrator:
         return "\n".join(lines)
 
 
-    def generate_validation_report(self, validation_results: Dict) -> str:
-        """生成超详细的验证报告 - 类型安全版本"""
-
-        report_lines = []
-        report_lines.append("=" * 80)
-        report_lines.append("AUTOSAR XML 超详细验证报告")
-        report_lines.append("=" * 80)
-
-        # XML文档信息
-        xml_info = validation_results['summary'].get('xml_info', {})
-        if xml_info:
-            report_lines.append(f"📋 XML文档信息:")
-            report_lines.append(f"   根元素: {xml_info.get('root_element', 'Unknown')}")
-            report_lines.append(f"   文档大小: {xml_info.get('xml_size_kb', 0):.2f} KB")
-            report_lines.append(f"   元素总数: {xml_info.get('total_elements', 0)}")
-            report_lines.append(f"   元素类型: {xml_info.get('element_types', 0)} 种")
-            report_lines.append("")
-
-        # 验证结果摘要
-        overall_status = "✅ 通过" if validation_results["overall_valid"] else "❌ 失败"
-        exec_time = validation_results['summary']['execution_time']
-
-        report_lines.append(f"🎯 验证结果: {overall_status}")
-        report_lines.append(f"⏱️  执行时间: {exec_time:.3f}秒")
-
-        passed = validation_results['summary']['passed_stages']
-        total = validation_results['summary']['total_stages']
-        stages = validation_results['summary'].get('validation_stages', [])
-
-        report_lines.append(f"📊 验证进度: {passed}/{total} 阶段通过")
-        report_lines.append(f"🔄 验证流程: {' → '.join(stages)}")
-
-        if validation_results['summary'].get('failed_stage'):
-            failed_stage = validation_results['summary']['failed_stage']
-            report_lines.append(f"🛑 失败阶段: {failed_stage}")
-
-        report_lines.append("")
-
-        # 各阶段超详细信息
-        stage_names = {
-            "structure": "🏗️  结构验证 (XSD Schema)",
-            "semantic": "🧠 语义验证 (SHACL Shapes)",
-            "constraint": "🔢 约束验证 (SMT Solver)"
-        }
-
-        for stage_key, stage_info in validation_results["stages"].items():
-            if stage_info["executed"]:
-                stage_name = stage_names.get(stage_key, stage_key.title())
-                result = stage_info["result"]
-                exec_time = result.get("execution_time", 0)
-
-                status = "✅ 通过" if result.get("valid", False) else "❌ 失败"
-                report_lines.append(f"{stage_name}: {status} ({exec_time:.3f}s)")
-
-                # 结构验证详细信息
-                if stage_key == "structure":
-                    val_type = result.get("validation_type", "Unknown")
-                    report_lines.append(f"   验证方式: {val_type}")
-
-                    if val_type == "Basic XML":
-                        element_count = result.get("element_count", 0)
-                        report_lines.append(f"   XML元素: {element_count} 个")
-
-                        if result.get("xsd_error"):
-                            report_lines.append(f"   XSD兼容: Schema版本不匹配，已降级")
-                            report_lines.append(f"   降级结果: 基础XML验证通过")
-
-                    elif val_type == "XSD":
-                        schema_file = result.get("schema_file", "")
-                        if schema_file:
-                            report_lines.append(f"   Schema: {Path(schema_file).name}")
-
-                # 语义验证详细信息
-                elif stage_key == "semantic":
-                    rdf_triples = result.get("rdf_triples", 0)
-                    shapes_applied = result.get("shapes_applied", 0)
-
-                    report_lines.append(f"   RDF转换: {rdf_triples} 个三元组")
-                    report_lines.append(f"   SHACL形状: {shapes_applied} 个")
-
-                    # 映射功能状态
-                    mapping_stats = result.get("mapping_stats", {})
-                    if mapping_stats.get("mapping_enabled", False):
-                        report_lines.append(
-                            f"   映射功能: 已启用 ({mapping_stats.get('xml_to_attr_mappings', 0)} 个映射)")
-                    else:
-                        report_lines.append(f"   映射功能: 标准模式")
-
-                    violation_count = result.get("violation_count", 0)
-                    if violation_count == 0:
-                        report_lines.append(f"   约束满足: 所有语义约束通过")
-                    else:
-                        report_lines.append(f"   违规发现: {violation_count} 个")
-
-                        violations = result.get("violations", [])
-                        for i, violation in enumerate(violations[:3], 1):
-                            severity = violation.get("severity", "Error")
-                            message = violation.get("message", "No message")
-                            report_lines.append(f"     {i}. [{severity}] {message}")
-
-                            # 显示XML元素信息（如果可用）
-                            xml_element = violation.get("xml_element")
-                            if xml_element:
-                                report_lines.append(f"        XML元素: {xml_element}")
-
-                # 约束验证详细信息 - 🔧 关键修复
-                elif stage_key == "constraint":
-                    satisfied = result.get("satisfied_count", 0)
-                    total_constraints = result.get("constraint_count", 0)
-
-                    # 🔧 修复：安全地处理constraint_breakdown
-                    breakdown = result.get("constraint_breakdown", {})
-                    if breakdown and isinstance(breakdown, dict):
-                        report_lines.append(f"   验证模式: 增强约束验证")
-                        report_lines.append(f"   约束分类:")
-
-                        # 🔧 关键修复：安全地遍历breakdown
-                        for category, count_data in breakdown.items():
-                            try:
-                                # 如果count_data是字典，提取相关数值
-                                if isinstance(count_data, dict):
-                                    total_count = self._safe_int_conversion(count_data.get("total", 0), 0)
-                                    satisfied_count = self._safe_int_conversion(count_data.get("satisfied", 0), 0)
-                                    violations_count = self._safe_int_conversion(count_data.get("violations", 0), 0)
-
-                                    if total_count > 0:
-                                        report_lines.append(f"     {category}: {satisfied_count}/{total_count} 满足")
-                                        if violations_count > 0:
-                                            report_lines.append(f"       违规: {violations_count} 个")
-                                else:
-                                    # 如果是简单数值
-                                    count = self._safe_int_conversion(count_data, 0)
-                                    if count > 0:
-                                        report_lines.append(f"     {category}: {count}")
-                            except Exception as breakdown_error:
-                                # 安全处理解析错误
-                                report_lines.append(f"     {category}: 数据解析错误")
-                                print(f"⚠️  breakdown解析错误: {breakdown_error}")
-                                continue
-                    else:
-                        data_points = result.get("data_points", 0)
-                        report_lines.append(f"   验证模式: 标准约束验证")
-                        report_lines.append(f"   数据提取: {data_points} 个约束数据点")
-
-                    if total_constraints > 0:
-                        satisfaction_rate = result.get("satisfaction_rate", 0)
-                        # 🔧 安全处理satisfaction_rate
-                        try:
-                            if isinstance(satisfaction_rate, (int, float)):
-                                rate_percent = satisfaction_rate * 100 if satisfaction_rate <= 1 else satisfaction_rate
-                                report_lines.append(
-                                    f"   约束求解: {satisfied}/{total_constraints} 满足 ({rate_percent:.1f}%)")
-                            else:
-                                report_lines.append(f"   约束求解: {satisfied}/{total_constraints} 满足")
-                        except Exception:
-                            report_lines.append(f"   约束求解: {satisfied}/{total_constraints} 满足")
-
-                        if satisfied == total_constraints:
-                            report_lines.append(f"   验证结果: 所有SMT约束满足")
-                        elif satisfaction_rate >= 0.8:
-                            report_lines.append(f"   验证结果: 大部分约束满足，通过验证")
-                        else:
-                            report_lines.append(f"   验证结果: 约束违反，需要调整")
-                    else:
-                        report_lines.append(f"   验证结果: 无约束数据，跳过验证")
-
-                # 错误信息
-                error_info = result.get("error_info") or result.get("error")
-                if error_info:
-                    # 🔧 安全处理错误信息
-                    try:
-                        error_str = str(error_info)
-                        if len(error_str) > 100:
-                            error_str = error_str[:100] + "..."
-                        report_lines.append(f"   错误详情: {error_str}")
-                    except Exception:
-                        report_lines.append(f"   错误详情: [错误信息解析失败]")
-
-                report_lines.append("")
-
-        # 验证建议
-        if not validation_results["overall_valid"]:
-            report_lines.append("💡 验证建议:")
-            failed_stage = validation_results['summary'].get('failed_stage')
-
-            if failed_stage == "structure":
-                report_lines.append("   🔧 结构问题: 检查XML元素名称和属性")
-                report_lines.append("   📚 参考: AUTOSAR 4.2.2 规范文档")
-
-            elif failed_stage == "semantic":
-                report_lines.append("   🧠 语义问题: 检查业务逻辑和数据关系")
-                report_lines.append("   📐 参考: SHACL形状定义文件")
-
-                # 检查是否有映射功能建议
-                semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
-                mapping_stats = semantic_result.get("mapping_stats", {})
-                if not mapping_stats.get("mapping_enabled", False):
-                    report_lines.append("   💡 建议: 启用映射功能以获得更精确的验证")
-
-            elif failed_stage == "constraint":
-                report_lines.append("   🔢 约束问题: 检查时序参数和数值设置")
-                report_lines.append("   ⏰ 建议: 确保deadline < period，timeout > period")
-
-                # 检查是否有增强功能建议
-                constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
-                if "constraint_breakdown" not in constraint_result:
-                    report_lines.append("   💡 建议: 启用增强约束验证以获得详细分析")
-
-            report_lines.append("")
-
-        # 技术统计
-        warnings = validation_results['summary'].get('warnings', [])
-        if warnings:
-            report_lines.append("⚠️  警告信息:")
-            for warning in warnings:
-                report_lines.append(f"   - {warning}")
-            report_lines.append("")
-
-        # 功能使用统计
-        report_lines.append("🔧 功能使用统计:")
-
-        semantic_result = validation_results["stages"].get("semantic", {}).get("result", {})
-        constraint_result = validation_results["stages"].get("constraint", {}).get("result", {})
-
-        # 语义验证功能
-        mapping_stats = semantic_result.get("mapping_stats", {})
-        if mapping_stats.get("mapping_enabled", False):
-            report_lines.append(f"   ✅ SHACL映射功能: 已启用")
-        else:
-            report_lines.append(f"   📝 SHACL映射功能: 标准模式")
-
-        # 约束验证功能
-        if "constraint_breakdown" in constraint_result:
-            report_lines.append(f"   ✅ SMT增强验证: 已启用")
-        else:
-            report_lines.append(f"   📝 SMT增强验证: 标准模式")
-
-        return "\n".join(report_lines)
 
     def _safe_int_conversion(self, value: any, default: int = 0) -> int:
         """🔧 安全的整数转换方法"""

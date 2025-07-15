@@ -779,7 +779,7 @@ class EnhancedCloudService:
                 constraint_violations=constraint_violations,
                 generation_time=generation_time,
                 model_info={
-                    "model_name": "DeepSeek-R1-Distill-Qwen-14B",
+                    "model_name": "DeepSeek-R1-Distill-Qwen-32B",
                     "constraint_strategy": strategy_constraints.get("strategy", strategy_mode),
                     "strategy_details": strategy_constraints,
                     "mode": "enhanced_gbnf_xml_generation" if strategy_mode == "dynamic_gbnf" else "other_mode",
@@ -886,7 +886,7 @@ class EnhancedCloudService:
         print(f"🎯 Using Unconstrained Strategy")
 
         vllm_request = {
-            "model": "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+            "model": "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
             "prompt": request.prompt,
             "max_tokens": request.max_tokens,
             "temperature": request.temperature,
