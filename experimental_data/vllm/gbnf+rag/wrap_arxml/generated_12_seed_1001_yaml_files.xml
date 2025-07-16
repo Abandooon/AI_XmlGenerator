@@ -7,15 +7,15 @@
         <APPLICATION-SW-COMPONENT-TYPE>
           <SHORT-NAME>ASW_COM_STD</SHORT-NAME>
           <PORTS>
-            <P-PORT-PROTOTYPE UUID="3e532871-d840-49d0-9a3f-69b88d40178f">
+            <P-PORT-PROTOTYPE UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b8">
               <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE UUID="a3e4d36c-1b5f-4d36-b5c5-e3d96273e75c">
+            <P-PORT-PROTOTYPE UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b9">
               <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="d73b812c-a9c1-4b5b-b0d9-cf5f23f33e0a">
+            <R-PORT-PROTOTYPE UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b1">
               <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
@@ -31,17 +31,17 @@
             <SWC-INTERNAL-BEHAVIOR>
               <SHORT-NAME>SwcInternalBehavior</SHORT-NAME>
               <EVENTS>
-                <TIMING-EVENT UUID="6c12b938-f565-4c85-bd62-d3d409e6e49a">
+                <TIMING-EVENT UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b2">
                   <SHORT-NAME>TE_RE_COM_SWC</SHORT-NAME>
                   <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/COM_SWC/ASW_COM_STD/SwcInternalBehavior/RE_COM_SWC</START-ON-EVENT-REF>
                   <PERIOD>0.01</PERIOD>
                 </TIMING-EVENT>
               </EVENTS>
               <RUNNABLES>
-                <RUNNABLE-ENTITY UUID="5295c488-fc7a-4f7e-b6e6-a7bb22c7e68b">
+                <RUNNABLE-ENTITY UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b3">
                   <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
                   <DATA-RECEIVE-POINT-BY-ARGUMENTS>
-                    <VARIABLE-ACCESS UUID="5d32da1c-bb1e-4c5a-b84a-fd72f772d66a">
+                    <VARIABLE-ACCESS UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b4">
                       <SHORT-NAME>DRPA_HCU01_TqCmd</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -52,7 +52,7 @@
                     </VARIABLE-ACCESS>
                   </DATA-RECEIVE-POINT-BY-ARGUMENTS>
                   <DATA-SEND-POINTS>
-                    <VARIABLE-ACCESS UUID="c9955a8f-d07c-4f7d-b375-c39ab0d8e6c4">
+                    <VARIABLE-ACCESS UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b5">
                       <SHORT-NAME>DSP_MCU01_EmergShutDown</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -61,7 +61,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="a5d4a6c4-d27a-48a2-bf2e-bb8839ab5a3f">
+                    <VARIABLE-ACCESS UUID="8d15d03e-d32b-4684-bf99-d067a3f2c9b6">
                       <SHORT-NAME>DSP_MCU02_MaxTor</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>

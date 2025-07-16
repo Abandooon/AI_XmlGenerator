@@ -7798,3 +7798,238 @@ AttributeError: 'list' object has no attribute 'format'
 2025-07-15 11:20:38,766 - src.client.full_client - INFO - Prompt type: component_level, length: 378
 2025-07-15 11:20:38,766 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
 2025-07-15 11:20:38,766 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:24:07,795 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:24:07,804 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:24:07,808 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:24:07,808 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:24:21,820 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:24:21,823 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:24:21,827 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:24:21,827 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:24:42,768 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:24:42,771 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:24:42,774 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:24:42,774 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:25:00,687 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:25:00,690 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:25:00,694 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:25:00,694 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:25:05,055 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:25:05,055 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - Built enhanced request 74da9fc4-8189-4601-be3b-d88fa9ba9c19 with strategy: dynamic_gbnf
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - Prompt type: component_level, length: 26547
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:25:05,055 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:25:13,530 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:25:13,533 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:25:13,536 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:25:13,536 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:25:16,337 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:25:16,338 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - Built enhanced request bacbf33c-5941-413b-ba10-e93d912d1ad5 with strategy: dynamic_gbnf
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - Prompt type: component_level, length: 26547
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:25:16,338 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:41:16,407 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:41:16,410 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:41:16,414 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:41:16,414 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:41:20,124 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:41:20,124 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:41:20,125 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - Built enhanced request 306e444f-ccd5-4c0b-b71b-acee5b42d0e5 with strategy: dynamic_gbnf
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - Prompt type: component_level, length: 26547
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:41:20,125 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:46:20,309 - src.client.constraint_preparer - INFO - Loaded GBNF grammar: 53629 characters
+2025-07-16 09:46:20,312 - src.client.constraint_preparer - INFO - Loaded FSM data with 713 states
+2025-07-16 09:46:20,315 - src.client.constraint_preparer - WARNING - ALLOWED_TOKENS not found in stub, falling back to default
+2025-07-16 09:46:20,315 - src.client.full_client - INFO - ConstraintSender initialized with strategy: dynamic_gbnf
+2025-07-16 09:46:25,717 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:46:25,717 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:46:25,717 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:46:25,717 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:46:25,717 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:46:25,718 - src.client.full_client - INFO - Built enhanced request 91fa4c33-c431-4bc0-add6-f8342a914183 with strategy: dynamic_gbnf
+2025-07-16 09:46:25,718 - src.client.full_client - INFO - Prompt type: component_level, length: 26547
+2025-07-16 09:46:25,718 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:46:25,718 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:52:33,565 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:52:33,565 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - Built enhanced request 93c326ff-ca45-4df1-84f6-e9d20e8e81db with strategy: dynamic_gbnf
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - Prompt type: component_level, length: 26617
+2025-07-16 09:52:33,565 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:52:33,566 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 09:58:30,339 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 09:58:30,340 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - Built enhanced request 34da1f3a-6abf-48bf-a6bb-387a583668e5 with strategy: dynamic_gbnf
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - Prompt type: component_level, length: 26624
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 09:58:30,340 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:04:30,757 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:04:30,757 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:04:30,757 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:04:30,758 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:04:30,758 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:04:30,758 - src.client.full_client - INFO - Built enhanced request 7b1d4982-7fd8-4720-97d2-680e9baf4d12 with strategy: dynamic_gbnf
+2025-07-16 10:04:30,758 - src.client.full_client - INFO - Prompt type: component_level, length: 26546
+2025-07-16 10:04:30,758 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:04:30,758 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:10:25,394 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:10:25,394 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - Built enhanced request 1181456b-9102-4e47-8438-f07901218ce5 with strategy: dynamic_gbnf
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - Prompt type: component_level, length: 26610
+2025-07-16 10:10:25,394 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:10:25,395 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:17:26,115 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:17:26,116 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - Built enhanced request 7eb626d8-b1c2-46e2-b8f7-8018c7acbfa5 with strategy: dynamic_gbnf
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - Prompt type: component_level, length: 26546
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:17:26,116 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:23:12,663 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:23:12,663 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - Built enhanced request 56f4eae3-ebb4-49b2-afc5-4e0226445624 with strategy: dynamic_gbnf
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - Prompt type: component_level, length: 26692
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:23:12,663 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:30:00,974 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:30:00,974 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - Built enhanced request 3df73f69-b33b-4078-87dd-a268daaf01cb with strategy: dynamic_gbnf
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - Prompt type: component_level, length: 12034
+2025-07-16 10:30:00,974 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:30:00,975 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:33:17,749 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:33:17,749 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - Built enhanced request 5dbe60da-8f27-47a9-a479-baf08ca17ff5 with strategy: dynamic_gbnf
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - Prompt type: component_level, length: 12044
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:33:17,749 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:36:15,529 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:36:15,529 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:36:15,529 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:36:15,529 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:36:15,529 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:36:15,529 - src.client.full_client - INFO - Built enhanced request 9455910b-f40f-4d76-a0e3-209237994d01 with strategy: dynamic_gbnf
+2025-07-16 10:36:15,530 - src.client.full_client - INFO - Prompt type: component_level, length: 12005
+2025-07-16 10:36:15,530 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:36:15,530 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:39:10,585 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:39:10,585 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - Built enhanced request fa972269-6431-49c4-ae94-8cea37b38834 with strategy: dynamic_gbnf
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - Prompt type: component_level, length: 11994
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:39:10,585 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:42:12,799 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:42:12,800 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - Built enhanced request c8ae8a95-0842-445a-863f-1daf8268e9aa with strategy: dynamic_gbnf
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - Prompt type: component_level, length: 12000
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:42:12,800 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:45:11,147 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:45:11,147 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:45:11,147 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:45:11,147 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:45:11,147 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:45:11,147 - src.client.full_client - INFO - Built enhanced request e70ac686-8060-4385-a54e-60ffc181dfc9 with strategy: dynamic_gbnf
+2025-07-16 10:45:11,147 - src.client.full_client - INFO - Prompt type: component_level, length: 11996
+2025-07-16 10:45:11,148 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:45:11,148 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:48:12,058 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:48:12,059 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - Built enhanced request 3ad53d92-28d2-4d58-86ba-d34829ac9a3c with strategy: dynamic_gbnf
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - Prompt type: component_level, length: 12037
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:48:12,059 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:51:16,177 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:51:16,177 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:51:16,177 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:51:16,178 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:51:16,178 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:51:16,178 - src.client.full_client - INFO - Built enhanced request c7a05907-9678-4898-9d85-03e1e895d2f6 with strategy: dynamic_gbnf
+2025-07-16 10:51:16,178 - src.client.full_client - INFO - Prompt type: component_level, length: 3192
+2025-07-16 10:51:16,178 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:51:16,178 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:51:50,160 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:51:50,160 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:51:50,161 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - Built enhanced request 0df06bb9-e6b6-434e-bf6a-ef9e49415832 with strategy: dynamic_gbnf
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - Prompt type: component_level, length: 3185
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:51:50,161 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:52:14,916 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:52:14,917 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - Built enhanced request 6f5c4b6a-4921-44cf-9670-d54501122cd7 with strategy: dynamic_gbnf
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - Prompt type: component_level, length: 3195
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:52:14,917 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:52:39,668 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:52:39,669 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - Built enhanced request 43435b50-6f63-4637-a3a3-7bc31790f306 with strategy: dynamic_gbnf
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - Prompt type: component_level, length: 3198
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:52:39,669 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:53:04,113 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:53:04,113 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - Built enhanced request 0f93549c-76a1-458f-bb3d-53bb42e2dbd9 with strategy: dynamic_gbnf
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - Prompt type: component_level, length: 3199
+2025-07-16 10:53:04,113 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:53:04,114 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate
+2025-07-16 10:53:28,969 - src.client.full_client - WARNING - Prompt type 'component_level' is empty or not found, using task directly
+2025-07-16 10:53:28,969 - src.client.full_client - INFO - 🎯 Setting GBNF ref for dynamic_gbnf: autosar
+2025-07-16 10:53:28,969 - src.client.full_client - INFO - ✅ Constraint info built for dynamic_gbnf: fsm_ref=None, gbnf_ref=autosar
+2025-07-16 10:53:28,969 - src.client.full_client - INFO -    fsm_enabled=False, gbnf_enabled=True
+2025-07-16 10:53:28,969 - src.client.full_client - INFO - Generation params: {'max_tokens': 8000, 'temperature': 0.7, 'top_p': 0.9, 'frequency_penalty': 0.1, 'presence_penalty': 0.1}
+2025-07-16 10:53:28,969 - src.client.full_client - INFO - Built enhanced request f4564b40-7f7d-4f30-bd5e-359fdce5af1c with strategy: dynamic_gbnf
+2025-07-16 10:53:28,969 - src.client.full_client - INFO - Prompt type: component_level, length: 3193
+2025-07-16 10:53:28,970 - src.client.full_client - INFO - 🎯 Prompt config included: 3 templates
+2025-07-16 10:53:28,970 - src.client.full_client - INFO - Sending request to http://117.50.205.153:8000/enhanced_generate

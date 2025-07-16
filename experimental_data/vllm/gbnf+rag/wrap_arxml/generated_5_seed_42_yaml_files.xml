@@ -11,15 +11,15 @@
               <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU01_EmergShutDown</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345679">
+            <P-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>PPort_MCU02_MaxTor</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU02_MaxTor</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <P-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345680">
+            <P-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>PPort_MCU03_NRF_IdcSamp</SHORT-NAME>
               <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp</PROVIDED-INTERFACE-TREF>
             </P-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345681">
+            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>RPort_HCU01_TqCmd</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
@@ -30,7 +30,7 @@
               </REQUIRED-COM-SPECS>
               <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_TqCmd</REQUIRED-INTERFACE-TREF>
             </R-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345682">
+            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>RPort_HCU01_Shift</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
@@ -41,7 +41,7 @@
               </REQUIRED-COM-SPECS>
               <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU01_Shift</REQUIRED-INTERFACE-TREF>
             </R-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345683">
+            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>RPort_HCU02_Poweroff</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
@@ -52,7 +52,7 @@
               </REQUIRED-COM-SPECS>
               <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/COM_Interface/SR_Interface_HCU02_Poweroff</REQUIRED-INTERFACE-TREF>
             </R-PORT-PROTOTYPE>
-            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345684">
+            <R-PORT-PROTOTYPE UUID="12345678-1234-5678-1234-567812345678">
               <SHORT-NAME>RPort_SLEEP_Mode</SHORT-NAME>
               <REQUIRED-COM-SPECS>
                 <NONQUEUED-RECEIVER-COM-SPEC>
@@ -68,17 +68,17 @@
             <SWC-INTERNAL-BEHAVIOR>
               <SHORT-NAME>SwcInternalBehavior</SHORT-NAME>
               <EVENTS>
-                <TIMING-EVENT UUID="12345678-1234-5678-1234-567812345685">
+                <TIMING-EVENT UUID="9d816fd8-a6fb-4e66-afa0-e9954576bf1e">
                   <SHORT-NAME>TE_RE_COM_SWC</SHORT-NAME>
                   <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/COM_SWC/ASW_COM/SwcInternalBehavior/RE_COM_SWC</START-ON-EVENT-REF>
                   <PERIOD>0.01</PERIOD>
                 </TIMING-EVENT>
               </EVENTS>
               <RUNNABLES>
-                <RUNNABLE-ENTITY UUID="12345678-1234-5678-1234-567812345686">
+                <RUNNABLE-ENTITY UUID="e9a9a9a9-a9a9-a9a9-a9a9-a9a9a9a9a9a9">
                   <SHORT-NAME>RE_COM_SWC</SHORT-NAME>
                   <DATA-RECEIVE-POINT-BY-ARGUMENTS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345687">
+                    <VARIABLE-ACCESS UUID="ecebebdb-bbb0-bebe-d992-bb99bdddebdd">
                       <SHORT-NAME>DRPA_HCU01_TqCmd</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -87,7 +87,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345688">
+                    <VARIABLE-ACCESS UUID="fbefefb9-bdbe-bbdd-ebdd-bccedfdafcbf">
                       <SHORT-NAME>DRPA_HCU01_Shift</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -96,7 +96,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345689">
+                    <VARIABLE-ACCESS UUID="eafbbfd4-efef-dbee-cafc-cefddbeaedae">
                       <SHORT-NAME>DRPA_HCU02_Poweroff</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -105,7 +105,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345690">
+                    <VARIABLE-ACCESS UUID="aafcccee-fede-feff-bfef-addbefeddbdd">
                       <SHORT-NAME>DRPA_SLEEP_Mode</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -116,7 +116,7 @@
                     </VARIABLE-ACCESS>
                   </DATA-RECEIVE-POINT-BY-ARGUMENTS>
                   <DATA-SEND-POINTS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345691">
+                    <VARIABLE-ACCESS UUID="abcdabcd-abcd-abcd-abcd-abcdabcdabcd">
                       <SHORT-NAME>DSP_MCU01_EmergShutDown</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -125,7 +125,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345692">
+                    <VARIABLE-ACCESS UUID="abcdabcd-abcd-abcd-abcd-abcdabcdabcd">
                       <SHORT-NAME>DSP_MCU02_MaxTor</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
@@ -134,7 +134,7 @@
                         </AUTOSAR-VARIABLE-IREF>
                       </ACCESSED-VARIABLE>
                     </VARIABLE-ACCESS>
-                    <VARIABLE-ACCESS UUID="12345678-1234-5678-1234-567812345693">
+                    <VARIABLE-ACCESS UUID="abcdabab-aefd-ddbe-abef-aefdabefeefd">
                       <SHORT-NAME>DSP_MCU03_NRF_IdcSamp</SHORT-NAME>
                       <ACCESSED-VARIABLE>
                         <AUTOSAR-VARIABLE-IREF>
