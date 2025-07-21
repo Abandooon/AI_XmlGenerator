@@ -687,7 +687,7 @@ Generate only the XML code block."""
 
 # Main execution block to run the script
 if __name__ == "__main__":
-    OUTPUT_DIR = "output"
+    OUTPUT_DIR = "S2D2_test_output"
 
     # Create the output directory if it doesn't exist
     try:
