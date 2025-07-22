@@ -1,0 +1,31 @@
+AI_XmlGenerator/
+├── config/
+│   └── main_config.yaml (1KB)
+├── src/
+│   ├── client/
+│   │   ├── cloud_client.py (9KB)
+│   ├── constraint_graph/
+│   │   ├── artifacts/
+│   │   │   ├── grammar/
+│   │   │   │   └── autosar.gbnf (4846KB)
+│   │   │   ├── raw/
+│   │   │   │   ├── autosar.fsm (1110KB)
+│   │   │   │   ├── autosar_allowed_tokens.py (1KB)
+│   │   │   ├── shapes/
+│   │   │   │   └── autosar_shapes.ttl (7KB)
+│   │   │   ├── smt/
+│   │   │   │   └── constraints.smt2 (4KB)
+│   ├── generation/
+│   ├── models/
+│   ├── utils/
+│   │   ├── logger.py (1KB)
+│   └── validation/
+│       ├── constraints/
+│       │   └── smt_validator.py (6KB)
+│       ├── orchestrator/
+│       │   └── validation_orchestrator.py (5KB)
+│       ├── semantic/
+│       │   └── shacl_validator.py (4KB)
+│       └── __init__.py (0B)
+│       ├── local_validator.py (3KB)
+└── main.py (9KB)

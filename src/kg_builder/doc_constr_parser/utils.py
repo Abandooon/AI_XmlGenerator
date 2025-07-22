@@ -29,6 +29,18 @@ def save_jsonl(data_list, file_path):
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
     print(f"已将 JSONL 保存至 {file_path}")
 
+def load_jsonl(file_path):
+    """加载 JSONL 文件，返回字典列表。"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return [json.loads(line) for line in f if line.strip()]
+    except FileNotFoundError:
+        print(f"错误: 文件未找到于 {file_path}")
+        return []
+    except json.JSONDecodeError:
+        print(f"错误: 无法解码 JSONL 文件 {file_path}")
+        return []
+
 def load_markdown(file_path):
     """加载 Markdown 文件。"""
     try:

@@ -1,0 +1,120 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "PROVIDED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          },
+          "SHORT-NAME": "PPort_MCU02_MaxTor"
+        },
+        {
+          "PROVIDED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          },
+          "SHORT-NAME": "PPort_MCU03_NRF_IdcSamp"
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "REQUIRED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_HCU01_Shift",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          },
+          "SHORT-NAME": "RPort_HCU01_Shift",
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": {
+              "ALIVE-TIMEOUT": 0.3,
+              "DATA-ELEMENT-REF": {
+                "#text": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift",
+                "@DEST": "VARIABLE-DATA-PROTOTYPE"
+              },
+              "HANDLE-TIMEOUT-TYPE": "NONE"
+            }
+          }
+        }
+      ]
+    },
+    "SHORT-NAME": "ASW_COM_STD",
+    "INTERNAL-BEHAVIORS": {
+      "SWC-INTERNAL-BEHAVIOR": {
+        "SHORT-NAME": "IB_ASW_COM_STD",
+        "EVENTS": {
+          "TIMING-EVENT": [
+            {
+              "PERIOD": 0.01,
+              "SHORT-NAME": "TE_10ms_RE_COM_SWC",
+              "START-ON-EVENT-REF": {
+                "#text": "/ASW_COM_STD/IB_ASW_COM_STD/RE_COM_SWC",
+                "@DEST": "RUNNABLE-ENTITY"
+              }
+            }
+          ]
+        },
+        "RUNNABLES": {
+          "RUNNABLE-ENTITY": [
+            {
+              "SHORT-NAME": "RE_COM_SWC",
+              "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                "VARIABLE-ACCESS": [
+                  {
+                    "ACCESSED-VARIABLE": {
+                      "AUTOSAR-VARIABLE-IREF": {
+                        "PORT-PROTOTYPE-REF": {
+                          "#text": "/ASW_COM_STD/RPort_HCU01_Shift",
+                          "@DEST": "R-PORT-PROTOTYPE"
+                        },
+                        "TARGET-DATA-PROTOTYPE-REF": {
+                          "#text": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift",
+                          "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                        }
+                      }
+                    },
+                    "SHORT-NAME": "REC_HCU01_Shift_HCU01_Shift"
+                  }
+                ]
+              },
+              "DATA-SEND-POINTS": {
+                "VARIABLE-ACCESS": [
+                  {
+                    "ACCESSED-VARIABLE": {
+                      "AUTOSAR-VARIABLE-IREF": {
+                        "PORT-PROTOTYPE-REF": {
+                          "#text": "/ASW_COM_STD/PPort_MCU02_MaxTor",
+                          "@DEST": "P-PORT-PROTOTYPE"
+                        },
+                        "TARGET-DATA-PROTOTYPE-REF": {
+                          "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor",
+                          "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                        }
+                      }
+                    },
+                    "SHORT-NAME": "SEND_MCU02_MaxTor_MCU02_MaxTor"
+                  },
+                  {
+                    "ACCESSED-VARIABLE": {
+                      "AUTOSAR-VARIABLE-IREF": {
+                        "PORT-PROTOTYPE-REF": {
+                          "#text": "/ASW_COM_STD/PPort_MCU03_NRF_IdcSamp",
+                          "@DEST": "P-PORT-PROTOTYPE"
+                        },
+                        "TARGET-DATA-PROTOTYPE-REF": {
+                          "#text": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp",
+                          "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                        }
+                      }
+                    },
+                    "SHORT-NAME": "SEND_MCU03_NRF_IdcSamp_MCU03_NRF_IdcSamp"
+                  }
+                ]
+              },
+              "SYMBOL": "RE_COM_SWC"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

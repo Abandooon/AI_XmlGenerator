@@ -17,7 +17,6 @@
           "xml_tag": "string" (or null),
           "xml_wrapper_tag": "string" (or null),
           "is_xml_attribute": "boolean",
-          "maxOccurs": "integer" (or null or string like "*"),
           "description": "string",
           "stereotypes": [ "string", ... ],
           "pure_minOccurs": "integer",
@@ -29,7 +28,9 @@
       "Package": [ "string", ... ],
       "abstract": "string" (e.g., "false"),
       "ClassAssociatedFrom": [ "string", ... ],
-      "generalization": [ "string", ... ]
+      "generalization": [ "string", ... ],
+      "latestBindingTime": [ "string", ... ],
+      "splitkey": [ "string", ... ]
     },
     // ... more group entries
   },

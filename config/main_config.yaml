@@ -1,0 +1,395 @@
+# config/main_config.yaml - 支持约束策略选择和提示词配置
+project:
+  name: "AUTOSAR vLLM Client with Multiple Constraint Strategies"
+  version: "3.0.0"
+  description: "Local client for AUTOSAR XML generation with configurable constraints"
+
+# vllm云端服务配置----------------------------------------------------------------------------------------------------------------------------------
+
+cloud_service:
+  internal_endpoint: "http://117.50.205.153:8000"
+  api_type: "enhanced"
+  model_name: "/model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+  timeout: 10000
+  max_retries: 3
+  retry_delay: 5
+
+vllm_config:
+  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B \
+    --port 8001 \
+    --tensor-parallel-size 4 \
+    --max-model-len 65168 \
+    --guided-decoding-backend outlines \
+    --gpu-memory-utilization 0.85 \
+    --trust-remote-code
+
+#vllm_config:
+#  vllm serve /model/HuggingFace/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B \
+#    --port 8001 \
+#    --tensor-parallel-size 2 \
+#    --max-model-len 40000 \
+#    --guided-decoding-backend outlines \
+#    --gpu-memory-utilization 0.85 \
+#    --trust-remote-code
+
+# 🔥 新增：提示词配置 - 便于调试和实验
+prompts:
+  # 基础组件级生成提示词
+  component_level:
+  # 实验性：带示例XML的提示词
+  with_example_xml: |
+    Based on the following task: {task}
+    
+    Use FSM and GBNF constraints to align and correct the XML structure.
+    Focus on tag alignment and structural correction.
+    
+    Expected XML example:
+    {example_xml}
+    
+    Generate corrected AUTOSAR component:
+
+  # 调试用简化提示词
+  debug_simple: |
+    Task: {task}
+    Generate AUTOSAR APPLICATION-SW-COMPONENT-TYPE with proper structure.
+    Use constraints for tag alignment and correction.
+
+# 🔥 约束策略配置
+constraint_strategy:
+  # 可选值: "block_level_fsm", "dynamic_gbnf"
+  mode: "dynamic_gbnf"  # 使用动态GBNF策略
+
+  dynamic_gbnf:
+    # 需求提取配置
+    extract_requirements: false          # 自动从prompt提取需求
+    use_prompt_mapper: true            # 使用prompt映射器（新增）
+    extraction_temperature: 0.1         # LLM提取时的温度（低温度更准确）
+    extraction_max_tokens: 1000         # 提取响应的最大token数
+    max_extraction_attempts: 2          # 提取失败时的最大重试次数
+    # Prompt映射配置（新增）
+    prompt_mapping:
+      enabled: true                     # 启用原始prompt到结构化prompt的映射
+      preserve_original_intent: true    # 保留原始prompt的意图
+      enhance_with_structure: true      # 添加结构化指导
+      fallback_on_error: true          # 映射失败时使用原始prompt
+    # GBNF生成配置
+    cache_generated_gbnf: true          # 缓存生成的GBNF以提高性能
+    cache_size: 100                     # 缓存大小
+    template_path: "autosar_template.gbnf"  # GBNF模板文件路径
+    # 回退策略
+    fallback_to_default: true           # 提取失败时使用默认配置
+    fallback_strategy: "enhanced_fsm"   # 动态GBNF失败时的备用策略
+    # 验证配置
+    validation_enabled: true            # 启用生成结果验证
+    validate_xml_structure: true        # 验证XML结构完整性
+    validate_against_requirements: true # 验证是否满足提取的需求
+    # 自适应配置
+    adaptive_temperature: true          # 根据复杂度自适应调整温度
+    min_temperature: 0.1                # 最小温度
+    max_temperature: 0.7                # 最大温度
+    # 默认需求配置（用于回退）
+    default_requirements:
+      min_p_ports: 1                   # 最少P端口数
+      max_p_ports: 5                   # 最多P端口数
+      min_r_ports: 1                   # 最少R端口数
+      max_r_ports: 5                   # 最多R端口数
+      default_alive_timeout: "0.3"     # 默认存活超时
+      default_handle_timeout: "NONE"   # 默认超时处理类型
+      default_period: "0.01"           # 默认事件周期
+    # 提取模板（用于指导LLM提取）
+    extraction_template: |
+      Analyze the AUTOSAR component request and extract:
+      1. Component name
+      2. Number and names of P-ports (provided ports)
+      3. Number and names of R-ports (required ports)
+      4. Interface references
+      5. Timing requirements
+      6. Runnable configurations
+      The request may be in Chinese or English.
+      Focus on explicit requirements in the prompt.
+      If not specified, use reasonable defaults.
+  
+
+  # 块级FSM策略配置
+  block_level_fsm:
+    # 基础生成参数
+    max_blocks: 15  # 增加最大块数以支持复杂结构
+    temperature: 0.3
+    top_p: 0.9
+    block_validation: true
+
+    # 动态块识别参数
+    min_block_size: 2  # 每个块至少包含2个token
+    max_block_size: 8  # 每个块最多包含8个token
+    branch_threshold: 3  # 超过3个分支视为分支点
+
+    # 路径探索参数
+    max_paths_per_block: 30  # 平衡探索深度和性能
+    path_clustering: true
+
+    # 成本优化参数
+    completion_cost_factor: 0.5  # 鼓励完成
+    branch_cost_factor: 1.2
+    loop_cost_factor: 1.5
+
+    # 高级选项
+    use_global_analysis: true  # 启用全局路径分析
+    adaptive_block_size: true  # 根据FSM结构自适应调整块大小
+    strict_fsm_compliance: true  # 严格遵循FSM路径
+
+## 生成参数配置-------------------
+generation:
+  default_max_tokens: 8000
+  default_temperature: 0.3
+  default_top_p: 0.9
+  default_frequency_penalty: 0.1
+  default_presence_penalty: 0.1
+
+# 云端约束引用配置文件----需传给云服务脚本
+constraint_references:
+  fsm_ref: "autosar"
+  gbnf_ref: "autosar"
+
+# 🔥 输出配置
+output:
+  save_raw_outputs: true
+  outputs_dir: "./outputs"
+  create_timestamp_dirs: true
+  save_intermediate_steps: false
+
+# 调试配置
+debug:
+  enabled: false
+  save_raw_outputs: true  # 🔥 强制保存原始输出
+  save_debug_files: false
+  console_logging: true
+
+# 本地验证配置
+local_validation:
+  enabled: false
+  validation_level: "simple"
+  artifacts_dir: "./src/constraint_graph/artifacts"
+
+# 🔥 移除后处理配置
+post_processing:
+  enabled: false  # 🔥 禁用所有后处理
+  xml_wrapping: false
+  fallback_templates: false
+  structure_completion: false
+
+# 约束传输配置（兼容性保留）
+constraint_transmission:
+  include_fsm: false
+  include_gbnf: false
+  include_allowed_tokens: false
+
+# 约束级别配置（兼容性保留）
+constraint_levels:
+  simple:
+    gbnf_enabled: false
+    fsm_enabled: false
+    description: "No constraints, fastest generation"
+
+  mixed:
+    gbnf_enabled: true
+    fsm_enabled: true
+    description: "Balanced constraints using configured strategy"
+
+  full:
+    gbnf_enabled: true
+    fsm_enabled: true
+    domain_constraints: true
+    description: "Maximum constraint enforcement"
+
+# 性能配置---v1
+performance:
+  concurrent_requests: 1
+  request_timeout: 300
+  constraint_cache_size: 10
+
+# 监控配置
+monitoring:
+  enabled: false
+
+# 日志配置
+logging:
+  level: "INFO"
+  file: "./logs/autosar_constraints.log"
+  console: true
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+# 形式化验证模块配置-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+file_paths:
+  # XML实例文件
+  xml_instances:
+#    - "experimental_data/llm/min_promote_No Guard"
+#    - "experimental_data/llm/mid_promote_No Guard"
+#    - "experimental_data/llm/full_promote_No Guard"
+      - "experimental_data/vllm/gbnf+rag/wrap_arxml"
+#    - "experimental_data/llm/min_promote_rag/output"
+#    - "experimental_data/llm/mid_promote_rag/output"
+#    - "experimental_data/llm/full_promote_rag/output"
+
+
+
+
+
+  # 验证相关文件
+  xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
+  shacl_shapes: "src/constraint_graph/artifacts/shapes/autosar_shapes.ttl"
+  smt_template: "src/constraint_graph/artifacts/smt/constraints.smt2"
+
+  enriched_constraints: "src/constraint_graph/artifacts/enriched_constraints.json"
+  raw_attributes: "src/constraint_graph/artifacts/raw/raw_attributes.jsonl"  # 确保路径正确
+
+  # 输出目录
+  output_dir: "logs"
+  report_dir: "reports"
+
+# 验证器配置
+validators:
+  # XSD 验证配置
+  structure:
+    enabled: false
+    strict_mode: true #严格按照xsd定义
+
+  # SHACL 🔧 增强的语义验证配置
+  semantic:
+    enabled: true
+    inference: true
+    timeout: 180
+    max_violations_display: 10
+
+    # 🔧 新增：语义验证细粒度控制
+    validation_scope:
+      # 验证层面控制
+      structural_validation: true      # SHACL结构性验证 (基数、必需属性等)
+      semantic_validation: true        # SHACL语义性验证 (值限制、依赖等)
+
+      # 语义约束类型细分控制 - 与SMT对齐
+      semantic_types:
+        existence: true                 # 存在性约束 (sh:not, sh:exists)
+        value_restriction: true         # 值限制约束 (sh:in, sh:hasValue)
+        cardinality: true              # 基数约束 (sh:minCount, sh:maxCount)
+        dependency: true               # 依赖关系约束 (sh:qualified, conditional)
+        mutual_exclusion: true         # 互斥约束 (sh:xone, exclusive)
+        format: true                   # 格式约束 (sh:pattern, sh:datatype)
+        range: true                    # 范围约束 (sh:minInclusive, sh:maxInclusive)
+        behavioral: true              # 行为约束 (时序、状态相关)
+        other: true                    # 其他未分类约束
+
+    # 🔧 新增：验证策略
+    validation_strategy:
+      # 验证模式
+      mode: "hybrid"                   # "structural_only", "semantic_only", "hybrid"
+
+      # 失败策略
+      fail_fast: false                # SHACL通常不需要快速失败
+      continue_on_violation: true      # 结构违规时继续验证
+
+      # 严重性过滤
+      severity_filter:
+        structural: ["violation"]      # 结构验证: 只处理违规
+        semantic: ["violation", "warning", "info"]  # 语义验证: 处理所有级别
+
+    # 🔧 新增：性能和输出控制
+    performance:
+      parallel_shapes: false           # 并行形状验证
+      max_parallel_shapes: 2           # 最大并行形状数
+      memory_limit_mb: 1024           # 内存限制
+      inference_timeout: 60           # 推理超时
+
+    output:
+      detailed_breakdown: true         # 详细的违规类型分解
+      show_satisfied_shapes: false     # 是否显示满足的形状
+      group_by_type: false             # 按类型分组显示结果
+      include_rdf_triples: false      # 是否包含RDF三元组信息
+      xml_element_mapping: false       # 显示XML元素映射
+
+  # SMT 约束验证配置 - 与SHACL配置对齐
+  constraint:
+    enabled: false
+    timeout: 120
+    solver: "z3"
+    max_constraints_display: 5
+
+    validation_scope:
+      structural_constraints: false     # SMT结构约束
+      semantic_constraints: true       # SMT语义约束
+
+      # 与SHACL语义类型保持一致
+      semantic_types:
+        existence: false
+        value_restriction: false
+        cardinality: false
+        dependency: true
+        mutual_exclusion: true
+        format: true
+        range: false
+        behavioral: true
+        other: true
+
+    validation_strategy:
+      mode: "hybrid"                  # 与SHACL模式保持一致
+      fail_fast: true
+      continue_on_semantic_fail: true
+
+      severity_filter:
+        structural: ["violation"]
+        semantic: ["violation", "warning"]
+
+# 🔧 新增：验证模式定义 - 支持细粒度控制
+validation_modes:
+  quick: ["structure"]
+  standard: ["structure", "semantic"]
+  full: ["structure", "semantic", "constraint"]
+
+  # 结构验证专用模式
+  structure_only: ["structure"]
+
+  # 语义验证专用模式
+  semantic_structural: ["semantic"]   # 仅SHACL结构验证
+  semantic_content: ["semantic"]      # 仅SHACL语义验证
+  semantic_full: ["semantic"]         # 完整SHACL验证
+
+  # 约束验证专用模式
+  constraint_structural: ["constraint"]  # 仅SMT结构约束
+  constraint_semantic: ["constraint"]    # 仅SMT语义约束
+  constraint_full: ["constraint"]        # 完整SMT约束验证
+
+  # 混合模式
+  structural_focus: ["structure", "semantic", "constraint"]  # 结构重点模式
+  semantic_focus: ["semantic", "constraint"]                 # 语义重点模式
+
+  # 🔧 增强的报告配置
+  reporting:
+    console_output: true          # 控制台输出
+    save_reports: true           # 🔧 确保启用报告保存
+    format: "both"               # "text", "json", "both" - 保存两种格式
+    detailed_errors: true        # 详细错误信息
+
+    # 🔧 新增：报告保存配置
+    auto_save: true              # 自动保存报告
+    create_timestamp_dirs: false # 是否创建时间戳目录
+    compress_old_reports: false  # 是否压缩旧报告
+
+    # SHACL验证报告配置
+    semantic_reporting:
+      summary_only: false              # 只显示摘要
+      include_rdf_details: false       # 包含RDF转换细节
+      breakdown_by_type: true          # 按约束类型分解报告
+      show_shape_source: true          # 显示SHACL形状来源
+      max_violations_per_type: 50      # 🔧 增加每种类型最多显示的违规数
+      xml_element_tracing: true        # XML元素追踪
+      save_detailed_violations: true   # 保存详细违规报告
+
+    # SMT约束验证报告配置
+    constraint_reporting:
+      summary_only: false              # 只显示摘要
+      include_smt_details: false       # 包含SMT求解细节
+      breakdown_by_type: true          # 按类型分解报告
+      show_constraint_source: true     # 显示约束来源
+      max_violations_per_type: 50      # 🔧 增加每种类型最多显示的违规数
+
+

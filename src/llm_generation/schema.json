@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AUTOSAR_ASW_Component_ARXML",
+  "type": "object",
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "required": ["SHORT-NAME", "PORTS"],
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "description": "Component name (e.g., ASW_COM)"
+        },
+
+        "ADMIN-DATA": {
+          "type": "object",
+          "properties": {
+            "SDGS": {
+              "type": "object",
+              "properties": {
+                "SDG": {
+                  "type": "object",
+                  "properties": {
+                    "@GID": { "type": "string" },
+                    "SD": { "type": "string" }
+                  },
+                  "required": ["SD"]
+                }
+              }
+            }
+          }
+        },
+
+        "PORTS": {
+          "type": "object",
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["SHORT-NAME", "PROVIDED-INTERFACE-TREF"],
+                "properties": {
+                  "@UUID": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                  },
+                  "SHORT-NAME": { "type": "string" },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "required": ["@DEST", "#text"],
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": ["SENDER-RECEIVER-INTERFACE"]
+                      },
+                      "#text": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["SHORT-NAME", "REQUIRED-INTERFACE-TREF"],
+                "properties": {
+                  "@UUID": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                  },
+                  "SHORT-NAME": { "type": "string" },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "required": ["@DEST", "#text"],
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": ["SENDER-RECEIVER-INTERFACE"]
+                      },
+                      "#text": { "type": "string" }
+                    }
+                  },
+                  "REQUIRED-COM-SPECS": {
+                    "type": "object",
+                    "properties": {
+                      "NONQUEUED-RECEIVER-COM-SPEC": {
+                        "type": "object",
+                        "required": ["DATA-ELEMENT-REF", "ALIVE-TIMEOUT", "HANDLE-TIMEOUT-TYPE"],
+                        "properties": {
+                          "DATA-ELEMENT-REF": {
+                            "type": "object",
+                            "required": ["@DEST", "#text"],
+                            "properties": {
+                              "@DEST": {
+                                "type": "string",
+                                "enum": ["VARIABLE-DATA-PROTOTYPE"]
+                              },
+                              "#text": { "type": "string" }
+                            }
+                          },
+                          "ALIVE-TIMEOUT": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "HANDLE-TIMEOUT-TYPE": {
+                            "type": "string",
+                            "enum": ["NONE", "REPLACE", "CUSTOM"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        "INTERNAL-BEHAVIORS": {
+          "type": "object",
+          "properties": {
+            "SWC-INTERNAL-BEHAVIOR": {
+              "type": "object",
+              "required": ["SHORT-NAME"],
+              "properties": {
+                "SHORT-NAME": { "type": "string" },
+
+                "EVENTS": {
+                  "type": "object",
+                  "properties": {
+                    "TIMING-EVENT": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["SHORT-NAME", "START-ON-EVENT-REF", "PERIOD"],
+                        "properties": {
+                          "@UUID": { "type": "string" },
+                          "SHORT-NAME": { "type": "string" },
+                          "START-ON-EVENT-REF": {
+                            "type": "object",
+                            "required": ["@DEST", "#text"],
+                            "properties": {
+                              "@DEST": {
+                                "type": "string",
+                                "enum": ["RUNNABLE-ENTITY"]
+                              },
+                              "#text": { "type": "string" }
+                            }
+                          },
+                          "PERIOD": {
+                            "type": "number",
+                            "description": "Period in seconds"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+
+                "RUNNABLES": {
+                  "type": "object",
+                  "properties": {
+                    "RUNNABLE-ENTITY": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["SHORT-NAME"],
+                        "properties": {
+                          "@UUID": { "type": "string" },
+                          "SHORT-NAME": { "type": "string" },
+
+                          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                            "type": "object",
+                            "properties": {
+                              "VARIABLE-ACCESS": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": ["SHORT-NAME", "ACCESSED-VARIABLE"],
+                                  "properties": {
+                                    "@UUID": { "type": "string" },
+                                    "SHORT-NAME": { "type": "string" },
+                                    "ACCESSED-VARIABLE": {
+                                      "type": "object",
+                                      "properties": {
+                                        "AUTOSAR-VARIABLE-IREF": {
+                                          "type": "object",
+                                          "properties": {
+                                            "PORT-PROTOTYPE-REF": {
+                                              "type": "object",
+                                              "properties": {
+                                                "@DEST": { "type": "string" },
+                                                "#text": { "type": "string" }
+                                              }
+                                            },
+                                            "TARGET-DATA-PROTOTYPE-REF": {
+                                              "type": "object",
+                                              "properties": {
+                                                "@DEST": { "type": "string" },
+                                                "#text": { "type": "string" }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+
+                          "DATA-SEND-POINTS": {
+                            "type": "object",
+                            "properties": {
+                              "VARIABLE-ACCESS": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": ["SHORT-NAME", "ACCESSED-VARIABLE"],
+                                  "properties": {
+                                    "@UUID": { "type": "string" },
+                                    "SHORT-NAME": { "type": "string" },
+                                    "ACCESSED-VARIABLE": {
+                                      "type": "object",
+                                      "properties": {
+                                        "AUTOSAR-VARIABLE-IREF": {
+                                          "type": "object",
+                                          "properties": {
+                                            "PORT-PROTOTYPE-REF": {
+                                              "type": "object",
+                                              "properties": {
+                                                "@DEST": { "type": "string" },
+                                                "#text": { "type": "string" }
+                                              }
+                                            },
+                                            "TARGET-DATA-PROTOTYPE-REF": {
+                                              "type": "object",
+                                              "properties": {
+                                                "@DEST": { "type": "string" },
+                                                "#text": { "type": "string" }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+
+                          "SYMBOL": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["APPLICATION-SW-COMPONENT-TYPE"]
+}

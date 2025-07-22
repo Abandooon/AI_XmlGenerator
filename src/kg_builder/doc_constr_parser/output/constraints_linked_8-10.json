@@ -1,0 +1,1857 @@
+[
+  {
+    "constraint_type": "behavioral",
+    "expression": "Mode-related communication shall implement a 1:1 or 1:n scenario but the creation of an n:1 configuration shall be considered invalid.",
+    "id": "TPS_SWCT_01581",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ModeRelatedCommunicationConcept"
+      }
+    ],
+    "title": "Communication patterns for mode-related communication",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200",
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeRelatedCommunicationConcept._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "cardinality",
+    "expression": "An RPortPrototype typed by ModeSwitchInterface shall not be referenced by more than one SwConnector.",
+    "id": "constr_1101",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RPortPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchInterface"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwConnector"
+      }
+    ],
+    "title": "Mode-related communication",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeSwitchInterface._classLevel",
+      "RPortPrototype._classLevel",
+      "SwConnector._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The AUTOSAR standard defines the following values of the attribute ModeDeclarationGroup.category with a standardized meaning:\n• EXPLICIT_ORDER\n• ALPHABETIC_ORDER\n\n[TPS_SWCT_01010] defines the meaning of these values. It is not allowed to define any custom or project-specific value of the attribute ModeDeclarationGroup.category.",
+    "id": "constr_1399",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Standardized values of ModeDeclarationGroup.category",
+    "is_active": true,
+    "references": [
+      "[TPS_SWCT_01010]"
+    ],
+    "value": "EXPLICIT_ORDER, ALPHABETIC_ORDER",
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The attributes ModeDeclarationGroup.onTransitionValue and ModeDeclaration.value (for each ModeDeclaration) shall be set if the category of a ModeDeclarationGroup is set to EXPLICIT_ORDER.",
+    "id": "constr_1298",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "onTransitionValue",
+          "category"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "value"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "Existence of attributes if category of a ModeDeclarationGroup is set to EXPLICIT_ORDER",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.value",
+      "ModeDeclarationGroup.category",
+      "ModeDeclarationGroup.onTransitionValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The attributes ModeDeclarationGroup.onTransitionValue or ModeDeclaration.value (for any ModeDeclaration) shall not be set if the category of a ModeDeclarationGroup is set to any value other than EXPLICIT_ORDER.",
+    "id": "constr_1299",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "onTransitionValue",
+          "category"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "value"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "Existence of attributes if category of a ModeDeclarationGroup is set to other than EXPLICIT_ORDER",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.value",
+      "ModeDeclarationGroup.category",
+      "ModeDeclarationGroup.onTransitionValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The numerical values used to define the value attributes and the onTransitionValue attribute of a ModeDeclarationGroup shall not overlap.",
+    "id": "constr_1181",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "value"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "onTransitionValue"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Numerical values used in ModeDeclaration.value and ModeDeclarationGroup.onTransitionValue",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.value",
+      "ModeDeclarationGroup.onTransitionValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "As long as the constraints [constr_1181], [constr_1298], and [constr_1299] are fulfilled, the numerical values used to define the values of ModeDeclaration.value and ModeDeclarationGroup.onTransitionValue can be arbitrarily defined. The numerical values are not required to be consecutive. Gaps are positively allowed.",
+    "id": "TPS_SWCT_01009",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "value"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "onTransitionValue"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "The numerical values used to define the values of ModeDeclaration.value and ModeDeclarationGroup.onTransitionValue can be arbitrarily defined",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200",
+      "[constr_1181]",
+      "[constr_1298]",
+      "[constr_1299]"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.value",
+      "ModeDeclarationGroup.onTransitionValue"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "For reasons of backwards-compatibility with previous releases of AUTOSAR the default value the category of a ModeDeclarationGroup shall be ALPHABETIC_ORDER.",
+    "id": "TPS_SWCT_01011",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Default category of a ModeDeclarationGroup",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200"
+    ],
+    "value": "ALPHABETIC_ORDER",
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "ModeTransition has two associations with the multiplicity 1 to ModeDeclaration: • The reference enteredMode denotes a ModeDeclaration that can be entered as part of the enclosing ModeTransition. • The reference exitedMode denotes a ModeDeclaration that can be exited as part of the enclosing ModeTransition.",
+    "id": "TPS_SWCT_01451",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "enteredMode",
+          "exitedMode"
+        ],
+        "targetEntityName": "ModeTransition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "Relations between ModeTransition and ModeDeclaration",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "ModeTransition.enteredMode",
+      "ModeTransition.exitedMode"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For each ModeDeclaration at least one ModeTransition shall reference the ModeDeclaration in the role enteredMode. This constraint shall apply only if there is at least one ModeTransition defined in the context of the enclosing ModeDeclarationGroup and it shall not apply to the initialMode.",
+    "id": "constr_1193",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "enteredMode"
+        ],
+        "targetEntityName": "ModeTransition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "initialMode",
+          "modeTransition"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "ModeDeclaration shall be referenced by at least one ModeTransition in the role enteredMode",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "ModeDeclarationGroup.initialMode",
+      "ModeDeclarationGroup.modeTransition",
+      "ModeTransition.enteredMode"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Software-components need to be capable of reacting to state changes issued by some Mode Manager and adopt their behavior to the new situation.",
+    "id": "TPS_SWCT_01376",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwComponentType"
+      }
+    ],
+    "title": "Software-components need to be capable of reacting to state changes",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Since the behavior of AtomicSwComponentTypes is mainly determined by the RunnableEntitys contained in the SwcInternalBehavior it is necessary to configure the response to mode changes on the level of RunnableEntitys.",
+    "id": "TPS_SWCT_01077",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwcInternalBehavior"
+      }
+    ],
+    "title": "Configure the response to mode changes",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03120"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "RunnableEntity._classLevel",
+      "SwcInternalBehavior._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Using the first mechanism, an AtomicSwComponentType can define an SwcModeSwitchEvent to specify that a particular RunnableEntity shall be started whenever a mode is entered, exited, or a transition between two specified modes occurs.",
+    "id": "TPS_SWCT_01378",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwcModeSwitchEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      }
+    ],
+    "title": "AtomicSwComponentType can define an SwcModeSwitchEvent to execute RunnableEntity",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "RunnableEntity._classLevel",
+      "SwcModeSwitchEvent._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "If the value of SwcModeSwitchEvent.activation is onTransition then SwcModeSwitchEvent shall refer to two different ModeDeclarations belonging to the same instance of ModeDeclarationGroup. Their order defines the direction of the transition from one mode into another. In all other cases SwcModeSwitchEvent shall refer to exactly one ModeDeclaration.",
+    "id": "constr_4003",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "activation",
+          "mode"
+        ],
+        "targetEntityName": "SwcModeSwitchEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Semantics of SwcModeSwitchEvent",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "ModeDeclarationGroup._classLevel",
+      "SwcModeSwitchEvent.activation",
+      "SwcModeSwitchEvent.mode"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For each pair of ModeDeclarations referenced by a SwcModeSwitchEvent with attribute activation set to onTransition a ModeTransition shall be defined in the corresponding direction (i.e. from exitedMode to enteredMode). This constraint shall only apply if the respective ModeDeclarationGroup defines at least one modeTransition.",
+    "id": "constr_1195",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "activation",
+          "mode"
+        ],
+        "targetEntityName": "SwcModeSwitchEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel",
+          "enteredMode",
+          "exitedMode"
+        ],
+        "targetEntityName": "ModeTransition"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeTransition"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "SwcModeSwitchEvent and the definition of ModeTransition",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "ModeDeclarationGroup.modeTransition",
+      "ModeTransition._classLevel",
+      "ModeTransition.enteredMode",
+      "ModeTransition.exitedMode",
+      "SwcModeSwitchEvent.activation",
+      "SwcModeSwitchEvent.mode"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Using the second mechanism, the AtomicSwComponentType can indicate whether an RTEEvent that starts an associated RunnableEntity is disabled in a certain mode. That is, RTEEvents without an association in the role disabledMode are processed regularly according to their definition. RTEEvents with the optional association disabledMode have the additional limitation that the associated RunnableEntity is not started when the ModeDeclaration referenced as disabledMode is active.",
+    "id": "TPS_SWCT_01379",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "disabledMode"
+        ],
+        "targetEntityName": "RTEEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "AtomicSwComponentType can indicate whether an RTEEvent that starts an associated RunnableEntity is disabled in a certain mode",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "ModeDeclaration._classLevel",
+      "RTEEvent.disabledMode",
+      "RunnableEntity._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "On the sender side, a RunnableEntity shall have ModeSwitchPoints that eventually associate a RunnableEntity with the specific ModeDeclarationGroups which it manages, see Figure 9.5.",
+    "id": "TPS_SWCT_01380",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events",
+      "Figure 9.5 ModeSwitchPoint"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeSwitchPoint"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Mode management behavior on the sender side",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup._classLevel",
+      "ModeSwitchPoint._classLevel",
+      "RunnableEntity.modeSwitchPoint"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The ModeSwitchPoint also allows for the definition of a ModeSwitchedAckEvent if this is requested by the definition of the PPortPrototype (see also 4.5.3). This RTEEvent is eventually owned by a mode manager to allow for getting confirmation of a mode change.",
+    "id": "TPS_SWCT_01383",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchedAckEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PPortPrototype"
+      }
+    ],
+    "title": "ModeSwitchPoint",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeSwitchPoint._classLevel",
+      "ModeSwitchedAckEvent._classLevel",
+      "PPortPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The timeout value of a Wait Point associated with a ModeSwitchedAckEvent shall be equal to the corresponding ModeSwitchedAckRequest.timeout.",
+    "id": "constr_4012",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeSwitchedAckEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "timeout"
+        ],
+        "targetEntityName": "WaitPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "timeout"
+        ],
+        "targetEntityName": "ModeSwitchedAckRequest"
+      }
+    ],
+    "title": "Timeout of ModeSwitchedAckEvent",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeSwitchedAckEvent._classLevel",
+      "ModeSwitchedAckRequest.timeout",
+      "WaitPoint.timeout"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "For Mode Manager and Mode User it might additionally be required to read the currently active mode. For that purpose the a RunnableEntity that requires read access to the ModeDeclarationGroupPrototype's current mode has to define a ModeAccessPoint.",
+    "id": "TPS_SWCT_01381",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events",
+      "Figure 9.6 ModeAccessPoint"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeAccessPoint"
+        ],
+        "targetEntityName": "RunnableEntity"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeAccessPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclarationGroupPrototype"
+      }
+    ],
+    "title": "Read the currently active mode",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeAccessPoint._classLevel",
+      "ModeDeclarationGroupPrototype._classLevel",
+      "RunnableEntity.modeAccessPoint"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "A SwcModeSwitchEvent shall not simultaneously reference to the same ModeDeclaration in both the roles mode and disabledMode.",
+    "id": "constr_1098",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management",
+      "9.2 Modes and Events"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "mode",
+          "disabledMode"
+        ],
+        "targetEntityName": "SwcModeSwitchEvent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "Mode switch and mode disabling",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "SwcModeSwitchEvent.disabledMode",
+      "SwcModeSwitchEvent.mode"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The AUTOSAR standard shall support the execution of initialization code for every AtomicSwComponentType.",
+    "id": "Constr_InitCodeSupport_AtomicSwComponentType",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "9 Mode Management",
+      "9.3 Initialization / Finalization"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "_abstractLevel"
+      }
+    ],
+    "title": "Support for Initialization Code in AtomicSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel",
+      "_abstractLevel._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Most AtomicSwComponentTypes will need to initialize by executing specific code; this code shall complete before any other code in the component is executed. Data will be initializing to specific values before the \"normal\" application software is running.",
+    "id": "TPS_SWCT_01384",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.3 Initialization / Finalization"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      }
+    ],
+    "title": "Execution of initialization code for software-components",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "Most AtomicSwComponentTypes will need to finalize by calling specific code; this code shall complete before the functionality of the application software shut down (e.g. a motor drive in a start or end position).",
+    "id": "TPS_SWCT_01385",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.3 Initialization / Finalization"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AtomicSwComponentType"
+      }
+    ],
+    "title": "Execution of finalization code for software-components",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "AtomicSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The behavior in response to a mode manager getting out of sync with a mode user (because the partition of the mode user has been terminated) or vice versa (because the partition of the mode manager has been terminated) can be defined for the mode manager by means of the attribute ModeDeclarationGroup.modeManagerErrorBehavior and for the mode user by means of the attribute ModeDeclarationGroup.modeUserErrorBehavior.",
+    "id": "TPS_SWCT_01530",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.4 Mode Error Behavior"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeManagerErrorBehavior",
+          "modeUserErrorBehavior"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "Error behavior of mode manager and mode user",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup.modeManagerErrorBehavior",
+      "ModeDeclarationGroup.modeUserErrorBehavior"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The attribute ModeErrorBehavior.defaultMode shall be used to identify the particular ModeDeclaration if ModeErrorBehavior.errorReactionPolicy is set to defaultMode.",
+    "id": "TPS_SWCT_01532",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "defaultMode",
+          "errorReactionPolicy"
+        ],
+        "targetEntityName": "ModeErrorBehavior"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      }
+    ],
+    "title": "The role of ModeErrorBehavior.defaultMode",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration._classLevel",
+      "ModeErrorBehavior.defaultMode",
+      "ModeErrorBehavior.errorReactionPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The optional attribute ModeErrorBehavior.defaultMode shall exist if the value of the attribute ModeErrorBehavior.errorReactionPolicy is set to defaultMode.",
+    "id": "constr_1263",
+    "id_type": "constr",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "defaultMode",
+          "errorReactionPolicy"
+        ],
+        "targetEntityName": "ModeErrorBehavior"
+      }
+    ],
+    "title": "Existence of ModeErrorBehavior.defaultMode",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeErrorBehavior.defaultMode",
+      "ModeErrorBehavior.errorReactionPolicy"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If the attribute ModeDeclarationGroup.modeManagerErrorBehavior is not defined it shall be assumed that the ModeDeclarationGroup.initialMode becomes applicable in case of the mode manager getting out of sync with a mode user (because the partition of the mode user has been terminated).",
+    "id": "TPS_SWCT_01533",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeManagerErrorBehavior",
+          "initialMode"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "ModeDeclarationGroup.initialMode shall be assumed in the absence of ModeDeclarationGroup.modeManagerErrorBehavior",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup.initialMode",
+      "ModeDeclarationGroup.modeManagerErrorBehavior"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If the attribute ModeDeclarationGroup.modeUserErrorBehavior is not defined it shall be assumed that the ModeDeclarationGroup.initialMode becomes applicable in case of the mode user getting out of sync with a mode manager (because the partition of the mode manager has been terminated).",
+    "id": "TPS_SWCT_01534",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeUserErrorBehavior",
+          "initialMode"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "ModeDeclarationGroup.initialMode shall be assumed in the absence of ModeDeclarationGroup.modeUserErrorBehavior",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclarationGroup.initialMode",
+      "ModeDeclarationGroup.modeUserErrorBehavior"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "The behavior in case of errors with the communication of mode switches needs to be coherent for all connected mode users especially if the individual SwConnectors are legitimized by the existence of a PortInterfaceMapping.",
+    "id": "TPS_SWCT_01536",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ModeUserConcept"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "SwConnector"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "PortInterfaceMapping"
+      }
+    ],
+    "title": "Coherent behavior of all mode users in case of errors in the mode switch communication",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeUserConcept._abstractLevel",
+      "PortInterfaceMapping._abstractLevel",
+      "SwConnector._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The concepts of PortGroups and ServiceProxySwComponentType have a semantical relationship to mode management, though this is not expressed via relations in the meta model.",
+    "id": "Constr_PortGroupServiceProxy_ModeManagementRelationship",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "9 Mode Management",
+      "9.5 Summary Meta-Model Excerpt Related to Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortGroup"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ServiceProxySwComponentType"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ModeManagementConcept"
+      }
+    ],
+    "title": "Semantical relationship of PortGroups and ServiceProxySwComponentType to Mode Management",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeManagementConcept._abstractLevel",
+      "PortGroup._classLevel",
+      "ServiceProxySwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "In an implementation of AUTOSAR only the Microcontroller Abstraction (MCAL) has direct access to the peripheral hardware. All hardware access should go through this layer.",
+    "id": "Constr_MCAL_HardwareAccess",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.2 High Level Hardware and Software Architecture"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "MicrocontrollerAbstractionLayer"
+      }
+    ],
+    "title": "MCAL Direct Hardware Access and Standardization",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "MicrocontrollerAbstractionLayer._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "It will not be practical to separate the ECU Abstraction and the corresponding SensorActuatorSwComponentType due to potentially high communication effort, although their interface is an AUTOSAR interface.",
+    "id": "Constr_ECUAbstraction_SensorSWC_Collocation",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.2 High Level Hardware and Software Architecture"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      }
+    ],
+    "title": "Practical Collocation of ECU Abstraction and SensorActuatorSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "EcuAbstractionSwComponentType._classLevel",
+      "SensorActuatorSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The interface between the Microcontroller Abstraction and the ECU Abstraction is a Standardized Interface. This interface is not visible on the Virtual Function Bus and therefore the MCAL and ECU Abstraction have to be present on the same ECU.",
+    "id": "Constr_MCAL_ECUAbstraction_Interface",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.3 Interfaces and APIs"
+    ],
+    "targets": [
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "MicrocontrollerAbstractionLayer"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      }
+    ],
+    "title": "Interface between MCAL and ECU Abstraction",
+    "is_active": true,
+    "references": [
+      "[42]"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "EcuAbstractionSwComponentType._classLevel",
+      "MicrocontrollerAbstractionLayer._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "In general the SensorActuatorSwComponentType should be on the same ECU as the ECU hardware abstraction.",
+    "id": "Constr_SensorActuatorSWC_ECUCollocation",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.3 Interfaces and APIs"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ECUHardwareAbstraction"
+      }
+    ],
+    "title": "Recommended Collocation of SensorActuatorSwComponentType and ECU Hardware Abstraction",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ECUHardwareAbstraction._abstractLevel",
+      "SensorActuatorSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "cardinality",
+    "expression": "For each sensor and actuator there is one AUTOSAR PortPrototype at the ECU Abstraction that represents the AUTOSAR Signal that is delivered by the sensor or the AUTOSAR Signal that is consumed by the actuator.",
+    "id": "Constr_PortPrototype_Per_SensorActuator",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.3 Interfaces and APIs",
+      "10.3.1 ECU Abstraction and its AUTOSAR Interfaces"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "port"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortPrototype"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "SensorConcept"
+      },
+      {
+        "entityType": "abstract",
+        "targetAttributes": [
+          "_abstractLevel"
+        ],
+        "targetEntityName": "ActuatorConcept"
+      }
+    ],
+    "title": "One PortPrototype per Sensor/Actuator at ECU Abstraction",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ActuatorConcept._abstractLevel",
+      "EcuAbstractionSwComponentType.port",
+      "PortPrototype._classLevel",
+      "SensorConcept._abstractLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The Interfaces between the ECU Abstraction and the SensorActuatorSwComponentType have to be compatible like defined in chapter 6.",
+    "id": "Constr_InterfaceCompatibility_ECUAbs_SensorActuator",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.3 Interfaces and APIs",
+      "10.3.1 ECU Abstraction and its AUTOSAR Interfaces"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "PortInterface"
+      }
+    ],
+    "title": "Interface Compatibility between ECU Abstraction and SensorActuatorSwComponentType",
+    "is_active": true,
+    "references": [
+      "chapter 6"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "EcuAbstractionSwComponentType._classLevel",
+      "PortInterface._classLevel",
+      "SensorActuatorSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Since the Software Component Template is going to be used to describe the SensorActuatorSwComponentType as well, there is also a reference needed from the software representation of a sensor/actuator to the actual hardware element described in the ECU Resource description.",
+    "id": "TPS_SWCT_01047",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "sensorActuator"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      }
+    ],
+    "title": "Reference from the software representation of a sensor/actuator to the actual hardware element",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_02080",
+      "RS_SWCT_03090"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SensorActuatorSwComponentType.sensorActuator"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "Each time a sensor/actuator is selected to be connected to an ECU also the corresponding SensorActuatorSwComponentType is available.",
+    "id": "Constr_SensorActuatorSwComponentType_Availability_On_ECU_Connection",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      }
+    ],
+    "title": "SensorActuatorSwComponentType availability on ECU connection",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SensorActuatorSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "The attribute sensorActuator of SensorActuatorSwComponentType, the attribute hardwareElement of EcuAbstractionSwComponentType, and the attribute hardwareElement of ComplexDeviceDriverSwComponentType may only reference a HwType. References to other subclasses of HwDescriptionEntity are not allowed.",
+    "id": "constr_1144",
+    "id_type": "constr",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "sensorActuator"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "hardwareElement"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "hardwareElement"
+        ],
+        "targetEntityName": "ComplexDeviceDriverSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "HwType"
+      }
+    ],
+    "title": "SensorActuatorSwComponentType, EcuAbstractionSwComponentType, and ComplexDeviceDriverSwComponentType may only reference a HwType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ComplexDeviceDriverSwComponentType.hardwareElement",
+      "EcuAbstractionSwComponentType.hardwareElement",
+      "HwType._classLevel",
+      "SensorActuatorSwComponentType.sensorActuator"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "A SwComponentPrototype typed by a SensorActuatorSwComponentType needs to be mapped and run on exactly that ECU that contains the HwElement corresponding to the HwType that its SensorActuatorSwComponentType refers to in case it accesses the hardware via the I/O hardware abstraction layer.",
+    "id": "constr_1109",
+    "id_type": "constr",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwComponentPrototype"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "sensorActuator"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "HwElement"
+      }
+    ],
+    "title": "Mapping of SwComponentPrototypes typed by a SensorActuatorSwComponentType",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "HwElement._classLevel",
+      "SensorActuatorSwComponentType.sensorActuator",
+      "SwComponentPrototype._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "In contrast to an ApplicationSwComponentType, a SensorActuatorSwComponentType may use the I/O hardware abstraction directly (via ports/connectors).",
+    "id": "TPS_SWCT_01048",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SensorActuatorSwComponentType"
+      }
+    ],
+    "title": "SensorActuatorSwComponentType may use the I/O hardware abstraction directly",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_02080",
+      "RS_SWCT_03090"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SensorActuatorSwComponentType._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The I/O Hardware Abstraction abstracts from the location of peripheral I/O devices (on-chip or on-board) and the ECU hardware layout and has therefore dependencies to ECU Hardware described by HwElements. In addition, the EcuAbstractionSwComponentType is a hybrid concept sharing features of both software-components and basic software modules.",
+    "id": "TPS_SWCT_01391",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.5 I/O Hardware Abstraction"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "hardwareElement"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "HwElement"
+      }
+    ],
+    "title": "I/O Hardware Abstraction abstracts from the location of peripheral I/O devices",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "EcuAbstractionSwComponentType.hardwareElement",
+      "HwElement._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The BSW part is described by the means of the Basic Software Module Template. The mapping between the EcuAbstractionSwComponentType and the corresponding BswModuleDescription is provided by the class SwcBswMapping which in addition also maps the two corresponding InternalBehaviors. This mechanism is further explained in [7].",
+    "id": "TPS_SWCT_01392",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.5 I/O Hardware Abstraction"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "EcuAbstractionSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "BswModuleDescription"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwcBswMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "InternalBehavior"
+      }
+    ],
+    "title": "Mapping between the EcuAbstractionSwComponentType and the corresponding BswModuleDescription",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BswModuleDescription._classLevel",
+      "EcuAbstractionSwComponentType._classLevel",
+      "InternalBehavior._classLevel",
+      "SwcBswMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "Similar to EcuAbstractionSwComponentType the ComplexDeviceDriverSwComponentType has dependencies to ECU Hardware described by HwElements and is a hybrid between Software Component and Basic Software Module.",
+    "id": "TPS_SWCT_01395",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.6 Complex Driver"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "hardwareElement"
+        ],
+        "targetEntityName": "ComplexDeviceDriverSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "HwElement"
+      }
+    ],
+    "title": "ComplexDeviceDriverSwComponentType has dependencies to ECU Hardware",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ComplexDeviceDriverSwComponentType.hardwareElement",
+      "HwElement._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "relationship",
+    "expression": "The BSW part is described by the means of the Basic Software Module Template. The mapping between the ComplexDeviceDriverSwComponentType and the corresponding BswModuleDescription is provided by the class SwcBswMapping which in addition also maps the two corresponding InternalBehaviors. This mechanism is further explained in [7].",
+    "id": "TPS_SWCT_01396",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "10 ECU Abstraction and Complex Drivers",
+      "10.6 Complex Driver"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "ComplexDeviceDriverSwComponentType"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "BswModuleDescription"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SwcBswMapping"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "InternalBehavior"
+      }
+    ],
+    "title": "Mapping between the ComplexDeviceDriverSwComponentType and the corresponding BswModuleDescription",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "BswModuleDescription._classLevel",
+      "ComplexDeviceDriverSwComponentType._classLevel",
+      "InternalBehavior._classLevel",
+      "SwcBswMapping._classLevel"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "existence",
+    "expression": "The name of the mode is the most important attribute that has to be provided for each ModeDeclaration. The ModeDeclarations are grouped together within the ModeDeclarationGroup.",
+    "id": "TPS_SWCT_01071",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "9 Mode Management",
+      "9.1 Declaration of Modes"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortName"
+        ],
+        "targetEntityName": "ModeDeclaration"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "modeDeclaration"
+        ],
+        "targetEntityName": "ModeDeclarationGroup"
+      }
+    ],
+    "title": "ModeDeclaration",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_03200",
+      "RS_SWCT_03110"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "ModeDeclaration.shortName",
+      "ModeDeclarationGroup.modeDeclaration"
+    ],
+    "confidence": 0.9
+  }
+]

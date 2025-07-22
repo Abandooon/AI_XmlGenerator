@@ -51,6 +51,9 @@ def validate_and_link_constraints(raw_extracted_data, metadata):
     VALID_ENTITY_TYPES = ["class", "enum", "abstract"]
 
     for item in raw_extracted_data:
+        # 非生产性则无需链接
+        if item.get("is_active") is False:
+            continue
         issues = []
         # 注意：字段名改为 targetRefs (复数), 确保在 item 中创建这个键
         item['targetRefs'] = generate_target_refs_for_item(item)
@@ -106,8 +109,9 @@ def validate_and_link_constraints(raw_extracted_data, metadata):
                 if entity_type == "class":
                     class_exists_in_groups = entity_name in metadata.get("groups", {})
                     class_exists_in_complex = entity_name in metadata.get("complexTypes", {})
+                    class_exists_in_inner = entity_name in metadata.get("extract_inner_class", {})
 
-                    if not (class_exists_in_groups or class_exists_in_complex):
+                    if not (class_exists_in_groups or class_exists_in_complex or class_exists_in_inner):
                         issues.append(f"目标类 '{entity_name}' 在元数据中未找到。")
                     else:
                         class_info_from_meta = get_class_info(metadata, entity_name)

@@ -1,0 +1,41 @@
+SHACL违规专门报告
+验证文件: D:\PycharmProjects\AI_XmlGenerator\experimental_data\llm\min_promote_No Guard\06_seed42.arxml
+生成时间: 2025-07-15 21:09:54
+================================================================================
+📊 SHACL违规详细分析报告
+============================================================
+验证模式: hybrid
+违规总数: 7
+
+📈 严重性分布:
+  ❌ 结构错误: 2 个 (28.6%)
+  ℹ️  格式建议: 5 个 (71.4%)
+
+📋 详细违规列表:
+     ❌ 结构错误 (2 个):
+       1. STRUCTURAL ERROR: RUNNABLE-ENTITY must occur between 1 and -1 times in SWC-INTERNAL-BEHAVIOR
+          详情: 焦点节点: SWC-INTERNAL-BEHAVIOR_0 | 结果路径: RUNNABLE-ENTITY | 约束组件: MinCountConstraintComponent | 源约束: http://example.com/Structural_1391454188
+       2. STRUCTURAL ERROR: HANDLE-TERMINATION-AND-RESTART must occur exactly 1 times in SWC-INTERNAL-BEHAVIOR
+          详情: 焦点节点: SWC-INTERNAL-BEHAVIOR_0 | 结果路径: HANDLE-TERMINATION-AND-RESTART | 约束组件: MinCountConstraintComponent | 源约束: http://example.com/Structural_822557917
+     ℹ️ 格式建议 (5 个):
+       3. RECOMMENDATION: PORTS should be one of: true
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2019_ATTR_id_511574761 | 语义类型: value_restriction
+       4. RECOMMENDATION: PORTS should be one of: PortPrototypes (NvDataInterface or ClientServerInterface) OR RPortPrototypes (ModeSwitchInterface)
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2009_ATTR_id_511574761 | 语义类型: value_restriction
+       5. RECOMMENDATION: PORTS should be one of: RPortPrototypes typed by SenderReceiverInterface OR PortPrototypes typed by PortInterface with isService=true
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2017_ATTR_id_511574761 | 语义类型: value_restriction
+       6. RECOMMENDATION: SUPPORTS-MULTIPLE-INSTANTIATION should be one of: enableTakeAddress=true implies SwcInternalBehavior.supportsMultipleInstantiation=...
+          详情: 焦点节点: SWC-INTERNAL-BEHAVIOR_0 | 结果路径: SUPPORTS-MULTIPLE-INSTANTIATION | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2024_ATTR_id_1669954518 | 语义类型: value_restriction
+       7. RECOMMENDATION: PORTS should be one of: RPortPrototypes typed by SenderReceiverInterfaces in a 1:n scenario
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2018_ATTR_id_511574761 | 语义类型: value_restriction
+     📊 违规模式分析:
+       🔧 约束组件分布:
+         InConstraintComponent: 5 次 (71.4%)
+         MinCountConstraintComponent: 2 次 (28.6%)
+       💡 语义类型分布:
+         value_restriction: 5 次 (71.4%)
+
+💡 修复建议:
+  1. 优先修复结构错误，这些会影响XML的基本合规性
+  2. 检查元素的必需属性和基数约束
+  5. 考虑格式建议，提升文档的规范性

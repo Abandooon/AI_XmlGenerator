@@ -1,7 +1,7 @@
 # TODO List
 
-19. 应将etas示例工程和规范文档中的listing(如5.1) 示例arxml提取出来放入知识图谱作为小样本学习样例,6.16.2.1 Legal Use这样的使用实例也应该放入样本-----etas工程通过云端 / API 进行小样本微调
-24. 尝试将xml标签转为json作为response_schema传给gemini，生成后再转为xml
+37. 
+
 
 可能存在问题：
 3. 需要对***Ref单独说明吗--------构建知识图谱和生成xml时需要
@@ -17,7 +17,13 @@ case1:类->类conditional->类content(在complextype中聚合)------>因此针�
 case2: 属性aggr/attr/iref----->不需要更改
 case3: 属性Ref->类中多一个变体点和属性类型为xxxRefConditional，该类同样有变体点属性，
 但是该类的qualifiedName与引用类型xxx重名了（当前会覆盖掉原来的这个类），比如PortPrototypeRefConditional
-
-检查其他章节有没有ImplementationDataType.swDataDefProps.baseType这样的需要手动加SwDataDefProps类的情况------link的时候呢
 xxxConditional都有是由变体生成的的说明
+
+记录一处异构元模型不一致的地方，ASW文档、uml模型中ApplicationCompositeElementInPortInterfaceInstanceRef类存在base属性，而xsd没有----constr_1184
+属性 'swCalprmAxisTypeProps' 在元数据类 'SwCalprmAxis没有----TPS_SWCT_01504
+
+
+
+
+
 

@@ -1,0 +1,424 @@
+[
+    {
+    "constraint_type": "existence",
+    "expression": "The symbol attribute shall only be provided for CompuScales where the category of the enclosing CompuMethod is one of the following:\n • SCALE_LINEAR_AND_TEXTTABLE\n • SCALE_RATIONAL_AND_TEXTTABLE\n • TEXTTABLE\n • BITFIELD_TEXTTABLE",
+    "id": "constr_1146",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "symbol"
+        ],
+        "targetEntityName": "CompuScale"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Applicability of a symbol for a CompuScale in C code",
+    "is_active": true,
+    "references": [],
+    "value": "SCALE_LINEAR_AND_TEXTTABLE, SCALE_RATIONAL_AND_TEXTTABLE, TEXTTABLE, BITFIELD_TEXTTABLE",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuMethod.category",
+      "CompuScale.symbol"
+    ],
+    "confidence": 0.9
+  },
+   {
+    "constraint_type": "other",
+    "expression": "Note that [constr_1135] only applies for BITFIELD_TEXTTABLE. It does not apply to the definition of vt in the context of an ApplicationValueSpecification.",
+    "id": "TPS_SWCT_01429",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "vt"
+        ],
+        "targetEntityName": "CompuConstTextContent"
+      }
+    ],
+    "title": "[constr_1135] only applies for BITFIELD_TEXTTABLE",
+    "is_active": true,
+    "references": [
+      "constr_1135"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuConstTextContent.vt",
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "format",
+    "expression": "The separator is “|” and is forbidden in vt therefore.",
+    "id": "constr_1135",
+    "id_type": "constr",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.1.1 Category Values in the context of a CompuMethod",
+      "Table 5.73 ASAM compuMethod"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "vt"
+        ],
+        "targetEntityName": "CompuConstTextContent"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "CompuMethod"
+      }
+    ],
+    "title": "Limit of vt in BITFIELD_TEXTTABLE",
+    "is_active": true,
+    "references": [],
+    "value": "|",
+    "xml_example_content": null,
+    "targetRefs": [
+      "CompuConstTextContent.vt",
+      "CompuMethod.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "value_restriction",
+    "expression": "According to [23] the following three values for categorys are recommended in the context of UnitGroup: • COUNTRY collects units which are common in a particular country, denoted by the shortName / longName of the UnitGroup • CALCULATION refers to speciﬁc units intended for the creation of data types. In this category of UnitGroup, several Units may refer to the same PhysicalDimension as well as to different PhysicalDimension. • EQUIV_UNITS deﬁne a group of equivalent units, which are used for example in different countries. Additional values for category may be mutually agreed between the stakeholders.",
+    "id": "Constr_UnitGroup_RecommendedCategories",
+    "id_type": "additional_not_binding",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.2 Physical Units, Physical Dimensions and Unit Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "UnitGroup"
+      }
+    ],
+    "title": "Recommended categories for UnitGroup",
+    "is_active": true,
+    "references": [
+      "[23]"
+    ],
+    "value": "COUNTRY, CALCULATION, EQUIV_UNITS",
+    "xml_example_content": null,
+    "targetRefs": [
+      "UnitGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "behavioral",
+    "expression": "If a unit has to be converted according to the chosen country code the physicalDimension of both units shall be the same. If another unit shares the same UnitGroup with a category of EQUIV_UNITS it is preferred as target of the conversion.",
+    "id": "TPS_SWCT_01061",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.5 Elements used in Properties of Data Deﬁnitions",
+      "5.5.2 Physical Units, Physical Dimensions and Unit Groups"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "physicalDimension"
+        ],
+        "targetEntityName": "Unit"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "category"
+        ],
+        "targetEntityName": "UnitGroup"
+      }
+    ],
+    "title": "Conversion of units",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_02100"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "Unit.physicalDimension",
+      "UnitGroup.category"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "definition",
+    "expression": "The purpose of the attribute scope of meta-class VariableAccess is to constrain the scope of the corresponding communication. The main use-case for this ability is the development of a software-component where certain end-points of communication from or to the software-component are known to fulfill a certain constraint, e.g. execute within the same partition.",
+    "id": "TPS_SWCT_01326",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "7.5.1 RunnableEntities and Sender Receiver Communication"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "scope"
+        ],
+        "targetEntityName": "VariableAccess"
+      }
+    ],
+    "title": "Constrain the scope of a specific communication",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00200"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "VariableAccess.scope"
+    ],
+    "confidence": 0.9
+  },
+   {
+    "constraint_type": "relationship",
+    "expression": "The attribute scope of meta-class VariableAccess shall only be applied with respect to the aggregation of VariableAccess in the following roles:\n• dataReadAccess\n• dataWriteAccess\n• dataSendPoint\n• dataReceivePointByValue\n• dataReceivePointByArgument",
+    "id": "constr_1141",
+    "id_type": "constr",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "7.5.1 RunnableEntities and Sender Receiver Communication"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "scope"
+        ],
+        "targetEntityName": "VariableAccess"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "dataReadAccess",
+          "dataWriteAccess",
+          "dataSendPoint",
+          "dataReceivePointByValue",
+          "dataReceivePointByArgument"
+        ],
+        "targetEntityName": "RunnableEntity"
+      }
+    ],
+    "title": "Applicability of the scope attribute",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "RunnableEntity.dataReadAccess",
+      "RunnableEntity.dataReceivePointByArgument",
+      "RunnableEntity.dataReceivePointByValue",
+      "RunnableEntity.dataSendPoint",
+      "RunnableEntity.dataWriteAccess",
+      "VariableAccess.scope"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "cardinality",
+    "expression": "The AsynchronousServerCallPoint has to be referenced by exactly one AsynchronousServerCallResultPoint. This means that only the RunnableEntity with this AsynchronousServerCallResultPoint can fetch the result of the asynchronous server invocation of this particular AsynchronousServerCallPoint.",
+    "id": "constr_2006",
+    "id_type": "constr",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.5 Data Access of RunnableEntities",
+      "7.5.2 RunnableEntities and Client Server Communication",
+      "7.5.2.1 Invoking an Operation"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AsynchronousServerCallPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "AsynchronousServerCallResultPoint"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "RunnableEntity"
+      }
+    ],
+    "title": "Number of AsynchronousServerCallResultPoint referencing to one AsynchronousServerCallPoint",
+    "is_active": true,
+    "references": [],
+    "value": "1",
+    "xml_example_content": null,
+    "targetRefs": [
+      "AsynchronousServerCallPoint._classLevel",
+      "AsynchronousServerCallResultPoint._classLevel",
+      "RunnableEntity._classLevel"
+    ],
+    "confidence": 0.9
+  },
+    {
+    "constraint_type": "format",
+    "expression": "In other words, this typeDefinition shall be formulated such that it can be included verbatim in a C header file.",
+    "id": "Constr_PerInstanceMemory_typeDefinition_CHeaderFormat",
+    "id_type": "additional_binding",
+    "scope_path": [
+      "7 Internal Behavior",
+      "7.7 PerInstanceMemory"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "typeDefinition"
+        ],
+        "targetEntityName": "PerInstanceMemory"
+      }
+    ],
+    "title": "typeDefinition C Header File Format",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "PerInstanceMemory.typeDefinition"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "ordering",
+    "expression": "The general precedence rule is that\n• SwDataDefProps wins over valueAxisDataType (exception: compuMethod and unit).\n• SwDataDefProps wins over compuMethod.\n• SwDataDefProps wins over swCalprmAxisSet.\n• SwDataDefProps.swCalprmAxisSet wins over swCalprmAxisSet.swCalprmAxis.swCalprmAxisTypeProps.compuMethod resp. SwAxisIndividual.inputVariableType.\n• SwAxisIndividual.inputVariableType wins over SwAxisIndividual.compuMethod, SwAxisIndividual.unit, but not over SwAxisIndividual.dataConstr.",
+    "id": "TPS_SWCT_01496",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "5 Data Description",
+      "5.4 Properties of Data Deﬁnitions",
+      "5.4.7 Precedence of data properties with respect to data elements, axis elements, computation methods, units"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "valueAxisDataType",
+          "compuMethod",
+          "unit",
+          "swCalprmAxisSet",
+          "dataConstr"
+        ],
+        "targetEntityName": "SwDataDefProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "inputVariableType",
+          "compuMethod",
+          "unit",
+          "dataConstr"
+        ],
+        "targetEntityName": "SwAxisIndividual"
+      }
+    ],
+    "title": "General precedence rule for attributes of SwDataDefProps",
+    "is_active": true,
+    "references": [],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwAxisIndividual.compuMethod",
+      "SwAxisIndividual.dataConstr",
+      "SwAxisIndividual.inputVariableType",
+      "SwAxisIndividual.unit",
+      "SwDataDefProps.compuMethod",
+      "SwDataDefProps.dataConstr",
+      "SwDataDefProps.swCalprmAxisSet",
+      "SwDataDefProps.unit",
+      "SwDataDefProps.valueAxisDataType"
+    ],
+    "confidence": 0.9
+  },
+  {
+    "constraint_type": "naming_convention",
+    "expression": "Of course, there is a residual risk that even in the presence of SymbolProps name clashes may occur. Therefore, the deﬁnition of naming conventions may facilitate the avoidance of name clashes to the further degree.\nHowever, these naming conventions can (with the support of the meta-model, e.g. by utilizing SymbolProps or shortNamePattern) still only be deﬁned on the model level.",
+    "id": "TPS_SWCT_01635",
+    "id_type": "TPS_SWCT",
+    "scope_path": [
+      "3 Overview: Software Components, Ports, and Interfaces",
+      "3.2 Software Component",
+      "3.2.5 Symbolic Name of a Software-Component"
+    ],
+    "targets": [
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "_classLevel"
+        ],
+        "targetEntityName": "SymbolProps"
+      },
+      {
+        "entityType": "class",
+        "targetAttributes": [
+          "shortNamePattern"
+        ],
+        "targetEntityName": "SwComponentType"
+      }
+    ],
+    "title": "Naming conventions may support the effectiveness of SymbolProps",
+    "is_active": true,
+    "references": [
+      "RS_SWCT_00230"
+    ],
+    "value": null,
+    "xml_example_content": null,
+    "targetRefs": [
+      "SwComponentType.shortNamePattern",
+      "SymbolProps._classLevel"
+    ],
+    "confidence": 0.9
+  }
+]

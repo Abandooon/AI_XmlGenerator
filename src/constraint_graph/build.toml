@@ -1,0 +1,13 @@
+[limits]
+max_depth = 20
+max_enum = 64
+lru_cache = 10000
+compress_threshold = 1
+progress_step = 1000  # 改小一些，更频繁地显示进度
+max_states = 100000   # 添加状态限制配置
+max_queue = 20000     # 添加队列限制配置
+
+[debug]
+enable_validation = true
+enable_visualization = true
+max_viz_depth = 8

@@ -1,0 +1,61 @@
+SHACL违规专门报告
+验证文件: D:\PycharmProjects\AI_XmlGenerator\experimental_data\llm\mid_promote_No Guard\01_seed1001.arxml
+生成时间: 2025-07-15 21:09:50
+================================================================================
+📊 SHACL违规详细分析报告
+============================================================
+验证模式: hybrid
+违规总数: 17
+
+📈 严重性分布:
+  ❌ 结构错误: 1 个 (5.9%)
+  ℹ️  格式建议: 16 个 (94.1%)
+
+📋 详细违规列表:
+     ❌ 结构错误 (1 个):
+       1. STRUCTURAL ERROR: HANDLE-TERMINATION-AND-RESTART must occur exactly 1 times in SWC-INTERNAL-BEHAVIOR
+          详情: 焦点节点: SWC-INTERNAL-BEHAVIOR_0 | 结果路径: HANDLE-TERMINATION-AND-RESTART | 约束组件: MinCountConstraintComponent | 源约束: http://example.com/Structural_822557917
+     ℹ️ 格式建议 (16 个):
+       2. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_0 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1277_ATTR_id_1995104171 | 语义类型: value_restriction
+       3. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_1 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1277_ATTR_id_1995104171 | 语义类型: value_restriction
+       4. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_0 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1277_ATTR_id_1995104171 | 语义类型: value_restriction
+       5. RECOMMENDATION: PORTS should be one of: true
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2019_ATTR_id_511574761 | 语义类型: value_restriction
+       6. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_0 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+       7. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_0 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+       8. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_0 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+       9. RECOMMENDATION: PORTS should be one of: PortPrototypes (NvDataInterface or ClientServerInterface) OR RPortPrototypes (ModeSwitchInterface)
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2009_ATTR_id_511574761 | 语义类型: value_restriction
+       10. RECOMMENDATION: PORTS should be one of: RPortPrototypes typed by SenderReceiverInterface OR PortPrototypes typed by PortInterface with isService=true
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2017_ATTR_id_511574761 | 语义类型: value_restriction
+       11. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_0 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2020_ATTR_id_1995104171 | 语义类型: value_restriction
+       12. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_1 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2020_ATTR_id_1995104171 | 语义类型: value_restriction
+       13. RECOMMENDATION: ACCESSED-VARIABLE should be one of: not queued
+          详情: 焦点节点: VARIABLE-ACCESS_0 | 结果路径: ACCESSED-VARIABLE | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2020_ATTR_id_1995104171 | 语义类型: value_restriction
+       14. RECOMMENDATION: PERIOD should be one of: > 0
+          详情: 焦点节点: TIMING-EVENT_0 | 结果路径: PERIOD | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2031_ATTR_id_1126822475 | 语义类型: value_restriction
+       15. RECOMMENDATION: SUPPORTS-MULTIPLE-INSTANTIATION should be one of: enableTakeAddress=true implies SwcInternalBehavior.supportsMultipleInstantiation=...
+          详情: 焦点节点: SWC-INTERNAL-BEHAVIOR_0 | 结果路径: SUPPORTS-MULTIPLE-INSTANTIATION | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2024_ATTR_id_1669954518 | 语义类型: value_restriction
+       16. RECOMMENDATION: MINIMUM-START-INTERVAL should be one of: 0
+          详情: 焦点节点: RUNNABLE-ENTITY_0 | 结果路径: MINIMUM-START-INTERVAL | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1258_ATTR_id_1916408117 | 语义类型: value_restriction
+       17. RECOMMENDATION: PORTS should be one of: RPortPrototypes typed by SenderReceiverInterfaces in a 1:n scenario
+          详情: 焦点节点: APPLICATION-SW-COMPONENT-TYPE_0 | 结果路径: PORTS | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_2018_ATTR_id_511574761 | 语义类型: value_restriction
+     📊 违规模式分析:
+       🔧 约束组件分布:
+         InConstraintComponent: 16 次 (94.1%)
+         MinCountConstraintComponent: 1 次 (5.9%)
+       💡 语义类型分布:
+         value_restriction: 16 次 (94.1%)
+
+💡 修复建议:
+  1. 优先修复结构错误，这些会影响XML的基本合规性
+  2. 检查元素的必需属性和基数约束
+  5. 考虑格式建议，提升文档的规范性

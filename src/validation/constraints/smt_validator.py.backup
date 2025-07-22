@@ -1,0 +1,283 @@
+# src/validation/constraints/smt_validator.py
+import subprocess
+import tempfile
+from typing import Dict, List
+import xml.etree.ElementTree as ET
+import re
+
+
+class SMTValidator:
+    """SMT约束验证器"""
+
+    def __init__(self, smt_template_file: str):
+        """
+        初始化SMT验证器
+
+        Args:
+            smt_template_file: SMT约束模板文件路径 (constraints.smt2)
+        """
+        self.smt_template_file = smt_template_file
+        self.smt_template = self._load_smt_template(smt_template_file)
+
+    def validate_constraints(self, xml_content: str) -> Dict:
+        """SMT约束验证"""
+
+        try:
+            # 1. 从XML提取约束数据
+            constraint_data = self.extract_constraint_data(xml_content)
+
+            # 2. 生成SMT实例
+            smt_instances = self.generate_smt_instances(constraint_data)
+
+            # 3. 调用Z3求解
+            results = []
+            for smt_instance in smt_instances:
+                result = self.solve_smt_instance(smt_instance)
+                results.append(result)
+
+            # 4. 汇总结果
+            all_sat = all(r["status"] == "sat" for r in results)
+            unsat_constraints = [r for r in results if r["status"] == "unsat"]
+
+            return {
+                "valid": all_sat,
+                "constraint_count": len(smt_instances),
+                "satisfied_count": len(results) - len(unsat_constraints),
+                "unsat_constraints": unsat_constraints,
+                "detailed_results": results
+            }
+
+        except Exception as e:
+            return {
+                "valid": False,
+                "constraint_count": 0,
+                "satisfied_count": 0,
+                "unsat_constraints": [],
+                "detailed_results": [],
+                "error": str(e)
+            }
+
+    # 修复 src/validation/constraints/smt_validator.py 中的 extract_constraint_data 方法
+
+    def extract_constraint_data(self, xml_content: str) -> Dict:
+        """从XML提取约束相关的数值和关系 - 增强版"""
+
+        print("🔍 开始提取约束数据...")
+
+        constraint_data = {
+            "timing_events": [],
+            "periods": [],
+            "deadlines": [],
+            "priorities": [],
+            "timeouts": [],
+            "relationships": []
+        }
+
+        try:
+            root = ET.fromstring(xml_content)
+            print(f"📋 解析XML根元素: {root.tag}")
+
+            # 移除命名空间前缀的辅助函数
+            def clean_tag(tag):
+                if '}' in tag:
+                    return tag.split('}')[1]
+                return tag
+
+            # 查找所有时序事件
+            timing_events = []
+            for elem in root.iter():
+                if clean_tag(elem.tag) == "TIMING-EVENT":
+                    timing_events.append(elem)
+
+            print(f"📊 找到 {len(timing_events)} 个TIMING-EVENT元素")
+
+            for timing_event in timing_events:
+                event_data = {
+                    "id": timing_event.get("UUID") or timing_event.get(
+                        "ID") or f"event_{len(constraint_data['timing_events'])}",
+                    "period": None,
+                    "deadline": None,
+                    "priority": None
+                }
+
+                # 提取周期 - 在当前元素或子元素中查找
+                period_elem = None
+                for child in timing_event.iter():
+                    if clean_tag(child.tag) == "PERIOD":
+                        period_elem = child
+                        break
+
+                if period_elem is not None and period_elem.text:
+                    try:
+                        event_data["period"] = float(period_elem.text.strip())
+                        constraint_data["periods"].append(event_data["period"])
+                        print(f"   ⏰ 提取周期: {event_data['period']}")
+                    except ValueError as e:
+                        print(f"   ⚠️  周期值转换失败: {period_elem.text} - {e}")
+
+                # 提取截止时间 - 可能在DEADLINE元素中
+                deadline_elem = None
+                for child in timing_event.iter():
+                    if clean_tag(child.tag) == "DEADLINE":
+                        deadline_elem = child
+                        break
+
+                if deadline_elem is not None and deadline_elem.text:
+                    try:
+                        event_data["deadline"] = float(deadline_elem.text.strip())
+                        constraint_data["deadlines"].append(event_data["deadline"])
+                        print(f"   ⏰ 提取截止时间: {event_data['deadline']}")
+                    except ValueError as e:
+                        print(f"   ⚠️  截止时间值转换失败: {deadline_elem.text} - {e}")
+
+                # 提取优先级
+                priority_elem = None
+                for child in timing_event.iter():
+                    if clean_tag(child.tag) == "PRIORITY":
+                        priority_elem = child
+                        break
+
+                if priority_elem is not None and priority_elem.text:
+                    try:
+                        event_data["priority"] = int(priority_elem.text.strip())
+                        constraint_data["priorities"].append(event_data["priority"])
+                        print(f"   📊 提取优先级: {event_data['priority']}")
+                    except ValueError as e:
+                        print(f"   ⚠️  优先级值转换失败: {priority_elem.text} - {e}")
+
+                constraint_data["timing_events"].append(event_data)
+                print(f"   ✅ 时序事件: {event_data['id']}")
+
+            # 提取ALIVE-TIMEOUT数据
+            timeout_elements = []
+            for elem in root.iter():
+                if clean_tag(elem.tag) == "ALIVE-TIMEOUT":
+                    timeout_elements.append(elem)
+
+            print(f"📊 找到 {len(timeout_elements)} 个ALIVE-TIMEOUT元素")
+
+            for timeout_elem in timeout_elements:
+                if timeout_elem.text:
+                    try:
+                        timeout_value = float(timeout_elem.text.strip())
+                        constraint_data["timeouts"].append(timeout_value)
+                        print(f"   ⏰ 提取超时: {timeout_value}")
+                    except ValueError as e:
+                        print(f"   ⚠️  超时值转换失败: {timeout_elem.text} - {e}")
+
+            # 查找其他可能的数值约束
+            numeric_elements = ["PERIOD", "DEADLINE", "ALIVE-TIMEOUT"]
+            for elem_type in numeric_elements:
+                elements = []
+                for elem in root.iter():
+                    if clean_tag(elem.tag) == elem_type:
+                        elements.append(elem)
+
+                if elements:
+                    print(f"📊 找到 {len(elements)} 个{elem_type}元素")
+                    for elem in elements:
+                        if elem.text and elem.text.strip():
+                            print(f"   💾 {elem_type}: {elem.text.strip()}")
+
+            # 总结提取结果
+            total_constraints = (len(constraint_data["timing_events"]) +
+                                 len(constraint_data["periods"]) +
+                                 len(constraint_data["deadlines"]) +
+                                 len(constraint_data["priorities"]) +
+                                 len(constraint_data["timeouts"]))
+
+            print(f"📊 约束数据提取总结:")
+            print(f"   时序事件: {len(constraint_data['timing_events'])}")
+            print(f"   周期数据: {len(constraint_data['periods'])}")
+            print(f"   截止时间: {len(constraint_data['deadlines'])}")
+            print(f"   优先级: {len(constraint_data['priorities'])}")
+            print(f"   超时设置: {len(constraint_data['timeouts'])}")
+            print(f"   总计: {total_constraints} 个约束数据点")
+
+        except ET.ParseError as e:
+            print(f"❌ XML parsing error in constraint extraction: {e}")
+        except Exception as e:
+            print(f"❌ Constraint extraction error: {e}")
+
+        return constraint_data
+
+    def generate_smt_instances(self, constraint_data: Dict) -> List[str]:
+        """基于模板生成具体的SMT实例"""
+
+        smt_instances = []
+
+        # 基本数值约束
+        for event in constraint_data["timing_events"]:
+            if event["period"] is not None:
+                smt_instance = f"""
+                (declare-const period_{event['id']} Real)
+                (assert (= period_{event['id']} {event['period']}))
+                (assert (and (>= period_{event['id']} 1.0) (<= period_{event['id']} 1000.0)))
+                (check-sat)
+                """
+                smt_instances.append(smt_instance)
+
+            # 截止时间约束
+            if event["deadline"] is not None and event["period"] is not None:
+                smt_instance = f"""
+                (declare-const deadline_{event['id']} Real)
+                (declare-const period_{event['id']} Real)
+                (assert (= deadline_{event['id']} {event['deadline']}))
+                (assert (= period_{event['id']} {event['period']}))
+                (assert (< deadline_{event['id']} period_{event['id']}))
+                (check-sat)
+                """
+                smt_instances.append(smt_instance)
+
+        return smt_instances
+
+    def solve_smt_instance(self, smt_instance: str) -> Dict:
+        """调用Z3求解器验证约束可满足性"""
+
+        try:
+            # 创建临时文件
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.smt2', delete=False) as f:
+                f.write(smt_instance)
+                temp_file = f.name
+
+            # 调用Z3求解器
+            result = subprocess.run(
+                ['z3', temp_file],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+
+            # 解析结果
+            output = result.stdout.strip()
+
+            if "sat" in output:
+                status = "sat"
+            elif "unsat" in output:
+                status = "unsat"
+            else:
+                status = "unknown"
+
+            return {
+                "status": status,
+                "output": output,
+                "error": result.stderr if result.stderr else None
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "timeout",
+                "output": "",
+                "error": "SMT solving timeout"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "output": "",
+                "error": str(e)
+            }
+
+
+    def _load_smt_template(self, path: str) -> str:
+        with open(path, "r", encoding="utf-8") as fp:
+            return fp.read()

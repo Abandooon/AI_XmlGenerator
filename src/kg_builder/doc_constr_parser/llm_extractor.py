@@ -2,6 +2,8 @@ import json
 import re
 import tiktoken
 import google.generativeai as genai
+import time
+from typing import List, Dict, Any, Optional
 
 from openai import OpenAI
 from config import (
@@ -45,7 +47,9 @@ class LlmExtractor:
         1.  仅返回一个 JSON 对象。
         2.  该 JSON 对象必须包含一个顶层键 `"extracted_constraints"`，其值为一个 JSON 数组。
         3.  数组中的每个元素都是一个代表单个约束的 JSON 对象，且必须 100% 符合通过 API 的 `response_schema` 参数强制执行的输出 Schema。
-        4.  若无任何约束可提取，则返回 `{{"extracted_constraints":[]}}`。
+        4.  每个约束对象新增 **"is_active"** 布尔字段：若该约束显然不会参与后续 XML 生成 / 验证，则设为 **false**，否则为 true。
+        5.  若无任何约束可提取，则返回 `{{"extracted_constraints":[]}}`。
+        
         
         # 约束提取指令与优先级
         
@@ -104,6 +108,9 @@ class LlmExtractor:
             - 若与特定图/表关联，其标题可作 `scope_path` 末尾。
         -   **`constraint_type`**: 根据约束语义选择 (如 `definition`, `cardinality`, `existence`, `relationship` 等)。仔细判断无 ID 约束的类型。
         -   **其他字段** (`value`, `references` 等): 根据上下文提取，缺失则为 `null` 或 `[]`。
+        - **自动判定 "is_active"**：  
+            - 若 title 或 expression 中出现 “Definition of…”, “shall be considered…”, “legacy”, “old-world”, “example”, “listing”, “deprecated”,  
+            - **或** 句式 “shall be used to … afterwards shall be considered …” / “shall be considered compatible” 等表示**后续语义效果**的短语， 则设 is_active = false
         
         # Few-shot 示例 (保持不变或根据需要调整)
         # few-shot 1：最简单
@@ -113,27 +120,29 @@ class LlmExtractor:
         [TPS_SWCT_00001] Short name uniqueness (cid:100) shortName must be unique. (cid:99)
         [END]
         期望输出:
-        {
+        {{
             "extracted_constraints":[
-                {
+                {{
                     "id":"TPS_SWCT_00001",
                     "id_type":"TPS_SWCT",
                     "title":"Short name uniqueness",
+                    "is_active":true,
                     "expression":"shortName must be unique.",
-                    "references":[],"targets":
+                    "references":[],
+                    "targets":
                         [
-                            {
+                            {{
                                 "targetEntityName":"SwComponentPrototype",
                                 "entityType":"class",
                                 "targetAttributes":["shortName"]
-                            }
+                            }}
                         ],
                     "constraint_type":"other",
                     "value":null,"scope_path":[],
                     "xml_example_content":null
-                }
+                }}
             ]
-        }
+        }}
 
         # few-shot 2：XML 示例
         [BEGIN]
@@ -152,33 +161,47 @@ class LlmExtractor:
         | readonly  | Recommended to match for all connected PortPrototypes |
         -------------->
         期望输出:
-        {
+        {{
             "extracted_constraints": [
-                {
+                {{
                     "id": "Table_11_7",
                     "id_type": "additional_not_binding",
                     "title": "readonly consistency (recommended)",
                     "expression": "NvBlockDescriptor.readonly is recommended to match the value requested by all connected PortPrototypes.",
                     "references": [],
                     "targets": [
-                        {
+                        {{
                             "targetEntityName": "NvBlockNeeds",
                             "entityType": "class",
                             "targetAttributes": ["readonly"]
-                        },
-                        {
+                        }},
+                        {{
                             "targetEntityName": "NvBlockDescriptor",
                             "entityType": "class",
                             "targetAttributes": ["readonly"]
-                        }
+                        }}
                     ],
                     "constraint_type": "relationship",
                     "value": null,
                     "scope_path": ["Table 11.7 NvBlockNeeds dependencies"],
                     "xml_example_content": null
-                }
+                }}
             ]
-        }
+        }}
+        # few-shot 4：定义性（is_active = false）
+        [BEGIN]
+        [TPS_SWCT_01642] Definition of an “old-world” dynamic-size array (cid:100) … shall be considered an “old-world” dynamic-size array. (cid:99)
+        [END]
+        期望输出:
+        {{
+          "extracted_constraints":[
+            {{
+              "id":"TPS_SWCT_01642",
+              "is_active":false,
+              ...
+            }}
+          ]
+        }}
 
         # 待处理文档
         \"\"\"{text_block_for_llm}\"\"\"
@@ -190,29 +213,25 @@ class LlmExtractor:
         return prompt
 
     def extract_constraints_from_block(self, text_block_for_llm):
+        """
+        调用 Gemini / OpenAI 接口，把单个文档块转为约束列表。
+        · 出错自动重试 3 次（1s / 3s / 放弃）
+        · 保证 raw_response_content 判空，避免 NoneType 切片
+        · 返回值始终为 list
+        """
+        # ---------- 1. 组装 Prompt ----------
         prompt = self._build_extraction_prompt(text_block_for_llm)
         current_tokens = count_tokens(text_block_for_llm)
-        prompt_tokens = count_tokens(prompt)  # Note: prompt token count depends on text_block_for_llm
-        total_input_tokens = count_tokens(prompt)  # Re-evaluate total input tokens based on the final prompt
-
+        total_input_tokens = count_tokens(prompt)  # prompt 已包含原文
         print(f"\n--- 正在向 LLM 发送请求 (片段内容 tokens: {current_tokens}, 总输入 tokens: {total_input_tokens}) ---")
-        # print(f"LLM 请求片段预览:\n{text_block_for_llm[:500]}...")
 
-        raw_response_content = None
-        try:
-            generation_config = genai.types.GenerationConfig(
-                response_mime_type="application/json",
-                response_schema=CONSTRAINT_SCHEMA,  # <--- 关键：这里传入 约束 Python 对象
-                temperature=0.0,
-                max_output_tokens=MAX_OUTPUT_TOKENS
-            )
-
-            response = self.model.generate_content(
-                contents=prompt,
-                generation_config=generation_config
-            )
-            raw_response_content = response.text
-
+        # ---------- 2. 调用 LLM（带重试） ----------
+        generation_config = genai.types.GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=CONSTRAINT_SCHEMA,
+            temperature=0.0,
+            max_output_tokens=MAX_OUTPUT_TOKENS
+        )
 
         # try:
         #     completion = self.client.chat.completions.create(
@@ -230,28 +249,46 @@ class LlmExtractor:
         #     raw_response_content = completion.choices[0].message.content
             # print(f"DEBUG: LLM 原始响应:\n{raw_response_content[:1000]}...")
 
+        raw_response_content = None
+        for attempt in range(3):
+            try:
+                resp = self.model.generate_content(
+                    contents=prompt,
+                    generation_config=generation_config
+                )
+                raw_response_content = resp.text          # 成功拿到响应
+                break
+            except Exception as call_err:
+                print(f"LLM 调用失败 (第 {attempt+1}/3 次): {call_err}")
+                if attempt < 2:
+                    time.sleep(2 ** attempt + 1)          # 1 秒 → 3 秒
+                else:
+                    print("LLM 连续失败，跳过该块。")
+                    return []                             # 放弃该块
 
+        # 若三次都失败 raw_response_content 仍为空
+        if not raw_response_content:
+            print("LLM 无返回内容，跳过该块。")
+            return []
+
+        # ---------- 3. 解析 JSON ----------
+        try:
             extracted_data = json.loads(raw_response_content)
-
-            if "extracted_constraints" in extracted_data and isinstance(extracted_data["extracted_constraints"], list):
-                print(f"--- LLM 成功解析并提取了 {len(extracted_data['extracted_constraints'])} 个约束 ---")
-                return extracted_data["extracted_constraints"]
-            else:
-                print("--- LLM 响应格式不正确: 未找到 'extracted_constraints' 列表 ---")
-                print(f"LLM 原始响应: {raw_response_content}")
-                return []
         except json.JSONDecodeError as je:
-            print(f"LLM API 调用成功，但JSON解析失败: {je}")
-            print(f"有问题的文本片段预览: {text_block_for_llm[:200]}")
-            if 'raw_response_content' in locals():
-                print(f"解析失败的 LLM 原始输出 (前1000字符): {raw_response_content[:1000]}")
+            print(f"LLM JSON 解析失败: {je}")
+            print(f"LLM 原始响应(前500): {raw_response_content[:500]}")
             return []
-        except Exception as e:
-            print(f"LLM API 调用或处理期间出错: {e}")
-            print(f"有问题的文本片段预览: {text_block_for_llm[:200]}")
-            if 'raw_response_content' in locals():
-                print(f"解析失败的 LLM 原始输出 (前1000字符): {raw_response_content[:1000]}")
+
+        # ---------- 4. 校验字段 ----------
+        if isinstance(extracted_data.get("extracted_constraints"), list):
+            cnt = len(extracted_data["extracted_constraints"])
+            print(f"--- LLM 成功解析并提取了 {cnt} 个约束 ---")
+            return extracted_data["extracted_constraints"]
+        else:
+            print("--- LLM 响应格式不正确: 未找到 'extracted_constraints' 列表 ---")
+            print(f"LLM 原始响应(前500): {raw_response_content[:500]}")
             return []
+
 
     def _split_text_by_paragraphs(self, text, max_tokens_for_sub_chunk, parent_section_context_str=""):
         """按段落分割文本，确保每个子块（加上父章节上下文）不超过token限制。"""
@@ -502,7 +539,53 @@ class LlmExtractor:
 
         return final_constraints
 
+    def get_text_chunks(self, enhanced_markdown: str) -> List[str]:
+        """
+        返回分块后的文本列表，每个元素对应一个待 LLM 处理的块
+        """
+        return self._split_document_into_chunks(enhanced_markdown)
 
-def extract_constraints_from_text(enhanced_markdown_content):
-    extractor = LlmExtractor()
-    return extractor.extract_constraints_from_text(enhanced_markdown_content)
+    def extract_constraints_from_text(
+            self,
+            enhanced_markdown: str,
+            rerun_chunks: Optional[List[int]] = None  # 新增参数
+    ) -> List[Dict]:
+        # 1) 调用私有分块，拿到 chunks 列表
+        chunks = self._split_document_into_chunks(enhanced_markdown)
+
+        raw_results: List[Dict] = []
+        # 2) 初次遍历所有块
+        for chunk in chunks:
+            items = self.extract_constraints_from_block(chunk)
+            raw_results.extend(items)
+
+        # 3) 如果指定了重跑块，按索引（从1开始）再次提取并追加
+        if rerun_chunks:
+            for idx in rerun_chunks:
+                # 忽略越界检查留给调用方
+                chunk_text = chunks[idx - 1]
+                rerun_items = self.extract_constraints_from_block(chunk_text)
+                raw_results.extend(rerun_items)
+
+        return raw_results
+
+_extractor = LlmExtractor()
+
+def get_text_chunks(enhanced_markdown: str) -> List[str]:
+    """
+    返回分块后的文本列表，可供 main.py 拆分并重跑指定块。
+    """
+    default_max_tokens = SAFE_INPUT_CONTENT_MAX_TOKENS  # 或者替换成你 LlmExtractor 初始化时实际使用的值
+    return _extractor._split_document_into_chunks(enhanced_markdown, default_max_tokens)
+
+def extract_constraints_from_block(chunk_text: str) -> List[Dict]:
+    """
+    对单个块文本调用 LLM 提取约束，返回约束 Dict 列表。
+    """
+    return _extractor.extract_constraints_from_block(chunk_text)
+
+def remove_duplicates(raw_results: List[Dict]) -> List[Dict]:
+    """
+    对原始约束列表去重，保留首次出现的条目。
+    """
+    return _extractor.remove_duplicates(raw_results)
