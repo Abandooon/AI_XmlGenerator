@@ -1,7 +1,3 @@
-下面把 **KG 的“本体（节点）表”与“关系（边）表”** 按开发代码实际创建的内容汇总成两张一览表，便于直接对照到 Cypher schema 或 ORM model。每一行都注明来源（代码文件），如需核对可跳回相应实现。
-
----
-
 ## 1. 本体（节点）表
 
 | 节点 Label        | 唯一键 / IRI 前缀              | 主要属性字段（必含★ / 常见）                                                                                                                                                                                                                         | 典型来源代码                                            |
@@ -43,15 +39,11 @@
 | **IN\_SECTION**                       | Constraint → Section                       | 多 → 1 | 约束出处文档章节                  | `EdgeAssembler.build_edges` + `_get_or_create_section`       |
 | **PARENT\_OF**                        | Section → Section                          | 多 → 多 | 文档章节层级                    | *规划中*（docstring 中声明待实现）                                      |
 
-† **多重度**：根据代码逻辑推断；Neo4j 未显式限制。
 
 ---
-
-### 核心要点回顾
 
 * **节点标签覆盖**：代码共创建 9 种主要 label；Constraint 节点会带 *双标签*（“Constraint;DataType”等）。
 * **关系类型**：17 种；其中 `PARENT_OF` 仅在 EdgeAssembler 文档字符串中声明，实际边生成将在后续补完。
 * **唯一键策略**：全部使用 IRI (`id`)；Class / Attribute / Enum 等子类由 builder 保证 IRI 不冲突。
 * **索引/查询**：builder 维护 `class_index`、`attr_index`、`enum_index`、`literal_index`、`parent_index`，在建边阶段做 O(1) 反查。
 
-至此，你可以直接把上表转成 Neo4j `CONSTRAINT`/`INDEX` 与 `CREATE` 语句，或映射到你的 ORM/DSL。在拿到实际 KG dump 时，跑简单的 `MATCH (n) RETURN DISTINCT labels(n)` / `MATCH ()-[r]->() RETURN DISTINCT type(r)` 即可校验实现与设计的一致性。

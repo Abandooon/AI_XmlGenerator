@@ -1,12 +1,3 @@
-# note:1.生成kg需要提取内部类，因此需要更改内部类名和主类元素类型
-       2.不需要记录元素是否为list，直接记录maxoccurs即可
-       3.不需要complexType，只需提取其中的attribute group放到group即可
-       4.只有REFERRABLE的short name minoccurs=1，别的都为0
-       5.complextype choice的maxoccurs=unbounded的其对应的group也是choice maxoccurs=unbounded，不用额外处理
-       6.类中的属性会有pureMM.maxOccurs="-1";pureMM.minOccurs="0",-1代表unbounded，也要提取，为语义级验证
-       7.将group和complextype合并，可能有非一一对应的，如IDENTIFIER，同一类的group和complextype的description是一样的
-        8.看下枚举值是直接放到主类还是也作为一个类
-       注：可以构建多个版本的kg，比如只有xsd的只符合语法验证的；只有规范文档提取出的数据的。
 
 # 项目设计文档：基于知识图谱增强的约束感知 AUTOSAR XML 生成器
 
