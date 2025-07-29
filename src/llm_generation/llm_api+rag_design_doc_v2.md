@@ -655,31 +655,6 @@ class ResponseParser:
 
 ## 6. 工具模块
 
-### 6.1 验证工具 (`utils/validators.py`)
-
-#### 6.1.1 主要功能
-- 数据格式验证
-- JSON Schema验证
-- ARXML语法验证
-- 业务规则验证
-
-#### 6.1.2 验证器类型
-
-**SchemaValidator**:
-- JSON Schema验证
-- 数据结构完整性检查
-- 类型约束验证
-
-**ARXMLValidator**:
-- XML语法验证
-- AUTOSAR规范符合性
-- 引用完整性检查
-
-**BusinessRuleValidator**:
-- 领域特定规则验证
-- 约束条件检查
-- 逻辑一致性验证
-
 ### 6.2 序列化工具 (`utils/serializers.py`)
 
 #### 6.2.1 主要功能
