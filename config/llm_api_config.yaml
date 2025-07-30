@@ -1,0 +1,157 @@
+# ===== LLM API 配置 =====
+llm:
+  model_name: "gemini-2.5-pro-preview-06-05"        # Gemini模型名称
+  llm_api_url: "https://api.openai-proxy.org/google" # API代理地址
+  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥（也可通过环境变量设置）
+  temperature: 0.7                                   # 生成温度参数
+  max_output_tokens: 60000                          # 最大输出Token数
+  max_context_tokens: 200000                        # 最大上下文Token数
+
+# ===== 对话系统配置 =====
+conversation:
+  session_ttl: 86400                                # 会话存活时间（秒）- 24小时
+  enable_memory: true                               # 启用会话记忆功能
+
+# ===== 知识图谱配置 =====
+knowledge_graph:
+  neo4j_uri: "neo4j+s://d4f0265c.databases.neo4j.io"                # Neo4j数据库连接URI
+  neo4j_password: "1ABs4OWM7B0V1wOTc5FZEpYaNSsCuOFuJmDRrsVeoiE"           # Neo4j密码（可通过环境变量设置）
+  neo4j_user: "neo4j"
+  max_schema_depth: 7                               # XML Schema最大递归深度
+
+
+# ===== 术语库配置 =====
+terminology:
+  # 组件类型定义
+  component_types:
+    - name: "APPLICATION-SW-COMPONENT-TYPE"
+      description: "应用软件组件类型，实现业务逻辑和算法处理"
+      scenarios:
+        - "业务逻辑处理"
+        - "算法计算"
+        - "数据处理"
+        - "控制逻辑"
+        - "状态管理"
+      complexity: "Medium"
+
+    - name: "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+      description: "传感器执行器组件类型，处理硬件接口和I/O操作"
+      scenarios:
+        - "传感器数据采集"
+        - "执行器控制"
+        - "硬件抽象"
+        - "I/O处理"
+        - "信号转换"
+      complexity: "Simple"
+
+    - name: "COMPOSITION-SW-COMPONENT-TYPE"
+      description: "组合组件类型，协调多个子组件的交互"
+      scenarios:
+        - "组件编排"
+        - "系统集成"
+        - "复杂业务流程"
+        - "多组件协调"
+        - "架构组织"
+      complexity: "Complex"
+
+    - name: "PARAMETER-SW-COMPONENT-TYPE"
+      description: "参数组件类型，管理配置参数和标定数据"
+      scenarios:
+        - "参数配置"
+        - "标定数据管理"
+        - "运行时参数"
+        - "系统设置"
+      complexity: "Simple"
+
+  # 接口类型定义
+  interface_types:
+    - name: "SENDER-RECEIVER-INTERFACE"
+      description: "发送接收接口，用于异步数据传输和信号通信"
+      communication_mode: "异步"
+      scenarios:
+        - "传感器数据传输"
+        - "状态信息广播"
+        - "事件通知"
+        - "周期性数据更新"
+        - "信号传递"
+
+    - name: "CLIENT-SERVER-INTERFACE"
+      description: "客户端服务端接口，用于同步服务调用和请求响应"
+      communication_mode: "同步"
+      scenarios:
+        - "服务请求响应"
+        - "远程过程调用"
+        - "查询操作"
+        - "控制指令"
+        - "配置设置"
+
+    - name: "MODE-SWITCH-INTERFACE"
+      description: "模式切换接口，用于系统状态和运行模式管理"
+      communication_mode: "事件驱动"
+      scenarios:
+        - "系统状态切换"
+        - "运行模式管理"
+        - "电源模式控制"
+        - "操作模式变更"
+
+    - name: "NV-DATA-INTERFACE"
+      description: "非易失性数据接口，用于持久化数据存储和恢复"
+      communication_mode: "同步"
+      scenarios:
+        - "配置数据存储"
+        - "历史数据保存"
+        - "参数持久化"
+        - "故障信息记录"
+
+  # 设计模式定义
+  design_patterns:
+    - name: "单组件数据处理模式"
+      components:
+        - "APPLICATION-SW-COMPONENT-TYPE"
+      interfaces:
+        - "SENDER-RECEIVER-INTERFACE"
+      scenarios:
+        - "简单数据处理"
+        - "单一功能实现"
+        - "基础算法处理"
+
+    - name: "多组件协作模式"
+      components:
+        - "APPLICATION-SW-COMPONENT-TYPE"
+        - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+      interfaces:
+        - "SENDER-RECEIVER-INTERFACE"
+        - "CLIENT-SERVER-INTERFACE"
+      scenarios:
+        - "复杂系统设计"
+        - "多功能协作"
+        - "分布式处理"
+
+    - name: "传感器数据融合模式"
+      components:
+        - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+        - "APPLICATION-SW-COMPONENT-TYPE"
+        - "COMPOSITION-SW-COMPONENT-TYPE"
+      interfaces:
+        - "SENDER-RECEIVER-INTERFACE"
+        - "CLIENT-SERVER-INTERFACE"
+      scenarios:
+        - "多传感器数据融合"
+        - "复杂数据处理链"
+        - "智能决策系统"
+
+    - name: "参数化配置模式"
+      components:
+        - "APPLICATION-SW-COMPONENT-TYPE"
+        - "PARAMETER-SW-COMPONENT-TYPE"
+      interfaces:
+        - "CLIENT-SERVER-INTERFACE"
+        - "NV-DATA-INTERFACE"
+      scenarios:
+        - "可配置系统"
+        - "参数化设计"
+        - "自适应系统"
+
+# ===== 系统配置 =====
+debug_mode: true                                    # 调试模式开关
+output_dir: "src/llm_generation/output"                # 输出文件目录（相对于项目根目录）
