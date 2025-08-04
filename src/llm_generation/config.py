@@ -77,6 +77,11 @@ class KnowledgeGraphConfig:
     neo4j_password: str = ""
     max_schema_depth: int = 7
 
+@dataclass
+class StandardTypesConfig:
+    """标准数据类型配置"""
+    standard_types_path: Optional[str] = None  # 新增
+
 
 @dataclass
 class SystemConfig:
@@ -84,6 +89,7 @@ class SystemConfig:
     llm: LLMConfig
     conversation: ConversationConfig
     knowledge_graph: KnowledgeGraphConfig
+    standard_types: StandardTypesConfig
     terminology: TerminologyConfig
     debug_mode: bool
     output_dir: Path
@@ -152,14 +158,14 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
             if not api_key:
                 raise ValueError("LLM API Key未配置：请在yaml文件中配置api_key或设置LLM_API_KEY环境变量")
 
-        # Neo4j配置处理 - 支持多种字段名
+        # Neo4j配置处理
         kg_config = yaml_config.get("knowledge_graph", {})
         neo4j_password = kg_config.get("neo4j_password", "")
-        if not neo4j_password:
-            neo4j_password = os.getenv("NEO4J_PASSWORD", "")
+        neo4j_user = kg_config.get("neo4j_user")
 
-        # 兼容user和neo4j_user两种字段名
-        neo4j_user = kg_config.get("neo4j_user") or kg_config.get("user", "neo4j")
+        # 标准数据类型配置
+        standard_types = yaml_config.get("standard_types", {})
+
 
         # 构建配置对象
         config = SystemConfig(
@@ -180,6 +186,9 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 neo4j_user=neo4j_user,  # 修正：兼容两种字段名
                 neo4j_password=neo4j_password,
                 max_schema_depth=kg_config["max_schema_depth"]
+            ),
+            standard_types=StandardTypesConfig(
+                standard_types_path=standard_types.get("standard_types_path")
             ),
             terminology=TerminologyConfig(
                 component_types=_create_component_types(yaml_config["terminology"]["component_types"]),

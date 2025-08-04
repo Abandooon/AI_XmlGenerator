@@ -164,7 +164,7 @@ class UserInteraction:
         return translations.get(intf_type, intf_type)
 
     def analyze_user_feedback(self, feedback: str) -> Dict[str, Any]:
-        """分析用户反馈"""
+        """分析用户反馈 - 增强版"""
 
         feedback_lower = feedback.lower()
         analysis = {
@@ -172,10 +172,24 @@ class UserInteraction:
             "confidence": 0.0,
             "specific_requests": [],
             "target_elements": [],
-            "action_type": "none"
+            "action_type": "none",
+            "is_final_confirmation": False  # 新增：是否最终确认
         }
 
-        # 意图识别
+        # 检查是否是最终确认
+        final_confirm_phrases = [
+            "确认无误", "完全确认", "最终确认", "没问题了",
+            "可以了", "就这样了", "开始生成", "进入下一步",
+            "没有修改了", "确定", "final", "done"
+        ]
+
+        for phrase in final_confirm_phrases:
+            if phrase in feedback_lower:
+                analysis["is_final_confirmation"] = True
+                analysis["confidence"] = 0.95
+                break
+
+        # 意图识别（原有逻辑）
         intents = {}
         for intent, patterns in self.feedback_patterns.items():
             matches = sum(1 for pattern in patterns if pattern.lower() in feedback_lower)
@@ -183,21 +197,90 @@ class UserInteraction:
                 intents[intent] = matches
 
         if intents:
-            # 选择匹配最多的意图
             primary_intent = max(intents.items(), key=lambda x: x[1])
             analysis["intent"] = primary_intent[0]
-            analysis["confidence"] = min(primary_intent[1] * 0.3, 1.0)
+            if not analysis["is_final_confirmation"]:
+                analysis["confidence"] = min(primary_intent[1] * 0.3, 1.0)
 
-        # 具体请求分析
+        # 其余分析逻辑保持不变...
         analysis["specific_requests"] = self._extract_specific_requests(feedback)
-
-        # 目标元素分析
         analysis["target_elements"] = self._identify_target_elements(feedback)
-
-        # 动作类型分析
-        analysis["action_type"] = self._determine_action_type(analysis["intent"], feedback)
+        analysis["action_type"] = self._determine_action_type(analysis["intent"], feedback,
+                                                              analysis["is_final_confirmation"])
 
         return analysis
+
+    def _determine_action_type(self, intent: str, feedback: str, is_final: bool = False) -> str:
+        """确定动作类型 - 增强版"""
+        if is_final or (intent == "confirm" and "确认" in feedback):
+            return "proceed"
+        elif intent == "modify":
+            return "modify"
+        elif intent == "reject":
+            return "remove"
+        elif intent == "add":
+            return "add"
+        else:
+            return "clarify"
+
+    def handle_user_feedback(
+            self,
+            feedback: str,
+            current_design: ArchitectureDesign
+    ) -> Tuple[str, ArchitectureDesign, bool]:
+        """处理用户反馈 - 增强版"""
+
+        # 分析反馈
+        analysis = self.analyze_user_feedback(feedback)
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 反馈分析: {analysis}")
+
+        # 检查是否是最终确认
+        if analysis["is_final_confirmation"]:
+            return self._handle_final_confirmation(current_design)
+
+        # 根据分析结果处理
+        if analysis["action_type"] == "proceed":
+            # 非最终确认，需要二次确认
+            return self._handle_tentative_confirmation(current_design)
+        elif analysis["action_type"] == "modify":
+            return self._handle_modification(feedback, current_design, analysis)
+        elif analysis["action_type"] == "add":
+            return self._handle_addition(feedback, current_design, analysis)
+        elif analysis["action_type"] == "remove":
+            return self._handle_removal(feedback, current_design, analysis)
+        else:
+            return self._handle_clarification(feedback, current_design)
+
+    def _handle_final_confirmation(self, design: ArchitectureDesign) -> Tuple[str, ArchitectureDesign, bool]:
+        """处理最终确认 - 新增方法"""
+        response = f"""
+    ✅ **架构设计已最终确认！**
+
+    确认的设计包含：
+    - 组件数量: {len(design.component_plan)}
+    - 接口数量: {len(design.interface_plan)}
+    - 连接关系: 已定义
+
+    正在准备生成详细的ARXML内容...
+    """
+        return response, design, True  # True表示可以进入Round 2
+
+    def _handle_tentative_confirmation(self, design: ArchitectureDesign) -> Tuple[str, ArchitectureDesign, bool]:
+        """处理暂时确认（需要二次确认）- 新增方法"""
+        response = f"""
+    📋 当前设计概要：
+    - 组件数量: {len(design.component_plan)}
+    - 接口数量: {len(design.interface_plan)}
+
+    如果您确认当前设计无需修改，请回复：
+    - "最终确认" 或 "确认无误" - 进入ARXML生成阶段
+    - 或继续提出具体的修改要求
+
+    当前设计是否满足您的需求？
+    """
+        return response, design, False  # False表示需要明确的最终确认
 
     def _extract_specific_requests(self, feedback: str) -> List[str]:
         """提取具体请求"""
@@ -230,53 +313,6 @@ class UserInteraction:
                 elements.append(word)
 
         return elements
-
-    def _determine_action_type(self, intent: str, feedback: str) -> str:
-        """确定动作类型"""
-        if intent == "confirm":
-            return "proceed"
-        elif intent == "modify":
-            return "modify"
-        elif intent == "reject":
-            return "remove"
-        elif intent == "add":
-            return "add"
-        else:
-            return "clarify"
-
-    def handle_user_feedback(
-            self,
-            feedback: str,
-            current_design: ArchitectureDesign
-    ) -> Tuple[str, ArchitectureDesign, bool]:
-        """处理用户反馈"""
-
-        # 分析反馈
-        analysis = self.analyze_user_feedback(feedback)
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 反馈分析: {analysis}")
-
-        # 根据分析结果处理
-        if analysis["action_type"] == "proceed":
-            return self._handle_confirmation(current_design)
-
-        elif analysis["action_type"] == "modify":
-            return self._handle_modification(feedback, current_design, analysis)
-
-        elif analysis["action_type"] == "add":
-            return self._handle_addition(feedback, current_design, analysis)
-
-        elif analysis["action_type"] == "remove":
-            return self._handle_removal(feedback, current_design, analysis)
-
-        else:
-            return self._handle_clarification(feedback, current_design)
-
-    def _handle_confirmation(self, design: ArchitectureDesign) -> Tuple[str, ArchitectureDesign, bool]:
-        """处理确认反馈"""
-        response = "✅ 架构设计已确认！正在生成详细的ARXML内容..."
-        return response, design, True  # True表示可以进入Round 2
 
     def _handle_modification(
             self,

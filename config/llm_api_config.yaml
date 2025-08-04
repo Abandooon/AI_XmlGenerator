@@ -19,6 +19,10 @@ knowledge_graph:
   neo4j_user: "neo4j"
   max_schema_depth: 7                               # XML Schema最大递归深度
 
+# ===== standard_types配置 =====
+standard_types:
+  standard_types_path: "src/llm_generation/standard_types/data"  # 标准类型文件目录
+
 
 # ===== 术语库配置 =====
 terminology:

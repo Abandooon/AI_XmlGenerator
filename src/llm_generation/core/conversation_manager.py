@@ -28,6 +28,7 @@ class ConversationState(Enum):
 
 class ConversationManager:
     """对话管理核心"""
+    MAX_MODIFICATIONS = 10  # 类常量，限制最大修改次数
 
     def __init__(self):
         """初始化对话管理器"""
@@ -162,34 +163,62 @@ class ConversationManager:
             raise ArchitectureDesignError(f"Round1执行失败: {str(e)}")
 
     def handle_user_feedback(
-        self,
-        session_id: str,
-        feedback: str
+            self,
+            session_id: str,
+            feedback: str
     ) -> Dict[str, Any]:
-        """处理用户反馈"""
-
+        """处理用户反馈 - 支持多轮修改直到最终确认"""
         session_info = self._get_session_info(session_id)
+
         if not session_info:
             raise ConversationError(f"会话不存在: {session_id}")
 
         try:
-            # 检查当前状态
-            if session_info["state"] != ConversationState.ROUND1_COMPLETED:
-                raise ConversationError("当前状态不允许接收用户反馈")
+            # 检查修改次数限制
+            modification_history = session_info.get("modification_history", [])
+            if len(modification_history) >= self.MAX_MODIFICATIONS:
+                return {
+                    "session_id": session_id,
+                    "status": "max_modifications_reached",
+                    "state": session_info["state"].value,
+                    "response": f"已达到最大修改次数限制({self.MAX_MODIFICATIONS}次)。\n请回复'最终确认'接受当前设计，或联系管理员。",
+                    "can_proceed": False,
+                    "flow_status": self.get_conversation_flow_status(session_id)
+                }
+            # 检查当前状态 - 允许在ROUND1_COMPLETED或USER_FEEDBACK状态接收反馈
+            if session_info["state"] not in [ConversationState.ROUND1_COMPLETED,
+                                             ConversationState.USER_FEEDBACK]:
+                raise ConversationError(f"当前状态{session_info['state'].value}不允许接收用户反馈")
 
-            # 更新状态
+            # 更新状态为用户反馈处理中
             session_info["state"] = ConversationState.USER_FEEDBACK
 
             # 获取当前设计
             current_design = session_info["results"]["round1"]["design"]
+
+            # 初始化修改历史（如果不存在）
+            if "modification_history" not in session_info:
+                session_info["modification_history"] = []
 
             # 处理反馈
             response, modified_design, can_proceed = self.user_interaction.handle_user_feedback(
                 feedback, current_design
             )
 
-            # 更新设计（如果有修改）
+            # 记录修改（如果有变化）
             if modified_design != current_design:
+                # 检测具体变化
+                changes = self._detect_changes(current_design, modified_design)
+
+                session_info["modification_history"].append({
+                    "feedback": feedback,
+                    "timestamp": time.time(),
+                    "changes": changes,
+                    "design_snapshot": modified_design.__dict__ if isinstance(modified_design,
+                                                                              ArchitectureDesign) else modified_design
+                })
+
+                # 更新设计
                 session_info["results"]["round1"]["design"] = modified_design
                 self.memory_manager.update_design_state(session_id, modified_design)
 
@@ -199,42 +228,104 @@ class ConversationManager:
                 round_number=1,
                 user_input=feedback,
                 system_output=response,
-                design_artifacts=modified_design.__dict__ if isinstance(modified_design, ArchitectureDesign) else modified_design,
+                design_artifacts=modified_design.__dict__ if isinstance(modified_design,
+                                                                        ArchitectureDesign) else modified_design,
                 user_feedback=feedback
             )
 
             if can_proceed:
-                # 用户确认，准备进入Round2
+                # 用户最终确认，准备进入Round2
                 session_info["state"] = ConversationState.ROUND1_COMPLETED
+                session_info["final_confirmation_time"] = time.time()
+                modification_count = len(session_info.get("modification_history", []))
+
+                flow_status = self.get_conversation_flow_status(session_id)  # 新增
+
                 return {
                     "session_id": session_id,
                     "status": "confirmed",
                     "state": session_info["state"].value,
                     "response": response,
                     "can_proceed": True,
-                    "message": "设计已确认，准备生成详细ARXML"
+                    "modification_count": modification_count,
+                    "total_iterations": modification_count + 1,  # 包括初始设计
+                    "flow_status": flow_status,  # 新增
+                    "message": f"设计已最终确认（经过{modification_count}次修改），准备生成详细ARXML"
                 }
             else:
-                # 需要继续修改
-                session_info["state"] = ConversationState.ROUND1_COMPLETED
+                # 需要继续修改，保持在反馈状态
+                session_info["state"] = ConversationState.USER_FEEDBACK
+                iteration_count = len(session_info.get("modification_history", [])) + 1
+                flow_status = self.get_conversation_flow_status(session_id)  # 新增
+
                 return {
                     "session_id": session_id,
                     "status": "modified",
                     "state": session_info["state"].value,
                     "response": response,
-                    "modified_design": modified_design.__dict__ if isinstance(modified_design, ArchitectureDesign) else modified_design,
+                    "modified_design": modified_design.__dict__ if isinstance(modified_design,
+                                                                              ArchitectureDesign) else modified_design,
                     "can_proceed": False,
-                    "message": "设计已修改，请继续确认"
+                    "current_iteration": iteration_count,
+                    "flow_status": flow_status,  # 新增
+                    "message": f"设计已修改（第{iteration_count}轮），请继续确认或提出新的修改要求"
                 }
 
         except Exception as e:
             session_info["state"] = ConversationState.ERROR
             raise ConversationError(f"处理用户反馈失败: {str(e)}")
 
+    def _detect_changes(self, old_design: ArchitectureDesign, new_design: ArchitectureDesign) -> List[str]:
+        """检测设计变更 - 新增方法"""
+        changes = []
+
+        # 检测组件变化
+        if hasattr(old_design, 'component_plan') and hasattr(new_design, 'component_plan'):
+            old_comps = {c.get("name", ""): c for c in old_design.component_plan}
+            new_comps = {c.get("name", ""): c for c in new_design.component_plan}
+
+            # 添加的组件
+            added = set(new_comps.keys()) - set(old_comps.keys())
+            if added:
+                changes.append(f"添加组件: {', '.join(added)}")
+
+            # 删除的组件
+            removed = set(old_comps.keys()) - set(new_comps.keys())
+            if removed:
+                changes.append(f"删除组件: {', '.join(removed)}")
+
+            # 修改的组件
+            for name in set(old_comps.keys()) & set(new_comps.keys()):
+                if old_comps[name] != new_comps[name]:
+                    changes.append(f"修改组件: {name}")
+
+        # 检测接口变化
+        if hasattr(old_design, 'interface_plan') and hasattr(new_design, 'interface_plan'):
+            old_intfs = {i.get("name", ""): i for i in old_design.interface_plan}
+            new_intfs = {i.get("name", ""): i for i in new_design.interface_plan}
+
+            added = set(new_intfs.keys()) - set(old_intfs.keys())
+            if added:
+                changes.append(f"添加接口: {', '.join(added)}")
+
+            removed = set(old_intfs.keys()) - set(new_intfs.keys())
+            if removed:
+                changes.append(f"删除接口: {', '.join(removed)}")
+
+        return changes
+
+    def get_modification_history(self, session_id: str) -> List[Dict[str, Any]]:
+        """获取修改历史 - 新增方法"""
+        session_info = self._get_session_info(session_id)
+        if not session_info:
+            return []
+
+        return session_info.get("modification_history", [])
+
     def process_round2(
-        self,
-        session_id: str,
-        custom_requirements: Dict[str, Any] = None
+            self,
+            session_id: str,
+            custom_requirements: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """执行Round 2详细生成"""
 
@@ -243,9 +334,13 @@ class ConversationManager:
             raise ConversationError(f"会话不存在: {session_id}")
 
         try:
-            # 检查状态
+            # 检查状态 - 必须是ROUND1_COMPLETED且有最终确认
             if session_info["state"] != ConversationState.ROUND1_COMPLETED:
                 raise ConversationError("必须先完成Round1并确认设计")
+
+            # 检查是否有最终确认
+            if "final_confirmation_time" not in session_info:
+                raise ConversationError("设计尚未最终确认，请先确认架构设计")
 
             # 更新状态
             session_info["state"] = ConversationState.ROUND2_PROCESSING
@@ -346,7 +441,6 @@ class ConversationManager:
         """获取会话信息"""
         return self.active_sessions.get(session_id)
 
-    # conversation_manager.py 修正
     def _save_results(self, session_id: str, arxml_content: str, design: ArchitectureDesign) -> List[str]:
         """保存生成结果 - 修正：arxml_content现在是XML字符串"""
 
@@ -503,6 +597,35 @@ class ConversationManager:
             sessions.append(session_summary)
 
         return sessions
+
+    def get_conversation_flow_status(self, session_id: str) -> Dict[str, Any]:
+        """获取对话流程状态 - 新增方法"""
+        session_info = self._get_session_info(session_id)
+        if not session_info:
+            return {"error": "会话不存在"}
+
+        modification_history = session_info.get("modification_history", [])
+
+        return {
+            "session_id": session_id,
+            "current_state": session_info["state"].value,
+            "current_round": session_info["current_round"],
+            "modification_count": len(modification_history),
+            "total_iterations": len(modification_history) + 1,
+            "last_modification": modification_history[-1] if modification_history else None,
+            "has_final_confirmation": "final_confirmation_time" in session_info,
+            "can_proceed_to_round2": (
+                    session_info["state"] == ConversationState.ROUND1_COMPLETED
+                    and "final_confirmation_time" in session_info
+            ),
+            "elapsed_time": time.time() - session_info["start_time"],
+            "design_summary": {
+                "components": len(session_info["results"]["round1"]["design"].component_plan)
+                if "round1" in session_info.get("results", {}) else 0,
+                "interfaces": len(session_info["results"]["round1"]["design"].interface_plan)
+                if "round1" in session_info.get("results", {}) else 0
+            }
+        }
 
 # 全局对话管理器实例
 conversation_manager = ConversationManager()

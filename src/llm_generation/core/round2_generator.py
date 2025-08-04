@@ -202,21 +202,36 @@ class Round2Generator:
             return ["确保XML结构完整性", "遵循AUTOSAR命名规范"]
 
     def _build_generation_prompt(
-        self,
-        architecture_design: ArchitectureDesign,
-        constraints: List[str],
-        memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None
+            self,
+            architecture_design: ArchitectureDesign,
+            constraints: List[str],
+            memory_context: str = "",
+            custom_requirements: Dict[str, Any] = None
     ) -> str:
         """构建生成提示词"""
 
         # 使用模板管理器生成基础提示词
         prompt = template_manager.get_round2_prompt(
             architecture_design=architecture_design.__dict__,
-            component_details=[],  # 已经包含在架构设计中
-            interface_details=[],  # 已经包含在架构设计中
+            component_details=[],
+            interface_details=[],
             constraints=constraints
         )
+
+        # 添加标准类型信息 - 新增
+        from ..standard_types.standard_types import standard_type_manager
+        type_context = standard_type_manager.get_type_context_for_llm(
+            filter_categories=["VALUE", "TYPE_REFERENCE"]  # 只包含常用类型
+        )
+        prompt += f"\n\n{type_context}"
+
+        # 添加类型使用指导 - 新增
+        prompt += "\n\n## 数据类型使用指导\n"
+        prompt += "- 对于接口中的数据元素，请从上述标准类型中选择合适的类型\n"
+        prompt += "- 使用TYPE-REFERENCE引用标准类型，例如：/AUTOSAR_Platform/ImplementationDataTypes/uint16\n"
+        prompt += "- 布尔值使用boolean类型，并配合TRUE/FALSE值\n"
+        prompt += "- 数值类型根据范围选择：uint8(0-255), uint16(0-65535), uint32等\n"
+        prompt += "- 浮点数使用float32或float64\n"
 
         # 添加记忆上下文
         if memory_context:

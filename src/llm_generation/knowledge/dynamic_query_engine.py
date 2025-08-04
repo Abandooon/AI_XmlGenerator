@@ -344,6 +344,28 @@ class DynamicQueryEngine:
         }
         return type_mapping.get(kg_type, "string")
 
+    def query_type_information(self, type_names: List[str]) -> Dict[str, Any]:
+        """查询标准类型信息"""
+        from ..standard_types.standard_types import standard_type_manager
+
+        type_info = {}
+        for type_name in type_names:
+            info = standard_type_manager.get_type_by_name(type_name)
+            if info:
+                type_info[type_name] = info
+
+        return type_info
+
+    def get_available_data_types(self) -> List[str]:
+        """获取可用的数据类型列表"""
+        from ..standard_types.standard_types import standard_type_manager
+
+        # 返回VALUE和TYPE_REFERENCE类型
+        value_types = standard_type_manager.list_available_types("VALUE")
+        ref_types = standard_type_manager.list_available_types("TYPE_REFERENCE")
+
+        return value_types + ref_types
+
     def _analyze_element_requirements(
             self,
             session,
@@ -402,6 +424,7 @@ class DynamicQueryEngine:
             "visited_classes_count": len(self.visited_classes),
             "cache_size": len(self.query_cache)
         }
+
 
 # 全局查询引擎实例
 query_engine = DynamicQueryEngine()
