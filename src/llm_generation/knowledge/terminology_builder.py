@@ -1,417 +1,391 @@
 """knowledge/terminology_builder.py - 高层术语库构建
 
-从KG提取核心概念，构建Round 1使用的高层术语库
+从元模型定义中提取核心概念，为Round 1提供纯粹的元模型信息
 """
 from typing import Dict, List, Any, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
-class ComponentType:
+class AttributeDefinition:
+    """属性定义"""
+    tag: str
+    description: str
+    min_occurs: int
+    max_occurs: int  # -1表示无限制
+
+
+@dataclass
+class ComponentTypeDefinition:
     """组件类型定义"""
     name: str
     description: str
-    typical_scenarios: List[str]
-    complexity_level: str  # Simple/Medium/Complex
-    connection_patterns: List[str]
-    usage_conditions: List[str]
+    is_abstract: bool
+    parent_type: Optional[str] = None
+    attributes: List[AttributeDefinition] = field(default_factory=list)
+    sub_types: List['ComponentTypeDefinition'] = field(default_factory=list)
 
 
 @dataclass
-class InterfaceType:
+class InterfaceTypeDefinition:
     """接口类型定义"""
     name: str
     description: str
-    communication_mode: str  # 同步/异步、单向/双向
-    data_characteristics: str
-    performance_characteristics: str
-    typical_data_types: List[str]
-    usage_scenarios: List[str]
+    is_abstract: bool
+    parent_type: Optional[str] = None
+    attributes: List[AttributeDefinition] = field(default_factory=list)
+    sub_types: List['InterfaceTypeDefinition'] = field(default_factory=list)
 
 
 @dataclass
-class DesignPattern:
-    """设计模式定义"""
-    name: str
-    description: str
-    component_combination: List[str]
-    interface_combination: List[str]
-    data_flow_direction: str
-    usage_scenarios: List[str]
-    variation_points: List[str]
+class ModeDeclarationGroupDefinition:
+    """模式声明组定义"""
+    name: str = "MODE-DECLARATION-GROUP"
+    description: str = "Mode declaration group for mode management"
+    attributes: List[AttributeDefinition] = field(default_factory=list)
 
 
 class TerminologyBuilder:
-    """高层术语库构建器"""
+    """高层术语库构建器 - 基于元模型信息"""
 
     def __init__(self):
         """初始化术语库构建器"""
-        self.component_types = self._build_component_types()
-        self.interface_types = self._build_interface_types()
-        self.design_patterns = self._build_design_patterns()
+        self.component_types = self._load_component_types()
+        self.interface_types = self._load_interface_types()
+        self.mode_declaration_group = self._load_mode_declaration_group()
 
-    def _build_component_types(self) -> List[ComponentType]:
-        """构建组件类型库（静态定义）"""
-        return [
-            ComponentType(
-                name="APPLICATION-SW-COMPONENT-TYPE",
-                description="应用软件组件，实现应用层业务逻辑",
-                typical_scenarios=[
-                    "数据处理和计算",
-                    "业务逻辑控制",
-                    "传感器数据融合",
-                    "执行器控制",
-                    "状态机管理"
-                ],
-                complexity_level="Medium",
-                connection_patterns=[
-                    "通过P-PORT提供服务",
-                    "通过R-PORT请求服务",
-                    "支持多个端口连接"
-                ],
-                usage_conditions=[
-                    "需要实现复杂业务逻辑",
-                    "需要与多个组件交互",
-                    "需要周期性或事件驱动执行"
-                ]
-            ),
-            ComponentType(
-                name="SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
-                description="传感器执行器软件组件，处理硬件接口",
-                typical_scenarios=[
-                    "传感器数据采集",
-                    "执行器控制信号输出",
-                    "硬件抽象层接口",
-                    "诊断数据处理"
-                ],
-                complexity_level="Simple",
-                connection_patterns=[
-                    "P-PORT提供传感器数据",
-                    "R-PORT接收控制命令",
-                    "通常单一数据流向"
-                ],
-                usage_conditions=[
-                    "需要与硬件直接交互",
-                    "数据格式相对固定",
-                    "实时性要求较高"
-                ]
-            ),
-            ComponentType(
-                name="COMPOSITION-SW-COMPONENT-TYPE",
-                description="组合软件组件，包含和组织其他组件",
-                typical_scenarios=[
-                    "系统级组件组合",
-                    "子系统封装",
-                    "复杂功能模块化",
-                    "层次化架构设计"
-                ],
-                complexity_level="Complex",
-                connection_patterns=[
-                    "包含多个子组件",
-                    "代理内部组件接口",
-                    "支持委托连接器"
-                ],
-                usage_conditions=[
-                    "需要组织多个相关组件",
-                    "需要隐藏内部复杂性",
-                    "需要提供统一外部接口"
-                ]
-            ),
-            ComponentType(
-                name="PARAMETER-SW-COMPONENT-TYPE",
-                description="参数软件组件，管理配置参数",
-                typical_scenarios=[
-                    "系统配置管理",
-                    "标定参数存储",
-                    "运行时参数调整",
-                    "工厂设置管理"
-                ],
-                complexity_level="Simple",
-                connection_patterns=[
-                    "P-PORT提供参数值",
-                    "支持参数变更通知",
-                    "通常为数据提供者"
-                ],
-                usage_conditions=[
-                    "需要管理可配置参数",
-                    "需要参数持久化",
-                    "需要运行时参数访问"
-                ]
-            )
+    def _load_component_types(self) -> Dict[str, ComponentTypeDefinition]:
+        """加载组件类型定义（从round1.json提取）"""
+
+        # 基础SW-COMPONENT-TYPE定义
+        sw_component_type = ComponentTypeDefinition(
+            name="SW-COMPONENT-TYPE",
+            description="Base abstract class for all software component types",
+            is_abstract=True,
+            attributes=[
+                AttributeDefinition("SHORT-NAME", "This specifies an identifying shortName for the object. It needs to be unique within its context and is intended for humans but even more for technical reference.", 1, 1),
+                AttributeDefinition("PORTS", "The ports through which this component can communicate.\nThe aggregation of PortPrototype is subject to variability with the purpose to support the conditional existence of PortPrototypes.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.", 0, -1),
+                AttributeDefinition("SW-COMPONENT-DOCUMENTATION", "This adds a documentation to the SwComponentType.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was 1.", 0, -1),
+                AttributeDefinition("CONSISTENCY-NEEDS", "This represents the colelction of ConsistencyNeeds owned by the enclosing SwComponentType.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.", 0, -1),
+                AttributeDefinition("DESC", "This represents a general but brief (one paragraph) description what the object in question is about. It is only one paragraph! Desc is intended to be collected into overview tables. This property helps a human reader to identify the object in question.\n\nMore elaborate documentation, (in particular how the object is built or used) should go to \"introduction\".", 0, 1),
+            ]
+        )
+
+        # ATOMIC-SW-COMPONENT-TYPE定义
+        atomic_sw_component = ComponentTypeDefinition(
+            name="ATOMIC-SW-COMPONENT-TYPE",
+            description="An atomic software component is atomic in the sense that it cannot be further decomposed and distributed across multiple ECUs.",
+            is_abstract=True,
+            parent_type="SW-COMPONENT-TYPE"
+        )
+
+        # 具体的原子组件类型
+        application_sw = ComponentTypeDefinition(
+            name="APPLICATION-SW-COMPONENT-TYPE",
+            description="The ApplicationSwComponentType is used to represent the application software.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        sensor_actuator_sw = ComponentTypeDefinition(
+            name="SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+            description="The SensorActuatorSwComponentType introduces the possibility to link from the software representation of a sensor/actuator to its hardware description provided by the ECU Resource Template.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        complex_driver_sw = ComponentTypeDefinition(
+            name="COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+            description="The ComplexDeviceDriverSwComponentType is a special AtomicSwComponentType that has direct access to hardware on an ECU and which is therefore linked to a specific ECU or specific hardware. The ComplexDeviceDriverSwComponentType introduces the possibility to link from the software representation to its hardware description provided by the ECU Resource Template.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        ecu_abstraction_sw = ComponentTypeDefinition(
+            name="ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+            description="The ECUAbstraction is a special AtomicSwComponentType that resides between a software-component that wants to access ECU periphery and the Microcontroller Abstraction. The EcuAbstractionSwComponentType introduces the possibility to link from the software representation to its hardware description provided by the ECU Resource Template.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        nv_block_sw = ComponentTypeDefinition(
+            name="NV-BLOCK-SW-COMPONENT-TYPE",
+            description="The NvBlockSwComponentType defines non volatile data which data can be shared between SwComponentPrototypes. The non volatile data of the NvBlockSwComponentType are accessible via provided and required ports.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        service_proxy_sw = ComponentTypeDefinition(
+            name="SERVICE-PROXY-SW-COMPONENT-TYPE",
+            description="This class provides the ability to express a software-component which provides access to an internal service for remote ECUs. It acts as a proxy for the service providing access to the service.\n\nAn important use case is the request of vehicle mode switches: Such requests can be communicated via sender-receiver interfaces across ECU boundaries, but the mode manager being responsible to perform the mode switches is an AUTOSAR Service which is located in the Basic Software and is not visible in the VFB view. To handle this situation, a ServiceProxySwComponentType will act as proxy for the mode manager. It will have R-Ports to be connected with the mode requestors on VFB level and Service-Ports to be connected with the local mode manager at ECU integration time.\n\nApart from the semantics, a ServiceProxySwComponentType has these specific properties:\n* A prototype of it can be mapped to more than one ECUs in the system description.\n* Exactly one additional instance of it will be created in the ECU-Extract per ECU to which the prototype has been mapped.\n* For remote communication, it can have only R-Ports with sender-receiver interfaces and 1:n semantics.\n* There shall be no connectors between two prototypes of any ServiceProxySwComponentType.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        service_sw = ComponentTypeDefinition(
+            name="SERVICE-SW-COMPONENT-TYPE",
+            description="ServiceSwComponentType is used for configuring services for a given ECU. Instances of this class are only to be created in ECU Configuration phase for the specific purpose of the service configuration.",
+            is_abstract=False,
+            parent_type="ATOMIC-SW-COMPONENT-TYPE"
+        )
+
+        # 组合组件类型
+        composition_sw = ComponentTypeDefinition(
+            name="COMPOSITION-SW-COMPONENT-TYPE",
+            description="A CompositionSwComponentType aggregates SwComponentPrototypes (that in turn are typed by SwComponentTypes) as well as SwConnectors for primarily connecting SwComponentPrototypes among each others and towards the surface of the CompositionSwComponentType. By this means hierarchical structures of software-components can be created.",
+            is_abstract=False,
+            parent_type="SW-COMPONENT-TYPE"
+        )
+
+        # 参数组件类型
+        parameter_sw = ComponentTypeDefinition(
+            name="PARAMETER-SW-COMPONENT-TYPE",
+            description="The ParameterSwComponentType defines parameters and characteristic values accessible via provided Ports. The provided values are the same for all connected SwComponentPrototypes",
+            is_abstract=False,
+            parent_type="SW-COMPONENT-TYPE"
+        )
+
+        # 构建层次结构
+        atomic_sw_component.sub_types = [
+            application_sw,
+            sensor_actuator_sw,
+            complex_driver_sw,
+            ecu_abstraction_sw,
+            nv_block_sw,
+            service_proxy_sw,
+            service_sw
         ]
 
-    def _build_interface_types(self) -> List[InterfaceType]:
-        """构建接口类型库（静态定义）"""
-        return [
-            InterfaceType(
-                name="SENDER-RECEIVER-INTERFACE",
-                description="发送接收接口，用于异步数据通信",
-                communication_mode="异步、单向或双向",
-                data_characteristics="数据驱动，支持周期性和事件驱动传输",
-                performance_characteristics="高吞吐量，低延迟，支持数据丢失检测",
-                typical_data_types=[
-                    "传感器数值（温度、压力、速度）",
-                    "状态信息（开关状态、模式）",
-                    "控制指令（目标值、使能信号）",
-                    "诊断数据（错误代码、状态标志）"
-                ],
-                usage_scenarios=[
-                    "传感器数据传输",
-                    "控制信号发送",
-                    "状态信息广播",
-                    "诊断数据报告",
-                    "周期性数据更新"
-                ]
-            ),
-            InterfaceType(
-                name="CLIENT-SERVER-INTERFACE",
-                description="客户端服务端接口，用于同步服务调用",
-                communication_mode="同步、双向请求响应",
-                data_characteristics="操作驱动，支持复杂数据结构和返回值",
-                performance_characteristics="确定性响应时间，支持错误处理",
-                typical_data_types=[
-                    "配置参数（读写操作）",
-                    "计算服务（输入参数和计算结果）",
-                    "诊断服务（测试请求和结果）",
-                    "标定数据（读写访问）"
-                ],
-                usage_scenarios=[
-                    "参数配置服务",
-                    "复杂计算请求",
-                    "诊断测试调用",
-                    "数据库访问",
-                    "文件操作服务"
-                ]
-            ),
-            InterfaceType(
-                name="MODE-SWITCH-INTERFACE",
-                description="模式切换接口，用于系统模式管理",
-                communication_mode="异步、事件驱动",
-                data_characteristics="模式状态驱动，支持模式切换通知",
-                performance_characteristics="低延迟模式切换，支持模式依赖管理",
-                typical_data_types=[
-                    "运行模式（初始化、正常、降级）",
-                    "功能模式（激活、非激活）",
-                    "诊断模式（正常、测试、维护）",
-                    "安全模式（安全、故障安全）"
-                ],
-                usage_scenarios=[
-                    "系统启动关闭管理",
-                    "功能激活控制",
-                    "故障安全处理",
-                    "诊断模式切换",
-                    "节能模式管理"
-                ]
-            ),
-            InterfaceType(
-                name="NV-DATA-INTERFACE",
-                description="非易失性数据接口，用于持久化数据存储",
-                communication_mode="同步、读写操作",
-                data_characteristics="持久化数据，支持数据完整性保护",
-                performance_characteristics="相对较慢，支持数据验证和恢复",
-                typical_data_types=[
-                    "配置参数（用户设置）",
-                    "标定数据（工厂标定值）",
-                    "学习数据（自适应参数）",
-                    "历史数据（事件记录）"
-                ],
-                usage_scenarios=[
-                    "用户配置存储",
-                    "标定参数保存",
-                    "自学习数据持久化",
-                    "故障记录存储",
-                    "统计数据保存"
-                ]
-            )
+        sw_component_type.sub_types = [
+            atomic_sw_component,
+            composition_sw,
+            parameter_sw
         ]
 
-    def _build_design_patterns(self) -> List[DesignPattern]:
-        """构建设计模式库（静态定义）"""
-        return [
-            DesignPattern(
-                name="传感器数据采集模式",
-                description="从传感器采集数据并提供给应用组件处理",
-                component_combination=["SENSOR-ACTUATOR-SW-COMPONENT-TYPE", "APPLICATION-SW-COMPONENT-TYPE"],
-                interface_combination=["SENDER-RECEIVER-INTERFACE"],
-                data_flow_direction="传感器组件 → 应用组件",
-                usage_scenarios=[
-                    "温度监控系统",
-                    "速度检测应用",
-                    "压力监测系统",
-                    "位置感知应用"
-                ],
-                variation_points=[
-                    "传感器数据类型",
-                    "采集频率",
-                    "数据预处理方式",
-                    "故障检测策略"
-                ]
-            ),
-            DesignPattern(
-                name="控制指令执行模式",
-                description="应用组件生成控制指令，执行器组件执行",
-                component_combination=["APPLICATION-SW-COMPONENT-TYPE", "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"],
-                interface_combination=["SENDER-RECEIVER-INTERFACE"],
-                data_flow_direction="应用组件 → 执行器组件",
-                usage_scenarios=[
-                    "电机控制系统",
-                    "阀门控制应用",
-                    "加热器控制",
-                    "照明控制系统"
-                ],
-                variation_points=[
-                    "控制算法类型",
-                    "执行器类型",
-                    "反馈机制",
-                    "安全保护策略"
-                ]
-            ),
-            DesignPattern(
-                name="参数配置服务模式",
-                description="通过客户端服务端接口进行参数配置",
-                component_combination=["APPLICATION-SW-COMPONENT-TYPE", "PARAMETER-SW-COMPONENT-TYPE"],
-                interface_combination=["CLIENT-SERVER-INTERFACE"],
-                data_flow_direction="双向：参数读写操作",
-                usage_scenarios=[
-                    "系统配置管理",
-                    "用户偏好设置",
-                    "标定参数调整",
-                    "诊断参数配置"
-                ],
-                variation_points=[
-                    "参数类型和范围",
-                    "访问权限控制",
-                    "参数验证规则",
-                    "默认值设置"
-                ]
-            ),
-            DesignPattern(
-                name="模式管理模式",
-                description="通过模式切换接口管理系统运行模式",
-                component_combination=["APPLICATION-SW-COMPONENT-TYPE", "APPLICATION-SW-COMPONENT-TYPE"],
-                interface_combination=["MODE-SWITCH-INTERFACE"],
-                data_flow_direction="模式管理器 → 功能组件",
-                usage_scenarios=[
-                    "系统启动关闭管理",
-                    "功能激活控制",
-                    "安全模式切换",
-                    "节能模式管理"
-                ],
-                variation_points=[
-                    "模式类型定义",
-                    "切换条件",
-                    "模式依赖关系",
-                    "切换延迟时间"
-                ]
-            ),
-            DesignPattern(
-                name="数据融合处理模式",
-                description="多个传感器数据融合处理，提供综合信息",
-                component_combination=["SENSOR-ACTUATOR-SW-COMPONENT-TYPE", "APPLICATION-SW-COMPONENT-TYPE"],
-                interface_combination=["SENDER-RECEIVER-INTERFACE"],
-                data_flow_direction="多个传感器 → 融合处理组件",
-                usage_scenarios=[
-                    "多传感器定位",
-                    "环境感知融合",
-                    "故障检测诊断",
-                    "性能监控分析"
-                ],
-                variation_points=[
-                    "融合算法选择",
-                    "传感器权重",
-                    "异常数据处理",
-                    "输出数据格式"
-                ]
-            ),
-            DesignPattern(
-                name="分层控制模式",
-                description="多层次控制架构，上层策略下层执行",
-                component_combination=["APPLICATION-SW-COMPONENT-TYPE", "APPLICATION-SW-COMPONENT-TYPE",
-                                       "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"],
-                interface_combination=["SENDER-RECEIVER-INTERFACE", "CLIENT-SERVER-INTERFACE"],
-                data_flow_direction="策略层 → 控制层 → 执行层",
-                usage_scenarios=[
-                    "复杂控制系统",
-                    "智能决策应用",
-                    "自适应控制",
-                    "多目标优化控制"
-                ],
-                variation_points=[
-                    "控制层级数量",
-                    "层间通信方式",
-                    "决策算法",
-                    "反馈路径设计"
-                ]
-            )
-        ]
+        # 返回字典形式
+        types_dict = {
+            "SW-COMPONENT-TYPE": sw_component_type,
+            "ATOMIC-SW-COMPONENT-TYPE": atomic_sw_component,
+            "APPLICATION-SW-COMPONENT-TYPE": application_sw,
+            "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": sensor_actuator_sw,
+            "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE": complex_driver_sw,
+            "ECU-ABSTRACTION-SW-COMPONENT-TYPE": ecu_abstraction_sw,
+            "NV-BLOCK-SW-COMPONENT-TYPE": nv_block_sw,
+            "SERVICE-PROXY-SW-COMPONENT-TYPE": service_proxy_sw,
+            "SERVICE-SW-COMPONENT-TYPE": service_sw,
+            "COMPOSITION-SW-COMPONENT-TYPE": composition_sw,
+            "PARAMETER-SW-COMPONENT-TYPE": parameter_sw
+        }
 
-    def get_component_types(self) -> List[ComponentType]:
-        """获取组件类型列表"""
+        return types_dict
+
+    def _load_interface_types(self) -> Dict[str, InterfaceTypeDefinition]:
+        """加载接口类型定义（从round1.json提取）"""
+
+        # 基础PORT-INTERFACE定义
+        port_interface = InterfaceTypeDefinition(
+            name="PORT-INTERFACE",
+            description="Abstract base class for all port interfaces",
+            is_abstract=True,
+            attributes=[
+                AttributeDefinition("SHORT-NAME", "This specifies an identifying shortName for the object. It needs to be unique within its context and is intended for humans but even more for technical reference.", 1, 1),
+                AttributeDefinition("IS-SERVICE", "This flag is set if the PortInterface is to be used for\ncommunication between an\n* ApplicationSwComponentType or\n* ServiceProxySwComponentType or\n* SensorActuatorSwComponentType or\n* ComplexDeviceDriverSwComponentType\n* ServiceSwComponentType\n* EcuAbstractionSwComponentType\n\nand a ServiceSwComponentType (namely an\nAUTOSAR Service) located on the same ECU.\nOtherwise the flag is not set.", 1, 1),
+                AttributeDefinition("SERVICE-KIND", "This attribute provides further details about the nature of the applied service.", 0, 1),
+                AttributeDefinition("DESC", "This represents a general but brief (one paragraph) description what the object in question is about. It is only one paragraph! Desc is intended to be collected into overview tables. This property helps a human reader to identify the object in question.\n\nMore elaborate documentation, (in particular how the object is built or used) should go to \"introduction\".", 0, 1),
+            ]
+        )
+
+        # CLIENT-SERVER-INTERFACE定义
+        client_server = InterfaceTypeDefinition(
+            name="CLIENT-SERVER-INTERFACE",
+            description="A client/server interface declares a number of operations that can be invoked on a server by a client.",
+            is_abstract=False,
+            parent_type="PORT-INTERFACE"
+        )
+
+        # DATA-INTERFACE定义（抽象）
+        data_interface = InterfaceTypeDefinition(
+            name="DATA-INTERFACE",
+            description="The purpose of this meta-class is to act as an abstract base class for subclasses that share the semantics of being concerned about data (as opposed to e.g. operations).",
+            is_abstract=True,
+            parent_type="PORT-INTERFACE"
+        )
+
+        # DATA-INTERFACE的子类
+        nv_data = InterfaceTypeDefinition(
+            name="NV-DATA-INTERFACE",
+            description="A non volatile data interface declares a number of VariableDataPrototypes to be exchanged between non volatile block components and atomic software components.",
+            is_abstract=False,
+            parent_type="DATA-INTERFACE"
+        )
+
+        parameter = InterfaceTypeDefinition(
+            name="PARAMETER-INTERFACE",
+            description="A parameter interface declares a number of parameter and characteristic values to be exchanged between parameter components and software components.",
+            is_abstract=False,
+            parent_type="DATA-INTERFACE"
+        )
+
+        sender_receiver = InterfaceTypeDefinition(
+            name="SENDER-RECEIVER-INTERFACE",
+            description="A sender/receiver interface declares a number of data elements to be sent and received.",
+            is_abstract=False,
+            parent_type="DATA-INTERFACE"
+        )
+
+        # MODE-SWITCH-INTERFACE定义
+        mode_switch = InterfaceTypeDefinition(
+            name="MODE-SWITCH-INTERFACE",
+            description="A mode switch interface declares a ModeDeclarationGroupPrototype to be sent and received.",
+            is_abstract=False,
+            parent_type="PORT-INTERFACE"
+        )
+
+        # TRIGGER-INTERFACE定义
+        trigger = InterfaceTypeDefinition(
+            name="TRIGGER-INTERFACE",
+            description="A trigger interface declares a number of triggers that can be sent by an trigger source.",
+            is_abstract=False,
+            parent_type="PORT-INTERFACE"
+        )
+
+        # 构建层次结构
+        data_interface.sub_types = [nv_data, parameter, sender_receiver]
+        port_interface.sub_types = [client_server, data_interface, mode_switch, trigger]
+
+        # 返回字典形式
+        types_dict = {
+            "PORT-INTERFACE": port_interface,
+            "CLIENT-SERVER-INTERFACE": client_server,
+            "DATA-INTERFACE": data_interface,
+            "NV-DATA-INTERFACE": nv_data,
+            "PARAMETER-INTERFACE": parameter,
+            "SENDER-RECEIVER-INTERFACE": sender_receiver,
+            "MODE-SWITCH-INTERFACE": mode_switch,
+            "TRIGGER-INTERFACE": trigger
+        }
+
+        return types_dict
+
+    def _load_mode_declaration_group(self) -> ModeDeclarationGroupDefinition:
+        """加载模式声明组定义（从round1.json提取）"""
+
+        mode_group = ModeDeclarationGroupDefinition(
+            attributes=[
+                AttributeDefinition("SHORT-NAME", "This specifies an identifying shortName for the object. It needs to be unique within its context and is intended for humans but even more for technical reference.", 1, 1),
+                AttributeDefinition("INITIAL-MODE-REF", "The initial mode of the ModeDeclarationGroup. This mode is active before any mode switches occurred.", 1, 1),
+                AttributeDefinition("MODE-DECLARATION", "The ModeDeclarations collected in this ModeDeclarationGroup.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.", 1, -1),
+                AttributeDefinition("MODE-TRANSITION", "This represents the avaliable ModeTransitions of the ModeDeclarationGroup", 0, -1),
+                AttributeDefinition("MODE-MANAGER-ERROR-BEHAVIOR", "This represents the ability to define the error behavior expected by the mode manager in case of errors on the mode user side (e.g. terminated mode user).", 0, 1),
+                AttributeDefinition("MODE-USER-ERROR-BEHAVIOR", "This represents the definition of the error behavior expected by the mode user in case of errors on the mode manager side (e.g. terminated mode manager).", 0, 1),
+                AttributeDefinition("ON-TRANSITION-VALUE", "The value of this attribute shall be taken into account by the RTE generator for programmatically representing a value used for the transition between two statuses.", 0, 1),
+                AttributeDefinition("DESC", "This represents a general but brief (one paragraph) description what the object in question is about. It is only one paragraph! Desc is intended to be collected into overview tables. This property helps a human reader to identify the object in question.\n\nMore elaborate documentation, (in particular how the object is built or used) should go to \"introduction\".", 0, 1),
+            ]
+        )
+
+        return mode_group
+
+    def get_component_types(self) -> Dict[str, ComponentTypeDefinition]:
+        """获取组件类型字典"""
         return self.component_types
 
-    def get_interface_types(self) -> List[InterfaceType]:
-        """获取接口类型列表"""
+    def get_interface_types(self) -> Dict[str, InterfaceTypeDefinition]:
+        """获取接口类型字典"""
         return self.interface_types
 
-    def get_design_patterns(self) -> List[DesignPattern]:
-        """获取设计模式列表"""
-        return self.design_patterns
+    def get_concrete_component_types(self) -> List[ComponentTypeDefinition]:
+        """获取具体（非抽象）的组件类型"""
+        concrete_types = []
+        for type_def in self.component_types.values():
+            if not type_def.is_abstract:
+                concrete_types.append(type_def)
+        return concrete_types
 
-    def get_component_type_by_name(self, name: str) -> Optional[ComponentType]:
+    def get_concrete_interface_types(self) -> List[InterfaceTypeDefinition]:
+        """获取具体（非抽象）的接口类型"""
+        concrete_types = []
+        for type_def in self.interface_types.values():
+            if not type_def.is_abstract:
+                concrete_types.append(type_def)
+        return concrete_types
+
+    def get_component_type_by_name(self, name: str) -> Optional[ComponentTypeDefinition]:
         """根据名称获取组件类型"""
-        for comp_type in self.component_types:
-            if comp_type.name == name:
-                return comp_type
-        return None
+        return self.component_types.get(name)
 
-    def get_interface_type_by_name(self, name: str) -> Optional[InterfaceType]:
+    def get_interface_type_by_name(self, name: str) -> Optional[InterfaceTypeDefinition]:
         """根据名称获取接口类型"""
-        for intf_type in self.interface_types:
-            if intf_type.name == name:
-                return intf_type
-        return None
+        return self.interface_types.get(name)
 
-    def suggest_patterns_for_scenario(self, scenario: str) -> List[DesignPattern]:
-        """根据场景建议设计模式"""
-        suggestions = []
-        scenario_lower = scenario.lower()
+    def get_metamodel_summary(self) -> Dict[str, Any]:
+        """获取元模型摘要信息"""
 
-        for pattern in self.design_patterns:
-            # 检查使用场景匹配
-            for usage_scenario in pattern.usage_scenarios:
-                if any(keyword in scenario_lower for keyword in usage_scenario.lower().split()):
-                    suggestions.append(pattern)
-                    break
+        # 获取具体组件类型
+        concrete_components = self.get_concrete_component_types()
 
-        return suggestions
+        # 获取具体接口类型
+        concrete_interfaces = self.get_concrete_interface_types()
 
-    def get_terminology_summary(self) -> Dict[str, Any]:
-        """获取术语库摘要"""
         return {
-            "component_types": [
-                {
-                    "name": ct.name,
-                    "description": ct.description,
-                    "complexity": ct.complexity_level
-                }
-                for ct in self.component_types
-            ],
-            "interface_types": [
-                {
-                    "name": it.name,
-                    "description": it.description,
-                    "communication_mode": it.communication_mode
-                }
-                for it in self.interface_types
-            ],
-            "design_patterns": [
-                {
-                    "name": dp.name,
-                    "description": dp.description,
-                    "components": dp.component_combination
-                }
-                for dp in self.design_patterns
-            ]
+            "component_types": {
+                "total_count": len(self.component_types),
+                "abstract_count": sum(1 for t in self.component_types.values() if t.is_abstract),
+                "concrete_types": [
+                    {
+                        "name": ct.name,
+                        "description": ct.description,
+                        "parent": ct.parent_type
+                    }
+                    for ct in concrete_components
+                ]
+            },
+            "interface_types": {
+                "total_count": len(self.interface_types),
+                "abstract_count": sum(1 for t in self.interface_types.values() if t.is_abstract),
+                "concrete_types": [
+                    {
+                        "name": it.name,
+                        "description": it.description,
+                        "parent": it.parent_type
+                    }
+                    for it in concrete_interfaces
+                ]
+            },
+            "mode_declaration_group": {
+                "name": self.mode_declaration_group.name,
+                "required_attributes": [
+                    attr.tag for attr in self.mode_declaration_group.attributes
+                    if attr.min_occurs >= 1
+                ],
+                "optional_attributes": [
+                    attr.tag for attr in self.mode_declaration_group.attributes
+                    if attr.min_occurs == 0
+                ]
+            }
+        }
+
+    def get_type_hierarchy(self) -> Dict[str, Any]:
+        """获取类型层次结构"""
+
+        def build_hierarchy(type_def, is_component=True):
+            """递归构建层次结构"""
+            result = {
+                "name": type_def.name,
+                "is_abstract": type_def.is_abstract,
+                "description": type_def.description[:100] + "..." if len(type_def.description) > 100 else type_def.description
+            }
+
+            if type_def.sub_types:
+                result["children"] = [
+                    build_hierarchy(sub_type, is_component)
+                    for sub_type in type_def.sub_types
+                ]
+
+            return result
+
+        return {
+            "component_hierarchy": build_hierarchy(self.component_types["SW-COMPONENT-TYPE"]),
+            "interface_hierarchy": build_hierarchy(self.interface_types["PORT-INTERFACE"], False)
         }
 
 
