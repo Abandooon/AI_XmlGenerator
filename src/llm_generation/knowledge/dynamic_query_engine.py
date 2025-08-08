@@ -417,6 +417,132 @@ class DynamicQueryEngine:
 
         return required_elements, optional_elements
 
+    def _enhance_schema_for_semantic_placeholders(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """增强Schema以支持语义占位符"""
+
+        def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
+            enhanced = {}
+
+            for key, value in properties.items():
+                if isinstance(value, dict):
+                    if value.get("type") == "string" and any(ref_key in key.upper() for ref_key in
+                                                             ["REF", "REFERENCE", "TREF", "IREF"]):
+                        # 引用字段，支持语义占位符
+                        enhanced[key] = {
+                            "type": "string",
+                            "description": f"{value.get('description', '')} (支持语义占位符)",
+                            "pattern": "^(/.+|引用.+|连接到.+|订阅.+|绑定到.+)$"
+                        }
+                    elif value.get("type") == "object" and "properties" in value:
+                        # 递归处理嵌套对象
+                        enhanced[key] = {
+                            **value,
+                            "properties": enhance_properties(value["properties"])
+                        }
+                    else:
+                        enhanced[key] = value
+                else:
+                    enhanced[key] = value
+
+            return enhanced
+
+        if schema.get("type") == "object" and "properties" in schema:
+            schema["properties"] = enhance_properties(schema["properties"])
+
+        return schema
+
+    def generate_batch_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """为组件批次生成Schema - 严格模式，失败时报错"""
+
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法生成批次Schema")
+
+        try:
+            with self.driver.session() as session:
+                batch_schemas = {}
+
+                for comp_plan in component_plans:
+                    comp_type = comp_plan.get("type", "APPLICATION-SW-COMPONENT-TYPE")
+                    comp_name = comp_plan.get("name", "Component")
+
+                    # 严格查询，不允许降级
+                    comp_schema = self._build_recursive_xml_structure(
+                        session, comp_type, depth=0
+                    )
+
+                    if not comp_schema or comp_schema.get("type") == "object" and not comp_schema.get("properties"):
+                        raise KGQueryError(f"无法为组件类型 {comp_type} 生成有效Schema")
+
+                    # 添加语义占位符支持
+                    comp_schema = self._enhance_schema_for_semantic_placeholders(comp_schema)
+
+                    batch_schemas[comp_name] = comp_schema
+
+                if not batch_schemas:
+                    raise KGQueryError("批次Schema生成失败，未生成任何有效的组件Schema")
+
+                # 构建批次级Schema
+                schema = {
+                    "type": "object",
+                    "properties": batch_schemas,
+                    "required": list(batch_schemas.keys()),
+                    "description": f"批次生成Schema，包含{len(component_plans)}个组件"
+                }
+
+                return schema
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 批次Schema生成失败: {e}")
+            raise KGQueryError(f"批次Schema生成失败: {str(e)}")
+
+    def query_constraints_for_elements(self, element_types: List[str]) -> List[str]:
+        """查询元素约束规则 - 严格模式"""
+
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法查询约束规则")
+
+        try:
+            with self.driver.session() as session:
+                constraints = []
+
+                for element_type in element_types:
+                    query = """
+                    MATCH (c:Class {xml_tag: $element_type})-[:HAS_CONSTRAINT]->(constraint:Constraint)
+                    RETURN constraint.description as description
+                    """
+
+                    result = session.run(query, element_type=element_type)
+                    for record in result:
+                        if record["description"]:
+                            constraints.append(record["description"])
+
+                # 只添加基础约束，不提供降级约束
+                constraints.extend([
+                    "所有UUID必须符合标准格式",
+                    "SHORT-NAME必须符合AUTOSAR命名规范",
+                    "引用路径必须正确且可解析"
+                ])
+
+                return list(set(constraints))  # 去重
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 约束查询失败: {e}")
+            raise KGQueryError(f"约束规则查询失败: {str(e)}")
+
+    def _get_fallback_constraints(self, element_types: List[str]) -> List[str]:
+        """获取降级约束规则"""
+        return [
+            "确保XML结构完整性",
+            "遵循AUTOSAR命名规范",
+            "所有UUID必须唯一",
+            "引用路径必须可解析",
+            "端口定义必须完整",
+            "内部行为必须包含至少一个Runnable",
+            "事件和Runnable必须正确关联"
+        ]
+
     def get_schema_depth_stats(self) -> Dict[str, Any]:
         """获取Schema深度统计信息"""
         return {

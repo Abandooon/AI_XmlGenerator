@@ -327,18 +327,17 @@ class ConversationManager:
             session_id: str,
             custom_requirements: Dict[str, Any] = None
     ) -> Dict[str, Any]:
-        """执行Round 2详细生成"""
+        """执行Round 2详细生成 - 支持分批生成"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
             raise ConversationError(f"会话不存在: {session_id}")
 
         try:
-            # 检查状态 - 必须是ROUND1_COMPLETED且有最终确认
+            # 检查状态
             if session_info["state"] != ConversationState.ROUND1_COMPLETED:
                 raise ConversationError("必须先完成Round1并确认设计")
 
-            # 检查是否有最终确认
             if "final_confirmation_time" not in session_info:
                 raise ConversationError("设计尚未最终确认，请先确认架构设计")
 
@@ -349,10 +348,20 @@ class ConversationManager:
             # 获取确认的设计
             confirmed_design = session_info["results"]["round1"]["design"]
 
+            # 判断生成策略
+            component_count = len(confirmed_design.component_plan)
+            if component_count <= CONFIG.generation.single_batch_threshold:
+                generation_mode = "single_batch"
+            else:
+                generation_mode = "multi_batch"
+
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] Round2生成模式: {generation_mode}, 组件数量: {component_count}")
+
             # 获取记忆上下文
             memory_context = self.memory_manager.generate_continuity_prompt(session_id)
 
-            # 执行详细生成
+            # 执行详细生成（支持分批）
             arxml_data, stats = self.round2_generator.generate_arxml(
                 architecture_design=confirmed_design,
                 memory_context=memory_context,
@@ -362,7 +371,9 @@ class ConversationManager:
             # 更新会话状态
             session_info["state"] = ConversationState.ROUND2_COMPLETED
             session_info["results"]["round2"] = {
-                "arxml_data": arxml_data
+                "arxml_data": arxml_data,
+                "generation_mode": generation_mode,
+                "component_count": component_count
             }
             session_info["stats"]["round2_tokens"] = stats["total_tokens"]
             session_info["stats"]["total_tokens"] += stats["total_tokens"]
@@ -375,7 +386,7 @@ class ConversationManager:
                 session_id=session_id,
                 round_number=2,
                 user_input="生成详细ARXML",
-                system_output="ARXML已生成",
+                system_output=f"ARXML已生成（{generation_mode}）",
                 design_artifacts={"arxml_files": [str(f) for f in output_files]}
             )
 
@@ -384,7 +395,7 @@ class ConversationManager:
             self.successful_sessions += 1
 
             if CONFIG.debug_mode:
-                print(f"[DEBUG] Round2完成: 生成{len(output_files)}个文件")
+                print(f"[DEBUG] Round2完成: 生成{len(output_files)}个文件，模式: {generation_mode}")
 
             return {
                 "session_id": session_id,
@@ -395,7 +406,8 @@ class ConversationManager:
                 "output_files": [str(f) for f in output_files],
                 "stats": stats,
                 "total_stats": session_info["stats"],
-                "message": f"ARXML文档已成功生成！共{len(output_files)}个文件。"
+                "generation_mode": generation_mode,
+                "message": f"ARXML文档已成功生成！共{len(output_files)}个文件，使用{generation_mode}模式。"
             }
 
         except Exception as e:

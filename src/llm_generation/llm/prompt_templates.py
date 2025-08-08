@@ -363,6 +363,108 @@ $constraints
 
         return "\n".join(lines)
 
+    def get_batch_generation_prompt(
+            self,
+            batch_info: Dict[str, Any],
+            architecture_design: Dict[str, Any],
+            constraints: List[str],
+            batch_context: str,
+            registered_interfaces: List[Dict[str, Any]] = None
+    ) -> str:
+        """获取分批生成提示词"""
+
+        batch_type = batch_info.get("batch_type", "unknown")
+        component_list = batch_info.get("components", [])
+
+        template_text = f"""
+    你是AUTOSAR XML分批生成专家。当前正在生成第{batch_info.get('batch_idx', 0) + 1}批组件。
+
+    {batch_context}
+
+    ## 当前批次任务
+    批次类型: {batch_type}
+    组件数量: {len(component_list)}
+    生成目标: {batch_info.get('description', '生成当前批次的组件')}
+
+    ### 要生成的组件:
+    """
+
+        for i, comp in enumerate(component_list, 1):
+            template_text += f"{i}. **{comp.get('name', f'Component{i}')}**\n"
+            template_text += f"   - 类型: {comp.get('type', '')}\n"
+            template_text += f"   - 功能: {comp.get('purpose', '')}\n"
+            template_text += f"   - 复杂度: {comp.get('estimated_complexity', '')}\n\n"
+
+        # 添加已注册接口信息
+        if registered_interfaces:
+            template_text += "## 可引用的已生成接口\n"
+            for intf in registered_interfaces:
+                template_text += f"- {intf['name']}: {intf['description']}\n"
+
+        # 添加语义占位符指导
+        template_text += """
+
+    ## 语义占位符使用规范
+
+    对于需要引用其他组件的地方，请使用语义占位符而非具体路径：
+
+    ### 正确示例:
+    - REQUIRED-INTERFACE-TREF: "引用温度传感器的数据输出接口"
+    - PORT-PROTOTYPE-REF: "连接到电机控制器的转速端口"
+    - START-ON-EVENT-REF: "绑定到数据处理器的周期事件"
+
+    ### 错误示例（不要使用具体路径）:
+    - REQUIRED-INTERFACE-TREF: "/Components/TempSensor/Ports/DataOut"
+
+    ### 语义占位符规则:
+    1. 使用自然语言描述引用意图
+    2. 明确指出目标组件的功能特征
+    3. 说明连接的数据类型或用途
+    4. 保持描述的简洁和准确
+
+    ## 约束规则
+    """
+
+        # 添加约束
+        for constraint in constraints:
+            template_text += f"- {constraint}\n"
+
+        template_text += """
+
+    ## 生成要求
+    1. 严格按照提供的JSON Schema生成
+    2. 每个组件必须有唯一的UUID
+    3. 组件名称必须与架构设计中的名称一致
+    4. 使用语义占位符处理所有外部引用
+    5. 确保端口定义与接口规划匹配
+    6. 内部行为定义要完整且合理
+
+    请生成当前批次所有组件的完整JSON结构。
+    """
+
+        return template_text
+
+    def get_semantic_placeholder_guidance(self) -> str:
+        """获取语义占位符指导"""
+        return """
+    ## 语义占位符设计指导
+
+    ### 组件引用模式
+    - "引用{功能描述}组件的{端口类型}端口"
+    - "连接到{组件角色}的{数据类型}接口"
+    - "订阅{系统功能}管理器的{事件类型}"
+
+    ### 接口引用模式
+    - "使用{数据内容}传输接口"
+    - "提供{服务功能}访问接口"
+    - "管理{状态类型}切换接口"
+
+    ### 内部引用模式
+    - "绑定到{功能名称}的{事件类型}事件"
+    - "执行{处理逻辑}的运行实体"
+    - "访问{数据源}的数据访问点"
+    """
+
     def _translate_analysis_key(self, key: str) -> str:
         """翻译系统分析的键"""
         translations = {

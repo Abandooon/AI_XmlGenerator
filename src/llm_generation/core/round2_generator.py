@@ -1,7 +1,6 @@
 """core/round2_generator.py - Round 2详细生成器
 
-执行第二轮对话：根据确认的架构设计生成详细的ARXML JSON内容
-支持多组件生成，动态Schema生成，确保实例引用唯一性
+支持分批生成、语义占位符处理、引用展开
 """
 import json
 import uuid
@@ -16,18 +15,21 @@ from ..knowledge.dynamic_query_engine import query_engine
 from ..knowledge.constraint_engine import constraint_engine
 from ..utils.serializers import ArchitectureDesign, generate_uuid
 from ..utils.exceptions import ValidationError
+from .component_registry import component_registry
+from .reference_resolver import reference_resolver
+from .dependency_analyzer import dependency_analyzer
 
 class Round2Generator:
-    """Round 2详细生成器"""
+    """Round 2详细生成器 - 支持分批生成"""
 
     def __init__(self):
         """初始化Round 2生成器"""
         self.gemini_client = GeminiClient()
         self.query_engine = query_engine
         self.constraint_engine = constraint_engine
-
-        # 实例引用管理
-        self.reference_manager = ReferenceManager()
+        self.component_registry = component_registry
+        self.reference_resolver = reference_resolver
+        self.dependency_analyzer = dependency_analyzer
 
     def generate_arxml(
         self,
@@ -35,7 +37,7 @@ class Round2Generator:
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """生成详细的ARXML内容"""
+        """生成详细的ARXML内容 - 支持分批生成"""
 
         try:
             # 分析要生成的组件
@@ -43,57 +45,245 @@ class Round2Generator:
             if not component_plans:
                 raise ValidationError("架构设计中没有组件计划")
 
-            # 动态生成JSON Schema
-            arxml_schema = self._generate_dynamic_schema(component_plans)
-
-            # 查询约束信息
-            constraints = self._query_constraints(component_plans)
-
-            # 初始化引用管理器
-            self.reference_manager.initialize_from_plans(component_plans, architecture_design.interface_plan)
-
-            # 生成提示词
-            prompt = self._build_generation_prompt(
-                architecture_design,
-                constraints,
-                memory_context,
-                custom_requirements
-            )
-
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] Round2 提示词长度: {len(prompt)}")
-                print(f"[DEBUG] 动态生成的Schema键: {list(arxml_schema.get('properties', {}).keys())}")
-
-            # 调用LLM生成ARXML
-            response_data, input_tokens, output_tokens, total_tokens = \
-                self.gemini_client.generate_with_schema(
-                    prompt=prompt,
-                    schema=arxml_schema,
+            # 判断生成策略
+            component_count = len(component_plans)
+            if component_count <= CONFIG.generation.single_batch_threshold:
+                # 单批生成
+                return self._generate_single_batch(
+                    architecture_design, memory_context, custom_requirements
                 )
-
-            # 将JSON转换为ARXML格式
-            arxml_content = self._convert_json_to_arxml(response_data, architecture_design)
-
-            # 生成统计信息
-            stats = {
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "total_tokens": total_tokens,
-                "component_count": len(component_plans),
-                "schema_properties": len(arxml_schema.get("properties", {})),
-                "constraints_applied": len(constraints)
-            }
-
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] Round2完成: {len(arxml_content)}个顶级元素")
-
-            return arxml_content, stats
+            else:
+                # 分批生成
+                return self._generate_multi_batch(
+                    architecture_design, memory_context, custom_requirements
+                )
 
         except Exception as e:
             raise ValidationError(f"ARXML生成失败: {str(e)}")
 
-    def _convert_json_to_arxml(self, json_data: Dict[str, Any], architecture_design: ArchitectureDesign) -> str:
-        """将JSON数据转换为标准ARXML格式"""
+    def _generate_single_batch(
+        self,
+        architecture_design: ArchitectureDesign,
+        memory_context: str = "",
+        custom_requirements: Dict[str, Any] = None
+    ) -> Tuple[str, Dict[str, Any]]:
+        """单批生成 - 原有逻辑"""
+
+        component_plans = architecture_design.component_plan
+
+        # 动态生成JSON Schema
+        arxml_schema = self._generate_dynamic_schema(component_plans)
+
+        # 查询约束信息
+        constraints = self._query_constraints(component_plans)
+
+        # 生成提示词
+        prompt = self._build_generation_prompt(
+            architecture_design,
+            constraints,
+            memory_context,
+            custom_requirements
+        )
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 单批生成 - 组件数量: {len(component_plans)}")
+
+        # 调用LLM生成ARXML
+        response_data, input_tokens, output_tokens, total_tokens = \
+            self.gemini_client.generate_with_schema(
+                prompt=prompt,
+                schema=arxml_schema,
+            )
+
+        # 将JSON转换为ARXML格式
+        arxml_content = self._convert_json_to_arxml(response_data, architecture_design)
+
+        # 生成统计信息
+        stats = {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": total_tokens,
+            "component_count": len(component_plans),
+            "generation_mode": "single_batch",
+            "schema_properties": len(arxml_schema.get("properties", {})),
+            "constraints_applied": len(constraints)
+        }
+
+        return arxml_content, stats
+
+    def _generate_multi_batch(
+        self,
+        architecture_design: ArchitectureDesign,
+        memory_context: str = "",
+        custom_requirements: Dict[str, Any] = None
+    ) -> Tuple[str, Dict[str, Any]]:
+        """分批生成 - 新增逻辑"""
+
+        # 1. 分析依赖关系并制定分批策略
+        batches = self.dependency_analyzer.analyze_and_batch(
+            architecture_design.component_plan,
+            architecture_design.interface_plan
+        )
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 分批策略: {len(batches)}批，组件分布: {[len(batch['components']) for batch in batches]}")
+
+        # 2. 初始化注册表
+        self.component_registry.initialize_session(
+            architecture_design.component_plan,
+            architecture_design.interface_plan
+        )
+
+        all_generated_components = {}
+        total_stats = {
+            "total_tokens": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "batch_count": len(batches),
+            "component_count": len(architecture_design.component_plan),
+            "generation_mode": "multi_batch",
+            "batch_details": []
+        }
+
+        # 3. 逐批生成
+        for batch_idx, batch_info in enumerate(batches):
+            batch_components, batch_stats = self._generate_batch(
+                batch_info,
+                architecture_design,
+                memory_context,
+                custom_requirements,
+                batch_idx
+            )
+
+            # 更新注册表
+            for comp_data in batch_components.values():
+                self.component_registry.register_generated_component(comp_data)
+
+            # 合并结果
+            all_generated_components.update(batch_components)
+
+            # 累计统计
+            total_stats["total_tokens"] += batch_stats["total_tokens"]
+            total_stats["input_tokens"] += batch_stats["input_tokens"]
+            total_stats["output_tokens"] += batch_stats["output_tokens"]
+            total_stats["batch_details"].append(batch_stats)
+
+        # 4. 展开语义占位符
+        resolved_components = self.reference_resolver.resolve_all_references(
+            all_generated_components,
+            self.component_registry.get_interface_registry()
+        )
+
+        # 5. 组装最终ARXML
+        final_arxml = self._assemble_final_arxml(resolved_components, architecture_design)
+
+        return final_arxml, total_stats
+
+    def _generate_batch(
+        self,
+        batch_info: Dict[str, Any],
+        architecture_design: ArchitectureDesign,
+        memory_context: str,
+        custom_requirements: Dict[str, Any],
+        batch_idx: int
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """生成单个批次"""
+
+        batch_components = batch_info["components"]
+        batch_type = batch_info["batch_type"]
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 生成第{batch_idx + 1}批: {batch_type}, {len(batch_components)}个组件")
+
+        # 动态生成Schema（只包含当前批次组件）
+        batch_schema = self.query_engine.generate_batch_schema(batch_components)
+
+        # 查询约束
+        constraints = self._query_constraints(batch_components)
+
+        # 构建批次上下文
+        batch_context = self._build_batch_context(
+            batch_info,
+            architecture_design,
+            memory_context
+        )
+
+        # 生成批次特定提示词
+        prompt = template_manager.get_batch_generation_prompt(
+            batch_info=batch_info,
+            architecture_design=architecture_design.__dict__,
+            constraints=constraints,
+            batch_context=batch_context,
+            registered_interfaces=self.component_registry.get_interface_summaries()
+        )
+
+        # 调用LLM生成
+        response_data, input_tokens, output_tokens, total_tokens = \
+            self.gemini_client.generate_with_schema(
+                prompt=prompt,
+                schema=batch_schema
+            )
+
+        # 生成统计
+        batch_stats = {
+            "batch_idx": batch_idx,
+            "batch_type": batch_type,
+            "component_count": len(batch_components),
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": total_tokens,
+            "constraints_applied": len(constraints)
+        }
+
+        return response_data, batch_stats
+
+    def _build_batch_context(
+        self,
+        batch_info: Dict[str, Any],
+        architecture_design: ArchitectureDesign,
+        memory_context: str
+    ) -> str:
+        """构建批次上下文"""
+
+        context_parts = []
+
+        # 架构设计摘要
+        context_parts.append("## 架构设计摘要")
+        context_parts.append(f"系统功能: {architecture_design.system_analysis.get('functional_decomposition', '')}")
+        context_parts.append(f"数据流分析: {architecture_design.system_analysis.get('data_flow_analysis', '')}")
+
+        # 当前批次信息
+        context_parts.append(f"\n## 当前批次信息")
+        context_parts.append(f"批次类型: {batch_info['batch_type']}")
+        context_parts.append(f"批次目标: {batch_info['description']}")
+
+        # 已生成组件摘要
+        registered_components = self.component_registry.get_component_summaries()
+        if registered_components:
+            context_parts.append(f"\n## 已生成组件摘要")
+            for comp_summary in registered_components:
+                context_parts.append(f"- {comp_summary['name']}: {comp_summary['interfaces']}")
+
+        # 语义占位符指导
+        context_parts.append(f"\n## 语义占位符使用指导")
+        context_parts.append("对于组件间引用，请使用语义占位符，例如:")
+        context_parts.append("- '引用温度传感器的输出端口'")
+        context_parts.append("- '连接到数据处理器的控制接口'")
+        context_parts.append("- '订阅系统状态管理器的模式切换'")
+
+        # 记忆上下文
+        if memory_context:
+            context_parts.append(f"\n## 对话上下文")
+            context_parts.append(memory_context)
+
+        return "\n".join(context_parts)
+
+    def _assemble_final_arxml(
+        self,
+        resolved_components: Dict[str, Any],
+        architecture_design: ArchitectureDesign
+    ) -> str:
+        """组装最终ARXML"""
 
         from xml.etree.ElementTree import Element, SubElement, tostring
         from xml.dom import minidom
@@ -106,111 +296,112 @@ class Round2Generator:
         # 创建AR-PACKAGES
         ar_packages = SubElement(root, "AR-PACKAGES")
         ar_package = SubElement(ar_packages, "AR-PACKAGE")
-
-        # 设置包信息
         SubElement(ar_package, "SHORT-NAME").text = "Components"
 
         # 创建ELEMENTS
         elements = SubElement(ar_package, "ELEMENTS")
 
-        # 递归转换JSON到XML
-        for key, value in json_data.items():
-            if isinstance(value, dict):
-                self._json_dict_to_xml(elements, key, value)
+        # 添加所有组件
+        for comp_name, comp_data in resolved_components.items():
+            if isinstance(comp_data, dict):
+                self._json_dict_to_xml(elements, comp_name, comp_data)
 
         # 格式化输出
         rough_string = tostring(root, encoding='unicode')
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
 
+    # 保留原有的其他方法
+    def _convert_json_to_arxml(self, json_data: Dict[str, Any], architecture_design: ArchitectureDesign) -> str:
+        """将JSON数据转换为标准ARXML格式"""
+        # 原有实现保持不变
+        from xml.etree.ElementTree import Element, SubElement, tostring
+        from xml.dom import minidom
+
+        root = Element("AUTOSAR")
+        root.set("xmlns", "http://autosar.org/schema/r4.0")
+        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+        ar_packages = SubElement(root, "AR-PACKAGES")
+        ar_package = SubElement(ar_packages, "AR-PACKAGE")
+        SubElement(ar_package, "SHORT-NAME").text = "Components"
+        elements = SubElement(ar_package, "ELEMENTS")
+
+        for key, value in json_data.items():
+            if isinstance(value, dict):
+                self._json_dict_to_xml(elements, key, value)
+
+        rough_string = tostring(root, encoding='unicode')
+        reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="  ")
+
     def _json_dict_to_xml(self, parent: Element, tag_name: str, data: Dict[str, Any]) -> Element:
         """递归将JSON字典转换为XML元素"""
-
-        # 处理特殊标签名转换
+        # 原有实现保持不变
         xml_tag = self._normalize_xml_tag(tag_name)
         element = SubElement(parent, xml_tag)
 
         for key, value in data.items():
             if key.startswith('@'):
-                # XML属性
-                attr_name = key[1:]  # 去掉@前缀
+                attr_name = key[1:]
                 element.set(attr_name, str(value))
             elif key == '#text':
-                # 文本内容
                 element.text = str(value)
             elif isinstance(value, dict):
-                # 嵌套对象
                 self._json_dict_to_xml(element, key, value)
             elif isinstance(value, list):
-                # 数组
                 for item in value:
                     if isinstance(item, dict):
                         self._json_dict_to_xml(element, key, item)
                     else:
                         SubElement(element, key).text = str(item)
             else:
-                # 简单值
                 SubElement(element, key).text = str(value)
 
         return element
 
     def _normalize_xml_tag(self, tag_name: str) -> str:
         """标准化XML标签名"""
-        # 移除非法字符，确保符合XML标签命名规范
         return tag_name.replace('_', '-').upper()
 
     def _generate_dynamic_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
         """动态生成JSON Schema"""
-
         try:
-            # 使用查询引擎生成多组件Schema
             schema = self.query_engine.generate_multi_component_schema(component_plans)
-
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 动态生成Schema，包含{len(schema.get('properties', {}))}个属性")
-
             return schema
-
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 动态Schema生成失败: {e}")
-
-            # 动态Schema生成失败时直接抛出异常
             raise ValidationError(f"动态Schema生成失败: {e}")
 
     def _query_constraints(self, component_plans: List[Dict[str, Any]]) -> List[str]:
         """查询相关约束规则"""
-
-        # 提取所有组件类型
         component_types = list(set([
             comp.get("type", "") for comp in component_plans
             if comp.get("type")
         ]))
 
         try:
-            # 从KG查询约束
             constraints = self.query_engine.query_constraints_for_elements(component_types)
-
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 查询到{len(constraints)}条约束")
-
             return constraints
-
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 约束查询失败: {e}")
             return ["确保XML结构完整性", "遵循AUTOSAR命名规范"]
 
     def _build_generation_prompt(
-            self,
-            architecture_design: ArchitectureDesign,
-            constraints: List[str],
-            memory_context: str = "",
-            custom_requirements: Dict[str, Any] = None
+        self,
+        architecture_design: ArchitectureDesign,
+        constraints: List[str],
+        memory_context: str = "",
+        custom_requirements: Dict[str, Any] = None
     ) -> str:
         """构建生成提示词"""
-
-        # 使用模板管理器生成基础提示词
+        # 原有实现保持不变
         prompt = template_manager.get_round2_prompt(
             architecture_design=architecture_design.__dict__,
             component_details=[],
@@ -218,14 +409,12 @@ class Round2Generator:
             constraints=constraints
         )
 
-        # 添加标准类型信息 - 新增
         from ..standard_types.standard_types import standard_type_manager
         type_context = standard_type_manager.get_type_context_for_llm(
-            filter_categories=["VALUE", "TYPE_REFERENCE"]  # 只包含常用类型
+            filter_categories=["VALUE", "TYPE_REFERENCE"]
         )
         prompt += f"\n\n{type_context}"
 
-        # 添加类型使用指导 - 新增
         prompt += "\n\n## 数据类型使用指导\n"
         prompt += "- 对于接口中的数据元素，请从上述标准类型中选择合适的类型\n"
         prompt += "- 使用TYPE-REFERENCE引用标准类型，例如：/AUTOSAR_Platform/ImplementationDataTypes/uint16\n"
@@ -233,11 +422,9 @@ class Round2Generator:
         prompt += "- 数值类型根据范围选择：uint8(0-255), uint16(0-65535), uint32等\n"
         prompt += "- 浮点数使用float32或float64\n"
 
-        # 添加记忆上下文
         if memory_context:
             prompt += f"\n\n## 对话上下文\n{memory_context}"
 
-        # 添加多组件生成指导
         if len(architecture_design.component_plan) > 1:
             prompt += f"\n\n## 多组件生成要求\n"
             prompt += f"需要生成 {len(architecture_design.component_plan)} 个组件:\n"
@@ -248,14 +435,12 @@ class Round2Generator:
             prompt += "- 确保组件间引用的一致性\n"
             prompt += "- 端口名称要体现组件特性\n"
 
-        # 添加引用一致性要求
         prompt += f"\n\n## 引用一致性要求\n"
         prompt += "- 所有UUID必须是唯一的\n"
         prompt += "- 接口引用路径要正确\n"
         prompt += "- START-ON-EVENT-REF必须正确引用RUNNABLE-ENTITY\n"
         prompt += "- PORT-PROTOTYPE-REF必须正确引用端口\n"
 
-        # 添加自定义要求
         if custom_requirements:
             prompt += f"\n\n## 特殊要求\n"
             for key, value in custom_requirements.items():
@@ -264,45 +449,9 @@ class Round2Generator:
         return prompt
 
 
-    def _build_reference_map(self, arxml_data: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
-        """构建引用映射表"""
-
-        ref_map = {
-            "runnables": {},      # runnable_name -> path
-            "ports": {},          # port_name -> path
-            "interfaces": {},     # interface_name -> path
-            "components": {}      # component_name -> path
-        }
-
-        def collect_refs(obj, current_path=""):
-            if isinstance(obj, dict):
-                # 收集组件引用
-                if "SHORT-NAME" in obj and current_path.endswith("APPLICATION-SW-COMPONENT-TYPE"):
-                    comp_name = obj["SHORT-NAME"]
-                    ref_map["components"][comp_name] = f"/{comp_name}"
-
-                # 收集端口引用
-                if "SHORT-NAME" in obj and ("P-PORT-PROTOTYPE" in current_path or "R-PORT-PROTOTYPE" in current_path):
-                    port_name = obj["SHORT-NAME"]
-                    ref_map["ports"][port_name] = f"/{port_name}"
-
-                # 收集Runnable引用
-                if "SHORT-NAME" in obj and "RUNNABLE-ENTITY" in current_path:
-                    runnable_name = obj["SHORT-NAME"]
-                    ref_map["runnables"][runnable_name] = f"/{runnable_name}"
-
-                for key, value in obj.items():
-                    collect_refs(value, f"{current_path}.{key}")
-            elif isinstance(obj, list):
-                for i, item in enumerate(obj):
-                    collect_refs(item, f"{current_path}[{i}]")
-
-        collect_refs(arxml_data)
-        return ref_map
-
-
+# 保持原有的ReferenceManager但标记为deprecated
 class ReferenceManager:
-    """引用管理器，确保实例引用的唯一性和一致性"""
+    """引用管理器（已弃用，使用ComponentRegistry替代）"""
 
     def __init__(self):
         self.component_refs = {}
@@ -310,21 +459,13 @@ class ReferenceManager:
         self.port_refs = {}
         self.runnable_refs = {}
 
-    def initialize_from_plans(
-        self,
-        component_plans: List[Dict[str, Any]],
-        interface_plans: List[Dict[str, Any]]
-    ):
-        """从设计计划初始化引用"""
-
-        # 初始化组件引用
+    def initialize_from_plans(self, component_plans: List[Dict[str, Any]], interface_plans: List[Dict[str, Any]]):
         for comp_plan in component_plans:
             comp_id = comp_plan.get("component_id", "")
             comp_name = comp_plan.get("name", "")
             if comp_id and comp_name:
                 self.component_refs[comp_id] = f"/{comp_name}"
 
-        # 初始化接口引用
         for intf_plan in interface_plans:
             intf_id = intf_plan.get("interface_id", "")
             intf_name = intf_plan.get("name", "")
@@ -332,21 +473,17 @@ class ReferenceManager:
                 self.interface_refs[intf_id] = f"/{intf_name}"
 
     def get_component_ref(self, component_id: str) -> str:
-        """获取组件引用路径"""
         return self.component_refs.get(component_id, f"/UnknownComponent_{component_id}")
 
     def get_interface_ref(self, interface_id: str) -> str:
-        """获取接口引用路径"""
         return self.interface_refs.get(interface_id, f"/UnknownInterface_{interface_id}")
 
     def register_port_ref(self, port_name: str, component_name: str) -> str:
-        """注册端口引用"""
         ref_path = f"/{component_name}/{port_name}"
         self.port_refs[port_name] = ref_path
         return ref_path
 
     def register_runnable_ref(self, runnable_name: str, component_name: str) -> str:
-        """注册Runnable引用"""
         ref_path = f"/{component_name}/InternalBehavior/{runnable_name}"
         self.runnable_refs[runnable_name] = ref_path
         return ref_path

@@ -82,6 +82,30 @@ class StandardTypesConfig:
     """标准数据类型配置"""
     standard_types_path: Optional[str] = None  # 新增
 
+@dataclass
+class GenerationConfig:
+    """生成配置"""
+    single_batch_threshold: int = 5  # 单批生成阈值
+    max_batch_size: int = 8  # 最大批次大小
+    enable_semantic_placeholders: bool = True  # 启用语义占位符
+    reference_resolution_timeout: int = 300  # 引用解析超时时间
+
+@dataclass
+class SemanticPattern:
+    """语义模式配置"""
+    pattern: str
+    type: str
+    template: str
+
+@dataclass
+class SemanticResolutionConfig:
+    """语义解析配置"""
+    identifiers: List[str]
+    patterns: List[SemanticPattern]
+    function_mappings: Dict[str, List[str]]
+    fuzzy_match_threshold: float = 0.6
+    enable_heuristic_resolution: bool = True
+    resolution_cache_size: int = 1000
 
 @dataclass
 class SystemConfig:
@@ -91,6 +115,8 @@ class SystemConfig:
     knowledge_graph: KnowledgeGraphConfig
     standard_types: StandardTypesConfig
     terminology: TerminologyConfig
+    generation: GenerationConfig
+    semantic_resolution: SemanticResolutionConfig  # 新增
     debug_mode: bool
     output_dir: Path
 
@@ -166,6 +192,19 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
         # 标准数据类型配置
         standard_types = yaml_config.get("standard_types", {})
 
+        # 生成配置
+        generation_config = yaml_config.get("generation", {})
+
+        # 语义解析配置
+        semantic_config = yaml_config.get("semantic_resolution", {})
+
+        patterns = []
+        for pattern_data in semantic_config.get("patterns", []):
+            patterns.append(SemanticPattern(
+                pattern=pattern_data["pattern"],
+                type=pattern_data["type"],
+                template=pattern_data["template"]
+            ))
 
         # 构建配置对象
         config = SystemConfig(
@@ -186,6 +225,20 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 neo4j_user=neo4j_user,  # 修正：兼容两种字段名
                 neo4j_password=neo4j_password,
                 max_schema_depth=kg_config["max_schema_depth"]
+            ),
+            generation=GenerationConfig(
+                single_batch_threshold=generation_config.get("single_batch_threshold", 5),
+                max_batch_size=generation_config.get("max_batch_size", 8),
+                enable_semantic_placeholders=generation_config.get("enable_semantic_placeholders", True),
+                reference_resolution_timeout=generation_config.get("reference_resolution_timeout", 300)
+            ),
+            semantic_resolution=SemanticResolutionConfig(
+                identifiers=semantic_config.get("identifiers", []),
+                patterns=patterns,
+                function_mappings=semantic_config.get("function_mappings", {}),
+                fuzzy_match_threshold=semantic_config.get("fuzzy_match_threshold", 0.6),
+                enable_heuristic_resolution=semantic_config.get("enable_heuristic_resolution", True),
+                resolution_cache_size=semantic_config.get("resolution_cache_size", 1000)
             ),
             standard_types=StandardTypesConfig(
                 standard_types_path=standard_types.get("standard_types_path")

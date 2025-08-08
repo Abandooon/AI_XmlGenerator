@@ -24,6 +24,62 @@ standard_types:
   standard_types_path: "src/llm_generation/standard_types/data"  # 标准类型文件目录
 
 
+# ===== 生成策略配置 =====
+generation:
+  single_batch_threshold: 5              # 单批生成阈值：<=5个组件时单批生成
+  max_batch_size: 8                      # 最大批次大小：每批最多8个组件
+  enable_semantic_placeholders: true     # 启用语义占位符
+  reference_resolution_timeout: 300      # 引用解析超时时间（秒）
+
+# ===== 语义解析配置 =====
+semantic_resolution:
+  # 语义引用标识符（用于判断是否为语义引用）
+  identifiers:
+    - "引用"
+    - "连接到"
+    - "订阅"
+    - "绑定到"
+    - "使用"
+    - "提供"
+
+  # 语义解析模式
+  patterns:
+    - pattern: "引用(.+?)的(.+?)端口"
+      type: "port_reference"
+      template: "/{component}/Ports/{target}"
+
+    - pattern: "连接到(.+?)的(.+?)接口"
+      type: "interface_reference"
+      template: "/{component}/Interfaces/{target}"
+
+    - pattern: "订阅(.+?)管理器的(.+?)事件"
+      type: "event_reference"
+      template: "/{component}/Events/{target}"
+
+    - pattern: "绑定到(.+?)的(.+?)事件"
+      type: "runnable_reference"
+      template: "/{component}/InternalBehavior/Runnables/{target}"
+
+    - pattern: "使用(.+?)提供的(.+?)服务"
+      type: "service_reference"
+      template: "/{component}/Services/{target}"
+
+  # 功能映射（用于组件名称推断）
+  function_mappings:
+    温度: ["temp", "temperature", "thermal"]
+    传感器: ["sensor", "detect", "monitor"]
+    控制器: ["controller", "control", "manager"]
+    处理器: ["processor", "process", "handler"]
+    管理器: ["manager", "mgr", "supervisor"]
+    电机: ["motor", "engine", "actuator"]
+    泵: ["pump", "valve"]
+    显示: ["display", "hmi", "screen"]
+
+  # 解析配置
+  fuzzy_match_threshold: 0.6
+  enable_heuristic_resolution: true
+  resolution_cache_size: 1000
+
 # ===== 术语库配置 =====
 terminology:
   # 组件类型定义
