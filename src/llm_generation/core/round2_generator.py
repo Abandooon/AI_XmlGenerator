@@ -365,33 +365,98 @@ class Round2Generator:
         return tag_name.replace('_', '-').upper()
 
     def _generate_dynamic_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """动态生成JSON Schema"""
-        try:
-            schema = self.query_engine.generate_multi_component_schema(component_plans)
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 动态生成Schema，包含{len(schema.get('properties', {}))}个属性")
-            return schema
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 动态Schema生成失败: {e}")
-            raise ValidationError(f"动态Schema生成失败: {e}")
+        """动态生成JSON Schema - 无降级，失败直接报错"""
+
+        # 必须成功生成，否则报错
+        schema = self.query_engine.generate_multi_component_schema(component_plans)
+
+        if not schema or not schema.get("properties"):
+            raise ValidationError(f"Schema生成失败：无法为{len(component_plans)}个组件生成有效Schema")
+
+        # 基于LLM的element_design增强schema
+        for comp_plan in component_plans:
+            comp_name = comp_plan.get("name")
+            if comp_name in schema["properties"]:
+                schema["properties"][comp_name] = self._enhance_schema_with_element_design(
+                    schema["properties"][comp_name],
+                    comp_plan.get("element_design", {})
+                )
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 成功生成Schema，包含{len(schema.get('properties', {}))}个组件定义")
+
+        return schema
+
+    def _enhance_schema_with_element_design(
+            self,
+            base_schema: Dict[str, Any],
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """基于LLM的元素设计增强Schema"""
+
+        if not element_design:
+            return base_schema
+
+        # 如果LLM设计了ports，确保schema包含PORTS
+        if element_design.get("ports", {}).get("needed"):
+            if "properties" not in base_schema:
+                base_schema["properties"] = {}
+
+            if "PORTS" not in base_schema["properties"]:
+                # 查询PORTS的完整结构
+                from ..knowledge.terminology_builder import terminology_builder
+                ports_context = terminology_builder.build_element_context_for_round2(
+                    "PORTS", depth=2
+                )
+
+                base_schema["properties"]["PORTS"] = {
+                    "type": "object",
+                    "description": ports_context.get("element_descriptions", {}).get("PORTS", {}).get("description",
+                                                                                                      "端口定义"),
+                    "properties": {
+                        "P-PORT-PROTOTYPE": {"type": "object"},
+                        "R-PORT-PROTOTYPE": {"type": "object"}
+                    }
+                }
+
+        # 如果LLM设计了internal_behaviors，确保schema包含
+        if element_design.get("internal_behaviors", {}).get("needed"):
+            if "properties" not in base_schema:
+                base_schema["properties"] = {}
+
+            if "INTERNAL-BEHAVIORS" not in base_schema["properties"]:
+                base_schema["properties"]["INTERNAL-BEHAVIORS"] = {
+                    "type": "object",
+                    "description": "内部行为定义",
+                    "properties": {
+                        "SWC-INTERNAL-BEHAVIOR": {
+                            "type": "object",
+                            "properties": {
+                                "SHORT-NAME": {"type": "string"},
+                                "EVENTS": {"type": "object"},
+                                "RUNNABLES": {"type": "object"}
+                            }
+                        }
+                    }
+                }
+
+        return base_schema
 
     def _query_constraints(self, component_plans: List[Dict[str, Any]]) -> List[str]:
-        """查询相关约束规则"""
+        """查询相关约束规则 - 无降级"""
+
         component_types = list(set([
             comp.get("type", "") for comp in component_plans
             if comp.get("type")
         ]))
 
-        try:
-            constraints = self.query_engine.query_constraints_for_elements(component_types)
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 查询到{len(constraints)}条约束")
-            return constraints
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 约束查询失败: {e}")
-            return ["确保XML结构完整性", "遵循AUTOSAR命名规范"]
+        # 必须成功查询，否则报错
+        constraints = self.query_engine.query_constraints_for_elements(component_types)
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 成功查询到{len(constraints)}条约束")
+
+        return constraints
 
     def _build_generation_prompt(
         self,

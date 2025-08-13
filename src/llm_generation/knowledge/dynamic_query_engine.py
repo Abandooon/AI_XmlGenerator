@@ -496,6 +496,165 @@ class DynamicQueryEngine:
                 print(f"[DEBUG] 批次Schema生成失败: {e}")
             raise KGQueryError(f"批次Schema生成失败: {str(e)}")
 
+    def generate_multi_component_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """生成多组件Schema - 无降级策略"""
+
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法生成Schema")
+
+        schemas = {}
+
+        with self.driver.session() as session:
+            for comp_plan in component_plans:
+                comp_type = comp_plan.get("type", "")
+                comp_name = comp_plan.get("name", "")
+
+                if not comp_type:
+                    raise KGQueryError(f"组件{comp_name}缺少类型定义")
+
+                # 基于element_design查询特定元素
+                element_design = comp_plan.get("element_design", {})
+                comp_schema = self._build_targeted_schema(
+                    session,
+                    comp_type,
+                    element_design
+                )
+
+                if not comp_schema or not comp_schema.get("properties"):
+                    raise KGQueryError(f"无法为组件类型{comp_type}生成有效Schema")
+
+                schemas[comp_name] = comp_schema
+
+        if not schemas:
+            raise KGQueryError("未能生成任何组件Schema")
+
+        return {
+            "type": "object",
+            "properties": schemas,
+            "required": list(schemas.keys()),
+            "description": f"包含{len(component_plans)}个组件的Schema定义"
+        }
+
+    def _build_targeted_schema(
+            self,
+            session,
+            component_type: str,
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """基于LLM设计构建目标Schema"""
+
+        # 查询基础结构
+        base_query = """
+        MATCH (c:Class {xml_tag: $component_type})
+        OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(a:Attribute)
+        WHERE a.minOccurs >= 1
+        RETURN c.xml_tag as class_tag,
+               collect(DISTINCT {
+                   xml_tag: a.xml_tag,
+                   min_occurs: a.minOccurs,
+                   max_occurs: a.maxOccurs,
+                   description: a.description
+               }) as required_attributes
+        """
+
+        result = session.run(base_query, component_type=component_type)
+        record = result.single()
+
+        if not record:
+            raise KGQueryError(f"KG中未找到组件类型: {component_type}")
+
+        # 构建基础schema
+        schema = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+
+        # 添加必需属性
+        for attr in record["required_attributes"]:
+            if attr["xml_tag"]:
+                schema["properties"][attr["xml_tag"]] = {
+                    "type": "string",
+                    "description": attr.get("description", "")
+                }
+                schema["required"].append(attr["xml_tag"])
+
+        # 基于element_design添加额外元素
+        if element_design.get("ports", {}).get("needed"):
+            self._add_ports_to_schema(session, schema)
+
+        if element_design.get("internal_behaviors", {}).get("needed"):
+            self._add_internal_behaviors_to_schema(session, schema)
+
+        return schema
+
+    def _add_ports_to_schema(self, session, schema: Dict[str, Any]):
+        """添加PORTS结构到schema"""
+
+        ports_query = """
+        MATCH (p:Class {xml_tag: 'PORTS'})
+        OPTIONAL MATCH (p)-[:HAS_CHILD]->(port:Class)
+        WHERE port.xml_tag IN ['P-PORT-PROTOTYPE', 'R-PORT-PROTOTYPE']
+        OPTIONAL MATCH (port)-[:HAS_ATTRIBUTE]->(a:Attribute)
+        RETURN port.xml_tag as port_type,
+               collect({
+                   xml_tag: a.xml_tag,
+                   min_occurs: a.minOccurs
+               }) as attributes
+        """
+
+        result = session.run(ports_query)
+
+        ports_schema = {
+            "type": "object",
+            "properties": {}
+        }
+
+        for record in result:
+            if record["port_type"]:
+                port_props = {}
+                for attr in record["attributes"]:
+                    if attr["xml_tag"]:
+                        port_props[attr["xml_tag"]] = {"type": "string"}
+
+                ports_schema["properties"][record["port_type"]] = {
+                    "type": "object",
+                    "properties": port_props
+                }
+
+        schema["properties"]["PORTS"] = ports_schema
+
+    def _add_internal_behaviors_to_schema(self, session, schema: Dict[str, Any]):
+        """添加INTERNAL-BEHAVIORS结构到schema"""
+
+        behavior_query = """
+        MATCH (ib:Class {xml_tag: 'INTERNAL-BEHAVIORS'})
+        OPTIONAL MATCH (ib)-[:HAS_CHILD]->(swc:Class {xml_tag: 'SWC-INTERNAL-BEHAVIOR'})
+        OPTIONAL MATCH (swc)-[:HAS_ATTRIBUTE]->(a:Attribute)
+        WHERE a.minOccurs >= 1
+        RETURN collect(DISTINCT a.xml_tag) as required_attrs
+        """
+
+        result = session.run(behavior_query)
+        record = result.single()
+
+        behavior_schema = {
+            "type": "object",
+            "properties": {
+                "SWC-INTERNAL-BEHAVIOR": {
+                    "type": "object",
+                    "properties": {
+                        "SHORT-NAME": {"type": "string"},
+                        "EVENTS": {"type": "object"},
+                        "RUNNABLES": {"type": "object"}
+                    },
+                    "required": record["required_attrs"] if record else ["SHORT-NAME"]
+                }
+            }
+        }
+
+        schema["properties"]["INTERNAL-BEHAVIORS"] = behavior_schema
+
     def query_constraints_for_elements(self, element_types: List[str]) -> List[str]:
         """查询元素约束规则 - 严格模式"""
 

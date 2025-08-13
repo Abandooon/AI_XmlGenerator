@@ -223,165 +223,156 @@ class Round1Designer:
         return context
 
     def _build_architecture_schema(self) -> Dict[str, Any]:
-        """构建架构设计的JSON Schema"""
+        """从配置构建架构设计的JSON Schema"""
+
+        # 从配置加载schema定义
+        round1_config = CONFIG.round1_schema
+
+        # 构建system_analysis的schema
+        system_analysis_schema = {
+            "type": "object",
+            "properties": {
+                "functional_decomposition": {
+                    "type": "string",
+                    "description": "功能分解和职责划分"
+                },
+                "data_flow_analysis": {
+                    "type": "string",
+                    "description": "数据流分析"
+                },
+                "timing_requirements": {
+                    "type": "string",
+                    "description": "时序要求分析"
+                },
+                "scalability_considerations": {
+                    "type": "string",
+                    "description": "可扩展性考虑"
+                }
+            },
+            "required": round1_config.system_analysis.required
+        }
+
+        # 构建component_plan的schema
+        component_plan_schema = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "component_id": {
+                        "type": "string",
+                        "description": "组件唯一标识符"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "组件名称"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": round1_config.component_plan.allowed_types,
+                        "description": "AUTOSAR组件类型"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "description": "功能目的和职责"
+                    },
+                    "estimated_complexity": {
+                        "type": "string",
+                        "enum": ["Simple", "Medium", "Complex"],
+                        "description": "复杂度评估"
+                    },
+                    "port_estimates": {
+                        "type": "object",
+                        "properties": {
+                            "input_ports": {"type": "string"},
+                            "output_ports": {"type": "string"}
+                        }
+                    },
+                    "behavioral_characteristics": {
+                        "type": "string",
+                        "description": "行为特征描述"
+                    },
+                    # 新增：元素设计规划
+                    "element_design": {
+                        "type": "object",
+                        "description": "LLM规划的元素使用",
+                        "properties": {
+                            "ports": {
+                                "type": "object",
+                                "properties": {
+                                    "needed": {"type": "boolean"},
+                                    "details": {"type": "string"}
+                                }
+                            },
+                            "internal_behaviors": {
+                                "type": "object",
+                                "properties": {
+                                    "needed": {"type": "boolean"},
+                                    "runnables": {"type": "array", "items": {"type": "string"}},
+                                    "events": {"type": "array", "items": {"type": "string"}}
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": round1_config.component_plan.required_fields
+            }
+        }
+
+        # 构建interface_plan的schema
+        interface_plan_schema = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "interface_id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "type": {
+                        "type": "string",
+                        "enum": round1_config.interface_plan.allowed_types
+                    },
+                    "communication_pattern": {"type": "string"},
+                    "data_category": {"type": "string"},
+                    "connected_components": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "performance_requirements": {"type": "string"}
+                },
+                "required": round1_config.interface_plan.required_fields
+            }
+        }
+
+        # 组装完整schema
         return {
             "type": "object",
             "properties": {
-                "system_analysis": {
-                    "type": "object",
-                    "properties": {
-                        "functional_decomposition": {
-                            "type": "string",
-                            "description": "功能分解和职责划分"
-                        },
-                        "data_flow_analysis": {
-                            "type": "string",
-                            "description": "数据流分析"
-                        },
-                        "timing_requirements": {
-                            "type": "string",
-                            "description": "时序要求分析"
-                        },
-                        "scalability_considerations": {
-                            "type": "string",
-                            "description": "可扩展性考虑"
-                        }
-                    },
-                    "required": ["functional_decomposition", "data_flow_analysis"]
-                },
-                "component_plan": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "component_id": {
-                                "type": "string",
-                                "description": "组件唯一标识符"
-                            },
-                            "name": {
-                                "type": "string",
-                                "description": "组件名称"
-                            },
-                            "type": {
-                                "type": "string",
-                                "enum": ["APPLICATION-SW-COMPONENT-TYPE", "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
-                                       "COMPOSITION-SW-COMPONENT-TYPE", "PARAMETER-SW-COMPONENT-TYPE"],
-                                "description": "AUTOSAR组件类型"
-                            },
-                            "purpose": {
-                                "type": "string",
-                                "description": "功能目的和职责"
-                            },
-                            "estimated_complexity": {
-                                "type": "string",
-                                "enum": ["Simple", "Medium", "Complex"],
-                                "description": "复杂度评估"
-                            },
-                            "port_estimates": {
-                                "type": "object",
-                                "properties": {
-                                    "input_ports": {
-                                        "type": "string",
-                                        "description": "预估输入端口数量和类型"
-                                    },
-                                    "output_ports": {
-                                        "type": "string",
-                                        "description": "预估输出端口数量和类型"
-                                    }
-                                }
-                            },
-                            "behavioral_characteristics": {
-                                "type": "string",
-                                "description": "行为特征描述"
-                            }
-                        },
-                        "required": ["component_id", "name", "type", "purpose"]
-                    }
-                },
-                "interface_plan": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "interface_id": {
-                                "type": "string",
-                                "description": "接口唯一标识符"
-                            },
-                            "name": {
-                                "type": "string",
-                                "description": "接口名称"
-                            },
-                            "type": {
-                                "type": "string",
-                                "enum": ["SENDER-RECEIVER-INTERFACE", "CLIENT-SERVER-INTERFACE",
-                                       "MODE-SWITCH-INTERFACE", "NV-DATA-INTERFACE"],
-                                "description": "AUTOSAR接口类型"
-                            },
-                            "communication_pattern": {
-                                "type": "string",
-                                "description": "通信模式"
-                            },
-                            "data_category": {
-                                "type": "string",
-                                "description": "数据类别"
-                            },
-                            "connected_components": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "description": "连接的组件ID列表"
-                            },
-                            "performance_requirements": {
-                                "type": "string",
-                                "description": "性能要求"
-                            }
-                        },
-                        "required": ["interface_id", "name", "type", "communication_pattern"]
-                    }
-                },
+                "system_analysis": system_analysis_schema,
+                "component_plan": component_plan_schema,
+                "interface_plan": interface_plan_schema,
                 "connection_topology": {
                     "type": "object",
                     "properties": {
-                        "component_connections": {
-                            "type": "string",
-                            "description": "组件间连接关系"
-                        },
-                        "data_flow_paths": {
-                            "type": "string",
-                            "description": "主要数据流路径"
-                        },
-                        "control_flow_paths": {
-                            "type": "string",
-                            "description": "控制流路径"
-                        }
+                        "component_connections": {"type": "string"},
+                        "data_flow_paths": {"type": "string"},
+                        "control_flow_paths": {"type": "string"}
                     },
                     "required": ["component_connections", "data_flow_paths"]
                 },
                 "architecture_rationale": {
                     "type": "object",
                     "properties": {
-                        "design_decisions": {
-                            "type": "string",
-                            "description": "关键设计决策及理由"
-                        },
-                        "tradeoff_analysis": {
-                            "type": "string",
-                            "description": "权衡分析"
-                        },
-                        "alternative_considerations": {
-                            "type": "string",
-                            "description": "考虑过的替代方案"
-                        },
-                        "risk_assessment": {
-                            "type": "string",
-                            "description": "潜在风险评估"
-                        }
+                        "design_decisions": {"type": "string"},
+                        "tradeoff_analysis": {"type": "string"},
+                        "alternative_considerations": {"type": "string"},
+                        "risk_assessment": {"type": "string"}
                     },
                     "required": ["design_decisions"]
                 }
             },
             "required": ["system_analysis", "component_plan", "interface_plan",
-                       "connection_topology", "architecture_rationale"]
+                         "connection_topology", "architecture_rationale"]
         }
+
 
     def _prepare_design_context(
         self,

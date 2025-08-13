@@ -285,6 +285,98 @@ class TerminologyBuilder:
 
         return mode_group
 
+    def build_element_context_for_round2(
+            self,
+            component_type: str,
+            depth: int = 2
+    ) -> Dict[str, Any]:
+        """为Round2构建元素上下文 - 基于round1.json的准确信息"""
+
+        context = {
+            "component_type": component_type,
+            "required_elements": [],
+            "optional_elements": [],
+            "element_descriptions": {}
+        }
+
+        # 获取组件类型定义
+        type_def = self.component_types.get(component_type)
+        if not type_def:
+            raise ValueError(f"未知的组件类型: {component_type}")
+
+        # 收集所有属性（包括继承的）
+        all_attributes = []
+        current_type = type_def
+        while current_type:
+            all_attributes.extend(current_type.attributes)
+            if current_type.parent_type:
+                current_type = self.component_types.get(current_type.parent_type)
+            else:
+                break
+
+        # 分类必需和可选元素
+        for attr in all_attributes:
+            element_info = {
+                "tag": attr.tag,
+                "description": attr.description,
+                "min_occurs": attr.min_occurs,
+                "max_occurs": attr.max_occurs
+            }
+
+            context["element_descriptions"][attr.tag] = element_info
+
+            if attr.min_occurs >= 1:
+                context["required_elements"].append(attr.tag)
+            else:
+                context["optional_elements"].append(attr.tag)
+
+        # 添加特定组件类型的内部结构提示
+        if component_type in ["APPLICATION-SW-COMPONENT-TYPE", "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"]:
+            # 这些组件通常需要INTERNAL-BEHAVIORS
+            context["common_structures"] = {
+                "INTERNAL-BEHAVIORS": {
+                    "description": "定义组件的内部行为",
+                    "typical_sub_elements": ["SWC-INTERNAL-BEHAVIOR"]
+                },
+                "PORTS": {
+                    "description": "定义组件的输入输出端口",
+                    "typical_sub_elements": ["P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE"]
+                }
+            }
+
+        return context
+
+    def get_round1_metamodel_context(self) -> str:
+        """获取Round1的元模型上下文文本"""
+
+        context_lines = []
+
+        # 具体组件类型
+        context_lines.append("## 可用的AUTOSAR组件类型\n")
+        for comp_type in self.get_concrete_component_types():
+            context_lines.append(f"### {comp_type.name}")
+            context_lines.append(f"描述: {comp_type.description}")
+
+            # 添加必需属性信息
+            required_attrs = [attr.tag for attr in comp_type.attributes if attr.min_occurs >= 1]
+            if required_attrs:
+                context_lines.append(f"必需属性: {', '.join(required_attrs)}")
+            context_lines.append("")
+
+        # 具体接口类型
+        context_lines.append("\n## 可用的AUTOSAR接口类型\n")
+        for intf_type in self.get_concrete_interface_types():
+            context_lines.append(f"### {intf_type.name}")
+            context_lines.append(f"描述: {intf_type.description}")
+
+            # 添加必需属性信息
+            required_attrs = [attr.tag for attr in intf_type.attributes if attr.min_occurs >= 1]
+            if required_attrs:
+                context_lines.append(f"必需属性: {', '.join(required_attrs)}")
+            context_lines.append("")
+
+        return "\n".join(context_lines)
+
     def get_component_types(self) -> Dict[str, ComponentTypeDefinition]:
         """获取组件类型字典"""
         return self.component_types

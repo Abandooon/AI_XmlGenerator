@@ -872,3 +872,92 @@ BatchGenerationStats:
 | 小型(1-5组件) | 单批生成 | 快速原型验证 | 关注接口设计的完整性 |
 | 中型(6-15组件) | 类型分批 | 平衡质量与效率 | 注意组件间依赖关系 |
 | 大型(16+组件) | 依赖分批 | 最优生成质量 | 重视架构设计的合理性 |
+
+
+三、设计文档v3补充
+补充内容：基于元模型的智能Schema生成
+markdown# 设计文档v3 - 补充章节
+
+## 15. 基于元模型的Schema生成策略
+
+### 15.1 设计理念
+- **元模型驱动**：基于round1.json的准确元模型信息
+- **LLM决策**：让LLM在Round1设计阶段决定需要哪些元素
+- **严格验证**：无降级策略，失败直接报错
+- **上下文注入**：分层注入元模型信息
+
+### 15.2 元素选择机制
+
+#### Round1阶段
+```json
+"element_design": {
+    "ports": {
+        "needed": true,
+        "details": "需要温度输入端口和控制输出端口"
+    },
+    "internal_behaviors": {
+        "needed": true,
+        "runnables": ["ProcessTemperature"],
+        "events": ["10ms周期事件"]
+    }
+}
+Round2阶段
+
+基于element_design查询KG
+组装包含必需元素的Schema
+验证LLM生成结果的完整性
+
+15.3 必需元素处理
+元素类别minOccurs处理策略必需元素>= 1Schema中设为required，生成后验证可选元素0Schema中为optional，基于LLM设计决定数组元素-1Schema中为array类型
+15.4 错误处理策略
+无降级原则：
+
+KG连接失败 → 立即报错
+Schema生成失败 → 立即报错
+缺少必需元素 → 立即报错
+
+15.5 配置化管理
+所有Schema定义和元模型规则都通过配置文件管理：
+
+round1_schema: Round1输出格式
+metamodel_injection: 元模型注入配置
+element_requirements: 元素要求定义
+
+16. 元模型信息流
+round1.json (元模型定义)
+    ↓
+terminology_builder (解析和构建)
+    ↓
+Round1 (注入可用类型，LLM设计)
+    ↓
+element_design (LLM决策)
+    ↓
+Round2 (基于决策生成Schema)
+    ↓
+验证 (确保必需元素存在)
+17. 质量保证措施
+17.1 元模型准确性
+
+直接从round1.json解析，不硬编码
+保留minOccurs/maxOccurs信息
+完整的属性描述
+
+17.2 生成完整性
+
+必需元素自动包含在Schema中
+生成后验证所有minOccurs>=1的元素
+缺失必需元素时明确报错
+
+17.3 可追溯性
+
+element_design记录LLM的设计决策
+Schema生成基于明确的元素选择
+错误信息包含完整上下文
+
+
+这些修改确保了：
+1. 完全基于round1.json的元模型信息
+2. 无降级策略，失败直接报错
+3. Schema定义在配置文件中，不硬编码
+4. LLM驱动的元素选择机制
+5. 严格的必需元素验证

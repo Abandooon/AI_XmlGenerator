@@ -80,6 +80,68 @@ semantic_resolution:
   enable_heuristic_resolution: true
   resolution_cache_size: 1000
 
+# Round1架构设计Schema配置
+round1_schema:
+  system_analysis:
+    required:
+      - functional_decomposition
+      - data_flow_analysis
+    optional:
+      - timing_requirements
+      - scalability_considerations
+
+  component_plan:
+    required_fields:
+      - component_id
+      - name
+      - type
+      - purpose
+    optional_fields:
+      - estimated_complexity
+      - port_estimates
+      - behavioral_characteristics
+
+    allowed_types:
+      - APPLICATION-SW-COMPONENT-TYPE
+      - SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+      - COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE
+      - ECU-ABSTRACTION-SW-COMPONENT-TYPE
+      - NV-BLOCK-SW-COMPONENT-TYPE
+      - SERVICE-PROXY-SW-COMPONENT-TYPE
+      - SERVICE-SW-COMPONENT-TYPE
+      - COMPOSITION-SW-COMPONENT-TYPE
+      - PARAMETER-SW-COMPONENT-TYPE
+
+  interface_plan:
+    required_fields:
+      - interface_id
+      - name
+      - type
+      - communication_pattern
+    optional_fields:
+      - data_category
+      - connected_components
+      - performance_requirements
+
+    allowed_types:
+      - SENDER-RECEIVER-INTERFACE
+      - CLIENT-SERVER-INTERFACE
+      - NV-DATA-INTERFACE
+      - PARAMETER-INTERFACE
+      - MODE-SWITCH-INTERFACE
+      - TRIGGER-INTERFACE
+
+# 元模型注入配置
+metamodel_injection:
+  # Round1注入深度：只注入具体类型
+  round1_depth: 1
+  # Round2注入深度：基于LLM选择注入2-3层
+  round2_depth: 8
+  # 是否包含必需属性说明
+  include_required_attributes: true
+  # 是否包含minOccurs信息
+  include_min_occurs: true
+
 # ===== 术语库配置 =====
 terminology:
   # 组件类型定义

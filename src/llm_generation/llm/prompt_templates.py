@@ -264,13 +264,13 @@ $constraints
         )
 
     def get_round2_prompt(
-        self,
-        architecture_design: Dict[str, Any],
-        component_details: List[Dict] = None,
-        interface_details: List[Dict] = None,
-        constraints: List[str] = None
+            self,
+            architecture_design: Dict[str, Any],
+            component_details: List[Dict] = None,
+            interface_details: List[Dict] = None,
+            constraints: List[str] = None
     ) -> str:
-        """获取Round 2提示词"""
+        """获取Round 2提示词 - 增强元素注入"""
 
         # 格式化架构设计
         arch_text = self._format_architecture_design(architecture_design)
@@ -278,30 +278,126 @@ $constraints
         # 格式化约束
         constraints_text = "\n".join(constraints or ["遵循AUTOSAR标准规范"])
 
-        # 判断是单组件还是多组件
+        # 获取元模型上下文
+        from ..knowledge.terminology_builder import terminology_builder
+
+        # 构建元素使用指导
+        element_guidance = self._build_element_guidance(architecture_design)
+
         component_plan = architecture_design.get("component_plan", [])
+
+        # 基础prompt
+        base_prompt = f"""
+    你是AUTOSAR XML生成专家。根据确认的架构设计生成详细的ARXML内容。
+
+    ## 架构设计
+    {arch_text}
+
+    ## 元素使用指导
+    {element_guidance}
+
+    ## 约束规则
+    {constraints_text}
+    """
 
         if len(component_plan) <= 1:
             # 单组件生成
-            return self.render_template(
-                "round2_generation",
-                architecture_design=arch_text,
-                constraints=constraints_text
-            )
+            comp = component_plan[0] if component_plan else {}
+            comp_type = comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
+
+            # 获取该组件类型的元素上下文
+            element_context = terminology_builder.build_element_context_for_round2(comp_type)
+
+            return base_prompt + f"""
+
+    ## 组件类型元素要求
+
+    ### 必需元素（minOccurs >= 1）
+    {', '.join(element_context['required_elements'])}
+
+    ### 可选元素
+    {', '.join(element_context['optional_elements'])}
+
+    ### 元素说明
+    """
+
+            for elem_tag, elem_info in element_context['element_descriptions'].items():
+                if elem_tag in element_context['required_elements']:
+                    base_prompt += f"\n- **{elem_tag}** (必需): {elem_info['description'][:100]}..."
+
         else:
             # 多组件生成
             component_list = "\n".join([
-                f"{i+1}. {comp.get('name', f'Component{i+1}')} - {comp.get('type', '')} - {comp.get('purpose', '')}"
+                f"{i + 1}. {comp.get('name', f'Component{i + 1}')} - {comp.get('type', '')} - {comp.get('purpose', '')}"
                 for i, comp in enumerate(component_plan)
             ])
 
-            return self.render_template(
-                "round2_multi_component",
-                architecture_design=arch_text,
-                component_count=len(component_plan),
-                component_list=component_list,
-                constraints=constraints_text
-            )
+            return base_prompt + f"""
+
+    ## 多组件生成要求
+    需要生成 {len(component_plan)} 个组件：
+    {component_list}
+
+    ## 基于您的设计规划
+    """
+
+            # 为每个组件添加其element_design信息
+            for comp in component_plan:
+                element_design = comp.get("element_design", {})
+                if element_design:
+                    base_prompt += f"\n### {comp.get('name')}的元素规划："
+                    if element_design.get("ports", {}).get("needed"):
+                        base_prompt += f"\n- PORTS: {element_design['ports'].get('details', '需要端口')}"
+                    if element_design.get("internal_behaviors", {}).get("needed"):
+                        base_prompt += f"\n- INTERNAL-BEHAVIORS: 包含Runnables和Events"
+
+        return base_prompt
+
+    def _build_element_guidance(self, architecture_design: Dict[str, Any]) -> str:
+        """基于架构设计构建元素使用指导"""
+
+        guidance = []
+
+        # 分析所有组件的element_design
+        all_need_ports = False
+        all_need_behaviors = False
+
+        for comp in architecture_design.get("component_plan", []):
+            element_design = comp.get("element_design", {})
+            if element_design.get("ports", {}).get("needed"):
+                all_need_ports = True
+            if element_design.get("internal_behaviors", {}).get("needed"):
+                all_need_behaviors = True
+
+        if all_need_ports:
+            guidance.append("""
+    ### PORTS元素
+    - 每个需要通信的组件都应包含PORTS元素
+    - P-PORT-PROTOTYPE: 用于提供数据或服务
+    - R-PORT-PROTOTYPE: 用于接收数据或请求服务
+    - 每个端口必须有SHORT-NAME和接口引用
+    """)
+
+        if all_need_behaviors:
+            guidance.append("""
+    ### INTERNAL-BEHAVIORS元素
+    - 定义组件的运行时行为
+    - 必须包含至少一个SWC-INTERNAL-BEHAVIOR
+    - SWC-INTERNAL-BEHAVIOR应包含:
+      - EVENTS: 触发事件（如TIMING-EVENT）
+      - RUNNABLES: 可运行实体（RUNNABLE-ENTITY）
+      - 事件必须正确引用Runnable
+    """)
+
+        # 添加通用必需元素说明
+        guidance.append("""
+    ### 通用必需元素
+    - SHORT-NAME: 每个元素的短名称（必需）
+    - UUID: 组件的唯一标识符（建议）
+    - 遵循AUTOSAR命名规范：PascalCase
+    """)
+
+        return "\n".join(guidance)
 
     def _format_architecture_design(self, design: Dict[str, Any]) -> str:
         """格式化架构设计信息"""
