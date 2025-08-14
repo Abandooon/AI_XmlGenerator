@@ -14,8 +14,8 @@ conversation:
 
 # ===== 知识图谱配置 =====
 knowledge_graph:
-  neo4j_uri: "neo4j+s://d4f0265c.databases.neo4j.io"                # Neo4j数据库连接URI
-  neo4j_password: "1ABs4OWM7B0V1wOTc5FZEpYaNSsCuOFuJmDRrsVeoiE"           # Neo4j密码（可通过环境变量设置）
+  neo4j_uri: "neo4j://127.0.0.1:7687"                # Neo4j数据库连接URI
+  neo4j_password: "542394665"           # Neo4j密码（可通过环境变量设置）
   neo4j_user: "neo4j"
   max_schema_depth: 7                               # XML Schema最大递归深度
 
