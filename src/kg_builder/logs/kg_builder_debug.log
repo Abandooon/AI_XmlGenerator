@@ -1086,3 +1086,23 @@
 2025-07-22 16:12:13 INFO [edge_builder.py:66] EdgeAssembler 生成边 5676 条
 2025-07-22 16:20:16 INFO [graph_exporter.py:35] Neo4j 导入完成: nodes=12580 edges=26689
 2025-07-22 16:20:16 INFO [cli.py:147] KG 构建流程结束
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [logger.py:41] Logger 初始化完成
+2025-08-15 08:57:58 DEBUG [config.py:83] 最终配置合并结果: {'graph_backend': 'neo4j', 'neo4j': {'uri': 'neo4j://127.0.0.1:7687', 'user': 'neo4j', 'password': '542394665'}, 'metadata_path': 'data/unified_metadata_with_inlines.json', 'constraints_path': 'data/constraints_linked.json', 'domain': 'AUTOSAR', 'version': '4-2-2', 'output_dir': 'output', 'export': {'shacl': 'output\\shapes.ttl', 'smt': 'output\\constraints.smt2', 'gbnf': 'output\\autosar.gbnf'}}
+2025-08-15 08:57:59 INFO [loader.py:37] 加载元模型文件: data/unified_metadata_with_inlines.json
+2025-08-15 08:58:02 INFO [normalizer.py:96] 元数据规范化完成 (domain=AUTOSAR, version=4-2-2)
+2025-08-15 08:58:02 INFO [loader.py:84] 加载约束文件: data/constraints_linked.json
+2025-08-15 08:58:02 INFO [ontology_builder.py:62] 开始构建本体层图 (v1.1)
+2025-08-15 08:58:11 INFO [ontology_builder.py:77] 本体层节点 11419，边 21013
+2025-08-15 08:58:11 INFO [constraint_parser.py:46] 开始解析约束 (1161 条)
+2025-08-15 08:58:11 INFO [constraint_parser.py:51] 约束节点构建完成
+2025-08-15 08:58:11 INFO [edge_builder.py:66] EdgeAssembler 生成边 5676 条
+2025-08-15 09:02:56 INFO [graph_exporter.py:35] Neo4j 导入完成: nodes=12580 edges=26689
+2025-08-15 09:02:56 INFO [cli.py:147] KG 构建流程结束
