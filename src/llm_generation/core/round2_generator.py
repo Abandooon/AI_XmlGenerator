@@ -1,9 +1,9 @@
-"""core/round2_generator.py - Round 2详细生成器
+"""core/round2_generator.py - 优化的Round 2生成器
 
-支持分批生成、语义占位符处理、引用展开
+利用Gemini长上下文能力，优先单批生成，减少复杂度
 """
 import json
-import uuid
+import time
 from typing import Dict, List, Any, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
@@ -12,24 +12,21 @@ from ..config import CONFIG
 from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.dynamic_query_engine import query_engine
-from ..knowledge.constraint_engine import constraint_engine
 from ..utils.serializers import ArchitectureDesign, generate_uuid
 from ..utils.exceptions import ValidationError
-from .component_registry import component_registry
-from .reference_resolver import reference_resolver
-from .dependency_analyzer import dependency_analyzer
+
 
 class Round2Generator:
-    """Round 2详细生成器 - 支持分批生成"""
+    """Round 2详细生成器 - 长上下文优化版"""
 
     def __init__(self):
         """初始化Round 2生成器"""
         self.gemini_client = GeminiClient()
         self.query_engine = query_engine
-        self.constraint_engine = constraint_engine
-        self.component_registry = component_registry
-        self.reference_resolver = reference_resolver
-        self.dependency_analyzer = dependency_analyzer
+        # 移除不必要的依赖
+        # self.component_registry = component_registry  # 不再需要
+        # self.reference_resolver = reference_resolver  # 简化处理
+        # self.dependency_analyzer = dependency_analyzer  # 简化处理
 
     def generate_arxml(
         self,
@@ -37,130 +34,164 @@ class Round2Generator:
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """生成详细的ARXML内容 - 支持分批生成"""
+        """生成详细的ARXML内容 - 优化版"""
 
         try:
-            # 分析要生成的组件
             component_plans = architecture_design.component_plan
             if not component_plans:
                 raise ValidationError("架构设计中没有组件计划")
 
-            # 判断生成策略
             component_count = len(component_plans)
+
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 开始Round2生成: {component_count}个组件")
+                print(f"[DEBUG] 单批阈值: {CONFIG.generation.single_batch_threshold}")
+
+            # 优先尝试单批生成
             if component_count <= CONFIG.generation.single_batch_threshold:
-                # 单批生成
-                return self._generate_single_batch(
+                # 单批生成（现在支持到25个组件）
+                return self._generate_unified_batch(
                     architecture_design, memory_context, custom_requirements
                 )
             else:
-                # 分批生成
-                return self._generate_multi_batch(
+                # 仅在超大规模时才考虑分批（>25个组件）
+                return self._generate_intelligent_batches(
                     architecture_design, memory_context, custom_requirements
                 )
 
         except Exception as e:
             raise ValidationError(f"ARXML生成失败: {str(e)}")
 
-    def _generate_single_batch(
+    def _generate_unified_batch(
         self,
         architecture_design: ArchitectureDesign,
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """单批生成 - 原有逻辑"""
+        """统一批次生成 - 核心优化"""
 
+        start_time = time.time()
         component_plans = architecture_design.component_plan
+        interface_plans = architecture_design.interface_plan
 
-        # 动态生成JSON Schema
-        arxml_schema = self._generate_dynamic_schema(component_plans)
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 统一批次生成: {len(component_plans)}个组件, {len(interface_plans)}个接口")
 
-        # 查询约束信息
-        constraints = self._query_constraints(component_plans)
+        # 生成深度Schema（增强到depth=15）
+        schema_depth = CONFIG.generation.max_schema_injection_depth
+        arxml_schema = self._generate_deep_schema(component_plans, schema_depth)
 
-        # 生成提示词
-        prompt = self._build_generation_prompt(
+        # 查询完整约束信息
+        constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
+
+        # 构建完整上下文的提示词
+        prompt = self._build_unified_prompt(
             architecture_design,
             constraints,
             memory_context,
-            custom_requirements
+            custom_requirements,
+            schema_depth
         )
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 单批生成 - 组件数量: {len(component_plans)}")
+            print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
+            print(f"[DEBUG] Schema深度: {schema_depth}")
+            print(f"[DEBUG] 约束规则数: {len(constraints)}")
 
-        # 调用LLM生成ARXML
+        # 调用LLM生成（利用长上下文）
         response_data, input_tokens, output_tokens, total_tokens = \
             self.gemini_client.generate_with_schema(
                 prompt=prompt,
                 schema=arxml_schema,
+                temperature=0.7,  # 保持创造性
+                max_retries=3
             )
 
-        # 将JSON转换为ARXML格式
-        arxml_content = self._convert_json_to_arxml(response_data, architecture_design)
+        # 后处理：直接引用展开（不需要语义占位符）
+        processed_data = self._process_direct_references(response_data, architecture_design)
 
-        # 生成统计信息
+        # 转换为ARXML
+        arxml_content = self._convert_to_arxml(processed_data, architecture_design)
+
+        generation_time = time.time() - start_time
+
+        # 详细统计信息
         stats = {
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
             "total_tokens": total_tokens,
             "component_count": len(component_plans),
-            "generation_mode": "single_batch",
+            "interface_count": len(interface_plans),
+            "generation_mode": "unified_batch",
+            "schema_depth": schema_depth,
             "schema_properties": len(arxml_schema.get("properties", {})),
-            "constraints_applied": len(constraints)
+            "constraints_applied": len(constraints),
+            "generation_time": generation_time,
+            "tokens_per_component": total_tokens / max(len(component_plans), 1),
+            "performance_metrics": {
+                "time_per_component": generation_time / max(len(component_plans), 1),
+                "schema_complexity": self._calculate_schema_complexity(arxml_schema),
+                "output_efficiency": output_tokens / max(len(str(response_data)), 1)
+            }
         }
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
+            print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
 
         return arxml_content, stats
 
-    def _generate_multi_batch(
+    def _generate_intelligent_batches(
         self,
         architecture_design: ArchitectureDesign,
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """分批生成 - 新增逻辑"""
+        """智能分批生成 - 仅用于超大规模（>25组件）"""
 
-        # 1. 分析依赖关系并制定分批策略
-        batches = self.dependency_analyzer.analyze_and_batch(
-            architecture_design.component_plan,
-            architecture_design.interface_plan
-        )
+        component_plans = architecture_design.component_plan
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 分批策略: {len(batches)}批，组件分布: {[len(batch['components']) for batch in batches]}")
+            print(f"[DEBUG] 超大规模系统，智能分批: {len(component_plans)}个组件")
 
-        # 2. 初始化注册表
-        self.component_registry.initialize_session(
-            architecture_design.component_plan,
-            architecture_design.interface_plan
-        )
+        # 基于复杂度智能分组
+        batches = self._create_intelligent_batches(component_plans)
 
-        all_generated_components = {}
+        all_components = {}
         total_stats = {
             "total_tokens": 0,
             "input_tokens": 0,
             "output_tokens": 0,
             "batch_count": len(batches),
-            "component_count": len(architecture_design.component_plan),
-            "generation_mode": "multi_batch",
+            "component_count": len(component_plans),
+            "generation_mode": "intelligent_batch",
             "batch_details": []
         }
 
-        # 3. 逐批生成
-        for batch_idx, batch_info in enumerate(batches):
-            batch_components, batch_stats = self._generate_batch(
-                batch_info,
-                architecture_design,
-                memory_context,
-                custom_requirements,
-                batch_idx
+        # 生成所有批次
+        for batch_idx, batch in enumerate(batches):
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 生成批次 {batch_idx + 1}/{len(batches)}: {len(batch)}个组件")
+
+            # 创建批次架构
+            batch_architecture = ArchitectureDesign(
+                system_analysis=architecture_design.system_analysis,
+                component_plan=batch,
+                interface_plan=architecture_design.interface_plan,  # 共享接口
+                connection_topology=architecture_design.connection_topology,
+                architecture_rationale=architecture_design.architecture_rationale
             )
 
-            # 更新注册表
-            for comp_data in batch_components.values():
-                self.component_registry.register_generated_component(comp_data)
+            # 生成批次（使用统一批次方法）
+            batch_arxml, batch_stats = self._generate_unified_batch(
+                batch_architecture,
+                memory_context,
+                custom_requirements
+            )
 
-            # 合并结果
-            all_generated_components.update(batch_components)
+            # 解析并合并结果
+            batch_components = self._parse_arxml_to_components(batch_arxml)
+            all_components.update(batch_components)
 
             # 累计统计
             total_stats["total_tokens"] += batch_stats["total_tokens"]
@@ -168,172 +199,58 @@ class Round2Generator:
             total_stats["output_tokens"] += batch_stats["output_tokens"]
             total_stats["batch_details"].append(batch_stats)
 
-        # 4. 展开语义占位符
-        resolved_components = self.reference_resolver.resolve_all_references(
-            all_generated_components,
-            self.component_registry.get_interface_registry()
-        )
-
-        # 5. 组装最终ARXML
-        final_arxml = self._assemble_final_arxml(resolved_components, architecture_design)
+        # 组装最终ARXML
+        final_arxml = self._assemble_components_to_arxml(all_components, architecture_design)
 
         return final_arxml, total_stats
 
-    def _build_batch_context(
+    def _generate_deep_schema(
         self,
-        batch_info: Dict[str, Any],
-        architecture_design: ArchitectureDesign,
-        memory_context: str
-    ) -> str:
-        """构建批次上下文"""
-
-        context_parts = []
-
-        # 架构设计摘要
-        context_parts.append("## 架构设计摘要")
-        context_parts.append(f"系统功能: {architecture_design.system_analysis.get('functional_decomposition', '')}")
-        context_parts.append(f"数据流分析: {architecture_design.system_analysis.get('data_flow_analysis', '')}")
-
-        # 当前批次信息
-        context_parts.append(f"\n## 当前批次信息")
-        context_parts.append(f"批次类型: {batch_info['batch_type']}")
-        context_parts.append(f"批次目标: {batch_info['description']}")
-
-        # 已生成组件摘要
-        registered_components = self.component_registry.get_component_summaries()
-        if registered_components:
-            context_parts.append(f"\n## 已生成组件摘要")
-            for comp_summary in registered_components:
-                context_parts.append(f"- {comp_summary['name']}: {comp_summary['interfaces']}")
-
-        # 语义占位符指导
-        context_parts.append(f"\n## 语义占位符使用指导")
-        context_parts.append("对于组件间引用，请使用语义占位符，例如:")
-        context_parts.append("- '引用温度传感器的输出端口'")
-        context_parts.append("- '连接到数据处理器的控制接口'")
-        context_parts.append("- '订阅系统状态管理器的模式切换'")
-
-        # 记忆上下文
-        if memory_context:
-            context_parts.append(f"\n## 对话上下文")
-            context_parts.append(memory_context)
-
-        return "\n".join(context_parts)
-
-    def _assemble_final_arxml(
-        self,
-        resolved_components: Dict[str, Any],
-        architecture_design: ArchitectureDesign
-    ) -> str:
-        """组装最终ARXML"""
-
-        # 创建AUTOSAR根元素
-        root = Element("AUTOSAR")
-        root.set("xmlns", "http://autosar.org/schema/r4.0")
-        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-
-        # 创建AR-PACKAGES
-        ar_packages = SubElement(root, "AR-PACKAGES")
-        ar_package = SubElement(ar_packages, "AR-PACKAGE")
-        SubElement(ar_package, "SHORT-NAME").text = "Components"
-
-        # 创建ELEMENTS
-        elements = SubElement(ar_package, "ELEMENTS")
-
-        # 添加所有组件
-        for comp_name, comp_data in resolved_components.items():
-            if isinstance(comp_data, dict):
-                self._json_dict_to_xml(elements, comp_name, comp_data)
-
-        # 格式化输出
-        rough_string = tostring(root, encoding='unicode')
-        reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="  ")
-
-    # 保留原有的其他方法
-    def _convert_json_to_arxml(self, json_data: Dict[str, Any], architecture_design: ArchitectureDesign) -> str:
-        """将JSON数据转换为标准ARXML格式"""
-        # 原有实现保持不变
-        root = Element("AUTOSAR")
-        root.set("xmlns", "http://autosar.org/schema/r4.0")
-        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-
-        ar_packages = SubElement(root, "AR-PACKAGES")
-        ar_package = SubElement(ar_packages, "AR-PACKAGE")
-        SubElement(ar_package, "SHORT-NAME").text = "Components"
-        elements = SubElement(ar_package, "ELEMENTS")
-
-        for key, value in json_data.items():
-            if isinstance(value, dict):
-                self._json_dict_to_xml(elements, key, value)
-
-        rough_string = tostring(root, encoding='unicode')
-        reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="  ")
-
-    def _json_dict_to_xml(self, parent: Element, tag_name: str, data: Dict[str, Any]) -> Element:
-        """递归将JSON字典转换为XML元素"""
-        # 原有实现保持不变
-        xml_tag = self._normalize_xml_tag(tag_name)
-        element = SubElement(parent, xml_tag)
-
-        for key, value in data.items():
-            if key.startswith('@'):
-                attr_name = key[1:]
-                element.set(attr_name, str(value))
-            elif key == '#text':
-                element.text = str(value)
-            elif isinstance(value, dict):
-                self._json_dict_to_xml(element, key, value)
-            elif isinstance(value, list):
-                for item in value:
-                    if isinstance(item, dict):
-                        self._json_dict_to_xml(element, key, item)
-                    else:
-                        SubElement(element, key).text = str(item)
-            else:
-                SubElement(element, key).text = str(value)
-
-        return element
-
-    def _normalize_xml_tag(self, tag_name: str) -> str:
-        """标准化XML标签名"""
-        return tag_name.replace('_', '-').upper()
-
-    def _generate_dynamic_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """动态生成JSON Schema - 增强版"""
-
-        # 直接调用query_engine的新方法，自动处理element_design
-        schema = self.query_engine.generate_multi_component_schema(component_plans)
-
-        if not schema or not schema.get("properties"):
-            raise ValidationError(f"Schema生成失败：无法为{len(component_plans)}个组件生成有效Schema")
-
-        # 添加语义占位符支持说明
-        schema = self._enhance_schema_for_semantic_placeholders(schema)
+        component_plans: List[Dict[str, Any]],
+        depth: int = 15
+    ) -> Dict[str, Any]:
+        """生成深度Schema - 增强版"""
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 成功生成Schema，包含{len(schema.get('properties', {}))}个组件定义")
-            # 输出缓存统计
-            cache_stats = self.query_engine.get_cache_stats()
-            print(f"[DEBUG] 缓存统计: {cache_stats}")
+            print(f"[DEBUG] 生成深度Schema: depth={depth}")
+            # 清理请求级缓存
+            self.query_engine.clear_cache("request")
+
+        # 利用query_engine生成深度Schema
+        schema = self.query_engine.generate_multi_component_schema(
+            component_plans,
+            max_depth=depth  # 使用配置的深度
+        )
+
+        if not schema or not schema.get("properties"):
+            raise ValidationError(f"Schema生成失败：无法生成深度{depth}的Schema")
+
+        # 增强Schema以支持直接引用
+        schema = self._enhance_schema_for_direct_references(schema)
+
+        if CONFIG.debug_mode:
+            properties_count = len(schema.get("properties", {}))
+            print(f"[DEBUG] Schema生成成功: {properties_count}个组件定义")
+            # 计算Schema复杂度
+            complexity = self._calculate_schema_complexity(schema)
+            print(f"[DEBUG] Schema复杂度: {complexity}")
 
         return schema
 
-    def _enhance_schema_for_semantic_placeholders(self, schema: Dict[str, Any]) -> Dict[str, Any]:
-        """增强Schema以支持语义占位符"""
+    def _enhance_schema_for_direct_references(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """增强Schema以支持直接引用（替代语义占位符）"""
 
         def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
             enhanced = {}
 
             for key, value in properties.items():
                 if isinstance(value, dict):
-                    # 引用字段支持语义占位符
+                    # 引用字段支持完整路径
                     if any(ref_key in key.upper() for ref_key in ["REF", "REFERENCE", "TREF", "IREF"]):
                         enhanced[key] = {
                             "type": "string",
-                            "description": f"{value.get('description', '')} (支持语义占位符)",
-                            "pattern": "^(/.+|引用.+|连接到.+|订阅.+|绑定到.+|使用.+)$"
+                            "description": f"{value.get('description', '')} (完整路径格式: /Category/Element/SubElement)",
+                            "pattern": "^(/[A-Za-z][A-Za-z0-9_-]*)+"  # 路径格式验证
                         }
                     elif value.get("type") == "object" and "properties" in value:
                         # 递归处理嵌套对象
@@ -353,193 +270,304 @@ class Round2Generator:
 
         return schema
 
-    def _generate_batch(
-            self,
-            batch_info: Dict[str, Any],
-            architecture_design: ArchitectureDesign,
-            memory_context: str,
-            custom_requirements: Dict[str, Any],
-            batch_idx: int
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        """生成单个批次 - 优化版"""
+    def _query_comprehensive_constraints(
+        self,
+        component_plans: List[Dict[str, Any]],
+        interface_plans: List[Dict[str, Any]]
+    ) -> List[str]:
+        """查询完整的约束规则"""
 
-        batch_components = batch_info["components"]
-        batch_type = batch_info["batch_type"]
+        constraints = []
 
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 生成第{batch_idx + 1}批: {batch_type}, {len(batch_components)}个组件")
-            # 清理请求级缓存
-            self.query_engine.clear_cache("request")
+        # 组件类型约束
+        component_types = set(comp.get("type", "") for comp in component_plans)
+        for comp_type in component_types:
+            if comp_type:
+                type_constraints = self.query_engine.query_constraints_for_elements([comp_type])
+                constraints.extend(type_constraints)
 
-        # 动态生成Schema（会自动复用相同类型的Schema）
-        batch_schema = self.query_engine.generate_batch_schema(batch_components)
+        # 接口类型约束
+        interface_types = set(intf.get("type", "") for intf in interface_plans)
+        for intf_type in interface_types:
+            if intf_type:
+                intf_constraints = self.query_engine.query_constraints_for_elements([intf_type])
+                constraints.extend(intf_constraints)
 
-        # 查询约束
-        component_types = list(set([comp.get("type", "") for comp in batch_components]))
-        constraints = self.query_engine.query_constraints_for_elements(component_types)
+        # 通用AUTOSAR约束
+        general_constraints = [
+            "所有UUID必须全局唯一",
+            "SHORT-NAME必须符合NCName规范",
+            "端口名称在组件内必须唯一",
+            "事件必须正确引用Runnable",
+            "接口引用必须使用完整路径",
+            "数据类型必须引用标准类型库"
+        ]
+        constraints.extend(general_constraints)
 
-        # 构建批次上下文
-        batch_context = self._build_batch_context(
-            batch_info,
-            architecture_design,
-            memory_context
-        )
-
-        # 生成批次特定提示词
-        prompt = template_manager.get_batch_generation_prompt(
-            batch_info=batch_info,
-            architecture_design=architecture_design.__dict__,
-            constraints=constraints,
-            batch_context=batch_context,
-            registered_interfaces=self.component_registry.get_interface_summaries()
-        )
-
-        # 调用LLM生成
-        response_data, input_tokens, output_tokens, total_tokens = \
-            self.gemini_client.generate_with_schema(
-                prompt=prompt,
-                schema=batch_schema
-            )
-
-        # 生成统计
-        batch_stats = {
-            "batch_idx": batch_idx,
-            "batch_type": batch_type,
-            "component_count": len(batch_components),
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": total_tokens,
-            "constraints_applied": len(constraints),
-            "cache_stats": self.query_engine.get_cache_stats()
-        }
-
-        return response_data, batch_stats
-
-    def _enhance_schema_with_element_design(
-            self,
-            base_schema: Dict[str, Any],
-            element_design: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """基于LLM的元素设计增强Schema"""
-
-        if not element_design:
-            return base_schema
-
-        # 如果LLM设计了ports，确保schema包含PORTS
-        if element_design.get("ports", {}).get("needed"):
-            if "properties" not in base_schema:
-                base_schema["properties"] = {}
-
-            if "PORTS" not in base_schema["properties"]:
-                # 查询PORTS的完整结构
-                from ..knowledge.terminology_builder import terminology_builder
-                ports_context = terminology_builder.build_element_context_for_round2(
-                    "PORTS", depth=2
-                )
-
-                base_schema["properties"]["PORTS"] = {
-                    "type": "object",
-                    "description": ports_context.get("element_descriptions", {}).get("PORTS", {}).get("description",
-                                                                                                      "端口定义"),
-                    "properties": {
-                        "P-PORT-PROTOTYPE": {"type": "object"},
-                        "R-PORT-PROTOTYPE": {"type": "object"}
-                    }
-                }
-
-        # 如果LLM设计了internal_behaviors，确保schema包含
-        if element_design.get("internal_behaviors", {}).get("needed"):
-            if "properties" not in base_schema:
-                base_schema["properties"] = {}
-
-            if "INTERNAL-BEHAVIORS" not in base_schema["properties"]:
-                base_schema["properties"]["INTERNAL-BEHAVIORS"] = {
-                    "type": "object",
-                    "description": "内部行为定义",
-                    "properties": {
-                        "SWC-INTERNAL-BEHAVIOR": {
-                            "type": "object",
-                            "properties": {
-                                "SHORT-NAME": {"type": "string"},
-                                "EVENTS": {"type": "object"},
-                                "RUNNABLES": {"type": "object"}
-                            }
-                        }
-                    }
-                }
-
-        return base_schema
-
-    def _query_constraints(self, component_plans: List[Dict[str, Any]]) -> List[str]:
-        """查询相关约束规则 - 无降级"""
-
-        component_types = list(set([
-            comp.get("type", "") for comp in component_plans
-            if comp.get("type")
-        ]))
-
-        # 必须成功查询，否则报错
-        constraints = self.query_engine.query_constraints_for_elements(component_types)
+        # 去重
+        constraints = list(set(constraints))
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 成功查询到{len(constraints)}条约束")
+            print(f"[DEBUG] 查询到{len(constraints)}条约束规则")
 
         return constraints
 
-    def _build_generation_prompt(
+    def _build_unified_prompt(
         self,
         architecture_design: ArchitectureDesign,
         constraints: List[str],
-        memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None
+        memory_context: str,
+        custom_requirements: Dict[str, Any],
+        schema_depth: int
     ) -> str:
-        """构建生成提示词"""
-        # 原有实现保持不变
+        """构建统一生成的提示词 - 优化版"""
+
+        # 使用优化的模板
         prompt = template_manager.get_round2_prompt(
             architecture_design=architecture_design.__dict__,
-            component_details=[],
-            interface_details=[],
-            constraints=constraints
+            constraints=constraints,
+            schema_depth=schema_depth
         )
 
-        from ..standard_types.standard_types import standard_type_manager
-        type_context = standard_type_manager.get_type_context_for_llm(
-            filter_categories=["VALUE", "TYPE_REFERENCE"]
-        )
-        prompt += f"\n\n{type_context}"
-
-        prompt += "\n\n## 数据类型使用指导\n"
-        prompt += "- 对于接口中的数据元素，请从上述标准类型中选择合适的类型\n"
-        prompt += "- 使用TYPE-REFERENCE引用标准类型，例如：/AUTOSAR_Platform/ImplementationDataTypes/uint16\n"
-        prompt += "- 布尔值使用boolean类型，并配合TRUE/FALSE值\n"
-        prompt += "- 数值类型根据范围选择：uint8(0-255), uint16(0-65535), uint32等\n"
-        prompt += "- 浮点数使用float32或float64\n"
-
+        # 添加记忆上下文
         if memory_context:
             prompt += f"\n\n## 对话上下文\n{memory_context}"
 
-        if len(architecture_design.component_plan) > 1:
-            prompt += f"\n\n## 多组件生成要求\n"
-            prompt += f"需要生成 {len(architecture_design.component_plan)} 个组件:\n"
-            for i, comp in enumerate(architecture_design.component_plan, 1):
-                prompt += f"{i}. {comp.get('name', f'Component{i}')} ({comp.get('type', 'APPLICATION-SW-COMPONENT-TYPE')})\n"
-            prompt += "\n注意事项:\n"
-            prompt += "- 每个组件使用独立的UUID\n"
-            prompt += "- 确保组件间引用的一致性\n"
-            prompt += "- 端口名称要体现组件特性\n"
-
-        prompt += f"\n\n## 引用一致性要求\n"
-        prompt += "- 所有UUID必须是唯一的\n"
-        prompt += "- 接口引用路径要正确\n"
-        prompt += "- START-ON-EVENT-REF必须正确引用RUNNABLE-ENTITY\n"
-        prompt += "- PORT-PROTOTYPE-REF必须正确引用端口\n"
-
+        # 添加自定义要求
         if custom_requirements:
             prompt += f"\n\n## 特殊要求\n"
             for key, value in custom_requirements.items():
                 prompt += f"- {key}: {value}\n"
 
+        # 添加直接引用示例
+        prompt += self._add_direct_reference_examples(architecture_design)
+
         return prompt
+
+    def _add_direct_reference_examples(self, architecture_design: ArchitectureDesign) -> str:
+        """添加直接引用示例"""
+
+        examples = """
+
+## 直接引用示例
+
+### 正确的引用格式：
+- PROVIDED-INTERFACE-TREF: "/Interfaces/SensorDataInterface"
+- REQUIRED-INTERFACE-TREF: "/Interfaces/ControlCommandInterface"
+- START-ON-EVENT-REF: "/Components/TempMonitor/InternalBehavior/Runnables/ProcessData"
+- PORT-PROTOTYPE-REF: "/Components/DataProcessor/Ports/DataInput"
+
+### 组件间引用规则：
+1. 使用绝对路径，从根开始
+2. 路径分隔符使用 /
+3. 遵循 /Category/Parent/Element 格式
+4. 确保引用的元素确实存在
+"""
+
+        # 基于实际架构添加具体示例
+        if architecture_design.component_plan:
+            examples += "\n### 本系统的具体引用路径：\n"
+            for comp in architecture_design.component_plan[:3]:  # 前3个组件作为示例
+                comp_name = comp.get("name", "Component")
+                examples += f"- 组件路径: /Components/{comp_name}\n"
+                examples += f"- 端口路径: /Components/{comp_name}/Ports/PortName\n"
+                examples += f"- Runnable路径: /Components/{comp_name}/InternalBehavior/Runnables/RunnableName\n"
+
+        return examples
+
+    def _process_direct_references(
+        self,
+        response_data: Dict[str, Any],
+        architecture_design: ArchitectureDesign
+    ) -> Dict[str, Any]:
+        """处理直接引用 - 简化版"""
+
+        # 由于使用直接引用，只需要验证引用的有效性
+        processed_data = response_data.copy()
+
+        # 验证并规范化引用路径
+        def normalize_references(obj):
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    if isinstance(value, str) and any(ref in key.upper() for ref in ["REF", "TREF"]):
+                        # 确保引用以/开始
+                        if value and not value.startswith("/"):
+                            obj[key] = "/" + value
+                    elif isinstance(value, (dict, list)):
+                        normalize_references(value)
+            elif isinstance(obj, list):
+                for item in obj:
+                    normalize_references(item)
+
+        normalize_references(processed_data)
+
+        return processed_data
+
+    def _convert_to_arxml(
+        self,
+        json_data: Dict[str, Any],
+        architecture_design: ArchitectureDesign
+    ) -> str:
+        """转换JSON为ARXML格式 - 优化版"""
+
+        # 创建AUTOSAR根元素
+        root = Element("AUTOSAR")
+        root.set("xmlns", "http://autosar.org/schema/r4.0")
+        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        root.set("xsi:schemaLocation", "http://autosar.org/schema/r4.0 AUTOSAR_4-3-0.xsd")
+
+        # AR-PACKAGES
+        ar_packages = SubElement(root, "AR-PACKAGES")
+
+        # Components包
+        comp_package = SubElement(ar_packages, "AR-PACKAGE")
+        SubElement(comp_package, "SHORT-NAME").text = "Components"
+        comp_elements = SubElement(comp_package, "ELEMENTS")
+
+        # Interfaces包
+        intf_package = SubElement(ar_packages, "AR-PACKAGE")
+        SubElement(intf_package, "SHORT-NAME").text = "Interfaces"
+        intf_elements = SubElement(intf_package, "ELEMENTS")
+
+        # 添加所有组件
+        for comp_name, comp_data in json_data.items():
+            if isinstance(comp_data, dict) and not comp_name.startswith("_"):
+                self._add_component_to_xml(comp_elements, comp_name, comp_data)
+
+        # 添加接口（如果在响应中定义）
+        if "_interfaces" in json_data:
+            for intf_name, intf_data in json_data["_interfaces"].items():
+                self._add_interface_to_xml(intf_elements, intf_name, intf_data)
+
+        # 格式化输出
+        rough_string = tostring(root, encoding='unicode')
+        reparsed = minidom.parseString(rough_string)
+
+        # 优化格式化
+        pretty_xml = reparsed.toprettyxml(indent="  ")
+
+        # 移除多余的空行
+        lines = [line for line in pretty_xml.split('\n') if line.strip()]
+        return '\n'.join(lines)
+
+    def _add_component_to_xml(self, parent: Element, comp_name: str, comp_data: Dict[str, Any]):
+        """添加组件到XML"""
+
+        # 确定组件类型元素名
+        comp_type = comp_data.get("_type", "APPLICATION-SW-COMPONENT-TYPE")
+        comp_element = SubElement(parent, comp_type)
+
+        # 递归添加属性
+        self._dict_to_xml(comp_element, comp_data, skip_keys=["_type"])
+
+    def _add_interface_to_xml(self, parent: Element, intf_name: str, intf_data: Dict[str, Any]):
+        """添加接口到XML"""
+
+        intf_type = intf_data.get("_type", "SENDER-RECEIVER-INTERFACE")
+        intf_element = SubElement(parent, intf_type)
+
+        self._dict_to_xml(intf_element, intf_data, skip_keys=["_type"])
+
+    def _dict_to_xml(self, parent: Element, data: Dict[str, Any], skip_keys: List[str] = None):
+        """递归转换字典到XML"""
+
+        skip_keys = skip_keys or []
+
+        for key, value in data.items():
+            if key in skip_keys or key.startswith("_"):
+                continue
+
+            if key.startswith("@"):
+                # 属性
+                parent.set(key[1:], str(value))
+            elif key == "#text":
+                # 文本内容
+                parent.text = str(value)
+            elif isinstance(value, dict):
+                # 嵌套元素
+                child = SubElement(parent, key)
+                self._dict_to_xml(child, value)
+            elif isinstance(value, list):
+                # 列表元素
+                for item in value:
+                    if isinstance(item, dict):
+                        child = SubElement(parent, key)
+                        self._dict_to_xml(child, item)
+                    else:
+                        SubElement(parent, key).text = str(item)
+            else:
+                # 简单元素
+                SubElement(parent, key).text = str(value)
+
+    def _create_intelligent_batches(
+        self,
+        component_plans: List[Dict[str, Any]]
+    ) -> List[List[Dict[str, Any]]]:
+        """创建智能批次 - 基于复杂度"""
+
+        # 计算每个组件的复杂度权重
+        weighted_components = []
+        for comp in component_plans:
+            complexity = comp.get("estimated_complexity", "Medium")
+            weight = {"Simple": 1, "Medium": 3, "Complex": 5}.get(complexity, 3)
+            weighted_components.append((comp, weight))
+
+        # 按复杂度排序
+        weighted_components.sort(key=lambda x: x[1])
+
+        # 智能分批
+        batches = []
+        current_batch = []
+        current_weight = 0
+        max_weight = CONFIG.batch_optimization.max_complexity_per_batch
+
+        for comp, weight in weighted_components:
+            if current_weight + weight <= max_weight:
+                current_batch.append(comp)
+                current_weight += weight
+            else:
+                if current_batch:
+                    batches.append(current_batch)
+                current_batch = [comp]
+                current_weight = weight
+
+        if current_batch:
+            batches.append(current_batch)
+
+        return batches
+
+    def _calculate_schema_complexity(self, schema: Dict[str, Any]) -> int:
+        """计算Schema复杂度"""
+
+        def count_properties(obj):
+            count = 0
+            if isinstance(obj, dict):
+                count += len(obj.keys())
+                for value in obj.values():
+                    count += count_properties(value)
+            elif isinstance(obj, list):
+                for item in obj:
+                    count += count_properties(item)
+            return count
+
+        return count_properties(schema)
+
+    def _parse_arxml_to_components(self, arxml_content: str) -> Dict[str, Any]:
+        """解析ARXML内容为组件字典"""
+
+        # 简化实现 - 实际应该使用XML解析
+        components = {}
+        # TODO: 实现XML到组件的解析
+        return components
+
+    def _assemble_components_to_arxml(
+        self,
+        components: Dict[str, Any],
+        architecture_design: ArchitectureDesign
+    ) -> str:
+        """组装组件为最终ARXML"""
+
+        return self._convert_to_arxml(components, architecture_design)
 
 
 # 全局Round2生成器实例

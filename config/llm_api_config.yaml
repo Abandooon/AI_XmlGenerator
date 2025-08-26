@@ -2,12 +2,12 @@
 llm:
   model_name: "gemini-2.5-pro-preview-06-05"        # Gemini模型名称
   llm_api_url: "https://api.openai-proxy.org/google" # API代理地址
-  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥（也可通过环境变量设置）
+  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
   temperature: 0.7                                   # 生成温度参数
-  max_output_tokens: 60000                          # 最大输出Token数
-  max_context_tokens: 200000                        # 最大上下文Token数
+  max_output_tokens: 100000                         # 提升到100K - 利用Gemini长输出能力
+  max_context_tokens: 2000000                       # 提升到2M - Gemini支持2M上下文
   # 文件上传功能开关（使用代理API时建议关闭）
-  enable_file_upload: false  # 设为false禁用文件上传，使用纯对话模式
+  enable_file_upload: false
 
 # ===== 对话系统配置 =====
 conversation:
@@ -16,14 +16,14 @@ conversation:
 
 # ===== 知识图谱配置 =====
 knowledge_graph:
-  neo4j_uri: "neo4j://127.0.0.1:7687"                # Neo4j数据库连接URI
-  neo4j_password: "542394665"           # Neo4j密码（可通过环境变量设置）
+  neo4j_uri: "neo4j://127.0.0.1:7687"              # Neo4j数据库连接URI
+  neo4j_password: "542394665"                       # Neo4j密码
   neo4j_user: "neo4j"
-  max_schema_depth: 50                               # XML Schema最大递归深度
+  max_safety_depth: 100                            # 提升安全深度，允许更深的Schema
 
 # ===== standard_types配置 =====
 standard_types:
-  standard_types_path: "src/llm_generation/standard_types/data"  # 标准类型文件目录
+  standard_types_path: "src/llm_generation/standard_types/data"
 
 # ===== Schema生成配置 =====
 schema_generation:
@@ -36,71 +36,33 @@ schema_generation:
   cache_config:
     enable_request_cache: true                      # 启用请求级缓存
     enable_application_cache: true                  # 启用应用级缓存
-    application_cache_ttl: 3600                     # 应用缓存TTL（秒）
-    max_cache_size: 100                            # 最大缓存条目数
+    application_cache_ttl: 7200                     # 提升缓存时间到2小时
+    max_cache_size: 500                            # 增大缓存容量
 
   # 性能控制
   performance:
-    query_timeout: 30                               # 查询超时（秒）
-    max_properties_per_object: 1000                 # 每个对象最大属性数
-    parallel_query: false                           # 是否并行查询（未来功能）
+    query_timeout: 60                               # 增加查询超时
+    max_properties_per_object: 5000                 # 允许更多属性
+    parallel_query: true                            # 启用并行查询
 
-
-# ===== 生成策略配置 =====
+# ===== 生成策略配置（核心优化） =====
 generation:
-  single_batch_threshold: 5              # 单批生成阈值：<=5个组件时单批生成
-  max_batch_size: 8                      # 最大批次大小：每批最多8个组件
-  enable_semantic_placeholders: true     # 启用语义占位符
-  reference_resolution_timeout: 300      # 引用解析超时时间（秒）
+  single_batch_threshold: 25                        # 大幅提升到25个组件
+  max_batch_size: 15                               # 增大单批最大容量
+  enable_semantic_placeholders: false               # 关闭语义占位符，直接处理完整引用
+  reference_resolution_timeout: 600                 # 增加引用解析超时
+  enable_direct_reference: true                     # 新增：启用直接引用模式
+  max_schema_injection_depth: 15                    # 新增：Schema注入深度
 
-# ===== 语义解析配置 =====
+# ===== 语义解析配置（简化） =====
 semantic_resolution:
-  # 语义引用标识符（用于判断是否为语义引用）
-  identifiers:
-    - "引用"
-    - "连接到"
-    - "订阅"
-    - "绑定到"
-    - "使用"
-    - "提供"
-
-  # 语义解析模式
-  patterns:
-    - pattern: "引用(.+?)的(.+?)端口"
-      type: "port_reference"
-      template: "/{component}/Ports/{target}"
-
-    - pattern: "连接到(.+?)的(.+?)接口"
-      type: "interface_reference"
-      template: "/{component}/Interfaces/{target}"
-
-    - pattern: "订阅(.+?)管理器的(.+?)事件"
-      type: "event_reference"
-      template: "/{component}/Events/{target}"
-
-    - pattern: "绑定到(.+?)的(.+?)事件"
-      type: "runnable_reference"
-      template: "/{component}/InternalBehavior/Runnables/{target}"
-
-    - pattern: "使用(.+?)提供的(.+?)服务"
-      type: "service_reference"
-      template: "/{component}/Services/{target}"
-
-  # 功能映射（用于组件名称推断）
-  function_mappings:
-    温度: ["temp", "temperature", "thermal"]
-    传感器: ["sensor", "detect", "monitor"]
-    控制器: ["controller", "control", "manager"]
-    处理器: ["processor", "process", "handler"]
-    管理器: ["manager", "mgr", "supervisor"]
-    电机: ["motor", "engine", "actuator"]
-    泵: ["pump", "valve"]
-    显示: ["display", "hmi", "screen"]
-
-  # 解析配置
-  fuzzy_match_threshold: 0.6
-  enable_heuristic_resolution: true
-  resolution_cache_size: 1000
+  # 简化语义解析，因为不再主要依赖语义占位符
+  enabled: false                                    # 默认关闭语义解析
+  identifiers: ["引用"]                            # 最小化标识符集合
+  patterns: []                                      # 清空模式列表
+  fuzzy_match_threshold: 0.9                       # 提高匹配阈值
+  enable_heuristic_resolution: false               # 关闭启发式解析
+  resolution_cache_size: 100                       # 减小缓存
 
 # Round1架构设计Schema配置
 round1_schema:
@@ -122,6 +84,7 @@ round1_schema:
       - estimated_complexity
       - port_estimates
       - behavioral_characteristics
+      - direct_references                          # 新增：直接引用列表
 
     allowed_types:
       - APPLICATION-SW-COMPONENT-TYPE
@@ -144,25 +107,27 @@ round1_schema:
       - data_category
       - connected_components
       - performance_requirements
+      - direct_paths                               # 新增：直接路径定义
 
-    allowed_types:
-      - SENDER-RECEIVER-INTERFACE
-      - CLIENT-SERVER-INTERFACE
-      - NV-DATA-INTERFACE
-      - PARAMETER-INTERFACE
-      - MODE-SWITCH-INTERFACE
-      - TRIGGER-INTERFACE
-
-# 元模型注入配置
+# 元模型注入配置（大幅增强）
 metamodel_injection:
-  # Round1注入深度：只注入具体类型
-  round1_depth: 1
-  # Round2注入深度：基于LLM选择注入2-3层
-  round2_depth: 8
-  # 是否包含必需属性说明
+  round1_depth: 3                                  # Round1也注入更多信息
+  round2_depth: 15                                 # 大幅增加Round2深度
   include_required_attributes: true
-  # 是否包含minOccurs信息
   include_min_occurs: true
+  include_inheritance_chain: true                  # 新增：包含继承链
+  include_all_children: true                       # 新增：包含所有子元素
+  max_element_expansion: 1000                      # 新增：最大元素展开数
+
+# ===== 批处理优化配置（新增） =====
+batch_optimization:
+  enable_intelligent_grouping: true                # 智能分组
+  prefer_single_batch: true                        # 优先单批生成
+  component_complexity_weights:                    # 组件复杂度权重
+    SIMPLE: 1
+    MEDIUM: 3
+    COMPLEX: 5
+  max_complexity_per_batch: 50                     # 每批最大复杂度总和
 
 # ===== 术语库配置 =====
 terminology:
@@ -247,55 +212,16 @@ terminology:
         - "参数持久化"
         - "故障信息记录"
 
-  # 设计模式定义
+  # 设计模式定义（简化）
   design_patterns:
-    - name: "单组件数据处理模式"
-      components:
-        - "APPLICATION-SW-COMPONENT-TYPE"
-      interfaces:
-        - "SENDER-RECEIVER-INTERFACE"
+    - name: "统一批次生成模式"
+      components: ["ALL"]
+      interfaces: ["ALL"]
       scenarios:
-        - "简单数据处理"
-        - "单一功能实现"
-        - "基础算法处理"
-
-    - name: "多组件协作模式"
-      components:
-        - "APPLICATION-SW-COMPONENT-TYPE"
-        - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
-      interfaces:
-        - "SENDER-RECEIVER-INTERFACE"
-        - "CLIENT-SERVER-INTERFACE"
-      scenarios:
-        - "复杂系统设计"
-        - "多功能协作"
-        - "分布式处理"
-
-    - name: "传感器数据融合模式"
-      components:
-        - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
-        - "APPLICATION-SW-COMPONENT-TYPE"
-        - "COMPOSITION-SW-COMPONENT-TYPE"
-      interfaces:
-        - "SENDER-RECEIVER-INTERFACE"
-        - "CLIENT-SERVER-INTERFACE"
-      scenarios:
-        - "多传感器数据融合"
-        - "复杂数据处理链"
-        - "智能决策系统"
-
-    - name: "参数化配置模式"
-      components:
-        - "APPLICATION-SW-COMPONENT-TYPE"
-        - "PARAMETER-SW-COMPONENT-TYPE"
-      interfaces:
-        - "CLIENT-SERVER-INTERFACE"
-        - "NV-DATA-INTERFACE"
-      scenarios:
-        - "可配置系统"
-        - "参数化设计"
-        - "自适应系统"
+        - "利用长上下文一次性生成所有组件"
+        - "保持引用一致性"
+        - "减少批次切换开销"
 
 # ===== 系统配置 =====
-debug_mode: true                                    # 调试模式开关
-output_dir: "src/llm_generation/output"                # 输出文件目录（相对于项目根目录）
+debug_mode: true
+output_dir: "src/llm_generation/output"

@@ -1,10 +1,12 @@
-"""
-管理已生成组件的接口信息，支持语义占位符解析
+"""core/component_registry.py - 简化的组件注册表
+
+优化为支持直接引用，移除语义占位符处理
 """
 import json
 from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass, field
 from ..utils.serializers import generate_uuid
+from ..config import CONFIG
 
 
 @dataclass
@@ -16,6 +18,7 @@ class ComponentInterface:
     data_elements: List[str] = field(default_factory=list)
     description: str = ""
     component_name: str = ""
+    absolute_path: str = ""  # 新增：绝对路径
 
 
 @dataclass
@@ -28,48 +31,75 @@ class ComponentRegistration:
     generated_data: Dict[str, Any] = field(default_factory=dict)
     generation_batch: int = 0
     timestamp: str = ""
+    absolute_path: str = ""  # 新增：组件绝对路径
 
 
 class ComponentRegistry:
-    """组件注册表管理器"""
+    """简化的组件注册表管理器 - 优化版"""
 
     def __init__(self):
         """初始化注册表"""
         self.components: Dict[str, ComponentRegistration] = {}
         self.interfaces: Dict[str, ComponentInterface] = {}
-        self.semantic_map: Dict[str, str] = {}  # 语义描述 -> 实际路径
+        self.path_index: Dict[str, Any] = {}  # 新增：路径索引
         self.session_id: Optional[str] = None
 
     def initialize_session(
-            self,
-            component_plans: List[Dict[str, Any]],
-            interface_plans: List[Dict[str, Any]]
+        self,
+        component_plans: List[Dict[str, Any]],
+        interface_plans: List[Dict[str, Any]]
     ):
-        """初始化会话"""
+        """初始化会话 - 简化版"""
+
         self.session_id = generate_uuid()
         self.components.clear()
         self.interfaces.clear()
-        self.semantic_map.clear()
+        self.path_index.clear()
 
-        # 预注册接口计划
+        # 预注册所有组件（用于直接引用）
+        for comp_plan in component_plans:
+            comp_name = comp_plan.get("name", "")
+            if comp_name:
+                comp_path = f"/Components/{comp_name}"
+                self.path_index[comp_path] = {
+                    "type": "component",
+                    "name": comp_name,
+                    "plan": comp_plan
+                }
+
+        # 预注册所有接口
         for intf_plan in interface_plans:
-            interface_info = ComponentInterface(
-                name=intf_plan.get("name", ""),
-                type="INTERFACE",
-                interface_type=intf_plan.get("type", ""),
-                description=intf_plan.get("communication_pattern", "")
-            )
-            self.interfaces[interface_info.name] = interface_info
+            intf_name = intf_plan.get("name", "")
+            if intf_name:
+                intf_path = f"/Interfaces/{intf_name}"
+                self.path_index[intf_path] = {
+                    "type": "interface",
+                    "name": intf_name,
+                    "plan": intf_plan
+                }
+
+                # 创建接口信息
+                interface_info = ComponentInterface(
+                    name=intf_name,
+                    type="INTERFACE",
+                    interface_type=intf_plan.get("type", ""),
+                    description=intf_plan.get("communication_pattern", ""),
+                    absolute_path=intf_path
+                )
+                self.interfaces[intf_name] = interface_info
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 初始化注册表: {len(component_plans)}个组件, {len(interface_plans)}个接口")
 
     def register_generated_component(self, component_data: Dict[str, Any]):
-        """注册已生成的组件"""
+        """注册已生成的组件 - 简化版"""
 
-        # 提取组件信息
         comp_name = self._extract_component_name(component_data)
-        comp_type = self._extract_component_type(component_data)
-
         if not comp_name:
             return
+
+        comp_type = self._extract_component_type(component_data)
+        comp_path = f"/Components/{comp_name}"
 
         # 创建注册信息
         registration = ComponentRegistration(
@@ -77,25 +107,223 @@ class ComponentRegistry:
             name=comp_name,
             type=comp_type,
             generated_data=component_data,
-            timestamp=generate_uuid()  # 临时使用UUID作为时间戳
+            timestamp=generate_uuid(),
+            absolute_path=comp_path
         )
 
-        # 提取接口信息
-        interfaces = self._extract_interfaces(component_data, comp_name)
+        # 提取并注册接口
+        interfaces = self._extract_interfaces_direct(component_data, comp_name)
         registration.interfaces = interfaces
 
         # 注册组件
         self.components[comp_name] = registration
 
-        # 更新语义映射
-        self._update_semantic_mapping(comp_name, interfaces)
+        # 更新路径索引
+        self.path_index[comp_path] = {
+            "type": "component",
+            "name": comp_name,
+            "registration": registration
+        }
+
+        # 注册端口路径
+        for interface in interfaces:
+            port_path = f"{comp_path}/Ports/{interface.name}"
+            self.path_index[port_path] = {
+                "type": "port",
+                "component": comp_name,
+                "port": interface.name,
+                "interface": interface
+            }
+
+    def _extract_interfaces_direct(
+        self,
+        component_data: Dict[str, Any],
+        comp_name: str
+    ) -> List[ComponentInterface]:
+        """提取接口信息 - 使用直接路径"""
+
+        interfaces = []
+        comp_path = f"/Components/{comp_name}"
+
+        # 查找PORTS结构
+        ports_data = self._find_ports_data(component_data)
+        if not ports_data:
+            return interfaces
+
+        # 提取P-PORT
+        if "P-PORT-PROTOTYPE" in ports_data:
+            pports = ports_data["P-PORT-PROTOTYPE"]
+            if not isinstance(pports, list):
+                pports = [pports]
+
+            for pport in pports:
+                if isinstance(pport, dict):
+                    port_name = pport.get("SHORT-NAME", "")
+                    if port_name:
+                        interface = ComponentInterface(
+                            name=port_name,
+                            type="P-PORT",
+                            interface_type="SENDER-RECEIVER-INTERFACE",
+                            component_name=comp_name,
+                            absolute_path=f"{comp_path}/Ports/{port_name}"
+                        )
+                        interfaces.append(interface)
+
+        # 提取R-PORT
+        if "R-PORT-PROTOTYPE" in ports_data:
+            rports = ports_data["R-PORT-PROTOTYPE"]
+            if not isinstance(rports, list):
+                rports = [rports]
+
+            for rport in rports:
+                if isinstance(rport, dict):
+                    port_name = rport.get("SHORT-NAME", "")
+                    if port_name:
+                        interface = ComponentInterface(
+                            name=port_name,
+                            type="R-PORT",
+                            interface_type="SENDER-RECEIVER-INTERFACE",
+                            component_name=comp_name,
+                            absolute_path=f"{comp_path}/Ports/{port_name}"
+                        )
+                        interfaces.append(interface)
+
+        return interfaces
+
+    def validate_reference_path(self, path: str) -> bool:
+        """验证引用路径的有效性"""
+
+        # 检查路径是否存在于索引中
+        return path in self.path_index
+
+    def get_element_by_path(self, path: str) -> Optional[Dict[str, Any]]:
+        """通过路径获取元素"""
+
+        return self.path_index.get(path)
+
+    def get_all_valid_paths(self) -> List[str]:
+        """获取所有有效路径"""
+
+        return list(self.path_index.keys())
+
+    def get_component_paths(self) -> List[str]:
+        """获取所有组件路径"""
+
+        return [
+            path for path, info in self.path_index.items()
+            if info.get("type") == "component"
+        ]
+
+    def get_interface_paths(self) -> List[str]:
+        """获取所有接口路径"""
+
+        return [
+            path for path, info in self.path_index.items()
+            if info.get("type") == "interface"
+        ]
+
+    def get_port_paths(self, component_name: str = None) -> List[str]:
+        """获取端口路径"""
+
+        port_paths = []
+        for path, info in self.path_index.items():
+            if info.get("type") == "port":
+                if component_name is None or info.get("component") == component_name:
+                    port_paths.append(path)
+        return port_paths
+
+    def generate_reference_map(self) -> Dict[str, List[str]]:
+        """生成引用映射（用于验证）"""
+
+        reference_map = {
+            "components": self.get_component_paths(),
+            "interfaces": self.get_interface_paths(),
+            "ports": self.get_port_paths()
+        }
+
+        return reference_map
+
+    def get_component_summaries(self) -> List[Dict[str, Any]]:
+        """获取组件摘要 - 包含路径信息"""
+
+        summaries = []
+        for comp_name, registration in self.components.items():
+            summary = {
+                "name": comp_name,
+                "type": registration.type,
+                "path": registration.absolute_path,
+                "interfaces": [
+                    {
+                        "type": intf.type,
+                        "name": intf.name,
+                        "path": intf.absolute_path
+                    }
+                    for intf in registration.interfaces
+                ],
+                "interface_count": len(registration.interfaces)
+            }
+            summaries.append(summary)
+
+        return summaries
+
+    def get_interface_summaries(self) -> List[Dict[str, Any]]:
+        """获取接口摘要 - 包含路径信息"""
+
+        summaries = []
+        for intf_name, interface in self.interfaces.items():
+            summary = {
+                "name": intf_name,
+                "type": interface.interface_type,
+                "path": interface.absolute_path,
+                "description": interface.description
+            }
+            summaries.append(summary)
+
+        return summaries
+
+    def validate_all_references(self, arxml_data: Dict[str, Any]) -> Dict[str, Any]:
+        """验证所有引用的有效性"""
+
+        validation_result = {
+            "valid": True,
+            "invalid_references": [],
+            "warnings": []
+        }
+
+        def check_references(obj, path=""):
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    if isinstance(value, str) and any(ref in key.upper() for ref in ["REF", "TREF"]):
+                        # 检查引用格式
+                        if value.startswith("/"):
+                            if not self.validate_reference_path(value):
+                                validation_result["valid"] = False
+                                validation_result["invalid_references"].append({
+                                    "path": path + "." + key,
+                                    "reference": value,
+                                    "reason": "路径不存在"
+                                })
+                        elif not value.startswith("#"):  # 内部引用
+                            validation_result["warnings"].append({
+                                "path": path + "." + key,
+                                "reference": value,
+                                "reason": "引用格式不标准"
+                            })
+                    elif isinstance(value, (dict, list)):
+                        check_references(value, path + "." + key)
+            elif isinstance(obj, list):
+                for i, item in enumerate(obj):
+                    check_references(item, path + f"[{i}]")
+
+        check_references(arxml_data)
+
+        return validation_result
 
     def _extract_component_name(self, component_data: Dict[str, Any]) -> str:
         """提取组件名称"""
         if "SHORT-NAME" in component_data:
             return component_data["SHORT-NAME"]
 
-        # 从顶级键提取
         for key in component_data.keys():
             if isinstance(component_data[key], dict) and "SHORT-NAME" in component_data[key]:
                 return component_data[key]["SHORT-NAME"]
@@ -104,54 +332,10 @@ class ComponentRegistry:
 
     def _extract_component_type(self, component_data: Dict[str, Any]) -> str:
         """提取组件类型"""
-        # 从键名推断
         for key in component_data.keys():
             if "COMPONENT-TYPE" in key:
                 return key
-
         return "APPLICATION-SW-COMPONENT-TYPE"
-
-    def _extract_interfaces(
-            self,
-            component_data: Dict[str, Any],
-            comp_name: str
-    ) -> List[ComponentInterface]:
-        """提取组件接口信息"""
-
-        interfaces = []
-
-        # 查找PORTS结构
-        ports_data = self._find_ports_data(component_data)
-        if not ports_data:
-            return interfaces
-
-        # 提取P-PORT-PROTOTYPE
-        if "P-PORT-PROTOTYPE" in ports_data:
-            pports = ports_data["P-PORT-PROTOTYPE"]
-            if isinstance(pports, list):
-                for pport in pports:
-                    interface = self._create_interface_from_port(pport, "P-PORT", comp_name)
-                    if interface:
-                        interfaces.append(interface)
-            elif isinstance(pports, dict):
-                interface = self._create_interface_from_port(pports, "P-PORT", comp_name)
-                if interface:
-                    interfaces.append(interface)
-
-        # 提取R-PORT-PROTOTYPE
-        if "R-PORT-PROTOTYPE" in ports_data:
-            rports = ports_data["R-PORT-PROTOTYPE"]
-            if isinstance(rports, list):
-                for rport in rports:
-                    interface = self._create_interface_from_port(rport, "R-PORT", comp_name)
-                    if interface:
-                        interfaces.append(interface)
-            elif isinstance(rports, dict):
-                interface = self._create_interface_from_port(rports, "R-PORT", comp_name)
-                if interface:
-                    interfaces.append(interface)
-
-        return interfaces
 
     def _find_ports_data(self, component_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """查找PORTS数据"""
@@ -168,142 +352,42 @@ class ComponentRegistry:
 
         return search_ports(component_data)
 
-    def _create_interface_from_port(
-            self,
-            port_data: Dict[str, Any],
-            port_type: str,
-            comp_name: str
-    ) -> Optional[ComponentInterface]:
-        """从端口数据创建接口信息"""
-
-        port_name = port_data.get("SHORT-NAME", "")
-        if not port_name:
-            return None
-
-        # 确定接口类型
-        interface_ref_key = "PROVIDED-INTERFACE-TREF" if port_type == "P-PORT" else "REQUIRED-INTERFACE-TREF"
-        interface_ref = port_data.get(interface_ref_key, "")
-
-        # 推断接口类型
-        interface_type = self._infer_interface_type(interface_ref, port_data)
-
-        return ComponentInterface(
-            name=port_name,
-            type=port_type,
-            interface_type=interface_type,
-            description=f"{comp_name}的{port_name}端口",
-            component_name=comp_name
-        )
-
-    def _infer_interface_type(self, interface_ref: str, port_data: Dict[str, Any]) -> str:
-        """推断接口类型"""
-
-        # 从引用路径推断
-        if "SENDER-RECEIVER" in interface_ref.upper():
-            return "SENDER-RECEIVER-INTERFACE"
-        elif "CLIENT-SERVER" in interface_ref.upper():
-            return "CLIENT-SERVER-INTERFACE"
-        elif "MODE-SWITCH" in interface_ref.upper():
-            return "MODE-SWITCH-INTERFACE"
-
-        # 默认类型
-        return "SENDER-RECEIVER-INTERFACE"
-
-    def _update_semantic_mapping(self, comp_name: str, interfaces: List[ComponentInterface]):
-        """更新语义映射"""
-
-        for interface in interfaces:
-            # 生成语义描述模式
-            semantic_patterns = [
-                f"引用{comp_name}的{interface.name}端口",
-                f"连接到{comp_name}的{interface.name}",
-                f"{comp_name}的{interface.name}接口",
-                f"使用{comp_name}提供的{interface.name}"
-            ]
-
-            # 生成实际路径
-            actual_path = f"/{comp_name}/Ports/{interface.name}"
-
-            # 添加映射
-            for pattern in semantic_patterns:
-                self.semantic_map[pattern] = actual_path
-
-    def resolve_semantic_reference(self, semantic_description: str) -> Optional[str]:
-        """解析语义引用"""
-
-        # 直接匹配
-        if semantic_description in self.semantic_map:
-            return self.semantic_map[semantic_description]
-
-        # 模糊匹配
-        for pattern, path in self.semantic_map.items():
-            if self._semantic_match(semantic_description, pattern):
-                return path
-
-        return None
-
-    def _semantic_match(self, description: str, pattern: str) -> bool:
-        """语义匹配"""
-
-        # 简单的关键词匹配
-        desc_words = set(description.lower().split())
-        pattern_words = set(pattern.lower().split())
-
-        # 计算交集比例
-        intersection = desc_words & pattern_words
-        union = desc_words | pattern_words
-
-        if len(union) == 0:
-            return False
-
-        similarity = len(intersection) / len(union)
-        return similarity > 0.6  # 相似度阈值
-
-    def get_component_summaries(self) -> List[Dict[str, Any]]:
-        """获取组件摘要"""
-
-        summaries = []
-        for comp_name, registration in self.components.items():
-            summary = {
-                "name": comp_name,
-                "type": registration.type,
-                "interfaces": [
-                    f"{intf.type}:{intf.name}" for intf in registration.interfaces
-                ],
-                "interface_count": len(registration.interfaces)
-            }
-            summaries.append(summary)
-
-        return summaries
-
-    def get_interface_summaries(self) -> List[Dict[str, Any]]:
-        """获取接口摘要"""
-
-        summaries = []
-        for intf_name, interface in self.interfaces.items():
-            summary = {
-                "name": intf_name,
-                "type": interface.interface_type,
-                "description": interface.description
-            }
-            summaries.append(summary)
-
-        return summaries
-
-    def get_interface_registry(self) -> Dict[str, ComponentInterface]:
-        """获取接口注册表"""
-        return self.interfaces.copy()
-
-    def get_semantic_mappings(self) -> Dict[str, str]:
-        """获取语义映射"""
-        return self.semantic_map.copy()
-
     def clear_session(self):
         """清理会话"""
         self.components.clear()
         self.interfaces.clear()
-        self.semantic_map.clear()
+        self.path_index.clear()
         self.session_id = None
+
+    def export_registry(self) -> Dict[str, Any]:
+        """导出注册表数据"""
+
+        return {
+            "session_id": self.session_id,
+            "components": {
+                name: {
+                    "type": reg.type,
+                    "path": reg.absolute_path,
+                    "interfaces": [
+                        {
+                            "name": intf.name,
+                            "type": intf.type,
+                            "path": intf.absolute_path
+                        }
+                        for intf in reg.interfaces
+                    ]
+                }
+                for name, reg in self.components.items()
+            },
+            "interfaces": {
+                name: {
+                    "type": intf.interface_type,
+                    "path": intf.absolute_path
+                }
+                for name, intf in self.interfaces.items()
+            },
+            "path_index_size": len(self.path_index)
+        }
 
 
 # 全局组件注册表实例

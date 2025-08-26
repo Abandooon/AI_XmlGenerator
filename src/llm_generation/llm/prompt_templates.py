@@ -1,27 +1,28 @@
-"""llm/prompt_templates.py - 提示词模板管理
+"""llm/prompt_templates.py - 优化的提示词模板管理
 
-管理Round 1和Round 2的提示词模板，支持多组件生成
+充分利用Gemini长上下文能力，减少分批，提供完整信息
 """
 from typing import Dict, Any, List, Optional
 from string import Template
 
 class PromptTemplateManager:
-    """提示词模板管理器"""
+    """提示词模板管理器 - 优化版"""
 
     def __init__(self):
         """初始化模板管理器"""
         self.templates = {
-            # Round 1 架构设计模板
-            "round1_architecture": self._get_round1_template(),
-            "round1_analysis": self._get_analysis_template(),
+            # Round 1 架构设计模板（增强）
+            "round1_architecture": self._get_enhanced_round1_template(),
 
-            # Round 2 详细生成模板
-            "round2_generation": self._get_round2_template(),
-            "round2_multi_component": self._get_multi_component_template(),
+            # Round 2 详细生成模板（长上下文优化）
+            "round2_unified": self._get_unified_round2_template(),
+
+            # 备用：大规模批次模板
+            "round2_large_batch": self._get_large_batch_template(),
         }
 
-    def _get_round1_template(self) -> Template:
-        """Round 1 架构设计模板"""
+    def _get_enhanced_round1_template(self) -> Template:
+        """增强的Round 1架构设计模板"""
         template_text = """
 你是一个AUTOSAR架构设计专家。根据用户需求设计软件组件架构。
 
@@ -31,187 +32,432 @@ $user_requirements
 ## 设计上下文
 $design_context
 
-## 可用组件类型
+## 可用组件类型（完整列表）
 $component_types
 
-## 可用接口类型  
+## 可用接口类型（完整列表）
 $interface_types
 
 ## 设计任务
-请设计一个符合AUTOSAR标准的软件组件架构，包括：
+请设计一个符合AUTOSAR标准的完整软件组件架构，包括：
 
-1. **系统分析**: 分析功能需求、数据流、时序要求
-2. **组件规划**: 确定需要的组件类型、数量、职责
-3. **接口规划**: 设计组件间的接口类型、通信模式
-4. **连接拓扑**: 定义组件间的连接关系和数据流向
-5. **架构决策**: 说明关键设计决策的理由
+1. **系统分析**: 深入分析功能需求、数据流、时序要求
+2. **组件规划**: 确定所有需要的组件类型、数量、职责、内部结构
+3. **接口规划**: 设计所有组件间的接口类型、通信模式、数据元素
+4. **连接拓扑**: 完整定义所有组件间的连接关系和数据流向
+5. **引用路径**: 明确指定所有引用的完整路径（无需语义占位符）
 
-## 设计原则
-- 遵循AUTOSAR分层架构
-- 保持组件职责单一
-- 最小化组件间耦合
-- 考虑可扩展性和可维护性
-- 满足实时性和安全性要求
+## 增强设计原则
+- **完整性优先**: 一次性设计所有需要的元素
+- **明确引用**: 使用完整的引用路径，如 /Components/TempSensor/Ports/DataOut
+- **详细规格**: 为每个组件提供详细的端口和行为规格
+- **减少歧义**: 避免模糊描述，使用精确的技术规范
 
-## 多组件设计指导
-如果需求复杂，可以设计多个组件：
-- 每个组件应有明确的职责边界
-- 组件间通过标准AUTOSAR接口通信
-- 避免循环依赖
-- 考虑组件的独立部署和测试
+## 组件规划要求
+对于每个组件，请提供：
+- component_id: 唯一标识符
+- name: 描述性名称
+- type: AUTOSAR组件类型
+- purpose: 详细功能描述
+- port_estimates: 
+  - input_ports: 输入端口详细列表
+  - output_ports: 输出端口详细列表
+- behavioral_characteristics:
+  - runnables: 运行实体列表
+  - events: 事件列表
+  - timing: 时序要求
+- direct_references: 直接引用的其他组件/接口的完整路径
+
+## 接口规划要求
+对于每个接口，请提供：
+- interface_id: 唯一标识符
+- name: 描述性名称
+- type: AUTOSAR接口类型
+- communication_pattern: 通信模式详情
+- data_elements: 详细的数据元素定义
+- connected_components: 连接的组件对
+- direct_paths: 接口在系统中的完整路径
 
 ## 输出要求
-输出JSON格式的架构设计，包含所有必需字段。确保：
-- 组件ID和接口ID唯一
-- 组件名称具有描述性
-- 接口类型选择合理
-- 连接关系清晰明确
+输出完整、详细的JSON格式架构设计。确保：
+- 所有ID全局唯一
+- 引用路径完整准确
+- 组件间关系明确
+- 数据流向清晰
+- 可直接用于Round 2生成
 """
         return Template(template_text)
 
-    def _get_analysis_template(self) -> Template:
-        """系统分析模板"""
+    def _get_unified_round2_template(self) -> Template:
+        """统一的Round 2生成模板 - 利用长上下文"""
         template_text = """
-作为AUTOSAR系统分析专家，请对以下需求进行深入分析：
+你是AUTOSAR XML生成专家。基于架构设计一次性生成所有组件的完整ARXML内容。
 
-## 需求描述
-$requirements
-
-## 分析维度
-1. **功能分解**: 识别主要功能模块和子功能
-2. **数据流分析**: 分析数据的产生、传递、消费路径
-3. **时序分析**: 识别关键时序约束和周期性要求
-4. **接口分析**: 确定对外接口和内部接口需求
-5. **约束分析**: 识别性能、安全、资源约束
-6. **复杂度评估**: 评估实现复杂度和组件数量需求
-
-## 输出格式
-提供结构化的分析结果，为架构设计提供依据。
-"""
-        return Template(template_text)
-
-    def _get_round2_template(self) -> Template:
-        """Round 2 详细生成模板"""
-        template_text = """
-你是AUTOSAR XML生成专家。根据确认的架构设计生成详细的ARXML内容。
-
-## 架构设计
+## 完整架构设计
 $architecture_design
 
-## 约束规则
+## 详细元模型信息（深度=$schema_depth）
+$metamodel_context
+
+## 完整约束规则
 $constraints
+
+## 标准类型库
+$standard_types
 
 ## 生成任务
-根据架构设计生成符合AUTOSAR标准的完整ARXML JSON结构。
+一次性生成所有 $component_count 个组件的完整ARXML JSON结构。
 
-## 生成要求
-1. **结构完整**: 包含所有必需的XML元素
-2. **命名规范**: 遵循AUTOSAR命名约定
-3. **类型正确**: 使用正确的AUTOSAR数据类型
-4. **引用一致**: 确保所有引用的完整性和唯一性
-5. **UUID唯一**: 所有UUID必须唯一且格式正确
+## 关键生成要求
 
-## 关键元素要求
-
-### APPLICATION-SW-COMPONENT-TYPE
-- SHORT-NAME: 使用架构设计中的组件名称
-- @UUID: 生成唯一UUID
-- PORTS: 根据接口计划生成端口
-- INTERNAL-BEHAVIORS: 定义内部行为
-
-### 端口定义 (PORTS)
-- P-PORT-PROTOTYPE: 提供接口的端口
-  - SHORT-NAME: 描述性端口名称
-  - PROVIDED-INTERFACE-TREF: 正确的接口引用
-- R-PORT-PROTOTYPE: 需要接口的端口
-  - SHORT-NAME: 描述性端口名称
-  - REQUIRED-INTERFACE-TREF: 正确的接口引用
-  - REQUIRED-COM-SPECS: 通信规范
-
-### 内部行为 (INTERNAL-BEHAVIORS)
-- SWC-INTERNAL-BEHAVIOR:
-  - SHORT-NAME: 内部行为名称
-  - EVENTS: 至少一个TIMING-EVENT
-  - RUNNABLES: 至少一个RUNNABLE-ENTITY
-
-### 事件和Runnable关联
-- TIMING-EVENT:
-  - SHORT-NAME: 事件名称
-  - START-ON-EVENT-REF: 正确引用RUNNABLE-ENTITY
-  - PERIOD: 合理的周期值
-- RUNNABLE-ENTITY:
-  - SHORT-NAME: Runnable名称
-  - SYMBOL: C函数名称
-  - 数据访问点: 根据端口定义
-
-## 命名约定
-- 组件名称: PascalCase，如 TemperatureMonitor
-- 端口名称: PascalCase + 方向，如 TempDataOut, ControlIn
-- Runnable名称: PascalCase + Run，如 TempProcessRun
-- 事件名称: PascalCase + Event，如 TempProcessEvent
-
-## 输出格式
-生成完整的JSON结构，严格遵循提供的schema定义。
-"""
-        return Template(template_text)
-
-    def _get_multi_component_template(self) -> Template:
-        """多组件生成模板"""
-        template_text = """
-你是AUTOSAR多组件XML生成专家。根据架构设计生成多个组件的ARXML内容。
-
-## 架构设计 (包含多个组件)
-$architecture_design
-
-## 组件生成要求
-需要生成 $component_count 个组件：
-$component_list
-
-## 多组件生成规则
-
-### 1. 唯一性保证
-- 每个组件的所有UUID必须全局唯一
-- 组件名称不能重复
-- 端口名称在组件内唯一
-- Runnable名称在组件内唯一
+### 1. 完整性要求
+- 生成所有组件的完整定义
+- 包含所有必需的XML元素和属性
+- 完整的内部行为定义（INTERNAL-BEHAVIORS）
+- 所有端口定义（PORTS）
+- 完整的事件和Runnable关联
 
 ### 2. 引用一致性
-- 接口引用路径必须正确
-- 组件间的端口连接要对应
-- 事件和Runnable的引用关系正确
+- 使用完整的引用路径，无需语义占位符
+- 组件间引用直接使用绝对路径
+- 示例：/Components/TemperatureMonitor/Ports/TempDataOut
 
-### 3. 命名策略
-- 组件名称体现功能特性，如: TempSensor, DataProcessor, ControlManager
-- 端口名称体现数据类型和方向，如: TempData_Out, ControlCmd_In
-- 避免通用名称，使用具体描述性名称
+### 3. 结构规范
+对于每个APPLICATION-SW-COMPONENT-TYPE：
+```
+{
+  "SHORT-NAME": "ComponentName",
+  "@UUID": "unique-uuid-here",
+  "PORTS": {
+    "P-PORT-PROTOTYPE": [{
+      "SHORT-NAME": "OutputPortName",
+      "PROVIDED-INTERFACE-TREF": "/Interfaces/InterfaceName"
+    }],
+    "R-PORT-PROTOTYPE": [{
+      "SHORT-NAME": "InputPortName", 
+      "REQUIRED-INTERFACE-TREF": "/Interfaces/InterfaceName",
+      "REQUIRED-COM-SPECS": {...}
+    }]
+  },
+  "INTERNAL-BEHAVIORS": {
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "InternalBehaviorName",
+      "EVENTS": {
+        "TIMING-EVENT": [{
+          "SHORT-NAME": "Event10ms",
+          "START-ON-EVENT-REF": "/Components/ComponentName/InternalBehavior/Runnables/RunnableName",
+          "PERIOD": 0.01
+        }]
+      },
+      "RUNNABLES": {
+        "RUNNABLE-ENTITY": [{
+          "SHORT-NAME": "RunnableName",
+          "SYMBOL": "RunnableName_func",
+          "DATA-READ-ACCESSES": {...},
+          "DATA-WRITE-ACCESSES": {...}
+        }]
+      }
+    }
+  }
+}
+```
 
-### 4. 组件间协作
-- 发送组件的P-PORT对应接收组件的R-PORT
-- 接口类型必须匹配
-- 数据流向符合架构设计
+### 4. 深层元素要求（基于元模型深度$schema_depth）
+包含以下所有层级的元素：
+$required_elements_detail
 
-## 约束规则
-$constraints
+### 5. 数据类型使用
+- 所有数据元素使用标准类型库中的类型
+- TYPE-TREF格式：/AUTOSAR_Platform/ImplementationDataTypes/typename
+- 避免自定义类型，优先使用标准类型
 
-## 特殊要求
-- 每个组件都应该是完整的、可独立部署的
-- 组件的复杂度应该合理，避免过度复杂
-- 保持组件间的松耦合
+## 组件列表（需要生成的所有组件）
+$component_list_detail
+
+## 接口定义（预定义的所有接口）
+$interface_definitions
+
+## 质量要求
+1. **原子性**: 所有组件在一个响应中完整生成
+2. **可追溯性**: 每个元素都能追溯到架构设计
+3. **一致性**: 组件间的交互完全一致
+4. **完整性**: 不遗漏任何必需元素
+5. **正确性**: 严格遵循AUTOSAR标准
 
 ## 输出格式
-生成包含所有组件的完整JSON结构，每个组件作为独立的顶级属性。
+生成包含所有组件的单一JSON结构，每个组件作为顶级属性：
+```json
+{
+  "TemperatureMonitor": { /* 完整组件定义 */ },
+  "DataProcessor": { /* 完整组件定义 */ },
+  "ControlManager": { /* 完整组件定义 */ },
+  // ... 所有其他组件
+}
+```
+
+请确保输出的JSON可以直接转换为有效的ARXML文件。
 """
         return Template(template_text)
 
+    def _get_large_batch_template(self) -> Template:
+        """大规模批次模板 - 备用"""
+        template_text = """
+你是AUTOSAR大规模系统生成专家。利用长上下文能力一次性处理大量组件。
+
+## 系统规模
+- 组件总数: $total_components
+- 接口总数: $total_interfaces  
+- 连接总数: $total_connections
+
+## 完整系统架构
+$full_architecture
+
+## 扩展元模型（深度=$extended_depth）
+$extended_metamodel
+
+## 生成策略
+采用"全系统一次性生成"策略：
+1. 先生成所有接口定义
+2. 再生成所有组件定义
+3. 最后建立所有连接关系
+
+## 优化指导
+- 利用组件模板减少重复
+- 使用命名规范保持一致性
+- 批量处理相似组件
+- 保持引用的绝对路径
+
+## 大规模生成规范
+$large_scale_specifications
+
+## 输出要求
+生成完整的系统ARXML，包含所有组件、接口和连接。
+"""
+        return Template(template_text)
+
+    def get_round2_prompt(
+        self,
+        architecture_design: Dict[str, Any],
+        constraints: List[str] = None,
+        schema_depth: int = 15
+    ) -> str:
+        """获取优化的Round 2提示词 - 统一生成版本"""
+
+        component_plans = architecture_design.get("component_plan", [])
+        interface_plans = architecture_design.get("interface_plan", [])
+
+        # 格式化组件列表详情
+        component_list_detail = self._format_component_list_detail(component_plans)
+
+        # 格式化接口定义
+        interface_definitions = self._format_interface_definitions(interface_plans)
+
+        # 获取深层元模型上下文
+        metamodel_context = self._get_deep_metamodel_context(component_plans, schema_depth)
+
+        # 获取必需元素详情
+        required_elements_detail = self._get_required_elements_detail(component_plans, schema_depth)
+
+        # 获取标准类型上下文
+        from ..standard_types.standard_types import standard_type_manager
+        standard_types = standard_type_manager.get_type_context_for_llm(
+            filter_categories=["VALUE", "TYPE_REFERENCE", "PRIMITIVE"]
+        )
+
+        return self.render_template(
+            "round2_unified",
+            architecture_design=self._format_architecture_design(architecture_design),
+            component_count=len(component_plans),
+            schema_depth=schema_depth,
+            metamodel_context=metamodel_context,
+            constraints="\n".join(constraints or ["遵循AUTOSAR标准规范"]),
+            standard_types=standard_types,
+            component_list_detail=component_list_detail,
+            interface_definitions=interface_definitions,
+            required_elements_detail=required_elements_detail
+        )
+
+    def _format_component_list_detail(self, component_plans: List[Dict]) -> str:
+        """格式化详细的组件列表"""
+        lines = []
+        for i, comp in enumerate(component_plans, 1):
+            lines.append(f"{i}. **{comp.get('name', f'Component{i}')}**")
+            lines.append(f"   - 类型: {comp.get('type', '')}")
+            lines.append(f"   - 功能: {comp.get('purpose', '')}")
+            lines.append(f"   - 复杂度: {comp.get('estimated_complexity', 'Medium')}")
+
+            # 端口估计
+            if 'port_estimates' in comp:
+                ports = comp['port_estimates']
+                lines.append(f"   - 输入端口: {ports.get('input_ports', 'N/A')}")
+                lines.append(f"   - 输出端口: {ports.get('output_ports', 'N/A')}")
+
+            # 行为特征
+            if 'behavioral_characteristics' in comp:
+                behavior = comp['behavioral_characteristics']
+                if 'runnables' in behavior:
+                    lines.append(f"   - Runnables: {', '.join(behavior['runnables'])}")
+                if 'events' in behavior:
+                    lines.append(f"   - Events: {', '.join(behavior['events'])}")
+
+            # 直接引用
+            if 'direct_references' in comp:
+                lines.append(f"   - 引用: {', '.join(comp['direct_references'])}")
+
+            lines.append("")
+
+        return "\n".join(lines)
+
+    def _format_interface_definitions(self, interface_plans: List[Dict]) -> str:
+        """格式化接口定义"""
+        lines = []
+        for i, intf in enumerate(interface_plans, 1):
+            lines.append(f"{i}. **{intf.get('name', f'Interface{i}')}**")
+            lines.append(f"   - 类型: {intf.get('type', '')}")
+            lines.append(f"   - 通信模式: {intf.get('communication_pattern', '')}")
+
+            if 'data_elements' in intf and intf['data_elements']:
+                lines.append(f"   - 数据元素: {', '.join(intf['data_elements'])}")
+
+            if 'connected_components' in intf:
+                lines.append(f"   - 连接组件: {' <-> '.join(intf['connected_components'])}")
+
+            if 'direct_paths' in intf:
+                lines.append(f"   - 路径: {intf['direct_paths']}")
+
+            lines.append("")
+
+        return "\n".join(lines)
+
+    def _get_deep_metamodel_context(self, component_plans: List[Dict], depth: int) -> str:
+        """获取深层元模型上下文"""
+        lines = ["### 元模型结构（深度扩展）"]
+
+        # 获取所有涉及的组件类型
+        component_types = set(comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
+                            for comp in component_plans)
+
+        for comp_type in component_types:
+            lines.append(f"\n#### {comp_type}")
+            lines.append(f"继承深度: {depth}")
+            lines.append("必需元素层级:")
+
+            # 这里应该从knowledge graph获取实际的元模型信息
+            # 简化示例
+            lines.append("- Level 1: SHORT-NAME, @UUID")
+            lines.append("- Level 2: PORTS (P-PORT-PROTOTYPE, R-PORT-PROTOTYPE)")
+            lines.append("- Level 3: INTERNAL-BEHAVIORS (SWC-INTERNAL-BEHAVIOR)")
+            lines.append("- Level 4: EVENTS (TIMING-EVENT, DATA-RECEIVED-EVENT)")
+            lines.append("- Level 5: RUNNABLES (RUNNABLE-ENTITY)")
+            lines.append("- Level 6+: DATA-ACCESS, SERVER-CALL-POINTS, etc.")
+
+        return "\n".join(lines)
+
+    def _get_required_elements_detail(self, component_plans: List[Dict], depth: int) -> str:
+        """获取必需元素的详细说明"""
+        lines = ["### 必需元素详细规格"]
+
+        lines.append("\n#### 通用必需元素（所有组件）")
+        lines.append("- SHORT-NAME: 组件短名称，PascalCase格式")
+        lines.append("- @UUID: 全局唯一标识符，标准UUID格式")
+
+        lines.append("\n#### PORTS结构（深度展开）")
+        lines.append("```")
+        lines.append("PORTS:")
+        lines.append("  P-PORT-PROTOTYPE: (minOccurs=0, maxOccurs=unbounded)")
+        lines.append("    - SHORT-NAME: 端口名称")
+        lines.append("    - PROVIDED-INTERFACE-TREF: 接口引用")
+        lines.append("    - PROVIDED-COM-SPECS: (可选)")
+        lines.append("      - QUEUED-SENDER-COM-SPEC")
+        lines.append("      - NONQUEUED-SENDER-COM-SPEC")
+        lines.append("  R-PORT-PROTOTYPE: (minOccurs=0, maxOccurs=unbounded)")
+        lines.append("    - SHORT-NAME: 端口名称")
+        lines.append("    - REQUIRED-INTERFACE-TREF: 接口引用")
+        lines.append("    - REQUIRED-COM-SPECS: (推荐)")
+        lines.append("```")
+
+        lines.append("\n#### INTERNAL-BEHAVIORS结构（深度展开）")
+        lines.append("```")
+        lines.append("INTERNAL-BEHAVIORS:")
+        lines.append("  SWC-INTERNAL-BEHAVIOR:")
+        lines.append("    - SHORT-NAME: 行为名称")
+        lines.append("    - EVENTS: (minOccurs=1)")
+        lines.append("      - TIMING-EVENT")
+        lines.append("      - DATA-RECEIVED-EVENT")
+        lines.append("      - OPERATION-INVOKED-EVENT")
+        lines.append("    - RUNNABLES: (minOccurs=1)")
+        lines.append("      - RUNNABLE-ENTITY")
+        lines.append("    - PER-INSTANCE-MEMORYS: (可选)")
+        lines.append("    - SERVICE-DEPENDENCYS: (可选)")
+        lines.append("```")
+
+        return "\n".join(lines)
+
+    def _format_architecture_design(self, design: Dict[str, Any]) -> str:
+        """格式化架构设计 - 增强版"""
+        lines = []
+
+        # 系统分析
+        if 'system_analysis' in design:
+            lines.append("### 系统分析")
+            for key, value in design['system_analysis'].items():
+                lines.append(f"- {self._translate_analysis_key(key)}: {value}")
+
+        # 组件统计
+        comp_count = len(design.get('component_plan', []))
+        intf_count = len(design.get('interface_plan', []))
+
+        lines.append(f"\n### 系统规模")
+        lines.append(f"- 组件总数: {comp_count}")
+        lines.append(f"- 接口总数: {intf_count}")
+        lines.append(f"- 预估连接数: {comp_count * 2}")  # 简单估算
+
+        # 组件摘要
+        lines.append(f"\n### 组件架构摘要")
+        comp_types = {}
+        for comp in design.get('component_plan', []):
+            comp_type = comp.get('type', 'Unknown')
+            comp_types[comp_type] = comp_types.get(comp_type, 0) + 1
+
+        for comp_type, count in comp_types.items():
+            lines.append(f"- {comp_type}: {count}个")
+
+        # 接口摘要
+        lines.append(f"\n### 接口架构摘要")
+        intf_types = {}
+        for intf in design.get('interface_plan', []):
+            intf_type = intf.get('type', 'Unknown')
+            intf_types[intf_type] = intf_types.get(intf_type, 0) + 1
+
+        for intf_type, count in intf_types.items():
+            lines.append(f"- {intf_type}: {count}个")
+
+        # 连接拓扑
+        if 'connection_topology' in design:
+            lines.append("\n### 连接拓扑")
+            topology = design['connection_topology']
+            if topology.get('component_connections'):
+                lines.append(f"- 组件连接: {topology['component_connections']}")
+            if topology.get('data_flow_paths'):
+                lines.append(f"- 数据流: {topology['data_flow_paths']}")
+
+        return "\n".join(lines)
+
+    def _translate_analysis_key(self, key: str) -> str:
+        """翻译分析键"""
+        translations = {
+            "functional_decomposition": "功能分解",
+            "data_flow_analysis": "数据流分析",
+            "timing_requirements": "时序要求",
+            "scalability_considerations": "可扩展性"
+        }
+        return translations.get(key, key)
+
     def get_template(self, template_name: str) -> Optional[Template]:
-        """获取指定模板"""
+        """获取模板"""
         return self.templates.get(template_name)
 
-    def render_template(
-        self,
-        template_name: str,
-        **kwargs
-    ) -> str:
+    def render_template(self, template_name: str, **kwargs) -> str:
         """渲染模板"""
         template = self.get_template(template_name)
         if not template:
@@ -221,386 +467,6 @@ $constraints
             return template.substitute(**kwargs)
         except KeyError as e:
             raise ValueError(f"模板参数缺失: {e}")
-
-    def get_round1_prompt(
-        self,
-        user_requirements: str,
-        design_context: str = "",
-        component_types: List[Dict] = None,
-        interface_types: List[Dict] = None
-    ) -> str:
-        """获取Round 1提示词"""
-
-        # 格式化组件类型
-        if component_types:
-            comp_text = "\n".join([
-                f"### {comp['name']}\n"
-                f"- 描述: {comp.get('description', '')}\n"
-                f"- 复杂度: {comp.get('complexity', '')}\n"
-                f"- 典型场景: {', '.join(comp.get('scenarios', []))}\n"
-                for comp in component_types
-            ])
-        else:
-            comp_text = "APPLICATION-SW-COMPONENT-TYPE: 应用软件组件"
-
-        # 格式化接口类型
-        if interface_types:
-            intf_text = "\n".join([
-                f"### {intf['name']}\n"
-                f"- 描述: {intf.get('description', '')}\n"
-                f"- 通信模式: {intf.get('communication_mode', '')}\n"
-                f"- 典型场景: {', '.join(intf.get('scenarios', []))}\n"
-                for intf in interface_types
-            ])
-        else:
-            intf_text = "SENDER-RECEIVER-INTERFACE: 发送接收接口"
-
-        return self.render_template(
-            "round1_architecture",
-            user_requirements=user_requirements,
-            design_context=design_context,
-            component_types=comp_text,
-            interface_types=intf_text
-        )
-
-    def get_round2_prompt(
-            self,
-            architecture_design: Dict[str, Any],
-            component_details: List[Dict] = None,
-            interface_details: List[Dict] = None,
-            constraints: List[str] = None
-    ) -> str:
-        """获取Round 2提示词 - 增强元素注入"""
-
-        # 格式化架构设计
-        arch_text = self._format_architecture_design(architecture_design)
-
-        # 格式化约束
-        constraints_text = "\n".join(constraints or ["遵循AUTOSAR标准规范"])
-
-        # 获取元模型上下文
-        from ..knowledge.terminology_builder import terminology_builder
-
-        # 构建元素使用指导
-        element_guidance = self._build_element_guidance(architecture_design)
-
-        component_plan = architecture_design.get("component_plan", [])
-
-        # 基础prompt
-        base_prompt = f"""
-    你是AUTOSAR XML生成专家。根据确认的架构设计生成详细的ARXML内容。
-
-    ## 架构设计
-    {arch_text}
-
-    ## 元素使用指导
-    {element_guidance}
-
-    ## 约束规则
-    {constraints_text}
-    """
-
-        if len(component_plan) <= 1:
-            # 单组件生成
-            comp = component_plan[0] if component_plan else {}
-            comp_type = comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
-
-            # 获取该组件类型的元素上下文
-            element_context = terminology_builder.build_element_context_for_round2(comp_type)
-
-            return base_prompt + f"""
-
-    ## 组件类型元素要求
-
-    ### 必需元素（minOccurs >= 1）
-    {', '.join(element_context['required_elements'])}
-
-    ### 可选元素
-    {', '.join(element_context['optional_elements'])}
-
-    ### 元素说明
-    """
-
-            for elem_tag, elem_info in element_context['element_descriptions'].items():
-                if elem_tag in element_context['required_elements']:
-                    base_prompt += f"\n- **{elem_tag}** (必需): {elem_info['description'][:100]}..."
-
-        else:
-            # 多组件生成
-            component_list = "\n".join([
-                f"{i + 1}. {comp.get('name', f'Component{i + 1}')} - {comp.get('type', '')} - {comp.get('purpose', '')}"
-                for i, comp in enumerate(component_plan)
-            ])
-
-            return base_prompt + f"""
-
-    ## 多组件生成要求
-    需要生成 {len(component_plan)} 个组件：
-    {component_list}
-
-    ## 基于您的设计规划
-    """
-
-            # 为每个组件添加其element_design信息
-            for comp in component_plan:
-                element_design = comp.get("element_design", {})
-                if element_design:
-                    base_prompt += f"\n### {comp.get('name')}的元素规划："
-                    if element_design.get("ports", {}).get("needed"):
-                        base_prompt += f"\n- PORTS: {element_design['ports'].get('details', '需要端口')}"
-                    if element_design.get("internal_behaviors", {}).get("needed"):
-                        base_prompt += f"\n- INTERNAL-BEHAVIORS: 包含Runnables和Events"
-
-        return base_prompt
-
-    def _build_element_guidance(self, architecture_design: Dict[str, Any]) -> str:
-        """基于架构设计构建元素使用指导"""
-
-        guidance = []
-
-        # 分析所有组件的element_design
-        all_need_ports = False
-        all_need_behaviors = False
-
-        for comp in architecture_design.get("component_plan", []):
-            element_design = comp.get("element_design", {})
-            if element_design.get("ports", {}).get("needed"):
-                all_need_ports = True
-            if element_design.get("internal_behaviors", {}).get("needed"):
-                all_need_behaviors = True
-
-        if all_need_ports:
-            guidance.append("""
-    ### PORTS元素
-    - 每个需要通信的组件都应包含PORTS元素
-    - P-PORT-PROTOTYPE: 用于提供数据或服务
-    - R-PORT-PROTOTYPE: 用于接收数据或请求服务
-    - 每个端口必须有SHORT-NAME和接口引用
-    """)
-
-        if all_need_behaviors:
-            guidance.append("""
-    ### INTERNAL-BEHAVIORS元素
-    - 定义组件的运行时行为
-    - 必须包含至少一个SWC-INTERNAL-BEHAVIOR
-    - SWC-INTERNAL-BEHAVIOR应包含:
-      - EVENTS: 触发事件（如TIMING-EVENT）
-      - RUNNABLES: 可运行实体（RUNNABLE-ENTITY）
-      - 事件必须正确引用Runnable
-    """)
-
-        # 添加通用必需元素说明
-        guidance.append("""
-    ### 通用必需元素
-    - SHORT-NAME: 每个元素的短名称（必需）
-    - UUID: 组件的唯一标识符（建议）
-    - 遵循AUTOSAR命名规范：PascalCase
-    """)
-
-        return "\n".join(guidance)
-
-    def _format_architecture_design(self, design: Dict[str, Any]) -> str:
-        """格式化架构设计信息"""
-        lines = []
-
-        if 'system_analysis' in design:
-            lines.append("### 系统分析")
-            for key, value in design['system_analysis'].items():
-                friendly_key = self._translate_analysis_key(key)
-                lines.append(f"- {friendly_key}: {value}")
-
-        if 'component_plan' in design:
-            lines.append(f"\n### 组件规划 ({len(design['component_plan'])}个组件)")
-            for i, comp in enumerate(design['component_plan'], 1):
-                lines.append(f"{i}. **{comp.get('name', f'Component{i}')}**")
-                lines.append(f"   - 类型: {comp.get('type', '')}")
-                lines.append(f"   - 功能: {comp.get('purpose', '')}")
-                lines.append(f"   - 复杂度: {comp.get('estimated_complexity', '')}")
-
-                if 'port_estimates' in comp:
-                    ports = comp['port_estimates']
-                    if ports.get('input_ports'):
-                        lines.append(f"   - 输入端口: {ports['input_ports']}")
-                    if ports.get('output_ports'):
-                        lines.append(f"   - 输出端口: {ports['output_ports']}")
-                lines.append("")
-
-        if 'interface_plan' in design:
-            lines.append(f"### 接口规划 ({len(design['interface_plan'])}个接口)")
-            for i, intf in enumerate(design['interface_plan'], 1):
-                lines.append(f"{i}. **{intf.get('name', f'Interface{i}')}**")
-                lines.append(f"   - 类型: {intf.get('type', '')}")
-                lines.append(f"   - 通信模式: {intf.get('communication_pattern', '')}")
-                lines.append(f"   - 数据类别: {intf.get('data_category', '')}")
-
-                if 'connected_components' in intf:
-                    components = intf['connected_components']
-                    if components:
-                        lines.append(f"   - 连接组件: {', '.join(components)}")
-                lines.append("")
-
-        if 'connection_topology' in design:
-            lines.append("### 连接拓扑")
-            topology = design['connection_topology']
-            if topology.get('component_connections'):
-                lines.append(f"- 组件连接: {topology['component_connections']}")
-            if topology.get('data_flow_paths'):
-                lines.append(f"- 数据流向: {topology['data_flow_paths']}")
-            if topology.get('control_flow_paths'):
-                lines.append(f"- 控制流向: {topology['control_flow_paths']}")
-
-        if 'architecture_rationale' in design:
-            lines.append("\n### 设计理由")
-            rationale = design['architecture_rationale']
-            if rationale.get('design_decisions'):
-                lines.append(f"- 关键决策: {rationale['design_decisions']}")
-            if rationale.get('tradeoff_analysis'):
-                lines.append(f"- 权衡分析: {rationale['tradeoff_analysis']}")
-
-        return "\n".join(lines)
-
-    def get_batch_generation_prompt(
-            self,
-            batch_info: Dict[str, Any],
-            architecture_design: Dict[str, Any],
-            constraints: List[str],
-            batch_context: str,
-            registered_interfaces: List[Dict[str, Any]] = None
-    ) -> str:
-        """获取分批生成提示词"""
-
-        batch_type = batch_info.get("batch_type", "unknown")
-        component_list = batch_info.get("components", [])
-
-        template_text = f"""
-    你是AUTOSAR XML分批生成专家。当前正在生成第{batch_info.get('batch_idx', 0) + 1}批组件。
-
-    {batch_context}
-
-    ## 当前批次任务
-    批次类型: {batch_type}
-    组件数量: {len(component_list)}
-    生成目标: {batch_info.get('description', '生成当前批次的组件')}
-
-    ### 要生成的组件:
-    """
-
-        for i, comp in enumerate(component_list, 1):
-            template_text += f"{i}. **{comp.get('name', f'Component{i}')}**\n"
-            template_text += f"   - 类型: {comp.get('type', '')}\n"
-            template_text += f"   - 功能: {comp.get('purpose', '')}\n"
-            template_text += f"   - 复杂度: {comp.get('estimated_complexity', '')}\n\n"
-
-        # 添加已注册接口信息
-        if registered_interfaces:
-            template_text += "## 可引用的已生成接口\n"
-            for intf in registered_interfaces:
-                template_text += f"- {intf['name']}: {intf['description']}\n"
-
-        # 添加语义占位符指导
-        template_text += """
-
-    ## 语义占位符使用规范
-
-    对于需要引用其他组件的地方，请使用语义占位符而非具体路径：
-
-    ### 正确示例:
-    - REQUIRED-INTERFACE-TREF: "引用温度传感器的数据输出接口"
-    - PORT-PROTOTYPE-REF: "连接到电机控制器的转速端口"
-    - START-ON-EVENT-REF: "绑定到数据处理器的周期事件"
-
-    ### 错误示例（不要使用具体路径）:
-    - REQUIRED-INTERFACE-TREF: "/Components/TempSensor/Ports/DataOut"
-
-    ### 语义占位符规则:
-    1. 使用自然语言描述引用意图
-    2. 明确指出目标组件的功能特征
-    3. 说明连接的数据类型或用途
-    4. 保持描述的简洁和准确
-
-    ## 约束规则
-    """
-
-        # 添加约束
-        for constraint in constraints:
-            template_text += f"- {constraint}\n"
-
-        template_text += """
-
-    ## 生成要求
-    1. 严格按照提供的JSON Schema生成
-    2. 每个组件必须有唯一的UUID
-    3. 组件名称必须与架构设计中的名称一致
-    4. 使用语义占位符处理所有外部引用
-    5. 确保端口定义与接口规划匹配
-    6. 内部行为定义要完整且合理
-
-    请生成当前批次所有组件的完整JSON结构。
-    """
-
-        return template_text
-
-    def get_semantic_placeholder_guidance(self) -> str:
-        """获取语义占位符指导"""
-        return """
-    ## 语义占位符设计指导
-
-    ### 组件引用模式
-    - "引用{功能描述}组件的{端口类型}端口"
-    - "连接到{组件角色}的{数据类型}接口"
-    - "订阅{系统功能}管理器的{事件类型}"
-
-    ### 接口引用模式
-    - "使用{数据内容}传输接口"
-    - "提供{服务功能}访问接口"
-    - "管理{状态类型}切换接口"
-
-    ### 内部引用模式
-    - "绑定到{功能名称}的{事件类型}事件"
-    - "执行{处理逻辑}的运行实体"
-    - "访问{数据源}的数据访问点"
-    """
-
-    def _translate_analysis_key(self, key: str) -> str:
-        """翻译系统分析的键"""
-        translations = {
-            "functional_decomposition": "功能分解",
-            "data_flow_analysis": "数据流分析",
-            "timing_requirements": "时序要求",
-            "scalability_considerations": "可扩展性考虑"
-        }
-        return translations.get(key, key)
-
-    def generate_component_specific_prompt(
-        self,
-        component_plan: Dict[str, Any],
-        context: str = ""
-    ) -> str:
-        """为单个组件生成特定的提示词"""
-
-        comp_name = component_plan.get('name', 'Component')
-        comp_type = component_plan.get('type', 'APPLICATION-SW-COMPONENT-TYPE')
-        comp_purpose = component_plan.get('purpose', '')
-
-        prompt = f"""
-## 组件特定生成要求
-
-### 目标组件: {comp_name}
-- 类型: {comp_type}
-- 功能: {comp_purpose}
-
-### 生成重点
-1. 组件名称必须为: {comp_name}
-2. 根据功能目的设计合适的端口
-3. 内部行为要体现组件特性
-4. Runnable和事件命名要与组件功能相关
-
-### 上下文信息
-{context}
-
-请生成该组件的完整ARXML结构。
-"""
-        return prompt
 
 # 全局模板管理器实例
 template_manager = PromptTemplateManager()
