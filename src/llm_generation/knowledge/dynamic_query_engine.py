@@ -1,19 +1,23 @@
-"""knowledge/dynamic_query_engine.py - 动态KG查询引擎
-
-按需查询Neo4j知识图谱，获取组件和接口的详细信息，动态生成JSON Schema
+"""
+动态查询引擎 - 从知识图谱查询AUTOSAR元模型信息并生成JSON Schema
 """
 import json
+import time
 from typing import Dict, List, Any, Optional, Tuple, Set
 from dataclasses import dataclass
+from functools import lru_cache
 from ..config import CONFIG
 from ..utils.exceptions import KGQueryError
+from ..utils.monitoring import schema_monitor
 
 try:
     from neo4j import GraphDatabase
+
     NEO4J_AVAILABLE = True
 except ImportError:
     NEO4J_AVAILABLE = False
     print("[WARN] neo4j driver未安装，使用模拟数据")
+
 
 @dataclass
 class XMLElementInfo:
@@ -26,6 +30,7 @@ class XMLElementInfo:
     min_occurs: int
     max_occurs: int
 
+
 @dataclass
 class ComponentSchema:
     """组件Schema信息"""
@@ -36,207 +41,175 @@ class ComponentSchema:
     constraints: List[str]
 
 
+class DepthManager:
+    """递归深度管理器"""
+
+    def __init__(self, max_depth: int = 50):
+        self.max_depth = max_depth
+        self.current_depth = 0
+        self.path_stack = []
+
+    def can_go_deeper(self) -> bool:
+        """检查是否可以继续深入"""
+        return self.current_depth < self.max_depth
+
+    def enter_level(self, tag: str) -> bool:
+        """进入新的递归层级"""
+        if tag in self.path_stack:  # 循环检测
+            return False
+        if not self.can_go_deeper():
+            return False
+        self.current_depth += 1
+        self.path_stack.append(tag)
+        return True
+
+    def exit_level(self):
+        """退出当前递归层级"""
+        if self.path_stack:
+            self.path_stack.pop()
+            self.current_depth -= 1
+
+    def get_depth(self) -> int:
+        """获取当前深度"""
+        return self.current_depth
+
+    def reset(self):
+        """重置深度管理器"""
+        self.current_depth = 0
+        self.path_stack.clear()
+
+
+class SchemaCache:
+    """Schema缓存管理器"""
+
+    def __init__(self, max_size: int = 100, ttl: int = 3600):
+        self.cache = {}
+        self.timestamps = {}
+        self.max_size = max_size
+        self.ttl = ttl
+        self.hits = 0
+        self.misses = 0
+
+    def get(self, key: str) -> Optional[Dict[str, Any]]:
+        """获取缓存项"""
+        if key in self.cache:
+            # 检查是否过期
+            if time.time() - self.timestamps[key] < self.ttl:
+                self.hits += 1
+                return self.cache[key]
+            else:
+                # 过期则删除
+                del self.cache[key]
+                del self.timestamps[key]
+        self.misses += 1
+        return None
+
+    def set(self, key: str, value: Dict[str, Any]):
+        """设置缓存项"""
+        # 如果缓存已满，删除最旧的项
+        if len(self.cache) >= self.max_size:
+            oldest_key = min(self.timestamps, key=self.timestamps.get)
+            del self.cache[oldest_key]
+            del self.timestamps[oldest_key]
+
+        self.cache[key] = value
+        self.timestamps[key] = time.time()
+
+    def clear(self):
+        """清空缓存"""
+        self.cache.clear()
+        self.timestamps.clear()
+        self.hits = 0
+        self.misses = 0
+
+    def get_stats(self) -> Dict[str, Any]:
+        """获取缓存统计"""
+        total = self.hits + self.misses
+        hit_rate = self.hits / total if total > 0 else 0
+        return {
+            "size": len(self.cache),
+            "hits": self.hits,
+            "misses": self.misses,
+            "hit_rate": hit_rate,
+            "max_size": self.max_size,
+            "ttl": self.ttl
+        }
+
+
+class QueryOptimizer:
+    """查询优化器"""
+
+    def __init__(self):
+        self.query_cache = {}
+
+    def optimize_query(self, query: str, params: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+        """优化查询语句"""
+        # 添加查询提示
+        optimized_query = query
+
+        # 如果查询大量数据，添加LIMIT提示
+        if "MATCH" in query and "LIMIT" not in query:
+            # 为安全起见，对没有LIMIT的查询添加默认限制
+            optimized_query = query + " LIMIT 1000"
+
+        return optimized_query, params
+
+    @lru_cache(maxsize=128)
+    def get_cached_query_plan(self, query_hash: str):
+        """获取缓存的查询计划"""
+        return self.query_cache.get(query_hash)
+
+
 class DynamicQueryEngine:
+    """动态查询引擎"""
+
     def __init__(self):
         """初始化查询引擎"""
         self.config = CONFIG.knowledge_graph
         self.driver = None
-        self.query_cache = {}
-        self.max_schema_depth = CONFIG.knowledge_graph.max_schema_depth  # 修正：正确访问配置
-        self.visited_classes = set()
+
+        # 使用配置中的值
+        self.max_safety_depth = self.config.max_safety_depth
+
+        # 深度管理器
+        self.depth_manager = DepthManager(self.max_safety_depth)
+
+        # 缓存管理器
+        cache_config = CONFIG.schema_generation.cache_config
+        self.schema_cache = SchemaCache(
+            max_size=cache_config.max_cache_size,
+            ttl=cache_config.application_cache_ttl
+        )
+        self.request_cache = {} if cache_config.enable_request_cache else None
+
+        # 查询优化器
+        self.query_optimizer = QueryOptimizer()
+
+        # 终止条件配置
+        self.termination_patterns = {
+            'ref_suffixes': CONFIG.schema_generation.termination_rules.ref_suffixes,
+            'standard_prefixes': CONFIG.schema_generation.termination_rules.standard_prefixes
+        }
+
+        # 性能配置
+        self.performance_config = CONFIG.schema_generation.performance
 
         if NEO4J_AVAILABLE:
             self._init_neo4j_connection()
 
-    def _query_xml_structure_from_neo4j(self, component_types: List[str]) -> Dict[str, ComponentSchema]:
-        """从Neo4j查询XML结构 - 基于节点表设计"""
-        schemas = {}
-
-        with self.driver.session() as session:
-            for comp_type in component_types:
-                try:
-                    # 重置访问记录
-                    self.visited_classes.clear()
-
-                    # 递归构建完整的XML结构
-                    xml_structure = self._build_recursive_xml_structure(
-                        session, comp_type, depth=0
-                    )
-
-                    if xml_structure:
-                        # 查询约束
-                        constraints = self._query_constraints_for_class(session, comp_type)
-
-                        # 分析必需和可选元素
-                        required_elements, optional_elements = self._analyze_element_requirements(
-                            session, comp_type
-                        )
-
-                        schemas[comp_type] = ComponentSchema(
-                            component_type=comp_type,
-                            xml_structure=xml_structure,
-                            required_elements=required_elements,
-                            optional_elements=optional_elements,
-                            constraints=constraints
-                        )
-
-                except Exception as e:
-                    print(f"[WARN] 查询{comp_type}结构失败: {e}")
-                    continue
-
-        return schemas
-
-    def _build_recursive_xml_structure(
-            self,
-            session,
-            class_xml_tag: str,
-            depth: int = 0,
-            parent_path: str = ""
-    ) -> Dict[str, Any]:
-        """递归构建XML结构，基于KG节点表"""
-
-        # 深度限制
-        if depth >= self.max_schema_depth:
-            return {"type": "object", "description": f"深度限制({self.max_schema_depth})"}
-
-        # 防止循环引用
-        path_key = f"{parent_path}/{class_xml_tag}"
-        if path_key in self.visited_classes:
-            return {"type": "object", "description": "循环引用"}
-
-        self.visited_classes.add(path_key)
-
-        try:
-            # 查询类及其属性和子元素
-            query = """
-            MATCH (c:Class)
-            WHERE c.xml_tag = $xml_tag OR c.name = $xml_tag
-
-            // 查询属性
-            OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(a:Attribute)
-
-            // 查询子类/子元素
-            OPTIONAL MATCH (c)-[:HAS_CHILD]->(child:Class)
-
-            // 查询类型引用
-            OPTIONAL MATCH (a)-[:TYPE_OF]->(type:Class)
-            OPTIONAL MATCH (a)-[:TYPE_OF]->(enum:Enum)
-
-            RETURN c.xml_tag as class_tag,
-                   c.xml_wrapper_tag as wrapper_tag,
-                   c.annotation as class_annotation,
-
-                   collect(DISTINCT {
-                       name: a.name,
-                       xml_tag: a.xml_tag,
-                       xml_wrapper_tag: a.xml_wrapper_tag,
-                       type: a.type,
-                       min_occurs: a.minOccurs,
-                       max_occurs: a.maxOccurs,
-                       is_xml_attr: a.isXmlAttr,
-                       description: a.description,
-                       type_class: type.xml_tag,
-                       type_enum: enum.name
-                   }) as attributes,
-
-                   collect(DISTINCT {
-                       xml_tag: child.xml_tag,
-                       wrapper_tag: child.xml_wrapper_tag,
-                       annotation: child.annotation
-                   }) as child_elements
-            """
-
-            result = session.run(query, xml_tag=class_xml_tag)
-            record = result.single()
-
-            if not record:
-                return {"type": "object", "description": f"未找到类: {class_xml_tag}"}
-
-            properties = {}
-            required = []
-
-            # 处理属性
-            for attr in record["attributes"]:
-                if not attr["name"]:
-                    continue
-
-                prop_schema = self._build_attribute_schema(
-                    session, attr, depth + 1, path_key
-                )
-
-                # 确定属性键名
-                prop_key = self._get_property_key(attr)
-                properties[prop_key] = prop_schema
-
-                # 判断是否必需
-                if self._is_attribute_required(attr):
-                    required.append(prop_key)
-
-            # 处理子元素
-            for child in record["child_elements"]:
-                if not child["xml_tag"]:
-                    continue
-
-                child_schema = self._build_recursive_xml_structure(
-                    session, child["xml_tag"], depth + 1, path_key
-                )
-
-                # 处理wrapper标签
-                child_key = child["xml_tag"]
-                if child["wrapper_tag"]:
-                    # 有wrapper的情况，创建嵌套结构
-                    wrapper_schema = {
-                        "type": "object",
-                        "properties": {
-                            child["xml_tag"]: child_schema
-                        }
-                    }
-                    properties[child["wrapper_tag"]] = wrapper_schema
-                else:
-                    properties[child_key] = child_schema
-
-            schema = {
-                "type": "object",
-                "properties": properties
-            }
-
-            if required:
-                schema["required"] = required
-
-            if record["class_annotation"]:
-                schema["description"] = record["class_annotation"]
-
-            return schema
-
-        except Exception as e:
-            print(f"[WARN] 构建{class_xml_tag}结构失败: {e}")
-            return {"type": "object", "description": f"构建失败: {str(e)}"}
-
-        finally:
-            # 移除访问记录
-            self.visited_classes.discard(path_key)
-
-    # dynamic_query_engine.py 修正
     def _init_neo4j_connection(self):
         """初始化Neo4j连接"""
         try:
-            # 添加连接调试信息
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 连接Neo4j: {self.config.neo4j_uri}")
                 print(f"[DEBUG] 用户名: {self.config.neo4j_user}")
 
             self.driver = GraphDatabase.driver(
                 self.config.neo4j_uri,
-                auth=(self.config.neo4j_user, self.config.neo4j_password),
-                # 添加Neo4j Aura云服务的连接配置
-                encrypted=True,  # 强制加密连接
-                trust="TRUST_SYSTEM_CA_SIGNED_CERTIFICATES",  # 信任系统CA证书
-                max_connection_lifetime=30 * 60,  # 30分钟连接生命周期
-                max_connection_pool_size=50,  # 连接池大小
-                connection_acquisition_timeout=60  # 连接获取超时60秒
+                auth=(self.config.neo4j_user, self.config.neo4j_password)
             )
 
-            # 测试连接 - 增强测试
+            # 测试连接
             with self.driver.session() as session:
                 result = session.run("RETURN 1 as test")
                 test_value = result.single()["test"]
@@ -252,70 +225,938 @@ class DynamicQueryEngine:
                 traceback.print_exc()
             self.driver = None
 
+    def generate_multi_component_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """生成多组件Schema - 带性能监控版本"""
+
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法生成Schema")
+
+        # 使用监控上下文
+        with schema_monitor.monitor("multi_component_schema_generation") as metrics:
+            schemas = {}
+            type_schema_cache = {}  # 类型级别的缓存
+
+            # 记录总组件数
+            if metrics:
+                metrics.total_components = len(component_plans)
+
+            with self.driver.session() as session:
+                for comp_plan in component_plans:
+                    comp_start_time = time.time() if metrics else None
+
+                    comp_type = comp_plan.get("type", "")
+                    comp_name = comp_plan.get("name", "")
+
+                    if not comp_type:
+                        raise KGQueryError(f"组件{comp_name}缺少类型定义")
+
+                    # 复用相同类型的Schema
+                    if comp_type in type_schema_cache:
+                        schemas[comp_name] = type_schema_cache[comp_type]
+
+                        # 记录缓存命中
+                        if metrics:
+                            metrics.record_cache_hit("type")
+                            metrics.record_component(comp_name, time.time() - comp_start_time)
+
+                        if CONFIG.debug_mode:
+                            print(f"  ♻️ Reusing schema for {comp_name} (type: {comp_type})")
+                        continue
+
+                    # 记录缓存未命中
+                    if metrics:
+                        metrics.record_cache_miss()
+
+                    # 基于element_design生成新的Schema
+                    element_design = comp_plan.get("element_design", {})
+
+                    # 包装Schema生成以记录查询
+                    comp_schema = self._build_component_schema_with_design_monitored(
+                        session,
+                        comp_type,
+                        element_design,
+                        metrics
+                    )
+
+                    if not comp_schema or not comp_schema.get("properties"):
+                        raise KGQueryError(f"无法为组件类型{comp_type}生成有效Schema")
+
+                    # 记录Schema统计
+                    if metrics:
+                        properties_count = self._count_properties(comp_schema)
+                        metrics.record_schema_properties(properties_count)
+                        metrics.record_component(comp_name, time.time() - comp_start_time)
+
+                    # 缓存该类型的Schema
+                    type_schema_cache[comp_type] = comp_schema
+                    schemas[comp_name] = comp_schema
+
+                    if CONFIG.debug_mode:
+                        print(f"  ✅ Generated schema for {comp_name} (type: {comp_type})")
+
+            if not schemas:
+                raise KGQueryError("未能生成任何组件Schema")
+
+            result = {
+                "type": "object",
+                "properties": schemas,
+                "required": list(schemas.keys()),
+                "description": f"包含{len(component_plans)}个组件的Schema定义"
+            }
+
+            # 记录最终统计
+            if metrics:
+                # 计算最大深度
+                max_depth = 0
+                for schema in schemas.values():
+                    depth = self._calculate_depth(schema)
+                    max_depth = max(max_depth, depth)
+                metrics.max_schema_depth = max_depth
+
+            return result
+
+    def _build_component_schema_with_design_monitored(
+            self,
+            session,
+            component_type: str,
+            element_design: Dict[str, Any],
+            metrics: Optional['SchemaGenerationMetrics'] = None
+    ) -> Dict[str, Any]:
+        """带监控的Schema生成"""
+
+        query_start = time.time() if metrics else None
+
+        try:
+            # 调用原有方法
+            schema = self._build_component_schema_with_design(
+                session,
+                component_type,
+                element_design
+            )
+
+            # 记录查询成功
+            if metrics and query_start:
+                metrics.record_query(time.time() - query_start, success=True)
+
+            return schema
+
+        except Exception as e:
+            # 记录查询失败
+            if metrics and query_start:
+                metrics.record_query(time.time() - query_start, success=False)
+            raise
+
+    def _build_component_schema_with_design(
+            self,
+            session,
+            component_type: str,
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """基于element_design构建组件Schema"""
+
+        # 检查应用级缓存
+        cache_key = f"{component_type}:{json.dumps(element_design, sort_keys=True)}"
+        cached_schema = self.schema_cache.get(cache_key)
+        if cached_schema:
+            return cached_schema
+
+        # 清空请求级缓存和重置深度管理器
+        if self.request_cache is not None:
+            self.request_cache.clear()
+        self.depth_manager.reset()
+
+        # 构建必需路径树
+        required_paths = self._build_required_paths_tree(
+            session,
+            component_type,
+            element_design
+        )
+
+        # 记录必需路径数
+        metrics = schema_monitor.current_metrics
+        if metrics:
+            metrics.required_paths_count += len(required_paths.get("required", []))
+
+        # 生成Schema
+        schema = self._build_schema_from_paths(
+            session,
+            component_type,
+            required_paths,
+            element_design
+        )
+
+        # 缓存结果
+        self.schema_cache.set(cache_key, schema)
+
+        return schema
+
+    def _build_required_paths_tree(
+            self,
+            session,
+            component_type: str,
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """构建必需元素路径树"""
+
+        query_start = time.time()
+        metrics = schema_monitor.current_metrics
+
+        # 查询组件的完整结构，包括继承和必需元素
+        query = """
+        // 获取组件及其所有父类
+        MATCH (c:Class {xml_tag: $component_type})
+        OPTIONAL MATCH (c)-[:SUBCLASS_OF*0..]->(parent:Class)
+        WITH c, collect(DISTINCT parent) as parents
+
+        // 获取所有相关属性
+        UNWIND (parents + [c]) as cls
+        OPTIONAL MATCH (cls)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+        WHERE attr.minOccurs >= 1 OR attr.xml_tag IN $design_elements
+
+        // 获取属性的类型信息
+        OPTIONAL MATCH (attr)-[:TYPE_OF]->(type)
+
+        RETURN cls.xml_tag as class_name,
+               collect(DISTINCT {
+                   name: attr.name,
+                   xml_tag: attr.xml_tag,
+                   minOccurs: attr.minOccurs,
+                   maxOccurs: attr.maxOccurs,
+                   xml_wrapper_tag: attr.xml_wrapper_tag,
+                   isXmlAttr: attr.isXmlAttr,
+                   type_xml_tag: type.xml_tag,
+                   type_name: type.name,
+                   type_labels: labels(type)
+               }) as attributes
+        """
+
+        # 从element_design提取需要的元素
+        design_elements = self._extract_design_elements(element_design)
+
+        # 优化查询
+        query, params = self.query_optimizer.optimize_query(
+            query,
+            {
+                "component_type": component_type,
+                "design_elements": design_elements
+            }
+        )
+
+        result = session.run(query, **params)
+
+        # 记录查询时间
+        if metrics:
+            metrics.record_query(time.time() - query_start, success=True)
+
+        # 构建路径树
+        paths_tree = self._organize_paths_tree(result, design_elements)
+
+        return paths_tree
+
+    def _extract_design_elements(self, element_design: Dict[str, Any]) -> List[str]:
+        """从element_design提取需要的元素 - 动态查询版本"""
+        design_elements = []
+
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法查询设计元素")
+
+        with self.driver.session() as session:
+            # 查询PORTS相关的所有子元素
+            if element_design.get("ports", {}).get("needed"):
+                ports_query = """
+                MATCH (p:Class {xml_tag: 'PORTS'})
+                OPTIONAL MATCH (p)-[:HAS_CHILD*1..2]->(child:Class)
+                RETURN collect(DISTINCT child.xml_tag) as child_tags
+                """
+                result = session.run(ports_query)
+                record = result.single()
+                if record and record["child_tags"]:
+                    design_elements.append("PORTS")
+                    design_elements.extend(record["child_tags"])
+                else:
+                    # 如果查询失败，使用最小必需集合
+                    raise KGQueryError("无法从KG查询PORTS结构")
+
+            # 查询INTERNAL-BEHAVIORS相关的所有子元素
+            if element_design.get("internal_behaviors", {}).get("needed"):
+                behaviors_query = """
+                MATCH (b:Class {xml_tag: 'INTERNAL-BEHAVIORS'})
+                OPTIONAL MATCH (b)-[:HAS_CHILD]->(ib:Class {xml_tag: 'SWC-INTERNAL-BEHAVIOR'})
+                OPTIONAL MATCH (ib)-[:HAS_CHILD*1..2]->(child:Class)
+                WHERE child.xml_tag IN ['EVENTS', 'RUNNABLES', 'EXCLUSIVE-AREAS', 
+                                        'INTER-RUNNABLE-VARIABLES', 'EXPLICIT-INTER-RUNNABLE-VARIABLES']
+                RETURN collect(DISTINCT child.xml_tag) as child_tags
+                """
+                result = session.run(behaviors_query)
+                record = result.single()
+                if record and record["child_tags"]:
+                    design_elements.extend([
+                        "INTERNAL-BEHAVIORS",
+                        "SWC-INTERNAL-BEHAVIOR"
+                    ])
+                    design_elements.extend(record["child_tags"])
+                else:
+                    raise KGQueryError("无法从KG查询INTERNAL-BEHAVIORS结构")
+
+        return design_elements
+
+    def _organize_paths_tree(self, query_result, design_elements: List[str]) -> Dict[str, Any]:
+        """组织路径树结构"""
+        paths_tree = {
+            "required": [],
+            "optional": [],
+            "design_required": design_elements
+        }
+
+        for record in query_result:
+            for attr in record["attributes"]:
+                if attr["minOccurs"] and attr["minOccurs"] >= 1:
+                    paths_tree["required"].append(attr)
+                elif attr["xml_tag"] in design_elements:
+                    paths_tree["required"].append(attr)  # 设计要求的也作为必需
+                else:
+                    paths_tree["optional"].append(attr)
+
+        return paths_tree
+
+    def _build_schema_from_paths(
+            self,
+            session,
+            component_type: str,
+            paths_tree: Dict[str, Any],
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """从路径树构建Schema"""
+
+        # 初始化根Schema
+        schema = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+
+        # 递归构建Schema
+        schema = self._build_schema_recursive(
+            session,
+            component_type,
+            paths_tree,
+            element_design
+        )
+
+        return schema
+
+    def _build_schema_recursive(
+            self,
+            session,
+            current_xml_tag: str,
+            paths_tree: Dict[str, Any],
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """递归构建Schema - 简化版本"""
+
+        # 检查缓存
+        cache_key = f"{current_xml_tag}:{self.depth_manager.get_depth()}"
+        if self.request_cache and cache_key in self.request_cache:
+            return {"$ref": f"#/definitions/{current_xml_tag}"}
+
+        # 检查终止条件
+        termination_result = self._check_termination(session, current_xml_tag)
+        if termination_result:
+            return termination_result
+
+        # 尝试进入新层级
+        if not self.depth_manager.enter_level(current_xml_tag):
+            return {"$ref": f"#/definitions/{current_xml_tag}"}
+
+        try:
+            # 查询当前类的结构
+            structure = self._query_class_structure(session, current_xml_tag)
+            if not structure:
+                return {"type": "object", "description": f"Unknown type: {current_xml_tag}"}
+
+            # 构建Schema
+            schema = self._build_class_schema(
+                session,
+                structure,
+                paths_tree,
+                element_design
+            )
+
+            # 缓存结果
+            if self.request_cache is not None:
+                self.request_cache[cache_key] = schema
+
+            return schema
+
+        finally:
+            # 退出当前层级
+            self.depth_manager.exit_level()
+
+    def _query_class_structure(self, session, xml_tag: str) -> Optional[Dict[str, Any]]:
+        """查询类的结构信息"""
+        query = """
+        MATCH (c:Class)
+        WHERE c.xml_tag = $xml_tag OR c.name = $xml_tag
+
+        // 获取直接属性
+        OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+        OPTIONAL MATCH (attr)-[:TYPE_OF]->(attrType)
+
+        // 获取子元素
+        OPTIONAL MATCH (c)-[:HAS_CHILD]->(child:Class)
+
+        // 获取继承的属性
+        OPTIONAL MATCH (c)-[:SUBCLASS_OF*]->(parent:Class)
+        OPTIONAL MATCH (parent)-[:HAS_ATTRIBUTE]->(inheritedAttr:Attribute)
+        OPTIONAL MATCH (inheritedAttr)-[:TYPE_OF]->(inheritedType)
+
+        RETURN c.xml_tag as class_tag,
+               c.annotation as description,
+               c.isComplexType as is_complex,
+               c.isInnerClassType as is_inner,
+               collect(DISTINCT {
+                   name: attr.name,
+                   xml_tag: attr.xml_tag,
+                   xml_wrapper_tag: attr.xml_wrapper_tag,
+                   minOccurs: attr.minOccurs,
+                   maxOccurs: attr.maxOccurs,
+                   isXmlAttr: attr.isXmlAttr,
+                   type_xml_tag: attrType.xml_tag,
+                   type_name: attrType.name,
+                   type_labels: labels(attrType),
+                   isPrimitiveType: attrType.isPrimitiveType
+               }) as direct_attrs,
+               collect(DISTINCT child.xml_tag) as child_elements,
+               collect(DISTINCT {
+                   name: inheritedAttr.name,
+                   xml_tag: inheritedAttr.xml_tag,
+                   minOccurs: inheritedAttr.minOccurs
+               }) as inherited_attrs
+        LIMIT 1
+        """
+
+        result = session.run(query, xml_tag=xml_tag)
+        return result.single()
+
+    def _build_class_schema(
+            self,
+            session,
+            structure: Dict[str, Any],
+            paths_tree: Dict[str, Any],
+            element_design: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """构建类的Schema"""
+
+        properties = {}
+        required = []
+
+        # 处理所有属性
+        all_attrs = structure["direct_attrs"] + structure["inherited_attrs"]
+        for attr in all_attrs:
+            if not attr.get("name"):
+                continue
+
+            # 构建属性Schema
+            prop_schema = self._build_attribute_schema(session, attr, paths_tree, element_design)
+
+            # 确定属性键名
+            prop_key = self._get_property_key(attr)
+
+            # 处理xml_wrapper_tag
+            if attr.get("xml_wrapper_tag"):
+                wrapper_schema = {
+                    "type": "object",
+                    "properties": {
+                        attr["xml_tag"]: prop_schema
+                    }
+                }
+                properties[attr["xml_wrapper_tag"]] = wrapper_schema
+                if attr.get("minOccurs", 0) >= 1:
+                    required.append(attr["xml_wrapper_tag"])
+            else:
+                properties[prop_key] = prop_schema
+                if attr.get("minOccurs", 0) >= 1:
+                    required.append(prop_key)
+
+        # 处理子元素
+        for child_tag in structure["child_elements"]:
+            if self._should_expand_child(child_tag, element_design):
+                child_schema = self._build_schema_recursive(
+                    session, child_tag, paths_tree, element_design
+                )
+                properties[child_tag] = child_schema
+
+        # 注入设计要求的结构
+        self._inject_design_structures(
+            properties, required, element_design, structure["class_tag"]
+        )
+
+        # 构建最终Schema
+        schema = {"type": "object", "properties": properties}
+
+        if required:
+            schema["required"] = required
+
+        if structure["description"]:
+            schema["description"] = structure["description"]
+
+        return schema
+
     def _build_attribute_schema(
             self,
             session,
             attr: Dict[str, Any],
-            depth: int,
-            parent_path: str
+            paths_tree: Dict[str, Any],
+            element_design: Dict[str, Any]
     ) -> Dict[str, Any]:
         """构建属性Schema"""
 
-        schema = {
-            "description": attr.get("description", "")
-        }
+        # 检查是否应该展开
+        if not self._should_expand_attribute(attr, paths_tree, element_design):
+            return {"type": "string", "description": "Simplified"}
 
-        # 处理类型
-        if attr.get("type_class"):
-            # 引用其他类类型，递归构建
-            if depth < self.max_schema_depth:
-                schema.update(self._build_recursive_xml_structure(
-                    session, attr["type_class"], depth, parent_path
-                ))
-            else:
-                schema["type"] = "object"
-                schema["description"] += " (类型引用，深度限制)"
+        # XML属性
+        if attr.get("isXmlAttr"):
+            return {"type": "string"}
 
-        elif attr.get("type_enum"):
-            # 枚举类型
-            enum_values = self._query_enum_values(session, attr["type_enum"])
-            schema["type"] = "string"
-            schema["enum"] = enum_values
+        # 原始类型
+        if attr.get("isPrimitiveType"):
+            return self._map_primitive_type(attr.get("type_name", "string"))
 
-        else:
-            # 基础类型
-            schema["type"] = self._map_primitive_type(attr.get("type", "string"))
-
-        # 处理数组
-        if attr.get("max_occurs") and (attr["max_occurs"] == -1 or attr["max_occurs"] > 1):
-            schema = {
-                "type": "array",
-                "items": schema
+        # 枚举类型
+        type_labels = attr.get("type_labels", [])
+        if "Enum" in type_labels:
+            enum_values = self._query_enum_values(session, attr.get("type_name"))
+            return {
+                "type": "string",
+                "enum": enum_values if enum_values else ["UNKNOWN"]
             }
 
-        return schema
+        # 复杂类型
+        type_xml_tag = attr.get("type_xml_tag")
+        if type_xml_tag and self.depth_manager.can_go_deeper():
+            return self._build_schema_recursive(
+                session, type_xml_tag, paths_tree, element_design
+            )
+
+        # 默认string类型
+        return {"type": "string"}
+
+    def _check_termination(self, session, xml_tag: str) -> Optional[Dict[str, Any]]:
+        """检查终止条件 - 简化版本"""
+
+        metrics = schema_monitor.current_metrics
+
+        # 1. 安全深度保护
+        if not self.depth_manager.can_go_deeper():
+            if metrics:
+                metrics.record_termination("max_depth")
+            return {"type": "object", "description": f"Max depth reached for {xml_tag}"}
+
+        # 2. 引用类型终止
+        for suffix in self.termination_patterns['ref_suffixes']:
+            if xml_tag.endswith(suffix):
+                if metrics:
+                    metrics.record_termination("reference_type")
+                return {"type": "string", "description": f"Reference to {xml_tag}"}
+
+        # 3. 标准类型引用
+        for prefix in self.termination_patterns['standard_prefixes']:
+            if xml_tag.startswith(prefix):
+                if metrics:
+                    metrics.record_termination("standard_type")
+                return {"type": "string", "description": f"Standard type: {xml_tag}"}
+
+        # 4. 查询节点类型判断
+        node_info = self._query_node_type(session, xml_tag)
+        if not node_info:
+            if metrics:
+                metrics.record_termination("unknown_type")
+            return {"type": "string", "description": f"Unknown type: {xml_tag}"}
+
+        return self._check_node_termination(node_info, xml_tag, metrics)
+
+    def _query_node_type(self, session, xml_tag: str) -> Optional[Dict[str, Any]]:
+        """查询节点类型信息"""
+        query = """
+        MATCH (n)
+        WHERE n.xml_tag = $xml_tag OR n.name = $xml_tag
+        RETURN labels(n) as labels,
+               n.isPrimitiveType as is_primitive,
+               n.isComplexType as is_complex,
+               n.baseType as base_type,
+               exists((n)-[:HAS_CHILD]->()) as has_children,
+               exists((n)-[:HAS_ATTRIBUTE]->()) as has_attributes
+        LIMIT 1
+        """
+
+        result = session.run(query, xml_tag=xml_tag)
+        return result.single()
+
+    def _check_node_termination(
+            self,
+            node_info: Dict[str, Any],
+            xml_tag: str,
+            metrics
+    ) -> Optional[Dict[str, Any]]:
+        """检查节点是否应该终止"""
+
+        # 原子类型
+        if node_info["is_primitive"]:
+            if metrics:
+                metrics.record_termination("primitive_type")
+            return self._map_primitive_type(node_info.get("base_type", "string"))
+
+        # 枚举类型
+        if "Enum" in node_info["labels"]:
+            if metrics:
+                metrics.record_termination("enum_type")
+            # 这里简化处理，实际枚举值需要另外查询
+            return {"type": "string", "enum": ["UNKNOWN"]}
+
+        # 简单类型（无子结构）
+        if not node_info["has_children"] and not node_info["has_attributes"]:
+            if metrics:
+                metrics.record_termination("simple_type")
+            if node_info.get("base_type"):
+                return self._map_primitive_type(node_info["base_type"])
+            return {"type": "string"}
+
+        # 不终止，继续展开
+        return None
+
+    def _should_expand_attribute(
+            self,
+            attr: Dict[str, Any],
+            paths_tree: Dict[str, Any],
+            element_design: Dict[str, Any]
+    ) -> bool:
+        """判断是否应该展开属性"""
+
+        # element_design明确需要的
+        if attr.get("xml_tag") in paths_tree.get("design_required", []):
+            return True
+
+        # minOccurs >= 1的必需属性
+        if attr.get("minOccurs", 0) >= 1:
+            return True
+
+        # 引用类型不展开
+        attr_name = attr.get("name", "")
+        for suffix in self.termination_patterns['ref_suffixes']:
+            if attr_name.endswith(suffix):
+                return False
+
+        # 原始类型不展开
+        if attr.get("isPrimitiveType"):
+            return False
+
+        return False
+
+    def _should_expand_child(
+            self,
+            child_tag: str,
+            element_design: Dict[str, Any]
+    ) -> bool:
+        """判断是否应该展开子元素"""
+
+        # PORTS相关
+        if element_design.get("ports", {}).get("needed"):
+            if child_tag in ["PORTS", "P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE"]:
+                return True
+
+        # INTERNAL-BEHAVIORS相关
+        if element_design.get("internal_behaviors", {}).get("needed"):
+            if child_tag in ["INTERNAL-BEHAVIORS", "SWC-INTERNAL-BEHAVIOR",
+                             "EVENTS", "RUNNABLES"]:
+                return True
+
+        # 默认不展开子元素，除非是必需的
+        return False
+
+    def _inject_design_structures(
+            self,
+            properties: Dict[str, Any],
+            required: List[str],
+            element_design: Dict[str, Any],
+            current_xml_tag: str
+    ) -> None:
+        """注入element_design要求的结构 - 动态版本"""
+
+        # 如果是组件根节点，添加必需的顶级结构
+        if current_xml_tag.endswith("-SW-COMPONENT-TYPE"):
+            # SHORT-NAME始终必需（AUTOSAR标准）
+            if "SHORT-NAME" not in properties:
+                properties["SHORT-NAME"] = {"type": "string", "minLength": 1}
+                if "SHORT-NAME" not in required:
+                    required.append("SHORT-NAME")
+
+            # UUID建议添加（AUTOSAR标准）
+            if "@UUID" not in properties:
+                properties["@UUID"] = {
+                    "type": "string",
+                    "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                }
+
+            # PORTS结构 - 动态查询
+            if element_design.get("ports", {}).get("needed") and "PORTS" not in properties:
+                try:
+                    properties["PORTS"] = self._get_ports_schema()
+                except KGQueryError as e:
+                    # 查询失败，直接抛出错误
+                    raise KGQueryError(f"无法为组件{current_xml_tag}生成PORTS结构: {str(e)}")
+
+            # INTERNAL-BEHAVIORS结构 - 动态查询
+            if element_design.get("internal_behaviors", {}).get("needed") and "INTERNAL-BEHAVIORS" not in properties:
+                try:
+                    properties["INTERNAL-BEHAVIORS"] = self._get_internal_behaviors_schema()
+                except KGQueryError as e:
+                    # 查询失败，直接抛出错误
+                    raise KGQueryError(f"无法为组件{current_xml_tag}生成INTERNAL-BEHAVIORS结构: {str(e)}")
+
+            # 查询并添加其他组件特定的必需元素
+            self._add_component_specific_elements(properties, required, current_xml_tag)
+
+    def _get_ports_schema(self) -> Dict[str, Any]:
+        """获取端口Schema - 动态查询版本"""
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法生成端口Schema")
+
+        with self.driver.session() as session:
+            # 查询PORTS的子元素结构
+            query = """
+            MATCH (ports:Class {xml_tag: 'PORTS'})
+            OPTIONAL MATCH (ports)-[:HAS_CHILD]->(port_type:Class)
+            WHERE port_type.xml_tag IN ['P-PORT-PROTOTYPE', 'R-PORT-PROTOTYPE', 
+                                         'PR-PORT-PROTOTYPE', 'PORT-PROTOTYPE']
+            OPTIONAL MATCH (port_type)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+            WHERE attr.minOccurs >= 1
+            RETURN port_type.xml_tag as port_tag,
+                   port_type.description as description,
+                   collect(DISTINCT {
+                       tag: attr.xml_tag,
+                       required: attr.minOccurs >= 1,
+                       type: attr.type
+                   }) as required_attrs
+            """
+
+            result = session.run(query)
+
+            ports_schema = {
+                "type": "object",
+                "properties": {}
+            }
+
+            for record in result:
+                port_tag = record["port_tag"]
+                if not port_tag:
+                    continue
+
+                # 构建每个端口类型的Schema
+                port_item_schema = {
+                    "type": "object",
+                    "properties": {
+                        "SHORT-NAME": {"type": "string", "minLength": 1}
+                    },
+                    "required": ["SHORT-NAME"]
+                }
+
+                # 添加特定端口类型的属性
+                if port_tag == "P-PORT-PROTOTYPE":
+                    port_item_schema["properties"]["PROVIDED-INTERFACE-TREF"] = {
+                        "type": "string",
+                        "description": "支持语义占位符，如'引用温度传感器的数据输出接口'"
+                    }
+                elif port_tag == "R-PORT-PROTOTYPE":
+                    port_item_schema["properties"]["REQUIRED-INTERFACE-TREF"] = {
+                        "type": "string",
+                        "description": "支持语义占位符，如'连接到控制器的命令接口'"
+                    }
+                    port_item_schema["properties"]["REQUIRED-COM-SPECS"] = {
+                        "type": "object"
+                    }
+                elif port_tag == "PR-PORT-PROTOTYPE":
+                    port_item_schema["properties"]["PROVIDED-REQUIRED-INTERFACE-TREF"] = {
+                        "type": "string",
+                        "description": "双向端口接口引用"
+                    }
+
+                # 添加从KG查询到的其他必需属性
+                for attr in record["required_attrs"]:
+                    if attr["tag"] not in port_item_schema["properties"]:
+                        port_item_schema["properties"][attr["tag"]] = {
+                            "type": "string"
+                        }
+                        if attr["required"] and attr["tag"] not in port_item_schema["required"]:
+                            port_item_schema["required"].append(attr["tag"])
+
+                # 端口可以是数组
+                ports_schema["properties"][port_tag] = {
+                    "type": "array",
+                    "items": port_item_schema
+                }
+
+            if not ports_schema["properties"]:
+                raise KGQueryError("无法从KG查询到有效的端口结构")
+
+            return ports_schema
+
+    def _get_internal_behaviors_schema(self) -> Dict[str, Any]:
+        """获取内部行为Schema - 动态查询版本"""
+        if not self.driver:
+            raise KGQueryError("Neo4j连接未建立，无法生成内部行为Schema")
+
+        with self.driver.session() as session:
+            # 查询SWC-INTERNAL-BEHAVIOR的结构
+            query = """
+            MATCH (ib:Class {xml_tag: 'SWC-INTERNAL-BEHAVIOR'})
+            OPTIONAL MATCH (ib)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+            OPTIONAL MATCH (ib)-[:HAS_CHILD]->(child:Class)
+            WHERE child.xml_tag IN ['EVENTS', 'RUNNABLES', 'EXCLUSIVE-AREAS', 
+                                    'INTER-RUNNABLE-VARIABLES', 'EXPLICIT-INTER-RUNNABLE-VARIABLES',
+                                    'PORT-API-OPTIONS', 'INCLUDED-DATA-TYPE-SETS']
+
+            // 查询EVENTS的子类型
+            OPTIONAL MATCH (events:Class {xml_tag: 'EVENTS'})-[:HAS_CHILD]->(event_type:Class)
+
+            // 查询RUNNABLES的结构
+            OPTIONAL MATCH (runnables:Class {xml_tag: 'RUNNABLES'})-[:HAS_CHILD]->(runnable:Class)
+
+            RETURN collect(DISTINCT attr.xml_tag) as attributes,
+                   collect(DISTINCT child.xml_tag) as child_elements,
+                   collect(DISTINCT event_type.xml_tag) as event_types,
+                   collect(DISTINCT runnable.xml_tag) as runnable_types
+            """
+
+            result = session.run(query)
+            record = result.single()
+
+            if not record:
+                raise KGQueryError("无法从KG查询SWC-INTERNAL-BEHAVIOR结构")
+
+            # 构建基础结构
+            behavior_schema = {
+                "type": "object",
+                "properties": {
+                    "SHORT-NAME": {"type": "string", "minLength": 1}
+                },
+                "required": ["SHORT-NAME"]
+            }
+
+            # 添加EVENTS结构（如果存在）
+            if "EVENTS" in record["child_elements"]:
+                events_properties = {}
+                for event_type in record["event_types"]:
+                    if event_type:
+                        events_properties[event_type] = {
+                            "type": "array",
+                            "items": {"type": "object"}
+                        }
+
+                if events_properties:
+                    behavior_schema["properties"]["EVENTS"] = {
+                        "type": "object",
+                        "properties": events_properties
+                    }
+                else:
+                    # 查询失败，无法获取事件类型
+                    raise KGQueryError("无法从KG查询EVENTS子类型")
+
+            # 添加RUNNABLES结构（如果存在）
+            if "RUNNABLES" in record["child_elements"]:
+                runnable_types = record["runnable_types"]
+                if runnable_types:
+                    behavior_schema["properties"]["RUNNABLES"] = {
+                        "type": "object",
+                        "properties": {
+                            runnable_type: {
+                                "type": "array",
+                                "items": {"type": "object"}
+                            }
+                            for runnable_type in runnable_types if runnable_type
+                        }
+                    }
+                else:
+                    raise KGQueryError("无法从KG查询RUNNABLES结构")
+
+            # 添加其他子元素
+            for child in record["child_elements"]:
+                if child and child not in ["EVENTS", "RUNNABLES"]:
+                    behavior_schema["properties"][child] = {
+                        "type": "object"
+                    }
+
+            # 包装在INTERNAL-BEHAVIORS中
+            return {
+                "type": "object",
+                "properties": {
+                    "SWC-INTERNAL-BEHAVIOR": behavior_schema
+                }
+            }
+
+    def _get_port_schema(self, port_type: str) -> Dict[str, Any]:
+        """获取端口Schema"""
+
+        base_schema = {
+            "type": "object",
+            "properties": {
+                "SHORT-NAME": {"type": "string", "minLength": 1}
+            },
+            "required": ["SHORT-NAME"]
+        }
+
+        if port_type == "P-PORT":
+            base_schema["properties"]["PROVIDED-INTERFACE-TREF"] = {
+                "type": "string",
+                "description": "支持语义占位符，如'引用温度传感器的数据输出接口'"
+            }
+        else:  # R-PORT
+            base_schema["properties"]["REQUIRED-INTERFACE-TREF"] = {
+                "type": "string",
+                "description": "支持语义占位符，如'连接到控制器的命令接口'"
+            }
+            base_schema["properties"]["REQUIRED-COM-SPECS"] = {
+                "type": "object"
+            }
+
+        return base_schema
+
+    def _map_primitive_type(self, kg_type: str) -> Dict[str, Any]:
+        """映射基础类型 - 返回Schema而非仅类型字符串"""
+
+        type_mapping = {
+            "string": {"type": "string"},
+            "integer": {"type": "integer"},
+            "int": {"type": "integer"},
+            "long": {"type": "integer"},
+            "float": {"type": "number"},
+            "double": {"type": "number"},
+            "decimal": {"type": "number"},
+            "boolean": {"type": "boolean"},
+            "bool": {"type": "boolean"},
+            "dateTime": {"type": "string", "format": "date-time"},
+            "date": {"type": "string", "format": "date"},
+            "time": {"type": "string", "format": "time"}
+        }
+
+        return type_mapping.get(kg_type, {"type": "string"})
 
     def _get_property_key(self, attr: Dict[str, Any]) -> str:
         """获取属性键名"""
 
         # XML属性用@前缀
-        if attr.get("is_xml_attr"):
-            return f"@{attr['xml_tag'] or attr['name']}"
+        if attr.get("isXmlAttr"):
+            return f"@{attr.get('xml_tag', attr.get('name', ''))}"
 
-        # 有xml_wrapper_tag的情况
-        if attr.get("xml_wrapper_tag"):
-            return attr["xml_wrapper_tag"]
-
-        # 普通情况
-        return attr.get("xml_tag") or attr["name"]
-
-    def _is_attribute_required(self, attr: Dict[str, Any]) -> bool:
-        """判断属性是否必需"""
-        min_occurs = attr.get("min_occurs", 0)
-        return min_occurs is not None and min_occurs > 0
+        # 普通属性
+        return attr.get("xml_tag") or attr.get("name", "")
 
     def _query_enum_values(self, session, enum_name: str) -> List[str]:
         """查询枚举值"""
+
+        query_start = time.time()
+        metrics = schema_monitor.current_metrics
+
         query = """
         MATCH (e:Enum {name: $enum_name})-[:HAS_LITERAL]->(l:EnumLiteral)
         RETURN collect(l.value) as values
@@ -324,339 +1165,50 @@ class DynamicQueryEngine:
         result = session.run(query, enum_name=enum_name)
         record = result.single()
 
+        if metrics:
+            metrics.record_query(time.time() - query_start, success=True)
+
         return record["values"] if record else []
 
-    def _map_primitive_type(self, kg_type: str) -> str:
-        """映射基础类型"""
-        type_mapping = {
-            "string": "string",
-            "integer": "integer",
-            "int": "integer",
-            "long": "integer",
-            "float": "number",
-            "double": "number",
-            "decimal": "number",
-            "boolean": "boolean",
-            "bool": "boolean",
-            "dateTime": "string",
-            "date": "string",
-            "time": "string"
-        }
-        return type_mapping.get(kg_type, "string")
+    def _count_properties(self, schema: Dict[str, Any]) -> int:
+        """递归计算Schema中的属性总数"""
+        count = 0
 
-    def query_type_information(self, type_names: List[str]) -> Dict[str, Any]:
-        """查询标准类型信息"""
-        from ..standard_types.standard_types import standard_type_manager
+        if isinstance(schema, dict):
+            if "properties" in schema:
+                count += len(schema["properties"])
+                for prop in schema["properties"].values():
+                    count += self._count_properties(prop)
+            elif "items" in schema:
+                count += self._count_properties(schema["items"])
 
-        type_info = {}
-        for type_name in type_names:
-            info = standard_type_manager.get_type_by_name(type_name)
-            if info:
-                type_info[type_name] = info
+        return count
 
-        return type_info
+    def _calculate_depth(self, schema: Dict[str, Any], current_depth: int = 0) -> int:
+        """计算Schema的最大深度"""
+        if not isinstance(schema, dict):
+            return current_depth
 
-    def get_available_data_types(self) -> List[str]:
-        """获取可用的数据类型列表"""
-        from ..standard_types.standard_types import standard_type_manager
+        max_depth = current_depth
 
-        # 返回VALUE和TYPE_REFERENCE类型
-        value_types = standard_type_manager.list_available_types("VALUE")
-        ref_types = standard_type_manager.list_available_types("TYPE_REFERENCE")
+        if "properties" in schema:
+            for prop in schema["properties"].values():
+                depth = self._calculate_depth(prop, current_depth + 1)
+                max_depth = max(max_depth, depth)
+        elif "items" in schema:
+            depth = self._calculate_depth(schema["items"], current_depth + 1)
+            max_depth = max(max_depth, depth)
 
-        return value_types + ref_types
-
-    def _analyze_element_requirements(
-            self,
-            session,
-            class_xml_tag: str
-    ) -> Tuple[List[str], List[str]]:
-        """分析必需和可选元素"""
-
-        required_elements = []
-        optional_elements = []
-
-        query = """
-        MATCH (c:Class {xml_tag: $xml_tag})-[:HAS_ATTRIBUTE]->(a:Attribute)
-        WHERE a.minOccurs > 0
-        RETURN collect(a.xml_tag) as required_attrs
-
-        UNION
-
-        MATCH (c:Class {xml_tag: $xml_tag})-[:HAS_ATTRIBUTE]->(a:Attribute)  
-        WHERE a.minOccurs = 0 OR a.minOccurs IS NULL
-        RETURN collect(a.xml_tag) as optional_attrs
-        """
-
-        # 简化查询，分别获取必需和可选
-        req_query = """
-        MATCH (c:Class {xml_tag: $xml_tag})-[:HAS_ATTRIBUTE]->(a:Attribute)
-        WHERE a.minOccurs > 0
-        RETURN collect(COALESCE(a.xml_tag, a.name)) as elements
-        """
-
-        opt_query = """
-        MATCH (c:Class {xml_tag: $xml_tag})-[:HAS_ATTRIBUTE]->(a:Attribute)
-        WHERE a.minOccurs = 0 OR a.minOccurs IS NULL  
-        RETURN collect(COALESCE(a.xml_tag, a.name)) as elements
-        """
-
-        try:
-            req_result = session.run(req_query, xml_tag=class_xml_tag)
-            req_record = req_result.single()
-            if req_record:
-                required_elements = [e for e in req_record["elements"] if e]
-
-            opt_result = session.run(opt_query, xml_tag=class_xml_tag)
-            opt_record = opt_result.single()
-            if opt_record:
-                optional_elements = [e for e in opt_record["elements"] if e]
-
-        except Exception as e:
-            print(f"[WARN] 分析{class_xml_tag}元素需求失败: {e}")
-
-        return required_elements, optional_elements
-
-    def _enhance_schema_for_semantic_placeholders(self, schema: Dict[str, Any]) -> Dict[str, Any]:
-        """增强Schema以支持语义占位符"""
-
-        def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
-            enhanced = {}
-
-            for key, value in properties.items():
-                if isinstance(value, dict):
-                    if value.get("type") == "string" and any(ref_key in key.upper() for ref_key in
-                                                             ["REF", "REFERENCE", "TREF", "IREF"]):
-                        # 引用字段，支持语义占位符
-                        enhanced[key] = {
-                            "type": "string",
-                            "description": f"{value.get('description', '')} (支持语义占位符)",
-                            "pattern": "^(/.+|引用.+|连接到.+|订阅.+|绑定到.+)$"
-                        }
-                    elif value.get("type") == "object" and "properties" in value:
-                        # 递归处理嵌套对象
-                        enhanced[key] = {
-                            **value,
-                            "properties": enhance_properties(value["properties"])
-                        }
-                    else:
-                        enhanced[key] = value
-                else:
-                    enhanced[key] = value
-
-            return enhanced
-
-        if schema.get("type") == "object" and "properties" in schema:
-            schema["properties"] = enhance_properties(schema["properties"])
-
-        return schema
+        return max_depth
 
     def generate_batch_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """为组件批次生成Schema - 严格模式，失败时报错"""
+        """为组件批次生成Schema - 复用generate_multi_component_schema"""
 
-        if not self.driver:
-            raise KGQueryError("Neo4j连接未建立，无法生成批次Schema")
-
-        try:
-            with self.driver.session() as session:
-                batch_schemas = {}
-
-                for comp_plan in component_plans:
-                    comp_type = comp_plan.get("type", "APPLICATION-SW-COMPONENT-TYPE")
-                    comp_name = comp_plan.get("name", "Component")
-
-                    # 严格查询，不允许降级
-                    comp_schema = self._build_recursive_xml_structure(
-                        session, comp_type, depth=0
-                    )
-
-                    if not comp_schema or comp_schema.get("type") == "object" and not comp_schema.get("properties"):
-                        raise KGQueryError(f"无法为组件类型 {comp_type} 生成有效Schema")
-
-                    # 添加语义占位符支持
-                    comp_schema = self._enhance_schema_for_semantic_placeholders(comp_schema)
-
-                    batch_schemas[comp_name] = comp_schema
-
-                if not batch_schemas:
-                    raise KGQueryError("批次Schema生成失败，未生成任何有效的组件Schema")
-
-                # 构建批次级Schema
-                schema = {
-                    "type": "object",
-                    "properties": batch_schemas,
-                    "required": list(batch_schemas.keys()),
-                    "description": f"批次生成Schema，包含{len(component_plans)}个组件"
-                }
-
-                return schema
-
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 批次Schema生成失败: {e}")
-            raise KGQueryError(f"批次Schema生成失败: {str(e)}")
-
-    def generate_multi_component_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """生成多组件Schema - 无降级策略"""
-
-        if not self.driver:
-            raise KGQueryError("Neo4j连接未建立，无法生成Schema")
-
-        schemas = {}
-
-        with self.driver.session() as session:
-            for comp_plan in component_plans:
-                comp_type = comp_plan.get("type", "")
-                comp_name = comp_plan.get("name", "")
-
-                if not comp_type:
-                    raise KGQueryError(f"组件{comp_name}缺少类型定义")
-
-                # 基于element_design查询特定元素
-                element_design = comp_plan.get("element_design", {})
-                comp_schema = self._build_targeted_schema(
-                    session,
-                    comp_type,
-                    element_design
-                )
-
-                if not comp_schema or not comp_schema.get("properties"):
-                    raise KGQueryError(f"无法为组件类型{comp_type}生成有效Schema")
-
-                schemas[comp_name] = comp_schema
-
-        if not schemas:
-            raise KGQueryError("未能生成任何组件Schema")
-
-        return {
-            "type": "object",
-            "properties": schemas,
-            "required": list(schemas.keys()),
-            "description": f"包含{len(component_plans)}个组件的Schema定义"
-        }
-
-    def _build_targeted_schema(
-            self,
-            session,
-            component_type: str,
-            element_design: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """基于LLM设计构建目标Schema"""
-
-        # 查询基础结构
-        base_query = """
-        MATCH (c:Class {xml_tag: $component_type})
-        OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(a:Attribute)
-        WHERE a.minOccurs >= 1
-        RETURN c.xml_tag as class_tag,
-               collect(DISTINCT {
-                   xml_tag: a.xml_tag,
-                   min_occurs: a.minOccurs,
-                   max_occurs: a.maxOccurs,
-                   description: a.description
-               }) as required_attributes
-        """
-
-        result = session.run(base_query, component_type=component_type)
-        record = result.single()
-
-        if not record:
-            raise KGQueryError(f"KG中未找到组件类型: {component_type}")
-
-        # 构建基础schema
-        schema = {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
-
-        # 添加必需属性
-        for attr in record["required_attributes"]:
-            if attr["xml_tag"]:
-                schema["properties"][attr["xml_tag"]] = {
-                    "type": "string",
-                    "description": attr.get("description", "")
-                }
-                schema["required"].append(attr["xml_tag"])
-
-        # 基于element_design添加额外元素
-        if element_design.get("ports", {}).get("needed"):
-            self._add_ports_to_schema(session, schema)
-
-        if element_design.get("internal_behaviors", {}).get("needed"):
-            self._add_internal_behaviors_to_schema(session, schema)
-
-        return schema
-
-    def _add_ports_to_schema(self, session, schema: Dict[str, Any]):
-        """添加PORTS结构到schema"""
-
-        ports_query = """
-        MATCH (p:Class {xml_tag: 'PORTS'})
-        OPTIONAL MATCH (p)-[:HAS_CHILD]->(port:Class)
-        WHERE port.xml_tag IN ['P-PORT-PROTOTYPE', 'R-PORT-PROTOTYPE']
-        OPTIONAL MATCH (port)-[:HAS_ATTRIBUTE]->(a:Attribute)
-        RETURN port.xml_tag as port_type,
-               collect({
-                   xml_tag: a.xml_tag,
-                   min_occurs: a.minOccurs
-               }) as attributes
-        """
-
-        result = session.run(ports_query)
-
-        ports_schema = {
-            "type": "object",
-            "properties": {}
-        }
-
-        for record in result:
-            if record["port_type"]:
-                port_props = {}
-                for attr in record["attributes"]:
-                    if attr["xml_tag"]:
-                        port_props[attr["xml_tag"]] = {"type": "string"}
-
-                ports_schema["properties"][record["port_type"]] = {
-                    "type": "object",
-                    "properties": port_props
-                }
-
-        schema["properties"]["PORTS"] = ports_schema
-
-    def _add_internal_behaviors_to_schema(self, session, schema: Dict[str, Any]):
-        """添加INTERNAL-BEHAVIORS结构到schema"""
-
-        behavior_query = """
-        MATCH (ib:Class {xml_tag: 'INTERNAL-BEHAVIORS'})
-        OPTIONAL MATCH (ib)-[:HAS_CHILD]->(swc:Class {xml_tag: 'SWC-INTERNAL-BEHAVIOR'})
-        OPTIONAL MATCH (swc)-[:HAS_ATTRIBUTE]->(a:Attribute)
-        WHERE a.minOccurs >= 1
-        RETURN collect(DISTINCT a.xml_tag) as required_attrs
-        """
-
-        result = session.run(behavior_query)
-        record = result.single()
-
-        behavior_schema = {
-            "type": "object",
-            "properties": {
-                "SWC-INTERNAL-BEHAVIOR": {
-                    "type": "object",
-                    "properties": {
-                        "SHORT-NAME": {"type": "string"},
-                        "EVENTS": {"type": "object"},
-                        "RUNNABLES": {"type": "object"}
-                    },
-                    "required": record["required_attrs"] if record else ["SHORT-NAME"]
-                }
-            }
-        }
-
-        schema["properties"]["INTERNAL-BEHAVIORS"] = behavior_schema
+        # 直接调用多组件生成方法，自动处理相同类型的Schema
+        return self.generate_multi_component_schema(component_plans)
 
     def query_constraints_for_elements(self, element_types: List[str]) -> List[str]:
-        """查询元素约束规则 - 严格模式"""
+        """查询元素约束规则 - 保持原有实现"""
 
         if not self.driver:
             raise KGQueryError("Neo4j连接未建立，无法查询约束规则")
@@ -676,7 +1228,7 @@ class DynamicQueryEngine:
                         if record["description"]:
                             constraints.append(record["description"])
 
-                # 只添加基础约束，不提供降级约束
+                # 添加基础约束
                 constraints.extend([
                     "所有UUID必须符合标准格式",
                     "SHORT-NAME必须符合AUTOSAR命名规范",
@@ -690,25 +1242,87 @@ class DynamicQueryEngine:
                 print(f"[DEBUG] 约束查询失败: {e}")
             raise KGQueryError(f"约束规则查询失败: {str(e)}")
 
-    def _get_fallback_constraints(self, element_types: List[str]) -> List[str]:
-        """获取降级约束规则"""
-        return [
-            "确保XML结构完整性",
-            "遵循AUTOSAR命名规范",
-            "所有UUID必须唯一",
-            "引用路径必须可解析",
-            "端口定义必须完整",
-            "内部行为必须包含至少一个Runnable",
-            "事件和Runnable必须正确关联"
-        ]
+    def clear_cache(self, cache_level: str = "all"):
+        """清理缓存"""
 
-    def get_schema_depth_stats(self) -> Dict[str, Any]:
-        """获取Schema深度统计信息"""
+        if cache_level in ["request", "all"]:
+            if self.request_cache is not None:
+                self.request_cache.clear()
+            self.depth_manager.reset()
+
+        if cache_level in ["application", "all"]:
+            self.schema_cache.clear()
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 清理了 {cache_level} 级别的缓存")
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """获取缓存统计信息"""
+
         return {
-            "max_depth": self.max_schema_depth,
-            "visited_classes_count": len(self.visited_classes),
-            "cache_size": len(self.query_cache)
+            "request_cache_size": len(self.request_cache) if self.request_cache else 0,
+            "schema_cache": self.schema_cache.get_stats(),
+            "current_depth": self.depth_manager.get_depth(),
+            "max_safety_depth": self.max_safety_depth
         }
+
+    def _add_component_specific_elements(
+            self,
+            properties: Dict[str, Any],
+            required: List[str],
+            component_type: str
+    ) -> None:
+        """添加组件类型特定的必需元素 - 从KG查询"""
+
+        if not self.driver:
+            return  # 如果没有连接，跳过特定元素
+
+        with self.driver.session() as session:
+            # 查询特定组件类型的必需元素
+            query = """
+            MATCH (c:Class {xml_tag: $component_type})
+            OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+            WHERE attr.minOccurs >= 1 
+              AND attr.xml_tag NOT IN ['SHORT-NAME', 'UUID']
+              AND NOT attr.xml_tag IN $existing_props
+            RETURN collect(DISTINCT {
+                tag: attr.xml_tag,
+                type: attr.type,
+                description: attr.description,
+                isXmlAttr: attr.isXmlAttr
+            }) as required_attrs
+            """
+
+            existing_props = list(properties.keys())
+            result = session.run(query,
+                                 component_type=component_type,
+                                 existing_props=existing_props)
+            record = result.single()
+
+            if record and record["required_attrs"]:
+                for attr in record["required_attrs"]:
+                    attr_key = f"@{attr['tag']}" if attr.get("isXmlAttr") else attr["tag"]
+
+                    if attr_key not in properties:
+                        # 根据类型添加适当的Schema
+                        if attr.get("type") == "boolean":
+                            properties[attr_key] = {"type": "boolean"}
+                        elif attr.get("type") in ["integer", "int"]:
+                            properties[attr_key] = {"type": "integer"}
+                        else:
+                            properties[attr_key] = {"type": "string"}
+
+                        if attr.get("description"):
+                            properties[attr_key]["description"] = attr["description"]
+
+                        # 添加到required列表
+                        if attr_key not in required:
+                            required.append(attr_key)
+
+    def close(self):
+        """关闭连接"""
+        if self.driver:
+            self.driver.close()
 
 
 # 全局查询引擎实例

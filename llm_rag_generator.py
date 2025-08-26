@@ -3,12 +3,13 @@
 
 基于对话式逐层深入设计系统的AUTOSAR组件生成器
 支持两轮对话：Round1架构设计 + Round2详细生成
-支持多组件生成，动态Schema生成，移除验证打分逻辑
+支持多组件生成，动态Schema生成，支持文档上传
 
 使用方法:
 1. 直接运行: python llm_rag_generator.py
 2. PyCharm右键运行
 3. 交互式对话生成AUTOSAR ARXML
+4. 支持上传PDF/Word/图片文档作为需求输入
 """
 
 import os
@@ -16,7 +17,7 @@ import sys
 import json
 import traceback
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).resolve().parent
@@ -31,6 +32,7 @@ try:
         ArchitectureDesignError, ValidationError
     )
     from src.llm_generation.utils.serializers import save_json
+    from src.llm_generation.utils.document_processor import document_processor
 except ImportError as e:
     print(f"❌ 导入模块失败: {e}")
     print("请确保项目结构正确且所有依赖已安装")
@@ -43,8 +45,10 @@ class LLMRAGGenerator:
     def __init__(self):
         """初始化生成器"""
         self.conversation_manager = conversation_manager
+        self.document_processor = document_processor
         self.current_session_id = None
         self.demo_mode = False
+        self.uploaded_documents = []  # 当前会话上传的文档
 
         print("🚀 LLM RAG AUTOSAR组件生成器")
         print("=" * 50)
@@ -63,17 +67,21 @@ class LLMRAGGenerator:
         print("  Round 1: 架构设计 - 确定组件类型、接口、连接关系")
         print("  Round 2: 详细生成 - 从KG查询详细信息并生成完整ARXML")
         print("\n✨ 新特性:")
+        print("  - 支持上传PDF/Word/图片文档作为需求输入")
         print("  - 支持多组件设计和生成")
         print("  - 动态从KG查询XML结构生成Schema")
         print("  - 确保实例引用的唯一性和一致性")
+        print("\n📁 支持的文档格式:")
+        print("  PDF, Word(.doc/.docx), 文本(.txt/.md), 图片(.png/.jpg/.jpeg/.gif/.webp)")
         print("\n输入 'quit' 或 'exit' 可随时退出")
         print("输入 'demo' 可运行演示模式")
         print("输入 'help' 查看帮助信息")
+        print("输入 'upload' 上传文档文件")
 
         while True:
             try:
                 print("\n" + "-" * 50)
-                user_input = input("\n💬 请描述您要设计的AUTOSAR组件需求: ").strip()
+                user_input = input("\n💬 请描述您要设计的AUTOSAR组件需求 (或输入'upload'上传文档): ").strip()
 
                 if not user_input:
                     continue
@@ -90,6 +98,12 @@ class LLMRAGGenerator:
                     continue
                 elif user_input.lower() == 'stats':
                     self._show_stats()
+                    continue
+                elif user_input.lower() == 'upload':
+                    self._handle_document_upload()
+                    continue
+                elif user_input.lower() == 'clear':
+                    self._clear_documents()
                     continue
 
                 # 开始新的对话会话
@@ -110,16 +124,110 @@ class LLMRAGGenerator:
                 else:
                     break
 
+    def _handle_document_upload(self):
+        """处理文档上传"""
+
+        print("\n📁 文档上传")
+        print("=" * 30)
+        print("支持格式: PDF, Word, TXT, MD, PNG, JPG, JPEG, GIF, WEBP")
+        print("最大文件大小: 20MB")
+        print("输入文件路径（支持多个，用逗号分隔），或输入'cancel'取消：")
+
+        file_input = input("📎 文件路径: ").strip()
+
+        if file_input.lower() == 'cancel':
+            print("❌ 已取消上传")
+            return
+
+        # 分割多个文件路径
+        file_paths = [path.strip() for path in file_input.split(',')]
+
+        uploaded_count = 0
+        failed_files = []
+
+        for file_path in file_paths:
+            # 展开用户目录
+            file_path = os.path.expanduser(file_path)
+            file_path = os.path.abspath(file_path)
+
+            # 验证文件
+            is_valid, error_msg = self.document_processor.validate_file(file_path)
+
+            if not is_valid:
+                print(f"❌ {Path(file_path).name}: {error_msg}")
+                failed_files.append(Path(file_path).name)
+                continue
+
+            try:
+                # 上传文件
+                print(f"⏳ 正在上传 {Path(file_path).name}...")
+                file_obj = self.document_processor.upload_file(file_path)
+
+                if file_obj:
+                    self.uploaded_documents.append(file_path)
+                    uploaded_count += 1
+                    print(f"✅ 成功上传: {Path(file_path).name}")
+
+                    # 提取并显示文档摘要
+                    print(f"📄 正在分析文档内容...")
+                    content_summary = self.document_processor.extract_document_content(file_obj)
+                    print(f"\n📋 文档摘要:")
+                    print("-" * 20)
+                    # 限制显示长度
+                    if len(content_summary) > 500:
+                        print(content_summary[:500] + "...")
+                    else:
+                        print(content_summary)
+                    print("-" * 20)
+
+            except Exception as e:
+                print(f"❌ 上传失败 {Path(file_path).name}: {e}")
+                failed_files.append(Path(file_path).name)
+
+        # 显示上传结果
+        print(f"\n📊 上传结果:")
+        print(f"  成功: {uploaded_count}")
+        print(f"  失败: {len(failed_files)}")
+
+        if self.uploaded_documents:
+            print(f"\n📚 当前已上传文档 ({len(self.uploaded_documents)}个):")
+            for doc_path in self.uploaded_documents:
+                print(f"  - {Path(doc_path).name}")
+            print("\n💡 提示: 输入'clear'可清除所有已上传的文档")
+            print("现在您可以输入需求描述，系统将结合文档内容进行设计")
+
+    def _clear_documents(self):
+        """清除已上传的文档"""
+
+        if not self.uploaded_documents:
+            print("ℹ️ 没有已上传的文档")
+            return
+
+        print(f"\n🗑️ 清除 {len(self.uploaded_documents)} 个文档...")
+
+        # 清理文档处理器中的文件
+        self.document_processor.cleanup_all_files()
+        self.uploaded_documents.clear()
+
+        print("✅ 所有文档已清除")
+
     def _start_new_conversation(self, user_input: str):
-        """开始新的对话"""
+        """开始新的对话，包含文档支持"""
 
         try:
             print(f"\n🔄 正在分析需求...")
 
-            # 启动对话
+            # 准备文档文件列表
+            document_files = self.uploaded_documents if self.uploaded_documents else None
+
+            if document_files:
+                print(f"📚 将参考 {len(document_files)} 个上传的文档")
+
+            # 启动对话（需要修改conversation_manager以支持文档）
             result = self.conversation_manager.start_conversation(
                 user_input=user_input,
-                user_id="interactive_user"
+                user_id="interactive_user",
+                document_files=document_files  # 传递文档文件
             )
 
             self.current_session_id = result["session_id"]
@@ -140,6 +248,9 @@ class LLMRAGGenerator:
             print(f"\n🏗️ Round 1: 正在进行架构设计...")
             print("📋 使用静态高层术语库进行架构规划...")
 
+            if self.uploaded_documents:
+                print(f"📚 结合 {len(self.uploaded_documents)} 个文档进行设计...")
+
             # 执行架构设计
             result = self.conversation_manager.process_round1(self.current_session_id)
 
@@ -151,6 +262,10 @@ class LLMRAGGenerator:
             component_count = len(design.get('component_plan', []))
             interface_count = len(design.get('interface_plan', []))
             print(f"🔧 设计结果: {component_count}个组件, {interface_count}个接口")
+
+            # 如果有文档处理统计
+            if 'documents_processed' in result['stats']:
+                print(f"📄 处理文档: {result['stats']['documents_processed']}个")
 
             # 展示设计结果
             print(f"\n{result['presentation']}")
@@ -243,6 +358,11 @@ class LLMRAGGenerator:
 
             print(f"\n✅ {result['message']}")
 
+            # 清理会话文档
+            if self.uploaded_documents:
+                print("\n🧹 清理会话文档...")
+                self._clear_documents()
+
         except Exception as e:
             print(f"❌ Round 2执行失败: {e}")
             if CONFIG.debug_mode:
@@ -317,25 +437,35 @@ class LLMRAGGenerator:
         demo_scenarios = [
             {
                 "name": "单组件温度监控",
-                "description": "设计一个温度监控AUTOSAR组件，能够从温度传感器读取数据，进行处理分析，并输出温度状态信息给其他组件使用。"
+                "description": "设计一个温度监控AUTOSAR组件，能够从温度传感器读取数据，进行处理分析，并输出温度状态信息给其他组件使用。",
+                "sample_docs": []
             },
             {
                 "name": "多组件电机控制系统",
-                "description": "设计一个多组件电机控制AUTOSAR系统，包括传感器数据采集组件、控制算法处理组件、执行器控制组件，实现完整的闭环控制。需要组件间的数据交互和协调。"
+                "description": "设计一个多组件电机控制AUTOSAR系统，包括传感器数据采集组件、控制算法处理组件、执行器控制组件，实现完整的闭环控制。需要组件间的数据交互和协调。",
+                "sample_docs": []
+            },
+            {
+                "name": "基于文档的系统设计",
+                "description": "基于上传的需求文档设计AUTOSAR系统",
+                "sample_docs": ["requirements.pdf", "architecture.png"]
             },
             {
                 "name": "复杂数据融合系统",
-                "description": "设计一个复杂的多传感器数据融合AUTOSAR系统，包括多个传感器接口组件、数据预处理组件、融合算法组件、结果输出组件。需要处理多种数据类型和复杂的数据流。"
+                "description": "设计一个复杂的多传感器数据融合AUTOSAR系统，包括多个传感器接口组件、数据预处理组件、融合算法组件、结果输出组件。需要处理多种数据类型和复杂的数据流。",
+                "sample_docs": []
             },
             {
                 "name": "车载通信网关",
-                "description": "设计一个车载通信网关AUTOSAR系统，需要多个组件处理不同的通信协议(CAN, LIN, Ethernet)，包括协议转换、路由管理、安全检查等功能。"
+                "description": "设计一个车载通信网关AUTOSAR系统，需要多个组件处理不同的通信协议(CAN, LIN, Ethernet)，包括协议转换、路由管理、安全检查等功能。",
+                "sample_docs": []
             }
         ]
 
         print("请选择演示场景:")
         for i, scenario in enumerate(demo_scenarios, 1):
-            print(f"  {i}. {scenario['name']}")
+            docs_hint = f" (含示例文档)" if scenario['sample_docs'] else ""
+            print(f"  {i}. {scenario['name']}{docs_hint}")
 
         try:
             choice = input(f"\n请选择 (1-{len(demo_scenarios)}): ").strip()
@@ -345,6 +475,10 @@ class LLMRAGGenerator:
                 selected = demo_scenarios[choice_idx]
                 print(f"\n🎯 选择了: {selected['name']}")
                 print(f"📝 需求描述: {selected['description']}")
+
+                if selected['sample_docs']:
+                    print(f"📁 示例文档: {', '.join(selected['sample_docs'])}")
+                    print("⚠️ 注意: 请确保示例文档存在，或使用'upload'命令上传您自己的文档")
 
                 self.demo_mode = True
                 self._start_new_conversation(selected['description'])
@@ -365,8 +499,15 @@ class LLMRAGGenerator:
 
 📝 使用说明:
 1. 输入您的组件设计需求，系统将进行两轮对话设计
-2. Round 1会生成架构设计，请确认或提供修改意见
-3. Round 2会从KG查询详细信息并生成ARXML文档
+2. 可以先上传文档（PDF/Word/图片），系统会参考文档内容
+3. Round 1会生成架构设计，请确认或提供修改意见
+4. Round 2会从KG查询详细信息并生成ARXML文档
+
+📁 文档上传:
+- 'upload': 上传需求文档、架构图等文件
+- 'clear': 清除所有已上传的文档
+- 支持格式: PDF, Word, TXT, MD, PNG, JPG等
+- 最大20MB，支持批量上传（逗号分隔路径）
 
 💡 需求描述示例:
 
@@ -378,11 +519,17 @@ class LLMRAGGenerator:
 - "设计一个多组件数据融合系统，包括数据采集、处理、输出组件"
 - "创建一个完整的控制系统，需要传感器组件、控制器组件、执行器组件"
 
+🔹 基于文档:
+- 先使用'upload'上传需求文档
+- 然后输入："基于上传的文档设计AUTOSAR系统"
+
 🎛️ 特殊命令:
-- 'demo'  : 运行演示模式，体验预设的复杂场景
-- 'help'  : 显示此帮助信息
-- 'stats' : 显示系统统计信息
-- 'quit'  : 退出程序
+- 'upload' : 上传文档文件
+- 'clear'  : 清除已上传的文档
+- 'demo'   : 运行演示模式
+- 'help'   : 显示此帮助信息
+- 'stats'  : 显示系统统计信息
+- 'quit'   : 退出程序
 
 📋 反馈指南:
 - 确认设计: "确认"、"同意"、"可以"
@@ -391,11 +538,12 @@ class LLMRAGGenerator:
 - 删除元素: "删除第二个组件"、"去掉这个接口"
 
 🚀 新特性 (本版本):
+- ✅ 支持PDF/Word/图片文档上传作为需求输入
+- ✅ 文档内容自动提取和分析
+- ✅ 基于文档的架构设计优化
 - ✅ 支持多组件架构设计和生成
 - ✅ 动态从KG查询XML结构生成Schema
 - ✅ 确保实例引用的唯一性和一致性
-- ✅ 移除验证打分逻辑，专注于生成质量
-- ✅ 支持复杂系统的组件间协作设计
 
 📁 输出文件:
 - 单组件: arxml_xxxxxxxx_timestamp.json
@@ -445,6 +593,14 @@ class LLMRAGGenerator:
                     avg_tokens = llm_stats.get('total_tokens', 0) / llm_stats.get('call_count', 1)
                     print(f"  平均Token/调用: {avg_tokens:.0f}")
 
+            # 文档处理统计
+            doc_info = self.document_processor.get_uploaded_files_info()
+            if doc_info:
+                print(f"\n文档统计:")
+                print(f"  已上传文档: {len(doc_info)}")
+                for doc in doc_info:
+                    print(f"    - {doc['name']} ({doc['state']})")
+
             # 约束引擎统计
             constraint_stats = stats.get("constraint_engine", {})
             if constraint_stats:
@@ -471,6 +627,11 @@ class LLMRAGGenerator:
         print("\n🧹 正在清理资源...")
 
         try:
+            # 清理文档
+            if self.uploaded_documents:
+                print("📁 清理上传的文档...")
+                self.document_processor.cleanup_all_files()
+
             # 清理当前会话
             if self.current_session_id:
                 self.conversation_manager.cleanup_session(self.current_session_id)
@@ -493,7 +654,7 @@ class LLMRAGGenerator:
             print(f"⚠️ 清理时发生错误: {e}")
 
         print("👋 感谢使用AUTOSAR组件设计助手!")
-        print("🚀 新版本特性: 多组件生成 + 动态KG查询 + 实例引用管理")
+        print("🚀 新版本特性: 文档上传 + 多组件生成 + 动态KG查询 + 实例引用管理")
 
 
 def check_environment():

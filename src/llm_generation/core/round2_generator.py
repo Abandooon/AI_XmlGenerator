@@ -5,8 +5,8 @@
 import json
 import uuid
 from typing import Dict, List, Any, Optional, Tuple
-
-from lxml.etree import Element, SubElement
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 
 from ..config import CONFIG
 from ..llm.gemini_client import GeminiClient
@@ -179,64 +179,6 @@ class Round2Generator:
 
         return final_arxml, total_stats
 
-    def _generate_batch(
-        self,
-        batch_info: Dict[str, Any],
-        architecture_design: ArchitectureDesign,
-        memory_context: str,
-        custom_requirements: Dict[str, Any],
-        batch_idx: int
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        """生成单个批次"""
-
-        batch_components = batch_info["components"]
-        batch_type = batch_info["batch_type"]
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 生成第{batch_idx + 1}批: {batch_type}, {len(batch_components)}个组件")
-
-        # 动态生成Schema（只包含当前批次组件）
-        batch_schema = self.query_engine.generate_batch_schema(batch_components)
-
-        # 查询约束
-        constraints = self._query_constraints(batch_components)
-
-        # 构建批次上下文
-        batch_context = self._build_batch_context(
-            batch_info,
-            architecture_design,
-            memory_context
-        )
-
-        # 生成批次特定提示词
-        prompt = template_manager.get_batch_generation_prompt(
-            batch_info=batch_info,
-            architecture_design=architecture_design.__dict__,
-            constraints=constraints,
-            batch_context=batch_context,
-            registered_interfaces=self.component_registry.get_interface_summaries()
-        )
-
-        # 调用LLM生成
-        response_data, input_tokens, output_tokens, total_tokens = \
-            self.gemini_client.generate_with_schema(
-                prompt=prompt,
-                schema=batch_schema
-            )
-
-        # 生成统计
-        batch_stats = {
-            "batch_idx": batch_idx,
-            "batch_type": batch_type,
-            "component_count": len(batch_components),
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": total_tokens,
-            "constraints_applied": len(constraints)
-        }
-
-        return response_data, batch_stats
-
     def _build_batch_context(
         self,
         batch_info: Dict[str, Any],
@@ -285,9 +227,6 @@ class Round2Generator:
     ) -> str:
         """组装最终ARXML"""
 
-        from xml.etree.ElementTree import Element, SubElement, tostring
-        from xml.dom import minidom
-
         # 创建AUTOSAR根元素
         root = Element("AUTOSAR")
         root.set("xmlns", "http://autosar.org/schema/r4.0")
@@ -315,9 +254,6 @@ class Round2Generator:
     def _convert_json_to_arxml(self, json_data: Dict[str, Any], architecture_design: ArchitectureDesign) -> str:
         """将JSON数据转换为标准ARXML格式"""
         # 原有实现保持不变
-        from xml.etree.ElementTree import Element, SubElement, tostring
-        from xml.dom import minidom
-
         root = Element("AUTOSAR")
         root.set("xmlns", "http://autosar.org/schema/r4.0")
         root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
@@ -365,27 +301,119 @@ class Round2Generator:
         return tag_name.replace('_', '-').upper()
 
     def _generate_dynamic_schema(self, component_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """动态生成JSON Schema - 无降级，失败直接报错"""
+        """动态生成JSON Schema - 增强版"""
 
-        # 必须成功生成，否则报错
+        # 直接调用query_engine的新方法，自动处理element_design
         schema = self.query_engine.generate_multi_component_schema(component_plans)
 
         if not schema or not schema.get("properties"):
             raise ValidationError(f"Schema生成失败：无法为{len(component_plans)}个组件生成有效Schema")
 
-        # 基于LLM的element_design增强schema
-        for comp_plan in component_plans:
-            comp_name = comp_plan.get("name")
-            if comp_name in schema["properties"]:
-                schema["properties"][comp_name] = self._enhance_schema_with_element_design(
-                    schema["properties"][comp_name],
-                    comp_plan.get("element_design", {})
-                )
+        # 添加语义占位符支持说明
+        schema = self._enhance_schema_for_semantic_placeholders(schema)
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 成功生成Schema，包含{len(schema.get('properties', {}))}个组件定义")
+            # 输出缓存统计
+            cache_stats = self.query_engine.get_cache_stats()
+            print(f"[DEBUG] 缓存统计: {cache_stats}")
 
         return schema
+
+    def _enhance_schema_for_semantic_placeholders(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """增强Schema以支持语义占位符"""
+
+        def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
+            enhanced = {}
+
+            for key, value in properties.items():
+                if isinstance(value, dict):
+                    # 引用字段支持语义占位符
+                    if any(ref_key in key.upper() for ref_key in ["REF", "REFERENCE", "TREF", "IREF"]):
+                        enhanced[key] = {
+                            "type": "string",
+                            "description": f"{value.get('description', '')} (支持语义占位符)",
+                            "pattern": "^(/.+|引用.+|连接到.+|订阅.+|绑定到.+|使用.+)$"
+                        }
+                    elif value.get("type") == "object" and "properties" in value:
+                        # 递归处理嵌套对象
+                        enhanced[key] = {
+                            **value,
+                            "properties": enhance_properties(value["properties"])
+                        }
+                    else:
+                        enhanced[key] = value
+                else:
+                    enhanced[key] = value
+
+            return enhanced
+
+        if schema.get("type") == "object" and "properties" in schema:
+            schema["properties"] = enhance_properties(schema["properties"])
+
+        return schema
+
+    def _generate_batch(
+            self,
+            batch_info: Dict[str, Any],
+            architecture_design: ArchitectureDesign,
+            memory_context: str,
+            custom_requirements: Dict[str, Any],
+            batch_idx: int
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """生成单个批次 - 优化版"""
+
+        batch_components = batch_info["components"]
+        batch_type = batch_info["batch_type"]
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 生成第{batch_idx + 1}批: {batch_type}, {len(batch_components)}个组件")
+            # 清理请求级缓存
+            self.query_engine.clear_cache("request")
+
+        # 动态生成Schema（会自动复用相同类型的Schema）
+        batch_schema = self.query_engine.generate_batch_schema(batch_components)
+
+        # 查询约束
+        component_types = list(set([comp.get("type", "") for comp in batch_components]))
+        constraints = self.query_engine.query_constraints_for_elements(component_types)
+
+        # 构建批次上下文
+        batch_context = self._build_batch_context(
+            batch_info,
+            architecture_design,
+            memory_context
+        )
+
+        # 生成批次特定提示词
+        prompt = template_manager.get_batch_generation_prompt(
+            batch_info=batch_info,
+            architecture_design=architecture_design.__dict__,
+            constraints=constraints,
+            batch_context=batch_context,
+            registered_interfaces=self.component_registry.get_interface_summaries()
+        )
+
+        # 调用LLM生成
+        response_data, input_tokens, output_tokens, total_tokens = \
+            self.gemini_client.generate_with_schema(
+                prompt=prompt,
+                schema=batch_schema
+            )
+
+        # 生成统计
+        batch_stats = {
+            "batch_idx": batch_idx,
+            "batch_type": batch_type,
+            "component_count": len(batch_components),
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": total_tokens,
+            "constraints_applied": len(constraints),
+            "cache_stats": self.query_engine.get_cache_stats()
+        }
+
+        return response_data, batch_stats
 
     def _enhance_schema_with_element_design(
             self,
@@ -513,45 +541,6 @@ class Round2Generator:
 
         return prompt
 
-
-# 保持原有的ReferenceManager但标记为deprecated
-class ReferenceManager:
-    """引用管理器（已弃用，使用ComponentRegistry替代）"""
-
-    def __init__(self):
-        self.component_refs = {}
-        self.interface_refs = {}
-        self.port_refs = {}
-        self.runnable_refs = {}
-
-    def initialize_from_plans(self, component_plans: List[Dict[str, Any]], interface_plans: List[Dict[str, Any]]):
-        for comp_plan in component_plans:
-            comp_id = comp_plan.get("component_id", "")
-            comp_name = comp_plan.get("name", "")
-            if comp_id and comp_name:
-                self.component_refs[comp_id] = f"/{comp_name}"
-
-        for intf_plan in interface_plans:
-            intf_id = intf_plan.get("interface_id", "")
-            intf_name = intf_plan.get("name", "")
-            if intf_id and intf_name:
-                self.interface_refs[intf_id] = f"/{intf_name}"
-
-    def get_component_ref(self, component_id: str) -> str:
-        return self.component_refs.get(component_id, f"/UnknownComponent_{component_id}")
-
-    def get_interface_ref(self, interface_id: str) -> str:
-        return self.interface_refs.get(interface_id, f"/UnknownInterface_{interface_id}")
-
-    def register_port_ref(self, port_name: str, component_name: str) -> str:
-        ref_path = f"/{component_name}/{port_name}"
-        self.port_refs[port_name] = ref_path
-        return ref_path
-
-    def register_runnable_ref(self, runnable_name: str, component_name: str) -> str:
-        ref_path = f"/{component_name}/InternalBehavior/{runnable_name}"
-        self.runnable_refs[runnable_name] = ref_path
-        return ref_path
 
 # 全局Round2生成器实例
 round2_generator = Round2Generator()

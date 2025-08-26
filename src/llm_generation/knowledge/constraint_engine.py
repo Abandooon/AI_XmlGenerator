@@ -46,7 +46,7 @@ class ConstraintEngine:
 
     # constraint_engine.py 修正
     def _init_neo4j_connection(self):
-        """初始化Neo4j连接"""
+        """初始化Neo4j连接 - 修复版本"""
         try:
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 约束引擎连接Neo4j: {self.config.neo4j_uri}")
@@ -54,17 +54,21 @@ class ConstraintEngine:
             self.driver = GraphDatabase.driver(
                 self.config.neo4j_uri,
                 auth=(self.config.neo4j_user, self.config.neo4j_password),
-                encrypted=True,
-                trust="TRUST_SYSTEM_CA_SIGNED_CERTIFICATES",
                 max_connection_lifetime=30 * 60,
                 max_connection_pool_size=10,  # 约束引擎使用较小的连接池
-                connection_acquisition_timeout=60
+                connection_acquisition_timeout=60,
+                # 根据URI判断是否需要加密
+                encrypted=False if any(
+                    x in self.config.neo4j_uri for x in ["localhost", "127.0.0.1", "bolt://"]) else True
             )
 
             # 测试连接
             with self.driver.session() as session:
-                session.run("RETURN 1")
-            print("[INFO] 约束引擎Neo4j连接成功")
+                result = session.run("RETURN 1 as test")
+                if result.single()["test"] == 1:
+                    print("[INFO] 约束引擎Neo4j连接成功")
+                else:
+                    raise Exception("连接测试失败")
 
         except Exception as e:
             print(f"[WARN] 约束引擎Neo4j连接失败: {e}，使用模拟约束")

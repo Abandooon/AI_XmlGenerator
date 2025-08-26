@@ -6,6 +6,8 @@ llm:
   temperature: 0.7                                   # 生成温度参数
   max_output_tokens: 60000                          # 最大输出Token数
   max_context_tokens: 200000                        # 最大上下文Token数
+  # 文件上传功能开关（使用代理API时建议关闭）
+  enable_file_upload: false  # 设为false禁用文件上传，使用纯对话模式
 
 # ===== 对话系统配置 =====
 conversation:
@@ -17,11 +19,31 @@ knowledge_graph:
   neo4j_uri: "neo4j://127.0.0.1:7687"                # Neo4j数据库连接URI
   neo4j_password: "542394665"           # Neo4j密码（可通过环境变量设置）
   neo4j_user: "neo4j"
-  max_schema_depth: 7                               # XML Schema最大递归深度
+  max_schema_depth: 50                               # XML Schema最大递归深度
 
 # ===== standard_types配置 =====
 standard_types:
   standard_types_path: "src/llm_generation/standard_types/data"  # 标准类型文件目录
+
+# ===== Schema生成配置 =====
+schema_generation:
+  # 终止条件配置
+  termination_rules:
+    ref_suffixes: ["-REF", "-TREF", "-IREF"]       # 引用类型后缀
+    standard_prefixes: ["/AUTOSAR/", "/DataTypes/"] # 标准类型前缀
+
+  # 缓存配置
+  cache_config:
+    enable_request_cache: true                      # 启用请求级缓存
+    enable_application_cache: true                  # 启用应用级缓存
+    application_cache_ttl: 3600                     # 应用缓存TTL（秒）
+    max_cache_size: 100                            # 最大缓存条目数
+
+  # 性能控制
+  performance:
+    query_timeout: 30                               # 查询超时（秒）
+    max_properties_per_object: 1000                 # 每个对象最大属性数
+    parallel_query: false                           # 是否并行查询（未来功能）
 
 
 # ===== 生成策略配置 =====

@@ -8,13 +8,12 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 import yaml
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 # 基础路径配置 - 修正路径逻辑
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent.parent  # 项目根目录
 CONFIG_DIR = ROOT_DIR / "config"   # 配置文件目录
-
 
 @dataclass
 class ComponentType:
@@ -75,20 +74,55 @@ class KnowledgeGraphConfig:
     neo4j_uri: str
     neo4j_user: str = "neo4j"
     neo4j_password: str = ""
-    max_schema_depth: int = 7
+    max_safety_depth: int = 50  # 修改：从max_schema_depth改为max_safety_depth
+
+
+@dataclass
+class TerminationRulesConfig:
+    """终止条件规则配置"""
+    ref_suffixes: List[str] = field(default_factory=lambda: ["-REF", "-TREF", "-IREF"])
+    standard_prefixes: List[str] = field(default_factory=lambda: ["/AUTOSAR/", "/DataTypes/"])
+
+
+@dataclass
+class CacheConfig:
+    """缓存配置"""
+    enable_request_cache: bool = True
+    enable_application_cache: bool = True
+    application_cache_ttl: int = 3600
+    max_cache_size: int = 100
+
+
+@dataclass
+class SchemaPerformanceConfig:
+    """Schema生成性能配置"""
+    query_timeout: int = 30
+    max_properties_per_object: int = 1000
+    parallel_query: bool = False
+
+
+@dataclass
+class SchemaGenerationConfig:
+    """Schema生成配置"""
+    termination_rules: TerminationRulesConfig = field(default_factory=TerminationRulesConfig)
+    cache_config: CacheConfig = field(default_factory=CacheConfig)
+    performance: SchemaPerformanceConfig = field(default_factory=SchemaPerformanceConfig)
+
 
 @dataclass
 class StandardTypesConfig:
     """标准数据类型配置"""
-    standard_types_path: Optional[str] = None  # 新增
+    standard_types_path: Optional[str] = None
+
 
 @dataclass
 class GenerationConfig:
     """生成配置"""
-    single_batch_threshold: int = 5  # 单批生成阈值
-    max_batch_size: int = 8  # 最大批次大小
-    enable_semantic_placeholders: bool = True  # 启用语义占位符
-    reference_resolution_timeout: int = 300  # 引用解析超时时间
+    single_batch_threshold: int = 5
+    max_batch_size: int = 8
+    enable_semantic_placeholders: bool = True
+    reference_resolution_timeout: int = 300
+
 
 @dataclass
 class SemanticPattern:
@@ -96,6 +130,7 @@ class SemanticPattern:
     pattern: str
     type: str
     template: str
+
 
 @dataclass
 class SemanticResolutionConfig:
@@ -107,6 +142,25 @@ class SemanticResolutionConfig:
     enable_heuristic_resolution: bool = True
     resolution_cache_size: int = 1000
 
+
+@dataclass
+class Round1SchemaConfig:
+    """Round1 Schema配置"""
+    system_analysis: Dict[str, Any] = field(default_factory=dict)
+    component_plan: Dict[str, Any] = field(default_factory=dict)
+    interface_plan: Dict[str, Any] = field(default_factory=dict)
+    allowed_types: Dict[str, List[str]] = field(default_factory=dict)
+
+
+@dataclass
+class MetamodelInjectionConfig:
+    """元模型注入配置"""
+    round1_depth: int = 1
+    round2_depth: int = 8
+    include_required_attributes: bool = True
+    include_min_occurs: bool = True
+
+
 @dataclass
 class SystemConfig:
     """系统总配置"""
@@ -116,7 +170,10 @@ class SystemConfig:
     standard_types: StandardTypesConfig
     terminology: TerminologyConfig
     generation: GenerationConfig
-    semantic_resolution: SemanticResolutionConfig  # 新增
+    semantic_resolution: SemanticResolutionConfig
+    schema_generation: SchemaGenerationConfig  # 新增
+    round1_schema: Round1SchemaConfig  # 新增
+    metamodel_injection: MetamodelInjectionConfig  # 新增
     debug_mode: bool
     output_dir: Path
 
@@ -160,7 +217,6 @@ def _create_design_patterns(data: List[Dict]) -> List[DesignPattern]:
     ]
 
 
-# config.py 修正版本
 def load_config(config_path: Optional[Path] = None) -> SystemConfig:
     """加载系统配置"""
 
@@ -187,7 +243,11 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
         # Neo4j配置处理
         kg_config = yaml_config.get("knowledge_graph", {})
         neo4j_password = kg_config.get("neo4j_password", "")
-        neo4j_user = kg_config.get("neo4j_user")
+        neo4j_user = kg_config.get("neo4j_user", "neo4j")
+
+        # 兼容性处理：如果配置中还是max_schema_depth，转换为max_safety_depth
+        max_safety_depth = kg_config.get("max_safety_depth",
+                                         kg_config.get("max_schema_depth", 50))
 
         # 标准数据类型配置
         standard_types = yaml_config.get("standard_types", {})
@@ -197,7 +257,6 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
 
         # 语义解析配置
         semantic_config = yaml_config.get("semantic_resolution", {})
-
         patterns = []
         for pattern_data in semantic_config.get("patterns", []):
             patterns.append(SemanticPattern(
@@ -205,6 +264,18 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 type=pattern_data["type"],
                 template=pattern_data["template"]
             ))
+
+        # Schema生成配置
+        schema_gen_config = yaml_config.get("schema_generation", {})
+        termination_config = schema_gen_config.get("termination_rules", {})
+        cache_config = schema_gen_config.get("cache_config", {})
+        perf_config = schema_gen_config.get("performance", {})
+
+        # Round1 Schema配置
+        round1_schema_config = yaml_config.get("round1_schema", {})
+
+        # 元模型注入配置
+        metamodel_config = yaml_config.get("metamodel_injection", {})
 
         # 构建配置对象
         config = SystemConfig(
@@ -222,9 +293,9 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
             ),
             knowledge_graph=KnowledgeGraphConfig(
                 neo4j_uri=kg_config["neo4j_uri"],
-                neo4j_user=neo4j_user,  # 修正：兼容两种字段名
+                neo4j_user=neo4j_user,
                 neo4j_password=neo4j_password,
-                max_schema_depth=kg_config["max_schema_depth"]
+                max_safety_depth=max_safety_depth  # 使用新字段
             ),
             generation=GenerationConfig(
                 single_batch_threshold=generation_config.get("single_batch_threshold", 5),
@@ -239,6 +310,35 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 fuzzy_match_threshold=semantic_config.get("fuzzy_match_threshold", 0.6),
                 enable_heuristic_resolution=semantic_config.get("enable_heuristic_resolution", True),
                 resolution_cache_size=semantic_config.get("resolution_cache_size", 1000)
+            ),
+            schema_generation=SchemaGenerationConfig(
+                termination_rules=TerminationRulesConfig(
+                    ref_suffixes=termination_config.get("ref_suffixes", ["-REF", "-TREF", "-IREF"]),
+                    standard_prefixes=termination_config.get("standard_prefixes", ["/AUTOSAR/", "/DataTypes/"])
+                ),
+                cache_config=CacheConfig(
+                    enable_request_cache=cache_config.get("enable_request_cache", True),
+                    enable_application_cache=cache_config.get("enable_application_cache", True),
+                    application_cache_ttl=cache_config.get("application_cache_ttl", 3600),
+                    max_cache_size=cache_config.get("max_cache_size", 100)
+                ),
+                performance=SchemaPerformanceConfig(
+                    query_timeout=perf_config.get("query_timeout", 30),
+                    max_properties_per_object=perf_config.get("max_properties_per_object", 1000),
+                    parallel_query=perf_config.get("parallel_query", False)
+                )
+            ),
+            round1_schema=Round1SchemaConfig(
+                system_analysis=round1_schema_config.get("system_analysis", {}),
+                component_plan=round1_schema_config.get("component_plan", {}),
+                interface_plan=round1_schema_config.get("interface_plan", {}),
+                allowed_types=round1_schema_config.get("allowed_types", {})
+            ),
+            metamodel_injection=MetamodelInjectionConfig(
+                round1_depth=metamodel_config.get("round1_depth", 1),
+                round2_depth=metamodel_config.get("round2_depth", 8),
+                include_required_attributes=metamodel_config.get("include_required_attributes", True),
+                include_min_occurs=metamodel_config.get("include_min_occurs", True)
             ),
             standard_types=StandardTypesConfig(
                 standard_types_path=standard_types.get("standard_types_path")
@@ -283,6 +383,10 @@ def _validate_config(config: SystemConfig):
         if not config.knowledge_graph.neo4j_uri.startswith(('bolt://', 'neo4j://', 'neo4j+s://', 'neo4j+ssc://')):
             raise ValueError("Neo4j URI格式不正确")
 
+    # 验证安全深度配置
+    if config.knowledge_graph.max_safety_depth < 10 or config.knowledge_graph.max_safety_depth > 100:
+        raise ValueError("max_safety_depth应该在10-100之间")
+
     # 验证术语库配置
     if not config.terminology.component_types:
         raise ValueError("至少需要配置一个组件类型")
@@ -293,6 +397,13 @@ def _validate_config(config: SystemConfig):
     # 验证输出目录
     if not config.output_dir.is_absolute():
         raise ValueError("输出目录必须是绝对路径")
+
+    # 验证Schema生成配置
+    if config.schema_generation.performance.query_timeout <= 0:
+        raise ValueError("查询超时时间必须大于0")
+
+    if config.schema_generation.cache_config.max_cache_size <= 0:
+        raise ValueError("缓存大小必须大于0")
 
 
 def get_config_info() -> Dict[str, Any]:

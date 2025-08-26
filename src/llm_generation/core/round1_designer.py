@@ -1,16 +1,19 @@
 """core/round1_designer.py - Round 1架构设计器
 
 执行第一轮对话：高层架构设计，确定组件类型、接口类型、连接关系
-移除验证打分逻辑，专注于架构设计生成
+支持文档输入作为需求来源
 """
 import json
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
+import google.generativeai as genai
 from ..config import CONFIG
 from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.terminology_builder import terminology_builder
 from ..utils.serializers import ArchitectureDesign
 from ..utils.exceptions import ArchitectureDesignError
+from ..utils.document_processor import document_processor
+
 
 class Round1Designer:
     """Round 1架构设计器"""
@@ -20,27 +23,85 @@ class Round1Designer:
         self.gemini_client = GeminiClient()
         self.terminology = self._load_terminology_from_config()
         self.architecture_schema = self._build_architecture_schema()
+        self.document_processor = document_processor
+
+    def _load_terminology_from_config(self) -> Dict[str, Any]:
+        """从配置文件加载术语库"""
+        return {
+            "component_types": CONFIG.terminology.component_types,
+            "interface_types": CONFIG.terminology.interface_types,
+            "design_patterns": CONFIG.terminology.design_patterns
+        }
 
     def design_architecture(
             self,
             user_requirements: str,
             design_context: str = "",
             memory_context: str = "",
-            suggested_patterns: List[str] = None
+            suggested_patterns: List[str] = None,
+            document_files: Optional[Union[str, List[str]]] = None
     ) -> Tuple[ArchitectureDesign, Dict[str, Any]]:
-        """执行架构设计"""
+        """执行架构设计，支持文档输入
+
+        Args:
+            user_requirements: 用户需求描述
+            design_context: 设计上下文
+            memory_context: 对话记忆上下文
+            suggested_patterns: 建议的设计模式
+            document_files: 文档文件路径（支持单个或列表）
+
+        Returns:
+            (架构设计对象, 统计信息)
+        """
 
         try:
-            # 准备设计上下文
-            context = self._prepare_design_context(design_context, memory_context, suggested_patterns)
+            # 处理文档上传
+            uploaded_files = None
+            document_content = ""
+
+            if document_files:
+                if CONFIG.debug_mode:
+                    print(f"[DEBUG] 处理上传的文档...")
+
+                # 确保是列表
+                if isinstance(document_files, str):
+                    document_files = [document_files]
+
+                # 上传文档
+                uploaded_files = []
+                for file_path in document_files:
+                    try:
+                        file_obj = self.document_processor.upload_file(file_path)
+                        if file_obj:
+                            uploaded_files.append(file_obj)
+
+                            # 提取文档内容摘要
+                            content = self.document_processor.extract_document_content(file_obj)
+                            document_content += f"\n\n文档 {file_obj.display_name} 内容摘要:\n{content}"
+
+                    except Exception as e:
+                        if CONFIG.debug_mode:
+                            print(f"[WARNING] 上传文档失败 {file_path}: {e}")
+                        continue
+
+                if CONFIG.debug_mode:
+                    print(f"[DEBUG] 成功上传 {len(uploaded_files)} 个文档")
+
+            # 准备设计上下文，包含文档内容
+            context = self._prepare_design_context(
+                design_context,
+                memory_context,
+                suggested_patterns,
+                document_content
+            )
 
             # 获取术语库信息 - 修正访问方式
             component_types = [
                 {
                     "name": ct.name,
                     "description": ct.description,
-                    "scenarios": ct.scenarios,  # 修正：直接访问scenarios属性
-                    "complexity": ct.complexity  # 修正：直接访问complexity属性
+                    "scenarios": ct.scenarios,
+                    "complexity": ct.complexity
                 }
                 for ct in self.terminology["component_types"]
             ]
@@ -50,7 +111,7 @@ class Round1Designer:
                     "name": it.name,
                     "description": it.description,
                     "communication_mode": it.communication_mode,
-                    "scenarios": it.scenarios  # 修正：直接访问scenarios属性
+                    "scenarios": it.scenarios
                 }
                 for it in self.terminology["interface_types"]
             ]
@@ -65,13 +126,22 @@ class Round1Designer:
 
             if CONFIG.debug_mode:
                 print(f"[DEBUG] Round1 提示词长度: {len(prompt)}")
+                if uploaded_files:
+                    print(f"[DEBUG] 包含 {len(uploaded_files)} 个文档文件")
 
-            # 调用LLM生成架构
+            # 调用LLM生成架构，包含文档
             response_data, input_tokens, output_tokens, total_tokens = \
                 self.gemini_client.generate_with_schema(
                     prompt=prompt,
-                    schema=self.architecture_schema
+                    schema=self.architecture_schema,
+                    document_files=uploaded_files
                 )
+
+            # 验证响应格式
+            from ..utils.validators import validate_architecture_design
+            is_valid, errors = validate_architecture_design(response_data)
+            if not is_valid and CONFIG.debug_mode:
+                print(f"[DEBUG] 架构设计验证警告: {errors[:3]}")
 
             # 解析响应并创建设计对象
             design = self._parse_response_to_design(response_data)
@@ -82,27 +152,78 @@ class Round1Designer:
                 "output_tokens": output_tokens,
                 "total_tokens": total_tokens,
                 "component_count": len(design.component_plan),
-                "interface_count": len(design.interface_plan)
+                "interface_count": len(design.interface_plan),
+                "validation_passed": is_valid,
+                "validation_errors": len(errors) if not is_valid else 0,
+                "documents_processed": len(uploaded_files) if uploaded_files else 0
             }
 
             if CONFIG.debug_mode:
-                print(f"[DEBUG] Round1完成: {len(design.component_plan)}个组件, {len(design.interface_plan)}个接口")
+                print(f"[DEBUG] Round1完成: {len(design.component_plan)}个组件, "
+                      f"{len(design.interface_plan)}个接口, 验证{'通过' if is_valid else '有警告'}")
 
             return design, stats
 
         except Exception as e:
             raise ArchitectureDesignError(f"架构设计失败: {str(e)}")
 
-    def _load_terminology_from_config(self) -> Dict[str, Any]:
-        """从配置文件加载术语库"""
-        return {
-            "component_types": CONFIG.terminology.component_types,
-            "interface_types": CONFIG.terminology.interface_types,
-            "design_patterns": CONFIG.terminology.design_patterns
-        }
+    def _build_terminology_context(self) -> Dict[str, str]:
+        """构建术语库上下文字符串"""
 
-    def analyze_requirements(self, user_requirements: str) -> Dict[str, Any]:
-        """LLM驱动的需求分析，替换硬编码逻辑"""
+        context = {}
+
+        # 组件类型上下文
+        comp_context = []
+        for comp_type in self.terminology["component_types"]:
+            comp_context.append(f"""
+    - {comp_type.name}: {comp_type.description}
+      适用场景: {', '.join(comp_type.scenarios)}
+      复杂度: {comp_type.complexity}""")
+        context["component_types"] = "\n".join(comp_context)
+
+        # 接口类型上下文
+        intf_context = []
+        for intf_type in self.terminology["interface_types"]:
+            intf_context.append(f"""
+    - {intf_type.name}: {intf_type.description}
+      通信模式: {intf_type.communication_mode}
+      适用场景: {', '.join(intf_type.scenarios)}""")
+        context["interface_types"] = "\n".join(intf_context)
+
+        # 设计模式上下文
+        pattern_context = []
+        for pattern in self.terminology["design_patterns"]:
+            pattern_context.append(f"""
+    - {pattern.name}: 
+      组件: {', '.join(pattern.components)}
+      接口: {', '.join(pattern.interfaces)}
+      适用场景: {', '.join(pattern.scenarios)}""")
+        context["design_patterns"] = "\n".join(pattern_context)
+
+        return context
+
+    def analyze_requirements(
+        self,
+        user_requirements: str,
+        document_files: Optional[Union[str, List[str]]] = None
+    ) -> Dict[str, Any]:
+        """LLM驱动的需求分析，支持文档输入"""
+
+        # 处理文档上传
+        uploaded_files = None
+        if document_files:
+            if isinstance(document_files, str):
+                document_files = [document_files]
+
+            uploaded_files = []
+            for file_path in document_files:
+                try:
+                    file_obj = self.document_processor.upload_file(file_path)
+                    if file_obj:
+                        uploaded_files.append(file_obj)
+                except Exception as e:
+                    if CONFIG.debug_mode:
+                        print(f"[WARNING] 上传文档失败 {file_path}: {e}")
 
         # 构建术语库上下文
         terminology_context = self._build_terminology_context()
@@ -122,7 +243,7 @@ class Round1Designer:
     ## 常见设计模式
     {terminology_context['design_patterns']}
 
-    请根据需求分析，以JSON格式返回：
+    请根据需求分析（如有文档请优先参考文档内容），以JSON格式返回：
     {{
         "complexity_estimate": "Simple|Medium|Complex",
         "suggested_component_types": ["组件类型1", "组件类型2"],
@@ -130,7 +251,8 @@ class Round1Designer:
         "suggested_patterns": ["模式1", "模式2"],
         "functional_analysis": "功能分析说明",
         "architectural_considerations": "架构考虑",
-        "key_requirements": ["需求1", "需求2"]
+        "key_requirements": ["需求1", "需求2"],
+        "document_insights": "从文档中提取的关键信息（如有）"
     }}
     """
 
@@ -160,14 +282,16 @@ class Round1Designer:
                     "key_requirements": {
                         "type": "array",
                         "items": {"type": "string"}
-                    }
+                    },
+                    "document_insights": {"type": "string"}
                 },
                 "required": ["complexity_estimate", "suggested_component_types", "suggested_interface_types"]
             }
 
             response_data, _, _, _ = self.gemini_client.generate_with_schema(
                 prompt=analysis_prompt,
-                schema=analysis_schema
+                schema=analysis_schema,
+                document_files=uploaded_files
             )
 
             return response_data
@@ -184,43 +308,10 @@ class Round1Designer:
                 "suggested_patterns": [],
                 "functional_analysis": "需求分析失败，使用默认配置",
                 "architectural_considerations": "基于通用AUTOSAR架构",
-                "key_requirements": [user_requirements]
+                "key_requirements": [user_requirements],
+                "document_insights": "无文档分析结果"
             }
 
-    def _build_terminology_context(self) -> Dict[str, str]:
-        """构建术语库上下文字符串"""
-
-        context = {}
-
-        # 组件类型上下文
-        comp_context = []
-        for comp_type in self.terminology["component_types"]:
-            comp_context.append(f"""
-    - {comp_type['name']}: {comp_type['description']}
-      适用场景: {', '.join(comp_type['scenarios'])}
-      复杂度: {comp_type['complexity']}""")
-        context["component_types"] = "\n".join(comp_context)
-
-        # 接口类型上下文
-        intf_context = []
-        for intf_type in self.terminology["interface_types"]:
-            intf_context.append(f"""
-    - {intf_type['name']}: {intf_type['description']}
-      通信模式: {intf_type['communication_mode']}
-      适用场景: {', '.join(intf_type['scenarios'])}""")
-        context["interface_types"] = "\n".join(intf_context)
-
-        # 设计模式上下文
-        pattern_context = []
-        for pattern in self.terminology["design_patterns"]:
-            pattern_context.append(f"""
-    - {pattern['name']}: 
-      组件: {', '.join(pattern['components'])}
-      接口: {', '.join(pattern['interfaces'])}
-      适用场景: {', '.join(pattern['scenarios'])}""")
-        context["design_patterns"] = "\n".join(pattern_context)
-
-        return context
 
     def _build_architecture_schema(self) -> Dict[str, Any]:
         """从配置构建架构设计的JSON Schema"""
@@ -247,6 +338,10 @@ class Round1Designer:
                 "scalability_considerations": {
                     "type": "string",
                     "description": "可扩展性考虑"
+                },
+                "document_based_requirements": {
+                    "type": "string",
+                    "description": "基于文档的需求分析"
                 }
             },
             "required": round1_config.system_analysis.required
@@ -373,14 +468,14 @@ class Round1Designer:
                          "connection_topology", "architecture_rationale"]
         }
 
-
     def _prepare_design_context(
         self,
         design_context: str,
         memory_context: str,
-        suggested_patterns: List[str] = None
+        suggested_patterns: List[str] = None,
+        document_content: str = ""
     ) -> str:
-        """准备设计上下文"""
+        """准备设计上下文，包含文档内容"""
         context_parts = []
 
         if design_context:
@@ -392,6 +487,9 @@ class Round1Designer:
         if suggested_patterns:
             patterns_text = "\n".join([f"- {pattern}" for pattern in suggested_patterns])
             context_parts.append(f"建议的设计模式:\n{patterns_text}")
+
+        if document_content:
+            context_parts.append(f"文档分析结果:\n{document_content}")
 
         # 添加AUTOSAR设计原则
         context_parts.append("""
