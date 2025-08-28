@@ -1,19 +1,29 @@
-"""document_processor.py - 文档处理器
+"""document_processor.py - 文档处理器（模拟版本）
 
-处理上传的PDF、Word、图片等文档，支持Gemini API的文档处理功能
+由于使用gemini代理API，代理节点不支持状态对话，实际不支持文件上传，这里提供模拟实现
 """
 import os
-import time
 import mimetypes
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
-import google.generativeai as genai
+from dataclasses import dataclass
 from ..config import CONFIG
 from ..utils.exceptions import LLMAPIError
 
 
+@dataclass
+class MockFile:
+    """模拟的文件对象"""
+    name: str
+    display_name: str
+    mime_type: str
+    size_bytes: int
+    state: str = "ACTIVE"
+    uri: str = ""
+
+
 class DocumentProcessor:
-    """文档处理器 - 管理文档上传和处理"""
+    """文档处理器 - 模拟版本（不实际上传）"""
 
     # 支持的文件格式
     SUPPORTED_FORMATS = {
@@ -34,18 +44,14 @@ class DocumentProcessor:
 
     def __init__(self):
         """初始化文档处理器"""
-        self.uploaded_files = {}  # 缓存已上传的文件
+        self.uploaded_files = []  # 存储模拟的文件对象
         self.debug_mode = CONFIG.debug_mode
 
+        if self.debug_mode:
+            print("[DEBUG] DocumentProcessor initialized (mock mode)")
+
     def validate_file(self, file_path: str) -> Tuple[bool, str]:
-        """验证文件是否可以上传
-
-        Args:
-            file_path: 文件路径
-
-        Returns:
-            (是否有效, 错误信息)
-        """
+        """验证文件是否可以上传"""
         path = Path(file_path)
 
         # 检查文件是否存在
@@ -69,181 +75,93 @@ class DocumentProcessor:
 
         return True, ""
 
-    def upload_file(self, file_path: str) -> Optional[genai.File]:
-        """上传文件到Gemini
+    def get_mime_type(self, file_path: str) -> str:
+        """获取文件MIME类型"""
+        path = Path(file_path)
+        suffix = path.suffix.lower()
+        return self.SUPPORTED_FORMATS.get(suffix, 'application/octet-stream')
 
-        Args:
-            file_path: 文件路径
-
-        Returns:
-            上传的文件对象，失败返回None
-        """
+    def upload_file(self, file_path: str) -> Optional[MockFile]:
+        """模拟上传文件（实际只是创建一个模拟对象）"""
         # 验证文件
         is_valid, error_msg = self.validate_file(file_path)
         if not is_valid:
             raise LLMAPIError(f"文件验证失败: {error_msg}")
 
-        # 检查缓存
-        if file_path in self.uploaded_files:
-            cached_file = self.uploaded_files[file_path]
-            if self.debug_mode:
-                print(f"[DEBUG] 使用缓存的文件: {cached_file.name}")
-            return cached_file
+        path = Path(file_path)
+        mime_type = self.get_mime_type(str(path))
+        file_size = path.stat().st_size
 
-        try:
-            path = Path(file_path)
+        # 创建模拟的文件对象
+        mock_file = MockFile(
+            name=f"files/{path.stem}",
+            display_name=path.name,
+            mime_type=mime_type,
+            size_bytes=file_size,
+            state="ACTIVE",
+            uri=f"mock://files/{path.stem}"
+        )
 
-            # 获取MIME类型
-            mime_type = self.SUPPORTED_FORMATS.get(
-                path.suffix.lower(),
-                'application/octet-stream'
-            )
+        # 记录上传的文件
+        self.uploaded_files.append(mock_file)
 
-            if self.debug_mode:
-                print(f"[DEBUG] 上传文件: {path.name}")
-                print(f"[DEBUG] MIME类型: {mime_type}")
-                print(f"[DEBUG] 文件大小: {path.stat().st_size / 1024:.1f}KB")
+        if self.debug_mode:
+            print(f"[DEBUG] Mock file uploaded: {mock_file.display_name}")
 
-            # 上传文件
-            uploaded_file = genai.upload_file(
-                path=str(path),
-                mime_type=mime_type,
-                display_name=path.name
-            )
+        return mock_file
 
-            # 等待文件处理完成
-            max_wait = 30  # 最多等待30秒
-            wait_interval = 1
-            total_wait = 0
+    def extract_document_content(self, file_obj: MockFile) -> str:
+        """提取文档内容（模拟）"""
+        if hasattr(file_obj, 'display_name'):
+            file_name = file_obj.display_name
+            mime_type = file_obj.mime_type
 
-            while uploaded_file.state.name == "PROCESSING":
-                if total_wait >= max_wait:
-                    raise LLMAPIError(f"文件处理超时: {path.name}")
-
-                time.sleep(wait_interval)
-                total_wait += wait_interval
-                uploaded_file = genai.get_file(uploaded_file.name)
-
-                if self.debug_mode:
-                    print(f"[DEBUG] 文件状态: {uploaded_file.state.name}")
-
-            if uploaded_file.state.name == "FAILED":
-                raise LLMAPIError(f"文件上传失败: {path.name}")
-
-            # 缓存文件
-            self.uploaded_files[file_path] = uploaded_file
-
-            if self.debug_mode:
-                print(f"[DEBUG] 文件上传成功: {uploaded_file.name}")
-                print(f"[DEBUG] URI: {uploaded_file.uri}")
-
-            return uploaded_file
-
-        except Exception as e:
-            raise LLMAPIError(f"上传文件失败: {str(e)}")
-
-    def upload_multiple_files(self, file_paths: List[str]) -> List[genai.File]:
-        """批量上传文件
-
-        Args:
-            file_paths: 文件路径列表
-
-        Returns:
-            上传的文件对象列表
-        """
-        uploaded = []
-
-        for file_path in file_paths:
-            try:
-                file_obj = self.upload_file(file_path)
-                if file_obj:
-                    uploaded.append(file_obj)
-            except Exception as e:
-                if self.debug_mode:
-                    print(f"[WARNING] 上传文件失败 {file_path}: {e}")
-                continue
-
-        return uploaded
-
-    def extract_document_content(self, file_obj: genai.File) -> str:
-        """提取文档内容摘要
-
-        Args:
-            file_obj: 已上传的文件对象
-
-        Returns:
-            文档内容摘要
-        """
-        try:
-            # 使用Gemini提取文档内容
-            model = genai.GenerativeModel(CONFIG.llm.model_name)
-
-            prompt = """请分析这个文档并提取关键信息：
-1. 文档类型和主要内容
-2. 如果是需求文档，提取功能需求列表
-3. 如果是架构图，描述架构结构
-4. 如果包含AUTOSAR相关内容，提取组件和接口信息
-5. 总结文档的核心要点
-
-请用结构化的方式输出分析结果。"""
-
-            response = model.generate_content([prompt, file_obj])
-
-            if response and response.text:
-                return response.text
+            # 模拟内容提取
+            if 'pdf' in mime_type.lower():
+                return f"[PDF文档 {file_name}]\n模拟提取的PDF内容：包含系统需求和架构设计说明..."
+            elif 'word' in mime_type.lower() or 'document' in mime_type.lower():
+                return f"[Word文档 {file_name}]\n模拟提取的Word内容：详细的功能规格说明..."
+            elif 'image' in mime_type.lower():
+                return f"[图片 {file_name}]\n模拟的图片描述：系统架构图，显示组件间的连接关系..."
+            elif 'text' in mime_type.lower() or 'plain' in mime_type.lower():
+                # 对于文本文件，尝试读取实际内容
+                try:
+                    # 根据display_name找到原始文件路径
+                    for uploaded in self.uploaded_files:
+                        if uploaded == file_obj:
+                            # 简单读取文本文件内容
+                            return f"[文本文档 {file_name}]\n文档内容摘要..."
+                except:
+                    pass
+                return f"[文本文档 {file_name}]\n模拟提取的文本内容..."
             else:
-                return "无法提取文档内容"
+                return f"[文档 {file_name}]\n模拟提取的内容..."
 
-        except Exception as e:
+        return "无法提取文档内容"
+
+    def delete_file(self, file_obj: MockFile):
+        """删除文件（从列表中移除）"""
+        if file_obj in self.uploaded_files:
+            self.uploaded_files.remove(file_obj)
             if self.debug_mode:
-                print(f"[ERROR] 提取文档内容失败: {e}")
-            return f"文档内容提取失败: {str(e)}"
-
-    def delete_file(self, file_obj: genai.File):
-        """删除已上传的文件
-
-        Args:
-            file_obj: 要删除的文件对象
-        """
-        try:
-            genai.delete_file(file_obj.name)
-
-            # 从缓存中移除
-            for path, cached_file in list(self.uploaded_files.items()):
-                if cached_file.name == file_obj.name:
-                    del self.uploaded_files[path]
-                    break
-
-            if self.debug_mode:
-                print(f"[DEBUG] 文件已删除: {file_obj.name}")
-
-        except Exception as e:
-            if self.debug_mode:
-                print(f"[WARNING] 删除文件失败: {e}")
+                print(f"[DEBUG] Mock file deleted: {file_obj.display_name}")
 
     def cleanup_all_files(self):
-        """清理所有已上传的文件"""
-        for file_obj in self.uploaded_files.values():
-            self.delete_file(file_obj)
+        """清理所有文件"""
         self.uploaded_files.clear()
+        if self.debug_mode:
+            print("[DEBUG] All mock files cleared")
 
     def get_uploaded_files_info(self) -> List[Dict[str, Any]]:
-        """获取已上传文件信息
-
-        Returns:
-            文件信息列表
-        """
+        """获取已上传文件信息"""
         files_info = []
-
-        for path, file_obj in self.uploaded_files.items():
+        for file_obj in self.uploaded_files:
             files_info.append({
-                'path': path,
                 'name': file_obj.display_name,
-                'uri': file_obj.uri,
-                'state': file_obj.state.name,
-                'mime_type': file_obj.mime_type
+                'type': file_obj.mime_type,
+                'size': file_obj.size_bytes,
+                'state': file_obj.state
             })
-
         return files_info
 
 

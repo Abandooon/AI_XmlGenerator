@@ -64,50 +64,90 @@ semantic_resolution:
   enable_heuristic_resolution: false               # 关闭启发式解析
   resolution_cache_size: 100                       # 减小缓存
 
-# Round1架构设计Schema配置
+# Round1 架构设计Schema配置 - 基于round1.json元模型
 round1_schema:
-  system_analysis:
-    required:
-      - functional_decomposition
-      - data_flow_analysis
-    optional:
-      - timing_requirements
-      - scalability_considerations
-
-  component_plan:
-    required_fields:
-      - component_id
-      - name
-      - type
-      - purpose
-    optional_fields:
-      - estimated_complexity
-      - port_estimates
-      - behavioral_characteristics
-      - direct_references                          # 新增：直接引用列表
-
+  # 基于round1.json中的SW-COMPONENT-TYPE定义
+  component_types:
+    # 从round1.json提取的具体组件类型
     allowed_types:
-      - APPLICATION-SW-COMPONENT-TYPE
-      - SENSOR-ACTUATOR-SW-COMPONENT-TYPE
-      - COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE
-      - ECU-ABSTRACTION-SW-COMPONENT-TYPE
-      - NV-BLOCK-SW-COMPONENT-TYPE
-      - SERVICE-PROXY-SW-COMPONENT-TYPE
-      - SERVICE-SW-COMPONENT-TYPE
-      - COMPOSITION-SW-COMPONENT-TYPE
-      - PARAMETER-SW-COMPONENT-TYPE
+      - "APPLICATION-SW-COMPONENT-TYPE"
+      - "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE"
+      - "ECU-ABSTRACTION-SW-COMPONENT-TYPE"
+      - "NV-BLOCK-SW-COMPONENT-TYPE"
+      - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+      - "SERVICE-PROXY-SW-COMPONENT-TYPE"
+      - "SERVICE-SW-COMPONENT-TYPE"
+      - "COMPOSITION-SW-COMPONENT-TYPE"
+      - "PARAMETER-SW-COMPONENT-TYPE"
 
-  interface_plan:
-    required_fields:
-      - interface_id
-      - name
-      - type
-      - communication_pattern
-    optional_fields:
-      - data_category
-      - connected_components
-      - performance_requirements
-      - direct_paths                               # 新增：直接路径定义
+    # 基于round1.json中SW-COMPONENT-TYPE的必需属性(min_occurs=1)
+    required_attributes:
+      - "SHORT-NAME"  # min_occurs: 1, max_occurs: 1
+
+    # 基于round1.json中SW-COMPONENT-TYPE的可选属性(min_occurs=0)
+    optional_attributes:
+      - "PORTS"                    # min_occurs: 0, max_occurs: -1
+      - "SW-COMPONENT-DOCUMENTATION" # min_occurs: 0, max_occurs: -1
+      - "CONSISTENCY-NEEDS"        # min_occurs: 0, max_occurs: -1
+      - "PORT-GROUP"               # min_occurs: 0, max_occurs: -1
+      - "UNIT-GROUP-REF"           # min_occurs: 0, max_occurs: -1
+      - "DESC"                     # min_occurs: 0, max_occurs: 1
+      - "CATEGORY"                 # min_occurs: 0, max_occurs: 1
+      - "ADMIN-DATA"               # min_occurs: 0, max_occurs: 1
+      - "ANNOTATION"               # min_occurs: 0, max_occurs: -1
+
+  # 基于round1.json中的PORT-INTERFACE定义
+  interface_types:
+    # 从round1.json提取的具体接口类型
+    allowed_types:
+      - "CLIENT-SERVER-INTERFACE"
+      - "NV-DATA-INTERFACE"
+      - "PARAMETER-INTERFACE"
+      - "SENDER-RECEIVER-INTERFACE"
+      - "MODE-SWITCH-INTERFACE"
+      - "TRIGGER-INTERFACE"
+
+    # 基于round1.json中PORT-INTERFACE的必需属性
+    required_attributes:
+      - "SHORT-NAME"  # min_occurs: 1, max_occurs: 1
+      - "IS-SERVICE"  # min_occurs: 1, max_occurs: 1
+
+    # 基于round1.json中PORT-INTERFACE的可选属性
+    optional_attributes:
+      - "SERVICE-KIND"      # min_occurs: 0, max_occurs: 1
+      - "DESC"              # min_occurs: 0, max_occurs: 1
+      - "CATEGORY"          # min_occurs: 0, max_occurs: 1
+      - "ADMIN-DATA"        # min_occurs: 0, max_occurs: 1
+      - "ANNOTATION"        # min_occurs: 0, max_occurs: -1
+
+  # 基于round1.json中的MODE-DECLARATION-GROUP定义
+  mode_declaration_group:
+    required_attributes:
+      - "SHORT-NAME"        # min_occurs: 1, max_occurs: 1
+      - "INITIAL-MODE-REF"  # min_occurs: 1, max_occurs: 1
+      - "MODE-DECLARATION"  # min_occurs: 1, max_occurs: -1
+
+    optional_attributes:
+      - "MODE-TRANSITION"              # min_occurs: 0, max_occurs: -1
+      - "MODE-MANAGER-ERROR-BEHAVIOR"  # min_occurs: 0, max_occurs: 1
+      - "MODE-USER-ERROR-BEHAVIOR"     # min_occurs: 0, max_occurs: 1
+      - "ON-TRANSITION-VALUE"          # min_occurs: 0, max_occurs: 1
+
+  # Round1输出格式定义 - 映射到round1.json的元素
+  output_schema:
+    system_analysis:
+      required_fields: []  # Round1不直接对应round1.json，这是架构分析
+      optional_fields: ["functional_decomposition", "data_flow_analysis"]
+
+    component_plan:
+      # 每个组件必须指定类型（基于round1.json的组件类型）
+      required_fields: ["name", "type"]  # type必须是allowed_types之一
+      optional_fields: ["purpose", "ports_needed", "behaviors_needed"]
+
+    interface_plan:
+      # 每个接口必须指定类型（基于round1.json的接口类型）
+      required_fields: ["name", "type"]  # type必须是allowed_types之一
+      optional_fields: ["is_service", "connected_components"]
 
 # 元模型注入配置（大幅增强）
 metamodel_injection:

@@ -17,6 +17,20 @@ from ..utils.serializers import ArchitectureDesign
 from ..utils.exceptions import ArchitectureDesignError
 from ..utils.document_processor import document_processor
 
+# 条件导入文档处理器 - 移到try块中避免导入错误
+document_processor = None
+if CONFIG.llm.enable_file_upload:
+    try:
+        from ..utils.document_processor import document_processor
+        if CONFIG.debug_mode:
+            print("[DEBUG] Document processor loaded successfully")
+    except ImportError as e:
+        if CONFIG.debug_mode:
+            print(f"[WARNING] Document processor import failed: {e}")
+        document_processor = None
+else:
+    if CONFIG.debug_mode:
+        print("[DEBUG] Document upload disabled in config")
 
 class Round1Designer:
     """Round 1架构设计器"""
@@ -26,10 +40,19 @@ class Round1Designer:
         self.gemini_client = GeminiClient()
         self.terminology = self._load_terminology_from_config()
         self.architecture_schema = self._build_architecture_schema()
+
+        # 只在启用文件上传时初始化文档处理器
         self.document_processor = document_processor
+        self.file_upload_enabled = CONFIG.llm.enable_file_upload and document_processor is not None
 
         # 注册Round1函数
         self._register_round1_functions()
+
+        if CONFIG.debug_mode:
+            if self.file_upload_enabled:
+                print("[DEBUG] 文档上传功能已启用")
+            else:
+                print("[DEBUG] 运行在纯对话模式（文档上传已禁用）")
 
     def _register_round1_functions(self):
         """注册Round1阶段的函数"""
@@ -320,26 +343,14 @@ class Round1Designer:
             document_files: Optional[Union[str, List[str]]] = None,
             use_functions: bool = True
     ) -> Tuple[ArchitectureDesign, Dict[str, Any]]:
-        """执行架构设计，支持文档输入和函数调用
-
-        Args:
-            user_requirements: 用户需求描述
-            design_context: 设计上下文
-            memory_context: 对话记忆上下文
-            suggested_patterns: 建议的设计模式
-            document_files: 文档文件路径（支持单个或列表）
-            use_functions: 是否启用函数调用
-
-        Returns:
-            (架构设计对象, 统计信息)
-        """
+        """执行架构设计"""
 
         try:
-            # 处理文档上传
+            # 处理文档上传（只在启用且有文档时）
             uploaded_files = None
             document_content = ""
 
-            if document_files:
+            if document_files and self.file_upload_enabled:
                 if CONFIG.debug_mode:
                     print(f"[DEBUG] 处理上传的文档...")
 
@@ -354,11 +365,9 @@ class Round1Designer:
                         file_obj = self.document_processor.upload_file(file_path)
                         if file_obj:
                             uploaded_files.append(file_obj)
-
                             # 提取文档内容摘要
                             content = self.document_processor.extract_document_content(file_obj)
                             document_content += f"\n\n文档 {file_obj.display_name} 内容摘要:\n{content}"
-
                     except Exception as e:
                         if CONFIG.debug_mode:
                             print(f"[WARNING] 上传文档失败 {file_path}: {e}")
@@ -366,6 +375,10 @@ class Round1Designer:
 
                 if CONFIG.debug_mode:
                     print(f"[DEBUG] 成功上传 {len(uploaded_files)} 个文档")
+
+            elif document_files and not self.file_upload_enabled:
+                if CONFIG.debug_mode:
+                    print("[WARNING] 文档上传功能未启用，忽略文档输入")
 
             # 准备设计上下文，包含文档内容
             context = self._prepare_design_context(
@@ -497,7 +510,9 @@ class Round1Designer:
                     "description": "基于文档的需求分析"
                 }
             },
-            "required": round1_config.system_analysis.required
+            # 使用正确的访问路径
+            "required": round1_config.output_schema.system_analysis.required_fields if round1_config.output_schema.system_analysis.required_fields else [
+                "functional_decomposition", "data_flow_analysis"]
         }
 
         # 构建component_plan的schema
@@ -516,7 +531,18 @@ class Round1Designer:
                     },
                     "type": {
                         "type": "string",
-                        "enum": round1_config.component_plan.allowed_types,
+                        # 使用组件类型配置中的allowed_types
+                        "enum": round1_config.component_types.allowed_types if round1_config.component_types.allowed_types else [
+                            "APPLICATION-SW-COMPONENT-TYPE",
+                            "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+                            "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+                            "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+                            "NV-BLOCK-SW-COMPONENT-TYPE",
+                            "SERVICE-PROXY-SW-COMPONENT-TYPE",
+                            "SERVICE-SW-COMPONENT-TYPE",
+                            "COMPOSITION-SW-COMPONENT-TYPE",
+                            "PARAMETER-SW-COMPONENT-TYPE"
+                        ],
                         "description": "AUTOSAR组件类型"
                     },
                     "purpose": {
@@ -562,7 +588,10 @@ class Round1Designer:
                         }
                     }
                 },
-                "required": round1_config.component_plan.required_fields
+                # 使用输出schema配置中的required_fields
+                "required": round1_config.output_schema.component_plan.required_fields if round1_config.output_schema.component_plan.required_fields else [
+                    "component_id", "name", "type", "purpose"
+                ]
             }
         }
 
@@ -576,7 +605,15 @@ class Round1Designer:
                     "name": {"type": "string"},
                     "type": {
                         "type": "string",
-                        "enum": round1_config.interface_plan.allowed_types
+                        # 使用接口类型配置中的allowed_types
+                        "enum": round1_config.interface_types.allowed_types if round1_config.interface_types.allowed_types else [
+                            "SENDER-RECEIVER-INTERFACE",
+                            "CLIENT-SERVER-INTERFACE",
+                            "MODE-SWITCH-INTERFACE",
+                            "NV-DATA-INTERFACE",
+                            "PARAMETER-INTERFACE",
+                            "TRIGGER-INTERFACE"
+                        ]
                     },
                     "communication_pattern": {"type": "string"},
                     "data_category": {"type": "string"},
@@ -586,7 +623,10 @@ class Round1Designer:
                     },
                     "performance_requirements": {"type": "string"}
                 },
-                "required": round1_config.interface_plan.required_fields
+                # 使用输出schema配置中的required_fields
+                "required": round1_config.output_schema.interface_plan.required_fields if round1_config.output_schema.interface_plan.required_fields else [
+                    "interface_id", "name", "type", "communication_pattern"
+                ]
             }
         }
 

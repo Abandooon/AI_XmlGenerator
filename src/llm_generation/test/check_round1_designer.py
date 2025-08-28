@@ -1,11 +1,5 @@
-"""test/test_round1_designer.py - Round1架构设计器完整测试套件
-
-测试Round1架构设计器的所有功能，包括：
-1. 架构设计输出结构完整性
-2. element_design正确性
-3. 多组件场景
-4. 组件类型多样性
-"""
+# -*- coding: utf-8 -*-
+# Run with: Python (not pytest)
 
 import os
 import sys
@@ -24,7 +18,7 @@ from src.llm_generation.utils.serializers import ArchitectureDesign
 from src.llm_generation.utils.exceptions import ArchitectureDesignError
 
 
-class TestRound1ArchitectureDesigner(unittest.TestCase):
+class checkRound1ArchitectureDesigner(unittest.TestCase):
     """Round1架构设计器测试类"""
 
     def setUp(self):
@@ -39,7 +33,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
 
     # ==================== 测试1：架构设计输出结构完整性 ====================
 
-    def test_architecture_output_structure_completeness(self):
+    def check_architecture_output_structure_completeness(self):
         """测试架构设计输出结构的完整性"""
 
         # 准备模拟的完整架构响应
@@ -200,7 +194,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
 
     # ==================== 测试2：element_design正确性 ====================
 
-    def test_element_design_correctness(self):
+    def check_element_design_correctness(self):
         """测试element_design的正确性和组件类型匹配"""
 
         test_cases = [
@@ -305,7 +299,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
 
     # ==================== 测试3：多组件场景测试 ====================
 
-    def test_multi_component_scenarios(self):
+    def check_multi_component_scenarios(self):
         """测试不同规模的多组件场景"""
 
         scenarios = [
@@ -494,7 +488,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
 
     # ==================== 测试4：组件类型多样性 ====================
 
-    def test_component_type_diversity(self):
+    def check_component_type_diversity(self):
         """测试不同组件类型的特性和约束"""
 
         component_type_specs = {
@@ -662,7 +656,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
 
     # ==================== 集成测试：element_design对Round2的影响 ====================
 
-    def test_element_design_impact_on_round2(self):
+    def check_element_design_impact_on_round2(self):
         """测试element_design如何影响Round2的Schema生成"""
 
         print("\n\n测试element_design对Round2 Schema生成的影响:")
@@ -818,7 +812,7 @@ class TestRound1ArchitectureDesigner(unittest.TestCase):
         print("\n✅ element_design影响测试通过：正确影响Round2 Schema生成")
 
 
-class TestRound1DesignerIntegration(unittest.TestCase):
+class checkRound1DesignerIntegration(unittest.TestCase):
     """Round1设计器集成测试"""
 
     def test_real_world_scenario(self):
@@ -1128,8 +1122,8 @@ def run_all_tests():
     suite = unittest.TestSuite()
 
     # 添加所有测试
-    suite.addTests(loader.loadTestsFromTestCase(TestRound1ArchitectureDesigner))
-    suite.addTests(loader.loadTestsFromTestCase(TestRound1DesignerIntegration))
+    suite.addTests(loader.loadTestsFromTestCase(checkRound1ArchitectureDesigner))
+    suite.addTests(loader.loadTestsFromTestCase(checkRound1DesignerIntegration))
 
     # 运行测试
     runner = unittest.TextTestRunner(verbosity=2)

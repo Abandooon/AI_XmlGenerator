@@ -45,18 +45,33 @@ class LLMRAGGenerator:
     def __init__(self):
         """初始化生成器"""
         self.conversation_manager = conversation_manager
-        self.document_processor = document_processor
+
+        # 条件初始化文档处理器
+        if CONFIG.llm.enable_file_upload:
+            try:
+                from src.llm_generation.utils.document_processor import document_processor
+                self.document_processor = document_processor
+                self.file_upload_enabled = True
+            except ImportError:
+                self.document_processor = None
+                self.file_upload_enabled = False
+                print("⚠️ 文档处理器不可用，文档上传功能已禁用")
+        else:
+            self.document_processor = None
+            self.file_upload_enabled = False
+
         self.current_session_id = None
         self.demo_mode = False
-        self.uploaded_documents = []  # 当前会话上传的文档
+        self.uploaded_documents = []
 
+        # 显示功能状态
         print("🚀 LLM RAG AUTOSAR组件生成器")
         print("=" * 50)
         print(f"📊 配置信息:")
         print(f"  - LLM模型: {CONFIG.llm.model_name}")
         print(f"  - 调试模式: {'开启' if CONFIG.debug_mode else '关闭'}")
+        print(f"  - 文档上传: {'启用' if self.file_upload_enabled else '禁用（纯对话模式）'}")
         print(f"  - 输出目录: {CONFIG.output_dir}")
-        print(f"  - KG连接: {'Neo4j' if CONFIG.knowledge_graph.neo4j_uri else '模拟数据'}")
         print("=" * 50)
 
     def run_interactive_session(self):
@@ -126,6 +141,10 @@ class LLMRAGGenerator:
 
     def _handle_document_upload(self):
         """处理文档上传"""
+        if not self.file_upload_enabled:
+            print("❌ 文档上传功能未启用")
+            print("提示: 请在配置文件中设置 enable_file_upload: true 来启用此功能")
+            return
 
         print("\n📁 文档上传")
         print("=" * 30)

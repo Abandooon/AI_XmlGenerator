@@ -15,6 +15,54 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent.parent  # 项目根目录
 CONFIG_DIR = ROOT_DIR / "config"   # 配置文件目录
 
+# 在 config.py 中添加/修改以下数据类定义
+
+@dataclass
+class ComponentTypesConfig:
+    """组件类型配置"""
+    allowed_types: List[str] = field(default_factory=list)
+    required_attributes: List[str] = field(default_factory=list)
+    optional_attributes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class InterfaceTypesConfig:
+    """接口类型配置"""
+    allowed_types: List[str] = field(default_factory=list)
+    required_attributes: List[str] = field(default_factory=list)
+    optional_attributes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ModeDeclarationGroupConfig:
+    """模式声明组配置"""
+    required_attributes: List[str] = field(default_factory=list)
+    optional_attributes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class OutputSchemaFieldConfig:
+    """输出Schema字段配置"""
+    required_fields: List[str] = field(default_factory=list)
+    optional_fields: List[str] = field(default_factory=list)
+
+
+@dataclass
+class OutputSchemaConfig:
+    """输出Schema配置"""
+    system_analysis: OutputSchemaFieldConfig = field(default_factory=OutputSchemaFieldConfig)
+    component_plan: OutputSchemaFieldConfig = field(default_factory=OutputSchemaFieldConfig)
+    interface_plan: OutputSchemaFieldConfig = field(default_factory=OutputSchemaFieldConfig)
+
+
+@dataclass
+class Round1SchemaConfig:
+    """Round1 Schema配置 - 完整的嵌套结构"""
+    component_types: ComponentTypesConfig = field(default_factory=ComponentTypesConfig)
+    interface_types: InterfaceTypesConfig = field(default_factory=InterfaceTypesConfig)
+    mode_declaration_group: ModeDeclarationGroupConfig = field(default_factory=ModeDeclarationGroupConfig)
+    output_schema: OutputSchemaConfig = field(default_factory=OutputSchemaConfig)
+
 @dataclass
 class ComponentType:
     """组件类型配置"""
@@ -59,6 +107,7 @@ class LLMConfig:
     temperature: float
     max_output_tokens: int
     max_context_tokens: int
+    enable_file_upload: bool
 
 
 @dataclass
@@ -144,15 +193,6 @@ class SemanticResolutionConfig:
 
 
 @dataclass
-class Round1SchemaConfig:
-    """Round1 Schema配置"""
-    system_analysis: Dict[str, Any] = field(default_factory=dict)
-    component_plan: Dict[str, Any] = field(default_factory=dict)
-    interface_plan: Dict[str, Any] = field(default_factory=dict)
-    allowed_types: Dict[str, List[str]] = field(default_factory=dict)
-
-
-@dataclass
 class MetamodelInjectionConfig:
     """元模型注入配置"""
     round1_depth: int = 1
@@ -177,6 +217,67 @@ class SystemConfig:
     debug_mode: bool
     output_dir: Path
 
+
+def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
+    """从YAML配置加载Round1Schema配置"""
+    round1_yaml = yaml_config.get("round1_schema", {})
+
+    # 加载组件类型配置
+    component_types_yaml = round1_yaml.get("component_types", {})
+    component_types_config = ComponentTypesConfig(
+        allowed_types=component_types_yaml.get("allowed_types", []),
+        required_attributes=component_types_yaml.get("required_attributes", []),
+        optional_attributes=component_types_yaml.get("optional_attributes", [])
+    )
+
+    # 加载接口类型配置
+    interface_types_yaml = round1_yaml.get("interface_types", {})
+    interface_types_config = InterfaceTypesConfig(
+        allowed_types=interface_types_yaml.get("allowed_types", []),
+        required_attributes=interface_types_yaml.get("required_attributes", []),
+        optional_attributes=interface_types_yaml.get("optional_attributes", [])
+    )
+
+    # 加载模式声明组配置
+    mode_group_yaml = round1_yaml.get("mode_declaration_group", {})
+    mode_group_config = ModeDeclarationGroupConfig(
+        required_attributes=mode_group_yaml.get("required_attributes", []),
+        optional_attributes=mode_group_yaml.get("optional_attributes", [])
+    )
+
+    # 加载输出Schema配置
+    output_schema_yaml = round1_yaml.get("output_schema", {})
+
+    system_analysis_yaml = output_schema_yaml.get("system_analysis", {})
+    system_analysis_config = OutputSchemaFieldConfig(
+        required_fields=system_analysis_yaml.get("required_fields", []),
+        optional_fields=system_analysis_yaml.get("optional_fields", [])
+    )
+
+    component_plan_yaml = output_schema_yaml.get("component_plan", {})
+    component_plan_config = OutputSchemaFieldConfig(
+        required_fields=component_plan_yaml.get("required_fields", []),
+        optional_fields=component_plan_yaml.get("optional_fields", [])
+    )
+
+    interface_plan_yaml = output_schema_yaml.get("interface_plan", {})
+    interface_plan_config = OutputSchemaFieldConfig(
+        required_fields=interface_plan_yaml.get("required_fields", []),
+        optional_fields=interface_plan_yaml.get("optional_fields", [])
+    )
+
+    output_schema_config = OutputSchemaConfig(
+        system_analysis=system_analysis_config,
+        component_plan=component_plan_config,
+        interface_plan=interface_plan_config
+    )
+
+    return Round1SchemaConfig(
+        component_types=component_types_config,
+        interface_types=interface_types_config,
+        mode_declaration_group=mode_group_config,
+        output_schema=output_schema_config
+    )
 
 def _create_component_types(data: List[Dict]) -> List[ComponentType]:
     """创建组件类型列表"""
@@ -285,7 +386,8 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 api_key=api_key,
                 temperature=yaml_config["llm"]["temperature"],
                 max_output_tokens=yaml_config["llm"]["max_output_tokens"],
-                max_context_tokens=yaml_config["llm"]["max_context_tokens"]
+                max_context_tokens=yaml_config["llm"]["max_context_tokens"],
+                enable_file_upload=yaml_config["llm"].get("enable_file_upload")
             ),
             conversation=ConversationConfig(
                 session_ttl=yaml_config["conversation"]["session_ttl"],
@@ -328,12 +430,7 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                     parallel_query=perf_config.get("parallel_query", False)
                 )
             ),
-            round1_schema=Round1SchemaConfig(
-                system_analysis=round1_schema_config.get("system_analysis", {}),
-                component_plan=round1_schema_config.get("component_plan", {}),
-                interface_plan=round1_schema_config.get("interface_plan", {}),
-                allowed_types=round1_schema_config.get("allowed_types", {})
-            ),
+            round1_schema=_load_round1_schema_config(yaml_config),
             metamodel_injection=MetamodelInjectionConfig(
                 round1_depth=metamodel_config.get("round1_depth", 1),
                 round2_depth=metamodel_config.get("round2_depth", 8),
