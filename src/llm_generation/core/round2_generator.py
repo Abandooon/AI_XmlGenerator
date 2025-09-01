@@ -1,6 +1,7 @@
-"""core/round2_generator.py - 优化的Round 2生成器
+"""core/round2_generator.py - 简化的Round 2生成器
 
-利用Gemini长上下文能力和函数调用，优先单批生成，减少复杂度
+移除了过度设计的函数调用，专注于结构化输出
+在生成前一次性准备所有信息，让LLM专注于内容生成
 """
 import json
 import time
@@ -19,7 +20,7 @@ from ..utils.exceptions import ValidationError
 
 
 class Round2Generator:
-    """Round 2详细生成器 - 长上下文优化版"""
+    """Round 2详细生成器 - 简化版"""
 
     def __init__(self):
         """初始化Round 2生成器"""
@@ -27,374 +28,16 @@ class Round2Generator:
         self.query_engine = query_engine
         self.constraint_engine = constraint_engine
 
-        # 注册Round2函数
-        self._register_round2_functions()
-
-    def _register_round2_functions(self):
-        """注册Round2阶段的函数"""
-
-        # 1. UUID生成函数
-        self.gemini_client.register_function(
-            name="generate_uuid",
-            description="Generate a valid UUID for AUTOSAR elements",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "element_type": {
-                        "type": "string",
-                        "description": "Type of element needing UUID"
-                    },
-                    "element_name": {
-                        "type": "string",
-                        "description": "Name of the element"
-                    }
-                },
-                "required": ["element_type", "element_name"]
-            },
-            implementation=self._generate_uuid_impl
-        )
-
-        # 2. 引用解析函数
-        self.gemini_client.register_function(
-            name="resolve_reference",
-            description="Resolve semantic reference to actual path",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "semantic_reference": {
-                        "type": "string",
-                        "description": "Semantic reference description (e.g., '引用温度传感器的数据输出端口')"
-                    },
-                    "reference_type": {
-                        "type": "string",
-                        "description": "Type of reference",
-                        "enum": ["PORT", "INTERFACE", "COMPONENT", "RUNNABLE", "EVENT"]
-                    },
-                    "context_component": {
-                        "type": "string",
-                        "description": "Component context for the reference"
-                    }
-                },
-                "required": ["semantic_reference", "reference_type"]
-            },
-            implementation=self._resolve_reference_impl
-        )
-
-        # 3. 获取组件Schema函数 - 移除minimum和maximum字段
-        self.gemini_client.register_function(
-            name="fetch_component_schema",
-            description="Fetch detailed schema for a component type from knowledge graph",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "component_type": {
-                        "type": "string",
-                        "description": "AUTOSAR component type"
-                    },
-                    "include_depth": {
-                        "type": "integer",
-                        "description": "Schema expansion depth (1-15)"  # 在描述中说明范围
-                    },
-                    "element_design": {
-                        "type": "object",
-                        "description": "Element design requirements"
-                    }
-                },
-                "required": ["component_type"]
-            },
-            implementation=self._fetch_component_schema_impl
-        )
-
-        # 4. 验证约束函数
-        self.gemini_client.register_function(
-            name="validate_constraints",
-            description="Validate element against AUTOSAR constraints",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "element_type": {
-                        "type": "string",
-                        "description": "Element type to validate"
-                    },
-                    "element_data": {
-                        "type": "object",
-                        "description": "Element data to validate"
-                    }
-                },
-                "required": ["element_type", "element_data"]
-            },
-            implementation=self._validate_constraints_impl
-        )
-
-    def _generate_uuid_impl(self, element_type: str, element_name: str) -> str:
-        """生成UUID的实现"""
-        # 生成符合AUTOSAR规范的UUID
-        new_uuid = str(uuid_module.uuid4())
-
         if CONFIG.debug_mode:
-            print(f"[DEBUG] Generated UUID for {element_type}/{element_name}: {new_uuid}")
-
-        return new_uuid
-
-    def _resolve_reference_impl(
-        self,
-        semantic_reference: str,
-        reference_type: str,
-        context_component: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """解析语义引用的实现"""
-
-        # 引用模式匹配
-        reference_patterns = {
-            "PORT": {
-                "patterns": [
-                    (r"引用(.+?)的(.+?)端口", "/{component}/Ports/{port}"),
-                    (r"连接到(.+?)的(.+?)端口", "/{component}/Ports/{port}")
-                ],
-                "default_path": "/Components/{component}/Ports/{port}"
-            },
-            "INTERFACE": {
-                "patterns": [
-                    (r"(.+?)接口", "/Interfaces/{interface}"),
-                    (r"引用(.+?)接口", "/Interfaces/{interface}")
-                ],
-                "default_path": "/Interfaces/{interface}"
-            },
-            "COMPONENT": {
-                "patterns": [
-                    (r"(.+?)组件", "/Components/{component}"),
-                ],
-                "default_path": "/Components/{component}"
-            },
-            "RUNNABLE": {
-                "patterns": [
-                    (r"(.+?)运行实体", "/Components/{context}/InternalBehavior/Runnables/{runnable}"),
-                ],
-                "default_path": "/Components/{context}/InternalBehavior/Runnables/{runnable}"
-            },
-            "EVENT": {
-                "patterns": [
-                    (r"(.+?)事件", "/Components/{context}/InternalBehavior/Events/{event}"),
-                ],
-                "default_path": "/Components/{context}/InternalBehavior/Events/{event}"
-            }
-        }
-
-        ref_config = reference_patterns.get(reference_type, {})
-
-        # 尝试模式匹配
-        import re
-        for pattern, template in ref_config.get("patterns", []):
-            match = re.search(pattern, semantic_reference)
-            if match:
-                # 提取匹配的组件/接口名称
-                extracted = match.groups()
-
-                # 生成路径
-                if reference_type in ["RUNNABLE", "EVENT"] and context_component:
-                    resolved_path = template.replace("{context}", context_component)
-                    if extracted:
-                        resolved_path = resolved_path.replace("{" + reference_type.lower() + "}", extracted[0])
-                else:
-                    resolved_path = template
-                    if extracted:
-                        resolved_path = resolved_path.replace("{component}", extracted[0])
-                        if len(extracted) > 1:
-                            resolved_path = resolved_path.replace("{port}", extracted[1])
-                            resolved_path = resolved_path.replace("{interface}", extracted[1])
-
-                return {
-                    "resolved": True,
-                    "path": resolved_path,
-                    "type": reference_type,
-                    "semantic": semantic_reference,
-                    "confidence": "high"
-                }
-
-        # 生成默认路径
-        default_path = ref_config.get("default_path", f"/{reference_type}/Unknown")
-        if context_component and "{context}" in default_path:
-            default_path = default_path.replace("{context}", context_component)
-
-        # 尝试从语义描述提取名称
-        words = semantic_reference.split()
-        if words:
-            key_word = words[0] if not words[0] in ["引用", "连接", "到"] else words[-1]
-            default_path = default_path.replace("{component}", key_word)
-            default_path = default_path.replace("{port}", key_word)
-            default_path = default_path.replace("{interface}", key_word)
-            default_path = default_path.replace("{runnable}", key_word)
-            default_path = default_path.replace("{event}", key_word)
-
-        return {
-            "resolved": False,
-            "path": default_path,
-            "type": reference_type,
-            "semantic": semantic_reference,
-            "confidence": "low",
-            "suggestion": "Please verify and correct the path"
-        }
-
-    def _fetch_component_schema_impl(
-            self,
-            component_type: str,
-            include_depth: int = 8,
-            element_design: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """获取组件Schema的实现"""
-
-        # 手动验证depth范围
-        if include_depth < 1:
-            include_depth = 1
-        elif include_depth > 15:
-            include_depth = 15
-
-        try:
-            # 使用动态查询引擎获取Schema
-            if not query_engine.driver:
-                # 返回简化的模拟Schema
-                return self._get_mock_component_schema(component_type)
-
-            # 设置深度
-            original_depth = query_engine.max_safety_depth
-            query_engine.max_safety_depth = include_depth
-
-            try:
-                # 生成单个组件的Schema
-                component_plan = {
-                    "type": component_type,
-                    "name": "SchemaQuery",
-                    "element_design": element_design or {}
-                }
-
-                schema = query_engine.generate_multi_component_schema([component_plan])
-
-                # 提取组件Schema
-                if schema and "properties" in schema:
-                    component_schema = schema["properties"].get("SchemaQuery", {})
-
-                    return {
-                        "success": True,
-                        "component_type": component_type,
-                        "schema": component_schema,
-                        "depth": include_depth,
-                        "properties_count": len(component_schema.get("properties", {}))
-                    }
-
-                return {
-                    "success": False,
-                    "component_type": component_type,
-                    "error": "Failed to generate schema"
-                }
-
-            finally:
-                # 恢复原始深度
-                query_engine.max_safety_depth = original_depth
-
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] Schema fetch failed: {e}")
-
-            return {
-                "success": False,
-                "component_type": component_type,
-                "error": str(e),
-                "fallback_schema": self._get_mock_component_schema(component_type)
-            }
-
-    def _get_mock_component_schema(self, component_type: str) -> Dict[str, Any]:
-        """获取模拟的组件Schema"""
-
-        base_schema = {
-            "type": "object",
-            "properties": {
-                "SHORT-NAME": {"type": "string"},
-                "@UUID": {"type": "string"}
-            },
-            "required": ["SHORT-NAME"]
-        }
-
-        # 根据组件类型添加特定属性
-        if "APPLICATION" in component_type:
-            base_schema["properties"]["PORTS"] = {"type": "object"}
-            base_schema["properties"]["INTERNAL-BEHAVIORS"] = {"type": "object"}
-        elif "SENSOR" in component_type:
-            base_schema["properties"]["PORTS"] = {"type": "object"}
-            base_schema["properties"]["SENSOR-CONFIGS"] = {"type": "object"}
-        elif "COMPOSITION" in component_type:
-            base_schema["properties"]["COMPONENTS"] = {"type": "array"}
-            base_schema["properties"]["CONNECTORS"] = {"type": "array"}
-
-        return base_schema
-
-    def _validate_constraints_impl(
-        self,
-        element_type: str,
-        element_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """验证约束的实现"""
-
-        try:
-            # 获取约束信息
-            constraints = constraint_engine.query_constraints_for_elements([element_type])
-
-            violations = []
-            warnings = []
-
-            # 基本验证
-            if "SHORT-NAME" in element_data:
-                short_name = element_data["SHORT-NAME"]
-                # 验证命名规范
-                import re
-                if not re.match(r'^[A-Za-z][A-Za-z0-9_]*$', short_name):
-                    violations.append(f"SHORT-NAME '{short_name}' violates naming convention")
-            else:
-                violations.append("Missing required SHORT-NAME")
-
-            # UUID格式验证
-            if "@UUID" in element_data:
-                uuid_val = element_data["@UUID"]
-                if not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', uuid_val):
-                    violations.append("Invalid UUID format")
-
-            # 检查特定约束
-            for constraint in constraints:
-                if constraint.constraint_type.value == "ModelOCL":
-                    # 简化的OCL检查
-                    if "ports->size() >= 1" in constraint.expression:
-                        if "PORTS" not in element_data or not element_data["PORTS"]:
-                            violations.append(constraint.description)
-                    elif "runnable->notEmpty()" in constraint.expression:
-                        if "INTERNAL-BEHAVIORS" in element_data:
-                            behaviors = element_data["INTERNAL-BEHAVIORS"]
-                            if not behaviors.get("RUNNABLES"):
-                                warnings.append("No runnables defined in internal behaviors")
-
-            return {
-                "valid": len(violations) == 0,
-                "element_type": element_type,
-                "violations": violations,
-                "warnings": warnings,
-                "checked_constraints": len(constraints),
-                "recommendation": "Fix violations before generation" if violations else "Element is valid"
-            }
-
-        except Exception as e:
-            return {
-                "valid": True,  # 默认通过
-                "element_type": element_type,
-                "error": str(e),
-                "note": "Validation service unavailable, proceeding with generation"
-            }
+            print("[DEBUG] Round2生成器初始化（简化版：无函数调用）")
 
     def generate_arxml(
         self,
         architecture_design: ArchitectureDesign,
         memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None,
-        use_functions: bool = True
+        custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """生成详细的ARXML内容 - 支持函数调用"""
+        """生成详细的ARXML内容 - 简化版"""
 
         try:
             component_plans = architecture_design.component_plan
@@ -406,18 +49,16 @@ class Round2Generator:
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 开始Round2生成: {component_count}个组件")
                 print(f"[DEBUG] 单批阈值: {CONFIG.generation.single_batch_threshold}")
-                print(f"[DEBUG] 函数调用: {'启用' if use_functions else '禁用'}")
 
             # 优先尝试单批生成
             if component_count <= CONFIG.generation.single_batch_threshold:
-                # 单批生成（现在支持到25个组件）
                 return self._generate_unified_batch(
-                    architecture_design, memory_context, custom_requirements, use_functions
+                    architecture_design, memory_context, custom_requirements
                 )
             else:
                 # 仅在超大规模时才考虑分批（>25个组件）
                 return self._generate_intelligent_batches(
-                    architecture_design, memory_context, custom_requirements, use_functions
+                    architecture_design, memory_context, custom_requirements
                 )
 
         except Exception as e:
@@ -427,10 +68,9 @@ class Round2Generator:
         self,
         architecture_design: ArchitectureDesign,
         memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None,
-        use_functions: bool = True
+        custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """统一批次生成 - 支持函数调用"""
+        """统一批次生成 - 简化版，无函数调用"""
 
         start_time = time.time()
         component_plans = architecture_design.component_plan
@@ -438,62 +78,60 @@ class Round2Generator:
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 统一批次生成: {len(component_plans)}个组件, {len(interface_plans)}个接口")
+            print(f"[DEBUG] 使用纯结构化输出模式（无函数调用）")
 
-        # 生成深度Schema（增强到depth=15）
+        # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
+
+        # 1. 生成深度Schema
         schema_depth = CONFIG.generation.max_schema_injection_depth
         arxml_schema = self._generate_deep_schema(component_plans, schema_depth)
 
-        # 查询完整约束信息
+        # 2. 批量生成UUID（预生成所有需要的UUID）
+        uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
+
+        # 3. 查询完整约束信息
         constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
 
-        # 构建完整上下文的提示词
-        prompt = self._build_unified_prompt(
+        # 4. 准备标准类型引用
+        standard_types = self._prepare_standard_types()
+
+        # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
+
+        # 构建增强的提示词（包含所有预生成的信息）
+        prompt = self._build_enhanced_prompt(
             architecture_design,
             constraints,
             memory_context,
             custom_requirements,
-            schema_depth
+            schema_depth,
+            uuid_mapping,
+            standard_types
         )
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
             print(f"[DEBUG] Schema深度: {schema_depth}")
+            print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
             print(f"[DEBUG] 约束规则数: {len(constraints)}")
 
-        # 准备函数列表
-        functions_to_use = None
-        if use_functions:
-            functions_to_use = [
-                "generate_uuid",
-                "resolve_reference",
-                "fetch_component_schema",
-                "validate_constraints"
-            ]
+        # 调用LLM生成（纯结构化输出，无函数调用）
+        response_data, input_tokens, output_tokens, total_tokens = \
+            self.gemini_client.generate_with_schema(
+                prompt=prompt,
+                schema=arxml_schema,
+                temperature=0.7,
+                max_retries=3
+            )
 
-        # 调用LLM生成（利用长上下文和函数）
-        if use_functions:
-            response_data, function_calls, input_tokens, output_tokens, total_tokens = \
-                self.gemini_client.generate_with_schema_and_functions(
-                    prompt=prompt,
-                    schema=arxml_schema,
-                    functions=functions_to_use,
-                    temperature=0.7,
-                    max_retries=3
-                )
-        else:
-            response_data, input_tokens, output_tokens, total_tokens = \
-                self.gemini_client.generate_with_schema(
-                    prompt=prompt,
-                    schema=arxml_schema,
-                    temperature=0.7,
-                    max_retries=3
-                )
-            function_calls = {}
+        # ========== Phase 3: 后处理阶段 ==========
 
-        # 后处理：直接引用展开（不需要语义占位符）
-        processed_data = self._process_direct_references(response_data, architecture_design)
+        # 1. 验证生成的内容
+        validation_results = self._validate_generated_content(response_data, constraints)
 
-        # 转换为ARXML
+        # 2. 确保所有引用都是直接路径（不需要解析语义占位符）
+        processed_data = self._ensure_direct_references(response_data)
+
+        # 3. 转换为ARXML
         arxml_content = self._convert_to_arxml(processed_data, architecture_design)
 
         generation_time = time.time() - start_time
@@ -509,10 +147,11 @@ class Round2Generator:
             "schema_depth": schema_depth,
             "schema_properties": len(arxml_schema.get("properties", {})),
             "constraints_applied": len(constraints),
+            "uuids_generated": len(uuid_mapping),
+            "validation_passed": validation_results["passed"],
+            "validation_errors": validation_results["errors"],
             "generation_time": generation_time,
             "tokens_per_component": total_tokens / max(len(component_plans), 1),
-            "functions_called": len(function_calls),
-            "function_details": function_calls,
             "performance_metrics": {
                 "time_per_component": generation_time / max(len(component_plans), 1),
                 "schema_complexity": self._calculate_schema_complexity(arxml_schema),
@@ -523,29 +162,288 @@ class Round2Generator:
         if CONFIG.debug_mode:
             print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
             print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
-            if function_calls:
-                print(f"[DEBUG] 调用了 {len(function_calls)} 个函数")
+            print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
 
         return arxml_content, stats
 
-    # 保留原有的其他方法...（省略未修改的方法）
+    def _batch_generate_uuids(
+        self,
+        component_plans: List[Dict[str, Any]],
+        interface_plans: List[Dict[str, Any]]
+    ) -> Dict[str, str]:
+        """批量预生成UUID"""
+
+        uuid_mapping = {}
+
+        # 为每个组件生成UUID
+        for comp in component_plans:
+            comp_name = comp.get("name", "")
+            if comp_name:
+                uuid_mapping[f"component_{comp_name}"] = str(uuid_module.uuid4())
+
+                # 为组件的端口预生成UUID
+                if comp.get("element_design", {}).get("ports", {}).get("needed"):
+                    uuid_mapping[f"port_p_{comp_name}"] = str(uuid_module.uuid4())
+                    uuid_mapping[f"port_r_{comp_name}"] = str(uuid_module.uuid4())
+
+                # 为内部行为预生成UUID
+                if comp.get("element_design", {}).get("internal_behaviors", {}).get("needed"):
+                    uuid_mapping[f"behavior_{comp_name}"] = str(uuid_module.uuid4())
+                    # 为runnables预生成
+                    for runnable in comp.get("element_design", {}).get("internal_behaviors", {}).get("runnables", []):
+                        uuid_mapping[f"runnable_{comp_name}_{runnable}"] = str(uuid_module.uuid4())
+
+        # 为每个接口生成UUID
+        for intf in interface_plans:
+            intf_name = intf.get("name", "")
+            if intf_name:
+                uuid_mapping[f"interface_{intf_name}"] = str(uuid_module.uuid4())
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 预生成 {len(uuid_mapping)} 个UUID")
+
+        return uuid_mapping
+
+    def _prepare_standard_types(self) -> Dict[str, Any]:
+        """准备标准类型引用信息"""
+
+        # 从标准类型库获取常用类型
+        standard_types = {
+            "base_types": [
+                "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+                "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+                "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+                "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+                "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+                "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+                "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+                "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+                "/AUTOSAR_Platform/ImplementationDataTypes/float64"
+            ],
+            "physical_types": [
+                "/AUTOSAR_Platform/CompuMethods/Temperature_degC",
+                "/AUTOSAR_Platform/CompuMethods/Voltage_V",
+                "/AUTOSAR_Platform/CompuMethods/Current_A",
+                "/AUTOSAR_Platform/CompuMethods/Speed_kmh",
+                "/AUTOSAR_Platform/CompuMethods/Pressure_kPa"
+            ]
+        }
+
+        return standard_types
+
+    def _build_enhanced_prompt(
+        self,
+        architecture_design: ArchitectureDesign,
+        constraints: List[str],
+        memory_context: str,
+        custom_requirements: Dict[str, Any],
+        schema_depth: int,
+        uuid_mapping: Dict[str, str],
+        standard_types: Dict[str, Any]
+    ) -> str:
+        """构建增强的提示词（包含所有预生成信息）"""
+
+        # 使用模板生成基础提示词
+        prompt = template_manager.get_round2_prompt(
+            architecture_design=architecture_design.__dict__,
+            constraints=constraints,
+            schema_depth=schema_depth
+        )
+
+        # 添加记忆上下文
+        if memory_context:
+            prompt += f"\n\n## 对话上下文\n{memory_context}"
+
+        # 添加自定义要求
+        if custom_requirements:
+            prompt += f"\n\n## 特殊要求\n"
+            for key, value in custom_requirements.items():
+                prompt += f"- {key}: {value}\n"
+
+        # 添加预生成的UUID映射
+        prompt += self._format_uuid_mapping(uuid_mapping)
+
+        # 添加标准类型引用
+        prompt += self._format_standard_types(standard_types)
+
+        # 添加直接引用指导
+        prompt += self._add_direct_reference_guidance(architecture_design)
+
+        return prompt
+
+    def _format_uuid_mapping(self, uuid_mapping: Dict[str, str]) -> str:
+        """格式化UUID映射为提示词"""
+
+        prompt = "\n\n## 预生成的UUID（必须使用这些UUID）\n"
+        prompt += "以下是每个元素对应的UUID，请严格使用：\n\n"
+
+        for key, uuid_val in uuid_mapping.items():
+            if key.startswith("component_"):
+                name = key.replace("component_", "")
+                prompt += f"- 组件 {name}: {uuid_val}\n"
+            elif key.startswith("interface_"):
+                name = key.replace("interface_", "")
+                prompt += f"- 接口 {name}: {uuid_val}\n"
+            elif key.startswith("port_"):
+                parts = key.split("_", 2)
+                prompt += f"- 端口 {parts[2]}_{parts[1]}: {uuid_val}\n"
+            elif key.startswith("behavior_"):
+                name = key.replace("behavior_", "")
+                prompt += f"- 内部行为 {name}: {uuid_val}\n"
+            elif key.startswith("runnable_"):
+                parts = key.replace("runnable_", "").split("_", 1)
+                prompt += f"- Runnable {parts[1]} (组件{parts[0]}): {uuid_val}\n"
+
+        return prompt
+
+    def _format_standard_types(self, standard_types: Dict[str, Any]) -> str:
+        """格式化标准类型引用"""
+
+        prompt = "\n\n## 标准数据类型引用\n"
+        prompt += "请使用以下标准类型，不要创建自定义类型：\n\n"
+
+        prompt += "### 基础数据类型\n"
+        for type_ref in standard_types["base_types"]:
+            prompt += f"- {type_ref}\n"
+
+        prompt += "\n### 物理量类型\n"
+        for type_ref in standard_types["physical_types"]:
+            prompt += f"- {type_ref}\n"
+
+        return prompt
+
+    def _add_direct_reference_guidance(self, architecture_design: ArchitectureDesign) -> str:
+        """添加直接引用指导"""
+
+        prompt = "\n\n## 引用路径规范\n"
+        prompt += "所有引用必须使用完整的直接路径，格式如下：\n\n"
+
+        # 基于实际架构生成具体示例
+        if architecture_design.component_plan:
+            prompt += "### 本系统的引用路径示例：\n"
+            for comp in architecture_design.component_plan[:3]:  # 前3个组件作为示例
+                comp_name = comp.get("name", "Component")
+                prompt += f"- 组件: /Components/{comp_name}\n"
+                prompt += f"- 端口: /Components/{comp_name}/Ports/PortName\n"
+                prompt += f"- Runnable: /Components/{comp_name}/InternalBehavior/Runnables/RunnableName\n"
+                prompt += f"- 事件: /Components/{comp_name}/InternalBehavior/Events/EventName\n\n"
+
+        if architecture_design.interface_plan:
+            prompt += "### 接口引用示例：\n"
+            for intf in architecture_design.interface_plan[:3]:
+                intf_name = intf.get("name", "Interface")
+                prompt += f"- /Interfaces/{intf_name}\n"
+
+        prompt += "\n**重要**：不要使用语义描述，必须使用完整路径！\n"
+
+        return prompt
+
+    def _validate_generated_content(
+        self,
+        response_data: Dict[str, Any],
+        constraints: List[str]
+    ) -> Dict[str, Any]:
+        """验证生成的内容（后处理）"""
+
+        validation_results = {
+            "passed": True,
+            "errors": [],
+            "warnings": []
+        }
+
+        # 遍历所有组件进行验证
+        for comp_name, comp_data in response_data.items():
+            if isinstance(comp_data, dict) and not comp_name.startswith("_"):
+                # 验证SHORT-NAME
+                if "SHORT-NAME" not in comp_data:
+                    validation_results["errors"].append(f"组件{comp_name}缺少SHORT-NAME")
+                    validation_results["passed"] = False
+
+                # 验证UUID格式
+                if "@UUID" in comp_data:
+                    uuid_val = comp_data["@UUID"]
+                    import re
+                    if not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', uuid_val):
+                        validation_results["errors"].append(f"组件{comp_name}的UUID格式无效")
+                        validation_results["passed"] = False
+
+                # 验证端口引用
+                if "PORTS" in comp_data:
+                    self._validate_port_references(comp_data["PORTS"], comp_name, validation_results)
+
+                # 验证内部行为
+                if "INTERNAL-BEHAVIORS" in comp_data:
+                    self._validate_internal_behaviors(comp_data["INTERNAL-BEHAVIORS"], comp_name, validation_results)
+
+        return validation_results
+
+    def _validate_port_references(self, ports_data: Dict[str, Any], comp_name: str, results: Dict[str, Any]):
+        """验证端口引用"""
+
+        for port_type in ["P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE"]:
+            if port_type in ports_data:
+                for port in ports_data[port_type]:
+                    if isinstance(port, dict):
+                        # 检查接口引用
+                        ref_key = "PROVIDED-INTERFACE-TREF" if port_type == "P-PORT-PROTOTYPE" else "REQUIRED-INTERFACE-TREF"
+                        if ref_key in port:
+                            ref_val = port[ref_key]
+                            if not ref_val.startswith("/"):
+                                results["warnings"].append(f"{comp_name}的端口引用应以/开始: {ref_val}")
+
+    def _validate_internal_behaviors(self, behaviors_data: Dict[str, Any], comp_name: str, results: Dict[str, Any]):
+        """验证内部行为"""
+
+        if "SWC-INTERNAL-BEHAVIOR" in behaviors_data:
+            behavior = behaviors_data["SWC-INTERNAL-BEHAVIOR"]
+
+            # 验证事件引用
+            if "EVENTS" in behavior:
+                for event_type, events in behavior["EVENTS"].items():
+                    if isinstance(events, list):
+                        for event in events:
+                            if isinstance(event, dict) and "START-ON-EVENT-REF" in event:
+                                ref = event["START-ON-EVENT-REF"]
+                                if not ref.startswith("/"):
+                                    results["warnings"].append(f"{comp_name}的事件引用应以/开始: {ref}")
+
+    def _ensure_direct_references(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
+        """确保所有引用都是直接路径格式"""
+
+        processed_data = response_data.copy()
+
+        def normalize_references(obj):
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    if isinstance(value, str) and any(ref in key.upper() for ref in ["REF", "TREF"]):
+                        # 确保引用以/开始
+                        if value and not value.startswith("/"):
+                            obj[key] = "/" + value
+                    elif isinstance(value, (dict, list)):
+                        normalize_references(value)
+            elif isinstance(obj, list):
+                for item in obj:
+                    normalize_references(item)
+
+        normalize_references(processed_data)
+
+        return processed_data
 
     def _generate_deep_schema(
         self,
         component_plans: List[Dict[str, Any]],
         depth: int = 15
     ) -> Dict[str, Any]:
-        """生成深度Schema - 增强版"""
+        """生成深度Schema - 保持原有实现"""
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 生成深度Schema: depth={depth}")
-            # 清理请求级缓存
             self.query_engine.clear_cache("request")
 
         # 利用query_engine生成深度Schema
         schema = self.query_engine.generate_multi_component_schema(
             component_plans,
-            max_depth=depth  # 使用配置的深度
+            max_depth=depth
         )
 
         if not schema or not schema.get("properties"):
@@ -557,14 +455,11 @@ class Round2Generator:
         if CONFIG.debug_mode:
             properties_count = len(schema.get("properties", {}))
             print(f"[DEBUG] Schema生成成功: {properties_count}个组件定义")
-            # 计算Schema复杂度
-            complexity = self._calculate_schema_complexity(schema)
-            print(f"[DEBUG] Schema复杂度: {complexity}")
 
         return schema
 
     def _enhance_schema_for_direct_references(self, schema: Dict[str, Any]) -> Dict[str, Any]:
-        """增强Schema以支持直接引用（替代语义占位符）"""
+        """增强Schema以支持直接引用"""
 
         def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
             enhanced = {}
@@ -601,7 +496,7 @@ class Round2Generator:
         component_plans: List[Dict[str, Any]],
         interface_plans: List[Dict[str, Any]]
     ) -> List[str]:
-        """查询完整的约束规则"""
+        """查询完整的约束规则 - 保持原有实现"""
 
         constraints = []
 
@@ -638,103 +533,12 @@ class Round2Generator:
 
         return constraints
 
-    def _build_unified_prompt(
-        self,
-        architecture_design: ArchitectureDesign,
-        constraints: List[str],
-        memory_context: str,
-        custom_requirements: Dict[str, Any],
-        schema_depth: int
-    ) -> str:
-        """构建统一生成的提示词 - 优化版"""
-
-        # 使用优化的模板
-        prompt = template_manager.get_round2_prompt(
-            architecture_design=architecture_design.__dict__,
-            constraints=constraints,
-            schema_depth=schema_depth
-        )
-
-        # 添加记忆上下文
-        if memory_context:
-            prompt += f"\n\n## 对话上下文\n{memory_context}"
-
-        # 添加自定义要求
-        if custom_requirements:
-            prompt += f"\n\n## 特殊要求\n"
-            for key, value in custom_requirements.items():
-                prompt += f"- {key}: {value}\n"
-
-        # 添加直接引用示例
-        prompt += self._add_direct_reference_examples(architecture_design)
-
-        return prompt
-
-    def _add_direct_reference_examples(self, architecture_design: ArchitectureDesign) -> str:
-        """添加直接引用示例"""
-
-        examples = """
-
-## 直接引用示例
-
-### 正确的引用格式：
-- PROVIDED-INTERFACE-TREF: "/Interfaces/SensorDataInterface"
-- REQUIRED-INTERFACE-TREF: "/Interfaces/ControlCommandInterface"
-- START-ON-EVENT-REF: "/Components/TempMonitor/InternalBehavior/Runnables/ProcessData"
-- PORT-PROTOTYPE-REF: "/Components/DataProcessor/Ports/DataInput"
-
-### 组件间引用规则：
-1. 使用绝对路径，从根开始
-2. 路径分隔符使用 /
-3. 遵循 /Category/Parent/Element 格式
-4. 确保引用的元素确实存在
-"""
-
-        # 基于实际架构添加具体示例
-        if architecture_design.component_plan:
-            examples += "\n### 本系统的具体引用路径：\n"
-            for comp in architecture_design.component_plan[:3]:  # 前3个组件作为示例
-                comp_name = comp.get("name", "Component")
-                examples += f"- 组件路径: /Components/{comp_name}\n"
-                examples += f"- 端口路径: /Components/{comp_name}/Ports/PortName\n"
-                examples += f"- Runnable路径: /Components/{comp_name}/InternalBehavior/Runnables/RunnableName\n"
-
-        return examples
-
-    def _process_direct_references(
-        self,
-        response_data: Dict[str, Any],
-        architecture_design: ArchitectureDesign
-    ) -> Dict[str, Any]:
-        """处理直接引用 - 简化版"""
-
-        # 由于使用直接引用，只需要验证引用的有效性
-        processed_data = response_data.copy()
-
-        # 验证并规范化引用路径
-        def normalize_references(obj):
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    if isinstance(value, str) and any(ref in key.upper() for ref in ["REF", "TREF"]):
-                        # 确保引用以/开始
-                        if value and not value.startswith("/"):
-                            obj[key] = "/" + value
-                    elif isinstance(value, (dict, list)):
-                        normalize_references(value)
-            elif isinstance(obj, list):
-                for item in obj:
-                    normalize_references(item)
-
-        normalize_references(processed_data)
-
-        return processed_data
-
     def _convert_to_arxml(
         self,
         json_data: Dict[str, Any],
         architecture_design: ArchitectureDesign
     ) -> str:
-        """转换JSON为ARXML格式 - 优化版"""
+        """转换JSON为ARXML格式 - 保持原有实现"""
 
         # 创建AUTOSAR根元素
         root = Element("AUTOSAR")
@@ -779,11 +583,9 @@ class Round2Generator:
     def _add_component_to_xml(self, parent: Element, comp_name: str, comp_data: Dict[str, Any]):
         """添加组件到XML"""
 
-        # 确定组件类型元素名
         comp_type = comp_data.get("_type", "APPLICATION-SW-COMPONENT-TYPE")
         comp_element = SubElement(parent, comp_type)
 
-        # 递归添加属性
         self._dict_to_xml(comp_element, comp_data, skip_keys=["_type"])
 
     def _add_interface_to_xml(self, parent: Element, intf_name: str, intf_data: Dict[str, Any]):
@@ -845,8 +647,7 @@ class Round2Generator:
         self,
         architecture_design: ArchitectureDesign,
         memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None,
-        use_functions: bool = True
+        custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
         """智能分批生成 - 仅用于超大规模（>25组件）"""
 
@@ -866,8 +667,7 @@ class Round2Generator:
             "batch_count": len(batches),
             "component_count": len(component_plans),
             "generation_mode": "intelligent_batch",
-            "batch_details": [],
-            "functions_called": 0
+            "batch_details": []
         }
 
         # 生成所有批次
@@ -888,8 +688,7 @@ class Round2Generator:
             batch_arxml, batch_stats = self._generate_unified_batch(
                 batch_architecture,
                 memory_context,
-                custom_requirements,
-                use_functions
+                custom_requirements
             )
 
             # 解析并合并结果
@@ -900,7 +699,6 @@ class Round2Generator:
             total_stats["total_tokens"] += batch_stats["total_tokens"]
             total_stats["input_tokens"] += batch_stats["input_tokens"]
             total_stats["output_tokens"] += batch_stats["output_tokens"]
-            total_stats["functions_called"] += batch_stats.get("functions_called", 0)
             total_stats["batch_details"].append(batch_stats)
 
         # 组装最终ARXML
@@ -928,7 +726,7 @@ class Round2Generator:
         batches = []
         current_batch = []
         current_weight = 0
-        max_weight = CONFIG.batch_optimization.max_complexity_per_batch
+        max_weight = 50  # 每批最大权重
 
         for comp, weight in weighted_components:
             if current_weight + weight <= max_weight:

@@ -110,7 +110,7 @@ class ConversationManager:
             raise ConversationError(f"启动对话失败: {str(e)}")
 
     def process_round1(self, session_id: str) -> Dict[str, Any]:
-        """执行Round 1架构设计 - 修复版"""
+        """执行Round 1架构设计 - 优化版"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
@@ -123,33 +123,21 @@ class ConversationManager:
             # 获取记忆上下文
             memory_context = self.memory_manager.generate_continuity_prompt(session_id)
 
-            # 简化需求分析，直接使用用户输入
-            requirements_analysis = {
-                "user_input": session_info["user_input"],
-                "suggested_patterns": [],
-                "complexity": "medium",
-                "document_context": session_info.get("document_context", "")
-            }
-
-            # 根据预分析结果提供设计指导
-            design_guidance = self._generate_design_guidance(session_info, requirements_analysis)
-
             # 准备设计上下文
             design_context = json.dumps({
                 **session_info.get("context", {}),
                 "optimization_info": session_info.get("optimization_info", {}),
-                "design_guidance": design_guidance,
                 "document_context": session_info.get("document_context", "")
             })
 
-            # 执行架构设计 - 使用实际存在的方法
+            # 执行架构设计（Round1不需要函数调用）
             design, stats = self.round1_designer.design_architecture(
                 user_requirements=session_info["user_input"],
                 design_context=design_context,
                 memory_context=memory_context,
-                suggested_patterns=requirements_analysis.get("suggested_patterns", []),
-                document_files=session_info.get("document_files"),  # 传递文档文件
-                use_functions=True  # 启用函数调用
+                suggested_patterns=[],
+                document_files=session_info.get("document_files"),
+                use_functions=False  # Round1使用纯结构化输出
             )
 
             # 分析生成策略
@@ -159,16 +147,20 @@ class ConversationManager:
             # 展示设计结果
             presentation = self.user_interaction.present_architecture_design(design)
 
-            # 添加优化建议
-            if generation_strategy.get("recommended_strategy") == "single_batch":
-                presentation += "\n\n✨ 优化提示：系统规模适合一次性生成，将获得最佳一致性。"
+            # 基于复杂度添加优化建议
+            complexity = design.system_analysis.get("complexity_assessment", "Medium")
+            if complexity == "Simple":
+                presentation += "\n\n✨ 系统规模简单，将采用单批生成以确保最佳一致性。"
+            elif complexity == "Complex":
+                presentation += "\n\n⚙️ 系统规模复杂，将采用智能分批策略优化生成质量。"
+            else:
+                presentation += "\n\n📊 系统规模适中，将根据组件依赖关系优化生成。"
 
             confirmation_prompt = self.user_interaction.generate_confirmation_prompt(design)
 
             session_info["state"] = ConversationState.ROUND1_COMPLETED
             session_info["results"]["round1"] = {
                 "design": design,
-                "requirements_analysis": requirements_analysis,
                 "presentation": presentation,
                 "generation_strategy": generation_strategy
             }
@@ -187,7 +179,9 @@ class ConversationManager:
             self.memory_manager.update_design_state(session_id, design)
 
             if CONFIG.debug_mode:
-                print(f"[DEBUG] Round1完成: {len(design.component_plan)}个组件")
+                print(f"[DEBUG] Round1完成: {stats['component_count']}个组件, "
+                      f"{stats['interface_count']}个接口")
+                print(f"[DEBUG] 复杂度评估: {complexity}")
                 print(f"[DEBUG] 建议策略: {generation_strategy.get('recommended_strategy')}")
 
             return {
