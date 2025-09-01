@@ -116,14 +116,22 @@ class ConversationConfig:
     session_ttl: int
     enable_memory: bool
 
+@dataclass
+class MemoryConfig:
+    """内存管理配置"""
+    session_ttl: int
+    max_session_history: int
+    enable_user_preferences: bool
+    storage_backend: str
+    cache_size: int
 
 @dataclass
 class KnowledgeGraphConfig:
     """知识图谱配置"""
     neo4j_uri: str
-    neo4j_user: str = "neo4j"
-    neo4j_password: str = ""
-    max_safety_depth: int = 50  # 修改：从max_schema_depth改为max_safety_depth
+    neo4j_user: str
+    neo4j_password: str
+    max_safety_depth: int
 
 
 @dataclass
@@ -136,18 +144,17 @@ class TerminationRulesConfig:
 @dataclass
 class CacheConfig:
     """缓存配置"""
-    enable_request_cache: bool = True
-    enable_application_cache: bool = True
-    application_cache_ttl: int = 3600
-    max_cache_size: int = 100
-
+    enable_request_cache: bool
+    enable_application_cache: bool
+    application_cache_ttl: int
+    max_cache_size: int
 
 @dataclass
 class SchemaPerformanceConfig:
     """Schema生成性能配置"""
-    query_timeout: int = 30
-    max_properties_per_object: int = 1000
-    parallel_query: bool = False
+    query_timeout: int
+    max_properties_per_object: int
+    parallel_query: bool
 
 
 @dataclass
@@ -167,10 +174,11 @@ class StandardTypesConfig:
 @dataclass
 class GenerationConfig:
     """生成配置"""
-    single_batch_threshold: int = 5
-    max_batch_size: int = 8
-    enable_semantic_placeholders: bool = True
-    reference_resolution_timeout: int = 300
+    single_batch_threshold: int
+    max_batch_size: int
+    enable_semantic_placeholders: bool
+    reference_resolution_timeout: int
+    max_schema_injection_depth: int
 
 
 @dataclass
@@ -187,18 +195,18 @@ class SemanticResolutionConfig:
     identifiers: List[str]
     patterns: List[SemanticPattern]
     function_mappings: Dict[str, List[str]]
-    fuzzy_match_threshold: float = 0.6
-    enable_heuristic_resolution: bool = True
-    resolution_cache_size: int = 1000
+    fuzzy_match_threshold: float
+    enable_heuristic_resolution: bool
+    resolution_cache_size: int
 
 
 @dataclass
 class MetamodelInjectionConfig:
     """元模型注入配置"""
-    round1_depth: int = 1
-    round2_depth: int = 8
-    include_required_attributes: bool = True
-    include_min_occurs: bool = True
+    round1_depth: int
+    round2_depth: int
+    include_required_attributes: bool
+    include_min_occurs: bool
 
 
 @dataclass
@@ -206,6 +214,7 @@ class SystemConfig:
     """系统总配置"""
     llm: LLMConfig
     conversation: ConversationConfig
+    memory: MemoryConfig
     knowledge_graph: KnowledgeGraphConfig
     standard_types: StandardTypesConfig
     terminology: TerminologyConfig
@@ -222,6 +231,7 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
     """从YAML配置加载Round1Schema配置"""
     round1_yaml = yaml_config.get("round1_schema", {})
 
+
     # 加载组件类型配置
     component_types_yaml = round1_yaml.get("component_types", {})
     component_types_config = ComponentTypesConfig(
@@ -237,6 +247,8 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
         required_attributes=interface_types_yaml.get("required_attributes", []),
         optional_attributes=interface_types_yaml.get("optional_attributes", [])
     )
+
+
 
     # 加载模式声明组配置
     mode_group_yaml = round1_yaml.get("mode_declaration_group", {})
@@ -378,6 +390,8 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
         # 元模型注入配置
         metamodel_config = yaml_config.get("metamodel_injection", {})
 
+        memory_config = yaml_config.get("memory", {})
+
         # 构建配置对象
         config = SystemConfig(
             llm=LLMConfig(
@@ -393,6 +407,13 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 session_ttl=yaml_config["conversation"]["session_ttl"],
                 enable_memory=yaml_config["conversation"]["enable_memory"]
             ),
+            memory=MemoryConfig(  # 新增
+                session_ttl=memory_config.get("session_ttl", 86400),
+                max_session_history=memory_config.get("max_session_history", 20),
+                enable_user_preferences=memory_config.get("enable_user_preferences", True),
+                storage_backend=memory_config.get("storage_backend", "memory"),
+                cache_size=memory_config.get("cache_size", 100)
+            ),
             knowledge_graph=KnowledgeGraphConfig(
                 neo4j_uri=kg_config["neo4j_uri"],
                 neo4j_user=neo4j_user,
@@ -403,7 +424,8 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 single_batch_threshold=generation_config.get("single_batch_threshold", 5),
                 max_batch_size=generation_config.get("max_batch_size", 8),
                 enable_semantic_placeholders=generation_config.get("enable_semantic_placeholders", True),
-                reference_resolution_timeout=generation_config.get("reference_resolution_timeout", 300)
+                reference_resolution_timeout=generation_config.get("reference_resolution_timeout", 300),
+                max_schema_injection_depth=generation_config.get("max_schema_injection_depth",15),
             ),
             semantic_resolution=SemanticResolutionConfig(
                 identifiers=semantic_config.get("identifiers", []),

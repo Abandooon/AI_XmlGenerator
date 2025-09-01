@@ -14,6 +14,14 @@ conversation:
   session_ttl: 86400                                # 会话存活时间（秒）- 24小时
   enable_memory: true                               # 启用会话记忆功能
 
+# ===== 内存管理配置 =====
+memory:
+  session_ttl: 86400                               # 会话超时时间（秒）
+  max_session_history: 20                          # 最大会话历史记录数
+  enable_user_preferences: true                    # 启用用户偏好学习
+  storage_backend: "memory"                        # 存储后端：memory/redis
+  cache_size: 100                                  # 缓存大小
+
 # ===== 知识图谱配置 =====
 knowledge_graph:
   neo4j_uri: "neo4j://127.0.0.1:7687"              # Neo4j数据库连接URI

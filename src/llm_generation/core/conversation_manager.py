@@ -50,12 +50,13 @@ class ConversationManager:
         self.multi_batch_sessions = 0   # 新增：多批生成的会话数
 
     def start_conversation(
-        self,
-        user_input: str,
-        user_id: str = None,
-        session_context: Dict[str, Any] = None
+            self,
+            user_input: str,
+            user_id: str = None,
+            session_context: Dict[str, Any] = None,
+            document_files: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """启动新对话会话"""
+        """启动新对话会话 - 支持文档输入"""
 
         try:
             session_id = self.memory_manager.create_session(user_id)
@@ -69,13 +70,15 @@ class ConversationManager:
                 "current_round": 0,
                 "user_input": user_input,
                 "context": session_context or {},
+                "document_files": document_files,  # 保存文档文件列表
+                "document_context": "",  # 文档内容摘要
                 "results": {},
                 "stats": {
                     "total_tokens": 0,
                     "round1_tokens": 0,
                     "round2_tokens": 0
                 },
-                "optimization_info": {}  # 新增：优化信息
+                "optimization_info": {}
             }
 
             self.active_sessions[session_id] = session_info
@@ -83,15 +86,22 @@ class ConversationManager:
             # 预分析系统规模
             self._analyze_system_scale(session_info, user_input)
 
+            # 如果有文档，提取文档上下文
+            if document_files:
+                session_info["document_context"] = f"基于{len(document_files)}个文档的需求设计"
+
             if CONFIG.debug_mode:
                 print(f"[DEBUG] 启动新对话: {session_id}")
                 print(f"[DEBUG] 预估系统规模: {session_info['optimization_info']}")
+                if document_files:
+                    print(f"[DEBUG] 包含文档: {len(document_files)}个")
 
             return {
                 "session_id": session_id,
                 "status": "success",
                 "state": session_info["state"].value,
                 "optimization_hint": session_info.get("optimization_info", {}),
+                "has_documents": bool(document_files),
                 "message": "对话会话已创建，准备开始架构设计..."
             }
 
@@ -100,7 +110,7 @@ class ConversationManager:
             raise ConversationError(f"启动对话失败: {str(e)}")
 
     def process_round1(self, session_id: str) -> Dict[str, Any]:
-        """执行Round 1架构设计 - 增强版"""
+        """执行Round 1架构设计 - 修复版"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
@@ -110,26 +120,36 @@ class ConversationManager:
             session_info["state"] = ConversationState.ROUND1_PROCESSING
             session_info["current_round"] = 1
 
+            # 获取记忆上下文
             memory_context = self.memory_manager.generate_continuity_prompt(session_id)
 
-            # 分析需求 - 增强版
-            requirements_analysis = self.round1_designer.analyze_requirements(
-                session_info["user_input"]
-            )
+            # 简化需求分析，直接使用用户输入
+            requirements_analysis = {
+                "user_input": session_info["user_input"],
+                "suggested_patterns": [],
+                "complexity": "medium",
+                "document_context": session_info.get("document_context", "")
+            }
 
             # 根据预分析结果提供设计指导
             design_guidance = self._generate_design_guidance(session_info, requirements_analysis)
 
-            # 执行架构设计
+            # 准备设计上下文
+            design_context = json.dumps({
+                **session_info.get("context", {}),
+                "optimization_info": session_info.get("optimization_info", {}),
+                "design_guidance": design_guidance,
+                "document_context": session_info.get("document_context", "")
+            })
+
+            # 执行架构设计 - 使用实际存在的方法
             design, stats = self.round1_designer.design_architecture(
                 user_requirements=session_info["user_input"],
-                design_context=json.dumps({
-                    **session_info.get("context", {}),
-                    "optimization_info": session_info.get("optimization_info", {}),
-                    "design_guidance": design_guidance
-                }),
+                design_context=design_context,
                 memory_context=memory_context,
-                suggested_patterns=requirements_analysis.get("suggested_patterns", [])
+                suggested_patterns=requirements_analysis.get("suggested_patterns", []),
+                document_files=session_info.get("document_files"),  # 传递文档文件
+                use_functions=True  # 启用函数调用
             )
 
             # 分析生成策略
@@ -155,6 +175,7 @@ class ConversationManager:
             session_info["stats"]["round1_tokens"] = stats["total_tokens"]
             session_info["stats"]["total_tokens"] += stats["total_tokens"]
 
+            # 更新记忆
             self.memory_manager.add_conversation_turn(
                 session_id=session_id,
                 round_number=1,
@@ -177,7 +198,7 @@ class ConversationManager:
                 "design": design.__dict__,
                 "presentation": presentation,
                 "confirmation_prompt": confirmation_prompt,
-                "generation_strategy": generation_strategy,  # 新增
+                "generation_strategy": generation_strategy,
                 "stats": stats,
                 "message": "架构设计已完成，请确认或提供修改意见"
             }
@@ -187,11 +208,11 @@ class ConversationManager:
             raise ArchitectureDesignError(f"Round1执行失败: {str(e)}")
 
     def process_round2(
-        self,
-        session_id: str,
-        custom_requirements: Dict[str, Any] = None
+            self,
+            session_id: str,
+            custom_requirements: Dict[str, Any] = None
     ) -> Dict[str, Any]:
-        """执行Round 2详细生成 - 优化版"""
+        """执行Round 2详细生成 - 修复版"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
@@ -224,7 +245,6 @@ class ConversationManager:
                 print(f"[DEBUG] Round2生成模式: {generation_mode}")
                 print(f"[DEBUG] 组件数量: {component_count}")
                 print(f"[DEBUG] 建议策略: {generation_strategy.get('recommended_strategy')}")
-                print(f"[DEBUG] 预估Token: {generation_strategy.get('estimated_tokens', 'N/A')}")
 
             memory_context = self.memory_manager.generate_continuity_prompt(session_id)
 
@@ -233,7 +253,11 @@ class ConversationManager:
                 custom_requirements = {}
             custom_requirements["optimization_mode"] = generation_mode
             custom_requirements["enable_direct_references"] = True
-            custom_requirements["schema_depth"] = CONFIG.generation.max_schema_injection_depth
+
+            # 修复配置属性访问 - 使用正确的属性名
+            schema_depth = getattr(CONFIG.generation, 'max_schema_injection_depth',
+                                   getattr(CONFIG.metamodel_injection, 'round2_depth', 15))
+            custom_requirements["schema_depth"] = schema_depth
 
             # 执行详细生成
             arxml_data, stats = self.round2_generator.generate_arxml(
@@ -272,7 +296,6 @@ class ConversationManager:
             if CONFIG.debug_mode:
                 print(f"[DEBUG] Round2完成: {len(output_files)}个文件")
                 print(f"[DEBUG] Token效率: {stats.get('tokens_per_component', 'N/A')} tokens/组件")
-                print(f"[DEBUG] 生成时间: {stats.get('generation_time', 'N/A')}秒")
 
             return {
                 "session_id": session_id,
@@ -284,14 +307,41 @@ class ConversationManager:
                 "stats": stats,
                 "total_stats": session_info["stats"],
                 "generation_mode": generation_mode,
-                "performance_report": performance_report,  # 新增
-                "message": f"ARXML文档已成功生成！共{len(output_files)}个文件，使用{generation_mode}模式。"
+                "performance_report": performance_report,
+                "message": f"ARXML文档已成功生成，共{len(output_files)}个文件，使用{generation_mode}模式。"
             }
 
         except Exception as e:
             session_info["state"] = ConversationState.ERROR
             self.failed_sessions += 1
             raise ValidationError(f"Round2执行失败: {str(e)}")
+
+    def get_system_stats(self) -> Dict[str, Any]:
+        """获取系统统计信息 - 修复版"""
+
+        stats = {
+            "conversation_manager": {
+                "total_sessions": self.total_sessions,
+                "successful_sessions": self.successful_sessions,
+                "failed_sessions": self.failed_sessions,
+                "active_sessions": len(self.active_sessions),
+                "success_rate": self.successful_sessions / max(self.total_sessions, 1),
+                "single_batch_sessions": self.single_batch_sessions,
+                "multi_batch_sessions": self.multi_batch_sessions,
+                "single_batch_ratio": self.single_batch_sessions / max(self.total_sessions, 1)
+            },
+            "optimization_metrics": {
+                "average_single_batch_threshold": CONFIG.generation.single_batch_threshold,
+                "max_batch_size": CONFIG.generation.max_batch_size,
+                # 修复配置属性访问
+                "schema_injection_depth": CONFIG.generation.max_schema_injection_depth,
+                "long_context_utilization": self._calculate_context_utilization()
+            },
+            "memory_manager": self.memory_manager.get_stats()
+        }
+
+        return stats
+
 
     def _analyze_system_scale(self, session_info: Dict[str, Any], user_input: str):
         """预分析系统规模"""
@@ -524,30 +574,6 @@ class ConversationManager:
             session_info["state"] = ConversationState.ERROR
             raise ConversationError(f"处理用户反馈失败: {str(e)}")
 
-    def get_system_stats(self) -> Dict[str, Any]:
-        """获取系统统计信息 - 增强版"""
-
-        stats = {
-            "conversation_manager": {
-                "total_sessions": self.total_sessions,
-                "successful_sessions": self.successful_sessions,
-                "failed_sessions": self.failed_sessions,
-                "active_sessions": len(self.active_sessions),
-                "success_rate": self.successful_sessions / max(self.total_sessions, 1),
-                "single_batch_sessions": self.single_batch_sessions,  # 新增
-                "multi_batch_sessions": self.multi_batch_sessions,    # 新增
-                "single_batch_ratio": self.single_batch_sessions / max(self.total_sessions, 1)  # 新增
-            },
-            "optimization_metrics": {
-                "average_single_batch_threshold": CONFIG.generation.single_batch_threshold,
-                "max_batch_size": CONFIG.generation.max_batch_size,
-                "schema_injection_depth": CONFIG.generation.max_schema_injection_depth,
-                "long_context_utilization": self._calculate_context_utilization()
-            },
-            "memory_manager": self.memory_manager.get_stats()
-        }
-
-        return stats
 
     def _calculate_context_utilization(self) -> float:
         """计算上下文利用率"""

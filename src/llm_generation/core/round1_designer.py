@@ -343,7 +343,7 @@ class Round1Designer:
             document_files: Optional[Union[str, List[str]]] = None,
             use_functions: bool = True
     ) -> Tuple[ArchitectureDesign, Dict[str, Any]]:
-        """执行架构设计"""
+        """执行架构设计 - 完整版本"""
 
         try:
             # 处理文档上传（只在启用且有文档时）

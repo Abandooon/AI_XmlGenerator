@@ -80,7 +80,7 @@ class Round2Generator:
             implementation=self._resolve_reference_impl
         )
 
-        # 3. 获取组件Schema函数
+        # 3. 获取组件Schema函数 - 移除minimum和maximum字段
         self.gemini_client.register_function(
             name="fetch_component_schema",
             description="Fetch detailed schema for a component type from knowledge graph",
@@ -93,9 +93,7 @@ class Round2Generator:
                     },
                     "include_depth": {
                         "type": "integer",
-                        "description": "Schema expansion depth",
-                        "minimum": 1,
-                        "maximum": 15
+                        "description": "Schema expansion depth (1-15)"  # 在描述中说明范围
                     },
                     "element_design": {
                         "type": "object",
@@ -238,12 +236,18 @@ class Round2Generator:
         }
 
     def _fetch_component_schema_impl(
-        self,
-        component_type: str,
-        include_depth: int = 8,
-        element_design: Optional[Dict[str, Any]] = None
+            self,
+            component_type: str,
+            include_depth: int = 8,
+            element_design: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """获取组件Schema的实现"""
+
+        # 手动验证depth范围
+        if include_depth < 1:
+            include_depth = 1
+        elif include_depth > 15:
+            include_depth = 15
 
         try:
             # 使用动态查询引擎获取Schema

@@ -231,8 +231,7 @@ class LLMRAGGenerator:
         print("✅ 所有文档已清除")
 
     def _start_new_conversation(self, user_input: str):
-        """开始新的对话，包含文档支持"""
-
+        """开始新的对话，条件性支持文档"""
         try:
             print(f"\n🔄 正在分析需求...")
 
@@ -242,12 +241,20 @@ class LLMRAGGenerator:
             if document_files:
                 print(f"📚 将参考 {len(document_files)} 个上传的文档")
 
-            # 启动对话（需要修改conversation_manager以支持文档）
-            result = self.conversation_manager.start_conversation(
-                user_input=user_input,
-                user_id="interactive_user",
-                document_files=document_files  # 传递文档文件
-            )
+            # 根据文档上传配置调用不同的方法
+            if self.file_upload_enabled and document_files:
+                # 启用文档上传且有文档时
+                result = self.conversation_manager.start_conversation(
+                    user_input=user_input,
+                    user_id="interactive_user",
+                    document_files=document_files
+                )
+            else:
+                # 纯对话模式，不传递document_files参数
+                result = self.conversation_manager.start_conversation(
+                    user_input=user_input,
+                    user_id="interactive_user"
+                )
 
             self.current_session_id = result["session_id"]
             print(f"✅ 会话已创建: {self.current_session_id[:8]}...")

@@ -242,7 +242,7 @@ class UserInteraction:
 
         # 根据分析结果处理
         if analysis["action_type"] == "proceed":
-            # 非最终确认，需要二次确认
+            # 非最终确认，需要明确的二次确认
             return self._handle_tentative_confirmation(current_design)
         elif analysis["action_type"] == "modify":
             return self._handle_modification(feedback, current_design, analysis)

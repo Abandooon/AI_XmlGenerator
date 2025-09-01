@@ -235,6 +235,50 @@ $large_scale_specifications
 """
         return Template(template_text)
 
+    def get_round1_prompt(
+            self,
+            user_requirements: str,
+            design_context: str = "",
+            component_types: List[Dict[str, Any]] = None,
+            interface_types: List[Dict[str, Any]] = None
+    ) -> str:
+        """获取Round 1架构设计提示词"""
+
+        # 格式化组件类型信息
+        component_types_text = ""
+        if component_types:
+            for comp_type in component_types:
+                component_types_text += f"""
+    - **{comp_type['name']}**
+      描述: {comp_type['description']}
+      场景: {', '.join(comp_type.get('scenarios', []))}
+      复杂度: {comp_type.get('complexity', 'Medium')}
+    """
+
+        # 格式化接口类型信息
+        interface_types_text = ""
+        if interface_types:
+            for intf_type in interface_types:
+                interface_types_text += f"""
+    - **{intf_type['name']}**
+      描述: {intf_type['description']}
+      通信模式: {intf_type.get('communication_mode', '')}
+      场景: {', '.join(intf_type.get('scenarios', []))}
+    """
+
+        # 使用模板渲染
+        template = self.get_template("round1_architecture")
+        if not template:
+            # 如果没有找到模板，使用默认模板
+            template = self._get_enhanced_round1_template()
+
+        return template.substitute(
+            user_requirements=user_requirements,
+            design_context=design_context if design_context else "无额外上下文",
+            component_types=component_types_text if component_types_text else "标准AUTOSAR组件类型",
+            interface_types=interface_types_text if interface_types_text else "标准AUTOSAR接口类型"
+        )
+
     def get_round2_prompt(
         self,
         architecture_design: Dict[str, Any],
