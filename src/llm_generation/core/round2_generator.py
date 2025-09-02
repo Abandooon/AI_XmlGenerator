@@ -15,6 +15,7 @@ from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.dynamic_query_engine import query_engine
 from ..knowledge.constraint_engine import constraint_engine
+from ..knowledge.standard_types import standard_type_manager  # 新增：导入标准类型管理器
 from ..utils.serializers import ArchitectureDesign, generate_uuid
 from ..utils.exceptions import ValidationError
 
@@ -27,9 +28,13 @@ class Round2Generator:
         self.gemini_client = GeminiClient()
         self.query_engine = query_engine
         self.constraint_engine = constraint_engine
+        self.standard_type_manager = standard_type_manager  # 新增：标准类型管理器
 
         if CONFIG.debug_mode:
             print("[DEBUG] Round2生成器初始化（简化版：无函数调用）")
+            # 显示加载的标准类型统计
+            type_stats = self.standard_type_manager.get_stats()
+            print(f"[DEBUG] 已加载标准类型: {type_stats}")
 
     def generate_arxml(
         self,
@@ -92,7 +97,7 @@ class Round2Generator:
         # 3. 查询完整约束信息
         constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
 
-        # 4. 准备标准类型引用
+        # 4. 准备标准类型引用（使用动态加载的类型）
         standard_types = self._prepare_standard_types()
 
         # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
@@ -113,6 +118,7 @@ class Round2Generator:
             print(f"[DEBUG] Schema深度: {schema_depth}")
             print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
             print(f"[DEBUG] 约束规则数: {len(constraints)}")
+            print(f"[DEBUG] 标准类型数: {len(standard_types['implementation_types'])}")
 
         # 调用LLM生成（纯结构化输出，无函数调用）
         response_data, input_tokens, output_tokens, total_tokens = \
@@ -148,6 +154,7 @@ class Round2Generator:
             "schema_properties": len(arxml_schema.get("properties", {})),
             "constraints_applied": len(constraints),
             "uuids_generated": len(uuid_mapping),
+            "standard_types_available": len(standard_types['implementation_types']),
             "validation_passed": validation_results["passed"],
             "validation_errors": validation_results["errors"],
             "generation_time": generation_time,
@@ -205,31 +212,76 @@ class Round2Generator:
         return uuid_mapping
 
     def _prepare_standard_types(self) -> Dict[str, Any]:
-        """准备标准类型引用信息"""
+        """准备标准类型引用信息 - 动态加载版本"""
 
-        # 从标准类型库获取常用类型
-        standard_types = {
-            "base_types": [
-                "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
-                "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
-                "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
-                "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
-                "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
-                "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
-                "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
-                "/AUTOSAR_Platform/ImplementationDataTypes/float32",
-                "/AUTOSAR_Platform/ImplementationDataTypes/float64"
-            ],
-            "physical_types": [
-                "/AUTOSAR_Platform/CompuMethods/Temperature_degC",
-                "/AUTOSAR_Platform/CompuMethods/Voltage_V",
-                "/AUTOSAR_Platform/CompuMethods/Current_A",
-                "/AUTOSAR_Platform/CompuMethods/Speed_kmh",
-                "/AUTOSAR_Platform/CompuMethods/Pressure_kPa"
-            ]
+        # 从标准类型管理器动态获取类型
+        implementation_types = []
+        base_types = []
+        compu_methods = []
+
+        # 获取所有IMPLEMENTATION-DATA-TYPE（接口应该引用这些）
+        for impl_type_name, impl_type in self.standard_type_manager.implementation_types.items():
+            # 只包含VALUE类型（基础数据类型）
+            if impl_type.category == "VALUE":
+                # 构建完整路径（基于实际ARXML中的路径）
+                type_path = f"/AUTOSAR_Platform/ImplementationDataTypes/{impl_type.name}"
+                implementation_types.append({
+                    "path": type_path,
+                    "name": impl_type.name,
+                    "description": impl_type.description,
+                    "base_type": impl_type.base_type_ref
+                })
+
+        # 添加标准类型库的其他类型（如Std_ReturnType）
+        if "Std_ReturnType" in self.standard_type_manager.implementation_types:
+            implementation_types.append({
+                "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+                "name": "Std_ReturnType",
+                "description": "Standard return type for APIs",
+                "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+            })
+
+        # 获取CompuMethods（计算方法）
+        for compu_name, compu in self.standard_type_manager.compu_methods.items():
+            if "RB" in compu_name or "RBA" in compu_name:
+                # RB相关的CompuMethod
+                compu_path = f"/RB/RBA/Common/CentralElements/CompuMethods/{compu.name}"
+            elif "AUTOSAR" in compu_name or compu_name == "boolean":
+                # AUTOSAR标准CompuMethod
+                compu_path = f"/AUTOSAR_Platform/CompuMethods/{compu.name}"
+            else:
+                # 其他标准CompuMethod
+                compu_path = f"/AUTOSAR_Std/CompuMethods/{compu.name}"
+
+            compu_methods.append({
+                "path": compu_path,
+                "name": compu.name,
+                "category": compu.category
+            })
+
+        # 注意：SW-BASE-TYPE不应直接被接口引用，仅供参考
+        for base_type_name, base_type in self.standard_type_manager.base_types.items():
+            base_types.append({
+                "path": f"/AUTOSAR_Platform/BaseTypes/{base_type.name}",
+                "name": base_type.name,
+                "size": base_type.size,
+                "encoding": base_type.encoding,
+                "note": "仅供IMPLEMENTATION-DATA-TYPE内部引用，接口不应直接使用"
+            })
+
+        result = {
+            "implementation_types": implementation_types,  # 接口数据元素应该引用这些
+            "base_types": base_types,  # 仅供参考，不直接使用
+            "compu_methods": compu_methods  # 计算方法
         }
 
-        return standard_types
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 动态加载标准类型:")
+            print(f"  - 实现类型: {len(implementation_types)}")
+            print(f"  - 基础类型: {len(base_types)} (仅供参考)")
+            print(f"  - 计算方法: {len(compu_methods)}")
+
+        return result
 
     def _build_enhanced_prompt(
         self,
@@ -263,7 +315,7 @@ class Round2Generator:
         # 添加预生成的UUID映射
         prompt += self._format_uuid_mapping(uuid_mapping)
 
-        # 添加标准类型引用
+        # 添加标准类型引用（改进版）
         prompt += self._format_standard_types(standard_types)
 
         # 添加直接引用指导
@@ -297,18 +349,69 @@ class Round2Generator:
         return prompt
 
     def _format_standard_types(self, standard_types: Dict[str, Any]) -> str:
-        """格式化标准类型引用"""
+        """格式化标准类型引用 - 改进版，基于动态加载的类型"""
 
-        prompt = "\n\n## 标准数据类型引用\n"
-        prompt += "请使用以下标准类型，不要创建自定义类型：\n\n"
+        prompt = "\n\n## 标准数据类型引用规则\n"
+        prompt += "**重要**：接口中的数据元素必须引用IMPLEMENTATION-DATA-TYPE，而不是SW-BASE-TYPE！\n\n"
 
-        prompt += "### 基础数据类型\n"
-        for type_ref in standard_types["base_types"]:
-            prompt += f"- {type_ref}\n"
+        prompt += "### 可用的实现数据类型（用于接口和端口）\n"
+        prompt += "以下是接口DATA-ELEMENT应该使用的类型：\n\n"
 
-        prompt += "\n### 物理量类型\n"
-        for type_ref in standard_types["physical_types"]:
-            prompt += f"- {type_ref}\n"
+        for type_info in standard_types["implementation_types"][:15]:  # 显示前15个常用类型
+            prompt += f"- `{type_info['path']}`  # {type_info['name']}类型"
+            if type_info.get('description'):
+                prompt += f" - {type_info['description'][:50]}"
+            prompt += "\n"
+
+        if len(standard_types["implementation_types"]) > 15:
+            prompt += f"... 以及其他 {len(standard_types['implementation_types']) - 15} 个标准类型\n"
+
+        prompt += "\n### 正确的类型引用示例\n"
+        prompt += "```xml\n"
+        prompt += "<!-- 在SENDER-RECEIVER-INTERFACE中 -->\n"
+        prompt += '<DATA-ELEMENTS>\n'
+        prompt += '  <VARIABLE-DATA-PROTOTYPE>\n'
+        prompt += '    <SHORT-NAME>Temperature</SHORT-NAME>\n'
+        prompt += '    <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">\n'
+        prompt += '      /AUTOSAR_Platform/ImplementationDataTypes/uint16\n'
+        prompt += '    </TYPE-TREF>\n'
+        prompt += '  </VARIABLE-DATA-PROTOTYPE>\n'
+        prompt += '</DATA-ELEMENTS>\n'
+        prompt += "```\n\n"
+
+        prompt += "```xml\n"
+        prompt += "<!-- 在CLIENT-SERVER-INTERFACE中 -->\n"
+        prompt += '<OPERATIONS>\n'
+        prompt += '  <CLIENT-SERVER-OPERATION>\n'
+        prompt += '    <SHORT-NAME>GetStatus</SHORT-NAME>\n'
+        prompt += '    <ARGUMENTS>\n'
+        prompt += '      <ARGUMENT-DATA-PROTOTYPE>\n'
+        prompt += '        <SHORT-NAME>Status</SHORT-NAME>\n'
+        prompt += '        <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">\n'
+        prompt += '          /AUTOSAR_Platform/ImplementationDataTypes/uint8\n'
+        prompt += '        </TYPE-TREF>\n'
+        prompt += '      </ARGUMENT-DATA-PROTOTYPE>\n'
+        prompt += '    </ARGUMENTS>\n'
+        prompt += '  </CLIENT-SERVER-OPERATION>\n'
+        prompt += '</OPERATIONS>\n'
+        prompt += "```\n\n"
+
+        prompt += "### 常见错误\n"
+        prompt += "❌ 错误：直接引用SW-BASE-TYPE\n"
+        prompt += "```xml\n"
+        prompt += '<TYPE-TREF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</TYPE-TREF>  <!-- 错误！ -->\n'
+        prompt += "```\n\n"
+
+        prompt += "✅ 正确：引用IMPLEMENTATION-DATA-TYPE\n"
+        prompt += "```xml\n"
+        prompt += '<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/uint16</TYPE-TREF>\n'
+        prompt += "```\n\n"
+
+        # 添加ComputMethod信息
+        if standard_types.get("compu_methods"):
+            prompt += "### 可用的计算方法（CompuMethod）\n"
+            for compu_info in standard_types["compu_methods"][:5]:
+                prompt += f"- `{compu_info['path']}` ({compu_info['category']})\n"
 
         return prompt
 
@@ -375,7 +478,34 @@ class Round2Generator:
                 if "INTERNAL-BEHAVIORS" in comp_data:
                     self._validate_internal_behaviors(comp_data["INTERNAL-BEHAVIORS"], comp_name, validation_results)
 
+        # 验证接口中的类型引用
+        if "_interfaces" in response_data:
+            for intf_name, intf_data in response_data["_interfaces"].items():
+                if isinstance(intf_data, dict):
+                    self._validate_interface_types(intf_data, intf_name, validation_results)
+
         return validation_results
+
+    def _validate_interface_types(self, interface_data: Dict[str, Any], intf_name: str, results: Dict[str, Any]):
+        """验证接口中的类型引用 - 新增方法"""
+
+        # 检查DATA-ELEMENTS中的类型引用
+        if "DATA-ELEMENTS" in interface_data:
+            for elem in interface_data["DATA-ELEMENTS"]:
+                if isinstance(elem, dict) and "TYPE-TREF" in elem:
+                    type_ref = elem["TYPE-TREF"]
+                    # 检查是否错误地引用了SW-BASE-TYPE
+                    if "/BaseTypes/" in type_ref:
+                        results["errors"].append(
+                            f"接口{intf_name}错误地引用了SW-BASE-TYPE: {type_ref}，"
+                            f"应该使用IMPLEMENTATION-DATA-TYPE"
+                        )
+                        results["passed"] = False
+                    # 检查是否使用了正确的IMPLEMENTATION-DATA-TYPE
+                    elif "/ImplementationDataTypes/" not in type_ref:
+                        results["warnings"].append(
+                            f"接口{intf_name}的类型引用可能不正确: {type_ref}"
+                        )
 
     def _validate_port_references(self, ports_data: Dict[str, Any], comp_name: str, results: Dict[str, Any]):
         """验证端口引用"""
@@ -428,6 +558,8 @@ class Round2Generator:
         normalize_references(processed_data)
 
         return processed_data
+
+    # ========== 以下方法保持不变 ==========
 
     def _generate_deep_schema(
         self,
@@ -514,14 +646,15 @@ class Round2Generator:
                 intf_constraints = self.query_engine.query_constraints_for_elements([intf_type])
                 constraints.extend(intf_constraints)
 
-        # 通用AUTOSAR约束
+        # 通用AUTOSAR约束（更新：强调类型引用规则）
         general_constraints = [
             "所有UUID必须全局唯一",
             "SHORT-NAME必须符合NCName规范",
             "端口名称在组件内必须唯一",
             "事件必须正确引用Runnable",
             "接口引用必须使用完整路径",
-            "数据类型必须引用标准类型库"
+            "接口数据元素必须引用IMPLEMENTATION-DATA-TYPE，不能引用SW-BASE-TYPE",
+            "类型引用格式：/AUTOSAR_Platform/ImplementationDataTypes/类型名"
         ]
         constraints.extend(general_constraints)
 
