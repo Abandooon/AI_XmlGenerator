@@ -110,7 +110,7 @@ class ConversationManager:
             raise ConversationError(f"启动对话失败: {str(e)}")
 
     def process_round1(self, session_id: str) -> Dict[str, Any]:
-        """执行Round 1架构设计 - 优化版"""
+        """执行Round 1架构设计 - 修正版"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
@@ -137,24 +137,25 @@ class ConversationManager:
                 memory_context=memory_context,
                 suggested_patterns=[],
                 document_files=session_info.get("document_files"),
-                use_functions=False  # Round1使用纯结构化输出
+                use_functions=False
             )
 
-            # 分析生成策略
-            generation_strategy = self._analyze_generation_strategy(design)
-            session_info["optimization_info"]["generation_strategy"] = generation_strategy
+            # 【移除】不在Round1分析生成策略
+            # generation_strategy = self._analyze_generation_strategy(design)
 
             # 展示设计结果
             presentation = self.user_interaction.present_architecture_design(design)
 
-            # 基于复杂度添加优化建议
+            # 基于复杂度添加简单提示（不涉及生成策略）
             complexity = design.system_analysis.get("complexity_assessment", "Medium")
-            if complexity == "Simple":
-                presentation += "\n\n✨ 系统规模简单，将采用单批生成以确保最佳一致性。"
-            elif complexity == "Complex":
-                presentation += "\n\n⚙️ 系统规模复杂，将采用智能分批策略优化生成质量。"
+            component_count = len(design.component_plan)
+
+            if component_count <= 5:
+                presentation += "\n\n✨ 系统规模适中，设计简洁清晰。"
+            elif component_count <= 15:
+                presentation += "\n\n📊 系统包含多个组件，架构设计合理。"
             else:
-                presentation += "\n\n📊 系统规模适中，将根据组件依赖关系优化生成。"
+                presentation += "\n\n🏗️ 大型系统架构，组件职责明确。"
 
             confirmation_prompt = self.user_interaction.generate_confirmation_prompt(design)
 
@@ -162,7 +163,7 @@ class ConversationManager:
             session_info["results"]["round1"] = {
                 "design": design,
                 "presentation": presentation,
-                "generation_strategy": generation_strategy
+                # 移除 generation_strategy
             }
             session_info["stats"]["round1_tokens"] = stats["total_tokens"]
             session_info["stats"]["total_tokens"] += stats["total_tokens"]
@@ -182,7 +183,6 @@ class ConversationManager:
                 print(f"[DEBUG] Round1完成: {stats['component_count']}个组件, "
                       f"{stats['interface_count']}个接口")
                 print(f"[DEBUG] 复杂度评估: {complexity}")
-                print(f"[DEBUG] 建议策略: {generation_strategy.get('recommended_strategy')}")
 
             return {
                 "session_id": session_id,
@@ -192,7 +192,7 @@ class ConversationManager:
                 "design": design.__dict__,
                 "presentation": presentation,
                 "confirmation_prompt": confirmation_prompt,
-                "generation_strategy": generation_strategy,
+                # 移除 generation_strategy
                 "stats": stats,
                 "message": "架构设计已完成，请确认或提供修改意见"
             }
@@ -206,7 +206,7 @@ class ConversationManager:
             session_id: str,
             custom_requirements: Dict[str, Any] = None
     ) -> Dict[str, Any]:
-        """执行Round 2详细生成 - 修复版"""
+        """执行Round 2详细生成 - 修正版"""
 
         session_info = self._get_session_info(session_id)
         if not session_info:
@@ -223,22 +223,26 @@ class ConversationManager:
             session_info["current_round"] = 2
 
             confirmed_design = session_info["results"]["round1"]["design"]
-            generation_strategy = session_info["results"]["round1"].get("generation_strategy", {})
-
             component_count = len(confirmed_design.component_plan)
 
-            # 记录生成模式统计
-            if component_count <= CONFIG.generation.single_batch_threshold:
-                self.single_batch_sessions += 1
+            # 在Round2决定生成模式（基于配置的阈值）
+            single_batch_threshold = getattr(CONFIG.generation, 'single_batch_threshold', 25)
+
+            if component_count <= single_batch_threshold:
                 generation_mode = "unified_batch"
+                if CONFIG.debug_mode:
+                    print(f"[DEBUG] 使用单批生成模式（{component_count}个组件 <= 阈值{single_batch_threshold}）")
+            else:
+                # 只有在超过阈值时才考虑分批
+                generation_mode = "intelligent_batch"
+                if CONFIG.debug_mode:
+                    print(f"[DEBUG] 使用分批生成模式（{component_count}个组件 > 阈值{single_batch_threshold}）")
+
+            # 记录生成模式统计
+            if generation_mode == "unified_batch":
+                self.single_batch_sessions += 1
             else:
                 self.multi_batch_sessions += 1
-                generation_mode = "intelligent_batch"
-
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] Round2生成模式: {generation_mode}")
-                print(f"[DEBUG] 组件数量: {component_count}")
-                print(f"[DEBUG] 建议策略: {generation_strategy.get('recommended_strategy')}")
 
             memory_context = self.memory_manager.generate_continuity_prompt(session_id)
 
@@ -248,7 +252,7 @@ class ConversationManager:
             custom_requirements["optimization_mode"] = generation_mode
             custom_requirements["enable_direct_references"] = True
 
-            # 修复配置属性访问 - 使用正确的属性名
+            # 设置schema深度
             schema_depth = getattr(CONFIG.generation, 'max_schema_injection_depth',
                                    getattr(CONFIG.metamodel_injection, 'round2_depth', 15))
             custom_requirements["schema_depth"] = schema_depth
@@ -289,7 +293,6 @@ class ConversationManager:
 
             if CONFIG.debug_mode:
                 print(f"[DEBUG] Round2完成: {len(output_files)}个文件")
-                print(f"[DEBUG] Token效率: {stats.get('tokens_per_component', 'N/A')} tokens/组件")
 
             return {
                 "session_id": session_id,
@@ -368,29 +371,6 @@ class ConversationManager:
             "recommended_mode": "unified_batch" if scale != "large" else "intelligent_batch"
         }
 
-    def _generate_design_guidance(
-        self,
-        session_info: Dict[str, Any],
-        requirements_analysis: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """生成设计指导"""
-
-        optimization_info = session_info.get("optimization_info", {})
-
-        guidance = {
-            "target_component_count": optimization_info.get("estimated_components", 8),
-            "prefer_simple_architecture": optimization_info.get("estimated_scale") == "small",
-            "enable_direct_references": True,
-            "use_standard_patterns": True,
-            "optimization_focus": "consistency" if optimization_info.get("estimated_scale") != "large" else "scalability"
-        }
-
-        return guidance
-
-    def _analyze_generation_strategy(self, design: ArchitectureDesign) -> Dict[str, Any]:
-        """分析最佳生成策略"""
-
-        return self.dependency_analyzer.get_optimization_suggestions(design.component_plan)
 
     def _generate_performance_report(
         self,

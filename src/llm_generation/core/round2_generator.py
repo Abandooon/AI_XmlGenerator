@@ -15,7 +15,7 @@ from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.dynamic_query_engine import query_engine
 from ..knowledge.constraint_engine import constraint_engine
-from ..knowledge.standard_types import standard_type_manager  # 新增：导入标准类型管理器
+from ..standard_types.standard_types import standard_type_manager # 新增：导入标准类型管理器
 from ..utils.serializers import ArchitectureDesign, generate_uuid
 from ..utils.exceptions import ValidationError
 

@@ -59,8 +59,8 @@ class StandardTypeManager:
         """初始化标准类型管理器"""
         # 确定标准类型目录路径
         if standard_types_path is None:
-            # 默认路径：src/llm_generation/data/standard_types/
-            self.types_dir = Path(__file__).parent.parent / "data" / "standard_types"
+            # 默认路径：src/llm_generation/standard_types/data/
+            self.types_dir = Path(__file__).parent.parent / "standard_types" / "data"
         else:
             self.types_dir = Path(standard_types_path)
 
