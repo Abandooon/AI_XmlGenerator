@@ -60,7 +60,7 @@ generation:
   enable_semantic_placeholders: false               # 关闭语义占位符，直接处理完整引用
   reference_resolution_timeout: 600                 # 增加引用解析超时
   enable_direct_reference: true                     # 新增：启用直接引用模式
-  max_schema_injection_depth: 15                    # 新增：Schema注入深度
+  max_schema_injection_depth: 100                    # 新增：Schema注入深度
 
 # ===== 语义解析配置（简化） =====
 semantic_resolution:

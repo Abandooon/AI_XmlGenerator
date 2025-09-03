@@ -1,7 +1,7 @@
-"""core/round2_generator.py - 简化的Round 2生成器
+"""core/round2_generator.py - 修复版Round 2生成器
 
-移除了过度设计的函数调用，专注于结构化输出
-在生成前一次性准备所有信息，让LLM专注于内容生成
+修复了参数调用不匹配问题和查询字段问题
+专注于结构化输出，确保Schema生成流程正确
 """
 import json
 import time
@@ -21,7 +21,7 @@ from ..utils.exceptions import ValidationError
 
 
 class Round2Generator:
-    """Round 2详细生成器 - 简化版"""
+    """Round 2详细生成器 - 修复版"""
 
     def __init__(self):
         """初始化Round 2生成器"""
@@ -31,7 +31,7 @@ class Round2Generator:
         self.standard_type_manager = standard_type_manager  # 新增：标准类型管理器
 
         if CONFIG.debug_mode:
-            print("[DEBUG] Round2生成器初始化（简化版：无函数调用）")
+            print("[DEBUG] Round2生成器初始化（修复版：无函数调用）")
             # 显示加载的标准类型统计
             type_stats = self.standard_type_manager.get_stats()
             print(f"[DEBUG] 已加载标准类型: {type_stats}")
@@ -42,7 +42,7 @@ class Round2Generator:
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """生成详细的ARXML内容 - 简化版"""
+        """生成详细的ARXML内容 - 修复版"""
 
         try:
             component_plans = architecture_design.component_plan
@@ -75,7 +75,7 @@ class Round2Generator:
         memory_context: str = "",
         custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """统一批次生成 - 简化版，无函数调用"""
+        """统一批次生成 - 修复版，无函数调用"""
 
         start_time = time.time()
         component_plans = architecture_design.component_plan
@@ -88,8 +88,7 @@ class Round2Generator:
         # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
 
         # 1. 生成深度Schema
-        schema_depth = CONFIG.generation.max_schema_injection_depth
-        arxml_schema = self._generate_deep_schema(component_plans, schema_depth)
+        arxml_schema = self._generate_deep_schema(component_plans)
 
         # 2. 批量生成UUID（预生成所有需要的UUID）
         uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
@@ -102,20 +101,18 @@ class Round2Generator:
 
         # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
 
-        # 构建增强的提示词（包含所有预生成的信息）
+        # 【修复】：构建增强的提示词（修复参数传递）
         prompt = self._build_enhanced_prompt(
             architecture_design,
             constraints,
             memory_context,
             custom_requirements,
-            schema_depth,
             uuid_mapping,
             standard_types
         )
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
-            print(f"[DEBUG] Schema深度: {schema_depth}")
             print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
             print(f"[DEBUG] 约束规则数: {len(constraints)}")
             print(f"[DEBUG] 标准类型数: {len(standard_types['implementation_types'])}")
@@ -150,7 +147,6 @@ class Round2Generator:
             "component_count": len(component_plans),
             "interface_count": len(interface_plans),
             "generation_mode": "unified_batch",
-            "schema_depth": schema_depth,
             "schema_properties": len(arxml_schema.get("properties", {})),
             "constraints_applied": len(constraints),
             "uuids_generated": len(uuid_mapping),
@@ -289,11 +285,16 @@ class Round2Generator:
         constraints: List[str],
         memory_context: str,
         custom_requirements: Dict[str, Any],
-        schema_depth: int,
         uuid_mapping: Dict[str, str],
         standard_types: Dict[str, Any]
     ) -> str:
-        """构建增强的提示词（包含所有预生成信息）"""
+        """【修复】：构建增强的提示词（修复参数列表）"""
+
+        # 获取schema深度配置
+        if hasattr(CONFIG.generation, 'max_schema_injection_depth'):
+            schema_depth = CONFIG.generation.max_schema_injection_depth
+        else:
+            schema_depth = CONFIG.knowledge_graph.max_safety_depth
 
         # 使用模板生成基础提示词
         prompt = template_manager.get_round2_prompt(
@@ -562,33 +563,51 @@ class Round2Generator:
     # ========== 以下方法保持不变 ==========
 
     def _generate_deep_schema(
-        self,
-        component_plans: List[Dict[str, Any]],
-        depth: int = 15
+            self,
+            component_plans: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """生成深度Schema - 保持原有实现"""
+        """生成深度Schema - 使用配置控制深度"""
+
+        # 从配置获取Schema生成深度
+        # 优先使用generation配置，如果没有则使用knowledge_graph配置
+        if hasattr(CONFIG.generation, 'max_schema_injection_depth'):
+            schema_depth = CONFIG.generation.max_schema_injection_depth
+        else:
+            schema_depth = CONFIG.knowledge_graph.max_safety_depth
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 生成深度Schema: depth={depth}")
+            print(f"[DEBUG] 生成深度Schema: depth={schema_depth} (from config)")
             self.query_engine.clear_cache("request")
 
-        # 利用query_engine生成深度Schema
-        schema = self.query_engine.generate_multi_component_schema(
-            component_plans,
-            max_depth=depth
-        )
+        # 临时设置query_engine的深度（如果需要与配置不同的深度）
+        original_depth = self.query_engine.depth_manager.max_depth
+        if schema_depth != original_depth:
+            self.query_engine.depth_manager.max_depth = schema_depth
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 临时调整Schema深度: {original_depth} -> {schema_depth}")
 
-        if not schema or not schema.get("properties"):
-            raise ValidationError(f"无法为组件类型生成有效Schema")
+        try:
+            # 利用query_engine生成深度Schema
+            schema = self.query_engine.generate_multi_component_schema(
+                component_plans
+            )
 
-        # 增强Schema以支持直接引用
-        schema = self._enhance_schema_for_direct_references(schema)
+            if not schema or not schema.get("properties"):
+                raise ValidationError(f"无法为组件类型生成有效Schema")
 
-        if CONFIG.debug_mode:
-            properties_count = len(schema.get("properties", {}))
-            print(f"[DEBUG] Schema生成成功: {properties_count}个组件定义")
+            # 增强Schema以支持直接引用
+            schema = self._enhance_schema_for_direct_references(schema)
 
-        return schema
+            if CONFIG.debug_mode:
+                properties_count = len(schema.get("properties", {}))
+                print(f"[DEBUG] Schema生成成功: {properties_count}个组件定义")
+
+            return schema
+
+        finally:
+            # 恢复原始深度
+            if schema_depth != original_depth:
+                self.query_engine.depth_manager.max_depth = original_depth
 
     def _enhance_schema_for_direct_references(self, schema: Dict[str, Any]) -> Dict[str, Any]:
         """增强Schema以支持直接引用"""
