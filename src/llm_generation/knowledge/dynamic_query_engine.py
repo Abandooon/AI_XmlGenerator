@@ -518,7 +518,9 @@ class DynamicQueryEngine:
 
         for record in query_result:
             for attr in record["attributes"]:
-                if attr["minOccurs"] and attr["minOccurs"] >= 1:
+                min_occurs = attr.get("minOccurs")
+                # 修复：处理None值
+                if min_occurs is not None and min_occurs >= 1:
                     paths_tree["required"].append(attr)
                 elif attr["xml_tag"] in design_elements:
                     paths_tree["required"].append(attr)  # 设计要求的也作为必需
@@ -567,10 +569,13 @@ class DynamicQueryEngine:
         if self.request_cache and cache_key in self.request_cache:
             return {"$ref": f"#/definitions/{current_class_name}"}
 
-        # 检查终止条件
-        termination_result = self._check_termination(session, current_class_name)
-        if termination_result:
-            return termination_result
+        # 特殊处理：顶级组件类型不检查终止条件
+        if not (current_class_name.endswith("-SW-COMPONENT-TYPE") or
+                current_class_name.endswith("SwComponentType")):
+            # 检查终止条件
+            termination_result = self._check_termination(session, current_class_name)
+            if termination_result:
+                return termination_result
 
         # 尝试进入新层级
         if not self.depth_manager.enter_level(current_class_name):
@@ -684,7 +689,8 @@ class DynamicQueryEngine:
                     required.append(attr["xml_wrapper_tag"])
             else:
                 properties[prop_key] = prop_schema
-                if attr.get("minOccurs", 0) >= 1:
+                minOccurs = attr.get("minOccurs")
+                if minOccurs is not None and minOccurs >= 1:
                     required.append(prop_key)
 
         # 处理子元素
@@ -811,6 +817,10 @@ class DynamicQueryEngine:
     ) -> Optional[Dict[str, Any]]:
         """检查节点是否应该终止"""
 
+        # 特殊处理：组件类型不应被终止
+        if class_name.endswith("-SW-COMPONENT-TYPE") or class_name.endswith("SwComponentType"):
+            return None  # 不终止，继续展开
+
         # 原子类型
         if node_info["is_primitive"]:
             if metrics:
@@ -848,7 +858,8 @@ class DynamicQueryEngine:
             return True
 
         # minOccurs >= 1的必需属性
-        if attr.get("minOccurs", 0) >= 1:
+        min_occurs = attr.get("minOccurs")
+        if min_occurs is not None and min_occurs >= 1:
             return True
 
         # 引用类型不展开
@@ -1274,20 +1285,26 @@ class DynamicQueryEngine:
             required: List[str],
             component_type: str
     ) -> None:
-        """添加组件类型特定的必需元素 - 使用灵活查询"""
+        """添加组件类型特定的必需元素 - 修复Neo4j语法"""
 
         if not self.driver:
-            return  # 如果没有连接，跳过特定元素
+            return
 
         with self.driver.session() as session:
-            # 查询特定组件类型的必需元素
+            # 修复后的查询：使用正确的Neo4j语法
             query = """
             MATCH (c:Class)
             WHERE c.name = $component_type OR c.xml_tag = $component_type
-            OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(attr:Attribute)
+            OPTIONAL MATCH (c)-[:SUBCLASS_OF*0..]->(parent:Class)
+            WITH c, collect(DISTINCT parent) as parents
+
+            // 获取所有类（包括自身和父类）的属性
+            UNWIND (parents + [c]) as cls
+            OPTIONAL MATCH (cls)-[:HAS_ATTRIBUTE]->(attr:Attribute)
             WHERE attr.minOccurs >= 1 
-              AND attr.xml_tag NOT IN ['SHORT-NAME', 'UUID']
+              AND NOT attr.xml_tag IN ['SHORT-NAME', 'UUID']
               AND NOT attr.xml_tag IN $existing_props
+
             RETURN collect(DISTINCT {
                 tag: attr.xml_tag,
                 name: attr.name,
@@ -1312,7 +1329,6 @@ class DynamicQueryEngine:
                     attr_key = f"@{attr_tag}" if attr.get("isXmlAttr") else attr_tag
 
                     if attr_key not in properties:
-                        # 根据类型添加适当的Schema
                         if attr.get("type") == "boolean":
                             properties[attr_key] = {"type": "boolean"}
                         elif attr.get("type") in ["integer", "int"]:
@@ -1323,7 +1339,6 @@ class DynamicQueryEngine:
                         if attr.get("description"):
                             properties[attr_key]["description"] = attr["description"]
 
-                        # 添加到required列表
                         if attr_key not in required:
                             required.append(attr_key)
 
