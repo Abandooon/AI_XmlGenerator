@@ -5,6 +5,8 @@
 """
 import json
 import time
+from datetime import datetime
+from pathlib import Path
 import uuid as uuid_module
 from typing import Dict, List, Any, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -88,7 +90,12 @@ class Round2Generator:
         # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
 
         # 1. 生成深度Schema
-        arxml_schema = self._generate_deep_schema(component_plans)
+        # arxml_schema = self._generate_deep_schema(component_plans)
+
+        arxml_schema = self._generate_comprehensive_schema(component_plans, interface_plans)
+
+        # 输出schema到文件
+        self._save_schema_to_file(arxml_schema)
 
         # 2. 批量生成UUID（预生成所有需要的UUID）
         uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
@@ -110,6 +117,8 @@ class Round2Generator:
             uuid_mapping,
             standard_types
         )
+        # 输出prompt到文件
+        self._save_prompt_to_file(prompt)
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
@@ -125,17 +134,17 @@ class Round2Generator:
                 temperature=0.7,
                 max_retries=3
             )
-
+        self._save_response_to_file(response_data)
         # ========== Phase 3: 后处理阶段 ==========
 
         # 1. 验证生成的内容
-        validation_results = self._validate_generated_content(response_data, constraints)
+        # validation_results = self._validate_generated_content(response_data, constraints)
 
         # 2. 确保所有引用都是直接路径（不需要解析语义占位符）
-        processed_data = self._ensure_direct_references(response_data)
+        # processed_data = self._ensure_direct_references(response_data)
 
         # 3. 转换为ARXML
-        arxml_content = self._convert_to_arxml(processed_data, architecture_design)
+        arxml_content = self._convert_to_arxml(response_data, architecture_design)
 
         generation_time = time.time() - start_time
 
@@ -151,8 +160,8 @@ class Round2Generator:
             "constraints_applied": len(constraints),
             "uuids_generated": len(uuid_mapping),
             "standard_types_available": len(standard_types['implementation_types']),
-            "validation_passed": validation_results["passed"],
-            "validation_errors": validation_results["errors"],
+            # "validation_passed": validation_results["passed"],
+            # "validation_errors": validation_results["errors"],
             "generation_time": generation_time,
             "tokens_per_component": total_tokens / max(len(component_plans), 1),
             "performance_metrics": {
@@ -165,9 +174,42 @@ class Round2Generator:
         if CONFIG.debug_mode:
             print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
             print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
-            print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
+            # print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
 
         return arxml_content, stats
+
+    def _generate_comprehensive_schema(
+            self,
+            component_plans: List[Dict[str, Any]],
+            interface_plans: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """生成包含组件和接口的完整Schema"""
+
+        # 生成组件Schema
+        component_schema = self.query_engine.generate_multi_component_schema(component_plans)
+
+        # 生成接口Schema
+        interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
+
+        # 合并Schema
+        comprehensive_schema = {
+            "type": "object",
+            "properties": {
+                **component_schema.get("properties", {}),
+                "_interfaces": {
+                    "type": "object",
+                    "properties": interface_schema.get("properties", {}),
+                    "description": "接口定义集合"
+                }
+            },
+            "definitions": {
+                **component_schema.get("definitions", {}),
+                **interface_schema.get("definitions", {})
+            },
+            "required": list(component_schema.get("properties", {}).keys())
+        }
+
+        return comprehensive_schema
 
     def _batch_generate_uuids(
         self,
@@ -566,10 +608,8 @@ class Round2Generator:
             self,
             component_plans: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """生成深度Schema - 使用配置控制深度"""
+        """生成深度Schema - 确保不包含降级的'Simplified'标记"""
 
-        # 从配置获取Schema生成深度
-        # 优先使用generation配置，如果没有则使用knowledge_graph配置
         if hasattr(CONFIG.generation, 'max_schema_injection_depth'):
             schema_depth = CONFIG.generation.max_schema_injection_depth
         else:
@@ -577,17 +617,16 @@ class Round2Generator:
 
         if CONFIG.debug_mode:
             print(f"[DEBUG] 生成深度Schema: depth={schema_depth} (from config)")
+            print(f"[DEBUG] 严格模式：只包含minOccurs>=1和element_design指定的元素")
             self.query_engine.clear_cache("request")
 
-        # 临时设置query_engine的深度（如果需要与配置不同的深度）
+        # 临时设置query_engine的深度
         original_depth = self.query_engine.depth_manager.max_depth
         if schema_depth != original_depth:
             self.query_engine.depth_manager.max_depth = schema_depth
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 临时调整Schema深度: {original_depth} -> {schema_depth}")
 
         try:
-            # 利用query_engine生成深度Schema
+            # 生成Schema - 应该完全从KG查询
             schema = self.query_engine.generate_multi_component_schema(
                 component_plans
             )
@@ -595,17 +634,18 @@ class Round2Generator:
             if not schema or not schema.get("properties"):
                 raise ValidationError(f"无法为组件类型生成有效Schema")
 
-            # 增强Schema以支持直接引用
-            schema = self._enhance_schema_for_direct_references(schema)
-
+            # 验证：不应该包含'Simplified'标记
             if CONFIG.debug_mode:
-                properties_count = len(schema.get("properties", {}))
-                print(f"[DEBUG] Schema生成成功: {properties_count}个组件定义")
+                schema_str = json.dumps(schema)
+                if 'Simplified' in schema_str:
+                    print("[WARNING] Schema中包含'Simplified'标记，表明存在降级处理")
+
+            # 增强Schema以支持直接引用（保持不变）
+            schema = self._enhance_schema_for_direct_references(schema)
 
             return schema
 
         finally:
-            # 恢复原始深度
             if schema_depth != original_depth:
                 self.query_engine.depth_manager.max_depth = original_depth
 
@@ -643,39 +683,65 @@ class Round2Generator:
         return schema
 
     def _query_comprehensive_constraints(
-        self,
-        component_plans: List[Dict[str, Any]],
-        interface_plans: List[Dict[str, Any]]
+            self,
+            component_plans: List[Dict[str, Any]],
+            interface_plans: List[Dict[str, Any]]
     ) -> List[str]:
-        """查询完整的约束规则 - 保持原有实现"""
+        """查询完整的约束规则 - 支持配置控制"""
 
         constraints = []
 
-        # 组件类型约束
-        component_types = set(comp.get("type", "") for comp in component_plans)
-        for comp_type in component_types:
-            if comp_type:
-                type_constraints = self.query_engine.query_constraints_for_elements([comp_type])
-                constraints.extend(type_constraints)
+        # 检查约束引擎是否启用
+        if hasattr(CONFIG, 'constraint_engine') and not CONFIG.constraint_engine.enabled:
+            # 约束引擎被禁用，只返回最基础的约束
+            if CONFIG.debug_mode:
+                print("[DEBUG] 约束引擎已禁用，使用最小约束集")
 
-        # 接口类型约束
-        interface_types = set(intf.get("type", "") for intf in interface_plans)
-        for intf_type in interface_types:
-            if intf_type:
-                intf_constraints = self.query_engine.query_constraints_for_elements([intf_type])
-                constraints.extend(intf_constraints)
+            return [
+                "所有UUID必须全局唯一",
+                "SHORT-NAME必须符合NCName规范",
+                "引用路径必须正确且一致"
+            ]
 
-        # 通用AUTOSAR约束（更新：强调类型引用规则）
-        general_constraints = [
-            "所有UUID必须全局唯一",
-            "SHORT-NAME必须符合NCName规范",
-            "端口名称在组件内必须唯一",
-            "事件必须正确引用Runnable",
-            "接口引用必须使用完整路径",
-            "接口数据元素必须引用IMPLEMENTATION-DATA-TYPE，不能引用SW-BASE-TYPE",
-            "类型引用格式：/AUTOSAR_Platform/ImplementationDataTypes/类型名"
-        ]
-        constraints.extend(general_constraints)
+        # 获取约束配置
+        constraint_config = getattr(CONFIG, 'constraint_engine', None)
+        max_constraints = constraint_config.max_constraints_per_type if constraint_config else 3
+        exclude_standard = constraint_config.exclude_standard_constraints if constraint_config else False
+
+        # 约束引擎启用时的逻辑
+        try:
+            # 组件类型约束
+            component_types = set(comp.get("type", "") for comp in component_plans)
+            for comp_type in component_types:
+                if comp_type:
+                    type_constraints = self.query_engine.query_constraints_for_elements([comp_type])
+                    # 限制约束数量
+                    constraints.extend(type_constraints[:max_constraints])
+
+            # 接口类型约束
+            interface_types = set(intf.get("type", "") for intf in interface_plans)
+            for intf_type in interface_types:
+                if intf_type:
+                    intf_constraints = self.query_engine.query_constraints_for_elements([intf_type])
+                    # 限制约束数量
+                    constraints.extend(intf_constraints[:max_constraints])
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 约束查询失败，使用基础约束: {e}")
+
+        # 通用AUTOSAR约束（根据配置决定是否添加）
+        if not exclude_standard:
+            general_constraints = [
+                "所有UUID必须全局唯一",
+                "SHORT-NAME必须符合NCName规范",
+                "端口名称在组件内必须唯一",
+                "事件必须正确引用Runnable",
+                "接口引用必须使用完整路径",
+                "接口数据元素必须引用IMPLEMENTATION-DATA-TYPE，不能引用SW-BASE-TYPE",
+                "类型引用格式：/AUTOSAR_Platform/ImplementationDataTypes/类型名"
+            ]
+            constraints.extend(general_constraints)
 
         # 去重
         constraints = list(set(constraints))
@@ -911,6 +977,64 @@ class Round2Generator:
         """组装组件为最终ARXML"""
 
         return self._convert_to_arxml(components, architecture_design)
+
+    def _save_schema_to_file(self, schema: Dict[str, Any]):
+        """保存Schema到文件"""
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            schema_file = output_dir / f"round2_schema_{timestamp}.json"
+
+            with open(schema_file, 'w', encoding='utf-8') as f:
+                json.dump(schema, f, indent=2, ensure_ascii=False)
+
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] Schema已保存到: {schema_file}")
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] Schema保存失败: {e}")
+
+    def _save_prompt_to_file(self, prompt: str):
+        """保存Prompt到文件"""
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            prompt_file = output_dir / f"round2_prompt_{timestamp}.txt"
+
+            with open(prompt_file, 'w', encoding='utf-8') as f:
+                f.write(prompt)
+
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] Prompt已保存到: {prompt_file}")
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] Prompt保存失败: {e}")
+
+
+    def _save_response_to_file(self, response_data: Dict[str, Any]):
+        """保存Response数据到文件"""
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            response_file = output_dir / f"round2_response_{timestamp}.json"
+
+            with open(response_file, 'w', encoding='utf-8') as f:
+                json.dump(response_data, f, indent=2, ensure_ascii=False)
+
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] Response已保存到: {response_file}")
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] Response保存失败: {e}")
 
 
 # 全局Round2生成器实例

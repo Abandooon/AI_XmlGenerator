@@ -29,6 +29,15 @@ knowledge_graph:
   neo4j_user: "neo4j"
   max_safety_depth: 100                            # 提升安全深度，允许更深的Schema
 
+# ===== 约束引擎配置 =====
+constraint_engine:
+  enabled: false                    # 是否启用约束引擎（关闭可节省token）
+  max_constraints_per_type: 3       # 每个类型最多返回的约束数量
+  constraint_types:                 # 要包含的约束类型
+    - MODEL_OCL                     # 模型约束
+    - DATA_TYPE                     # 数据类型约束
+  exclude_standard_constraints: false  # 是否排除通用约束
+
 # ===== standard_types配置 =====
 standard_types:
   standard_types_path: "src/llm_generation/standard_types/data"
@@ -103,6 +112,84 @@ round1_schema:
       - "CATEGORY"                 # min_occurs: 0, max_occurs: 1
       - "ADMIN-DATA"               # min_occurs: 0, max_occurs: 1
       - "ANNOTATION"               # min_occurs: 0, max_occurs: -1
+
+  # Round1架构设计增强配置
+  round1_element_design:
+    # 端口类型定义
+    port_types:
+      - name: "P-PORT-PROTOTYPE"
+        description: "Provided port for sending data"
+      - name: "R-PORT-PROTOTYPE"
+        description: "Required port for receiving data"
+      - name: "PR-PORT-PROTOTYPE"
+        description: "Provided-Required port for bidirectional"
+
+    # 事件类型定义（基于ports_events.json）
+    event_types:
+      - name: "TIMING-EVENT"
+        description: "Periodic time-triggered event"
+      - name: "DATA-RECEIVED-EVENT"
+        description: "Triggered when data is received"
+      - name: "DATA-SEND-COMPLETED-EVENT"
+        description: "Triggered when data send completes"
+      - name: "OPERATION-INVOKED-EVENT"
+        description: "Triggered when operation is called"
+      - name: "MODE-SWITCH-EVENT"
+        description: "Triggered on mode changes"
+      - name: "INIT-EVENT"
+        description: "Initialization event"
+      - name: "DATA-RECEIVE-ERROR-EVENT"
+        description: "Error in data reception"
+      - name: "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT"
+        description: "Async server call completion"
+      - name: "BACKGROUND-EVENT"
+        description: "Background processing event"
+      - name: "DATA-WRITE-COMPLETED-EVENT"
+        description: "Data write completion"
+      - name: "EXTERNAL-TRIGGER-OCCURRED-EVENT"
+        description: "External trigger"
+      - name: "INTERNAL-TRIGGER-OCCURRED-EVENT"
+        description: "Internal trigger"
+      - name: "MODE-SWITCHED-ACK-EVENT"
+        description: "Mode switch acknowledgment"
+      - name: "SWC-MODE-MANAGER-ERROR-EVENT"
+        description: "Mode manager error"
+      - name: "TRANSFORMER-HARD-ERROR-EVENT"
+        description: "Transformer error"
+
+    # 新增：RunnableEntity详细配置
+    runnable_entity_config:
+      required_elements:
+        - "SHORT-NAME"                    # 继承自Identifiable
+        - "SYMBOL"                         # RunnableEntity必需
+        - "MINIMUM-START-INTERVAL"        # 继承自ExecutableEntity
+      optional_elements:
+        - "CAN-BE-INVOKED-CONCURRENTLY"
+        - "ARGUMENTS"
+        - "ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS"
+        - "DATA-READ-ACCESSS"
+        - "DATA-RECEIVE-POINT-BY-ARGUMENTS"
+        - "DATA-RECEIVE-POINT-BY-VALUES"
+        - "DATA-SEND-POINTS"
+        - "DATA-WRITE-ACCESSS"
+        - "EXTERNAL-TRIGGERING-POINTS"
+        - "INTERNAL-TRIGGERING-POINTS"
+        - "MODE-ACCESS-POINTS"
+        - "MODE-SWITCH-POINTS"
+        - "PARAMETER-ACCESSS"
+        - "READ-LOCAL-VARIABLES"
+        - "SERVER-CALL-POINTS"
+        - "WAIT-POINTS"
+        - "WRITTEN-LOCAL-VARIABLES"
+        # 继承自ExecutableEntity的可选元素
+        - "ACTIVATION-REASONS"
+        - "CAN-ENTER-EXCLUSIVE-AREA-REFS"
+        - "EXCLUSIVE-AREA-NESTING-ORDER-REFS"
+        - "REENTRANCY-LEVEL"
+        - "RUNS-INSIDE-EXCLUSIVE-AREA-REFS"
+        - "SW-ADDR-METHOD-REF"
+
+  # 修改理由：需要让Round1能够选择具体的端口和事件类型，而不是简单的true/false
 
   # 基于round1.json中的PORT-INTERFACE定义
   interface_types:

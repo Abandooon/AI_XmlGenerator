@@ -422,7 +422,6 @@ class GeminiClient:
                 else:
                     raise LLMAPIError(f"Generation failed: {str(e)}")
 
-    # 保留原有的其他方法...（省略未修改的方法）
 
     def _convert_json_schema_to_gemini(self, json_schema: Dict) -> Dict:
         """将JSON Schema转换为Gemini Response Schema格式"""

@@ -24,6 +24,14 @@ class ComponentTypesConfig:
     required_attributes: List[str] = field(default_factory=list)
     optional_attributes: List[str] = field(default_factory=list)
 
+@dataclass
+class ConstraintEngineConfig:
+    """约束引擎配置"""
+    enabled: bool
+    max_constraints_per_type: int
+    constraint_types: List[str]
+    exclude_standard_constraints: bool
+
 
 @dataclass
 class InterfaceTypesConfig:
@@ -55,6 +63,35 @@ class OutputSchemaConfig:
     interface_plan: OutputSchemaFieldConfig = field(default_factory=OutputSchemaFieldConfig)
 
 
+# 在其他dataclass定义之后，Round1SchemaConfig定义之前添加：
+
+@dataclass
+class PortType:
+    """端口类型定义"""
+    name: str
+    description: str
+
+
+@dataclass
+class EventType:
+    """事件类型定义"""
+    name: str
+    description: str
+
+
+@dataclass
+class Round1ElementDesignConfig:
+    """Round1元素设计配置"""
+    port_types: List[PortType] = field(default_factory=list)
+    event_types: List[EventType] = field(default_factory=list)
+
+@dataclass
+class RunnableEntityConfig:
+    """RunnableEntity配置"""
+    required_elements: List[str] = field(default_factory=list)
+    optional_elements: List[str] = field(default_factory=list)
+
+
 @dataclass
 class Round1SchemaConfig:
     """Round1 Schema配置 - 完整的嵌套结构"""
@@ -62,6 +99,9 @@ class Round1SchemaConfig:
     interface_types: InterfaceTypesConfig = field(default_factory=InterfaceTypesConfig)
     mode_declaration_group: ModeDeclarationGroupConfig = field(default_factory=ModeDeclarationGroupConfig)
     output_schema: OutputSchemaConfig = field(default_factory=OutputSchemaConfig)
+    round1_element_design: Round1ElementDesignConfig = field(default_factory=Round1ElementDesignConfig)
+    runnable_entity_config: RunnableEntityConfig = field(default_factory=RunnableEntityConfig)
+
 
 @dataclass
 class ComponentType:
@@ -223,6 +263,7 @@ class SystemConfig:
     schema_generation: SchemaGenerationConfig  # 新增
     round1_schema: Round1SchemaConfig  # 新增
     metamodel_injection: MetamodelInjectionConfig  # 新增
+    constraint_engine: ConstraintEngineConfig
     debug_mode: bool
     output_dir: Path
 
@@ -230,7 +271,6 @@ class SystemConfig:
 def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
     """从YAML配置加载Round1Schema配置"""
     round1_yaml = yaml_config.get("round1_schema", {})
-
 
     # 加载组件类型配置
     component_types_yaml = round1_yaml.get("component_types", {})
@@ -247,8 +287,6 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
         required_attributes=interface_types_yaml.get("required_attributes", []),
         optional_attributes=interface_types_yaml.get("optional_attributes", [])
     )
-
-
 
     # 加载模式声明组配置
     mode_group_yaml = round1_yaml.get("mode_declaration_group", {})
@@ -278,17 +316,50 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
         optional_fields=interface_plan_yaml.get("optional_fields", [])
     )
 
+    # 加载RunnableEntity配置（新增）
+    runnable_config_yaml = round1_yaml.get("runnable_entity_config", {})
+    runnable_entity_config = RunnableEntityConfig(
+        required_elements=runnable_config_yaml.get("required_elements", []),
+        optional_elements=runnable_config_yaml.get("optional_elements", [])
+    )
+
     output_schema_config = OutputSchemaConfig(
         system_analysis=system_analysis_config,
         component_plan=component_plan_config,
         interface_plan=interface_plan_config
     )
 
+    # 加载Round1元素设计配置（新增）
+    element_design_yaml = round1_yaml.get("round1_element_design", {})
+
+    # 解析端口类型
+    port_types_list = []
+    for port_type_data in element_design_yaml.get("port_types", []):
+        port_types_list.append(PortType(
+            name=port_type_data.get("name", ""),
+            description=port_type_data.get("description", "")
+        ))
+
+    # 解析事件类型
+    event_types_list = []
+    for event_type_data in element_design_yaml.get("event_types", []):
+        event_types_list.append(EventType(
+            name=event_type_data.get("name", ""),
+            description=event_type_data.get("description", "")
+        ))
+
+    round1_element_design_config = Round1ElementDesignConfig(
+        port_types=port_types_list,
+        event_types=event_types_list
+    )
+
     return Round1SchemaConfig(
         component_types=component_types_config,
         interface_types=interface_types_config,
         mode_declaration_group=mode_group_config,
-        output_schema=output_schema_config
+        output_schema=output_schema_config,
+        round1_element_design=round1_element_design_config,
+        runnable_entity_config=runnable_entity_config
     )
 
 def _create_component_types(data: List[Dict]) -> List[ComponentType]:
@@ -392,6 +463,9 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
 
         memory_config = yaml_config.get("memory", {})
 
+        # 约束引擎配置（新增）
+        constraint_config = yaml_config.get("constraint_engine", {})
+
         # 构建配置对象
         config = SystemConfig(
             llm=LLMConfig(
@@ -413,6 +487,12 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 enable_user_preferences=memory_config.get("enable_user_preferences", True),
                 storage_backend=memory_config.get("storage_backend", "memory"),
                 cache_size=memory_config.get("cache_size", 100)
+            ),
+            constraint_engine=ConstraintEngineConfig(
+            enabled=constraint_config.get("enabled"),
+            max_constraints_per_type=constraint_config.get("max_constraints_per_type"),
+            constraint_types=constraint_config.get("constraint_types", ["MODEL_OCL", "DATA_TYPE"]),
+            exclude_standard_constraints=constraint_config.get("exclude_standard_constraints")
             ),
             knowledge_graph=KnowledgeGraphConfig(
                 neo4j_uri=kg_config["neo4j_uri"],

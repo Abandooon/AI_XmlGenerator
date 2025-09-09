@@ -229,6 +229,82 @@ class Round1Designer:
                 "functional_decomposition", "data_flow_analysis"]
         }
 
+        # 加载端口和事件类型配置 - 修正：使用属性访问而非字典访问
+        port_types = round1_config.round1_element_design.port_types
+        event_types = round1_config.round1_element_design.event_types
+        # 加载RunnableEntity详细配置
+        runnable_config = round1_config.runnable_entity_config
+
+        # 构建element_design的schema - 更精细的结构
+        element_design_schema = {
+            "type": "object",
+            "description": "LLM决定需要哪些具体元素",
+            "properties": {
+                "ports": {
+                    "type": "object",
+                    "properties": {
+                        "needed": {"type": "boolean"},
+                        "types": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [pt.name for pt in port_types]  # 修正：使用.name属性访问
+                            },
+                            "description": "需要的具体端口类型"
+                        },
+                        "details": {"type": "string"}
+                    }
+                },
+                "internal_behaviors": {
+                    "type": "object",
+                    "properties": {
+                        "needed": {"type": "boolean"},
+                        "events": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [et.name for et in event_types]  # 修正：使用.name属性访问
+                                    },
+                                    "name": {"type": "string"},
+                                    "trigger": {"type": "string"}
+                                }
+                            },
+                            "description": "需要的具体事件类型和配置"
+                        },
+                        "runnables": {
+                        "type": "object",
+                        "properties": {
+                            "names": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Runnable实体名称列表"
+                            },
+                            "required_elements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": runnable_config.required_elements
+                                },
+                                "description": "每个RunnableEntity必需的元素"
+                            },
+                            "optional_elements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": runnable_config.optional_elements
+                                },
+                                "description": "每个RunnableEntity可选的元素"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         # 构建component_plan的schema
         component_plan_schema = {
             "type": "array",
@@ -278,27 +354,7 @@ class Round1Designer:
                         "type": "string",
                         "description": "行为特征描述"
                     },
-                    "element_design": {
-                        "type": "object",
-                        "description": "LLM规划的元素使用",
-                        "properties": {
-                            "ports": {
-                                "type": "object",
-                                "properties": {
-                                    "needed": {"type": "boolean"},
-                                    "details": {"type": "string"}
-                                }
-                            },
-                            "internal_behaviors": {
-                                "type": "object",
-                                "properties": {
-                                    "needed": {"type": "boolean"},
-                                    "runnables": {"type": "array", "items": {"type": "string"}},
-                                    "events": {"type": "array", "items": {"type": "string"}}
-                                }
-                            }
-                        }
-                    }
+                    "element_design": element_design_schema
                 },
                 "required": round1_config.output_schema.component_plan.required_fields if round1_config.output_schema.component_plan.required_fields else [
                     "component_id", "name", "type", "purpose"

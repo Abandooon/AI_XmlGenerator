@@ -321,34 +321,58 @@ $large_scale_specifications
             required_elements_detail=required_elements_detail
         )
 
-    def _format_component_list_detail(self, component_plans: List[Dict]) -> str:
-        """格式化详细的组件列表"""
+    def _format_component_list_detail(self, component_plans: List[Dict[str, Any]]) -> str:
+        """格式化组件列表的详细信息"""
+
+        if not component_plans:
+            return "无组件"
+
         lines = []
         for i, comp in enumerate(component_plans, 1):
-            lines.append(f"{i}. **{comp.get('name', f'Component{i}')}**")
-            lines.append(f"   - 类型: {comp.get('type', '')}")
-            lines.append(f"   - 功能: {comp.get('purpose', '')}")
-            lines.append(f"   - 复杂度: {comp.get('estimated_complexity', 'Medium')}")
+            comp_name = comp.get("name", f"Component_{i}")
+            comp_type = comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
 
-            # 端口估计
-            if 'port_estimates' in comp:
-                ports = comp['port_estimates']
-                lines.append(f"   - 输入端口: {ports.get('input_ports', 'N/A')}")
-                lines.append(f"   - 输出端口: {ports.get('output_ports', 'N/A')}")
+            lines.append(f"{i}. {comp_name} ({comp_type})")
 
-            # 行为特征
-            if 'behavioral_characteristics' in comp:
-                behavior = comp['behavioral_characteristics']
-                if 'runnables' in behavior:
-                    lines.append(f"   - Runnables: {', '.join(behavior['runnables'])}")
-                if 'events' in behavior:
-                    lines.append(f"   - Events: {', '.join(behavior['events'])}")
+            # 添加目的描述
+            if comp.get("purpose"):
+                lines.append(f"   目的: {comp.get('purpose')}")
 
-            # 直接引用
-            if 'direct_references' in comp:
-                lines.append(f"   - 引用: {', '.join(comp['direct_references'])}")
+            # 添加元素设计信息（如果存在）
+            element_design = comp.get("element_design", {})
 
-            lines.append("")
+            # 处理端口信息
+            if element_design.get("ports", {}).get("needed"):
+                port_details = element_design["ports"].get("details", "需要端口")
+                lines.append(f"   端口: {port_details}")
+
+            # 处理内部行为信息
+            if element_design.get("internal_behaviors", {}).get("needed"):
+                behavior = element_design["internal_behaviors"]
+
+                # 安全处理runnables - 可能是字符串或列表
+                runnables = behavior.get("runnables", [])
+                if isinstance(runnables, str):
+                    # 如果是字符串，尝试分割或直接使用
+                    lines.append(f"   - Runnables: {runnables}")
+                elif isinstance(runnables, list):
+                    # 如果是列表，join处理
+                    if runnables:
+                        lines.append(f"   - Runnables: {', '.join(str(r) for r in runnables)}")
+
+                # 安全处理events - 可能是字符串或列表
+                events = behavior.get("events", [])
+                if isinstance(events, str):
+                    lines.append(f"   - Events: {events}")
+                elif isinstance(events, list):
+                    if events:
+                        lines.append(f"   - Events: {', '.join(str(e) for e in events)}")
+
+            # 添加复杂度评估
+            if comp.get("estimated_complexity"):
+                lines.append(f"   复杂度: {comp.get('estimated_complexity')}")
+
+            lines.append("")  # 空行分隔
 
         return "\n".join(lines)
 
