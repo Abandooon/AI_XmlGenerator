@@ -39,215 +39,268 @@ class Round2Generator:
             print(f"[DEBUG] 已加载标准类型: {type_stats}")
 
     def generate_arxml(
-        self,
-        architecture_design: ArchitectureDesign,
-        memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None
+            self,
+            architecture_design: ArchitectureDesign,
+            memory_context: str = "",
+            custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
-        """生成详细的ARXML内容 - 修复版"""
-
-        try:
-            component_plans = architecture_design.component_plan
-            if not component_plans:
-                raise ValidationError("架构设计中没有组件计划")
-
-            component_count = len(component_plans)
-
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 开始Round2生成: {component_count}个组件")
-                print(f"[DEBUG] 单批阈值: {CONFIG.generation.single_batch_threshold}")
-
-            # 优先尝试单批生成
-            if component_count <= CONFIG.generation.single_batch_threshold:
-                return self._generate_unified_batch(
-                    architecture_design, memory_context, custom_requirements
-                )
-            else:
-                # 仅在超大规模时才考虑分批（>25个组件）
-                return self._generate_intelligent_batches(
-                    architecture_design, memory_context, custom_requirements
-                )
-
-        except Exception as e:
-            raise ValidationError(f"ARXML生成失败: {str(e)}")
-
-    def _generate_unified_batch(
-        self,
-        architecture_design: ArchitectureDesign,
-        memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None
-    ) -> Tuple[str, Dict[str, Any]]:
-        """统一批次生成 - 修复版，无函数调用"""
+        """Round2 逐组件生成：
+        - 为所有接口先生成“只读参考 Schema”
+        - 按组件逐一生成（每个组件独立 Schema + Prompt + 推理）
+        - 校验并合并为最终 JSON，再转 ARXML
+        """
 
         start_time = time.time()
-        component_plans = architecture_design.component_plan
-        interface_plans = architecture_design.interface_plan
+        component_plans = architecture_design.component_plan or []
+        interface_plans = architecture_design.interface_plan or []
 
         if CONFIG.debug_mode:
-            print(f"[DEBUG] 统一批次生成: {len(component_plans)}个组件, {len(interface_plans)}个接口")
-            print(f"[DEBUG] 使用纯结构化输出模式（无函数调用）")
+            print(f"[DEBUG] Round2逐组件模式：{len(component_plans)} 个组件，{len(interface_plans)} 个接口")
 
-        # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
+        # 1) 先准备接口 Schema（只读参考，不混入组件根）
+        interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
 
-        # 1. 生成深度Schema
-        # arxml_schema = self._generate_deep_schema(component_plans)
-
-        arxml_schema = self._generate_comprehensive_schema(component_plans, interface_plans)
-
-        # 输出schema到文件
-        self._save_schema_to_file(arxml_schema)
-
-        # 2. 批量生成UUID（预生成所有需要的UUID）
-        uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
-
-        # 3. 查询完整约束信息
-        constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
-
-        # 4. 准备标准类型引用（使用动态加载的类型）
+        # 2) 全局约束集合（随后按组件过滤）
+        constraints_all = self._query_comprehensive_constraints(component_plans, interface_plans)
         standard_types = self._prepare_standard_types()
 
-        # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
+        merged_json: Dict[str, Any] = {}
+        token_stats = {"input": 0, "output": 0, "total": 0}
 
-        # 【修复】：构建增强的提示词（修复参数传递）
-        prompt = self._build_enhanced_prompt(
-            architecture_design,
-            constraints,
-            memory_context,
-            custom_requirements,
-            uuid_mapping,
-            standard_types
-        )
-        # 输出prompt到文件
-        self._save_prompt_to_file(prompt)
+        for comp in component_plans:
+            comp_name = comp.get("name", "Component")
+            # 2.1 生成“单组件 Schema”（只含当前类型 definitions + 顶层 comp_name）
+            comp_schema = self._build_single_component_schema(comp)
 
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
-            print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
-            print(f"[DEBUG] 约束规则数: {len(constraints)}")
-            print(f"[DEBUG] 标准类型数: {len(standard_types['implementation_types'])}")
+            # 保存单组件 Schema 以便调试
+            self._save_component_schema_to_file(comp_name, comp_schema)
 
-        # 调用LLM生成（纯结构化输出，无函数调用）
-        response_data, input_tokens, output_tokens, total_tokens = \
-            self.gemini_client.generate_with_schema(
+            # 2.2 过滤与该组件相关的约束，减少无关噪声
+            constraints = self._filter_constraints_for_component(comp, constraints_all)
+
+            # 2.3 逐组件 Prompt（接口 Schema 以只读参考方式注入）
+            prompt = template_manager.get_round2_prompt_single(
+                comp_plan=comp,
+                interface_plans=interface_plans,
+                constraints=constraints,
+                component_schema=comp_schema,
+                interface_schema=interface_schema,
+                memory_context=memory_context or ""
+            )
+
+            # 补充标准类型引用规则（用于 *-INTERFACE-TREF 的 DEST 指引等）
+            prompt += self._format_standard_types(standard_types)
+            prompt += self._add_direct_reference_guidance(architecture_design)
+
+            # 2.4 调用 LLM（严格约束该组件 Schema）
+            resp, in_tok, out_tok, ttl_tok = self.gemini_client.generate_with_schema(
                 prompt=prompt,
-                schema=arxml_schema,
+                schema=comp_schema,
                 temperature=0.7,
                 max_retries=3
             )
-        self._save_response_to_file(response_data)
-        # ========== Phase 3: 后处理阶段 ==========
+            self._save_component_prompt_to_file(comp_name, prompt)
+            self._save_component_response_to_file(comp_name, resp)
 
-        # 1. 验证生成的内容
-        # validation_results = self._validate_generated_content(response_data, constraints)
+            token_stats["input"] += in_tok
+            token_stats["output"] += out_tok
+            token_stats["total"] += ttl_tok
 
-        # 2. 确保所有引用都是直接路径（不需要解析语义占位符）
-        # processed_data = self._ensure_direct_references(response_data)
+            # 2.5 合并当前组件结果（顶层只会有一个键 = comp_name）
+            if isinstance(resp, dict):
+                merged_json.update(resp)
 
-        # 3. 转换为ARXML
-        arxml_content = self._convert_to_arxml(response_data, architecture_design)
+        # 3) 合并接口（如果你的后续 ARXML 转换需要放在同一 JSON 下）
+        if interface_plans:
+            merged_json["_interfaces"] = self._extract_interfaces_as_readonly(interface_plans)
 
+        # 4) 转换为 ARXML
+        arxml_content = self._convert_to_arxml(merged_json, architecture_design)
+
+        # 5) 统计
         generation_time = time.time() - start_time
-
-        # 详细统计信息
         stats = {
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": total_tokens,
-            "component_count": len(component_plans),
-            "interface_count": len(interface_plans),
-            "generation_mode": "unified_batch",
-            "schema_properties": len(arxml_schema.get("properties", {})),
-            "constraints_applied": len(constraints),
-            "uuids_generated": len(uuid_mapping),
-            "standard_types_available": len(standard_types['implementation_types']),
-            # "validation_passed": validation_results["passed"],
-            # "validation_errors": validation_results["errors"],
-            "generation_time": generation_time,
-            "tokens_per_component": total_tokens / max(len(component_plans), 1),
-            "performance_metrics": {
-                "time_per_component": generation_time / max(len(component_plans), 1),
-                "schema_complexity": self._calculate_schema_complexity(arxml_schema),
-                "output_efficiency": output_tokens / max(len(str(response_data)), 1)
-            }
+            "input_tokens": token_stats["input"],
+            "output_tokens": token_stats["output"],
+            "total_tokens": token_stats["total"],
+            "generation_time": generation_time
         }
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
-            print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
-            # print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
-
         return arxml_content, stats
 
-    def _generate_comprehensive_schema(
-            self,
-            component_plans: List[Dict[str, Any]],
-            interface_plans: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
-        """生成包含组件和接口的完整Schema"""
+    def _build_single_component_schema(self, comp: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Round2 单组件 schema 构建入口：
+        - 不做任何 runnable elements 的合并或简化
+        - 直接把 Round1 的 element_design 交给 query_engine
+        """
+        return self.query_engine.generate_component_schema_fixed(comp)
 
-        # 生成组件Schema
-        component_schema = self.query_engine.generate_multi_component_schema(component_plans)
+    # def _generate_unified_batch(
+    #     self,
+    #     architecture_design: ArchitectureDesign,
+    #     memory_context: str = "",
+    #     custom_requirements: Dict[str, Any] = None
+    # ) -> Tuple[str, Dict[str, Any]]:
+    #     """统一批次生成 - 修复版，无函数调用"""
+    #
+    #     start_time = time.time()
+    #     component_plans = architecture_design.component_plan
+    #     interface_plans = architecture_design.interface_plan
+    #
+    #     if CONFIG.debug_mode:
+    #         print(f"[DEBUG] 统一批次生成: {len(component_plans)}个组件, {len(interface_plans)}个接口")
+    #         print(f"[DEBUG] 使用纯结构化输出模式（无函数调用）")
+    #
+    #     # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
+    #
+    #     # 1. 生成深度Schema
+    #     # arxml_schema = self._generate_deep_schema(component_plans)
+    #
+    #     arxml_schema = self._generate_comprehensive_schema(component_plans, interface_plans)
+    #
+    #     # 输出schema到文件
+    #     self._save_schema_to_file(arxml_schema)
+    #
+    #     # 2. 批量生成UUID（预生成所有需要的UUID）
+    #     # uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
+    #
+    #     # 3. 查询完整约束信息
+    #     constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
+    #
+    #     # 4. 准备标准类型引用（使用动态加载的类型）
+    #     standard_types = self._prepare_standard_types()
+    #
+    #     # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
+    #
+    #     # 【修复】：构建增强的提示词（修复参数传递）
+    #     prompt = self._build_enhanced_prompt(
+    #         architecture_design,
+    #         constraints,
+    #         memory_context,
+    #         custom_requirements,
+    #         standard_types,
+    #         arxml_schema
+    #     )
+    #     # 输出prompt到文件
+    #     self._save_prompt_to_file(prompt)
+    #
+    #     if CONFIG.debug_mode:
+    #         print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
+    #         # print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
+    #         print(f"[DEBUG] 约束规则数: {len(constraints)}")
+    #         print(f"[DEBUG] 标准类型数: {len(standard_types['implementation_types'])}")
+    #
+    #     # 调用LLM生成（纯结构化输出，无函数调用）
+    #     response_data, input_tokens, output_tokens, total_tokens = \
+    #         self.gemini_client.generate_with_schema(
+    #             prompt=prompt,
+    #             schema=arxml_schema,
+    #             temperature=0.7,
+    #             max_retries=3
+    #         )
+    #     self._save_response_to_file(response_data)
+    #     # ========== Phase 3: 后处理阶段 ==========
+    #
+    #     # 1. 验证生成的内容
+    #     # validation_results = self._validate_generated_content(response_data, constraints)
+    #
+    #     # 2. 确保所有引用都是直接路径（不需要解析语义占位符）
+    #     # processed_data = self._ensure_direct_references(response_data)
+    #
+    #     # 3. 转换为ARXML
+    #     arxml_content = self._convert_to_arxml(response_data, architecture_design)
+    #
+    #     generation_time = time.time() - start_time
+    #
+    #     # 详细统计信息
+    #     stats = {
+    #         "input_tokens": input_tokens,
+    #         "output_tokens": output_tokens,
+    #         "total_tokens": total_tokens,
+    #         "component_count": len(component_plans),
+    #         "interface_count": len(interface_plans),
+    #         "generation_mode": "unified_batch",
+    #         "schema_properties": len(arxml_schema.get("properties", {})),
+    #         "constraints_applied": len(constraints),
+    #         # "uuids_generated": len(uuid_mapping),
+    #         "standard_types_available": len(standard_types['implementation_types']),
+    #         # "validation_passed": validation_results["passed"],
+    #         # "validation_errors": validation_results["errors"],
+    #         "generation_time": generation_time,
+    #         "tokens_per_component": total_tokens / max(len(component_plans), 1),
+    #         "performance_metrics": {
+    #             "time_per_component": generation_time / max(len(component_plans), 1),
+    #             "schema_complexity": self._calculate_schema_complexity(arxml_schema),
+    #             "output_efficiency": output_tokens / max(len(str(response_data)), 1)
+    #         }
+    #     }
+    #
+    #     if CONFIG.debug_mode:
+    #         print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
+    #         print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
+    #         # print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
+    #
+    #     return arxml_content, stats
 
-        # 生成接口Schema
-        interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
+    # def _generate_comprehensive_schema(
+    #         self,
+    #         component_plans: List[Dict[str, Any]],
+    #         interface_plans: List[Dict[str, Any]]
+    # ) -> Dict[str, Any]:
+    #     """生成包含组件和接口的完整Schema"""
+    #
+    #     # 生成组件Schema
+    #     component_schema = self.query_engine.generate_multi_component_schema(component_plans)
+    #
+    #     # 生成接口Schema
+    #     interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
+    #
+    #     # 合并Schema
+    #     comprehensive_schema = {
+    #         "type": "object",
+    #         "properties": {
+    #             **component_schema.get("properties", {}),
+    #             "_interfaces": {
+    #                 "type": "object",
+    #                 "properties": interface_schema.get("properties", {}),
+    #                 "description": "接口定义集合"
+    #             }
+    #         },
+    #         "definitions": {
+    #             **component_schema.get("definitions", {}),
+    #             **interface_schema.get("definitions", {})
+    #         },
+    #         "required": list(component_schema.get("properties", {}).keys())
+    #     }
+    #
+    #     return comprehensive_schema
 
-        # 合并Schema
-        comprehensive_schema = {
-            "type": "object",
-            "properties": {
-                **component_schema.get("properties", {}),
-                "_interfaces": {
-                    "type": "object",
-                    "properties": interface_schema.get("properties", {}),
-                    "description": "接口定义集合"
-                }
-            },
-            "definitions": {
-                **component_schema.get("definitions", {}),
-                **interface_schema.get("definitions", {})
-            },
-            "required": list(component_schema.get("properties", {}).keys())
-        }
+    def _filter_constraints_for_component(self, comp_plan: Dict[str, Any], constraints: List[str]) -> List[str]:
+        """按组件特征（端口/内部行为/事件）过滤约束，减少 LLM 负担。"""
+        ed = comp_plan.get("element_design", {}) or {}
+        need_ports = bool(ed.get("ports", {}).get("needed"))
+        need_ib = bool(ed.get("internal_behaviors", {}).get("needed"))
+        event_types = set()
+        for e in ed.get("internal_behaviors", {}).get("events", []) or []:
+            if isinstance(e, dict) and e.get("type"):
+                event_types.add(e["type"])
 
-        return comprehensive_schema
+        filtered = []
+        for c in constraints or []:
+            cs = c or ""
+            # 朴素启发：只保留与需要的部分相关的约束
+            if ("端口" in cs or "PORT" in cs) and not need_ports:
+                continue
+            if ("RUNNABLE" in cs or "事件" in cs or "EVENT" in cs or "INTERNAL-BEHAVIOR" in cs) and not need_ib:
+                continue
+            # 如果指向特定事件类型，但该组件未声明此事件，则跳过
+            if any(et in cs for et in ["TIMING-EVENT", "DATA-RECEIVED-EVENT", "OPERATION-INVOKED-EVENT"]):
+                if not any(et in cs for et in event_types):
+                    continue
+            filtered.append(c)
+        # 去重
+        return sorted(set(filtered))
 
-    def _batch_generate_uuids(
-        self,
-        component_plans: List[Dict[str, Any]],
-        interface_plans: List[Dict[str, Any]]
-    ) -> Dict[str, str]:
-        """批量预生成UUID"""
-
-        uuid_mapping = {}
-
-        # 为每个组件生成UUID
-        for comp in component_plans:
-            comp_name = comp.get("name", "")
-            if comp_name:
-                uuid_mapping[f"component_{comp_name}"] = str(uuid_module.uuid4())
-
-                # 为组件的端口预生成UUID
-                if comp.get("element_design", {}).get("ports", {}).get("needed"):
-                    uuid_mapping[f"port_p_{comp_name}"] = str(uuid_module.uuid4())
-                    uuid_mapping[f"port_r_{comp_name}"] = str(uuid_module.uuid4())
-
-                # 为内部行为预生成UUID
-                if comp.get("element_design", {}).get("internal_behaviors", {}).get("needed"):
-                    uuid_mapping[f"behavior_{comp_name}"] = str(uuid_module.uuid4())
-                    # 为runnables预生成
-                    for runnable in comp.get("element_design", {}).get("internal_behaviors", {}).get("runnables", []):
-                        uuid_mapping[f"runnable_{comp_name}_{runnable}"] = str(uuid_module.uuid4())
-
-        # 为每个接口生成UUID
-        for intf in interface_plans:
-            intf_name = intf.get("name", "")
-            if intf_name:
-                uuid_mapping[f"interface_{intf_name}"] = str(uuid_module.uuid4())
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 预生成 {len(uuid_mapping)} 个UUID")
-
-        return uuid_mapping
 
     def _prepare_standard_types(self) -> Dict[str, Any]:
         """准备标准类型引用信息 - 动态加载版本"""
@@ -327,8 +380,8 @@ class Round2Generator:
         constraints: List[str],
         memory_context: str,
         custom_requirements: Dict[str, Any],
-        uuid_mapping: Dict[str, str],
-        standard_types: Dict[str, Any]
+        standard_types: Dict[str, Any],
+        arxml_schema: Dict[str, Any]
     ) -> str:
         """【修复】：构建增强的提示词（修复参数列表）"""
 
@@ -342,7 +395,8 @@ class Round2Generator:
         prompt = template_manager.get_round2_prompt(
             architecture_design=architecture_design.__dict__,
             constraints=constraints,
-            schema_depth=schema_depth
+            schema_depth=schema_depth,
+            composite_schema=arxml_schema
         )
 
         # 添加记忆上下文
@@ -356,7 +410,7 @@ class Round2Generator:
                 prompt += f"- {key}: {value}\n"
 
         # 添加预生成的UUID映射
-        prompt += self._format_uuid_mapping(uuid_mapping)
+        # prompt += self._format_uuid_mapping(uuid_mapping)
 
         # 添加标准类型引用（改进版）
         prompt += self._format_standard_types(standard_types)
@@ -366,30 +420,6 @@ class Round2Generator:
 
         return prompt
 
-    def _format_uuid_mapping(self, uuid_mapping: Dict[str, str]) -> str:
-        """格式化UUID映射为提示词"""
-
-        prompt = "\n\n## 预生成的UUID（必须使用这些UUID）\n"
-        prompt += "以下是每个元素对应的UUID，请严格使用：\n\n"
-
-        for key, uuid_val in uuid_mapping.items():
-            if key.startswith("component_"):
-                name = key.replace("component_", "")
-                prompt += f"- 组件 {name}: {uuid_val}\n"
-            elif key.startswith("interface_"):
-                name = key.replace("interface_", "")
-                prompt += f"- 接口 {name}: {uuid_val}\n"
-            elif key.startswith("port_"):
-                parts = key.split("_", 2)
-                prompt += f"- 端口 {parts[2]}_{parts[1]}: {uuid_val}\n"
-            elif key.startswith("behavior_"):
-                name = key.replace("behavior_", "")
-                prompt += f"- 内部行为 {name}: {uuid_val}\n"
-            elif key.startswith("runnable_"):
-                parts = key.replace("runnable_", "").split("_", 1)
-                prompt += f"- Runnable {parts[1]} (组件{parts[0]}): {uuid_val}\n"
-
-        return prompt
 
     def _format_standard_types(self, standard_types: Dict[str, Any]) -> str:
         """格式化标准类型引用 - 改进版，基于动态加载的类型"""
@@ -410,42 +440,6 @@ class Round2Generator:
             prompt += f"... 以及其他 {len(standard_types['implementation_types']) - 15} 个标准类型\n"
 
         prompt += "\n### 正确的类型引用示例\n"
-        prompt += "```xml\n"
-        prompt += "<!-- 在SENDER-RECEIVER-INTERFACE中 -->\n"
-        prompt += '<DATA-ELEMENTS>\n'
-        prompt += '  <VARIABLE-DATA-PROTOTYPE>\n'
-        prompt += '    <SHORT-NAME>Temperature</SHORT-NAME>\n'
-        prompt += '    <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">\n'
-        prompt += '      /AUTOSAR_Platform/ImplementationDataTypes/uint16\n'
-        prompt += '    </TYPE-TREF>\n'
-        prompt += '  </VARIABLE-DATA-PROTOTYPE>\n'
-        prompt += '</DATA-ELEMENTS>\n'
-        prompt += "```\n\n"
-
-        prompt += "```xml\n"
-        prompt += "<!-- 在CLIENT-SERVER-INTERFACE中 -->\n"
-        prompt += '<OPERATIONS>\n'
-        prompt += '  <CLIENT-SERVER-OPERATION>\n'
-        prompt += '    <SHORT-NAME>GetStatus</SHORT-NAME>\n'
-        prompt += '    <ARGUMENTS>\n'
-        prompt += '      <ARGUMENT-DATA-PROTOTYPE>\n'
-        prompt += '        <SHORT-NAME>Status</SHORT-NAME>\n'
-        prompt += '        <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">\n'
-        prompt += '          /AUTOSAR_Platform/ImplementationDataTypes/uint8\n'
-        prompt += '        </TYPE-TREF>\n'
-        prompt += '      </ARGUMENT-DATA-PROTOTYPE>\n'
-        prompt += '    </ARGUMENTS>\n'
-        prompt += '  </CLIENT-SERVER-OPERATION>\n'
-        prompt += '</OPERATIONS>\n'
-        prompt += "```\n\n"
-
-        prompt += "### 常见错误\n"
-        prompt += "❌ 错误：直接引用SW-BASE-TYPE\n"
-        prompt += "```xml\n"
-        prompt += '<TYPE-TREF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</TYPE-TREF>  <!-- 错误！ -->\n'
-        prompt += "```\n\n"
-
-        prompt += "✅ 正确：引用IMPLEMENTATION-DATA-TYPE\n"
         prompt += "```xml\n"
         prompt += '<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/uint16</TYPE-TREF>\n'
         prompt += "```\n\n"
@@ -484,203 +478,6 @@ class Round2Generator:
 
         return prompt
 
-    def _validate_generated_content(
-        self,
-        response_data: Dict[str, Any],
-        constraints: List[str]
-    ) -> Dict[str, Any]:
-        """验证生成的内容（后处理）"""
-
-        validation_results = {
-            "passed": True,
-            "errors": [],
-            "warnings": []
-        }
-
-        # 遍历所有组件进行验证
-        for comp_name, comp_data in response_data.items():
-            if isinstance(comp_data, dict) and not comp_name.startswith("_"):
-                # 验证SHORT-NAME
-                if "SHORT-NAME" not in comp_data:
-                    validation_results["errors"].append(f"组件{comp_name}缺少SHORT-NAME")
-                    validation_results["passed"] = False
-
-                # 验证UUID格式
-                if "@UUID" in comp_data:
-                    uuid_val = comp_data["@UUID"]
-                    import re
-                    if not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', uuid_val):
-                        validation_results["errors"].append(f"组件{comp_name}的UUID格式无效")
-                        validation_results["passed"] = False
-
-                # 验证端口引用
-                if "PORTS" in comp_data:
-                    self._validate_port_references(comp_data["PORTS"], comp_name, validation_results)
-
-                # 验证内部行为
-                if "INTERNAL-BEHAVIORS" in comp_data:
-                    self._validate_internal_behaviors(comp_data["INTERNAL-BEHAVIORS"], comp_name, validation_results)
-
-        # 验证接口中的类型引用
-        if "_interfaces" in response_data:
-            for intf_name, intf_data in response_data["_interfaces"].items():
-                if isinstance(intf_data, dict):
-                    self._validate_interface_types(intf_data, intf_name, validation_results)
-
-        return validation_results
-
-    def _validate_interface_types(self, interface_data: Dict[str, Any], intf_name: str, results: Dict[str, Any]):
-        """验证接口中的类型引用 - 新增方法"""
-
-        # 检查DATA-ELEMENTS中的类型引用
-        if "DATA-ELEMENTS" in interface_data:
-            for elem in interface_data["DATA-ELEMENTS"]:
-                if isinstance(elem, dict) and "TYPE-TREF" in elem:
-                    type_ref = elem["TYPE-TREF"]
-                    # 检查是否错误地引用了SW-BASE-TYPE
-                    if "/BaseTypes/" in type_ref:
-                        results["errors"].append(
-                            f"接口{intf_name}错误地引用了SW-BASE-TYPE: {type_ref}，"
-                            f"应该使用IMPLEMENTATION-DATA-TYPE"
-                        )
-                        results["passed"] = False
-                    # 检查是否使用了正确的IMPLEMENTATION-DATA-TYPE
-                    elif "/ImplementationDataTypes/" not in type_ref:
-                        results["warnings"].append(
-                            f"接口{intf_name}的类型引用可能不正确: {type_ref}"
-                        )
-
-    def _validate_port_references(self, ports_data: Dict[str, Any], comp_name: str, results: Dict[str, Any]):
-        """验证端口引用"""
-
-        for port_type in ["P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE"]:
-            if port_type in ports_data:
-                for port in ports_data[port_type]:
-                    if isinstance(port, dict):
-                        # 检查接口引用
-                        ref_key = "PROVIDED-INTERFACE-TREF" if port_type == "P-PORT-PROTOTYPE" else "REQUIRED-INTERFACE-TREF"
-                        if ref_key in port:
-                            ref_val = port[ref_key]
-                            if not ref_val.startswith("/"):
-                                results["warnings"].append(f"{comp_name}的端口引用应以/开始: {ref_val}")
-
-    def _validate_internal_behaviors(self, behaviors_data: Dict[str, Any], comp_name: str, results: Dict[str, Any]):
-        """验证内部行为"""
-
-        if "SWC-INTERNAL-BEHAVIOR" in behaviors_data:
-            behavior = behaviors_data["SWC-INTERNAL-BEHAVIOR"]
-
-            # 验证事件引用
-            if "EVENTS" in behavior:
-                for event_type, events in behavior["EVENTS"].items():
-                    if isinstance(events, list):
-                        for event in events:
-                            if isinstance(event, dict) and "START-ON-EVENT-REF" in event:
-                                ref = event["START-ON-EVENT-REF"]
-                                if not ref.startswith("/"):
-                                    results["warnings"].append(f"{comp_name}的事件引用应以/开始: {ref}")
-
-    def _ensure_direct_references(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
-        """确保所有引用都是直接路径格式"""
-
-        processed_data = response_data.copy()
-
-        def normalize_references(obj):
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    if isinstance(value, str) and any(ref in key.upper() for ref in ["REF", "TREF"]):
-                        # 确保引用以/开始
-                        if value and not value.startswith("/"):
-                            obj[key] = "/" + value
-                    elif isinstance(value, (dict, list)):
-                        normalize_references(value)
-            elif isinstance(obj, list):
-                for item in obj:
-                    normalize_references(item)
-
-        normalize_references(processed_data)
-
-        return processed_data
-
-    # ========== 以下方法保持不变 ==========
-
-    def _generate_deep_schema(
-            self,
-            component_plans: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
-        """生成深度Schema - 确保不包含降级的'Simplified'标记"""
-
-        if hasattr(CONFIG.generation, 'max_schema_injection_depth'):
-            schema_depth = CONFIG.generation.max_schema_injection_depth
-        else:
-            schema_depth = CONFIG.knowledge_graph.max_safety_depth
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 生成深度Schema: depth={schema_depth} (from config)")
-            print(f"[DEBUG] 严格模式：只包含minOccurs>=1和element_design指定的元素")
-            self.query_engine.clear_cache("request")
-
-        # 临时设置query_engine的深度
-        original_depth = self.query_engine.depth_manager.max_depth
-        if schema_depth != original_depth:
-            self.query_engine.depth_manager.max_depth = schema_depth
-
-        try:
-            # 生成Schema - 应该完全从KG查询
-            schema = self.query_engine.generate_multi_component_schema(
-                component_plans
-            )
-
-            if not schema or not schema.get("properties"):
-                raise ValidationError(f"无法为组件类型生成有效Schema")
-
-            # 验证：不应该包含'Simplified'标记
-            if CONFIG.debug_mode:
-                schema_str = json.dumps(schema)
-                if 'Simplified' in schema_str:
-                    print("[WARNING] Schema中包含'Simplified'标记，表明存在降级处理")
-
-            # 增强Schema以支持直接引用（保持不变）
-            schema = self._enhance_schema_for_direct_references(schema)
-
-            return schema
-
-        finally:
-            if schema_depth != original_depth:
-                self.query_engine.depth_manager.max_depth = original_depth
-
-    def _enhance_schema_for_direct_references(self, schema: Dict[str, Any]) -> Dict[str, Any]:
-        """增强Schema以支持直接引用"""
-
-        def enhance_properties(properties: Dict[str, Any]) -> Dict[str, Any]:
-            enhanced = {}
-
-            for key, value in properties.items():
-                if isinstance(value, dict):
-                    # 引用字段支持完整路径
-                    if any(ref_key in key.upper() for ref_key in ["REF", "REFERENCE", "TREF", "IREF"]):
-                        enhanced[key] = {
-                            "type": "string",
-                            "description": f"{value.get('description', '')} (完整路径格式: /Category/Element/SubElement)",
-                            "pattern": "^(/[A-Za-z][A-Za-z0-9_-]*)+"  # 路径格式验证
-                        }
-                    elif value.get("type") == "object" and "properties" in value:
-                        # 递归处理嵌套对象
-                        enhanced[key] = {
-                            **value,
-                            "properties": enhance_properties(value["properties"])
-                        }
-                    else:
-                        enhanced[key] = value
-                else:
-                    enhanced[key] = value
-
-            return enhanced
-
-        if schema.get("type") == "object" and "properties" in schema:
-            schema["properties"] = enhance_properties(schema["properties"])
-
-        return schema
 
     def _query_comprehensive_constraints(
             self,
@@ -861,123 +658,6 @@ class Round2Generator:
 
         return count_properties(schema)
 
-    def _generate_intelligent_batches(
-        self,
-        architecture_design: ArchitectureDesign,
-        memory_context: str = "",
-        custom_requirements: Dict[str, Any] = None
-    ) -> Tuple[str, Dict[str, Any]]:
-        """智能分批生成 - 仅用于超大规模（>25组件）"""
-
-        component_plans = architecture_design.component_plan
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 超大规模系统，智能分批: {len(component_plans)}个组件")
-
-        # 基于复杂度智能分组
-        batches = self._create_intelligent_batches(component_plans)
-
-        all_components = {}
-        total_stats = {
-            "total_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "batch_count": len(batches),
-            "component_count": len(component_plans),
-            "generation_mode": "intelligent_batch",
-            "batch_details": []
-        }
-
-        # 生成所有批次
-        for batch_idx, batch in enumerate(batches):
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 生成批次 {batch_idx + 1}/{len(batches)}: {len(batch)}个组件")
-
-            # 创建批次架构
-            batch_architecture = ArchitectureDesign(
-                system_analysis=architecture_design.system_analysis,
-                component_plan=batch,
-                interface_plan=architecture_design.interface_plan,  # 共享接口
-                connection_topology=architecture_design.connection_topology,
-                architecture_rationale=architecture_design.architecture_rationale
-            )
-
-            # 生成批次（使用统一批次方法）
-            batch_arxml, batch_stats = self._generate_unified_batch(
-                batch_architecture,
-                memory_context,
-                custom_requirements
-            )
-
-            # 解析并合并结果
-            batch_components = self._parse_arxml_to_components(batch_arxml)
-            all_components.update(batch_components)
-
-            # 累计统计
-            total_stats["total_tokens"] += batch_stats["total_tokens"]
-            total_stats["input_tokens"] += batch_stats["input_tokens"]
-            total_stats["output_tokens"] += batch_stats["output_tokens"]
-            total_stats["batch_details"].append(batch_stats)
-
-        # 组装最终ARXML
-        final_arxml = self._assemble_components_to_arxml(all_components, architecture_design)
-
-        return final_arxml, total_stats
-
-    def _create_intelligent_batches(
-        self,
-        component_plans: List[Dict[str, Any]]
-    ) -> List[List[Dict[str, Any]]]:
-        """创建智能批次 - 基于复杂度"""
-
-        # 计算每个组件的复杂度权重
-        weighted_components = []
-        for comp in component_plans:
-            complexity = comp.get("estimated_complexity", "Medium")
-            weight = {"Simple": 1, "Medium": 3, "Complex": 5}.get(complexity, 3)
-            weighted_components.append((comp, weight))
-
-        # 按复杂度排序
-        weighted_components.sort(key=lambda x: x[1])
-
-        # 智能分批
-        batches = []
-        current_batch = []
-        current_weight = 0
-        max_weight = 50  # 每批最大权重
-
-        for comp, weight in weighted_components:
-            if current_weight + weight <= max_weight:
-                current_batch.append(comp)
-                current_weight += weight
-            else:
-                if current_batch:
-                    batches.append(current_batch)
-                current_batch = [comp]
-                current_weight = weight
-
-        if current_batch:
-            batches.append(current_batch)
-
-        return batches
-
-    def _parse_arxml_to_components(self, arxml_content: str) -> Dict[str, Any]:
-        """解析ARXML内容为组件字典"""
-
-        # 简化实现 - 实际应该使用XML解析
-        components = {}
-        # TODO: 实现XML到组件的解析
-        return components
-
-    def _assemble_components_to_arxml(
-        self,
-        components: Dict[str, Any],
-        architecture_design: ArchitectureDesign
-    ) -> str:
-        """组装组件为最终ARXML"""
-
-        return self._convert_to_arxml(components, architecture_design)
-
     def _save_schema_to_file(self, schema: Dict[str, Any]):
         """保存Schema到文件"""
         try:
@@ -1016,7 +696,6 @@ class Round2Generator:
             if CONFIG.debug_mode:
                 print(f"[WARNING] Prompt保存失败: {e}")
 
-
     def _save_response_to_file(self, response_data: Dict[str, Any]):
         """保存Response数据到文件"""
         try:
@@ -1035,6 +714,63 @@ class Round2Generator:
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[WARNING] Response保存失败: {e}")
+
+    def _extract_interfaces_as_readonly(self, interface_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """把 Round1 的接口清单提炼成只读的索引（可选）。
+        不做深结构生成，避免引导 LLM 回写接口对象。
+        """
+        out = {}
+        for it in interface_plans or []:
+            name = it.get("name")
+            if not name:
+                continue
+            out[name] = {
+                "type": it.get("type"),
+                "purpose": it.get("purpose")
+            }
+        return out
+
+    def _save_component_schema_to_file(self, comp_name: str, schema: Dict[str, Any]):
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            fp = output_dir / f"round2_schema_{comp_name}_{ts}.json"
+            with open(fp, "w", encoding="utf-8") as f:
+                json.dump(schema, f, indent=2, ensure_ascii=False)
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 单组件Schema已保存: {fp}")
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] 保存单组件Schema失败: {e}")
+
+    def _save_component_prompt_to_file(self, comp_name: str, prompt: str):
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            fp = output_dir / f"round2_prompt_{comp_name}_{ts}.txt"
+            with open(fp, "w", encoding="utf-8") as f:
+                f.write(prompt)
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 单组件Prompt已保存: {fp}")
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] 保存单组件Prompt失败: {e}")
+
+    def _save_component_response_to_file(self, comp_name: str, resp: Dict[str, Any]):
+        try:
+            output_dir = Path(CONFIG.output_dir) / "debug"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            fp = output_dir / f"round2_response_{comp_name}_{ts}.json"
+            with open(fp, "w", encoding="utf-8") as f:
+                json.dump(resp, f, indent=2, ensure_ascii=False)
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 单组件Response已保存: {fp}")
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] 保存单组件Response失败: {e}")
 
 
 # 全局Round2生成器实例

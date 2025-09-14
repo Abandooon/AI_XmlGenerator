@@ -2,6 +2,8 @@
 
 充分利用Gemini长上下文能力，减少分批，提供完整信息
 """
+import json
+from textwrap import dedent
 from typing import Dict, Any, List, Optional
 from string import Template
 
@@ -16,76 +18,101 @@ class PromptTemplateManager:
 
             # Round 2 详细生成模板（长上下文优化）
             "round2_unified": self._get_unified_round2_template(),
-
-            # 备用：大规模批次模板
-            "round2_large_batch": self._get_large_batch_template(),
         }
 
     def _get_enhanced_round1_template(self) -> Template:
-        """增强的Round 1架构设计模板"""
         template_text = """
-你是一个AUTOSAR架构设计专家。根据用户需求设计软件组件架构。
+        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践。
+        ==========================================
+        本系统采用两阶段生成架构：
+        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素
+        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容
 
-## 用户需求
-$user_requirements
+        Round1 架构设计师职责:
+        ------------------------------------------
+        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：
 
-## 设计上下文
-$design_context
+        1. system_analysis（系统分析）:
+           - functional_decomposition: 明确每个组件的具体功能职责和分工边界
+           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序
+           - 明确每个接口承载的数据类型和通信模式
+           - 分析组件间的依赖关系和调用链路
+        2. connection_topology
+           - 描述系统中组件和接口的连接关系和数据流向
+        3. architecture_rationale
+           - 记录和说明架构设计的决策依据和思考过程
 
-## 可用组件类型（完整列表）
-$component_types
+        4. component_plan（组件设计）:
+           - behavioral_characteristics: 详细描述该组件的运行时行为特征
+             * 主要处理逻辑和算法
+             * 触发条件和执行周期
+             * 状态管理和转换逻辑
+             * 数据处理流程（输入→处理→输出）
+           - element_design: 预先确定组件需要的所有内部元素
+             * 精确指定需要的端口类型（P-PORT/R-PORT等）
+             * 明确事件类型和触发机制
+             * 详细设计每个Runnable的元素结构和数据访问点
 
-## 可用接口类型（完整列表）
-$interface_types
+        5. interface_plan（接口设计）:
+           - communication_pattern: 详细说明该接口的通信模式
+             * 同步/异步特性
+             * 数据传输频率和时延要求
+             * 缓冲策略（队列/最新值）
+             * 错误处理机制
+           - data_elements/operations: 明确接口包含的数据元素或操作
+           - 连接拓扑: 指明哪些组件通过此接口连接
 
-## 设计任务
-请设计一个符合AUTOSAR标准的完整软件组件架构，包括：
+        6. element_design预选（关键）:
+           你的预选决策将直接指导Round2的Schema生成：
+           - 每个选择都会影响最终生成的XML结构
+           - preselect中的include列表决定了哪些子元素会被包含
+           - 联合类型的variant选择决定了数据访问的具体实现方式
 
-1. **系统分析**: 深入分析功能需求、数据流、时序要求
-2. **组件规划**: 确定所有需要的组件类型、数量、职责、内部结构
-3. **接口规划**: 设计所有组件间的接口类型、通信模式、数据元素
-4. **连接拓扑**: 完整定义所有组件间的连接关系和数据流向
-5. **引用路径**: 明确指定所有引用的完整路径（无需语义占位符）
+        架构设计质量标准:
+        ------------------------------------------
+        - 完整性: 所有组件和接口都有明确的功能定义和实现策略
+        - 一致性: 组件间的接口匹配，数据类型统一
+        - 可追溯性: 每个设计决策都能追溯到用户需求
+        - 可实现性: element_design提供足够的细节供Round2生成
 
-## 增强设计原则
-- **完整性优先**: 一次性设计所有需要的元素
-- **明确引用**: 使用完整的引用路径，如 /Components/TempSensor/Ports/DataOut
-- **详细规格**: 为每个组件提供详细的端口和行为规格
-- **减少歧义**: 避免模糊描述，使用精确的技术规范
+        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。
+        
+    ## 用户需求
+    $user_requirements
 
-## 组件规划要求
-对于每个组件，请提供：
-- component_id: 唯一标识符
-- name: 描述性名称
-- type: AUTOSAR组件类型
-- purpose: 详细功能描述
-- port_estimates: 
-  - input_ports: 输入端口详细列表
-  - output_ports: 输出端口详细列表
-- behavioral_characteristics:
-  - runnables: 运行实体列表
-  - events: 事件列表
-  - timing: 时序要求
-- direct_references: 直接引用的其他组件/接口的完整路径
+    ## 设计上下文
+    $design_context
 
-## 接口规划要求
-对于每个接口，请提供：
-- interface_id: 唯一标识符
-- name: 描述性名称
-- type: AUTOSAR接口类型
-- communication_pattern: 通信模式详情
-- data_elements: 详细的数据元素定义
-- connected_components: 连接的组件对
-- direct_paths: 接口在系统中的完整路径
+    ---
 
-## 输出要求
-输出完整、详细的JSON格式架构设计。确保：
-- 所有ID全局唯一
-- 引用路径完整准确
-- 组件间关系明确
-- 数据流向清晰
-- 可直接用于Round 2生成
-"""
+    ## 元素预选任务（务必遵循schema结构化输出）
+    对每个 runnable 的 `elements`，按如下对象结构产出（数组）：
+    - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）
+    - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）
+    - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：
+      - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）
+      - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）
+      - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键）
+      - `notes`: 可选说明
+
+    > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `["PORT-PROTOTYPE-REF","TARGET-DATA-PROTOTYPE-REF"]` 两个子键；不要输出未选择的 `CONTEXT-*`、`ROOT-*` 等。
+
+    ### 预选清单（参考）
+    - VariableAccess:
+      - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF
+      - 若选 AUTOSAR-VARIABLE-IREF：其可选子键包括 TARGET-DATA-PROTOTYPE-REF、PORT-PROTOTYPE-REF、CONTEXT-DATA-PROTOTYPE-REF、ROOT-VARIABLE-DATA-PROTOTYPE-REF（**从schema中精确挑选要生成的**）
+    - ModeAccessPoint / ModeSwitchPoint:
+      - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF
+    - ParameterAccess:
+      - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF
+    - ServerCallPoints:
+      - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）
+                                 ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）
+
+    ## 输出 JSON Schema（**必须严格匹配此结构与键名**）
+    $round1_schema_json
+    """
+
         return Template(template_text)
 
     def _get_unified_round2_template(self) -> Template:
@@ -153,10 +180,18 @@ $standard_types
         "RUNNABLE-ENTITY": [{
           "SHORT-NAME": "RunnableName",
           "SYMBOL": "RunnableName_func",
-          "DATA-READ-ACCESSES": {...},
-          "DATA-WRITE-ACCESSES": {...}
-        }]
-      }
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [ { /* VariableAccess 展开，含 AUTOSAR-VARIABLE-IREF 等 */ } ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [ { /* ... */ } ]
+          },
+          "SERVER-CALL-POINTS": {
+            /* 若该容器在KG中是集合，使用数组；否则对象 */
+        }
+    }]
+    }
+
     }
   }
 }
@@ -199,127 +234,183 @@ $interface_definitions
 """
         return Template(template_text)
 
-    def _get_large_batch_template(self) -> Template:
-        """大规模批次模板 - 备用"""
-        template_text = """
-你是AUTOSAR大规模系统生成专家。利用长上下文能力一次性处理大量组件。
-
-## 系统规模
-- 组件总数: $total_components
-- 接口总数: $total_interfaces  
-- 连接总数: $total_connections
-
-## 完整系统架构
-$full_architecture
-
-## 扩展元模型（深度=$extended_depth）
-$extended_metamodel
-
-## 生成策略
-采用"全系统一次性生成"策略：
-1. 先生成所有接口定义
-2. 再生成所有组件定义
-3. 最后建立所有连接关系
-
-## 优化指导
-- 利用组件模板减少重复
-- 使用命名规范保持一致性
-- 批量处理相似组件
-- 保持引用的绝对路径
-
-## 大规模生成规范
-$large_scale_specifications
-
-## 输出要求
-生成完整的系统ARXML，包含所有组件、接口和连接。
-"""
-        return Template(template_text)
-
     def get_round1_prompt(
             self,
             user_requirements: str,
             design_context: str = "",
-            component_types: List[Dict[str, Any]] = None,
-            interface_types: List[Dict[str, Any]] = None
+            component_types_allowed: List[str] = None,  # ← 新增：来自 config 的枚举
+            interface_types_allowed: List[str] = None,  # ← 新增：来自 config 的枚举
+            architecture_schema: Dict[str, Any] = None  # ← 新增：Round1 JSON Schema
     ) -> str:
-        """获取Round 1架构设计提示词"""
+        """获取Round 1架构设计提示词（带 config 枚举与 JSON Schema）"""
 
-        # 格式化组件类型信息
-        component_types_text = ""
-        if component_types:
-            for comp_type in component_types:
-                component_types_text += f"""
-    - **{comp_type['name']}**
-      描述: {comp_type['description']}
-      场景: {', '.join(comp_type.get('scenarios', []))}
-      复杂度: {comp_type.get('complexity', 'Medium')}
-    """
+    #     # 术语库详细说明（可选）
+    #     component_types_text = ""
+    #     if component_types:
+    #         for comp_type in component_types:
+    #             component_types_text += f"""
+    # - **{comp_type.get('name', '')}**
+    #   描述: {comp_type.get('description', '')}
+    #   场景: {', '.join(comp_type.get('scenarios', []) or [])}
+    #   复杂度: {comp_type.get('complexity', 'Medium')}
+    # """
+    #
+    #     interface_types_text = ""
+    #     if interface_types:
+    #         for intf_type in interface_types:
+    #             interface_types_text += f"""
+    # - **{intf_type.get('name', '')}**
+    #   描述: {intf_type.get('description', '')}
+    #   通信模式: {intf_type.get('communication_mode', '')}
+    #   场景: {', '.join(intf_type.get('scenarios', []) or [])}
+    # """
 
-        # 格式化接口类型信息
-        interface_types_text = ""
-        if interface_types:
-            for intf_type in interface_types:
-                interface_types_text += f"""
-    - **{intf_type['name']}**
-      描述: {intf_type['description']}
-      通信模式: {intf_type.get('communication_mode', '')}
-      场景: {', '.join(intf_type.get('scenarios', []))}
-    """
+        # config.allowed_types 的枚举展示（主信息源）
+        def _fmt_allowed(title, items):
+            if not items:
+                return f"{title}: （未在 config 指定，使用标准 AUTOSAR 缺省集）"
+            lines = [f"{title}:"]
+            for s in items:
+                lines.append(f"- {s}")
+            return "\n".join(lines)
 
-        # 使用模板渲染
-        template = self.get_template("round1_architecture")
-        if not template:
-            # 如果没有找到模板，使用默认模板
-            template = self._get_enhanced_round1_template()
+        component_types_allowed_text = _fmt_allowed("组件类型（允许枚举）", component_types_allowed or [])
+        interface_types_allowed_text = _fmt_allowed("接口类型（允许枚举）", interface_types_allowed or [])
 
+        # JSON Schema 文本（避免 None）
+        schema_text = json.dumps(architecture_schema or {}, ensure_ascii=False, indent=2)
+
+        template = self.get_template("round1_architecture") or self._get_enhanced_round1_template()
         return template.substitute(
             user_requirements=user_requirements,
-            design_context=design_context if design_context else "无额外上下文",
-            component_types=component_types_text if component_types_text else "标准AUTOSAR组件类型",
-            interface_types=interface_types_text if interface_types_text else "标准AUTOSAR接口类型"
+            design_context=design_context or "无额外上下文",
+            # 术语库说明（可选）
+            # component_types=component_types_text.strip(),
+            # interface_types=interface_types_text.strip(),
+            # config 的 allowed 列表（主信息源）
+            component_types_allowed=component_types_allowed_text,
+            interface_types_allowed=interface_types_allowed_text,
+            # JSON Schema
+            round1_schema_json=schema_text
         )
 
-    def get_round2_prompt(
-        self,
-        architecture_design: Dict[str, Any],
-        constraints: List[str] = None,
-        schema_depth: int = 15
+    def get_round2_prompt_single(
+            self,
+            comp_plan: Dict[str, Any],
+            interface_plans: List[Dict[str, Any]],
+            constraints: Dict[str, Any],
+            component_schema: Dict[str, Any],
+            interface_schema: Dict[str, Any],
+            memory_context: str = ""
     ) -> str:
-        """获取优化的Round 2提示词 - 统一生成版本"""
+        comp_name = comp_plan["name"]
+        comp_type = comp_plan["type"]
+        ed = comp_plan.get("element_design", {}) or {}
 
-        component_plans = architecture_design.get("component_plan", [])
-        interface_plans = architecture_design.get("interface_plan", [])
+        lines = []
+        lines.append("你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例。")
+        lines.append(f"组件：{comp_name}（{comp_type}）。输出必须是严格 JSON，顶层只包含 `{comp_name}`。")
 
-        # 格式化组件列表详情
-        component_list_detail = self._format_component_list_detail(component_plans)
+        # —— Round1 设计约束（容错：elements 既可能是 str 也可能是 dict）
+        if ed.get("ports", {}).get("needed"):
+            lines.append(f"- 需要端口类型：{', '.join(ed.get('ports', {}).get('types', [])) or '(未指定)'}")
 
-        # 格式化接口定义
-        interface_definitions = self._format_interface_definitions(interface_plans)
+        ib = ed.get("internal_behaviors", {}) or {}
+        if ib.get("needed"):
+            evs = [e.get('type') for e in ib.get("events", []) if isinstance(e, dict) and e.get('type')]
+            if evs:
+                lines.append(f"- 事件类型：{', '.join(evs)}")
 
-        # 获取深层元模型上下文
-        metamodel_context = self._get_deep_metamodel_context(component_plans, schema_depth)
+            runs = ib.get("runnables", []) or []
+            if runs:
+                lines.append("- Runnable 子容器（逐 runnable）：")
+                for r in runs:
+                    rname = (r.get("name") if isinstance(r, dict) else None) or "(unnamed)"
+                    elems = []
+                    raw_elems = (r.get("elements") if isinstance(r, dict) else None) or []
+                    for e in raw_elems:
+                        if isinstance(e, str):
+                            t = e
+                            w = None
+                        else:
+                            t = e.get("xml_tag")
+                            w = e.get("xml_wrapper_tag")
+                        elems.append(w if w else t)
+                    lines.append(f"  - {rname}: {', '.join([x for x in elems if x]) or '(无)'}")
 
-        # 获取必需元素详情
-        required_elements_detail = self._get_required_elements_detail(component_plans, schema_depth)
+        # —— 只读接口摘要（可选）
+        if interface_schema:
+            lines.append("\n(接口 schema 已加载，作为只读引用，不要输出接口对象)")
 
-        # 获取标准类型上下文
-        from ..standard_types.standard_types import standard_type_manager
-        standard_types = standard_type_manager.get_type_context_for_llm(
-            filter_categories=["VALUE", "TYPE_REFERENCE", "PRIMITIVE"]
-        )
+        lines.append("\n## JSON Schema（仅本组件）\n```json")
+        lines.append(json.dumps(component_schema, ensure_ascii=False, indent=2))
+        lines.append("```")
 
-        return self.render_template(
-            "round2_unified",
-            architecture_design=self._format_architecture_design(architecture_design),
-            component_count=len(component_plans),
-            schema_depth=schema_depth,
-            metamodel_context=metamodel_context,
-            constraints="\n".join(constraints or ["遵循AUTOSAR标准规范"]),
-            standard_types=standard_types,
-            component_list_detail=component_list_detail,
-            interface_definitions=interface_definitions,
-            required_elements_detail=required_elements_detail
-        )
+        lines.append("\n## 生成规则")
+        lines.append(f"- 顶层只包含 `{comp_name}`。")
+        lines.append("- 端口的 *-INTERFACE-TREF 必须是对象（包含 `@DEST` 与 `#text`），不得写成字符串。")
+        lines.append("- 仅生成 Round1 声明的事件类型。")
+        lines.append("- RUNNABLE-ENTITY 为对象数组；其下子容器采用“(wrapper 或容器) → 多个 items 数组”的结构。")
+        lines.append("- 所有 *REF/*TREF/*IREF 使用完整路径。")
+
+        return "\n".join(lines)
+
+    def build_round2_prompt(self, component_name: str, component_type: str,
+                            design: dict, interfaces_readonly: dict, schema: dict) -> str:
+        """
+        关键点：
+        - 顶层只能是 { "<component_name>": <component_object> }
+        - 明确 PORTS 是 object，且只包含 Round1 指定 P/R 两类数组
+        - INTERNAL-BEHAVIORS 只允许 SWC-INTERNAL-BEHAVIOR，下含 EVENTS(仅限 Round1 声明的类型) 与 RUNNABLES
+        - RUNNABLE-ENTITY 是数组，单 runnable 的子容器由 KG 的 wrapper_tag 决定（例如 DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-SEND-POINTS）
+        - 禁止生成未在 schema 中出现的键
+        """
+        design_summary = {
+            "component": {"name": component_name, "type": component_type},
+            "ports_needed_types": design.get("ports", {}).get("types", []),
+            "events": [e.get("type") for e in design.get("internal_behaviors", {}).get("events", [])],
+            "runnables": [r.get("short_name") for r in design.get("internal_behaviors", {}).get("runnables", [])]
+        }
+
+        return dedent(f"""
+           你是 AUTOSAR XML 生成专家。
+           仅生成一个组件：**{component_name} ({component_type})** 的 JSON 内容。
+           输出必须是严格的 JSON 对象，且顶层只包含一个键："{component_name}"。
+
+           ## 设计要点（来自 Round1 & KG）
+           {json.dumps(design_summary, ensure_ascii=False, indent=2)}
+
+           ## 可引用的接口（只读参考，不要在输出里重写接口对象）
+           {json.dumps(interfaces_readonly, ensure_ascii=False, indent=2)}
+
+           ## JSON Schema（必须严格匹配）对于带 variant 的对象：只填写一个分支属性（与 variant 匹配），另外两个不允许出现
+           ```json
+           {json.dumps(schema, ensure_ascii=False, indent=2)}
+           ```
+
+           ## 必须遵守
+           - 仅输出一个顶层键："{component_name}"。
+           - 不允许出现 schema 之外的属性。
+           - PORTS 必须是 object，且仅包含 Round1 指定的 P/R 两类数组。
+           - INTERNAL-BEHAVIORS/SWC-INTERNAL-BEHAVIOR/RUNNABLES/RUNNABLE-ENTITY 必须是对象数组。
+           - 仅生成 Round1 声明的事件类型（若无则不生成 EVENTS）。
+           - 所有 TREF 必须使用对象形状，包含 "@DEST" 与 "#text"。
+           - 引用路径必须为完整直接路径；UUID 全局唯一。
+
+           ## 输出格式
+           - 严格 JSON，无注释、无解释、无 XML 或伪代码。
+           """).strip()
+
+    def build_fix_prompt(self, base_prompt: str, bad_output: str) -> str:
+        return base_prompt + \
+            "\n\n上一次输出无法解析为 JSON。请只输出合法 JSON，不要包含任何多余文本。原始输出如下（供你纠错）：\n```\n" + \
+            bad_output + "\n```"
+
+    def build_repair_prompt(self, base_prompt: str, previous_output: str, errors: list) -> str:
+        return base_prompt + \
+            "\n\n上一次输出与 JSON Schema 不匹配。请在不改变 Schema 的前提下修复 JSON，" \
+            "只输出修复后的 JSON。错误如下：\n" + json.dumps(errors, ensure_ascii=False, indent=2) + \
+            "\n\n上一次的 JSON 为：\n```\n" + previous_output + "\n```"
 
     def _format_component_list_detail(self, component_plans: List[Dict[str, Any]]) -> str:
         """格式化组件列表的详细信息"""
@@ -348,31 +439,43 @@ $large_scale_specifications
 
             # 处理内部行为信息
             if element_design.get("internal_behaviors", {}).get("needed"):
-                behavior = element_design["internal_behaviors"]
-
-                # 安全处理runnables - 可能是字符串或列表
+                # 原来只处理 str/list —— 改成优先处理数组对象
+                behavior = comp.get("element_design", {}).get("internal_behaviors", {})
                 runnables = behavior.get("runnables", [])
-                if isinstance(runnables, str):
-                    # 如果是字符串，尝试分割或直接使用
-                    lines.append(f"   - Runnables: {runnables}")
+
+                if isinstance(runnables, list) and runnables and isinstance(runnables[0], dict):
+                    for r in runnables:
+                        rname = r.get("name", "Runnable")
+                        elems = r.get("elements", [])
+                        if elems:
+                            lines.append(f"   - Runnable: {rname} | elements: {', '.join(elems)}")
+                        else:
+                            lines.append(f"   - Runnable: {rname}")
                 elif isinstance(runnables, list):
-                    # 如果是列表，join处理
-                    if runnables:
-                        lines.append(f"   - Runnables: {', '.join(str(r) for r in runnables)}")
+                    # 兼容旧格式：["R1","R2"]
+                    lines.append(f"   - Runnables: {', '.join(str(r) for r in runnables)}")
+                elif isinstance(runnables, str):
+                    lines.append(f"   - Runnables: {runnables}")
 
                 # 安全处理events - 可能是字符串或列表
                 events = behavior.get("events", [])
                 if isinstance(events, str):
                     lines.append(f"   - Events: {events}")
-                elif isinstance(events, list):
-                    if events:
-                        lines.append(f"   - Events: {', '.join(str(e) for e in events)}")
+                elif isinstance(events, list) and events:
+                    for ev in events:
+                        if isinstance(ev, dict):
+                            et = ev.get("type", "EVENT")
+                            en = ev.get("name", "")
+                            trig = ev.get("trigger", "")
+                            lines.append(f"   - Event: {et} {en} {('[' + trig + ']') if trig else ''}".rstrip())
+                        else:
+                            lines.append(f"   - Event: {ev}")
 
             # 添加复杂度评估
             if comp.get("estimated_complexity"):
                 lines.append(f"   复杂度: {comp.get('estimated_complexity')}")
 
-            lines.append("")  # 空行分隔
+            lines.append("")
 
         return "\n".join(lines)
 
@@ -417,7 +520,7 @@ $large_scale_specifications
             lines.append("- Level 3: INTERNAL-BEHAVIORS (SWC-INTERNAL-BEHAVIOR)")
             lines.append("- Level 4: EVENTS (TIMING-EVENT, DATA-RECEIVED-EVENT)")
             lines.append("- Level 5: RUNNABLES (RUNNABLE-ENTITY)")
-            lines.append("- Level 6+: DATA-ACCESS, SERVER-CALL-POINTS, etc.")
+            lines.append("- Level 6+: DATA-RECEIVE-POINT-BY-ARGUMENTS, DATA-SEND-POINTS, SERVER-CALL-POINTS, DATA-READ-ACCESSS, DATA-READ-ACCESSSetc.")
 
         return "\n".join(lines)
 
@@ -535,6 +638,23 @@ $large_scale_specifications
             return template.substitute(**kwargs)
         except KeyError as e:
             raise ValueError(f"模板参数缺失: {e}")
+
+    def _metamodel_context_from_schema(self, schema: Dict[str, Any], depth: int) -> str:
+        # 简明版上下文：列出顶层 keys、definitions 里每种类型的首层字段名
+        lines = ["### 元模型结构（来自JSON Schema）"]
+        defs = (schema or {}).get("definitions", {}) or {}
+        if defs:
+            for tname, tschema in defs.items():
+                if isinstance(tschema, dict) and tschema.get("type") == "object":
+                    keys = list((tschema.get("properties") or {}).keys())
+                    lines.append(f"- {tname}: {', '.join(keys[:12])}" if keys else f"- {tname}: (no properties)")
+        else:
+            # 若没有 definitions，就输出顶层 properties 的概览
+            keys = list((schema.get("properties") or {}).keys())
+            lines.append(f"- Root: {', '.join(keys[:20])}" if keys else "- Root: (no properties)")
+        return "\n".join(lines)
+
+
 
 # 全局模板管理器实例
 template_manager = PromptTemplateManager()

@@ -704,15 +704,15 @@ def check_environment():
     CONFIG.output_dir.mkdir(exist_ok=True, parents=True)
 
     # 测试LLM连接
-    try:
-        from src.llm_generation.llm.gemini_client import GeminiClient
-        client = GeminiClient()
-        if not client.test_connection():
-            print("⚠️ LLM API连接测试失败，但程序将继续运行")
-        else:
-            print("✅ LLM API连接正常")
-    except Exception as e:
-        print(f"⚠️ LLM连接测试异常: {e}")
+    # try:
+    #     from src.llm_generation.llm.gemini_client import GeminiClient
+    #     client = GeminiClient()
+    #     if not client.test_connection():
+    #         print("⚠️ LLM API连接测试失败，但程序将继续运行")
+    #     else:
+    #         print("✅ LLM API连接正常")
+    # except Exception as e:
+    #     print(f"⚠️ LLM连接测试异常: {e}")
 
     # 测试KG连接（可选）
     try:

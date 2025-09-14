@@ -16,6 +16,8 @@ from ..knowledge.constraint_engine import constraint_engine
 from ..utils.serializers import ArchitectureDesign
 from ..utils.exceptions import ArchitectureDesignError
 from ..utils.document_processor import document_processor
+from datetime import datetime
+from pathlib import Path
 
 # 条件导入文档处理器
 document_processor = None
@@ -116,33 +118,58 @@ class Round1Designer:
                 document_content
             )
 
-            # 获取术语库信息
-            component_types = [
-                {
-                    "name": ct.name,
-                    "description": ct.description,
-                    "scenarios": ct.scenarios,
-                    "complexity": ct.complexity
-                }
-                for ct in self.terminology["component_types"]
-            ]
+            # 获取术语库信息（可选说明用）
+            # component_types_termino = [
+            #     {
+            #         "name": ct.name,
+            #         "description": ct.description,
+            #         "scenarios": ct.scenarios,
+            #         "complexity": ct.complexity
+            #     }
+            #     for ct in self.terminology["component_types"]
+            # ]
+            #
+            # interface_types_termino = [
+            #     {
+            #         "name": it.name,
+            #         "description": it.description,
+            #         "communication_mode": it.communication_mode,
+            #         "scenarios": it.scenarios
+            #     }
+            #     for it in self.terminology["interface_types"]
+            # ]
 
-            interface_types = [
-                {
-                    "name": it.name,
-                    "description": it.description,
-                    "communication_mode": it.communication_mode,
-                    "scenarios": it.scenarios
-                }
-                for it in self.terminology["interface_types"]
-            ]
+            # —— 来自 config.round1_schema 的“允许枚举”（主信息源，用于提示&对齐 schema）
+            ct_allowed = (CONFIG.round1_schema.component_types.allowed_types
+                          if CONFIG.round1_schema.component_types.allowed_types else [
+                "APPLICATION-SW-COMPONENT-TYPE",
+                "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+                "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+                "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+                "NV-BLOCK-SW-COMPONENT-TYPE",
+                "SERVICE-PROXY-SW-COMPONENT-TYPE",
+                "SERVICE-SW-COMPONENT-TYPE",
+                "COMPOSITION-SW-COMPONENT-TYPE",
+                "PARAMETER-SW-COMPONENT-TYPE"
+            ])
 
-            # 生成提示词
+            it_allowed = (CONFIG.round1_schema.interface_types.allowed_types
+                          if CONFIG.round1_schema.interface_types.allowed_types else [
+                "SENDER-RECEIVER-INTERFACE",
+                "CLIENT-SERVER-INTERFACE",
+                "MODE-SWITCH-INTERFACE",
+                "NV-DATA-INTERFACE",
+                "PARAMETER-INTERFACE",
+                "TRIGGER-INTERFACE"
+            ])
+
+            # 生成提示词（把 schema 也放进提示）
             prompt = template_manager.get_round1_prompt(
                 user_requirements=user_requirements,
                 design_context=context,
-                component_types=component_types,
-                interface_types=interface_types
+                component_types_allowed=ct_allowed,  # ← 主信息源：来自 config
+                interface_types_allowed=it_allowed,  # ← 主信息源：来自 config
+                architecture_schema=self.architecture_schema  # ← 明确内嵌 JSON Schema
             )
 
             if CONFIG.debug_mode:
@@ -179,6 +206,14 @@ class Round1Designer:
                 "validation_errors": len(errors) if not is_valid else 0,
                 "documents_processed": len(uploaded_files) if uploaded_files else 0
             }
+            saved_file = self.save_round1_data(
+                prompt=prompt,
+                response_data=response_data,
+                design=design,
+                stats=stats,
+                user_requirements=user_requirements
+            )
+            stats["saved_file"] = str(saved_file)
 
             if CONFIG.debug_mode:
                 print(f"[DEBUG] Round1完成: {len(design.component_plan)}个组件, "
@@ -215,10 +250,6 @@ class Round1Designer:
                     "type": "string",
                     "description": "可扩展性考虑"
                 },
-                "document_based_requirements": {
-                    "type": "string",
-                    "description": "基于文档的需求分析"
-                },
                 "complexity_assessment": {
                     "type": "string",
                     "description": "复杂度评估",
@@ -232,75 +263,130 @@ class Round1Designer:
         # 加载端口和事件类型配置 - 修正：使用属性访问而非字典访问
         port_types = round1_config.round1_element_design.port_types
         event_types = round1_config.round1_element_design.event_types
-        # 加载RunnableEntity详细配置
+        # ---------- 元素目录 & “联合预选”枚举 ----------
         runnable_config = round1_config.runnable_entity_config
+        if getattr(runnable_config, "elements", None):
+            elem_keys = [e.key for e in runnable_config.elements]
+        else:
+            elem_keys = list(dict.fromkeys(
+                (runnable_config.required_elements or []) + (runnable_config.optional_elements or [])
+            ))
 
-        # 构建element_design的schema - 更精细的结构
+        # 从配置编译 union → variants / variant → selectable_children
+        preselect_cfg = getattr(round1_config, "preselect", None)
+        union_variants_map: Dict[str, List[str]] = {}
+        variant_children_map: Dict[str, List[str]] = {}
+        union_card_map: Dict[str, Dict[str, int]] = {}
+        if preselect_cfg and getattr(preselect_cfg, "unions", None):
+            for u in preselect_cfg.unions:
+                union_variants_map[u.of] = [b.name for b in u.variants]
+                union_card_map[u.of] = {"min": u.min_select, "max": u.max_select}
+                for b in u.variants:
+                    variant_children_map[b.name] = b.selectable_children or []
+
+        # 统一枚举列表（Gemini 不支持跨字段动态枚举，就给出全集合，靠提示词与后处理校验）
+        all_union_names = sorted(list(union_variants_map.keys()))
+        all_variant_names = sorted({v for vs in union_variants_map.values() for v in vs})
+
+        # ---------- 元素选择对象（关键：在 Round1 确定性选择 include） ----------
+        element_selection_schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "key": {"type": "string", "enum": elem_keys},  # 例如 "VariableAccess" / "ServerCallPoints" ...
+                "wrapper": {"type": "string"},  # 可选：若位于某 wrapper（如 SERVER-CALL-POINTS / DATA-SEND-POINTS）
+                "preselect": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "of": {"type": "string", "enum": all_union_names},  # 比如 "ACCESSED-VARIABLE"
+                            "variant": {"type": "string", "enum": all_variant_names},  # 比如 "AUTOSAR-VARIABLE-IREF"
+                            # Round1 在这里“确定性选择”schema 需要生成的子键，而不是仅提示
+                            "include": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "从配置的 selectable_children 中精确选择这次要生成 Schema 的子键（确定性选择）",
+                                # 给 LLM 的提示性信息（非校验）
+                                "x-allowed-children": variant_children_map
+                            },
+                            "notes": {"type": "string"}
+                        },
+                        "required": ["of", "variant", "include"]
+                    },
+                    "description": "在该元素内部的联合位置进行分支与子键的确定性选择"
+                },
+                "notes": {"type": "string"}
+            },
+            "required": ["key"]
+        }
+
+        # ---------- element_design_schema ----------
         element_design_schema = {
             "type": "object",
-            "description": "LLM决定需要哪些具体元素",
+            "description": "LLM决定需要哪些具体元素（含联合分支与子键的确定性选择）",
+            "additionalProperties": False,
             "properties": {
                 "ports": {
                     "type": "object",
+                    "additionalProperties": False,
                     "properties": {
                         "needed": {"type": "boolean"},
                         "types": {
                             "type": "array",
-                            "items": {
-                                "type": "string",
-                                "enum": [pt.name for pt in port_types]  # 修正：使用.name属性访问
-                            },
+                            "items": {"type": "string", "enum": [pt.name for pt in port_types]},
                             "description": "需要的具体端口类型"
                         },
                         "details": {"type": "string"}
-                    }
+                    },
+                    "allOf": [
+                        {"if": {"properties": {"needed": {"const": True}}}, "then": {"required": ["types"]}}
+                    ]
                 },
                 "internal_behaviors": {
                     "type": "object",
+                    "additionalProperties": False,
                     "properties": {
                         "needed": {"type": "boolean"},
                         "events": {
                             "type": "array",
                             "items": {
                                 "type": "object",
+                                "additionalProperties": False,
                                 "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "enum": [et.name for et in event_types]  # 修正：使用.name属性访问
-                                    },
+                                    "type": {"type": "string", "enum": [et.name for et in event_types]},
                                     "name": {"type": "string"},
                                     "trigger": {"type": "string"}
-                                }
+                                },
+                                "required": ["type", "name"]
                             },
                             "description": "需要的具体事件类型和配置"
                         },
                         "runnables": {
-                        "type": "object",
-                        "properties": {
-                            "names": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "description": "Runnable实体名称列表"
-                            },
-                            "required_elements": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": runnable_config.required_elements
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "name": {"type": "string", "description": "Runnable 实体名"},
+                                    "elements": {
+                                        "type": "array",
+                                        "items": element_selection_schema,
+                                        "description": "该 Runnable 需要的深层元素（结构化 & 确定性 include）"
+                                    },
+                                    "notes": {"type": "string"}
                                 },
-                                "description": "每个RunnableEntity必需的元素"
+                                "required": ["name"]
                             },
-                            "optional_elements": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": runnable_config.optional_elements
-                                },
-                                "description": "每个RunnableEntity可选的元素"
-                                }
-                            }
+                            "description": "每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择"
                         }
-                    }
+                    },
+                    "allOf": [
+                        {"if": {"properties": {"needed": {"const": True}}},
+                         "then": {"required": ["runnables"]}}
+                    ]
                 }
             }
         }
@@ -310,6 +396,7 @@ class Round1Designer:
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "component_id": {
                         "type": "string",
@@ -329,7 +416,6 @@ class Round1Designer:
                             "NV-BLOCK-SW-COMPONENT-TYPE",
                             "SERVICE-PROXY-SW-COMPONENT-TYPE",
                             "SERVICE-SW-COMPONENT-TYPE",
-                            "COMPOSITION-SW-COMPONENT-TYPE",
                             "PARAMETER-SW-COMPONENT-TYPE"
                         ],
                         "description": "AUTOSAR组件类型"
@@ -354,7 +440,8 @@ class Round1Designer:
                         "type": "string",
                         "description": "行为特征描述"
                     },
-                    "element_design": element_design_schema
+                    "element_design": element_design_schema,
+                    "direct_references": {"type": "array", "items": {"type": "string"}}
                 },
                 "required": round1_config.output_schema.component_plan.required_fields if round1_config.output_schema.component_plan.required_fields else [
                     "component_id", "name", "type", "purpose"
@@ -367,6 +454,7 @@ class Round1Designer:
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "interface_id": {"type": "string"},
                     "name": {"type": "string"},
@@ -387,7 +475,9 @@ class Round1Designer:
                         "type": "array",
                         "items": {"type": "string"}
                     },
-                    "performance_requirements": {"type": "string"}
+                    "performance_requirements": {"type": "string"},
+                    "data_elements": {"type": "array", "items": {"type": "string"}},
+                    "direct_paths": {"type": "string"}
                 },
                 "required": round1_config.output_schema.interface_plan.required_fields if round1_config.output_schema.interface_plan.required_fields else [
                     "interface_id", "name", "type", "communication_pattern"
@@ -449,30 +539,6 @@ class Round1Designer:
         if document_content:
             context_parts.append(f"文档分析结果:\n{document_content}")
 
-        # 添加AUTOSAR设计原则和规则（替代函数调用）
-        context_parts.append("""
-AUTOSAR设计原则:
-- 分层架构: 应用层、RTE层、基础软件层
-- 组件化设计: 功能封装在独立组件中
-- 标准化接口: 使用标准AUTOSAR接口类型
-- 可配置性: 支持不同ECU配置
-- 可重用性: 组件可在不同项目中复用
-
-接口兼容性规则:
-- SENDER-RECEIVER接口: 用于异步数据传输，不能与CLIENT-SERVER直接连接
-- CLIENT-SERVER接口: 用于同步服务调用，不能与SENDER-RECEIVER直接连接
-- MODE-SWITCH接口: 用于模式切换和状态同步
-- NV-DATA接口: 用于非易失性数据存储
-- 相同类型的接口通常可以连接
-- 不同类型的接口需要适配器组件
-
-复杂度评估指南:
-- Simple (简单): 1-5个组件，基础功能，少量接口
-- Medium (中等): 6-15个组件，中等业务逻辑，适度的接口复杂度
-- Complex (复杂): 16+个组件，复杂交互，状态机，实时约束
-- 复杂度影响生成策略选择
-""")
-
         return "\n\n".join(context_parts)
 
     def _parse_response_to_design(self, response_data: Dict[str, Any]) -> ArchitectureDesign:
@@ -488,6 +554,56 @@ AUTOSAR设计原则:
         )
 
         return design
+
+    def save_round1_data(self,
+                         prompt: str,
+                         response_data: Dict[str, Any],
+                         design: ArchitectureDesign,
+                         stats: Dict[str, Any],
+                         user_requirements: str = "",
+                         save_dir: Optional[Path] = None) -> Path:
+        """保存Round1的prompt和输出数据"""
+
+        # 确定保存目录
+        if save_dir is None:
+            save_dir = CONFIG.output_dir / "round1_data"
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成时间戳文件名
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        session_id = f"round1_{timestamp}"
+
+        # 准备保存数据
+        round1_data = {
+            "session_id": session_id,
+            "timestamp": timestamp,
+            "user_requirements": user_requirements,
+            "prompt": prompt,
+            "response_data": response_data,
+            "design": {
+                "system_analysis": design.system_analysis,
+                "component_plan": design.component_plan,
+                "interface_plan": design.interface_plan,
+                "connection_topology": design.connection_topology,
+                "architecture_rationale": design.architecture_rationale
+            },
+            "stats": stats,
+            "config": {
+                "model": CONFIG.llm.model_name,
+                "temperature": CONFIG.llm.temperature,
+                "max_output_tokens": CONFIG.llm.max_output_tokens
+            }
+        }
+
+        # 保存JSON文件
+        output_file = save_dir / f"{session_id}.json"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(round1_data, f, indent=2, ensure_ascii=False)
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] Round1数据已保存到: {output_file}")
+
+        return output_file
 
 
 # 全局Round1设计器实例

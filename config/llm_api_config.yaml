@@ -1,6 +1,6 @@
 # ===== LLM API 配置 =====
 llm:
-  model_name: "gemini-2.5-pro-preview-06-05"        # Gemini模型名称
+  model_name: "gemini-2.5-pro"        # Gemini模型名称
   llm_api_url: "https://api.openai-proxy.org/google" # API代理地址
   api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
   temperature: 0.7                                   # 生成温度参数
@@ -94,7 +94,6 @@ round1_schema:
       - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
       - "SERVICE-PROXY-SW-COMPONENT-TYPE"
       - "SERVICE-SW-COMPONENT-TYPE"
-      - "COMPOSITION-SW-COMPONENT-TYPE"
       - "PARAMETER-SW-COMPONENT-TYPE"
 
     # 基于round1.json中SW-COMPONENT-TYPE的必需属性(min_occurs=1)
@@ -157,39 +156,257 @@ round1_schema:
       - name: "TRANSFORMER-HARD-ERROR-EVENT"
         description: "Transformer error"
 
-    # 新增：RunnableEntity详细配置
-    runnable_entity_config:
-      required_elements:
-        - "SHORT-NAME"                    # 继承自Identifiable
-        - "SYMBOL"                         # RunnableEntity必需
-        - "MINIMUM-START-INTERVAL"        # 继承自ExecutableEntity
-      optional_elements:
-        - "CAN-BE-INVOKED-CONCURRENTLY"
-        - "ARGUMENTS"
-        - "ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS"
-        - "DATA-READ-ACCESSS"
-        - "DATA-RECEIVE-POINT-BY-ARGUMENTS"
-        - "DATA-RECEIVE-POINT-BY-VALUES"
-        - "DATA-SEND-POINTS"
-        - "DATA-WRITE-ACCESSS"
-        - "EXTERNAL-TRIGGERING-POINTS"
-        - "INTERNAL-TRIGGERING-POINTS"
-        - "MODE-ACCESS-POINTS"
-        - "MODE-SWITCH-POINTS"
-        - "PARAMETER-ACCESSS"
-        - "READ-LOCAL-VARIABLES"
-        - "SERVER-CALL-POINTS"
-        - "WAIT-POINTS"
-        - "WRITTEN-LOCAL-VARIABLES"
-        # 继承自ExecutableEntity的可选元素
-        - "ACTIVATION-REASONS"
-        - "CAN-ENTER-EXCLUSIVE-AREA-REFS"
-        - "EXCLUSIVE-AREA-NESTING-ORDER-REFS"
-        - "REENTRANCY-LEVEL"
-        - "RUNS-INSIDE-EXCLUSIVE-AREA-REFS"
-        - "SW-ADDR-METHOD-REF"
+  runnable_entity_config:
+  # 旧字段保留以便兼容，但不再用于 LLM 枚举
+    required_elements: []
+    optional_elements: []
 
-  # 修改理由：需要让Round1能够选择具体的端口和事件类型，而不是简单的true/false
+    # 新：枚举 LLM 可选择的“容器级”键（key）
+    elements:
+      # ---------- RunnableEntity 自身 ----------
+      - key: ARGUMENTS
+        xml_wrapper_tag: ARGUMENTS
+        xml_tag: RUNNABLE-ENTITY-ARGUMENT
+        type: RunnableEntityArgument
+        min: 0
+        max: -1
+
+      - key: ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS
+        xml_wrapper_tag: ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS
+        xml_tag: ASYNCHRONOUS-SERVER-CALL-RESULT-POINT
+        type: AsynchronousServerCallResultPoint
+        min: 0
+        max: -1
+
+      - key: CAN-BE-INVOKED-CONCURRENTLY
+        xml_wrapper_tag: null
+        xml_tag: CAN-BE-INVOKED-CONCURRENTLY
+        type: Boolean
+        min: 0
+        max: 1
+
+      - key: DATA-READ-ACCESSS          # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: DATA-READ-ACCESSS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-RECEIVE-POINT-BY-ARGUMENTS
+        xml_wrapper_tag: DATA-RECEIVE-POINT-BY-ARGUMENTS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-RECEIVE-POINT-BY-VALUES
+        xml_wrapper_tag: DATA-RECEIVE-POINT-BY-VALUES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-SEND-POINTS
+        xml_wrapper_tag: DATA-SEND-POINTS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-WRITE-ACCESSS         # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: DATA-WRITE-ACCESSS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: EXTERNAL-TRIGGERING-POINTS
+        xml_wrapper_tag: EXTERNAL-TRIGGERING-POINTS
+        xml_tag: EXTERNAL-TRIGGERING-POINT
+        type: ExternalTriggeringPoint
+        min: 0
+        max: -1
+
+      - key: INTERNAL-TRIGGERING-POINTS
+        xml_wrapper_tag: INTERNAL-TRIGGERING-POINTS
+        xml_tag: INTERNAL-TRIGGERING-POINT
+        type: InternalTriggeringPoint
+        min: 0
+        max: -1
+
+      - key: MODE-ACCESS-POINTS
+        xml_wrapper_tag: MODE-ACCESS-POINTS
+        xml_tag: MODE-ACCESS-POINT
+        type: ModeAccessPoint
+        min: 0
+        max: -1
+
+      - key: MODE-SWITCH-POINTS
+        xml_wrapper_tag: MODE-SWITCH-POINTS
+        xml_tag: MODE-SWITCH-POINT
+        type: ModeSwitchPoint
+        min: 0
+        max: -1
+
+      - key: PARAMETER-ACCESSS          # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: PARAMETER-ACCESSS
+        xml_tag: PARAMETER-ACCESS
+        type: ParameterAccess
+        min: 0
+        max: -1
+
+      - key: READ-LOCAL-VARIABLES
+        xml_wrapper_tag: READ-LOCAL-VARIABLES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: SERVER-CALL-POINTS
+        xml_wrapper_tag: null
+        xml_tag: SERVER-CALL-POINTS
+        type: ServerCallPoints
+        min: 0
+        max: -1
+
+      - key: SYMBOL
+        xml_wrapper_tag: null
+        xml_tag: SYMBOL
+        type: CIdentifier
+        min: 0
+        max: 1
+
+      - key: WAIT-POINTS
+        xml_wrapper_tag: WAIT-POINTS
+        xml_tag: WAIT-POINT
+        type: WaitPoint
+        min: 0
+        max: -1
+
+      - key: WRITTEN-LOCAL-VARIABLES
+        xml_wrapper_tag: WRITTEN-LOCAL-VARIABLES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: VARIATION-POINT
+        xml_wrapper_tag: null
+        xml_tag: VARIATION-POINT
+        type: VariationPoint
+        min: 0
+        max: 1
+
+      # ---------- ExecutableEntity 继承 ----------
+      - key: ACTIVATION-REASONS
+        xml_wrapper_tag: ACTIVATION-REASONS
+        xml_tag: EXECUTABLE-ENTITY-ACTIVATION-REASON
+        type: ExecutableEntityActivationReason
+        min: 0
+        max: -1
+
+      - key: CAN-ENTER-EXCLUSIVE-AREA-REFS
+        xml_wrapper_tag: CAN-ENTER-EXCLUSIVE-AREA-REFS
+        xml_tag: CAN-ENTER-EXCLUSIVE-AREA-REF
+        type: CanEnterExclusiveAreaRef
+        min: 0
+        max: -1
+
+      - key: EXCLUSIVE-AREA-NESTING-ORDER-REFS
+        xml_wrapper_tag: EXCLUSIVE-AREA-NESTING-ORDER-REFS
+        xml_tag: EXCLUSIVE-AREA-NESTING-ORDER-REF
+        type: ExclusiveAreaNestingOrderRef
+        min: 0
+        max: -1
+
+      - key: MINIMUM-START-INTERVAL
+        xml_wrapper_tag: null
+        xml_tag: MINIMUM-START-INTERVAL
+        type: TimeValue
+        min: 0
+        max: 1
+
+      - key: REENTRANCY-LEVEL
+        xml_wrapper_tag: null
+        xml_tag: REENTRANCY-LEVEL
+        type: ReentrancyLevelEnum
+        min: 0
+        max: 1
+
+      - key: RUNS-INSIDE-EXCLUSIVE-AREA-REFS
+        xml_wrapper_tag: RUNS-INSIDE-EXCLUSIVE-AREA-REFS
+        xml_tag: RUNS-INSIDE-EXCLUSIVE-AREA-REF
+        type: RunsInsideExclusiveAreaRef
+        min: 0
+        max: -1
+
+      - key: SW-ADDR-METHOD-REF
+        xml_wrapper_tag: null
+        xml_tag: SW-ADDR-METHOD-REF
+        type: SwAddrMethodRef
+        min: 0
+        max: 1
+
+  preselect:
+    unions:
+      # VariableAccess: ACCESSED-VARIABLE 三选一
+      - of: "ACCESSED-VARIABLE"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "AUTOSAR-VARIABLE-IREF"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REF"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REFS"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "LOCAL-VARIABLE-REF"
+            selectable_children: [ ]
+
+      # ModeAccessPoint / ModeSwitchPoint: MODE-GROUP-IREF 二选一
+      - of: "MODE-GROUP-IREF"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+            selectable_children: [ ]
+          - name: "P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+            selectable_children: [ ]
+
+      # ParameterAccess: ACCESSED-PARAMETER 二选一
+      - of: "ACCESSED-PARAMETER"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "AUTOSAR-PARAMETER-IREF"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REF"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "LOCAL-PARAMETER-REF"
+            selectable_children: [ ]
+
+      # ServerCallPoints：同步/异步可并存（可多选），并允许精确选择子键
+      - of: "SERVER-CALL-POINTS"
+        min_select: 1
+        max_select: 2
+        variants:
+          - name: "SYNCHRONOUS-SERVER-CALL-POINT"
+            selectable_children:
+              - "OPERATION-IREF"
+              - "TIMEOUT"
+              - "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+          - name: "ASYNCHRONOUS-SERVER-CALL-POINT"
+            selectable_children:
+              - "OPERATION-IREF"
+              - "TIMEOUT"
 
   # 基于round1.json中的PORT-INTERFACE定义
   interface_types:
