@@ -13,7 +13,8 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 
 from ..config import CONFIG
-from ..llm.gemini_client import GeminiClient
+from ..llm.openai_client import OpenAIClient as GeminiClient
+# from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.dynamic_query_engine import query_engine
 from ..knowledge.constraint_engine import constraint_engine

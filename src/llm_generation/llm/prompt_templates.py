@@ -22,7 +22,7 @@ class PromptTemplateManager:
 
     def _get_enhanced_round1_template(self) -> Template:
         template_text = """
-        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践。
+        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。
         ==========================================
         本系统采用两阶段生成架构：
         - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素
@@ -77,41 +77,84 @@ class PromptTemplateManager:
 
         注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。
         
-    ## 用户需求
-    $user_requirements
+        ## 用户需求
+        $user_requirements
+    
+        ## 设计上下文
+        $design_context
 
-    ## 设计上下文
-    $design_context
+        ---
 
-    ---
+        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）
+        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：
+        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）
+        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）
+        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：
+          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）
+          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）
+          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键）
+          - `notes`: 可选说明
 
-    ## 元素预选任务（务必遵循schema结构化输出）
-    对每个 runnable 的 `elements`，按如下对象结构产出（数组）：
-    - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）
-    - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）
-    - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：
-      - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）
-      - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）
-      - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键）
-      - `notes`: 可选说明
+        > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `["PORT-PROTOTYPE-REF","TARGET-DATA-PROTOTYPE-REF"]` 两个子键；不要输出未选择的 `CONTEXT-*`、`ROOT-*` 等。
 
-    > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `["PORT-PROTOTYPE-REF","TARGET-DATA-PROTOTYPE-REF"]` 两个子键；不要输出未选择的 `CONTEXT-*`、`ROOT-*` 等。
+        ### 预选清单（参考）
+        - VariableAccess:
+          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF
+          - 若选 AUTOSAR-VARIABLE-IREF：其可选子键包括 TARGET-DATA-PROTOTYPE-REF、PORT-PROTOTYPE-REF、CONTEXT-DATA-PROTOTYPE-REF、ROOT-VARIABLE-DATA-PROTOTYPE-REF（**从schema中精确挑选要生成的**）
+        - ModeAccessPoint / ModeSwitchPoint:
+          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF
+        - ParameterAccess:
+          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF
+        - ServerCallPoints:
+          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）
+                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）
+                                     
+        element_design 输出示例（必须严格遵循）:
+        ------------------------------------------
+        ```json
+        {
+            "runnables": [
+              {
+                "name": "ProcessingRunnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": ["PORT-PROTOTYPE-REF", "TARGET-DATA-PROTOTYPE-REF"],
+                        "notes": "从输入端口读取数据"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": ["PORT-PROTOTYPE-REF", "TARGET-DATA-PROTOTYPE-REF"],
+                        "notes": "向输出端口发送处理后的数据"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）
+        【输出硬规则 / HARD RULES】
+            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。
+            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。
+            - JSON 字符串内不要出现裸换行，请使用 \\n。
+            - 不要出现尾随逗号。
 
-    ### 预选清单（参考）
-    - VariableAccess:
-      - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF
-      - 若选 AUTOSAR-VARIABLE-IREF：其可选子键包括 TARGET-DATA-PROTOTYPE-REF、PORT-PROTOTYPE-REF、CONTEXT-DATA-PROTOTYPE-REF、ROOT-VARIABLE-DATA-PROTOTYPE-REF（**从schema中精确挑选要生成的**）
-    - ModeAccessPoint / ModeSwitchPoint:
-      - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF
-    - ParameterAccess:
-      - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF
-    - ServerCallPoints:
-      - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）
-                                 ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）
-
-    ## 输出 JSON Schema（**必须严格匹配此结构与键名**）
-    $round1_schema_json
-    """
+        $round1_schema_json
+        """
 
         return Template(template_text)
 

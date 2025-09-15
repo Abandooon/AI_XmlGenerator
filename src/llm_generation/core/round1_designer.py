@@ -8,7 +8,8 @@ import uuid
 from typing import Dict, List, Any, Optional, Tuple, Union
 import google.generativeai as genai
 from ..config import CONFIG
-from ..llm.gemini_client import GeminiClient
+from ..llm.openai_client import OpenAIClient as GeminiClient
+# from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
 from ..knowledge.terminology_builder import terminology_builder
 from ..knowledge.dynamic_query_engine import query_engine
@@ -319,8 +320,38 @@ class Round1Designer:
                 },
                 "notes": {"type": "string"}
             },
-            "required": ["key"]
+            "required": ["key","preselect"]
         }
+        # ① preselect 至少挑 1 个分支
+        element_selection_schema["properties"]["preselect"]["minItems"] = 1
+
+        # ② include：去重 + 非空
+        include_schema = element_selection_schema["properties"]["preselect"]["items"]["properties"]["include"]
+        include_schema["uniqueItems"] = True
+        include_schema["minItems"] = 1
+        # 替换 variant_guards 构造
+        item_guards = []
+        for vname, children in variant_children_map.items():
+            if not children:
+                continue
+            item_guards.append({
+                # 针对每个 preselect 的 item：若 variant 命中，就限制 include 的枚举
+                "if": {
+                    "properties": {
+                        "variant": {"const": vname}
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "include": {
+                            "items": {"enum": sorted(set(children))}
+                        }
+                    }
+                }
+            })
+
+        # 挂到 preselect.items.allOf（逐 item 生效）
+        element_selection_schema["properties"]["preselect"]["items"].setdefault("allOf", []).extend(item_guards)
 
         # ---------- element_design_schema ----------
         element_design_schema = {
@@ -335,13 +366,14 @@ class Round1Designer:
                         "needed": {"type": "boolean"},
                         "types": {
                             "type": "array",
+                            "minItems": 1,
                             "items": {"type": "string", "enum": [pt.name for pt in port_types]},
                             "description": "需要的具体端口类型"
                         },
                         "details": {"type": "string"}
                     },
                     "allOf": [
-                        {"if": {"properties": {"needed": {"const": True}}}, "then": {"required": ["types"]}}
+                        {"if": {"properties": {"needed": {"const": True}}}, "then": {"required": ["types"], "properties": {"types": {"minItems": 1}}}}
                     ]
                 },
                 "internal_behaviors": {
@@ -351,6 +383,7 @@ class Round1Designer:
                         "needed": {"type": "boolean"},
                         "events": {
                             "type": "array",
+                            "minItems": 1,
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
@@ -373,6 +406,7 @@ class Round1Designer:
                                     "name": {"type": "string", "description": "Runnable 实体名"},
                                     "elements": {
                                         "type": "array",
+                                        "minItems": 1,
                                         "items": element_selection_schema,
                                         "description": "该 Runnable 需要的深层元素（结构化 & 确定性 include）"
                                     },
@@ -394,6 +428,7 @@ class Round1Designer:
         # 构建component_plan的schema
         component_plan_schema = {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -449,9 +484,11 @@ class Round1Designer:
             }
         }
 
+
         # 构建interface_plan的schema
         interface_plan_schema = {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -473,6 +510,7 @@ class Round1Designer:
                     "data_category": {"type": "string"},
                     "connected_components": {
                         "type": "array",
+                        "minItems": 1,
                         "items": {"type": "string"}
                     },
                     "performance_requirements": {"type": "string"},
@@ -488,12 +526,14 @@ class Round1Designer:
         # 组装完整schema
         return {
             "type": "object",
+            "additionalProperties": False,  # ← 新增：根对象禁多长字段
             "properties": {
                 "system_analysis": system_analysis_schema,
                 "component_plan": component_plan_schema,
                 "interface_plan": interface_plan_schema,
                 "connection_topology": {
                     "type": "object",
+                    "additionalProperties": False,
                     "properties": {
                         "component_connections": {"type": "string"},
                         "data_flow_paths": {"type": "string"},
@@ -503,6 +543,7 @@ class Round1Designer:
                 },
                 "architecture_rationale": {
                     "type": "object",
+                    "additionalProperties": False,
                     "properties": {
                         "design_decisions": {"type": "string"},
                         "tradeoff_analysis": {"type": "string"},
