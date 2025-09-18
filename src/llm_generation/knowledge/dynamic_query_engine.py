@@ -38,33 +38,33 @@ except ImportError:
 
 # 三选一（exactly one）类：类名 → 需要互斥选择的键集合
 CHOICE_ONE_OF = {
-    "AUTOSARVARIABLEREF": {
-        "AUTOSAR-VARIABLE-IREF",
-        "LOCAL-VARIABLE-REF",
-        "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
-    },
+    # "AUTOSARVARIABLEREF": {
+    #     "AUTOSAR-VARIABLE-IREF",
+    #     "LOCAL-VARIABLE-REF",
+    #     "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+    # },
 }
 
 # InstanceRef 的“必选 + 三选一”规则（支持同义键：tag / wrapper）
 # mandatory: 这些键必须出现（即便 KG 的 minOccurs 标成 0 也强制）
 # xor_groups: 三选一，每个元素是同义键集合（取其中存在于 props 的那个）
 XOR_WITH_MANDATORY = {
-    "VARIABLEINATOMICSWCTYPEINSTANCEREF": {
-        "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
-        "xor_groups": [
-            {"PORT-PROTOTYPE-REF"},
-            {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
-            {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},  # tag / wrapper 兼容
-        ],
-    },
-    "ARVARIABLEINIMPLEMENTATIONDATAINSTANCEREF": {
-        "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
-        "xor_groups": [
-            {"PORT-PROTOTYPE-REF"},
-            {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
-            {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},
-        ],
-    },
+    # "VARIABLEINATOMICSWCTYPEINSTANCEREF": {
+    #     "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
+    #     "xor_groups": [
+    #         {"PORT-PROTOTYPE-REF"},
+    #         {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
+    #         {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},  # tag / wrapper 兼容
+    #     ],
+    # },
+    # "ARVARIABLEINIMPLEMENTATIONDATAINSTANCEREF": {
+    #     "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
+    #     "xor_groups": [
+    #         {"PORT-PROTOTYPE-REF"},
+    #         {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
+    #         {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},
+    #     ],
+    # },
 
 }
 
@@ -73,10 +73,21 @@ XOR_WITH_MANDATORY = {
 # 删除会越权影响结构选择的条目：RUNNABLE-ENTITY / SERVERCALLPOINTS 相关。
 ALWAYS_INCLUDE_OPTIONALS: dict[str, set[str]] = {
     # 事件：常见的“起点引用”在 KG 中多为 0..1，但工程上几乎总需要
-    "TIMINGEVENT": {"START-ON-EVENT-REF"},
-    "RTEEVENT": {"START-ON-EVENT-REF"},
-    "MODESWITCHEVENT": {"START-ON-EVENT-REF"},
-    "DATARECEIVEDEVENT": {"START-ON-EVENT-REF"},
+    "SWC-MODE-SWITCH-EVENT": {"START-ON-EVENT-REF"},
+    "DATA-WRITE-COMPLETED-EVENT": {"START-ON-EVENT-REF"},
+    "OPERATION-INVOKED-EVENT": {"START-ON-EVENT-REF"},
+    "TIMING-EVENT": {"START-ON-EVENT-REF"},
+    "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT": {"START-ON-EVENT-REF"},
+    "EXTERNAL-TRIGGER-OCCURRED-EVENT": {"START-ON-EVENT-REF"},
+    "DATA-RECEIVED-EVENT": {"START-ON-EVENT-REF"},
+    "MODE-SWITCHED-ACK-EVENT": {"START-ON-EVENT-REF"},
+    "SWC-MODE-MANAGER-ERROR-EVENT": {"START-ON-EVENT-REF"},
+    "INTERNAL-TRIGGER-OCCURRED-EVENT": {"START-ON-EVENT-REF"},
+    "BACKGROUND-EVENT": {"START-ON-EVENT-REF"},
+    "DATA-SEND-COMPLETED-EVENT": {"START-ON-EVENT-REF"},
+    "INIT-EVENT": {"START-ON-EVENT-REF"},
+    "DATA-RECEIVE-ERROR-EVENT": {"START-ON-EVENT-REF"},
+    "TRANSFORMER-HARD-ERROR-EVENT": {"START-ON-EVENT-REF"},
 }
 
 
@@ -197,9 +208,10 @@ class DynamicQueryEngine:
           - 'INTERNAL-BEHAVIORS'：固定允许 {'RUNNABLE-ENTITY','EVENTS'}
           - 'RUNNABLE-ENTITY'：runnables[*].elements 的 wrapper/key 合并（如 DATA-SEND-POINTS、SERVER-CALL-POINTS…）
           - 'EVENTS'：events[*].type 合并（如 TIMING-EVENT、DATA-RECEIVED-EVENT…）
-          - **新增**：消费 elements[].preselect[]，将
+          - 还会消费 elements[].preselect[]，将：
               of -> variant 加入白名单（保证分支被展开）
               variant -> include 子键加入白名单（保证只展开所选子键）
+              ✅ 新增：wrapper -> of（确保在该 wrapper 下放行该锚点分支）
         """
 
         def U(x):
@@ -247,6 +259,10 @@ class DynamicQueryEngine:
                         # of -> variant：白名单该分支（避免分支是 0..1 时被过滤）
                         if of and variant:
                             idx.setdefault(of, set()).add(variant)
+
+                        # ✅ 同步到 wrapper：确保本 wrapper 下放行该 of（例如 DATA-SEND-POINTS → ACCESSED-VARIABLE）
+                        if run_key and of:
+                            idx.setdefault(run_key, set()).add(of)
 
                         # variant -> include：只展开被选择的子键
                         if variant and include:
@@ -427,8 +443,8 @@ class DynamicQueryEngine:
         """
         从 KG 递归构建 class_ident 的 JSON Schema 片段（内联版）：
           - 仅保留：KG 必选(minOccurs>=1) ∪ Round1 白名单（容器→子键；of→variant；variant→include）
-          - CHOICE_ONE_OF：仅在“该容器没有任何 Round1 白名单”时作为兜底放行
-          - XOR_WITH_MANDATORY：仍保留（对 InstanceRef 类的强约束）
+          - CHOICE_ONE_OF：仅在“该容器没有任何【相关】Round1 白名单”时作为兜底放行
+          - XOR_WITH_MANDATORY：只做约束（强制必选 + 三选一），不主动放行新键
           - 引用终止（*-TREF/IREF）→ {@DEST, #text}；原子/枚举直接落标量；其余继续递归（内联）
         """
         info = self._query_class_attributes(session, class_ident)
@@ -443,51 +459,86 @@ class DynamicQueryEngine:
         attrs = info.get("attributes") or []
 
         # ---- 规则/表 ----
-        choice_map = globals().get("CHOICE_ONE_OF",
-                                   {})  # e.g. AUTOSARVARIABLEREF → {"AUTOSAR-VARIABLE-IREF","LOCAL-VARIABLE-REF",...}
-        xor_map = globals().get("XOR_WITH_MANDATORY", {})  # e.g. *INSTANCE-REF 的必选 + 三组选一分组
+        choice_map = globals().get("CHOICE_ONE_OF", {})
+        xor_map = globals().get("XOR_WITH_MANDATORY", {})
         always_map = globals().get("ALWAYS_INCLUDE_OPTIONALS", {})
 
-        # ---- Round1 白名单：来自父容器（例如 ACCESSED-VARIABLE / SERVER-CALL-POINTS / RUNNABLE-ENTITY 等）----
+        # ---- Round1 白名单：来自父容器（例如 ACCESSED-VARIABLE / RUNNABLE-ENTITY / AUTOSAR-VARIABLE-IREF 等）----
         allowed_from_design: set[str] = set()
         if parent_container_tag:
             allowed_from_design |= {_U(x) for x in (design_index.get(_U(parent_container_tag)) or set())}
 
+        # ★ 额外：全局设计键集合（用于允许“锚点”属性如 ACCESSED-VARIABLE 先被保留）
+        design_global_keys: set[str] = {_U(k) for k in (design_index.keys() or [])}
+        design_all_selected_values: set[str] = set()
+        for v in (design_index.values() or []):
+            design_all_selected_values |= {_U(x) for x in (v or set())}
+
         class_up = _U(class_ident)
 
-        # ---- CHOICE_ONE_OF 只在“无 Round1 白名单”时兜底放行 ----
-        # 例如：在 ACCESSED-VARIABLE 容器下，Round1 若已选择了 AUTOSAR-VARIABLE-IREF，
-        # 则 allowed_from_design 已非空，此时不要把其它候选也放进去。
+        # ---- 计算“本层候选名集合”，用于判定 Round1 白名单是否与本层相关 ----
+        candidate_names: set[str] = set()
+        for a in attrs:
+            for nm in (a.get("xml_wrapper_tag"), a.get("xml_tag"), a.get("name")):
+                if nm:
+                    candidate_names.add(_U(nm))
+
+        # ---- CHOICE_ONE_OF 只在“无【相关】Round1 白名单”时兜底放行 ----
         choice_set = set(choice_map.get(class_up, set()))
-        if choice_set and not allowed_from_design:
+        has_related_design = bool(allowed_from_design & (candidate_names | choice_set))
+        if choice_set and not has_related_design:
+            # 兜底：放入所有候选（例如 AUTOSARVARIABLEREF 的各个变体），避免无路可走
             allowed_from_design |= {_U(x) for x in choice_set}
 
-        # ---- 可选放行表（精简后）：仅事件起点引用。InstanceRef 仍然自动放行本类拥有的 tag/wrapper 键 ----
+        # ---- 可选放行：事件引用等（来自 ALWAYS_INCLUDE_OPTIONALS）----
         extra_opt: set[str] = set(always_map.get(class_up, set()))
+
+        # ---- InstanceRef 类的放行策略（关键点）----
         if class_up.endswith("INSTANCEREF"):
-            for a in attrs:
-                if a.get("xml_tag"):
-                    extra_opt.add(_U(a.get("xml_tag")))
-                if a.get("xml_wrapper_tag"):
-                    extra_opt.add(_U(a.get("xml_wrapper_tag")))
+            rule = xor_map.get(class_up, {})
+            mandatory = {_U(x) for x in (rule.get("mandatory") or set())}
+            if has_related_design or allowed_from_design:
+                # 只放行必选；其余由 allowed_from_design（来自 variant 的 include）决定
+                extra_opt |= mandatory
+            else:
+                # 兜底（没有设计约束）：放行本类所有键，避免剪空
+                for a in attrs:
+                    if a.get("xml_tag"):
+                        extra_opt.add(_U(a.get("xml_tag")))
+                    if a.get("xml_wrapper_tag"):
+                        extra_opt.add(_U(a.get("xml_wrapper_tag")))
 
         def _keep(a: dict) -> bool:
-            # 选择：KG必选(minOccurs>=1) ∪ Round1白名单 ∪ 额外可选（事件引用等）
+            # 1) KG 必选
             try:
                 min_occ = int(a.get("minOccurs") or a.get("pure_minOccurs") or 0)
             except Exception:
                 min_occ = 0
             if min_occ >= 1:
                 return True
+
             w = _U(a.get("xml_wrapper_tag"))
             t = _U(a.get("xml_tag"))
             n = _U(a.get("name"))
+
+            # 2) 命中“本层相关”的 Round1 白名单
             if (w in allowed_from_design) or (t in allowed_from_design) or (n in allowed_from_design):
                 return True
+
+            # 3) 设计锚点 / 选中值（跨层允许）
+            if (w in design_global_keys) or (t in design_global_keys) or (n in design_global_keys):
+                return True
+            if (w in design_all_selected_values) or (t in design_all_selected_values) or (
+                    n in design_all_selected_values):
+                return True
+
+            # 4) 额外放行（事件引用、InstanceRef 的 mandatory 键等）
             if (w in extra_opt) or (t in extra_opt) or (n in extra_opt):
                 return True
+
             return False
 
+        # 基于上述规则过滤属性
         attrs = [a for a in attrs if _keep(a)]
 
         props: dict[str, dict] = {}
@@ -502,38 +553,23 @@ class DynamicQueryEngine:
             if b in {"FLOAT", "DOUBLE", "DECIMAL", "NUMBER"}: return {"type": "number"}
             return {"type": "string"}
 
-        def _scalar_from_name_hint(key: str) -> dict:
-            u = _U(key)
-            if any(tok in u for tok in ("NAME", "ID", "REF", "TAG")): return {"type": "string"}
-            if any(tok in u for tok in ("COUNT", "NUM", "RATE", "RATIO", "LENGTH")): return {"type": "number"}
-            return {"type": "string"}
-
         for a in attrs:
-            tag = _U(a.get("xml_tag"))
-            wrap = _U(a.get("xml_wrapper_tag"))
-            key = wrap or tag or _U(a.get("name"))
-            if not key:
-                continue
-
-            # occurs / array 判定
-            try:
-                min_occ = int(a.get("minOccurs") or a.get("pure_minOccurs") or 0)
-            except Exception:
-                min_occ = 0
-            max_occ_raw = a.get("maxOccurs", a.get("pure_maxOccurs"))
-
+            key = a.get("name") or a.get("xml_tag") or a.get("xml_wrapper_tag") or "FIELD"
+            key = key.strip()
+            tag = a.get("xml_tag")
+            wrap = a.get("xml_wrapper_tag")
+            min_occ = int(a.get("minOccurs") or a.get("pure_minOccurs") or 0)
+            max_occ_raw = a.get("maxOccurs")
             default_is_array = _is_array_occurs(max_occ_raw)
             is_array = _override_container_shape(_U(key), default_is_array)
 
-            # KG 的类型名有时在 "type_name"，有时在 "type"
             tname = a.get("type_name") or a.get("type")
 
-            # ---- 引用终止：由结构判定（DEST-only）或明显 TREF 标签 ----
+            # ---- 引用终止（TREF/IREF 或 DEST-only 类）----
             if self._is_ref_terminal(session, tname, tag):
                 val = _emit_ref_object_schema(is_array)
-                if is_array:
-                    if min_occ > 0:
-                        val.setdefault("minItems", min_occ)
+                if is_array and min_occ > 0:
+                    val.setdefault("minItems", min_occ)
                     try:
                         if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
                             val["maxItems"] = int(max_occ_raw)
@@ -552,13 +588,14 @@ class DynamicQueryEngine:
                 t_is_enum = bool(a.get("t_is_enum")) or bool(a.get("t_enum_values"))
                 t_base = a.get("t_base")
                 t_pattern = a.get("t_pattern")
-                enum_vals = a.get("t_enum_values") or []
 
-                # 原子/枚举：直接落标量
-                if t_is_attr or t_is_enum:
+                # 1) 终止：原子/枚举
+                if t_is_attr or t_is_enum or t_base:
                     scalar = _scalar_from_base(t_base)
-                    if enum_vals:
-                        scalar = {**scalar, "enum": enum_vals}
+                    if t_is_enum:
+                        enum_vals = a.get("t_enum_values") or []
+                        if enum_vals:
+                            scalar = {**scalar, "enum": enum_vals}
                     if t_pattern:
                         scalar = {**scalar, "pattern": t_pattern}
                     val = {"type": "array", "items": scalar} if is_array else scalar
@@ -571,7 +608,7 @@ class DynamicQueryEngine:
                     props[key]["x-xml-wrapper-tag"] = wrap
                     continue
 
-                # 递归（若下层在 design_index 有专属白名单，则切 parent；否则沿用父容器）
+                # 2) 递归（若下层在 design_index 有专属白名单，则切 parent；否则沿用父容器）
                 next_key = _U(a.get("xml_wrapper_tag") or a.get("xml_tag"))
                 child_parent = next_key if design_index.get(next_key) else _U(parent_container_tag)
 
@@ -580,19 +617,13 @@ class DynamicQueryEngine:
                     class_ident=tname,
                     parent_container_tag=child_parent,
                     design_index=design_index,
-                    seen=seen
+                    seen=set(seen)
                 )
                 definitions.update(sub_defs)
 
                 val = {"type": "array", "items": sub_schema} if is_array else sub_schema
-                if is_array:
-                    if min_occ > 0:
-                        val["minItems"] = min_occ
-                    try:
-                        if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
-                            val["maxItems"] = int(max_occ_raw)
-                    except Exception:
-                        pass
+                if is_array and min_occ > 0:
+                    val.setdefault("minItems", min_occ)
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
@@ -600,19 +631,16 @@ class DynamicQueryEngine:
                 props[key]["x-xml-wrapper-tag"] = wrap
                 continue
 
-            # ---- 无 TYPE_OF：叶子兜底（名称/声明类型启发）----
-            if self._is_ref_terminal(session, None, tag):
-                val = _emit_ref_object_schema(is_array)
+            # ---- 无 TYPE_OF：按 a.isEnum/a.baseType/命名启发落标量 ----
+            base_type = a.get("a_baseType") or a.get("baseType")
+            is_enum = bool(a.get("a_isEnum"))
+            if is_enum:
+                val = {"type": "string", "enum": a.get("enum_values") or []}
             else:
-                if a.get("a_is_primitive"):
-                    scalar = {"type": "string"}
-                elif a.get("a_declared_type"):
-                    scalar = _scalar_from_base(a.get("a_declared_type"))
-                else:
-                    scalar = _scalar_from_name_hint(key)
-                val = {"type": "array", "items": scalar} if is_array else scalar
-
+                prim = self._guess_primitive_from_name(_U(base_type) or _U(tag) or _U(key))
+                val = prim or {"type": "string"}
             if is_array and min_occ > 0:
+                val = {"type": "array", "items": val}
                 val.setdefault("minItems", min_occ)
             props[key] = val
             if min_occ >= 1:
@@ -624,6 +652,23 @@ class DynamicQueryEngine:
         schema: dict = {"type": "object", "properties": props, "additionalProperties": False}
         if required:
             schema["required"] = required
+
+        # ✅ Round1 include → required：若 Round1 在当前类（如 AUTOSAR-VARIABLE-IREF）声明了 include 子键，
+        #    则把这些子键提升为 required（按 x-xml-tag 对齐 JSON 键名）
+        includes = {_U(x) for x in (design_index.get(class_up) or set())}
+        if includes:
+            # 建立 xmlTag → jsonKey 的映射
+            tag_to_json_key = {}
+            for _k, _v in props.items():
+                if isinstance(_v, dict):
+                    xt = _v.get("x-xml-tag")
+                    if xt:
+                        tag_to_json_key[_U(xt)] = _k
+            req = schema.setdefault("required", [])
+            for inc_tag in includes:
+                jk = tag_to_json_key.get(inc_tag)
+                if jk and jk not in req:
+                    req.append(jk)
 
         # ================= 判别式“三选一”兜底（仅基于“当前 props 中实际存在的候选”） =================
         # A) CHOICE_ONE_OF：例如 AUTOSARVARIABLEREF 的多个子分支
@@ -645,37 +690,22 @@ class DynamicQueryEngine:
                         }
                     })
                 schema.setdefault("allOf", []).extend(conditions)
-            elif len(options) == 1:
-                schema.setdefault("required", [])
-                if options[0] not in schema["required"]:
-                    schema["required"].append(options[0])
 
-        # B) XOR_WITH_MANDATORY：必选 + 互斥组（按“当前 props 中存在的键”裁剪）
-        if class_up in xor_map:
-            rule = xor_map[class_up]
-            # must
-            must = list(rule.get("mandatory", set()) or [])
-            if must:
+        # B) XOR_WITH_MANDATORY：例如 *INSTANCE-REF 的 TARGET 必选 + 定位三选一
+        rule = xor_map.get(class_up)
+        if rule:
+            mandatory = [x for x in (rule.get("mandatory") or []) if x in props]
+            reps = [list(g)[0] for g in (rule.get("xor_groups") or []) if any(x in props for x in g)]
+            if mandatory:
                 schema.setdefault("required", [])
-                for k in must:
-                    if k in props and k not in schema["required"]:
-                        schema["required"].append(k)
-            # xor groups
-            groups = list(rule.get("xor_groups", []) or [])
-            reps: list[str] = []
-            for g in groups:
-                rep = next((k for k in g if k in props), None)
-                if rep:
-                    reps.append(rep)
+                for m in mandatory:
+                    if m not in schema["required"]:
+                        schema["required"].append(m)
             if len(reps) >= 2:
-                if "variant" in schema["properties"]:
-                    old_enum = set(schema["properties"]["variant"].get("enum", []))
-                    schema["properties"]["variant"]["enum"] = sorted(old_enum.union(reps))
-                else:
-                    schema["properties"]["variant"] = {"type": "string", "enum": reps}
-                    schema.setdefault("required", [])
-                    if "variant" not in schema["required"]:
-                        schema["required"].append("variant")
+                schema["properties"]["variant"] = {"type": "string", "enum": reps}
+                schema.setdefault("required", [])
+                if "variant" not in schema["required"]:
+                    schema["required"].append("variant")
                 conditions = []
                 for opt in reps:
                     forbid = [x for x in reps if x != opt]
@@ -697,21 +727,95 @@ class DynamicQueryEngine:
     # ------------------------分块构建----------------------------------------
     # ======================== 固定骨架 + 局部递归 入口 ========================
 
+    def _xmlize_schema_properties(self, schema_fragment: dict) -> dict:
+        """
+        将递归阶段产生的“驼峰键 + x-xml-wrapper-tag/x-xml-tag 标注”的 schema 片段，
+        在最终输出阶段重写为 AUTOSAR 风格键名：
+          - 同时存在 wrapper/tag：外层用 wrapper，当容器键；容器内部以 tag 作为元素键
+            * 若原节点为 array：W -> { T: array(items=原items) }
+            * 若原节点为 object/scalar：仅将键重命名为 W
+          - wrapper 为空/不存在：仅使用 tag；若 tag 也无，则保留原键
+          - 递归处理 object.properties / array.items，并同步 required 键名映射
+        注意：仅在最终组装 schema 前调用；不要在 KG 递归阶段调用。
+        """
+        from copy import deepcopy
+        node = deepcopy(schema_fragment)
+
+        def _walk(n: dict) -> dict:
+            if not isinstance(n, dict):
+                return n
+
+            # 先递归 array.items（这样 items 已经完成内部重命名）
+            if n.get("type") == "array" and isinstance(n.get("items"), dict):
+                n["items"] = _walk(n["items"])
+
+            # 再处理对象 properties
+            if n.get("type") == "object" and isinstance(n.get("properties"), dict):
+                old_props = n["properties"]
+                new_props = {}
+                # 旧键 → 新键 的映射，用于同步 required
+                key_map = {}
+
+                for old_key, sub in list(old_props.items()):
+                    sub2 = _walk(sub)  # 先对子树进行重命名/规范化
+
+                    wrapper = sub2.get("x-xml-wrapper-tag")
+                    tag = sub2.get("x-xml-tag")
+
+                    # 默认值
+                    new_key = old_key
+                    new_val = sub2
+
+                    if wrapper:
+                        # 有 wrapper，优先作为外层容器键
+                        new_key = wrapper
+                        if isinstance(sub2, dict) and sub2.get("type") == "array" and tag:
+                            # 规则：W -> { T: 原 array }
+                            arr = {"type": "array"}
+                            # 继承原 array 的 items/min/maxItems
+                            if "items" in sub2:
+                                arr["items"] = sub2["items"]
+                            if "minItems" in sub2:
+                                arr["minItems"] = sub2["minItems"]
+                            if "maxItems" in sub2:
+                                arr["maxItems"] = sub2["maxItems"]
+                            new_val = {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {tag: arr}
+                            }
+                        else:
+                            # 非 array：仅改键为 wrapper，值保持
+                            new_val = sub2
+                    else:
+                        # 无 wrapper：若有 xml tag，用 xml tag 改键；否则保留旧键
+                        if tag:
+                            new_key = tag
+                            new_val = sub2
+
+                    new_props[new_key] = new_val
+                    key_map[old_key] = new_key
+
+                # 应用 properties 替换
+                n["properties"] = new_props
+
+                # 同步 required 键名
+                if isinstance(n.get("required"), list):
+                    n["required"] = [key_map.get(k, k) for k in n["required"]]
+
+            return n
+
+        return _walk(node)
+
     def generate_component_schema_fixed(self, comp_plan: Dict[str, Any]) -> Dict[str, Any]:
         """
         固定上层骨架（PORTS / INTERNAL-BEHAVIORS / RUNNABLES / EVENTS），
-        仅在三处“内层区域”做类型驱动的递归：
-          - PORTS 下的条目对象（P-PORT-PROTOTYPE / R-PORT-PROTOTYPE / …）
-          - RUNNABLE-ENTITY 下各 elements wrapper（如 DATA-SEND-POINTS 等）
-          - EVENTS 下各事件类型（如 TIMING-EVENT、DATA-RECEIVED-EVENT …）
-
-        参数:
-          comp_plan: Round1 的单组件计划（含 element_design）
-
-        返回:
-          JSON Schema（definitions里含局部递归生成的类型；顶层仅包含 { "<comp_name>": { ... } }）
+        三处“内层区域”做类型驱动递归（端口条目、runnable 子容器、事件类型）。
+        —— 保持递归阶段用驼峰键以兼容 KG 查询；最终打包时统一替换为 AUTOSAR 标签键。
+        返回：JSON Schema（顶层键 = 组件类型名；内联根；仍保留 definitions 以备后续扩展）
         """
         name = (comp_plan.get("name") or "SWC").strip()
+        comp_type = (comp_plan.get("type") or "ECU-ABSTRACTION-SW-COMPONENT-TYPE").strip()
         element_design = comp_plan.get("element_design") or {}
 
         # Round1 → 设计索引
@@ -719,40 +823,39 @@ class DynamicQueryEngine:
 
         definitions: Dict[str, Any] = {}
         with self.driver.session() as session:
-            # --- 1) PORTS 区 ---
+            # 1) PORTS
             ports_obj, defs_ports = self._build_ports_section(session, design_index)
             definitions.update(defs_ports)
 
-            # --- 2) RUNNABLES 与 EVENTS（都在 INTERNAL-BEHAVIORS / SWC-INTERNAL-BEHAVIOR 之下） ---
+            # 2) RUNNABLES / EVENTS（在 INTERNAL-BEHAVIORS 下）
             runnables_obj, defs_runs = self._build_runnables_section(session, design_index)
             definitions.update(defs_runs)
 
             events_obj, defs_events = self._build_events_section(session, design_index)
             definitions.update(defs_events)
 
-        # ----- 3) 组件根骨架（不从 KG 根类递归，直接模板化） -----
+        # 3) 组件根骨架（模板化，不从 KG 根类递归）
         root_props: Dict[str, Any] = {
-            "SHORT-NAME": {"type": "string"}
+            "SHORT-NAME": {
+                "type": "string",
+                # 给 LLM 友好的示例，但不强约束（避免把 name 锁死为 const）
+                "examples": [name],
+            }
         }
         root_required: List[str] = ["SHORT-NAME"]
 
-        # 是否需要 PORTS
-        if "PORTS" in design_index.get("__TOP__", set()):
-            if ports_obj is not None:
-                root_props["PORTS"] = ports_obj
-                # 端口不是强必填：由实例是否需要决定；如需强制必填可取消下行注释
-                # root_required.append("PORTS")
+        if "PORTS" in design_index.get("__TOP__", set()) and ports_obj is not None:
+            root_props["PORTS"] = ports_obj
+            # 你是否强制 PORTS 必填取决于策略，这里保持“不强制”，如需严格可解开下一行
+            # root_required.append("PORTS")
 
-        # 是否需要 INTERNAL-BEHAVIORS
         if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):
-            # 固定两级壳：INTERNAL-BEHAVIORS/SWC-INTERNAL-BEHAVIOR
             ib_props = {
                 "SWC-INTERNAL-BEHAVIOR": {
                     "type": "object",
                     "additionalProperties": False,
                     "properties": {
                         "SHORT-NAME": {"type": "string"},
-                        # RUNNABLES / EVENTS 两块：按需放入（为空则不放）
                         **({"RUNNABLES": runnables_obj} if runnables_obj is not None else {}),
                         **({"EVENTS": events_obj} if events_obj is not None else {}),
                     },
@@ -763,10 +866,8 @@ class DynamicQueryEngine:
                 "type": "object",
                 "additionalProperties": False,
                 "properties": ib_props,
-                "x-xml-tag": "INTERNAL-BEHAVIORS"
+                "x-xml-tag": "INTERNAL-BEHAVIORS",
             }
-            # 同上，不强制 required，按需打开
-            # root_required.append("INTERNAL-BEHAVIORS")
 
         swc_root = {
             "type": "object",
@@ -775,19 +876,22 @@ class DynamicQueryEngine:
             "required": root_required,
         }
 
-        # 顶层包装：<comp_name> : $ref SWC-ROOT
-        schema = {
+        # ✅ 关键收尾：把根片段统一替换为 AUTOSAR 标签键（wrapper/tag），仅在最终输出前执行
+        swc_root_xml = self._xmlize_schema_properties(swc_root)
+
+        # ✅ 顶层：用“组件类型名”作为根键，且直接内联（不再 $ref）
+        schema: Dict[str, Any] = {
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                name: {"$ref": "#/definitions/SWC-ROOT"}
+                comp_type: swc_root_xml
             },
-            "required": [name],
-            "definitions": {
-                **definitions,
-                "SWC-ROOT": swc_root
-            }
+            "required": [comp_type],
         }
+        # 如后续子类型真的需要，可保留 definitions（当前生成通常用不到 $ref）
+        if definitions:
+            schema["definitions"] = definitions
+
         return schema
 
     # ======================== 三个内层构建器 ========================
@@ -1012,111 +1116,116 @@ class DynamicQueryEngine:
     # ------------------------ interface ------------------------
     def generate_multi_interface_schema(self, interface_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        生成多接口Schema - 作为只读参考供组件引用
-        按类型分组，同类型接口复用Schema定义
+        接口 Schema（精简版）：
+        - 顶层以接口类型名分组（AUTOSAR 标签）
+        - 每类接口 -> array(items = 该类型的内联 Schema）
+        - 仅依赖 KG：展开 (minOccurs>=1) 的元素；不做任何额外放行/手工骨架
         """
-        if not interface_plans:
-            return {"type": "object", "properties": {}, "additionalProperties": False}
+        from collections import defaultdict
 
-        # 按类型分组
-        interfaces_by_type = {}
-        for intf in interface_plans:
-            intf_type = intf.get("type", "")
-            intf_name = intf.get("name", "")
+        # 1) 按类型分组
+        grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        for itf in interface_plans or []:
+            t = self._canon_iface_type(itf.get("type", ""))
+            if not t:
+                continue
+            grouped[t].append(itf)
 
-            if not intf_type:
-                raise KGQueryError(f"接口{intf_name}缺少类型定义")
+        properties: Dict[str, Any] = {}
+        required: List[str] = []
+        definitions: Dict[str, Any] = {}
 
-            if intf_type not in interfaces_by_type:
-                interfaces_by_type[intf_type] = []
-            interfaces_by_type[intf_type].append(intf)
+        if not self.driver:
+            # 没 KG 时，降级为最小可用形状（仅 SHORT-NAME），仍保持分组
+            for itype, items in grouped.items():
+                item_schema = {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "SHORT-NAME": {
+                            "type": "string",
+                            "examples": [it.get("name") for it in items if it.get("name")]
+                        }
+                    },
+                    "required": ["SHORT-NAME"]
+                }
+                properties[itype] = {"type": "array", "items": item_schema, "minItems": 1}
+                required.append(itype)
+            return {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": properties,
+                "required": required
+            }
 
-        # 为每个类型生成一次schema，然后复用
-        type_definitions = {}
-        schemas = {}
-
+        # 2) 走 KG 递归：class_ident=类型名，parent_container_tag=类型名，design_index={}
         with self.driver.session() as session:
-            for intf_type, intfs in interfaces_by_type.items():
-                # 检查缓存或生成新Schema
-                if intf_type not in type_definitions:
-                    # 生成接口类型Schema
-                    type_schema = self._build_interface_schema(session, intf_type)
-                    type_definitions[intf_type] = type_schema
+            for itype, items in grouped.items():
+                try:
+                    _nm, base_schema, defs = self._build_class_schema_recursive(
+                        session=session,
+                        class_ident=itype,
+                        parent_container_tag=itype,
+                        design_index={},  # 接口不依赖 Round1 设计白名单
+                        seen=set()
+                    )
+                    # 转为 AUTOSAR 标签键（wrapper/tag 处理）
+                    if hasattr(self, "_xmlize_schema_properties"):
+                        base_schema = self._xmlize_schema_properties(base_schema)
+                    definitions.update(defs)
 
-                # 为该类型的每个接口创建引用
-                for intf in intfs:
-                    schemas[intf["name"]] = {"$ref": f"#/definitions/{intf_type}"}
+                    # 给 SHORT-NAME 打 examples（不改变结构/必填，仅利于命名）
+                    sn = base_schema.get("properties", {}).get("SHORT-NAME")
+                    if isinstance(sn, dict):
+                        examples = [it.get("name") for it in items if it.get("name")]
+                        if examples:
+                            sn["examples"] = examples
+
+                    properties[itype] = {"type": "array", "items": base_schema, "minItems": 1}
+                    required.append(itype)
+                except Exception:
+                    # 查询失败时保底为最小形状
+                    item_schema = {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "SHORT-NAME": {
+                                "type": "string",
+                                "examples": [it.get("name") for it in items if it.get("name")]
+                            }
+                        },
+                        "required": ["SHORT-NAME"]
+                    }
+                    properties[itype] = {"type": "array", "items": item_schema, "minItems": 1}
+                    required.append(itype)
 
         return {
             "type": "object",
-            "properties": schemas,
-            "definitions": type_definitions,
-            "additionalProperties": False
+            "additionalProperties": False,
+            "properties": properties,
+            "required": required,
+            "definitions": definitions or {}
         }
 
-    def _build_interface_schema(self, session, interface_type: str) -> Dict[str, Any]:
-        """构建接口类型Schema"""
-        # 查询接口类型结构
-        info = self._query_class_attributes(session, interface_type)
-
-        props = {}
-        req = []
-
-        # 处理必需属性
-        for attr in info["attributes"]:
-            min_occ = int(attr.get("minOccurs", 0))
-            if min_occ >= 1:
-                key = attr.get("xml_tag") or attr.get("name")
-                if key:
-                    # 简化处理：接口主要包含标量属性和数据元素
-                    if key == "DATA-ELEMENTS":
-                        props[key] = self._build_data_elements_schema()
-                    elif key == "OPERATIONS":
-                        props[key] = self._build_operations_schema()
-                    else:
-                        props[key] = {"type": "string"}
-                    req.append(key)
-
-        schema = {"type": "object", "properties": props, "additionalProperties": False}
-        if req:
-            schema["required"] = req
-
-        return schema
-
-    def _build_data_elements_schema(self) -> Dict[str, Any]:
-        """构建DATA-ELEMENTS结构"""
-        return {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "SHORT-NAME": {"type": "string"},
-                    "TYPE-TREF": {
-                        "type": "object",
-                        "properties": {
-                            "@DEST": {"type": "string", "const": "IMPLEMENTATION-DATA-TYPE"},
-                            "#text": {"type": "string"}
-                        },
-                        "required": ["@DEST", "#text"]
-                    }
-                },
-                "required": ["SHORT-NAME", "TYPE-TREF"]
-            }
+    def _canon_iface_type(self, t: str) -> str:
+        """将多种写法统一成 AUTOSAR 标签写法"""
+        U = (t or "").strip().upper().replace(" ", "").replace("_", "")
+        mapping = {
+            "CLIENTSERVERINTERFACE": "CLIENT-SERVER-INTERFACE",
+            "CLIENT-SERVER-INTERFACE": "CLIENT-SERVER-INTERFACE",
+            "SENDERRECEIVERINTERFACE": "SENDER-RECEIVER-INTERFACE",
+            "SENDER-RECEIVER-INTERFACE": "SENDER-RECEIVER-INTERFACE",
+            "NVDATAINTERFACE": "NV-DATA-INTERFACE",
+            "NV-DATA-INTERFACE": "NV-DATA-INTERFACE",
+            "MODESWITCHINTERFACE": "MODE-SWITCH-INTERFACE",
+            "MODE-SWITCH-INTERFACE": "MODE-SWITCH-INTERFACE",
+            "PARAMETERINTERFACE": "PARAMETER-INTERFACE",
+            "PARAMETER-INTERFACE": "PARAMETER-INTERFACE",
+            "TRIGGERINTERFACE": "TRIGGER-INTERFACE",
+            "TRIGGER-INTERFACE": "TRIGGER-INTERFACE",
         }
+        return mapping.get(U, (t or "").strip().upper())
 
-    def _build_operations_schema(self) -> Dict[str, Any]:
-        """构建OPERATIONS结构"""
-        return {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "SHORT-NAME": {"type": "string"},
-                    "ARGUMENTS": {"type": "object"}
-                },
-                "required": ["SHORT-NAME"]
-            }
-        }
     # ------------------------ 资源管理 ------------------------
 
     def close(self):

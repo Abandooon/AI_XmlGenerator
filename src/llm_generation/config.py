@@ -434,6 +434,36 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
         event_types=event_types_list,
     )
 
+    # ---------- preselect（unions/variants） ----------
+    preselect_yaml = round1_yaml.get("preselect", {}) or {}
+    unions_cfg: List[UnionSpec] = []
+
+    for u in preselect_yaml.get("unions", []) or []:
+        of_name = u.get("of")
+        if not of_name:
+            continue  # 跳过无 of 的条目
+
+        branches: List[UnionBranch] = []
+        for b in (u.get("variants") or []):
+            vname = b.get("name")
+            if not vname:
+                continue  # 跳过无 name 的分支
+            branches.append(UnionBranch(
+                name=vname,
+                selectable_children=b.get("selectable_children", []) or [],
+                default_children=b.get("default_children", []) or [],
+                required_children=b.get("required_children", []) or [],
+            ))
+
+        unions_cfg.append(UnionSpec(
+            of=of_name,
+            variants=branches,
+            min_select=int(u.get("min_select", 1) or 1),
+            max_select=int(u.get("max_select", 1) or 1),
+        ))
+
+    preselect_config = Round1PreselectConfig(unions=unions_cfg)
+
     # ---------- 汇总 ----------
     return Round1SchemaConfig(
         component_types=component_types_config,
@@ -442,6 +472,7 @@ def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
         output_schema=output_schema_config,
         round1_element_design=round1_element_design_config,
         runnable_entity_config=runnable_entity_config,
+        preselect=preselect_config,
     )
 
 

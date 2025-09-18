@@ -46,9 +46,9 @@ class Round2Generator:
             custom_requirements: Dict[str, Any] = None
     ) -> Tuple[str, Dict[str, Any]]:
         """Round2 逐组件生成：
-        - 为所有接口先生成“只读参考 Schema”
-        - 按组件逐一生成（每个组件独立 Schema + Prompt + 推理）
-        - 校验并合并为最终 JSON，再转 ARXML
+        - 先基于 Round1 的接口计划与接口 Schema 生成“接口实例对象”
+        - 再逐组件生成组件实例
+        - 合并为最终 JSON，并转换为 ARXML
         """
 
         start_time = time.time()
@@ -58,46 +58,84 @@ class Round2Generator:
         if CONFIG.debug_mode:
             print(f"[DEBUG] Round2逐组件模式：{len(component_plans)} 个组件，{len(interface_plans)} 个接口")
 
-        # 1) 先准备接口 Schema（只读参考，不混入组件根）
+        # 1) 准备接口 Schema（用于接口实例的强校验）
         interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
 
-        # 2) 全局约束集合（随后按组件过滤）
-        constraints_all = self._query_comprehensive_constraints(component_plans, interface_plans)
-        standard_types = self._prepare_standard_types()
-
+        # 2) 先生成接口实例（独立于组件，严格按接口 Schema）
         merged_json: Dict[str, Any] = {}
         token_stats = {"input": 0, "output": 0, "total": 0}
 
+        if interface_plans:
+            try:
+                interfaces_prompt = template_manager.get_round2_prompt_interfaces(
+                    interface_plans=interface_plans,
+                    interface_schema=interface_schema,
+                    architecture_design=architecture_design.__dict__,
+                    memory_context=memory_context or ""
+                )
+                # 保存接口 Prompt 以便调试
+                self._save_prompt_to_file(interfaces_prompt)
+
+                iface_resp, in_tok_i, out_tok_i, ttl_tok_i = self.gemini_client.generate_with_schema(
+                    prompt=interfaces_prompt,
+                    schema=interface_schema,  # 直接用接口 Schema 做强校验
+                    max_retries=3
+                )
+                # 保存接口响应
+                self._save_response_to_file(iface_resp)
+
+                token_stats["input"] += in_tok_i
+                token_stats["output"] += out_tok_i
+                token_stats["total"] += ttl_tok_i
+
+                # 规范化：{ type: [ {SHORT-NAME,...}, ... ] } → { "<SHORT-NAME>": { _type: "<type>", ... } }
+                interfaces_obj = iface_resp if isinstance(iface_resp, dict) else {}
+                normalized_ifaces = self._normalize_interfaces_object(interfaces_obj)
+                # 可选：持久化接口实例，便于核对
+                if normalized_ifaces:
+                    try:
+                        self._save_interfaces_instances(normalized_ifaces)
+                    except Exception:
+                        pass
+                # 注入供后续 XML 转换
+                merged_json["_interfaces"] = normalized_ifaces
+
+            except Exception as e:
+                if CONFIG.debug_mode:
+                    print(f"[WARNING] 接口实例生成失败，将跳过接口：{e}")
+
+        # 3) 查询全局约束集合（随后按组件过滤）
+        constraints_all = self._query_comprehensive_constraints(component_plans, interface_plans)
+        standard_types = self._prepare_standard_types()
+
+        # 4) 逐组件生成
         for comp in component_plans:
             comp_name = comp.get("name", "Component")
-            # 2.1 生成“单组件 Schema”（只含当前类型 definitions + 顶层 comp_name）
+            # 4.1 单组件 Schema
             comp_schema = self._build_single_component_schema(comp)
-
-            # 保存单组件 Schema 以便调试
             self._save_component_schema_to_file(comp_name, comp_schema)
 
-            # 2.2 过滤与该组件相关的约束，减少无关噪声
+            # 4.2 过滤与该组件相关的约束
             constraints = self._filter_constraints_for_component(comp, constraints_all)
 
-            # 2.3 逐组件 Prompt（接口 Schema 以只读参考方式注入）
+            # 4.3 单组件 Prompt（接口仅作为上下文参考；组件输出仍严格按组件 Schema）
             prompt = template_manager.get_round2_prompt_single(
                 comp_plan=comp,
                 interface_plans=interface_plans,
                 constraints=constraints,
                 component_schema=comp_schema,
                 interface_schema=interface_schema,
-                memory_context=memory_context or ""
+                memory_context=memory_context or "",
+                architecture_design=architecture_design.__dict__
             )
-
-            # 补充标准类型引用规则（用于 *-INTERFACE-TREF 的 DEST 指引等）
+            # 类型库与引用规范
             prompt += self._format_standard_types(standard_types)
             prompt += self._add_direct_reference_guidance(architecture_design)
 
-            # 2.4 调用 LLM（严格约束该组件 Schema）
+            # 4.4 调用 LLM（严格约束该组件 Schema）
             resp, in_tok, out_tok, ttl_tok = self.gemini_client.generate_with_schema(
                 prompt=prompt,
                 schema=comp_schema,
-                temperature=0.7,
                 max_retries=3
             )
             self._save_component_prompt_to_file(comp_name, prompt)
@@ -107,18 +145,14 @@ class Round2Generator:
             token_stats["output"] += out_tok
             token_stats["total"] += ttl_tok
 
-            # 2.5 合并当前组件结果（顶层只会有一个键 = comp_name）
+            # 4.5 合并当前组件结果（顶层只会有一个键 = comp_name）
             if isinstance(resp, dict):
                 merged_json.update(resp)
 
-        # 3) 合并接口（如果你的后续 ARXML 转换需要放在同一 JSON 下）
-        if interface_plans:
-            merged_json["_interfaces"] = self._extract_interfaces_as_readonly(interface_plans)
-
-        # 4) 转换为 ARXML
+        # 5) 转换为 ARXML
         arxml_content = self._convert_to_arxml(merged_json, architecture_design)
 
-        # 5) 统计
+        # 6) 统计
         generation_time = time.time() - start_time
         stats = {
             "input_tokens": token_stats["input"],
@@ -131,10 +165,67 @@ class Round2Generator:
     def _build_single_component_schema(self, comp: Dict[str, Any]) -> Dict[str, Any]:
         """
         Round2 单组件 schema 构建入口：
-        - 不做任何 runnable elements 的合并或简化
-        - 直接把 Round1 的 element_design 交给 query_engine
+        - 直接调用 query_engine 生成组件 Schema
+        - 生成后执行“Round1 include -> required”增强，确保强一致
         """
-        return self.query_engine.generate_component_schema_fixed(comp)
+        schema = self.query_engine.generate_component_schema_fixed(comp)
+        # ✅ 强一致：把 Round1 include 的所有子键设为 required（仅对命中的 variant 节点）
+        schema = self._enforce_includes_required(comp, schema)
+        return schema
+
+    def _enforce_includes_required(self, comp_plan: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        将 Round1 element_design 中 preselect.variant 对应的 include 子键，
+        在 Schema 中提升为 required（仅当这些子键真实出现在该 variant 节点的 properties 时）。
+        - 不修改 KG 查询逻辑，仅对返回的 Schema 做安全后处理
+        - 以“父属性键 == variant 名称”作为定位依据；遍历时大小写不敏感
+        """
+        # 1) 收集 Round1 的 variant -> includes（均大写化便于匹配）
+        variant_includes: Dict[str, set] = {}
+        ed = (comp_plan.get("element_design") or {})
+        ib = (ed.get("internal_behaviors") or {})
+        for r in ib.get("runnables") or []:
+            for elem in (r.get("elements") or []):
+                if not isinstance(elem, dict):
+                    continue
+                for ps in (elem.get("preselect") or []):
+                    variant = str(ps.get("variant") or "").strip().upper()
+                    includes = [str(x).strip().upper() for x in (ps.get("include") or [])]
+                    if variant and includes:
+                        variant_includes.setdefault(variant, set()).update(includes)
+
+        if not variant_includes:
+            return schema  # 无需增强
+
+        # 2) 深度遍历 schema：当当前对象节点的“父键”命中某个 variant 时，把 include 子键并入 required
+        def _walk(node: Any, parent_key: Optional[str] = None):
+            if not isinstance(node, dict):
+                return
+            ntype = node.get("type")
+
+            if ntype == "object":
+                props = node.get("properties") or {}
+                # 命中 variant：把 includes -> required（仅对存在于 properties 的键）
+                if parent_key and parent_key.upper() in variant_includes:
+                    need = variant_includes[parent_key.upper()]
+                    # 建立 “大写 -> 实际键名”的映射，安全对齐
+                    upper2real = {str(k).strip().upper(): k for k in props.keys()}
+                    req = node.setdefault("required", [])
+                    for inc in need:
+                        real = upper2real.get(inc)
+                        if real and real not in req:
+                            req.append(real)
+
+                # 递归子属性
+                for ck, cv in props.items():
+                    _walk(cv, ck)
+
+            elif ntype == "array" and isinstance(node.get("items"), dict):
+                # 数组项沿用相同 parent_key 继续下潜（parent_key 决定是否命中 variant）
+                _walk(node["items"], parent_key)
+
+        _walk(schema, None)
+        return schema
 
     # def _generate_unified_batch(
     #     self,
@@ -772,6 +863,42 @@ class Round2Generator:
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[WARNING] 保存单组件Response失败: {e}")
+
+    def _normalize_interfaces_object(self, iface_grouped: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        将 LLM 按 interface_schema 产出的“类型分组对象”规范化为：
+           { "<SHORT-NAME>": { "_type": "<TYPE>", ...其余字段... }, ... }
+        这样可以直接被 _convert_to_arxml/_add_interface_to_xml 消费。
+        - 不做结构重写，不丢字段，只增加 _type，并以 SHORT-NAME 作为 key。
+        - 若条目缺少 SHORT-NAME，则跳过该条（无法命名）。
+        """
+        if not isinstance(iface_grouped, dict):
+            return {}
+        out: Dict[str, Any] = {}
+        for type_key, items in iface_grouped.items():
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                short = item.get("SHORT-NAME") or item.get("SHORTNAME")
+                if not short:
+                    continue
+                normalized = dict(item)
+                normalized["_type"] = type_key
+                out[str(short)] = normalized
+        return out
+
+    def _save_interfaces_instances(self, data: Dict[str, Any], suffix: str = "interfaces.instances.json") -> None:
+        """调试用：将接口实例保存到文件（可选）。"""
+        try:
+            out_path = Path(CONFIG.output_dir) / suffix
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[WARNING] 保存接口实例失败: {e}")
 
 
 # 全局Round2生成器实例

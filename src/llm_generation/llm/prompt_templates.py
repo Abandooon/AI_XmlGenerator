@@ -92,15 +92,14 @@ class PromptTemplateManager:
         - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：
           - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）
           - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）
-          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键）
+          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）
           - `notes`: 可选说明
-
-        > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `["PORT-PROTOTYPE-REF","TARGET-DATA-PROTOTYPE-REF"]` 两个子键；不要输出未选择的 `CONTEXT-*`、`ROOT-*` 等。
 
         ### 预选清单（参考）
         - VariableAccess:
-          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF
-          - 若选 AUTOSAR-VARIABLE-IREF：其可选子键包括 TARGET-DATA-PROTOTYPE-REF、PORT-PROTOTYPE-REF、CONTEXT-DATA-PROTOTYPE-REF、ROOT-VARIABLE-DATA-PROTOTYPE-REF（**从schema中精确挑选要生成的**）
+          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，
+          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项
+            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `["PORT-PROTOTYPE-REF","TARGET-DATA-PROTOTYPE-REF"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。
         - ModeAccessPoint / ModeSwitchPoint:
           - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF
         - ParameterAccess:
@@ -152,7 +151,6 @@ class PromptTemplateManager:
             - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。
             - JSON 字符串内不要出现裸换行，请使用 \\n。
             - 不要出现尾随逗号。
-
         $round1_schema_json
         """
 
@@ -337,6 +335,63 @@ $interface_definitions
             round1_schema_json=schema_text
         )
 
+    def get_round2_prompt_interfaces(
+            self,
+            interface_plans: List[Dict[str, Any]],
+            interface_schema: Dict[str, Any],
+            architecture_design: Optional[Dict[str, Any]] = None,
+            memory_context: str = ""
+    ) -> str:
+        """
+        接口实例专用 Prompt（整块文本）：
+        - 只生成“接口对象集合”，严格匹配 interface_schema
+        - Round1 的 system_analysis / connection_topology / interface_plan 作为只读上下文
+        - 不生成组件
+        """
+        import json
+        from textwrap import dedent
+
+        sys_analysis = (architecture_design or {}).get("system_analysis") if architecture_design else None
+        conn_topology = (architecture_design or {}).get("connection_topology") if architecture_design else None
+
+        sys_analysis_json = json.dumps(sys_analysis or {}, ensure_ascii=False, indent=2)
+        conn_topology_json = json.dumps(conn_topology or {}, ensure_ascii=False, indent=2)
+        iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
+        iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
+
+        prompt = f"""
+            你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+            
+            ## Round1 系统分析（只读）
+            ```json
+            {sys_analysis_json} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {conn_topology_json}
+            ```
+            
+            Round1 接口计划（只读）
+            ```json
+            {iface_plan_json}
+            ```
+            
+            接口 JSON Schema（严格匹配）
+            ```json
+            {iface_schema_json}
+            ```
+            
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF/*TREF/*IREF 字段必须是对象，包含 @DEST 与 #text。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+            {"\n## 对话记忆\n" + memory_context if memory_context else ""}
+            """.strip()
+
+        return dedent(prompt)
+
     def get_round2_prompt_single(
             self,
             comp_plan: Dict[str, Any],
@@ -344,116 +399,70 @@ $interface_definitions
             constraints: Dict[str, Any],
             component_schema: Dict[str, Any],
             interface_schema: Dict[str, Any],
-            memory_context: str = ""
+            memory_context: str = "",
+            architecture_design: Optional[Dict[str, Any]] = None
     ) -> str:
-        comp_name = comp_plan["name"]
-        comp_type = comp_plan["type"]
-        ed = comp_plan.get("element_design", {}) or {}
-
-        lines = []
-        lines.append("你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例。")
-        lines.append(f"组件：{comp_name}（{comp_type}）。输出必须是严格 JSON，顶层只包含 `{comp_name}`。")
-
-        # —— Round1 设计约束（容错：elements 既可能是 str 也可能是 dict）
-        if ed.get("ports", {}).get("needed"):
-            lines.append(f"- 需要端口类型：{', '.join(ed.get('ports', {}).get('types', [])) or '(未指定)'}")
-
-        ib = ed.get("internal_behaviors", {}) or {}
-        if ib.get("needed"):
-            evs = [e.get('type') for e in ib.get("events", []) if isinstance(e, dict) and e.get('type')]
-            if evs:
-                lines.append(f"- 事件类型：{', '.join(evs)}")
-
-            runs = ib.get("runnables", []) or []
-            if runs:
-                lines.append("- Runnable 子容器（逐 runnable）：")
-                for r in runs:
-                    rname = (r.get("name") if isinstance(r, dict) else None) or "(unnamed)"
-                    elems = []
-                    raw_elems = (r.get("elements") if isinstance(r, dict) else None) or []
-                    for e in raw_elems:
-                        if isinstance(e, str):
-                            t = e
-                            w = None
-                        else:
-                            t = e.get("xml_tag")
-                            w = e.get("xml_wrapper_tag")
-                        elems.append(w if w else t)
-                    lines.append(f"  - {rname}: {', '.join([x for x in elems if x]) or '(无)'}")
-
-        # —— 只读接口摘要（可选）
-        if interface_schema:
-            lines.append("\n(接口 schema 已加载，作为只读引用，不要输出接口对象)")
-
-        lines.append("\n## JSON Schema（仅本组件）\n```json")
-        lines.append(json.dumps(component_schema, ensure_ascii=False, indent=2))
-        lines.append("```")
-
-        lines.append("\n## 生成规则")
-        lines.append(f"- 顶层只包含 `{comp_name}`。")
-        lines.append("- 端口的 *-INTERFACE-TREF 必须是对象（包含 `@DEST` 与 `#text`），不得写成字符串。")
-        lines.append("- 仅生成 Round1 声明的事件类型。")
-        lines.append("- RUNNABLE-ENTITY 为对象数组；其下子容器采用“(wrapper 或容器) → 多个 items 数组”的结构。")
-        lines.append("- 所有 *REF/*TREF/*IREF 使用完整路径。")
-
-        return "\n".join(lines)
-
-    def build_round2_prompt(self, component_name: str, component_type: str,
-                            design: dict, interfaces_readonly: dict, schema: dict) -> str:
+        """单组件实例 Prompt（整块文本）：
+        - 只生成一个组件实例，严格匹配 component_schema
+        - 注入 Round1 的 system_analysis / connection_topology / interface_plan（只读）
+        - 同时提供 interface_schema（只读参考）帮助命名/类型一致性
         """
-        关键点：
-        - 顶层只能是 { "<component_name>": <component_object> }
-        - 明确 PORTS 是 object，且只包含 Round1 指定 P/R 两类数组
-        - INTERNAL-BEHAVIORS 只允许 SWC-INTERNAL-BEHAVIOR，下含 EVENTS(仅限 Round1 声明的类型) 与 RUNNABLES
-        - RUNNABLE-ENTITY 是数组，单 runnable 的子容器由 KG 的 wrapper_tag 决定（例如 DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-SEND-POINTS）
-        - 禁止生成未在 schema 中出现的键
-        """
-        design_summary = {
-            "component": {"name": component_name, "type": component_type},
-            "ports_needed_types": design.get("ports", {}).get("types", []),
-            "events": [e.get("type") for e in design.get("internal_behaviors", {}).get("events", [])],
-            "runnables": [r.get("short_name") for r in design.get("internal_behaviors", {}).get("runnables", [])]
-        }
+        import json
+        from textwrap import dedent
 
-        return dedent(f"""
-           你是 AUTOSAR XML 生成专家。
-           仅生成一个组件：**{component_name} ({component_type})** 的 JSON 内容。
-           输出必须是严格的 JSON 对象，且顶层只包含一个键："{component_name}"。
+        comp_name = comp_plan.get("name")
+        comp_type = comp_plan.get("type")
 
-           ## 设计要点（来自 Round1 & KG）
-           {json.dumps(design_summary, ensure_ascii=False, indent=2)}
+        sys_analysis_json = json.dumps((architecture_design or {}).get("system_analysis") or {}, ensure_ascii=False,
+                                       indent=2)
+        conn_topology_json = json.dumps((architecture_design or {}).get("connection_topology") or {},
+                                        ensure_ascii=False, indent=2)
+        iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
+        iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
+        comp_schema_json = json.dumps(component_schema or {}, ensure_ascii=False, indent=2)
 
-           ## 可引用的接口（只读参考，不要在输出里重写接口对象）
-           {json.dumps(interfaces_readonly, ensure_ascii=False, indent=2)}
+        prompt = f"""
+            你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+        
+            组件：{comp_name}（类型：{comp_type}）
+        
+            ## Round1 系统分析（只读）
+            ```json
+            {sys_analysis_json}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {conn_topology_json}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            {iface_plan_json}
+            ```
+            接口 JSON Schema（只读参考，勿输出接口对象）
+            ```json
+            {iface_schema_json}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {comp_schema_json}
+            ```
+            生成规则
+            顶层只包含 {comp_type}（组件类型名）。
+        
+            在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
+        
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+        
+            所有 *REF/*TREF/*IREF 字段为对象，包含 @DEST 与 #text。
+        
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+        
+            不要输出接口对象；接口仅用于命名/类型一致性参考。
+            {"\n## 对话记忆\n" + memory_context if memory_context else ""}
+            """.strip()
 
-           ## JSON Schema（必须严格匹配）对于带 variant 的对象：只填写一个分支属性（与 variant 匹配），另外两个不允许出现
-           ```json
-           {json.dumps(schema, ensure_ascii=False, indent=2)}
-           ```
+        return dedent(prompt)
 
-           ## 必须遵守
-           - 仅输出一个顶层键："{component_name}"。
-           - 不允许出现 schema 之外的属性。
-           - PORTS 必须是 object，且仅包含 Round1 指定的 P/R 两类数组。
-           - INTERNAL-BEHAVIORS/SWC-INTERNAL-BEHAVIOR/RUNNABLES/RUNNABLE-ENTITY 必须是对象数组。
-           - 仅生成 Round1 声明的事件类型（若无则不生成 EVENTS）。
-           - 所有 TREF 必须使用对象形状，包含 "@DEST" 与 "#text"。
-           - 引用路径必须为完整直接路径；UUID 全局唯一。
-
-           ## 输出格式
-           - 严格 JSON，无注释、无解释、无 XML 或伪代码。
-           """).strip()
-
-    def build_fix_prompt(self, base_prompt: str, bad_output: str) -> str:
-        return base_prompt + \
-            "\n\n上一次输出无法解析为 JSON。请只输出合法 JSON，不要包含任何多余文本。原始输出如下（供你纠错）：\n```\n" + \
-            bad_output + "\n```"
-
-    def build_repair_prompt(self, base_prompt: str, previous_output: str, errors: list) -> str:
-        return base_prompt + \
-            "\n\n上一次输出与 JSON Schema 不匹配。请在不改变 Schema 的前提下修复 JSON，" \
-            "只输出修复后的 JSON。错误如下：\n" + json.dumps(errors, ensure_ascii=False, indent=2) + \
-            "\n\n上一次的 JSON 为：\n```\n" + previous_output + "\n```"
 
     def _format_component_list_detail(self, component_plans: List[Dict[str, Any]]) -> str:
         """格式化组件列表的详细信息"""

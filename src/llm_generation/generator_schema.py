@@ -26,7 +26,7 @@ def _safe_name(s: str) -> str:
 
 def main():
     # 允许通过命令行传入 Round1 路径；否则用默认示例路径
-    round1_path = sys.argv[1] if len(sys.argv) > 1 else "output/round1_data/round1_20250912_202241.json"
+    round1_path = sys.argv[1] if len(sys.argv) > 1 else "output/round1_data/round1_20250917_155551.json"
     d = load_round1_design(round1_path)
 
     comps = d.get("component_plan") or []
