@@ -782,16 +782,25 @@ class DynamicQueryEngine:
                             new_val = {
                                 "type": "object",
                                 "additionalProperties": False,
-                                "properties": {tag: arr}
+                                "properties": {tag: arr},
+                                "required": [tag]
                             }
                         else:
                             # 非 array：仅改键为 wrapper，值保持
                             new_val = sub2
+                            if isinstance(new_val, dict) and new_val.get("type") == "object" \
+                                    and isinstance(new_val.get("properties"), dict):
+                                new_val.setdefault("additionalProperties", False)
+                                new_val["required"] = sorted(list(new_val["properties"].keys()))
                     else:
                         # 无 wrapper：若有 xml tag，用 xml tag 改键；否则保留旧键
                         if tag:
                             new_key = tag
                             new_val = sub2
+                            if isinstance(new_val, dict) and new_val.get("type") == "object" \
+                                    and isinstance(new_val.get("properties"), dict):
+                                new_val.setdefault("additionalProperties", False)
+                                new_val["required"] = sorted(list(new_val["properties"].keys()))
 
                     new_props[new_key] = new_val
                     key_map[old_key] = new_key
@@ -802,6 +811,12 @@ class DynamicQueryEngine:
                 # 同步 required 键名
                 if isinstance(n.get("required"), list):
                     n["required"] = [key_map.get(k, k) for k in n["required"]]
+
+                # 本层兜底：若本层未显式 or 未写全 required，按 strict 规则补成“全部子键”
+                if isinstance(n.get("properties"), dict):
+                    all_keys = sorted(list(n["properties"].keys()))
+                    if not isinstance(n.get("required"), list) or set(n["required"]) != set(all_keys):
+                        n["required"] = all_keys
 
             return n
 
@@ -850,30 +865,32 @@ class DynamicQueryEngine:
             # root_required.append("PORTS")
 
         if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):
-            ib_props = {
-                "SWC-INTERNAL-BEHAVIOR": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {
-                        "SHORT-NAME": {"type": "string"},
-                        **({"RUNNABLES": runnables_obj} if runnables_obj is not None else {}),
-                        **({"EVENTS": events_obj} if events_obj is not None else {}),
-                    },
-                    "required": ["SHORT-NAME"],
-                }
+            # 扁平化：直接把 SWC-INTERNAL-BEHAVIOR 挂到组件根下（拿掉 INTERNAL-BEHAVIORS 壳）
+            sib_props = {
+                "SHORT-NAME": {"type": "string"},
             }
-            root_props["INTERNAL-BEHAVIORS"] = {
+            if runnables_obj is not None:
+                # 保持你原先的 RUNNABLES 形状（里面有 RUNNABLE-ENTITY 数组）
+                sib_props["RUNNABLES"] = runnables_obj
+                # 如果后续仍碰到深度边界，再把 RUNNABLES 扁平为：
+                # sib_props["RUNNABLE-ENTITY"] = runnables_obj["properties"]["RUNNABLE-ENTITY"]
+            if events_obj is not None:
+                sib_props["EVENTS"] = events_obj
+
+            root_props["SWC-INTERNAL-BEHAVIOR"] = {
                 "type": "object",
                 "additionalProperties": False,
-                "properties": ib_props,
-                "x-xml-tag": "INTERNAL-BEHAVIORS",
+                "properties": sib_props,
+                # strict：required 覆盖当前层全部键
+                "required": sorted(list(sib_props.keys())),
+                # 不加 x-xml-wrapper-tag，避免 xmlize 把它再包回 INTERNAL-BEHAVIORS 壳
             }
 
         swc_root = {
             "type": "object",
             "additionalProperties": False,
             "properties": root_props,
-            "required": root_required,
+            "required": sorted(list(root_props.keys())),
         }
 
         # ✅ 关键收尾：把根片段统一替换为 AUTOSAR 标签键（wrapper/tag），仅在最终输出前执行
@@ -941,7 +958,8 @@ class DynamicQueryEngine:
             "type": "object",
             "additionalProperties": False,
             "properties": props,
-            "x-xml-tag": "PORTS"
+            "x-xml-tag": "PORTS",
+            "required": sorted(list(props.keys()))
         }
         if required:
             ports_obj["required"] = required
@@ -1044,8 +1062,8 @@ class DynamicQueryEngine:
             "type": "object",
             "additionalProperties": False,
             "properties": props,
-            "x-xml-tag": "EVENTS"
-            # 如需强制至少出现某类事件，可按需添加 "required": sorted(event_types)
+            "x-xml-tag": "EVENTS",
+            "required": sorted(list(props.keys()))
         }
         return events_obj, definitions
 

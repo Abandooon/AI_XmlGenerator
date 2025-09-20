@@ -61,6 +61,9 @@ class Round2Generator:
         # 1) 准备接口 Schema（用于接口实例的强校验）
         interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
 
+        # ↓↓↓ 新增：提早准备标准类型，给接口 prompt 使用
+        standard_types = self._prepare_standard_types()
+
         # 2) 先生成接口实例（独立于组件，严格按接口 Schema）
         merged_json: Dict[str, Any] = {}
         token_stats = {"input": 0, "output": 0, "total": 0}
@@ -71,7 +74,8 @@ class Round2Generator:
                     interface_plans=interface_plans,
                     interface_schema=interface_schema,
                     architecture_design=architecture_design.__dict__,
-                    memory_context=memory_context or ""
+                    memory_context=memory_context or "",
+                    standard_types=standard_types
                 )
                 # 保存接口 Prompt 以便调试
                 self._save_prompt_to_file(interfaces_prompt)
@@ -99,6 +103,25 @@ class Round2Generator:
                         pass
                 # 注入供后续 XML 转换
                 merged_json["_interfaces"] = normalized_ifaces
+                # ↓↓↓ 新增：为组件 Prompt 构建只读“接口实例索引”
+                iface_index_for_prompt = [
+                    {
+                        "name": name,
+                        "type": data.get("_type", ""),
+                        "path": f"/Interfaces/{name}"
+                    }
+                    for name, data in (normalized_ifaces or {}).items()
+                ]
+                # 若接口阶段失败或为空，则退化为基于 Round1 计划的索引（不新增函数，局部就地处理）
+                if not iface_index_for_prompt:
+                    iface_index_for_prompt = [
+                        {
+                            "name": it.get("name", ""),
+                            "type": it.get("type", ""),
+                            "path": f"/Interfaces/{it.get('name', '')}"
+                        }
+                        for it in (interface_plans or [])
+                    ]
 
             except Exception as e:
                 if CONFIG.debug_mode:
@@ -124,12 +147,11 @@ class Round2Generator:
                 interface_plans=interface_plans,
                 constraints=constraints,
                 component_schema=comp_schema,
-                interface_schema=interface_schema,
+                interface_index=iface_index_for_prompt,
                 memory_context=memory_context or "",
                 architecture_design=architecture_design.__dict__
             )
             # 类型库与引用规范
-            prompt += self._format_standard_types(standard_types)
             prompt += self._add_direct_reference_guidance(architecture_design)
 
             # 4.4 调用 LLM（严格约束该组件 Schema）

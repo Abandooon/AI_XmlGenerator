@@ -340,7 +340,8 @@ $interface_definitions
             interface_plans: List[Dict[str, Any]],
             interface_schema: Dict[str, Any],
             architecture_design: Optional[Dict[str, Any]] = None,
-            memory_context: str = ""
+            memory_context: str = "",
+            standard_types: dict | None = None,
     ) -> str:
         """
         接口实例专用 Prompt（整块文本）：
@@ -359,6 +360,7 @@ $interface_definitions
         iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
         iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
 
+
         prompt = f"""
             你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
             
@@ -370,11 +372,12 @@ $interface_definitions
             ```json
             {conn_topology_json}
             ```
-            
             Round1 接口计划（只读）
             ```json
             {iface_plan_json}
             ```
+            标准类型库，可以供TYPE-TREF引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>
+            {standard_types}
             
             接口 JSON Schema（严格匹配）
             ```json
@@ -398,14 +401,14 @@ $interface_definitions
             interface_plans: List[Dict[str, Any]],
             constraints: Dict[str, Any],
             component_schema: Dict[str, Any],
-            interface_schema: Dict[str, Any],
+            interface_index: List[Dict[str, Any]],  # CHANGED
             memory_context: str = "",
             architecture_design: Optional[Dict[str, Any]] = None
     ) -> str:
         """单组件实例 Prompt（整块文本）：
         - 只生成一个组件实例，严格匹配 component_schema
         - 注入 Round1 的 system_analysis / connection_topology / interface_plan（只读）
-        - 同时提供 interface_schema（只读参考）帮助命名/类型一致性
+        - 同时提供 interface_index（只读引用清单），避免模型回写接口对象
         """
         import json
         from textwrap import dedent
@@ -418,14 +421,16 @@ $interface_definitions
         conn_topology_json = json.dumps((architecture_design or {}).get("connection_topology") or {},
                                         ensure_ascii=False, indent=2)
         iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
-        iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
+
+        # CHANGED: 用接口实例索引，而不是接口 Schema
+        iface_index_json = json.dumps(interface_index or [], ensure_ascii=False, indent=2)
         comp_schema_json = json.dumps(component_schema or {}, ensure_ascii=False, indent=2)
 
         prompt = f"""
             你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
-        
+
             组件：{comp_name}（类型：{comp_type}）
-        
+
             ## Round1 系统分析（只读）
             ```json
             {sys_analysis_json}
@@ -438,31 +443,28 @@ $interface_definitions
             ```json
             {iface_plan_json}
             ```
-            接口 JSON Schema（只读参考，勿输出接口对象）
+
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
             ```json
-            {iface_schema_json}
+            {iface_index_json}
             ```
+
             组件 JSON Schema（严格匹配）
             ```json
             {comp_schema_json}
             ```
+
             生成规则
             顶层只包含 {comp_type}（组件类型名）。
-        
             在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
-        
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-        
             所有 *REF/*TREF/*IREF 字段为对象，包含 @DEST 与 #text。
-        
             仅使用 Schema 中出现的字段；不要新增未定义字段。
-        
-            不要输出接口对象；接口仅用于命名/类型一致性参考。
+            不要输出接口对象；接口仅用于 *-INTERFACE-TREF 的命名/路径一致性参考（使用索引里的 /Interfaces/<name>）。
             {"\n## 对话记忆\n" + memory_context if memory_context else ""}
             """.strip()
 
         return dedent(prompt)
-
 
     def _format_component_list_detail(self, component_plans: List[Dict[str, Any]]) -> str:
         """格式化组件列表的详细信息"""
