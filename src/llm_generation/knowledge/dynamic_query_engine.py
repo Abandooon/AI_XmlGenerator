@@ -90,7 +90,8 @@ ALWAYS_INCLUDE_OPTIONALS: dict[str, set[str]] = {
     "TRANSFORMER-HARD-ERROR-EVENT": {"START-ON-EVENT-REF"},
 }
 
-
+# 哪些 XML wrapper 在 Schema 阶段要折叠，生成完成后再补壳
+COLLAPSED_WRAPPERS = {"INTERNAL-BEHAVIORS", "RUNNABLES"}
 
 # ---------------------------- 工具 & 异常 ----------------------------
 
@@ -116,17 +117,19 @@ def _is_array_occurs(max_occurs) -> bool:
         s = str(max_occurs).strip().lower()
         return s in {"unbounded","inf","infinite"}
 
-def _emit_ref_object_schema(is_array: bool) -> dict:
-    obj = {
+def _emit_ref_object_schema(is_array: bool, dest_enum: list[str] | None = None) -> dict:
+    base = {
         "type": "object",
         "properties": {
             "@DEST": {"type": "string"},
             "#text": {"type": "string"}
         },
-        "required": ["@DEST","#text"],
-        "additionalProperties": False
+        "required": ["@DEST", "#text"]
     }
-    return {"type":"array","items":obj} if is_array else obj
+    if dest_enum:
+        base["properties"]["@DEST"]["enum"] = sorted({str(x) for x in dest_enum if x})
+    return {"type": "array", "items": base, "minItems": 1} if is_array else base
+
 
 def _override_container_shape(prop_key_upper: str, default_is_array: bool) -> bool:
     """
@@ -338,9 +341,6 @@ class DynamicQueryEngine:
             attrs.append(a)
         return {"class_name": data.get("class_name"), "class_tag": data.get("class_tag"), "attributes": attrs}
 
-
-
-
     # ------------------------ 终止与基元映射 ------------------------
 
     @staticmethod
@@ -357,34 +357,6 @@ class DynamicQueryEngine:
         if any(x in tn for x in ("STRING", "CHAR", "TEXT", "IDENTIFIER", "ID")):
             return {"type": "string"}
         return None  # 交给递归
-
-    @staticmethod
-    def _scalar_from_base(base: Optional[str]) -> Dict[str, Any]:
-        b = _up(base)
-        if b in {"BOOLEAN"}: return {"type": "boolean"}
-        if b in {"INT","INTEGER","INT8","INT16","INT32","INT64"}: return {"type": "integer"}
-        if b in {"FLOAT","DOUBLE","DECIMAL","NUMBER"}: return {"type": "number"}
-        return {"type": "string"}
-
-    @staticmethod
-    def _map_primitive_json(type_name: Optional[str], type_labels: Optional[List[str]], is_primitive: Optional[bool]) -> Optional[Dict[str, Any]]:
-        """
-        兼容旧的判断方式：根据 t.isPrimitiveType / labels / 命名猜测
-        返回 None 表示“不是终止类型，需要递归”。
-        """
-        labels = set((type_labels or []))
-        tn = _up(type_name)
-
-        # 明确的原子类型标记（KG 字段）
-        if is_primitive:
-            return DynamicQueryEngine._guess_primitive_from_name(tn)
-
-        # Enum 类：按 string 处理（不硬编码枚举值列表）
-        if "Enum" in labels or "ENUM" in labels:
-            return {"type": "string"}
-
-        # 某些 KG 未标注 isPrimitiveType，可根据命名猜测
-        return DynamicQueryEngine._guess_primitive_from_name(tn)
 
     # --- 2) 新增：统一的“是否当作引用终止”的判断 ---
     def _is_ref_terminal(self, session, type_name: str | None, a_xml_tag: str | None) -> bool:
@@ -565,9 +537,25 @@ class DynamicQueryEngine:
 
             tname = a.get("type_name") or a.get("type")
 
-            # ---- 引用终止（TREF/IREF 或 DEST-only 类）----
+            # 引用终止（TREF/IREF 或 DEST-only 类）
             if self._is_ref_terminal(session, tname, tag):
-                val = _emit_ref_object_schema(is_array)
+                dest_enum = None
+                try:
+                    # 以 xml_tag 优先，其次用 type_name 去查“包含 DEST 的类”
+                    tref_ident = (tag or tname)
+                    info = self._query_class_attributes(session, tref_ident) or {}
+                    for _a in (info.get("attributes") or []):
+                        # 找到 XML 属性 DEST
+                        _is_attr = bool(_a.get("isXmlAttr")) or bool(_a.get("is_xml_attribute"))
+                        _tag = (_a.get("xml_tag") or _a.get("name") or "").strip().upper()
+                        if _is_attr and _tag == "DEST":
+                            evs = _a.get("t_enum_values") or []
+                            dest_enum = [e for e in evs if e] or None
+                            break
+                except Exception:
+                    pass
+
+                val = _emit_ref_object_schema(is_array, dest_enum)
                 if is_array and min_occ > 0:
                     val.setdefault("minItems", min_occ)
                     try:
@@ -578,8 +566,11 @@ class DynamicQueryEngine:
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
-                props[key]["x-xml-tag"] = tag
-                props[key]["x-xml-wrapper-tag"] = wrap
+                if tag:
+                    props[key]["x-xml-tag"] = tag
+                if wrap and wrap not in COLLAPSED_WRAPPERS:
+                    props[key]["x-xml-wrapper-tag"] = wrap
+
                 continue
 
             # ---- 有 TYPE_OF：原子/枚举 终止 或 继续递归（直接内联子 schema）----
@@ -604,8 +595,11 @@ class DynamicQueryEngine:
                     props[key] = val
                     if min_occ >= 1:
                         required.append(key)
-                    props[key]["x-xml-tag"] = tag
-                    props[key]["x-xml-wrapper-tag"] = wrap
+                    if tag:
+                        props[key]["x-xml-tag"] = tag
+                    if wrap and wrap not in COLLAPSED_WRAPPERS:
+                        props[key]["x-xml-wrapper-tag"] = wrap
+
                     continue
 
                 # 2) 递归（若下层在 design_index 有专属白名单，则切 parent；否则沿用父容器）
@@ -627,8 +621,11 @@ class DynamicQueryEngine:
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
-                props[key]["x-xml-tag"] = tag
-                props[key]["x-xml-wrapper-tag"] = wrap
+                if tag:
+                    props[key]["x-xml-tag"] = tag
+                if wrap and wrap not in COLLAPSED_WRAPPERS:
+                    props[key]["x-xml-wrapper-tag"] = wrap
+
                 continue
 
             # ---- 无 TYPE_OF：按 a.isEnum/a.baseType/命名启发落标量 ----
@@ -645,8 +642,10 @@ class DynamicQueryEngine:
             props[key] = val
             if min_occ >= 1:
                 required.append(key)
-            props[key]["x-xml-tag"] = tag
-            props[key]["x-xml-wrapper-tag"] = wrap
+            if tag:
+                props[key]["x-xml-tag"] = tag
+            if wrap and wrap not in COLLAPSED_WRAPPERS:
+                props[key]["x-xml-wrapper-tag"] = wrap
 
         # ---- 组装当前类的 schema ----
         schema: dict = {"type": "object", "properties": props, "additionalProperties": False}
@@ -724,9 +723,7 @@ class DynamicQueryEngine:
 
         return class_name, schema, definitions
 
-    # ------------------------分块构建----------------------------------------
     # ======================== 固定骨架 + 局部递归 入口 ========================
-
     def _xmlize_schema_properties(self, schema_fragment: dict) -> dict:
         """
         将递归阶段产生的“驼峰键 + x-xml-wrapper-tag/x-xml-tag 标注”的 schema 片段，
@@ -864,28 +861,38 @@ class DynamicQueryEngine:
             # 你是否强制 PORTS 必填取决于策略，这里保持“不强制”，如需严格可解开下一行
             # root_required.append("PORTS")
 
+        # 先构建 runnables 的 “条目” schema（def_schema），保持你原本的递归/definitions 逻辑
+        def_schema, definitions_runnables = self._build_runnable_entity_definition(session, design_index)
+        definitions.update(definitions_runnables or {})
+
+        # 事件 EVENT 区域（如有），保持你原有的构建逻辑
+        events_obj, definitions_events = self._build_events_section(session, design_index)
+        definitions.update(definitions_events or {})
+
+        # === 扁平化：SWC-INTERNAL-BEHAVIOR 直接挂 RUNNABLE-ENTITY 数组（不再套 RUNNABLES 壳） ===
+        # 扁平 INTERNAL-BEHAVIORS 与 RUNNABLES：只保留 SWC-INTERNAL-BEHAVIOR 与其下的 RUNNABLE-ENTITY
         if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):
-            # 扁平化：直接把 SWC-INTERNAL-BEHAVIOR 挂到组件根下（拿掉 INTERNAL-BEHAVIORS 壳）
             sib_props = {
                 "SHORT-NAME": {"type": "string"},
+                # 折叠 RUNNABLES：把 RUNNABLES 容器里的 RUNNABLE-ENTITY 直接暴露出来
+                **(
+                    {"RUNNABLE-ENTITY": (runnables_obj.get("properties") or {}).get("RUNNABLE-ENTITY")}
+                    if isinstance(runnables_obj, dict) else {}
+                ),
+                # 事件仍使用原来的 EVENTS 结构（本次仅折叠 RUNNABLES，EVENTS 保持不变）
+                **({"EVENTS": events_obj} if events_obj is not None else {}),
             }
-            if runnables_obj is not None:
-                # 保持你原先的 RUNNABLES 形状（里面有 RUNNABLE-ENTITY 数组）
-                sib_props["RUNNABLES"] = runnables_obj
-                # 如果后续仍碰到深度边界，再把 RUNNABLES 扁平为：
-                # sib_props["RUNNABLE-ENTITY"] = runnables_obj["properties"]["RUNNABLE-ENTITY"]
-            if events_obj is not None:
-                sib_props["EVENTS"] = events_obj
+            # required 要覆盖当前 properties 的所有键，避免 Structured Outputs 校验缺键
+            sib_required = sorted([k for k, v in (sib_props or {}).items() if v is not None])
 
             root_props["SWC-INTERNAL-BEHAVIOR"] = {
                 "type": "object",
                 "additionalProperties": False,
                 "properties": sib_props,
-                # strict：required 覆盖当前层全部键
-                "required": sorted(list(sib_props.keys())),
-                # 不加 x-xml-wrapper-tag，避免 xmlize 把它再包回 INTERNAL-BEHAVIORS 壳
+                "required": sib_required,
             }
 
+        # 根对象 strict：required = 当前 properties 的全部键
         swc_root = {
             "type": "object",
             "additionalProperties": False,
@@ -1244,12 +1251,6 @@ class DynamicQueryEngine:
         }
         return mapping.get(U, (t or "").strip().upper())
 
-    # ------------------------ 资源管理 ------------------------
 
-    def close(self):
-        try:
-            self.driver.close()
-        except Exception:
-            pass
 
 query_engine = DynamicQueryEngine()

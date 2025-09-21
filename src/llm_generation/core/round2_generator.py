@@ -140,6 +140,7 @@ class Round2Generator:
 
             # 4.2 过滤与该组件相关的约束
             constraints = self._filter_constraints_for_component(comp, constraints_all)
+            r1_component_design = comp
 
             # 4.3 单组件 Prompt（接口仅作为上下文参考；组件输出仍严格按组件 Schema）
             prompt = template_manager.get_round2_prompt_single(
@@ -148,6 +149,7 @@ class Round2Generator:
                 constraints=constraints,
                 component_schema=comp_schema,
                 interface_index=iface_index_for_prompt,
+                r1_component_design=r1_component_design,
                 memory_context=memory_context or "",
                 architecture_design=architecture_design.__dict__
             )
@@ -169,6 +171,27 @@ class Round2Generator:
 
             # 4.5 合并当前组件结果（顶层只会有一个键 = comp_name）
             if isinstance(resp, dict):
+                # --- 恢复折叠的容器标签（就地处理，不改变 LLM 输出的其它字段） ---
+                try:
+                    if len(resp) == 1:
+                        comp_type = next(iter(resp.keys()))
+                        root = resp.get(comp_type) or {}
+                        if isinstance(root, dict) and "SWC-INTERNAL-BEHAVIOR" in root:
+                            sib = root.get("SWC-INTERNAL-BEHAVIOR") or {}
+                            if isinstance(sib, dict):
+                                # A) 先恢复 RUNNABLES：若有 RUNNABLE-ENTITY 且没有 RUNNABLES，就包一层
+                                if "RUNNABLE-ENTITY" in sib and "RUNNABLES" not in sib:
+                                    sib["RUNNABLES"] = {"RUNNABLE-ENTITY": sib.pop("RUNNABLE-ENTITY")}
+                                # B) 再恢复 INTERNAL-BEHAVIORS：若不存在则包一层
+                                if "INTERNAL-BEHAVIORS" not in root:
+                                    root["INTERNAL-BEHAVIORS"] = {"SWC-INTERNAL-BEHAVIOR": sib}
+                                    # 移除扁平时暴露出来的 SWC-INTERNAL-BEHAVIOR
+                                    root.pop("SWC-INTERNAL-BEHAVIOR", None)
+                            resp[comp_type] = root
+                except Exception:
+                    # 出错时忽略恢复，继续走原逻辑
+                    pass
+
                 merged_json.update(resp)
 
         # 5) 转换为 ARXML
@@ -249,146 +272,6 @@ class Round2Generator:
         _walk(schema, None)
         return schema
 
-    # def _generate_unified_batch(
-    #     self,
-    #     architecture_design: ArchitectureDesign,
-    #     memory_context: str = "",
-    #     custom_requirements: Dict[str, Any] = None
-    # ) -> Tuple[str, Dict[str, Any]]:
-    #     """统一批次生成 - 修复版，无函数调用"""
-    #
-    #     start_time = time.time()
-    #     component_plans = architecture_design.component_plan
-    #     interface_plans = architecture_design.interface_plan
-    #
-    #     if CONFIG.debug_mode:
-    #         print(f"[DEBUG] 统一批次生成: {len(component_plans)}个组件, {len(interface_plans)}个接口")
-    #         print(f"[DEBUG] 使用纯结构化输出模式（无函数调用）")
-    #
-    #     # ========== Phase 1: 准备阶段（所有动态信息一次性获取）==========
-    #
-    #     # 1. 生成深度Schema
-    #     # arxml_schema = self._generate_deep_schema(component_plans)
-    #
-    #     arxml_schema = self._generate_comprehensive_schema(component_plans, interface_plans)
-    #
-    #     # 输出schema到文件
-    #     self._save_schema_to_file(arxml_schema)
-    #
-    #     # 2. 批量生成UUID（预生成所有需要的UUID）
-    #     # uuid_mapping = self._batch_generate_uuids(component_plans, interface_plans)
-    #
-    #     # 3. 查询完整约束信息
-    #     constraints = self._query_comprehensive_constraints(component_plans, interface_plans)
-    #
-    #     # 4. 准备标准类型引用（使用动态加载的类型）
-    #     standard_types = self._prepare_standard_types()
-    #
-    #     # ========== Phase 2: 生成阶段（纯LLM结构化输出）==========
-    #
-    #     # 【修复】：构建增强的提示词（修复参数传递）
-    #     prompt = self._build_enhanced_prompt(
-    #         architecture_design,
-    #         constraints,
-    #         memory_context,
-    #         custom_requirements,
-    #         standard_types,
-    #         arxml_schema
-    #     )
-    #     # 输出prompt到文件
-    #     self._save_prompt_to_file(prompt)
-    #
-    #     if CONFIG.debug_mode:
-    #         print(f"[DEBUG] 提示词长度: {len(prompt)} 字符")
-    #         # print(f"[DEBUG] 预生成UUID数: {len(uuid_mapping)}")
-    #         print(f"[DEBUG] 约束规则数: {len(constraints)}")
-    #         print(f"[DEBUG] 标准类型数: {len(standard_types['implementation_types'])}")
-    #
-    #     # 调用LLM生成（纯结构化输出，无函数调用）
-    #     response_data, input_tokens, output_tokens, total_tokens = \
-    #         self.gemini_client.generate_with_schema(
-    #             prompt=prompt,
-    #             schema=arxml_schema,
-    #             temperature=0.7,
-    #             max_retries=3
-    #         )
-    #     self._save_response_to_file(response_data)
-    #     # ========== Phase 3: 后处理阶段 ==========
-    #
-    #     # 1. 验证生成的内容
-    #     # validation_results = self._validate_generated_content(response_data, constraints)
-    #
-    #     # 2. 确保所有引用都是直接路径（不需要解析语义占位符）
-    #     # processed_data = self._ensure_direct_references(response_data)
-    #
-    #     # 3. 转换为ARXML
-    #     arxml_content = self._convert_to_arxml(response_data, architecture_design)
-    #
-    #     generation_time = time.time() - start_time
-    #
-    #     # 详细统计信息
-    #     stats = {
-    #         "input_tokens": input_tokens,
-    #         "output_tokens": output_tokens,
-    #         "total_tokens": total_tokens,
-    #         "component_count": len(component_plans),
-    #         "interface_count": len(interface_plans),
-    #         "generation_mode": "unified_batch",
-    #         "schema_properties": len(arxml_schema.get("properties", {})),
-    #         "constraints_applied": len(constraints),
-    #         # "uuids_generated": len(uuid_mapping),
-    #         "standard_types_available": len(standard_types['implementation_types']),
-    #         # "validation_passed": validation_results["passed"],
-    #         # "validation_errors": validation_results["errors"],
-    #         "generation_time": generation_time,
-    #         "tokens_per_component": total_tokens / max(len(component_plans), 1),
-    #         "performance_metrics": {
-    #             "time_per_component": generation_time / max(len(component_plans), 1),
-    #             "schema_complexity": self._calculate_schema_complexity(arxml_schema),
-    #             "output_efficiency": output_tokens / max(len(str(response_data)), 1)
-    #         }
-    #     }
-    #
-    #     if CONFIG.debug_mode:
-    #         print(f"[DEBUG] 生成完成: {generation_time:.2f}秒")
-    #         print(f"[DEBUG] Token效率: {stats['tokens_per_component']:.0f} tokens/组件")
-    #         # print(f"[DEBUG] 验证结果: {'通过' if validation_results['passed'] else '有错误'}")
-    #
-    #     return arxml_content, stats
-
-    # def _generate_comprehensive_schema(
-    #         self,
-    #         component_plans: List[Dict[str, Any]],
-    #         interface_plans: List[Dict[str, Any]]
-    # ) -> Dict[str, Any]:
-    #     """生成包含组件和接口的完整Schema"""
-    #
-    #     # 生成组件Schema
-    #     component_schema = self.query_engine.generate_multi_component_schema(component_plans)
-    #
-    #     # 生成接口Schema
-    #     interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
-    #
-    #     # 合并Schema
-    #     comprehensive_schema = {
-    #         "type": "object",
-    #         "properties": {
-    #             **component_schema.get("properties", {}),
-    #             "_interfaces": {
-    #                 "type": "object",
-    #                 "properties": interface_schema.get("properties", {}),
-    #                 "description": "接口定义集合"
-    #             }
-    #         },
-    #         "definitions": {
-    #             **component_schema.get("definitions", {}),
-    #             **interface_schema.get("definitions", {})
-    #         },
-    #         "required": list(component_schema.get("properties", {}).keys())
-    #     }
-    #
-    #     return comprehensive_schema
-
     def _filter_constraints_for_component(self, comp_plan: Dict[str, Any], constraints: List[str]) -> List[str]:
         """按组件特征（端口/内部行为/事件）过滤约束，减少 LLM 负担。"""
         ed = comp_plan.get("element_design", {}) or {}
@@ -414,7 +297,6 @@ class Round2Generator:
             filtered.append(c)
         # 去重
         return sorted(set(filtered))
-
 
     def _prepare_standard_types(self) -> Dict[str, Any]:
         """准备标准类型引用信息 - 动态加载版本"""
@@ -488,53 +370,6 @@ class Round2Generator:
 
         return result
 
-    def _build_enhanced_prompt(
-        self,
-        architecture_design: ArchitectureDesign,
-        constraints: List[str],
-        memory_context: str,
-        custom_requirements: Dict[str, Any],
-        standard_types: Dict[str, Any],
-        arxml_schema: Dict[str, Any]
-    ) -> str:
-        """【修复】：构建增强的提示词（修复参数列表）"""
-
-        # 获取schema深度配置
-        if hasattr(CONFIG.generation, 'max_schema_injection_depth'):
-            schema_depth = CONFIG.generation.max_schema_injection_depth
-        else:
-            schema_depth = CONFIG.knowledge_graph.max_safety_depth
-
-        # 使用模板生成基础提示词
-        prompt = template_manager.get_round2_prompt(
-            architecture_design=architecture_design.__dict__,
-            constraints=constraints,
-            schema_depth=schema_depth,
-            composite_schema=arxml_schema
-        )
-
-        # 添加记忆上下文
-        if memory_context:
-            prompt += f"\n\n## 对话上下文\n{memory_context}"
-
-        # 添加自定义要求
-        if custom_requirements:
-            prompt += f"\n\n## 特殊要求\n"
-            for key, value in custom_requirements.items():
-                prompt += f"- {key}: {value}\n"
-
-        # 添加预生成的UUID映射
-        # prompt += self._format_uuid_mapping(uuid_mapping)
-
-        # 添加标准类型引用（改进版）
-        prompt += self._format_standard_types(standard_types)
-
-        # 添加直接引用指导
-        prompt += self._add_direct_reference_guidance(architecture_design)
-
-        return prompt
-
-
     def _format_standard_types(self, standard_types: Dict[str, Any]) -> str:
         """格式化标准类型引用 - 改进版，基于动态加载的类型"""
 
@@ -567,31 +402,19 @@ class Round2Generator:
         return prompt
 
     def _add_direct_reference_guidance(self, architecture_design: ArchitectureDesign) -> str:
-        """添加直接引用指导"""
-
-        prompt = "\n\n## 引用路径规范\n"
-        prompt += "所有引用必须使用完整的直接路径，格式如下：\n\n"
-
-        # 基于实际架构生成具体示例
-        if architecture_design.component_plan:
-            prompt += "### 本系统的引用路径示例：\n"
-            for comp in architecture_design.component_plan[:3]:  # 前3个组件作为示例
-                comp_name = comp.get("name", "Component")
-                prompt += f"- 组件: /Components/{comp_name}\n"
-                prompt += f"- 端口: /Components/{comp_name}/Ports/PortName\n"
-                prompt += f"- Runnable: /Components/{comp_name}/InternalBehavior/Runnables/RunnableName\n"
-                prompt += f"- 事件: /Components/{comp_name}/InternalBehavior/Events/EventName\n\n"
-
-        if architecture_design.interface_plan:
-            prompt += "### 接口引用示例：\n"
-            for intf in architecture_design.interface_plan[:3]:
-                intf_name = intf.get("name", "Interface")
-                prompt += f"- /Interfaces/{intf_name}\n"
-
-        prompt += "\n**重要**：不要使用语义描述，必须使用完整路径！\n"
-
-        return prompt
-
+        """
+        精简版引用指导：
+        - 不再展开具体组件/接口的示例清单，避免重复冗长
+        - 只保留硬规则 + 最少必要的占位示例
+        """
+        # 只给一段非常短的规则，避免重复列举多个组件/接口示例
+        return (
+            "\n\n## 引用路径规范\n"
+            "所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。\n"
+            "- 组件路径示例：/Components/<ComponentShortName>\n"
+            "- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>\n"
+            "- 接口路径示例：/Interfaces/<InterfaceShortName>\n"
+        )
 
     def _query_comprehensive_constraints(
             self,
@@ -756,41 +579,6 @@ class Round2Generator:
                 # 简单元素
                 SubElement(parent, key).text = str(value)
 
-    def _calculate_schema_complexity(self, schema: Dict[str, Any]) -> int:
-        """计算Schema复杂度"""
-
-        def count_properties(obj):
-            count = 0
-            if isinstance(obj, dict):
-                count += len(obj.keys())
-                for value in obj.values():
-                    count += count_properties(value)
-            elif isinstance(obj, list):
-                for item in obj:
-                    count += count_properties(item)
-            return count
-
-        return count_properties(schema)
-
-    def _save_schema_to_file(self, schema: Dict[str, Any]):
-        """保存Schema到文件"""
-        try:
-            output_dir = Path(CONFIG.output_dir) / "debug"
-            output_dir.mkdir(parents=True, exist_ok=True)
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            schema_file = output_dir / f"round2_schema_{timestamp}.json"
-
-            with open(schema_file, 'w', encoding='utf-8') as f:
-                json.dump(schema, f, indent=2, ensure_ascii=False)
-
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] Schema已保存到: {schema_file}")
-
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[WARNING] Schema保存失败: {e}")
-
     def _save_prompt_to_file(self, prompt: str):
         """保存Prompt到文件"""
         try:
@@ -828,21 +616,6 @@ class Round2Generator:
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[WARNING] Response保存失败: {e}")
-
-    def _extract_interfaces_as_readonly(self, interface_plans: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """把 Round1 的接口清单提炼成只读的索引（可选）。
-        不做深结构生成，避免引导 LLM 回写接口对象。
-        """
-        out = {}
-        for it in interface_plans or []:
-            name = it.get("name")
-            if not name:
-                continue
-            out[name] = {
-                "type": it.get("type"),
-                "purpose": it.get("purpose")
-            }
-        return out
 
     def _save_component_schema_to_file(self, comp_name: str, schema: Dict[str, Any]):
         try:

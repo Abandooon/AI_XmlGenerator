@@ -15,9 +15,9 @@ class PromptTemplateManager:
         self.templates = {
             # Round 1 架构设计模板（增强）
             "round1_architecture": self._get_enhanced_round1_template(),
-
-            # Round 2 详细生成模板（长上下文优化）
-            "round2_unified": self._get_unified_round2_template(),
+            # Round2（接口与单组件）
+            "round2_interfaces": self.get_round2_prompt_interfaces,
+            "round2_component": self.get_round2_prompt_single,
         }
 
     def _get_enhanced_round1_template(self) -> Template:
@@ -156,125 +156,6 @@ class PromptTemplateManager:
 
         return Template(template_text)
 
-    def _get_unified_round2_template(self) -> Template:
-        """统一的Round 2生成模板 - 利用长上下文"""
-        template_text = """
-你是AUTOSAR XML生成专家。基于架构设计一次性生成所有组件的完整ARXML内容。
-
-## 完整架构设计
-$architecture_design
-
-## 详细元模型信息（深度=$schema_depth）
-$metamodel_context
-
-## 完整约束规则
-$constraints
-
-## 标准类型库
-$standard_types
-
-## 生成任务
-一次性生成所有 $component_count 个组件的完整ARXML JSON结构。
-
-## 关键生成要求
-
-### 1. 完整性要求
-- 生成所有组件的完整定义
-- 包含所有必需的XML元素和属性
-- 完整的内部行为定义（INTERNAL-BEHAVIORS）
-- 所有端口定义（PORTS）
-- 完整的事件和Runnable关联
-
-### 2. 引用一致性
-- 使用完整的引用路径，无需语义占位符
-- 组件间引用直接使用绝对路径
-- 示例：/Components/TemperatureMonitor/Ports/TempDataOut
-
-### 3. 结构规范
-对于每个APPLICATION-SW-COMPONENT-TYPE：
-```
-{
-  "SHORT-NAME": "ComponentName",
-  "@UUID": "unique-uuid-here",
-  "PORTS": {
-    "P-PORT-PROTOTYPE": [{
-      "SHORT-NAME": "OutputPortName",
-      "PROVIDED-INTERFACE-TREF": "/Interfaces/InterfaceName"
-    }],
-    "R-PORT-PROTOTYPE": [{
-      "SHORT-NAME": "InputPortName", 
-      "REQUIRED-INTERFACE-TREF": "/Interfaces/InterfaceName",
-      "REQUIRED-COM-SPECS": {...}
-    }]
-  },
-  "INTERNAL-BEHAVIORS": {
-    "SWC-INTERNAL-BEHAVIOR": {
-      "SHORT-NAME": "InternalBehaviorName",
-      "EVENTS": {
-        "TIMING-EVENT": [{
-          "SHORT-NAME": "Event10ms",
-          "START-ON-EVENT-REF": "/Components/ComponentName/InternalBehavior/Runnables/RunnableName",
-          "PERIOD": 0.01
-        }]
-      },
-      "RUNNABLES": {
-        "RUNNABLE-ENTITY": [{
-          "SHORT-NAME": "RunnableName",
-          "SYMBOL": "RunnableName_func",
-          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
-            "VARIABLE-ACCESS": [ { /* VariableAccess 展开，含 AUTOSAR-VARIABLE-IREF 等 */ } ]
-          },
-          "DATA-SEND-POINTS": {
-            "VARIABLE-ACCESS": [ { /* ... */ } ]
-          },
-          "SERVER-CALL-POINTS": {
-            /* 若该容器在KG中是集合，使用数组；否则对象 */
-        }
-    }]
-    }
-
-    }
-  }
-}
-```
-
-### 4. 深层元素要求（基于元模型深度$schema_depth）
-包含以下所有层级的元素：
-$required_elements_detail
-
-### 5. 数据类型使用
-- 所有数据元素使用标准类型库中的类型
-- TYPE-TREF格式：/AUTOSAR_Platform/ImplementationDataTypes/typename
-- 避免自定义类型，优先使用标准类型
-
-## 组件列表（需要生成的所有组件）
-$component_list_detail
-
-## 接口定义（预定义的所有接口）
-$interface_definitions
-
-## 质量要求
-1. **原子性**: 所有组件在一个响应中完整生成
-2. **可追溯性**: 每个元素都能追溯到架构设计
-3. **一致性**: 组件间的交互完全一致
-4. **完整性**: 不遗漏任何必需元素
-5. **正确性**: 严格遵循AUTOSAR标准
-
-## 输出格式
-生成包含所有组件的单一JSON结构，每个组件作为顶级属性：
-```json
-{
-  "TemperatureMonitor": { /* 完整组件定义 */ },
-  "DataProcessor": { /* 完整组件定义 */ },
-  "ControlManager": { /* 完整组件定义 */ },
-  // ... 所有其他组件
-}
-```
-
-请确保输出的JSON可以直接转换为有效的ARXML文件。
-"""
-        return Template(template_text)
-
     def get_round1_prompt(
             self,
             user_requirements: str,
@@ -335,6 +216,7 @@ $interface_definitions
             round1_schema_json=schema_text
         )
 
+    # （建议同步）替换 PromptTemplateManager.get_round2_prompt_interfaces（整段）以去掉 memory_context 注入
     def get_round2_prompt_interfaces(
             self,
             interface_plans: List[Dict[str, Any]],
@@ -359,11 +241,11 @@ $interface_definitions
         conn_topology_json = json.dumps(conn_topology or {}, ensure_ascii=False, indent=2)
         iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
         iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
-
+        standard_types_json = json.dumps(standard_types or {}, ensure_ascii=False, indent=2)
 
         prompt = f"""
             你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
-            
+
             ## Round1 系统分析（只读）
             ```json
             {sys_analysis_json} 
@@ -376,32 +258,34 @@ $interface_definitions
             ```json
             {iface_plan_json}
             ```
-            标准类型库，可以供TYPE-TREF引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>
-            {standard_types}
-            
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {standard_types_json}
+            ```
             接口 JSON Schema（严格匹配）
             ```json
             {iface_schema_json}
             ```
-            
+
             生成规则:
             顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
             每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-            所有 *REF/*TREF/*IREF 字段必须是对象，包含 @DEST 与 #text。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
-            {"\n## 对话记忆\n" + memory_context if memory_context else ""}
-            """.strip()
+        """.strip()
 
         return dedent(prompt)
 
+    # 替换 PromptTemplateManager.get_round2_prompt_single（整段）
     def get_round2_prompt_single(
             self,
             comp_plan: Dict[str, Any],
             interface_plans: List[Dict[str, Any]],
             constraints: Dict[str, Any],
             component_schema: Dict[str, Any],
-            interface_index: List[Dict[str, Any]],  # CHANGED
+            interface_index: List[Dict[str, Any]],
+            r1_component_design: Dict[str, Any],
             memory_context: str = "",
             architecture_design: Optional[Dict[str, Any]] = None
     ) -> str:
@@ -422,15 +306,16 @@ $interface_definitions
                                         ensure_ascii=False, indent=2)
         iface_plan_json = json.dumps(interface_plans or [], ensure_ascii=False, indent=2)
 
-        # CHANGED: 用接口实例索引，而不是接口 Schema
+        # 关键：接口实例索引 + 组件schema + round1 的“组件完整设计计划”
         iface_index_json = json.dumps(interface_index or [], ensure_ascii=False, indent=2)
         comp_schema_json = json.dumps(component_schema or {}, ensure_ascii=False, indent=2)
+        r1_design_json = json.dumps(r1_component_design or {}, ensure_ascii=False, indent=2)
 
         prompt = f"""
             你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
 
             组件：{comp_name}（类型：{comp_type}）
-
             ## Round1 系统分析（只读）
             ```json
             {sys_analysis_json}
@@ -443,230 +328,27 @@ $interface_definitions
             ```json
             {iface_plan_json}
             ```
-
             接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
             ```json
             {iface_index_json}
             ```
-
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {r1_design_json}
+            ```
             组件 JSON Schema（严格匹配）
             ```json
             {comp_schema_json}
             ```
-
             生成规则
             顶层只包含 {comp_type}（组件类型名）。
             在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-            所有 *REF/*TREF/*IREF 字段为对象，包含 @DEST 与 #text。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
-            不要输出接口对象；接口仅用于 *-INTERFACE-TREF 的命名/路径一致性参考（使用索引里的 /Interfaces/<name>）。
-            {"\n## 对话记忆\n" + memory_context if memory_context else ""}
-            """.strip()
+        """.strip()
 
         return dedent(prompt)
-
-    def _format_component_list_detail(self, component_plans: List[Dict[str, Any]]) -> str:
-        """格式化组件列表的详细信息"""
-
-        if not component_plans:
-            return "无组件"
-
-        lines = []
-        for i, comp in enumerate(component_plans, 1):
-            comp_name = comp.get("name", f"Component_{i}")
-            comp_type = comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
-
-            lines.append(f"{i}. {comp_name} ({comp_type})")
-
-            # 添加目的描述
-            if comp.get("purpose"):
-                lines.append(f"   目的: {comp.get('purpose')}")
-
-            # 添加元素设计信息（如果存在）
-            element_design = comp.get("element_design", {})
-
-            # 处理端口信息
-            if element_design.get("ports", {}).get("needed"):
-                port_details = element_design["ports"].get("details", "需要端口")
-                lines.append(f"   端口: {port_details}")
-
-            # 处理内部行为信息
-            if element_design.get("internal_behaviors", {}).get("needed"):
-                # 原来只处理 str/list —— 改成优先处理数组对象
-                behavior = comp.get("element_design", {}).get("internal_behaviors", {})
-                runnables = behavior.get("runnables", [])
-
-                if isinstance(runnables, list) and runnables and isinstance(runnables[0], dict):
-                    for r in runnables:
-                        rname = r.get("name", "Runnable")
-                        elems = r.get("elements", [])
-                        if elems:
-                            lines.append(f"   - Runnable: {rname} | elements: {', '.join(elems)}")
-                        else:
-                            lines.append(f"   - Runnable: {rname}")
-                elif isinstance(runnables, list):
-                    # 兼容旧格式：["R1","R2"]
-                    lines.append(f"   - Runnables: {', '.join(str(r) for r in runnables)}")
-                elif isinstance(runnables, str):
-                    lines.append(f"   - Runnables: {runnables}")
-
-                # 安全处理events - 可能是字符串或列表
-                events = behavior.get("events", [])
-                if isinstance(events, str):
-                    lines.append(f"   - Events: {events}")
-                elif isinstance(events, list) and events:
-                    for ev in events:
-                        if isinstance(ev, dict):
-                            et = ev.get("type", "EVENT")
-                            en = ev.get("name", "")
-                            trig = ev.get("trigger", "")
-                            lines.append(f"   - Event: {et} {en} {('[' + trig + ']') if trig else ''}".rstrip())
-                        else:
-                            lines.append(f"   - Event: {ev}")
-
-            # 添加复杂度评估
-            if comp.get("estimated_complexity"):
-                lines.append(f"   复杂度: {comp.get('estimated_complexity')}")
-
-            lines.append("")
-
-        return "\n".join(lines)
-
-    def _format_interface_definitions(self, interface_plans: List[Dict]) -> str:
-        """格式化接口定义"""
-        lines = []
-        for i, intf in enumerate(interface_plans, 1):
-            lines.append(f"{i}. **{intf.get('name', f'Interface{i}')}**")
-            lines.append(f"   - 类型: {intf.get('type', '')}")
-            lines.append(f"   - 通信模式: {intf.get('communication_pattern', '')}")
-
-            if 'data_elements' in intf and intf['data_elements']:
-                lines.append(f"   - 数据元素: {', '.join(intf['data_elements'])}")
-
-            if 'connected_components' in intf:
-                lines.append(f"   - 连接组件: {' <-> '.join(intf['connected_components'])}")
-
-            if 'direct_paths' in intf:
-                lines.append(f"   - 路径: {intf['direct_paths']}")
-
-            lines.append("")
-
-        return "\n".join(lines)
-
-    def _get_deep_metamodel_context(self, component_plans: List[Dict], depth: int) -> str:
-        """获取深层元模型上下文"""
-        lines = ["### 元模型结构（深度扩展）"]
-
-        # 获取所有涉及的组件类型
-        component_types = set(comp.get("type", "APPLICATION-SW-COMPONENT-TYPE")
-                            for comp in component_plans)
-
-        for comp_type in component_types:
-            lines.append(f"\n#### {comp_type}")
-            lines.append(f"继承深度: {depth}")
-            lines.append("必需元素层级:")
-
-            # 这里应该从knowledge graph获取实际的元模型信息
-            # 简化示例
-            lines.append("- Level 1: SHORT-NAME, @UUID")
-            lines.append("- Level 2: PORTS (P-PORT-PROTOTYPE, R-PORT-PROTOTYPE)")
-            lines.append("- Level 3: INTERNAL-BEHAVIORS (SWC-INTERNAL-BEHAVIOR)")
-            lines.append("- Level 4: EVENTS (TIMING-EVENT, DATA-RECEIVED-EVENT)")
-            lines.append("- Level 5: RUNNABLES (RUNNABLE-ENTITY)")
-            lines.append("- Level 6+: DATA-RECEIVE-POINT-BY-ARGUMENTS, DATA-SEND-POINTS, SERVER-CALL-POINTS, DATA-READ-ACCESSS, DATA-READ-ACCESSSetc.")
-
-        return "\n".join(lines)
-
-    def _get_required_elements_detail(self, component_plans: List[Dict], depth: int) -> str:
-        """获取必需元素的详细说明"""
-        lines = ["### 必需元素详细规格"]
-
-        lines.append("\n#### 通用必需元素（所有组件）")
-        lines.append("- SHORT-NAME: 组件短名称，PascalCase格式")
-        lines.append("- @UUID: 全局唯一标识符，标准UUID格式")
-
-        lines.append("\n#### PORTS结构（深度展开）")
-        lines.append("```")
-        lines.append("PORTS:")
-        lines.append("  P-PORT-PROTOTYPE: (minOccurs=0, maxOccurs=unbounded)")
-        lines.append("    - SHORT-NAME: 端口名称")
-        lines.append("    - PROVIDED-INTERFACE-TREF: 接口引用")
-        lines.append("    - PROVIDED-COM-SPECS: (可选)")
-        lines.append("      - QUEUED-SENDER-COM-SPEC")
-        lines.append("      - NONQUEUED-SENDER-COM-SPEC")
-        lines.append("  R-PORT-PROTOTYPE: (minOccurs=0, maxOccurs=unbounded)")
-        lines.append("    - SHORT-NAME: 端口名称")
-        lines.append("    - REQUIRED-INTERFACE-TREF: 接口引用")
-        lines.append("    - REQUIRED-COM-SPECS: (推荐)")
-        lines.append("```")
-
-        lines.append("\n#### INTERNAL-BEHAVIORS结构（深度展开）")
-        lines.append("```")
-        lines.append("INTERNAL-BEHAVIORS:")
-        lines.append("  SWC-INTERNAL-BEHAVIOR:")
-        lines.append("    - SHORT-NAME: 行为名称")
-        lines.append("    - EVENTS: (minOccurs=1)")
-        lines.append("      - TIMING-EVENT")
-        lines.append("      - DATA-RECEIVED-EVENT")
-        lines.append("      - OPERATION-INVOKED-EVENT")
-        lines.append("    - RUNNABLES: (minOccurs=1)")
-        lines.append("      - RUNNABLE-ENTITY")
-        lines.append("    - PER-INSTANCE-MEMORYS: (可选)")
-        lines.append("    - SERVICE-DEPENDENCYS: (可选)")
-        lines.append("```")
-
-        return "\n".join(lines)
-
-    def _format_architecture_design(self, design: Dict[str, Any]) -> str:
-        """格式化架构设计 - 增强版"""
-        lines = []
-
-        # 系统分析
-        if 'system_analysis' in design:
-            lines.append("### 系统分析")
-            for key, value in design['system_analysis'].items():
-                lines.append(f"- {self._translate_analysis_key(key)}: {value}")
-
-        # 组件统计
-        comp_count = len(design.get('component_plan', []))
-        intf_count = len(design.get('interface_plan', []))
-
-        lines.append(f"\n### 系统规模")
-        lines.append(f"- 组件总数: {comp_count}")
-        lines.append(f"- 接口总数: {intf_count}")
-        lines.append(f"- 预估连接数: {comp_count * 2}")  # 简单估算
-
-        # 组件摘要
-        lines.append(f"\n### 组件架构摘要")
-        comp_types = {}
-        for comp in design.get('component_plan', []):
-            comp_type = comp.get('type', 'Unknown')
-            comp_types[comp_type] = comp_types.get(comp_type, 0) + 1
-
-        for comp_type, count in comp_types.items():
-            lines.append(f"- {comp_type}: {count}个")
-
-        # 接口摘要
-        lines.append(f"\n### 接口架构摘要")
-        intf_types = {}
-        for intf in design.get('interface_plan', []):
-            intf_type = intf.get('type', 'Unknown')
-            intf_types[intf_type] = intf_types.get(intf_type, 0) + 1
-
-        for intf_type, count in intf_types.items():
-            lines.append(f"- {intf_type}: {count}个")
-
-        # 连接拓扑
-        if 'connection_topology' in design:
-            lines.append("\n### 连接拓扑")
-            topology = design['connection_topology']
-            if topology.get('component_connections'):
-                lines.append(f"- 组件连接: {topology['component_connections']}")
-            if topology.get('data_flow_paths'):
-                lines.append(f"- 数据流: {topology['data_flow_paths']}")
-
-        return "\n".join(lines)
 
     def _translate_analysis_key(self, key: str) -> str:
         """翻译分析键"""
@@ -681,33 +363,6 @@ $interface_definitions
     def get_template(self, template_name: str) -> Optional[Template]:
         """获取模板"""
         return self.templates.get(template_name)
-
-    def render_template(self, template_name: str, **kwargs) -> str:
-        """渲染模板"""
-        template = self.get_template(template_name)
-        if not template:
-            raise ValueError(f"模板不存在: {template_name}")
-
-        try:
-            return template.substitute(**kwargs)
-        except KeyError as e:
-            raise ValueError(f"模板参数缺失: {e}")
-
-    def _metamodel_context_from_schema(self, schema: Dict[str, Any], depth: int) -> str:
-        # 简明版上下文：列出顶层 keys、definitions 里每种类型的首层字段名
-        lines = ["### 元模型结构（来自JSON Schema）"]
-        defs = (schema or {}).get("definitions", {}) or {}
-        if defs:
-            for tname, tschema in defs.items():
-                if isinstance(tschema, dict) and tschema.get("type") == "object":
-                    keys = list((tschema.get("properties") or {}).keys())
-                    lines.append(f"- {tname}: {', '.join(keys[:12])}" if keys else f"- {tname}: (no properties)")
-        else:
-            # 若没有 definitions，就输出顶层 properties 的概览
-            keys = list((schema.get("properties") or {}).keys())
-            lines.append(f"- Root: {', '.join(keys[:20])}" if keys else "- Root: (no properties)")
-        return "\n".join(lines)
-
 
 
 # 全局模板管理器实例

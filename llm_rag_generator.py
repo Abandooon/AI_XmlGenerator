@@ -394,8 +394,8 @@ class LLMRAGGenerator:
             if CONFIG.debug_mode:
                 traceback.print_exc()
 
-    def _show_arxml_summary(self, arxml_data: Dict[str, Any]):
-        """显示ARXML摘要"""
+    def _show_arxml_summary(self, arxml_data):
+        """显示ARXML摘要（兼容 dict 与 ARXML 字符串）"""
 
         print(f"\n📋 生成的ARXML摘要:")
         print("-" * 30)
@@ -405,40 +405,116 @@ class LLMRAGGenerator:
         total_events = 0
         total_runnables = 0
 
-        # 遍历所有顶级元素
-        for key, value in arxml_data.items():
-            if isinstance(value, dict):
-                component_count += 1
-                comp_name = value.get('SHORT-NAME', key)
-                print(f"🔧 组件: {comp_name}")
+        # ---- 情况 A：已经是结构化 dict（沿用旧逻辑） ----
+        if isinstance(arxml_data, dict):
+            for key, value in arxml_data.items():
+                if isinstance(value, dict):
+                    component_count += 1
+                    comp_name = value.get('SHORT-NAME', key)
+                    print(f"🔧 组件: {comp_name}")
 
-                # 统计端口
-                ports = value.get("PORTS", {})
-                p_ports = len(ports.get("P-PORT-PROTOTYPE", []))
-                r_ports = len(ports.get("R-PORT-PROTOTYPE", []))
-                ports_count = p_ports + r_ports
-                total_ports += ports_count
-                print(f"  📌 端口: {ports_count} (P:{p_ports}, R:{r_ports})")
+                    # 端口
+                    ports = value.get("PORTS", {})
+                    p_ports = len(ports.get("P-PORT-PROTOTYPE", []))
+                    r_ports = len(ports.get("R-PORT-PROTOTYPE", []))
+                    ports_count = p_ports + r_ports
+                    total_ports += ports_count
+                    print(f"  📌 端口: {ports_count} (P:{p_ports}, R:{r_ports})")
 
-                # 统计内部行为
-                behaviors = value.get("INTERNAL-BEHAVIORS", {})
-                if "SWC-INTERNAL-BEHAVIOR" in behaviors:
-                    swc_behavior = behaviors["SWC-INTERNAL-BEHAVIOR"]
+                    # 内部行为
+                    behaviors = value.get("INTERNAL-BEHAVIORS", {})
+                    if "SWC-INTERNAL-BEHAVIOR" in behaviors:
+                        swc_behavior = behaviors["SWC-INTERNAL-BEHAVIOR"]
 
-                    events = swc_behavior.get("EVENTS", {})
-                    timing_events = len(events.get("TIMING-EVENT", []))
-                    total_events += timing_events
+                        events = swc_behavior.get("EVENTS", {})
+                        timing_events = len(events.get("TIMING-EVENT", []))
+                        total_events += timing_events
 
-                    runnables = swc_behavior.get("RUNNABLES", {})
-                    runnable_entities = len(runnables.get("RUNNABLE-ENTITY", []))
-                    total_runnables += runnable_entities
+                        runnables = swc_behavior.get("RUNNABLES", {})
+                        runnable_entities = len(runnables.get("RUNNABLE-ENTITY", []))
+                        total_runnables += runnable_entities
 
-                    print(f"  ⏰ 事件: {timing_events}")
-                    print(f"  🏃 Runnable: {runnable_entities}")
-                print()
+                        print(f"  ⏰ 事件: {timing_events}")
+                        print(f"  🏃 Runnable: {runnable_entities}")
+                    print()
 
-        print(
-            f"📊 总计: {component_count}个组件, {total_ports}个端口, {total_events}个事件, {total_runnables}个Runnable")
+            print(
+                f"📊 总计: {component_count}个组件, {total_ports}个端口, {total_events}个事件, {total_runnables}个Runnable")
+            return
+
+        # ---- 情况 B：是 ARXML 字符串（新逻辑：解析 XML 统计） ----
+        if isinstance(arxml_data, str):
+            try:
+                import xml.etree.ElementTree as ET
+                root = ET.fromstring(arxml_data)
+
+                # 找到 Components 包：/AUTOSAR/AR-PACKAGES/AR-PACKAGE[SHORT-NAME='Components']/ELEMENTS/*
+                def _find_pkg(root_el, pkg_name):
+                    for pkg in root_el.findall(".//AR-PACKAGE"):
+                        name = pkg.findtext("SHORT-NAME")
+                        if name == pkg_name:
+                            return pkg
+                    return None
+
+                comp_pkg = _find_pkg(root, "Components")
+                if comp_pkg is None:
+                    print("ℹ️ 未找到 Components 包，无法统计组件。")
+                    return
+
+                comp_elements = comp_pkg.find("ELEMENTS")
+                if comp_elements is None:
+                    print("ℹ️ Components 包中缺少 ELEMENTS。")
+                    return
+
+                for comp_elem in list(comp_elements):
+                    # comp_elem.tag 是具体组件类型，如 APPLICATION-SW-COMPONENT-TYPE
+                    component_count += 1
+                    comp_name = comp_elem.findtext("SHORT-NAME") or comp_elem.tag
+                    print(f"🔧 组件: {comp_name}")
+
+                    # 端口统计
+                    p_ports = r_ports = 0
+                    ports_el = comp_elem.find("PORTS")
+                    if ports_el is not None:
+                        p_ports = len(ports_el.findall("P-PORT-PROTOTYPE"))
+                        r_ports = len(ports_el.findall("R-PORT-PROTOTYPE"))
+                    ports_count = p_ports + r_ports
+                    total_ports += ports_count
+                    print(f"  📌 端口: {ports_count} (P:{p_ports}, R:{r_ports})")
+
+                    # 内部行为统计
+                    behaviors_el = comp_elem.find("INTERNAL-BEHAVIORS")
+                    if behaviors_el is not None:
+                        swc_ib = behaviors_el.find("SWC-INTERNAL-BEHAVIOR")
+                        if swc_ib is not None:
+                            events_el = swc_ib.find("EVENTS")
+                            timing_events = 0
+                            if events_el is not None:
+                                timing_events = len(events_el.findall("TIMING-EVENT"))
+                            total_events += timing_events
+
+                            runnables_el = swc_ib.find("RUNNABLES")
+                            runnable_entities = 0
+                            if runnables_el is not None:
+                                runnable_entities = len(runnables_el.findall("RUNNABLE-ENTITY"))
+                            total_runnables += runnable_entities
+
+                            print(f"  ⏰ 事件: {timing_events}")
+                            print(f"  🏃 Runnable: {runnable_entities}")
+                    print()
+
+                print(
+                    f"📊 总计: {component_count}个组件, {total_ports}个端口, {total_events}个事件, {total_runnables}个Runnable")
+                return
+
+            except Exception as e:
+                print(f"⚠️ 无法解析ARXML字符串，跳过摘要。原因: {e}")
+                # 可选：输出部分内容长度
+                print(f"（调试：ARXML长度={len(arxml_data)}）")
+                return
+
+        # ---- 其他类型：直接提示 ----
+        print(f"⚠️ 未知的 arxml_data 类型: {type(arxml_data)}，无法摘要。")
 
     def _show_session_summary(self, stats: Dict[str, Any]):
         """显示会话摘要"""
@@ -681,7 +757,6 @@ class LLMRAGGenerator:
 
         print("👋 感谢使用AUTOSAR组件设计助手!")
         print("🚀 新版本特性: 文档上传 + 多组件生成 + 动态KG查询 + 实例引用管理")
-
 
 def check_environment():
     """检查运行环境"""
