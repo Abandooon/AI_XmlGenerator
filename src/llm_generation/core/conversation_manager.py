@@ -422,46 +422,67 @@ class ConversationManager:
         return min(100, (token_score + time_score) / 2 + batch_bonus)
 
     def _save_optimized_results(
-        self,
-        session_id: str,
-        arxml_content: str,
-        design: ArchitectureDesign
+            self,
+            session_id: str,
+            arxml_content,  # 兼容老签名：可能是 str，也可能是 dict
+            design: ArchitectureDesign
     ) -> List[str]:
-        """保存优化的结果"""
-
-        output_files = []
+        """保存Round2结果：兼容单文件与多文件两种返回"""
+        output_files: List[str] = []
         timestamp = int(time.time())
 
-        # 保存ARXML文件
-        component_count = len(design.component_plan)
-        if component_count <= 5:
-            filename = f"arxml_{design.component_plan[0].get('name', 'System')}_{session_id[:8]}_{timestamp}.xml"
+        # ---- 新：多文件模式（dict）----
+        if isinstance(arxml_content, dict):
+            # 组件
+            comp_map = arxml_content.get("components", {}) or {}
+            outdir = CONFIG.output_dir / "ARXML" / "Components"
+            outdir.mkdir(parents=True, exist_ok=True)
+            for name, xml_text in comp_map.items():
+                fp = outdir / f"{name}_{session_id[:8]}_{timestamp}.arxml"
+                with open(fp, "w", encoding="utf-8") as f:
+                    f.write(xml_text)
+                output_files.append(str(fp))
+
+            # 接口
+            intf_map = arxml_content.get("interfaces", {}) or {}
+            outdir = CONFIG.output_dir / "ARXML" / "Interfaces"
+            outdir.mkdir(parents=True, exist_ok=True)
+            for name, xml_text in intf_map.items():
+                fp = outdir / f"{name}_{session_id[:8]}_{timestamp}.arxml"
+                with open(fp, "w", encoding="utf-8") as f:
+                    f.write(xml_text)
+                output_files.append(str(fp))
+
+        # ---- 旧：单文件回退（保持兼容）----
         else:
-            filename = f"arxml_system_{component_count}comps_{session_id[:8]}_{timestamp}.xml"
+            component_count = len(design.component_plan)
+            if component_count <= 5 and component_count > 0:
+                first = design.component_plan[0].get("name", "System")
+                filename = f"arxml_{first}_{session_id[:8]}_{timestamp}.xml"
+            else:
+                filename = f"arxml_system_{component_count}comps_{session_id[:8]}_{timestamp}.xml"
 
-        output_path = CONFIG.output_dir / filename
+            output_path = CONFIG.output_dir / filename
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(arxml_content)
+            output_files.append(str(output_path))
 
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(arxml_content)
-        output_files.append(output_path)
-
-        # 保存性能报告
+        # 统一写性能报告
         session_info = self._get_session_info(session_id)
         if session_info and "results" in session_info and "round2" in session_info["results"]:
             report_filename = f"performance_{session_id[:8]}_{timestamp}.json"
             report_path = CONFIG.output_dir / report_filename
-
             performance_data = {
                 "session_id": session_id,
                 "generation_mode": session_info["results"]["round2"]["generation_mode"],
-                "component_count": component_count,
+                "component_count": len(design.component_plan),
                 "optimization_metrics": session_info["results"]["round2"].get("optimization_metrics", {}),
                 "total_stats": session_info["stats"],
                 "timestamp": timestamp
             }
-
+            from ..utils.serializers import save_json
             save_json(performance_data, report_path)
-            output_files.append(report_path)
+            output_files.append(str(report_path))
 
         return output_files
 

@@ -861,14 +861,6 @@ class DynamicQueryEngine:
             # 你是否强制 PORTS 必填取决于策略，这里保持“不强制”，如需严格可解开下一行
             # root_required.append("PORTS")
 
-        # 先构建 runnables 的 “条目” schema（def_schema），保持你原本的递归/definitions 逻辑
-        def_schema, definitions_runnables = self._build_runnable_entity_definition(session, design_index)
-        definitions.update(definitions_runnables or {})
-
-        # 事件 EVENT 区域（如有），保持你原有的构建逻辑
-        events_obj, definitions_events = self._build_events_section(session, design_index)
-        definitions.update(definitions_events or {})
-
         # === 扁平化：SWC-INTERNAL-BEHAVIOR 直接挂 RUNNABLE-ENTITY 数组（不再套 RUNNABLES 壳） ===
         # 扁平 INTERNAL-BEHAVIORS 与 RUNNABLES：只保留 SWC-INTERNAL-BEHAVIOR 与其下的 RUNNABLE-ENTITY
         if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):

@@ -44,7 +44,7 @@ class Round2Generator:
             architecture_design: ArchitectureDesign,
             memory_context: str = "",
             custom_requirements: Dict[str, Any] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+    ) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Any]]:
         """Round2 逐组件生成：
         - 先基于 Round1 的接口计划与接口 Schema 生成“接口实例对象”
         - 再逐组件生成组件实例
@@ -194,8 +194,8 @@ class Round2Generator:
 
                 merged_json.update(resp)
 
-        # 5) 转换为 ARXML
-        arxml_content = self._convert_to_arxml(merged_json, architecture_design)
+        # 5) 转为 ARXML（新逻辑：逐条输出，不合并）
+        component_xml_map, interface_xml_map = self._convert_each_to_arxml(merged_json)
 
         # 6) 统计
         generation_time = time.time() - start_time
@@ -205,7 +205,10 @@ class Round2Generator:
             "total_tokens": token_stats["total"],
             "generation_time": generation_time
         }
-        return arxml_content, stats
+        return {
+            "components": component_xml_map,  # Dict[str, str]  ->  {组件名: 组件XML文本}
+            "interfaces": interface_xml_map  # Dict[str, str]  ->  {接口名: 接口XML文本}
+        }, stats
 
     def _build_single_component_schema(self, comp: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -694,6 +697,62 @@ class Round2Generator:
         except Exception as e:
             if CONFIG.debug_mode:
                 print(f"[WARNING] 保存接口实例失败: {e}")
+
+    def _convert_single_component_to_arxml(self, comp_name: str, comp_data: Dict[str, Any]) -> str:
+        root = Element("AUTOSAR")
+        root.set("xmlns", "http://autosar.org/schema/r4.0")
+        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        root.set("xsi:schemaLocation", "http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd")
+
+        ar_packages = SubElement(root, "AR-PACKAGES")
+        comp_package = SubElement(ar_packages, "AR-PACKAGE")
+        SubElement(comp_package, "SHORT-NAME").text = "Components"
+        comp_elements = SubElement(comp_package, "ELEMENTS")
+        self._add_component_to_xml(comp_elements, comp_name, comp_data)
+
+        rough = tostring(root, encoding="unicode")
+        pretty = minidom.parseString(rough).toprettyxml(indent="  ")
+        return "\n".join(ln for ln in pretty.split("\n") if ln.strip())
+
+    def _convert_single_interface_to_arxml(self, intf_name: str, intf_data: Dict[str, Any]) -> str:
+        root = Element("AUTOSAR")
+        root.set("xmlns", "http://autosar.org/schema/r4.0")
+        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        root.set("xsi:schemaLocation", "http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd")
+
+        ar_packages = SubElement(root, "AR-PACKAGES")
+        intf_package = SubElement(ar_packages, "AR-PACKAGE")
+        SubElement(intf_package, "SHORT-NAME").text = "Interfaces"
+        intf_elements = SubElement(intf_package, "ELEMENTS")
+        self._add_interface_to_xml(intf_elements, intf_name, intf_data)
+
+        rough = tostring(root, encoding="unicode")
+        pretty = minidom.parseString(rough).toprettyxml(indent="  ")
+        return "\n".join(ln for ln in pretty.split("\n") if ln.strip())
+
+    # === ADD: 批量分发为「名称 → XML文本」的映射（组件 & 接口分开）===
+    def _convert_each_to_arxml(self, merged_json: Dict[str, Any]) -> Tuple[Dict[str, str], Dict[str, str]]:
+        def _short_name(obj: Dict[str, Any], fallback: str) -> str:
+            return str(obj.get("SHORT-NAME") or obj.get("SHORTNAME") or fallback)
+
+        component_xml_map: Dict[str, str] = {}
+        interface_xml_map: Dict[str, str] = {}
+
+        # 组件：跳过内部键（如 _interfaces）
+        for k, v in (merged_json or {}).items():
+            if not isinstance(v, dict) or k.startswith("_"):
+                continue
+            name = _short_name(v, k)
+            component_xml_map[name] = self._convert_single_component_to_arxml(name, v)
+
+        # 接口：来自 _interfaces
+        for k, v in (merged_json or {}).get("_interfaces", {}).items():
+            if not isinstance(v, dict):
+                continue
+            name = _short_name(v, k)
+            interface_xml_map[name] = self._convert_single_interface_to_arxml(name, v)
+
+        return component_xml_map, interface_xml_map
 
 
 # 全局Round2生成器实例
