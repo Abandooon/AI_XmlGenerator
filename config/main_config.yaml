@@ -226,10 +226,11 @@ file_paths:
 #    - "experimental_data/llm/min_promote_No Guard"
 #    - "experimental_data/llm/mid_promote_No Guard"
 #    - "experimental_data/llm/full_promote_No Guard"
-      - "experimental_data/vllm/gbnf+rag/wrap_arxml"
+#      - "experimental_data/vllm/gbnf+rag/wrap_arxml"
 #    - "experimental_data/llm/min_promote_rag/output"
 #    - "experimental_data/llm/mid_promote_rag/output"
 #    - "experimental_data/llm/full_promote_rag/output"
+    - xml_instance
 
 
 
@@ -251,12 +252,12 @@ file_paths:
 validators:
   # XSD 验证配置
   structure:
-    enabled: false
+    enabled: true
     strict_mode: true #严格按照xsd定义
 
   # SHACL 🔧 增强的语义验证配置
   semantic:
-    enabled: true
+    enabled: false
     inference: true
     timeout: 180
     max_violations_display: 10

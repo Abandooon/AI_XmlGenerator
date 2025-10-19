@@ -114,7 +114,7 @@ class PromptTemplateManager:
         {
             "runnables": [
               {
-                "name": "ProcessingRunnable",
+                "name": "Processing_Runnable",
                 "elements": [
                   {
                     "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
@@ -151,6 +151,7 @@ class PromptTemplateManager:
             - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。
             - JSON 字符串内不要出现裸换行，请使用 \\n。
             - 不要出现尾随逗号。
+            - name字段的连接符用'_'。
         $round1_schema_json
         """
 
@@ -344,7 +345,8 @@ class PromptTemplateManager:
             顶层只包含 {comp_type}（组件类型名）。
             在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-            所有 *REF 字段为对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            数值填写不要加单位，true、false用小写。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
         """.strip()
 

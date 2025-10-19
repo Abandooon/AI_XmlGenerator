@@ -513,6 +513,15 @@ class DynamicQueryEngine:
         # 基于上述规则过滤属性
         attrs = [a for a in attrs if _keep(a)]
 
+        # --- 修改后的排序逻辑 ---
+        # 使用一个元组 (tuple) 作为排序键。
+        # 第一个元素是优先级 (0 for SHORT-NAME, 1 for others)。
+        # 第二个元素是属性的名称，用于字母排序。
+        attrs.sort(key=lambda a: (
+            0 if _U(a.get("xml_tag") or a.get("name")) == "SHORT-NAME" else 1,
+            _U(a.get("xml_tag") or a.get("name") or "")
+        ))
+
         props: dict[str, dict] = {}
         required: list[str] = []
         definitions: dict[str, dict] = {}
@@ -541,19 +550,34 @@ class DynamicQueryEngine:
             if self._is_ref_terminal(session, tname, tag):
                 dest_enum = None
                 try:
-                    # 以 xml_tag 优先，其次用 type_name 去查“包含 DEST 的类”
-                    tref_ident = (tag or tname)
-                    info = self._query_class_attributes(session, tref_ident) or {}
-                    for _a in (info.get("attributes") or []):
-                        # 找到 XML 属性 DEST
-                        _is_attr = bool(_a.get("isXmlAttr")) or bool(_a.get("is_xml_attribute"))
-                        _tag = (_a.get("xml_tag") or _a.get("name") or "").strip().upper()
-                        if _is_attr and _tag == "DEST":
-                            evs = _a.get("t_enum_values") or []
-                            dest_enum = [e for e in evs if e] or None
-                            break
-                except Exception:
-                    pass
+                    # 引用类型的标识符（通常是其类名，如 ContextRPortRef）
+                    ref_class_identifier = tname or tag
+                    if ref_class_identifier:
+                        # 查询这个引用类自身的属性，找到 DEST 属性并提取其枚举类型
+                        ref_class_info = self._query_class_attributes(session, ref_class_identifier)
+
+                        for ref_attr in ref_class_info.get("attributes", []):
+                            # 检查属性的 xml_tag 或 name 是否为 "DEST"
+                            attr_tag = (ref_attr.get("xml_tag") or ref_attr.get("name") or "").strip().upper()
+                            is_xml_attr = bool(ref_attr.get("isXmlAttr")) or bool(ref_attr.get("is_xml_attribute"))
+
+                            # 必须是名为 DEST 的 XML 属性
+                            if is_xml_attr and attr_tag == "DEST":
+                                # _query_class_attributes 查询已通过 TYPE_OF 关系预先获取了枚举值
+                                # 如果 ref_attr 的类型是 Enum，t_enum_values 就会有值
+                                enum_values = ref_attr.get("t_enum_values")
+                                if enum_values and isinstance(enum_values, list) and len(enum_values) > 0:
+                                    # 成功提取枚举值列表，用于 Schema 约束
+                                    dest_enum = sorted([e for e in enum_values if e])
+                                break  # 找到DEST属性，停止遍历
+
+                    if dest_enum is None and CONFIG.debug_mode:
+                        print(f"[DEBUG] 未能为引用 {ref_class_identifier} 的 DEST 属性解析出枚举值。")
+
+                except Exception as e:
+                    if CONFIG.debug_mode:
+                        print(f"[DEBUG] 解析 DEST 属性的枚举值时发生错误 (引用: {tname or tag}): {e}")
+                    pass  # 保持 dest_enum 为 None
 
                 val = _emit_ref_object_schema(is_array, dest_enum)
                 if is_array and min_occ > 0:
