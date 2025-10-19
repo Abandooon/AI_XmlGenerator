@@ -1,0 +1,14 @@
+# grammar/decision.gbnf（摘：关键枚举）
+root ::= "{" fields "}"
+fields ::=  "\"conclusion\":" conclusion "," "\"forum\":" string "," "\"forum_type\":" forum_type "," "\"legal_basis\":" lb_array "," "\"reasoning\":" string "," "\"missing_facts\":" mf_array "," "\"trace\":" trace "}"
+conclusion ::= "\"Court_of_X_has_jurisdiction\"" | "\"Stay_for_first_seised\"" | "\"Decline_in_favor_of_chosen_court\"" | "\"No_EU_jurisdiction_use_member_state_law\"" | "\"Abstain_Insufficient_Info\""
+forum_type ::= "\"exclusive\"" | "\"agreement\"" | "\"special\"" | "\"general\"" | "\"lis_penden\"" | "\"appearance\"" | "\"none\""
+lb_array ::= "[" (lbobj ("," lbobj)*)? "]"
+lbobj ::= "{" "\"provision\":" provision "," "\"eli\":" string "," "\"granularity\":" granularity "}"
+provision ::= "\"Art." digit+ ( "(" digit+ ")" )? ( "(" lower ")" )? "\""
+granularity ::= "\"article\"" | "\"paragraph\"" | "\"item\""
+mf_array ::= "[" (string ("," string)*)? "]"
+trace ::= "{" "\"evidence_ids\":" "[" (string ("," string)*)? "]" "," "\"decode_run\":" string "}"
+string ::= /"([^"\\]|\\.)*"/
+digit ::= /[0-9]/
+lower ::= /[a-z]/

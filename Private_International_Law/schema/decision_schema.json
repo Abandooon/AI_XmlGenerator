@@ -1,0 +1,59 @@
+{
+  "$id": "schema/decision_schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "conclusion",
+    "forum",
+    "forum_type",
+    "legal_basis",
+    "reasoning",
+    "missing_facts",
+    "trace"
+  ],
+  "properties": {
+    "conclusion": {
+      "type": "string",
+      "enum": [
+        "Court_of_X_has_jurisdiction",
+        "Stay_for_first_seised",
+        "Decline_in_favor_of_chosen_court",
+        "No_EU_jurisdiction_use_member_state_law",
+        "Abstain_Insufficient_Info"
+      ]
+    },
+    "forum": { "type": "string" },
+    "forum_type": {
+      "type": "string",
+      "enum": ["exclusive", "agreement", "special", "general", "lis_penden", "appearance", "none"]
+    },
+    "legal_basis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provision", "eli", "granularity"],
+        "properties": {
+          "provision": {
+            "type": "string",
+            "pattern": "^Art\\.(\\d+)(\\(\\d+\\))?(\\([a-z]\\))?$"
+          },
+          "eli": { "type": "string" },
+          "granularity": { "type": "string", "enum": ["article", "paragraph", "item"] }
+        }
+      }
+    },
+    "reasoning": { "type": "string", "minLength": 1 },
+    "missing_facts": { "type": "array", "items": { "type": "string" } },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_ids", "decode_run"],
+      "properties": {
+        "evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "decode_run": { "type": "string" }
+      }
+    }
+  }
+}

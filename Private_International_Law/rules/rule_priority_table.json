@@ -1,0 +1,13 @@
+{
+  "id": "rules/rule_priority_table.json",
+  "priority_order": ["exclusive_Art24","agreement_Art25_31","special_Art7","general_Art4","appearance_Art26"],
+  "overrides": [
+    {"if":"applies(Art24)","then_forbid":["Art25","Art7","Art4","Art26"]},
+    {"if":"applies(Art25)","then_forbid":["Art7","Art4"],"notes":"Art.31(2)-(3) 触发中止/让渡"},
+    {"if":"applies(Art7)","then_allow":["Art4"],"notes":"并行可适用，受先受理规则约束"},
+    {"if":"Art26_appearance","then_forbid":["Art24"],"notes":"出庭不能突破专属"}
+  ],
+  "abstention_hard_gates": [
+    {"missing":"form_requirement","for":"Art25","action":"Abstain_Insufficient_Info"}
+  ]
+}
