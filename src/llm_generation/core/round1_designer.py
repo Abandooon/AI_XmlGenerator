@@ -184,6 +184,7 @@ class Round1Designer:
                 self.gemini_client.generate_with_schema(
                     prompt=prompt,
                     schema=self.architecture_schema,
+                    temperature=CONFIG.llm.get_temperature('round1'),
                     document_files=uploaded_files
                 )
 
@@ -507,6 +508,13 @@ class Round1Designer:
                 "system_analysis": system_analysis_schema,
                 "component_plan": component_plan_schema,
                 "interface_plan": interface_plan_schema,
+                "component_generation_order": {
+                    "type": "array",
+                    "description": "组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "connection_topology": {
                     "type": "object",
                     "additionalProperties": False,
@@ -534,6 +542,7 @@ class Round1Designer:
                 "system_analysis",
                 "component_plan",
                 "interface_plan",
+                "component_generation_order",
                 "connection_topology",
                 "architecture_rationale"
             ]
@@ -572,6 +581,7 @@ class Round1Designer:
             system_analysis=response_data.get("system_analysis", {}),
             component_plan=response_data.get("component_plan", []),
             interface_plan=response_data.get("interface_plan", []),
+            component_generation_order=response_data.get("component_generation_order", []),
             connection_topology=response_data.get("connection_topology", {}),
             architecture_rationale=response_data.get("architecture_rationale", {})
         )

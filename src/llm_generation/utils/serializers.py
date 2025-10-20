@@ -26,6 +26,7 @@ class ArchitectureDesign:
     system_analysis: Dict[str, str]
     component_plan: List[Dict[str, Any]]
     interface_plan: List[Dict[str, Any]]
+    component_generation_order: List[str]
     connection_topology: Dict[str, Any]
     architecture_rationale: Dict[str, str]
     session_id: str = ""

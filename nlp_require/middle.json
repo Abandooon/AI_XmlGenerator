@@ -1,0 +1,154 @@
+[
+  {
+    "system_name": "PowertrainDomainController",
+    "description": "管理发动机、变速箱、能量回收系统",
+    "components_count": 6,
+    "component_types": [
+      "EngineController",
+      "TransmissionController",
+      "EnergyRecovery",
+      "TorqueCoordinator",
+      "CANRouter",
+      "DiagnosticService"
+    ],
+    "key_requirements": [
+      "EngineController管理燃油喷射、点火正时",
+      "TransmissionController控制换挡逻辑",
+      "EnergyRecovery管理制动能量回收",
+      "TorqueCoordinator协调三者的扭矩请求",
+      "CANRouter连接动力CAN和车身CAN",
+      "DiagnosticService提供UDS服务"
+    ]
+  },
+  {
+    "system_name": "ChassisDomainController",
+    "description": "集成ABS、EPS、ESP功能",
+    "components_count": 6,
+    "component_types": [
+      "ABSController",
+      "EPSController",
+      "ESPController",
+      "WheelSpeedProcessor",
+      "CANGateway",
+      "SafetyMonitor"
+    ],
+    "key_requirements": [
+      "ABSController防抱死制动",
+      "EPSController电动助力转向",
+      "ESPController车身稳定控制",
+      "WheelSpeedProcessor处理4个轮速传感器数据",
+      "SafetyMonitor实现ASIL-D安全监控",
+      "多条CAN总线互联"
+    ]
+  },
+  {
+    "system_name": "BodyComfortController",
+    "description": "管理门窗、座椅、空调、氛围灯",
+    "components_count": 7,
+    "component_types": [
+      "DoorWindowManager",
+      "SeatManager",
+      "ClimateControl",
+      "AmbientLighting",
+      "CANInterface",
+      "LINInterface",
+      "DiagHandler"
+    ],
+    "key_requirements": [
+      "DoorWindowManager控制4门4窗",
+      "SeatManager控制电动座椅调节和加热",
+      "ClimateControl实现自动空调",
+      "AmbientLighting控制64色氛围灯",
+      "通过CAN和LIN总线通信",
+      "支持OTA固件更新"
+    ]
+  },
+  {
+    "system_name": "ADASController",
+    "description": "实现ACC、LKA、AEB功能",
+    "components_count": 6,
+    "component_types": [
+      "RadarProcessor",
+      "CameraProcessor",
+      "FusionAlgorithm",
+      "PathPlanner",
+      "ActuationInterface",
+      "HMIManager"
+    ],
+    "key_requirements": [
+      "RadarProcessor处理毫米波雷达数据",
+      "CameraProcessor处理前视摄像头图像",
+      "FusionAlgorithm融合多传感器数据",
+      "PathPlanner规划纵向和横向控制指令",
+      "ActuationInterface对接动力和底盘域",
+      "HMIManager在仪表显示ADAS状态"
+    ]
+  },
+  {
+    "system_name": "BatteryManagementSystem",
+    "description": "电动车电池包管理",
+    "components_count": 7,
+    "component_types": [
+      "CellMonitor",
+      "ThermalManager",
+      "SOCEstimator",
+      "Balancer",
+      "SafetyManager",
+      "ChargeController",
+      "CANComm"
+    ],
+    "key_requirements": [
+      "CellMonitor监控96个单体电池电压",
+      "ThermalManager控制液冷系统",
+      "SOCEstimator估算SOC和SOH",
+      "Balancer实现被动均衡",
+      "SafetyManager实现ASIL-D安全功能",
+      "ChargeController支持快充和慢充",
+      "通过CAN上报电池状态给VCU"
+    ]
+  },
+  {
+    "system_name": "InfotainmentSystem",
+    "description": "车载娱乐和导航系统",
+    "components_count": 6,
+    "component_types": [
+      "MediaPlayer",
+      "NavigationEngine",
+      "BluetoothStack",
+      "VoiceRecognition",
+      "DisplayManager",
+      "CANInterface"
+    ],
+    "key_requirements": [
+      "MediaPlayer支持多格式音视频播放",
+      "NavigationEngine实现在线导航",
+      "BluetoothStack支持电话和音乐",
+      "VoiceRecognition实现语音控制",
+      "DisplayManager管理双屏显示",
+      "通过CAN获取车速、档位等信息"
+    ]
+  },
+  {
+    "system_name": "ThermalManagementSystem",
+    "description": "管理电机、电池、空调的热平衡",
+    "components_count": 7,
+    "component_types": [
+      "MotorCooling",
+      "BatteryCooling",
+      "CabinCooling",
+      "PumpController",
+      "ValveController",
+      "TempMonitor",
+      "ThermalOptimizer"
+    ],
+    "key_requirements": [
+      "MotorCooling管理电机冷却液循环",
+      "BatteryCooling管理电池液冷循环",
+      "CabinCooling管理空调制冷剂循环",
+      "PumpController控制3个水泵",
+      "ValveController控制多个电磁阀",
+      "TempMonitor采集12路温度",
+      "ThermalOptimizer协调三路散热需求"
+    ]
+  }
+]

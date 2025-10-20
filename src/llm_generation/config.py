@@ -177,6 +177,15 @@ class LLMConfig:
     max_context_tokens: int
     enable_file_upload: bool
 
+    # 新增：分阶段温度
+    stage_temperatures: Dict[str, float] = field(default_factory=dict)
+
+    def get_temperature(self, stage: str = None) -> float:
+        """获取指定阶段的温度"""
+        if stage and stage in self.stage_temperatures:
+            return self.stage_temperatures[stage]
+        return self.temperature
+
 
 @dataclass
 class ConversationConfig:
@@ -581,6 +590,9 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
         # 约束引擎配置（新增）
         constraint_config = yaml_config.get("constraint_engine", {})
 
+        # 加载分阶段温度
+        stage_temps = yaml_config["llm"].get("stage_temperatures", {})
+
         # 构建配置对象
         config = SystemConfig(
             llm=LLMConfig(
@@ -588,6 +600,7 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 llm_api_url=yaml_config["llm"]["llm_api_url"],
                 api_key=api_key,
                 temperature=yaml_config["llm"]["temperature"],
+                stage_temperatures=stage_temps,  # 新增
                 max_output_tokens=yaml_config["llm"]["max_output_tokens"],
                 max_context_tokens=yaml_config["llm"]["max_context_tokens"],
                 enable_file_upload=yaml_config["llm"].get("enable_file_upload")

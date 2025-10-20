@@ -4,21 +4,18 @@
 基于对话式逐层深入设计系统的AUTOSAR组件生成器
 支持两轮对话：Round1架构设计 + Round2详细生成
 支持多组件生成，动态Schema生成，支持文档上传
-
-使用方法:
-1. 直接运行: python llm_rag_generator.py
-2. PyCharm右键运行
-3. 交互式对话生成AUTOSAR ARXML
-4. 支持上传PDF/Word/图片文档作为需求输入
+✨ 新增：批量处理需求文件 + 指标记录功能
 """
 
 import os
 import sys
 import json
 import traceback
+import time
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-
+from datetime import datetime
+from src.llm_generation.core.conversation_manager import ConversationState
 # 添加项目根目录到Python路径
 project_root = Path(__file__).resolve().parent
 if str(project_root) not in sys.path:
@@ -64,15 +61,473 @@ class LLMRAGGenerator:
         self.demo_mode = False
         self.uploaded_documents = []
 
+        # ✨ 新增：批量实验相关
+        self.batch_mode = False
+        self.current_metrics = {}
+
+        # ✨ 新增：创建输出目录
+        self.generated_arxml_dir = project_root / "generated_arxml"
+        self.metrics_dir = project_root / "llm_rag_output" / "mark"
+        self.generated_arxml_dir.mkdir(exist_ok=True, parents=True)
+        self.metrics_dir.mkdir(exist_ok=True, parents=True)
+
         # 显示功能状态
         print("🚀 LLM RAG AUTOSAR组件生成器")
         print("=" * 50)
         print(f"📊 配置信息:")
         print(f"  - LLM模型: {CONFIG.llm.model_name}")
         print(f"  - 调试模式: {'开启' if CONFIG.debug_mode else '关闭'}")
-        print(f"  - 文档上传: {'启用' if self.file_upload_enabled else '禁用（纯对话模式）'}")
+        print(f"  - 文档上传: {'可用' if self.file_upload_enabled else '禁用（纯对话模式）'}")
         print(f"  - 输出目录: {CONFIG.output_dir}")
+        print(f"  - ARXML目录: {self.generated_arxml_dir}")
+        print(f"  - 指标目录: {self.metrics_dir}")
         print("=" * 50)
+
+    # ✨ 新增：批量处理需求文件
+    def run_batch_experiment(self):
+        """运行批量实验模式"""
+        print("\n🧪 批量实验模式")
+        print("=" * 50)
+
+        # 需求文件目录
+        require_dir = project_root / "nlp_require"
+        if not require_dir.exists():
+            print(f"❌ 需求目录不存在: {require_dir}")
+            return
+
+        # 读取需求文件
+        requirement_files = {
+            "simple": require_dir / "simple.json",
+            # "middle": require_dir / "middle.json",
+            # "complex": require_dir / "complex.json"
+        }
+
+        # 检查文件是否存在
+        for complexity, file_path in requirement_files.items():
+            if not file_path.exists():
+                print(f"⚠️  需求文件不存在: {file_path}")
+                requirement_files.pop(complexity)
+
+        if not requirement_files:
+            print("❌ 没有可用的需求文件")
+            return
+
+        print(f"📁 找到 {len(requirement_files)} 个需求文件")
+
+        # 询问是否继续
+        response = input("\n是否开始批量生成? (y/n): ").strip().lower()
+        if response not in ['y', 'yes', '是']:
+            print("❌ 已取消")
+            return
+
+        # 批量处理
+        self.batch_mode = True
+        all_results = []
+
+        for complexity, file_path in requirement_files.items():
+            print(f"\n{'=' * 60}")
+            print(f"📋 处理 {complexity.upper()} 复杂度需求")
+            print(f"{'=' * 60}")
+
+            try:
+                # 读取需求文件
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    requirements = json.load(f)
+
+                if not isinstance(requirements, list):
+                    requirements = [requirements]
+
+                # 处理每个需求
+                for idx, req in enumerate(requirements, 1):
+                    print(f"\n{'─' * 60}")
+                    print(f"🔹 需求 {idx}/{len(requirements)}: {req.get('system_name', 'Unknown')}")
+                    print(f"{'─' * 60}")
+
+                    result = self._process_single_requirement(
+                        requirement=req,
+                        complexity=complexity,
+                        index=idx
+                    )
+                    all_results.append(result)
+
+                    # 短暂延迟避免API限流
+                    if idx < len(requirements):
+                        time.sleep(2)
+
+            except Exception as e:
+                print(f"❌ 处理 {complexity} 失败: {e}")
+                if CONFIG.debug_mode:
+                    traceback.print_exc()
+
+        # 保存汇总结果
+        self._save_batch_summary(all_results)
+
+        print(f"\n{'=' * 60}")
+        print("✅ 批量实验完成！")
+        print(f"📊 处理了 {len(all_results)} 个需求")
+        print(f"📁 ARXML文件位于: {self.generated_arxml_dir}")
+        print(f"📈 指标文件位于: {self.metrics_dir}")
+        print(f"\n💡 提示: 输入 'analyze' 命令可手动计算详细指标")
+        print(f"{'=' * 60}")
+
+    # ✨ 新增：处理单个需求
+    def _process_single_requirement(
+            self,
+            requirement: Dict[str, Any],
+            complexity: str,
+            index: int
+    ) -> Dict[str, Any]:
+        """处理单个需求并记录指标"""
+
+        system_name = requirement.get("system_name", f"System_{index}")
+        description = requirement.get("description", "")
+
+        # 构建提示文本
+        prompt = self._build_prompt_from_requirement(requirement)
+
+        print(f"\n📝 系统名称: {system_name}")
+        print(f"📄 描述: {description[:100]}...")
+
+        # 初始化指标记录
+        metrics = {
+            "case_id": f"{complexity}_{index}",
+            "system_name": system_name,
+            "complexity": complexity,
+            "requirement": requirement,
+            "start_time": datetime.now().isoformat(),
+            "phase1": {},
+            "phase2": {},
+            "final_status": "pending"
+        }
+
+        try:
+            # Phase 1: Blueprint生成
+            print(f"\n🏗️  Phase 1: 架构设计...")
+            phase1_start = time.time()
+
+            result = self.conversation_manager.start_conversation(
+                user_input=prompt,
+                user_id=f"batch_{complexity}_{index}"
+            )
+            self.current_session_id = result["session_id"]
+
+            # Round1 设计
+            result1 = self.conversation_manager.process_round1(self.current_session_id)
+            phase1_end = time.time()
+
+            # 记录Phase1指标
+            metrics["phase1"] = {
+                "duration": phase1_end - phase1_start,
+                "api_calls": 1,
+                "tokens": result1.get('stats', {}).get('total_tokens', 0),
+                "component_count": len(result1.get('design', {}).get('component_plan', [])),
+                "interface_count": len(result1.get('design', {}).get('interface_plan', [])),
+                "blueprint": result1.get('design', {})
+            }
+
+            print(f"✅ Phase 1 完成 ({phase1_end - phase1_start:.2f}s)")
+            print(f"   - Token使用: {metrics['phase1']['tokens']}")
+            print(f"   - 组件数: {metrics['phase1']['component_count']}")
+            print(f"   - 接口数: {metrics['phase1']['interface_count']}")
+
+            # ✅ 批量模式：直接设置确认状态（绕过用户反馈）
+            print(f"\n⚙️  批量模式：自动确认设计...")
+            session_info = self.conversation_manager._get_session_info(self.current_session_id)
+
+            if session_info:
+                # 直接设置为已确认状态
+                session_info["state"] = ConversationState.ROUND1_COMPLETED
+                session_info["final_confirmation_time"] = time.time()
+
+                # 记录确认操作到内存
+                self.conversation_manager.memory_manager.add_conversation_turn(
+                    session_id=self.current_session_id,
+                    round_number=1,
+                    user_input="[自动确认]",
+                    system_output="批量模式自动确认设计",
+                    design_artifacts={},
+                    user_feedback="[Batch Mode Auto-Confirm]"
+                )
+
+                print(f"✅ 设计已自动确认")
+            else:
+                raise ConversationError(f"会话不存在: {self.current_session_id}")
+
+            # Phase 2: 详细生成
+            print(f"\n🔧 Phase 2: 详细生成...")
+            phase2_start = time.time()
+
+            result2 = self.conversation_manager.process_round2(self.current_session_id)
+
+            phase2_end = time.time()
+
+            # 记录Phase2指标
+            metrics["phase2"] = {
+                "duration": phase2_end - phase2_start,
+                "tokens": result2.get('stats', {}).get('total_tokens', 0),
+                "output_files": result2.get('output_files', [])
+            }
+
+            print(f"✅ Phase 2 完成 ({phase2_end - phase2_start:.2f}s)")
+            print(f"   - Token使用: {metrics['phase2']['tokens']}")
+            print(f"   - 输出文件: {len(metrics['phase2']['output_files'])}")
+
+            # 移动生成的文件到指定目录
+            self._move_generated_files(
+                output_files=result2.get('output_files', []),
+                system_name=system_name,
+                complexity=complexity,
+                index=index
+            )
+
+            metrics["final_status"] = "success"
+            metrics["end_time"] = datetime.now().isoformat()
+
+        except Exception as e:
+            print(f"❌ 处理失败: {e}")
+            if CONFIG.debug_mode:
+                traceback.print_exc()
+
+            metrics["final_status"] = "failure"
+            metrics["error"] = str(e)
+            metrics["end_time"] = datetime.now().isoformat()
+
+        finally:
+            # 保存单个需求的指标
+            self._save_metrics(metrics, complexity, index)
+
+        return metrics
+
+    # ✨ 新增：从需求构建提示
+    def _build_prompt_from_requirement(self, requirement: Dict[str, Any]) -> str:
+        """从需求JSON构建提示文本"""
+
+        prompt_parts = []
+
+        # 系统名称
+        if "system_name" in requirement:
+            prompt_parts.append(f"系统名称: {requirement['system_name']}")
+
+        # 描述
+        if "description" in requirement:
+            prompt_parts.append(f"系统描述: {requirement['description']}")
+
+        # 组件数量
+        if "components_count" in requirement:
+            prompt_parts.append(f"组件数量: {requirement['components_count']}")
+
+        # 组件类型
+        if "component_types" in requirement:
+            types_str = ", ".join(requirement["component_types"])
+            prompt_parts.append(f"组件类型: {types_str}")
+
+        # 关键需求
+        if "key_requirements" in requirement:
+            prompt_parts.append("关键需求:")
+            for req in requirement["key_requirements"]:
+                prompt_parts.append(f"  - {req}")
+
+        return "\n".join(prompt_parts)
+
+    # ✨ 新增：移动生成的文件
+    def _move_generated_files(
+            self,
+            output_files: List[str],
+            system_name: str,
+            complexity: str,
+            index: int
+    ):
+        """移动生成的ARXML文件到指定目录"""
+
+        import shutil
+
+        # 创建子目录
+        target_dir = self.generated_arxml_dir / complexity
+        target_dir.mkdir(exist_ok=True, parents=True)
+
+        moved_files = []
+
+        for file_path in output_files:
+            if not os.path.exists(file_path):
+                print(f"⚠️  文件不存在: {file_path}")
+                continue
+
+            # 构建新文件名
+            file_name = Path(file_path).name
+            # 添加序号前缀
+            new_name = f"{complexity}_{index:02d}_{system_name}_{file_name}"
+            target_path = target_dir / new_name
+
+            try:
+                shutil.copy2(file_path, target_path)
+                moved_files.append(str(target_path))
+                print(f"📁 已保存: {target_path.name}")
+            except Exception as e:
+                print(f"⚠️  移动文件失败 {file_name}: {e}")
+
+        return moved_files
+
+    # ✨ 新增：保存指标
+    def _save_metrics(self, metrics: Dict[str, Any], complexity: str, index: int):
+        """保存单个需求的指标"""
+
+        # 创建复杂度子目录
+        complexity_dir = self.metrics_dir / complexity
+        complexity_dir.mkdir(exist_ok=True, parents=True)
+
+        # 保存指标文件
+        metrics_file = complexity_dir / f"{complexity}_{index:02d}_metrics.json"
+
+        try:
+            with open(metrics_file, 'w', encoding='utf-8') as f:
+                json.dump(metrics, f, indent=2, ensure_ascii=False)
+            print(f"📊 指标已保存: {metrics_file.name}")
+        except Exception as e:
+            print(f"⚠️  保存指标失败: {e}")
+
+    # ✨ 新增：保存批量汇总
+    def _save_batch_summary(self, all_results: List[Dict[str, Any]]):
+        """保存批量实验汇总"""
+
+        summary = {
+            "experiment_time": datetime.now().isoformat(),
+            "total_cases": len(all_results),
+            "success_count": sum(1 for r in all_results if r["final_status"] == "success"),
+            "failure_count": sum(1 for r in all_results if r["final_status"] == "failure"),
+            "by_complexity": {},
+            "results": all_results
+        }
+
+        # 按复杂度统计
+        for result in all_results:
+            complexity = result["complexity"]
+            if complexity not in summary["by_complexity"]:
+                summary["by_complexity"][complexity] = {
+                    "total": 0,
+                    "success": 0,
+                    "failure": 0
+                }
+
+            summary["by_complexity"][complexity]["total"] += 1
+            if result["final_status"] == "success":
+                summary["by_complexity"][complexity]["success"] += 1
+            else:
+                summary["by_complexity"][complexity]["failure"] += 1
+
+        # 保存汇总文件
+        summary_file = self.metrics_dir / f"batch_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+        try:
+            with open(summary_file, 'w', encoding='utf-8') as f:
+                json.dump(summary, f, indent=2, ensure_ascii=False)
+            print(f"\n📊 汇总报告已保存: {summary_file}")
+        except Exception as e:
+            print(f"⚠️  保存汇总失败: {e}")
+
+    # ✨ 新增：手动分析指标
+    def analyze_metrics(self):
+        """手动分析和计算详细指标"""
+
+        print("\n📊 指标分析工具")
+        print("=" * 50)
+
+        # 读取所有指标文件
+        all_metrics = []
+
+        for complexity_dir in self.metrics_dir.iterdir():
+            if not complexity_dir.is_dir():
+                continue
+
+            for metrics_file in complexity_dir.glob("*_metrics.json"):
+                try:
+                    with open(metrics_file, 'r', encoding='utf-8') as f:
+                        metrics = json.load(f)
+                        all_metrics.append(metrics)
+                except Exception as e:
+                    print(f"⚠️  读取失败 {metrics_file}: {e}")
+
+        if not all_metrics:
+            print("❌ 没有找到指标文件")
+            return
+
+        print(f"📁 找到 {len(all_metrics)} 个指标文件")
+
+        # 计算统计信息
+        self._calculate_statistics(all_metrics)
+
+    # ✨ 新增：计算统计信息
+    def _calculate_statistics(self, all_metrics: List[Dict[str, Any]]):
+        """计算并显示统计信息"""
+
+        print("\n" + "=" * 60)
+        print("📈 统计分析结果")
+        print("=" * 60)
+
+        # 总体统计
+        total = len(all_metrics)
+        success = sum(1 for m in all_metrics if m["final_status"] == "success")
+        failure = total - success
+
+        print(f"\n【总体统计】")
+        print(f"  总案例数: {total}")
+        print(f"  成功: {success} ({success / total * 100:.1f}%)")
+        print(f"  失败: {failure} ({failure / total * 100:.1f}%)")
+
+        # 按复杂度统计
+        by_complexity = {}
+        for m in all_metrics:
+            complexity = m["complexity"]
+            if complexity not in by_complexity:
+                by_complexity[complexity] = []
+            by_complexity[complexity].append(m)
+
+        print(f"\n【按复杂度统计】")
+        for complexity in sorted(by_complexity.keys()):
+            metrics = by_complexity[complexity]
+            total_c = len(metrics)
+            success_c = sum(1 for m in metrics if m["final_status"] == "success")
+
+            print(f"\n  {complexity.upper()}:")
+            print(f"    案例数: {total_c}")
+            print(f"    成功率: {success_c / total_c * 100:.1f}%")
+
+        # Token使用统计
+        successful_metrics = [m for m in all_metrics if m["final_status"] == "success"]
+
+        if successful_metrics:
+            total_tokens = sum(
+                m["phase1"].get("tokens", 0) + m["phase2"].get("tokens", 0)
+                for m in successful_metrics
+            )
+            avg_tokens = total_tokens / len(successful_metrics)
+
+            print(f"\n【Token使用统计】")
+            print(f"  总Token: {total_tokens}")
+            print(f"  平均Token/案例: {avg_tokens:.0f}")
+
+        # 时间统计
+        if successful_metrics:
+            total_time = sum(
+                m["phase1"].get("duration", 0) + m["phase2"].get("duration", 0)
+                for m in successful_metrics
+            )
+            avg_time = total_time / len(successful_metrics)
+
+            print(f"\n【时间统计】")
+            print(f"  总耗时: {total_time:.1f}秒")
+            print(f"  平均耗时/案例: {avg_time:.1f}秒")
+
+        # 组件统计
+        component_counts = [
+            m["phase1"].get("component_count", 0)
+            for m in successful_metrics
+        ]
+
+        if component_counts:
+            print(f"\n【组件统计】")
+            print(f"  平均组件数: {sum(component_counts) / len(component_counts):.1f}")
+            print(f"  最小组件数: {min(component_counts)}")
+            print(f"  最大组件数: {max(component_counts)}")
 
     def run_interactive_session(self):
         """运行交互式会话"""
@@ -86,12 +541,14 @@ class LLMRAGGenerator:
         print("  - 支持多组件设计和生成")
         print("  - 动态从KG查询XML结构生成Schema")
         print("  - 确保实例引用的唯一性和一致性")
-        print("\n📁 支持的文档格式:")
+        print("\n📚 支持的文档格式:")
         print("  PDF, Word(.doc/.docx), 文本(.txt/.md), 图片(.png/.jpg/.jpeg/.gif/.webp)")
         print("\n输入 'quit' 或 'exit' 可随时退出")
         print("输入 'demo' 可运行演示模式")
         print("输入 'help' 查看帮助信息")
         print("输入 'upload' 上传文档文件")
+        print("输入 'batch' 运行批量实验模式")  # ✨ 新增
+        print("输入 'analyze' 分析已有指标")  # ✨ 新增
 
         while True:
             try:
@@ -120,6 +577,12 @@ class LLMRAGGenerator:
                 elif user_input.lower() == 'clear':
                     self._clear_documents()
                     continue
+                elif user_input.lower() == 'batch':  # ✨ 新增
+                    self.run_batch_experiment()
+                    continue
+                elif user_input.lower() == 'analyze':  # ✨ 新增
+                    self.analyze_metrics()
+                    continue
 
                 # 开始新的对话会话
                 self._start_new_conversation(user_input)
@@ -139,6 +602,8 @@ class LLMRAGGenerator:
                 else:
                     break
 
+    # ... 其他方法保持不变 ...
+
     def _handle_document_upload(self):
         """处理文档上传"""
         if not self.file_upload_enabled:
@@ -152,7 +617,7 @@ class LLMRAGGenerator:
         print("最大文件大小: 20MB")
         print("输入文件路径（支持多个，用逗号分隔），或输入'cancel'取消：")
 
-        file_input = input("📎 文件路径: ").strip()
+        file_input = input("🔎 文件路径: ").strip()
 
         if file_input.lower() == 'cancel':
             print("❌ 已取消上传")
@@ -233,7 +698,7 @@ class LLMRAGGenerator:
     def _start_new_conversation(self, user_input: str):
         """开始新的对话，条件性支持文档"""
         try:
-            print(f"\n🔄 正在分析需求...")
+            print(f"\n📄 正在分析需求...")
 
             # 准备文档文件列表
             document_files = self.uploaded_documents if self.uploaded_documents else None
@@ -271,8 +736,8 @@ class LLMRAGGenerator:
         """执行Round 1架构设计"""
 
         try:
-            print(f"\n🏗️ Round 1: 正在进行架构设计...")
-            print("📋 使用静态高层术语库进行架构规划...")
+            print(f"\n🗃️ Round 1: 正在进行架构设计...")
+            print("📋 使用限定高层术语库进行架构规划...")
 
             if self.uploaded_documents:
                 print(f"📚 结合 {len(self.uploaded_documents)} 个文档进行设计...")
@@ -297,8 +762,33 @@ class LLMRAGGenerator:
             print(f"\n{result['presentation']}")
             print(f"\n{result['confirmation_prompt']}")
 
-            # 等待用户反馈
-            self._handle_user_feedback_loop()
+
+            if not self.batch_mode:
+                # 交互模式：需要人工反馈
+                self._handle_user_feedback_loop()
+            else:
+                # ✅ 批量模式：直接确认（与 _process_single_requirement 中的逻辑一致）
+                print(f"\n⚙️  批量模式：自动确认设计...")
+                session_info = self.conversation_manager._get_session_info(self.current_session_id)
+
+                if session_info:
+                    session_info["state"] = ConversationState.ROUND1_COMPLETED
+                    session_info["final_confirmation_time"] = time.time()
+
+                    self.conversation_manager.memory_manager.add_conversation_turn(
+                        session_id=self.current_session_id,
+                        round_number=1,
+                        user_input="[自动确认]",
+                        system_output="批量模式自动确认设计",
+                        design_artifacts={},
+                        user_feedback="[Batch Mode Auto-Confirm]"
+                    )
+                    print(f"✅ 设计已自动确认")
+
+                    # 直接进入 Round2
+                    self._execute_round2()
+                else:
+                    raise ConversationError(f"会话不存在: {self.current_session_id}")
 
         except Exception as e:
             print(f"❌ Round 1执行失败: {e}")
@@ -339,7 +829,7 @@ class LLMRAGGenerator:
                         self._execute_round2()
                         break
                     else:
-                        print(f"\n🔄 请继续提供反馈 ({feedback_count}/{max_feedback_rounds})")
+                        print(f"\n📄 请继续提供反馈 ({feedback_count}/{max_feedback_rounds})")
 
             except Exception as e:
                 print(f"❌ 处理反馈失败: {e}")
@@ -353,7 +843,7 @@ class LLMRAGGenerator:
         try:
             print(f"\n⚙️ Round 2: 正在生成详细ARXML...")
             print("🔍 动态查询KG获取XML结构信息...")
-            print("📐 生成定制化JSON Schema...")
+            print("📋 生成定制化JSON Schema...")
             print("🎯 确保实例引用唯一性...")
 
             # 执行详细生成
@@ -362,22 +852,12 @@ class LLMRAGGenerator:
             print(f"\n🎉 Round 2完成!")
             print(f"📊 Token使用: {result['stats']['total_tokens']}")
 
-            # 显示生成统计
-            stats = result['stats']
-            print(f"📈 生成统计:")
-            print(f"  - 组件数量: {stats.get('component_count', 0)}")
-            print(f"  - Schema属性: {stats.get('schema_properties', 0)}")
-            print(f"  - 应用约束: {stats.get('constraints_applied', 0)}")
-
             # 显示输出文件
             output_files = result.get('output_files', [])
             print(f"\n📁 输出文件 ({len(output_files)}个):")
             for file_path in output_files:
                 file_name = Path(file_path).name
                 print(f"  - {file_name}")
-
-            # 显示生成的ARXML摘要
-            self._show_arxml_summary(result['arxml_data'])
 
             # 显示总体统计
             self._show_session_summary(result['total_stats'])
@@ -393,128 +873,6 @@ class LLMRAGGenerator:
             print(f"❌ Round 2执行失败: {e}")
             if CONFIG.debug_mode:
                 traceback.print_exc()
-
-    def _show_arxml_summary(self, arxml_data):
-        """显示ARXML摘要（兼容 dict 与 ARXML 字符串）"""
-
-        print(f"\n📋 生成的ARXML摘要:")
-        print("-" * 30)
-
-        component_count = 0
-        total_ports = 0
-        total_events = 0
-        total_runnables = 0
-
-        # ---- 情况 A：已经是结构化 dict（沿用旧逻辑） ----
-        if isinstance(arxml_data, dict):
-            for key, value in arxml_data.items():
-                if isinstance(value, dict):
-                    component_count += 1
-                    comp_name = value.get('SHORT-NAME', key)
-                    print(f"🔧 组件: {comp_name}")
-
-                    # 端口
-                    ports = value.get("PORTS", {})
-                    p_ports = len(ports.get("P-PORT-PROTOTYPE", []))
-                    r_ports = len(ports.get("R-PORT-PROTOTYPE", []))
-                    ports_count = p_ports + r_ports
-                    total_ports += ports_count
-                    print(f"  📌 端口: {ports_count} (P:{p_ports}, R:{r_ports})")
-
-                    # 内部行为
-                    behaviors = value.get("INTERNAL-BEHAVIORS", {})
-                    if "SWC-INTERNAL-BEHAVIOR" in behaviors:
-                        swc_behavior = behaviors["SWC-INTERNAL-BEHAVIOR"]
-
-                        events = swc_behavior.get("EVENTS", {})
-                        timing_events = len(events.get("TIMING-EVENT", []))
-                        total_events += timing_events
-
-                        runnables = swc_behavior.get("RUNNABLES", {})
-                        runnable_entities = len(runnables.get("RUNNABLE-ENTITY", []))
-                        total_runnables += runnable_entities
-
-                        print(f"  ⏰ 事件: {timing_events}")
-                        print(f"  🏃 Runnable: {runnable_entities}")
-                    print()
-
-            print(
-                f"📊 总计: {component_count}个组件, {total_ports}个端口, {total_events}个事件, {total_runnables}个Runnable")
-            return
-
-        # ---- 情况 B：是 ARXML 字符串（新逻辑：解析 XML 统计） ----
-        if isinstance(arxml_data, str):
-            try:
-                import xml.etree.ElementTree as ET
-                root = ET.fromstring(arxml_data)
-
-                # 找到 Components 包：/AUTOSAR/AR-PACKAGES/AR-PACKAGE[SHORT-NAME='Components']/ELEMENTS/*
-                def _find_pkg(root_el, pkg_name):
-                    for pkg in root_el.findall(".//AR-PACKAGE"):
-                        name = pkg.findtext("SHORT-NAME")
-                        if name == pkg_name:
-                            return pkg
-                    return None
-
-                comp_pkg = _find_pkg(root, "Components")
-                if comp_pkg is None:
-                    print("ℹ️ 未找到 Components 包，无法统计组件。")
-                    return
-
-                comp_elements = comp_pkg.find("ELEMENTS")
-                if comp_elements is None:
-                    print("ℹ️ Components 包中缺少 ELEMENTS。")
-                    return
-
-                for comp_elem in list(comp_elements):
-                    # comp_elem.tag 是具体组件类型，如 APPLICATION-SW-COMPONENT-TYPE
-                    component_count += 1
-                    comp_name = comp_elem.findtext("SHORT-NAME") or comp_elem.tag
-                    print(f"🔧 组件: {comp_name}")
-
-                    # 端口统计
-                    p_ports = r_ports = 0
-                    ports_el = comp_elem.find("PORTS")
-                    if ports_el is not None:
-                        p_ports = len(ports_el.findall("P-PORT-PROTOTYPE"))
-                        r_ports = len(ports_el.findall("R-PORT-PROTOTYPE"))
-                    ports_count = p_ports + r_ports
-                    total_ports += ports_count
-                    print(f"  📌 端口: {ports_count} (P:{p_ports}, R:{r_ports})")
-
-                    # 内部行为统计
-                    behaviors_el = comp_elem.find("INTERNAL-BEHAVIORS")
-                    if behaviors_el is not None:
-                        swc_ib = behaviors_el.find("SWC-INTERNAL-BEHAVIOR")
-                        if swc_ib is not None:
-                            events_el = swc_ib.find("EVENTS")
-                            timing_events = 0
-                            if events_el is not None:
-                                timing_events = len(events_el.findall("TIMING-EVENT"))
-                            total_events += timing_events
-
-                            runnables_el = swc_ib.find("RUNNABLES")
-                            runnable_entities = 0
-                            if runnables_el is not None:
-                                runnable_entities = len(runnables_el.findall("RUNNABLE-ENTITY"))
-                            total_runnables += runnable_entities
-
-                            print(f"  ⏰ 事件: {timing_events}")
-                            print(f"  🏃 Runnable: {runnable_entities}")
-                    print()
-
-                print(
-                    f"📊 总计: {component_count}个组件, {total_ports}个端口, {total_events}个事件, {total_runnables}个Runnable")
-                return
-
-            except Exception as e:
-                print(f"⚠️ 无法解析ARXML字符串，跳过摘要。原因: {e}")
-                # 可选：输出部分内容长度
-                print(f"（调试：ARXML长度={len(arxml_data)}）")
-                return
-
-        # ---- 其他类型：直接提示 ----
-        print(f"⚠️ 未知的 arxml_data 类型: {type(arxml_data)}，无法摘要。")
 
     def _show_session_summary(self, stats: Dict[str, Any]):
         """显示会话摘要"""
@@ -551,16 +909,6 @@ class LLMRAGGenerator:
                 "name": "基于文档的系统设计",
                 "description": "基于上传的需求文档设计AUTOSAR系统",
                 "sample_docs": ["requirements.pdf", "architecture.png"]
-            },
-            {
-                "name": "复杂数据融合系统",
-                "description": "设计一个复杂的多传感器数据融合AUTOSAR系统，包括多个传感器接口组件、数据预处理组件、融合算法组件、结果输出组件。需要处理多种数据类型和复杂的数据流。",
-                "sample_docs": []
-            },
-            {
-                "name": "车载通信网关",
-                "description": "设计一个车载通信网关AUTOSAR系统，需要多个组件处理不同的通信协议(CAN, LIN, Ethernet)，包括协议转换、路由管理、安全检查等功能。",
-                "sample_docs": []
             }
         ]
 
@@ -579,7 +927,7 @@ class LLMRAGGenerator:
                 print(f"📝 需求描述: {selected['description']}")
 
                 if selected['sample_docs']:
-                    print(f"📁 示例文档: {', '.join(selected['sample_docs'])}")
+                    print(f"📚 示例文档: {', '.join(selected['sample_docs'])}")
                     print("⚠️ 注意: 请确保示例文档存在，或使用'upload'命令上传您自己的文档")
 
                 self.demo_mode = True
@@ -611,51 +959,23 @@ class LLMRAGGenerator:
 - 支持格式: PDF, Word, TXT, MD, PNG, JPG等
 - 最大20MB，支持批量上传（逗号分隔路径）
 
-💡 需求描述示例:
-
-🔹 单组件场景:
-- "设计一个温度监控组件，读取传感器数据并输出状态"
-- "创建一个电机控制组件，接收控制指令并调节转速"
-
-🔹 多组件场景:
-- "设计一个多组件数据融合系统，包括数据采集、处理、输出组件"
-- "创建一个完整的控制系统，需要传感器组件、控制器组件、执行器组件"
-
-🔹 基于文档:
-- 先使用'upload'上传需求文档
-- 然后输入："基于上传的文档设计AUTOSAR系统"
-
 🎛️ 特殊命令:
 - 'upload' : 上传文档文件
 - 'clear'  : 清除已上传的文档
 - 'demo'   : 运行演示模式
+- 'batch'  : 批量实验模式（RQ2）✨
+- 'analyze': 分析已有指标 ✨
 - 'help'   : 显示此帮助信息
 - 'stats'  : 显示系统统计信息
 - 'quit'   : 退出程序
 
-📋 反馈指南:
-- 确认设计: "确认"、"同意"、"可以"
-- 修改设计: "修改组件名称为XXX"、"改变接口类型"、"增加一个组件"
-- 添加元素: "添加一个传感器组件"、"增加一个服务接口"
-- 删除元素: "删除第二个组件"、"去掉这个接口"
-
-🚀 新特性 (本版本):
-- ✅ 支持PDF/Word/图片文档上传作为需求输入
-- ✅ 文档内容自动提取和分析
-- ✅ 基于文档的架构设计优化
-- ✅ 支持多组件架构设计和生成
-- ✅ 动态从KG查询XML结构生成Schema
-- ✅ 确保实例引用的唯一性和一致性
-
-📁 输出文件:
-- 单组件: arxml_xxxxxxxx_timestamp.json
-- 多组件: 每个组件单独保存 + 会话摘要
-- 所有文件保存在 output/ 目录
-
-🔧 KG集成:
-- 如果配置了Neo4j，系统会动态查询元模型信息
-- 如果没有KG，系统会使用内置的模拟数据
-- 约束规则也会从KG动态查询
+📚 批量实验模式:
+- 自动读取 nlp_require/ 目录下的需求文件
+- 支持 simple.json, middle.json, complex.json
+- 自动执行 Round1 + Round2
+- 生成的ARXML保存到 generated_arxml/
+- 指标保存到 output/mark/
+- 使用 'analyze' 命令分析指标
 """
         print(help_text)
 
@@ -677,13 +997,6 @@ class LLMRAGGenerator:
             print(f"  活跃会话: {conv_stats.get('active_sessions', 0)}")
             print(f"  成功率: {conv_stats.get('success_rate', 0):.2%}")
 
-            # 记忆管理器统计
-            memory_stats = stats.get("memory_manager", {})
-            if memory_stats:
-                print(f"\n记忆统计:")
-                print(f"  活跃会话: {memory_stats.get('active_sessions', 0)}")
-                print(f"  对话轮次: {memory_stats.get('total_conversations', 0)}")
-
             # LLM客户端统计
             llm_stats = stats.get("llm_client", {})
             if llm_stats:
@@ -691,25 +1004,6 @@ class LLMRAGGenerator:
                 print(f"  API调用次数: {llm_stats.get('call_count', 0)}")
                 print(f"  总Token使用: {llm_stats.get('total_tokens', 0)}")
                 print(f"  错误次数: {llm_stats.get('error_count', 0)}")
-                if llm_stats.get('call_count', 0) > 0:
-                    avg_tokens = llm_stats.get('total_tokens', 0) / llm_stats.get('call_count', 1)
-                    print(f"  平均Token/调用: {avg_tokens:.0f}")
-
-            # 文档处理统计
-            doc_info = self.document_processor.get_uploaded_files_info()
-            if doc_info:
-                print(f"\n文档统计:")
-                print(f"  已上传文档: {len(doc_info)}")
-                for doc in doc_info:
-                    print(f"    - {doc['name']} ({doc['state']})")
-
-            # 约束引擎统计
-            constraint_stats = stats.get("constraint_engine", {})
-            if constraint_stats:
-                print(f"\n约束引擎统计:")
-                print(f"  缓存条目: {constraint_stats.get('cache_entries', 0)}")
-                print(f"  缓存约束: {constraint_stats.get('total_cached_constraints', 0)}")
-                print(f"  KG连接: {'是' if constraint_stats.get('kg_connected', False) else '否'}")
 
         except Exception as e:
             print(f"❌ 获取统计信息失败: {e}")
@@ -756,7 +1050,8 @@ class LLMRAGGenerator:
             print(f"⚠️ 清理时发生错误: {e}")
 
         print("👋 感谢使用AUTOSAR组件设计助手!")
-        print("🚀 新版本特性: 文档上传 + 多组件生成 + 动态KG查询 + 实例引用管理")
+        print("🚀 新版本特性: 文档上传 + 多组件生成 + 动态KG查询 + 实例引用管理 + 批量实验")
+
 
 def check_environment():
     """检查运行环境"""
@@ -771,23 +1066,12 @@ def check_environment():
     # 检查API密钥
     if not CONFIG.llm.api_key:
         print("❌ LLM_API_KEY环境变量未设置")
-        print("请设置Gemini API密钥:")
+        print("请设置API密钥:")
         print("  export LLM_API_KEY='your_api_key'")
         return False
 
     # 检查输出目录
     CONFIG.output_dir.mkdir(exist_ok=True, parents=True)
-
-    # 测试LLM连接
-    # try:
-    #     from src.llm_generation.llm.gemini_client import GeminiClient
-    #     client = GeminiClient()
-    #     if not client.test_connection():
-    #         print("⚠️ LLM API连接测试失败，但程序将继续运行")
-    #     else:
-    #         print("✅ LLM API连接正常")
-    # except Exception as e:
-    #     print(f"⚠️ LLM连接测试异常: {e}")
 
     # 测试KG连接（可选）
     try:

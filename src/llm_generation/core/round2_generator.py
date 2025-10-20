@@ -11,7 +11,7 @@ import uuid as uuid_module
 from typing import Dict, List, Any, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
-
+from copy import deepcopy
 from ..config import CONFIG
 from ..llm.openai_client import OpenAIClient as GeminiClient
 # from ..llm.gemini_client import GeminiClient
@@ -52,11 +52,9 @@ class Round2Generator:
         """
 
         start_time = time.time()
-        component_plans = architecture_design.component_plan or []
+        component_plans_map = {comp['name']: comp for comp in (architecture_design.component_plan or [])}
         interface_plans = architecture_design.interface_plan or []
 
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] Round2逐组件模式：{len(component_plans)} 个组件，{len(interface_plans)} 个接口")
 
         # 1) 准备接口 Schema（用于接口实例的强校验）
         interface_schema = self.query_engine.generate_multi_interface_schema(interface_plans)
@@ -83,6 +81,7 @@ class Round2Generator:
                 iface_resp, in_tok_i, out_tok_i, ttl_tok_i = self.gemini_client.generate_with_schema(
                     prompt=interfaces_prompt,
                     schema=interface_schema,  # 直接用接口 Schema 做强校验
+                    temperature=CONFIG.llm.get_temperature('interface'),
                     max_retries=3
                 )
                 # 保存接口响应
@@ -103,15 +102,10 @@ class Round2Generator:
                         pass
                 # 注入供后续 XML 转换
                 merged_json["_interfaces"] = normalized_ifaces
+
                 # ↓↓↓ 新增：为组件 Prompt 构建只读“接口实例索引”
-                iface_index_for_prompt = [
-                    {
-                        "name": name,
-                        "type": data.get("_type", ""),
-                        "path": f"/Interfaces/{name}"
-                    }
-                    for name, data in (normalized_ifaces or {}).items()
-                ]
+                iface_index_for_prompt = self._build_detailed_interface_index(normalized_ifaces)
+
                 # 若接口阶段失败或为空，则退化为基于 Round1 计划的索引（不新增函数，局部就地处理）
                 if not iface_index_for_prompt:
                     iface_index_for_prompt = [
@@ -127,16 +121,49 @@ class Round2Generator:
                 if CONFIG.debug_mode:
                     print(f"[WARNING] 接口实例生成失败，将跳过接口：{e}")
 
-        # 3) 查询全局约束集合（随后按组件过滤）
-        constraints_all = self._query_comprehensive_constraints(component_plans, interface_plans)
-        standard_types = self._prepare_standard_types()
+
 
         # 4) 逐组件生成
-        for comp in component_plans:
+        generation_order = architecture_design.component_generation_order
+        if not generation_order or len(generation_order) != len(component_plans_map):
+            if CONFIG.debug_mode:
+                print("[WARNING] Round 1未提供有效生成顺序，将按默认顺序执行。")
+            ordered_component_plans = architecture_design.component_plan or []
+        else:
+            ordered_component_plans = [component_plans_map[name] for name in generation_order if
+                                       name in component_plans_map]
+
+        if CONFIG.debug_mode:
+            print(f"[DEBUG] 组件生成顺序: {[comp['name'] for comp in ordered_component_plans]}")
+
+        # 3) 查询全局约束集合（随后按组件过滤）
+        constraints_all = self._query_comprehensive_constraints(ordered_component_plans, interface_plans)
+        standard_types = self._prepare_standard_types()
+
+        # 4.b) 初始化用于累积实例路径的字典
+        known_instance_paths: Dict[str, List[str]] = {}
+        if iface_index_for_prompt:
+            for item in iface_index_for_prompt:
+                item_type = item.get("type")
+                item_path = item.get("path")
+                if item_type and item_path:
+                    known_instance_paths.setdefault(item_type, []).append(item_path)
+
+        if CONFIG.debug_mode and known_instance_paths:
+            print(f"[DEBUG] 已预加载 {len(iface_index_for_prompt)} 条接口实例路径用于Schema注入。")
+        # **********************************
+
+        for comp in ordered_component_plans:
             comp_name = comp.get("name", "Component")
             # 4.1 单组件 Schema
             comp_schema = self._build_single_component_schema(comp)
-            self._save_component_schema_to_file(comp_name, comp_schema)
+            self._save_component_schema_to_file(comp_name, comp_schema)  # 保存原生Schema
+
+            # 4.2 (新) 将已知的路径注入当前组件的Schema，生成增强版Schema
+            enhanced_schema = self._inject_paths_into_schema(comp_schema, known_instance_paths)
+            if CONFIG.debug_mode and known_instance_paths:
+                # 可以选择性保存增强后的Schema用于调试
+                self._save_component_schema_to_file(f"{comp_name}_enhanced", enhanced_schema)
 
             # 4.2 过滤与该组件相关的约束
             constraints = self._filter_constraints_for_component(comp, constraints_all)
@@ -147,11 +174,13 @@ class Round2Generator:
                 comp_plan=comp,
                 interface_plans=interface_plans,
                 constraints=constraints,
-                component_schema=comp_schema,
+                component_schema=enhanced_schema,
                 interface_index=iface_index_for_prompt,
                 r1_component_design=r1_component_design,
                 memory_context=memory_context or "",
-                architecture_design=architecture_design.__dict__
+                architecture_design=architecture_design.__dict__,
+                # ****** 新增参数: 传递已知路径 ******
+                known_paths=known_instance_paths
             )
             # 类型库与引用规范
             prompt += self._add_direct_reference_guidance(architecture_design)
@@ -159,7 +188,8 @@ class Round2Generator:
             # 4.4 调用 LLM（严格约束该组件 Schema）
             resp, in_tok, out_tok, ttl_tok = self.gemini_client.generate_with_schema(
                 prompt=prompt,
-                schema=comp_schema,
+                schema=enhanced_schema,
+                temperature=CONFIG.llm.get_temperature('round2'),
                 max_retries=3
             )
             self._save_component_prompt_to_file(comp_name, prompt)
@@ -168,6 +198,18 @@ class Round2Generator:
             token_stats["input"] += in_tok
             token_stats["output"] += out_tok
             token_stats["total"] += ttl_tok
+
+            new_paths = self._extract_instance_paths(resp, comp_name)
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 从 {comp_name} 提取到新路径: {new_paths}")
+
+            # 4.6 (新) 将新路径合并到已知路径字典中
+            for path_type, path_list in new_paths.items():
+                known_instance_paths.setdefault(path_type, []).extend(path_list)
+
+            # # 4.7 合并当前组件结果
+            # if isinstance(resp, dict):
+            #     merged_json.update(resp)
 
             # 4.5 合并当前组件结果（顶层只会有一个键 = comp_name）
             if isinstance(resp, dict):
@@ -220,6 +262,154 @@ class Round2Generator:
         # ✅ 强一致：把 Round1 include 的所有子键设为 required（仅对命中的 variant 节点）
         schema = self._enforce_includes_required(comp, schema)
         return schema
+
+    # ****** 泛化后的辅助方法: 提取所有带SHORT-NAME的实例路径 ******
+    def _extract_instance_paths(self, component_json: Dict[str, Any], component_name: str) -> Dict[str, List[str]]:
+        """
+        【修正版】从单个组件的生成结果中，递归提取所有带SHORT-NAME的实例路径。
+        规则：只要一个JSON对象有SHORT-NAME，就认为它是一个可引用的实例。
+        """
+        paths = {}
+        def recurse_children(parent_node: Dict[str, Any], parent_path: str):
+            """
+            【新逻辑】递归函数，只处理 parent_node 的子节点。
+            """
+            for key, value in parent_node.items():
+                if key == "SHORT-NAME":
+                    continue
+                if isinstance(value, dict):
+                    short_name = value.get("SHORT-NAME")
+                    if short_name:
+                        child_path = f"{parent_path}/{short_name}"
+                        child_type = key
+                        paths.setdefault(child_type, []).append(child_path)
+                        recurse_children(value, child_path)
+                elif isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, dict):
+                            short_name = item.get("SHORT-NAME")
+                            if short_name:
+                                child_path = f"{parent_path}/{short_name}"
+                                child_type = key
+                                paths.setdefault(child_type, []).append(child_path)
+                                recurse_children(item, child_path)
+        # 顶层组件处理
+        if component_json and len(component_json) == 1:
+            comp_type_key = next(iter(component_json))
+            root_data = component_json[comp_type_key]
+            # 1. 先正确添加组件自身
+            base_path = f"/Components/{component_name}"
+            paths.setdefault(comp_type_key, []).append(base_path)
+            # 2. 然后调用递归函数处理其【子节点】
+            recurse_children(root_data, base_path)
+        return paths
+    # ****** 修正后的辅助方法 2: 按@DEST精准注入路径到Schema ******
+    def _inject_paths_into_schema(self, schema: Dict[str, Any], known_paths: Dict[str, List[str]]) -> Dict[str, Any]:
+        """
+        【核心逻辑】遍历Schema，找到*-REF字段，并根据其@DEST属性的约束，
+        从known_paths中筛选出类型匹配的路径，注入为#text字段的enum。
+        """
+        if not known_paths:
+            return schema
+        schema_copy = deepcopy(schema)
+        def recurse(node):
+            if not isinstance(node, dict):
+                return
+            # 定位到引用对象的Schema定义 (特征: 包含@DEST和#text)
+            props = node.get("properties", {})
+            if node.get("type") == "object" and "@DEST" in props and "#text" in props:
+                # 1. 读取@DEST允许的类型列表
+                dest_prop_schema = props["@DEST"]
+                # @DEST允许的类型通常在其enum字段中定义
+                allowed_dest_types = dest_prop_schema.get("enum", [])
+                # 如果没有enum定义，我们无法进行安全注入，直接返回
+                if not allowed_dest_types:
+                    return
+                # 2. 根据@DEST允许的类型，从全局路径池(known_paths)中筛选
+                valid_paths_for_this_ref = []
+                for dest_type in allowed_dest_types:
+                    # 如果我们已经提取到了这种类型的实例路径
+                    if dest_type in known_paths:
+                        # 就将这些路径加入到此引用的有效路径列表中
+                        valid_paths_for_this_ref.extend(known_paths[dest_type])
+                # 3. 如果找到了匹配的路径，则注入到#text字段的enum中
+                if valid_paths_for_this_ref:
+                    text_prop_schema = props["#text"]
+                    # 使用set去重并排序，然后注入enum约束
+                    text_prop_schema["enum"] = sorted(list(set(valid_paths_for_this_ref)))
+                    # 还可以加上一个示例，帮助LLM理解
+                    text_prop_schema["examples"] = [valid_paths_for_this_ref[0]]
+            # 递归遍历Schema的所有子节点
+            for key, value in node.items():
+                if isinstance(value, dict):
+                    recurse(value)
+                elif isinstance(value, list):
+                    for item in value:
+                        recurse(item)
+        recurse(schema_copy)
+        return schema_copy
+
+    # ****** 新增辅助方法: 构建包含深层实例的详细接口索引 ******
+    def _build_detailed_interface_index(self, normalized_ifaces: Dict[str, Any]) -> List[Dict[str, str]]:
+        """
+        【修正版】遍历规范化后的接口实例，递归提取所有带SHORT-NAME的子元素，
+        构建一个详细的、可供引用的实例索引。
+        """
+        if not normalized_ifaces:
+            return []
+        detailed_index = []
+        def recurse_children(parent_node: Dict[str, Any], parent_path: str):
+            """
+            【新逻辑】递归函数，只处理 parent_node 的子节点。
+            """
+            # 遍历父节点的所有子元素（由key和value代表）
+            for key, value in parent_node.items():
+                # 跳过非结构化的元数据
+                if key in ["SHORT-NAME", "_type"]:
+                    continue
+                # 处理作为字典的单个子元素
+                if isinstance(value, dict):
+                    short_name = value.get("SHORT-NAME")
+                    if short_name:
+                        # 子元素的路径 = 父路径 / 子元素的名字
+                        child_path = f"{parent_path}/{short_name}"
+                        # 子元素的类型 = 它在父节点中的key
+                        child_type = key
+                        detailed_index.append({
+                            "name": short_name,
+                            "type": child_type,
+                            "path": child_path
+                        })
+                        # 继续向下递归，处理这个子元素的子节点
+                        recurse_children(value, child_path)
+                # 处理作为列表的多个子元素
+                elif isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, dict):
+                            short_name = item.get("SHORT-NAME")
+                            if short_name:
+                                child_path = f"{parent_path}/{short_name}"
+                                # 列表中所有元素的类型都由列表的key决定
+                                child_type = key
+                                detailed_index.append({
+                                    "name": short_name,
+                                    "type": child_type,
+                                    "path": child_path
+                                })
+                                recurse_children(item, child_path)
+        # 从每个顶层接口开始遍历
+        for name, data in normalized_ifaces.items():
+            interface_type = data.get("_type")
+            interface_path = f"/Interfaces/{name}"
+            # 1. 先正确添加顶层接口自身
+            detailed_index.append({
+                "name": name,
+                "type": interface_type,
+                "path": interface_path
+            })
+            # 2. 然后调用递归函数来处理它的【子节点】
+            recurse_children(data, interface_path)
+        return detailed_index
 
     def _enforce_includes_required(self, comp_plan: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -347,16 +537,6 @@ class Round2Generator:
                 "path": compu_path,
                 "name": compu.name,
                 "category": compu.category
-            })
-
-        # 注意：SW-BASE-TYPE不应直接被接口引用，仅供参考
-        for base_type_name, base_type in self.standard_type_manager.base_types.items():
-            base_types.append({
-                "path": f"/AUTOSAR_Platform/BaseTypes/{base_type.name}",
-                "name": base_type.name,
-                "size": base_type.size,
-                "encoding": base_type.encoding,
-                "note": "仅供IMPLEMENTATION-DATA-TYPE内部引用，接口不应直接使用"
             })
 
         result = {
@@ -487,53 +667,6 @@ class Round2Generator:
             print(f"[DEBUG] 查询到{len(constraints)}条约束规则")
 
         return constraints
-
-    def _convert_to_arxml(
-        self,
-        json_data: Dict[str, Any],
-        architecture_design: ArchitectureDesign
-    ) -> str:
-        """转换JSON为ARXML格式 - 保持原有实现"""
-
-        # 创建AUTOSAR根元素
-        root = Element("AUTOSAR")
-        root.set("xmlns", "http://autosar.org/schema/r4.0")
-        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-        root.set("xsi:schemaLocation", "http://autosar.org/schema/r4.0 AUTOSAR_4-3-0.xsd")
-
-        # AR-PACKAGES
-        ar_packages = SubElement(root, "AR-PACKAGES")
-
-        # Components包
-        comp_package = SubElement(ar_packages, "AR-PACKAGE")
-        SubElement(comp_package, "SHORT-NAME").text = "Components"
-        comp_elements = SubElement(comp_package, "ELEMENTS")
-
-        # Interfaces包
-        intf_package = SubElement(ar_packages, "AR-PACKAGE")
-        SubElement(intf_package, "SHORT-NAME").text = "Interfaces"
-        intf_elements = SubElement(intf_package, "ELEMENTS")
-
-        # 添加所有组件
-        for comp_name, comp_data in json_data.items():
-            if isinstance(comp_data, dict) and not comp_name.startswith("_"):
-                self._add_component_to_xml(comp_elements, comp_name, comp_data)
-
-        # 添加接口（如果在响应中定义）
-        if "_interfaces" in json_data:
-            for intf_name, intf_data in json_data["_interfaces"].items():
-                self._add_interface_to_xml(intf_elements, intf_name, intf_data)
-
-        # 格式化输出
-        rough_string = tostring(root, encoding='unicode')
-        reparsed = minidom.parseString(rough_string)
-
-        # 优化格式化
-        pretty_xml = reparsed.toprettyxml(indent="  ")
-
-        # 移除多余的空行
-        lines = [line for line in pretty_xml.split('\n') if line.strip()]
-        return '\n'.join(lines)
 
     def _add_component_to_xml(self, parent: Element, comp_name: str, comp_data: Dict[str, Any]):
         """添加组件到XML"""

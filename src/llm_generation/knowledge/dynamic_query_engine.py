@@ -170,6 +170,19 @@ class DynamicQueryEngine:
         self.config = CONFIG.knowledge_graph
         self.driver = None
 
+        # ✅ 新增：特定类型名称的直接映射表（优先级最高）
+        self.DIRECT_TYPE_MAPPINGS = {
+            "BOOLEAN": {
+                "type": "string",
+                "enum": ["true", "false"]  # ⬅️ 限制只能填 "true" 或 "false"
+            },
+            "INTEGER": {"type": "integer"},
+            "DOUBLE": {"type": "number"},
+            "TIME-VALUE": {"type": "number"},
+            "TIMEVALUE": {"type": "number"},
+            "FLOAT": {"type": "number"},
+        }
+
         if NEO4J_AVAILABLE:
             self._init_neo4j_connection()
 
@@ -513,13 +526,30 @@ class DynamicQueryEngine:
         # 基于上述规则过滤属性
         attrs = [a for a in attrs if _keep(a)]
 
-        # --- 修改后的排序逻辑 ---
-        # 使用一个元组 (tuple) 作为排序键。
-        # 第一个元素是优先级 (0 for SHORT-NAME, 1 for others)。
-        # 第二个元素是属性的名称，用于字母排序。
+        # --- 最终版排序逻辑 (含MINIMUM-START-INTERVAL特殊处理) ---
+        def get_final_sort_key(attr_dict: dict) -> str:
+            """
+            根据 wrapper > tag > name 的优先级，获取用于排序的最终键名。
+            """
+            # 优先使用 wrapper_tag
+            key = attr_dict.get("xml_wrapper_tag")
+            if key:
+                return str(key)
+            # 其次使用 xml_tag
+            key = attr_dict.get("xml_tag")
+            if key:
+                return str(key)
+            # 最后使用 name
+            return str(attr_dict.get("name") or "")
+
         attrs.sort(key=lambda a: (
-            0 if _U(a.get("xml_tag") or a.get("name")) == "SHORT-NAME" else 1,
-            _U(a.get("xml_tag") or a.get("name") or "")
+            # 第一部分(优先级)：三级优先级系统
+            0 if _U(get_final_sort_key(a)) == "SHORT-NAME" else
+            1 if _U(get_final_sort_key(a)) == "START-ON-EVENT-REF" else
+            2 if _U(get_final_sort_key(a)) == "MINIMUM-START-INTERVAL" else
+            3,
+            # 第二部分(字母顺序)：仍然使用最终的键名进行排序
+            _U(get_final_sort_key(a))
         ))
 
         props: dict[str, dict] = {}
@@ -545,6 +575,37 @@ class DynamicQueryEngine:
             is_array = _override_container_shape(_U(key), default_is_array)
 
             tname = a.get("type_name") or a.get("type")
+
+            # ============================================================
+            # ✅ 新增：优先检查直接映射表（在所有其他判断之前）
+            # ============================================================
+            if tname:
+                tname_upper = _U(tname)
+                if tname_upper in self.DIRECT_TYPE_MAPPINGS:
+                    # 命中硬编码映射，直接使用
+                    scalar = self.DIRECT_TYPE_MAPPINGS[tname_upper].copy()
+
+                    val = {"type": "array", "items": scalar} if is_array else scalar
+                    if is_array and min_occ > 0:
+                        val.setdefault("minItems", min_occ)
+                        try:
+                            if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                val["maxItems"] = int(max_occ_raw)
+                        except Exception:
+                            pass
+
+                    props[key] = val
+                    if min_occ >= 1:
+                        required.append(key)
+                    if tag:
+                        props[key]["x-xml-tag"] = tag
+                    if wrap and wrap not in COLLAPSED_WRAPPERS:
+                        props[key]["x-xml-wrapper-tag"] = wrap
+
+                    if CONFIG.debug_mode:
+                        print(f"[DEBUG] 直接映射类型: {tname} → {scalar}")
+
+                    continue  # ⚠️ 跳过后续所有判断
 
             # 引用终止（TREF/IREF 或 DEST-only 类）
             if self._is_ref_terminal(session, tname, tag):

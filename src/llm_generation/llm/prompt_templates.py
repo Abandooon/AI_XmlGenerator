@@ -288,7 +288,8 @@ class PromptTemplateManager:
             interface_index: List[Dict[str, Any]],
             r1_component_design: Dict[str, Any],
             memory_context: str = "",
-            architecture_design: Optional[Dict[str, Any]] = None
+            architecture_design: Optional[Dict[str, Any]] = None,
+            known_paths: Optional[Dict[str, List[str]]] = None
     ) -> str:
         """单组件实例 Prompt（整块文本）：
         - 只生成一个组件实例，严格匹配 component_schema
@@ -312,6 +313,16 @@ class PromptTemplateManager:
         comp_schema_json = json.dumps(component_schema or {}, ensure_ascii=False, indent=2)
         r1_design_json = json.dumps(r1_component_design or {}, ensure_ascii=False, indent=2)
 
+        # ****** 新增逻辑: 格式化已知路径为文本 ******
+        known_paths_text = "无。这是第一个生成的组件。"
+        if known_paths:
+            lines = []
+            for path_type, path_list in known_paths.items():
+                lines.append(f"  # 类型: {path_type}")
+                for path in path_list:
+                    lines.append(f"  - {path}")
+            known_paths_text = "\n".join(lines)
+
         prompt = f"""
             你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
             当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
@@ -333,6 +344,13 @@ class PromptTemplateManager:
             ```json
             {iface_index_json}
             ```
+            
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+            {known_paths_text}
+            ```
+            
             Round1 组件设计Schema（完整的 component_plan 条目）
             ```json
             {r1_design_json}
@@ -346,7 +364,7 @@ class PromptTemplateManager:
             在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
             所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
-            数值填写不要加单位，true、false用小写。
+            注意数值填写不要加ms单位，true、false用小写。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
         """.strip()
 

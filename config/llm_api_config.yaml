@@ -8,6 +8,11 @@ llm:
   max_context_tokens: 400000                      # 提升到2M - Gemini支持2M上下文
   # 文件上传功能开关（使用代理API时建议关闭）
   enable_file_upload: false
+  # 分阶段温度配置（新增）
+  stage_temperatures:
+    round1: 0.7    # 架构设计阶段：较低温度，更确定性
+    round2: 0.3    # 详细生成阶段：低温度，严格遵循Schema
+    interface: 0.2 # 接口生成：极低温度，保证格式正确
 
 # ===== 对话系统配置 =====
 conversation:
@@ -133,7 +138,7 @@ round1_schema:
         description: "Triggered when data send completes"
       - name: "OPERATION-INVOKED-EVENT"
         description: "Triggered when operation is called"
-      - name: "MODE-SWITCH-EVENT"
+      - name: "SWC-MODE-SWITCH-EVENT"
         description: "Triggered on mode changes"
       - name: "INIT-EVENT"
         description: "Initialization event"
