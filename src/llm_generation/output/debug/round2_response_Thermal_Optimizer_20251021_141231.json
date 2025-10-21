@@ -1,0 +1,209 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Thermal_Optimizer",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "OptimizationLog_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Thermal_Optimization_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PumpClient_Port",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/PumpControl_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "ValveClient_Port",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/ValveControl_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "TempSensor_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temperature_Sensor_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "CoolingStatus_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Cooling_Status_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Thermal_Optimizer_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Optimize_Runnable",
+          "MINIMUM-START-INTERVAL": 200,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Recv_TemperatureArray",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/TempSensor_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "TemperatureArray"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/TempSensor_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "APPLICATION-ARRAY-ELEMENT",
+                      "#text": "TemperatureArray[12]"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Recv_CoolingStatus",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/CoolingStatus_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "CoolingStatus"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/CoolingStatus_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "CoolingStatus"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_OptimizationPlan",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/OptimizationLog_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "OptimizationPlan"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Thermal_Optimizer/Ports/OptimizationLog_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "OptimizationPlan"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_PumpController",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/Components/Thermal_Optimizer/ExclusiveArea/OptimizeEA"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/Thermal_Optimizer/Ports/PumpClient_Port"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/PumpControl_Interface/SetPump"
+                  }
+                },
+                "TIMEOUT": 150
+              }
+            },
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_ValveController",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/Components/Thermal_Optimizer/ExclusiveArea/OptimizeEA"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/Thermal_Optimizer/Ports/ValveClient_Port"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/ValveControl_Interface/SetValve"
+                  }
+                },
+                "TIMEOUT": 150
+              }
+            }
+          ],
+          "SYMBOL": "Thermal_Optimizer.Optimize_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "INTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "HighLoad_Trigger",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "INTERNAL-TRIGGERING-POINT",
+              "#text": "/Components/Thermal_Optimizer/Triggers/HighLoadTrigger"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Optimizer_Cycle_200ms",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable"
+            },
+            "PERIOD": 200
+          }
+        ]
+      }
+    }
+  }
+}

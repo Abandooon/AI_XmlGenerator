@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Components</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>PWMGenerator</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Status_Out</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Status_Report_Interface</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>PWMCtrl_In</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/PWM_Control_Interface</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>PWMGenerator_Behavior</SHORT-NAME>
+              <EVENTS>
+                <DATA-RECEIVED-EVENT>
+                  <SHORT-NAME>PWM_Command_Received_Event</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/CANInterface/CANInterface_Behavior/CAN_Rx_Handler</START-ON-EVENT-REF>
+                </DATA-RECEIVED-EVENT>
+                <TIMING-EVENT>
+                  <SHORT-NAME>PWM_Hardware_Cycle_Event</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/CANInterface/CANInterface_Behavior/CAN_Rx_Handler</START-ON-EVENT-REF>
+                  <PERIOD>10</PERIOD>
+                </TIMING-EVENT>
+                <TIMING-EVENT>
+                  <SHORT-NAME>HW_Monitor_Cycle_Event</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/CANInterface/CANInterface_Behavior/CAN_Rx_Handler</START-ON-EVENT-REF>
+                  <PERIOD>100</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>PWM_Update</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>10</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Current_Duty</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">CurrentDutyImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/DataPrototypes/CurrentDuty</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-READ-ACCESSS>
+                  <DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Receive_PWM_Command</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/PWMCtrl_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">PWMCommandImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/PWMCtrl_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="ARGUMENT-DATA-PROTOTYPE">/DataPrototypes/PWM_Command</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Send_HW_Status</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">StatusImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="AUTOSAR-DATA-PROTOTYPE">/DataPrototypes/LampStatus</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <DATA-WRITE-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Write_HW_Register</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">HW_Register</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/DataPrototypes/OutputRegister</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-WRITE-ACCESSS>
+                  <SYMBOL>Runnable_PWM_Update</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>HW_Monitor</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>100</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Hardware_Metrics</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">HwMetricsImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="AUTOSAR-DATA-PROTOTYPE">/DataPrototypes/DriverMetrics</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-READ-ACCESSS>
+                  <DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>No_Args</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">NoArgsImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="ARGUMENT-DATA-PROTOTYPE">/DataPrototypes/NoArgs</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Report_Status</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">StatusImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="AUTOSAR-DATA-PROTOTYPE">/DataPrototypes/DriverFaultFlag</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <DATA-WRITE-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Apply_Safety_Action</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">OutputDisableImpl</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/PWMGenerator/Ports/Status_Out</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/DataPrototypes/OutputDisable</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-WRITE-ACCESSS>
+                  <SYMBOL>Runnable_HW_Monitor</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

@@ -1,0 +1,848 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：DataAggregator（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "系统由4个SWC组成：VoltageMonitor、CurrentMonitor、TempMonitor负责各自传感器采样、滤波并通过Sender-Receiver接口发布值；DataAggregator订阅三路数据，执行数据融合与SOC估算，并通过CAN发送电池状态。各监控组件边界仅限于传感器采集与发布，聚合器负责状态推理、阈值检测与上报。",
+  "data_flow_analysis": "VoltageMonitor/CurrentMonitor/TempMonitor各自以Sender-Receiver模式发布单变量信号(Voltage:float, Current:float, Temp:float)。DataAggregator订阅三路信号，按时间戳或最新值聚合到内部状态，计算SOC并构建BatteryState结构{soc,voltage,current,temp,status}，通过同步Client-Server调用CAN发送服务下发到CAN网络。传输时序：采样->本地滤波->发布（各监控周期）->聚合（200ms或数据变动触发）->CAN发送（每200ms或重要事件）。组件间依赖：DataAggregator依赖三监控的SR接口和CAN发送服务。",
+  "timing_requirements": "Voltage采样周期100ms，Current采样周期50ms，Temp采样周期500ms。DataAggregator聚合周期200ms，或在任一输入超阈值/显著变化时触发立即聚合并尝试发送。CAN发送应在调用后20ms内完成响应，整体端到端上报延迟目标≤100ms（典型），关键报警≤50ms。",
+  "scalability_considerations": "设计以模块化组件为单位，可增加更多传感器监控组件或替代聚合算法。接口采用Sender-Receiver和Client-Server标准，可水平扩展至更多数据源或多级聚合器。为将来高采样率增加预留更短的定时事件和可配置缓冲策略。",
+  "complexity_assessment": "Medium"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "VoltageMonitor/CurrentMonitor/TempMonitor各自通过对应Sender-Receiver接口(IF_Voltage_SR,IF_Current_SR,IF_Temp_SR)与DataAggregator相连；DataAggregator通过Client-Server接口(IF_CAN_CLIENT)调用CAN发送服务。RTE映射将各Sender端口作为提供者，DataAggregator为消费者；CAN 服务作为外部服务被DataAggregator作为客户端使用。",
+  "data_flow_paths": "VoltageMonitor -> IF_Voltage_SR -> DataAggregator; CurrentMonitor -> IF_Current_SR -> DataAggregator; TempMonitor -> IF_Temp_SR -> DataAggregator; DataAggregator -> IF_CAN_CLIENT -> CAN Driver -> CAN Bus.",
+  "control_flow_paths": "各监控组件由各自定时事件触发采样（控制流本地）；当DataAggregator的聚合Runnable完成后发起同步控制调用至CAN发送服务；异常/报警可从监控组件触发DataAggregator的紧急聚合和立即CAN发送。"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "IF_Voltage_SR",
+    "name": "Voltage_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略（no queue），典型发布频率100ms，最大允许传输抖动10ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "VoltageMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "端到端延迟目标≤100ms，订阅侧需在200ms内读取到最新值；错误处理为有效位/timeout标志",
+    "data_elements": [
+      "Voltage_Volt:float"
+    ],
+    "direct_paths": "VoltageMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_Current_SR",
+    "name": "Current_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略，典型发布频率50ms，最大抖动10ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "CurrentMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "订阅侧需在100ms内获得更新；当检测到过流报警必须立即触发聚合器紧急上报流程",
+    "data_elements": [
+      "Current_Amp:float",
+      "Overcurrent_Flag:uint8"
+    ],
+    "direct_paths": "CurrentMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_Temp_SR",
+    "name": "Temp_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略，典型发布频率500ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "TempMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "延迟容忍度较高，订阅侧需在1s内读到更新；高温报警触发紧急上报",
+    "data_elements": [
+      "Temp_Celsius:float",
+      "Overtemp_Flag:uint8"
+    ],
+    "direct_paths": "TempMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_CAN_CLIENT",
+    "name": "CAN_Send_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步Client-Server，request-response，调用阻塞等待响应，超时20ms，重试策略在上层决定",
+    "data_category": "control",
+    "connected_components": [
+      "DataAggregator"
+    ],
+    "performance_requirements": "调用成功并返回应在≤50ms内完成以满足上报时序；失败时应支持重试一次并上报错误状态",
+    "data_elements": [
+      "BatteryState:{soc:float,voltage:float,current:float,temp:float,status:uint8}"
+    ],
+    "direct_paths": "DataAggregator -> CAN_Send_Service (Client-Server) -> CAN Driver -> CAN Controller"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "Voltage_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Voltage_SR"
+  },
+  {
+    "name": "Current_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Current_SR"
+  },
+  {
+    "name": "Temp_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Temp_SR"
+  },
+  {
+    "name": "CAN_Send_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/CAN_Send_Service"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/Voltage_SR
+  - /Interfaces/Current_SR
+  - /Interfaces/Temp_SR
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/CAN_Send_Service
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/VoltageMonitor
+  - /Components/CurrentMonitor
+  - /Components/TempMonitor
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/VoltageMonitor/VoltageMonitorBehavior
+  - /Components/CurrentMonitor/CurrentMonitorBehavior
+  - /Components/TempMonitor/TempMonitorBehavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable
+  - /Components/CurrentMonitor/CurrentMonitorBehavior/Current_Read_Runnable
+  - /Components/TempMonitor/TempMonitorBehavior/Temp_Read_Runnable
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "comp_data_aggregator",
+  "name": "DataAggregator",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "订阅电压/电流/温度，执行数据融合与SOC估算，生成BatteryState并通过CAN发送服务上报",
+  "estimated_complexity": "Medium",
+  "port_estimates": {
+    "input_ports": "3 Sender-Receiver input ports (Voltage_SR, Current_SR, Temp_SR)",
+    "output_ports": "1 Client-Server port用于调用CAN发送服务"
+  },
+  "behavioral_characteristics": "以200ms定时或输入显著变化触发聚合；读取各输入最新值，执行数据一致性校验与简单滤波，运行SOC估计算法（基于开路电压与积分校正的轻量实现），生成BatteryState并通过同步Client-Server调用CAN发送服务。维护内部缓存、时间戳和报警状态机（OK/WARNING/FAULT），支持阈值触发紧急上报。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE"
+      ],
+      "details": "三个R-port用于订阅Voltage/Current/Temp SR接口；一个P-port或Client-Server端口用于调用CAN发送服务"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "TIMING-EVENT",
+          "name": "Aggregation_Timer",
+          "trigger": "Periodic 200ms"
+        },
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "Input_Data_Received",
+          "trigger": "Any subscribed SR input update"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Aggregation_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-VALUES",
+              "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "从Voltage_SR/Current_SR/Temp_SR读取最新值"
+                }
+              ],
+              "notes": "接收三路传感器最新值"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "本地生成BatteryState并准备发送（映射到CAN发送服务的输入）"
+                }
+              ],
+              "notes": "将BatteryState交给CAN发送点或本地端口"
+            },
+            {
+              "key": "SERVER-CALL-POINTS",
+              "wrapper": "SERVER-CALL-POINTS",
+              "preselect": [
+                {
+                  "of": "SERVER-CALL-POINTS",
+                  "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                  "include": [
+                    "OPERATION-IREF",
+                    "TIMEOUT"
+                  ],
+                  "notes": "同步调用CAN发送服务，将BatteryState PDU传出"
+                }
+              ],
+              "notes": "调用CAN传输服务"
+            }
+          ],
+          "notes": "执行读取、融合、SOC计算、状态评估并触发CAN发送"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "IF_Voltage_SR",
+    "IF_Current_SR",
+    "IF_Temp_SR",
+    "IF_CAN_CLIENT"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "DataAggregator"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_Send_Service",
+                          "/Interfaces/Current_SR",
+                          "/Interfaces/Temp_SR",
+                          "/Interfaces/Voltage_SR"
+                        ],
+                        "examples": [
+                          "/Interfaces/CAN_Send_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_Send_Service",
+                          "/Interfaces/Current_SR",
+                          "/Interfaces/Temp_SR",
+                          "/Interfaces/Voltage_SR"
+                        ],
+                        "examples": [
+                          "/Interfaces/CAN_Send_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-VALUES": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SERVER-CALL-POINTS": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "SYNCHRONOUS-SERVER-CALL-POINT": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "OPERATION-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-R-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE",
+                                        "R-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-R-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-REQUIRED-OPERATION-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "CLIENT-SERVER-OPERATION"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-REQUIRED-OPERATION-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-R-PORT-REF",
+                                "TARGET-REQUIRED-OPERATION-REF"
+                              ],
+                              "x-xml-tag": "OPERATION-IREF"
+                            },
+                            "TIMEOUT": {
+                              "type": "number",
+                              "x-xml-tag": "TIMEOUT"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "OPERATION-IREF",
+                            "SHORT-NAME",
+                            "TIMEOUT"
+                          ],
+                          "x-xml-tag": "SYNCHRONOUS-SERVER-CALL-POINT"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "SYNCHRONOUS-SERVER-CALL-POINT"
+                      ]
+                    },
+                    "x-xml-tag": "SERVER-CALL-POINTS"
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-VALUES",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SERVER-CALL-POINTS",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CurrentMonitor/CurrentMonitorBehavior/Current_Read_Runnable",
+                              "/Components/TempMonitor/TempMonitorBehavior/Temp_Read_Runnable",
+                              "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CurrentMonitor/CurrentMonitorBehavior/Current_Read_Runnable",
+                              "/Components/TempMonitor/TempMonitorBehavior/Temp_Read_Runnable",
+                              "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：DataAggregator。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

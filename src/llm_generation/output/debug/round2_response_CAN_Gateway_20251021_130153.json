@@ -1,0 +1,163 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CAN_Gateway",
+    "PORTS": {
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PR_CAN_Gateway_Interface",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Gateway_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "PR_BrakeActuator_Service",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/BrakeActuator_Service"
+          }
+        },
+        {
+          "SHORT-NAME": "PR_SteeringMotor_Service",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/SteeringMotor_Service"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Safety_Status",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Safety_Status"
+          }
+        },
+        {
+          "SHORT-NAME": "R_CanBus_WheelSpeed",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CanBus_WheelSpeed"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CAN_Gateway_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "CAN_Forward_Runnable",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_Rx_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "PR-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Gateway/Ports/PR_CAN_Gateway_Interface"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CAN_Frame_Rx"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_Tx_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "PR-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Gateway/Ports/PR_CAN_Gateway_Interface"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CAN_Frame_Tx"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Can_Gateway_CAN_Forward_Runnable"
+        },
+        {
+          "SHORT-NAME": "CAN_Periodic_Send_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Periodic_Config_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Gateway/Ports/R_Safety_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/GatewayConfig"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Periodic_Tx_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "PR-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Gateway/Ports/PR_CAN_Gateway_Interface"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CAN_Frame_Tx"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Can_Gateway_CAN_Periodic_Send_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Rx_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Gateway/SwcInternalBehavior/CAN_Forward_Runnable"
+            }
+          }
+        ],
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Tx_Complete",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Gateway/SwcInternalBehavior/CAN_Periodic_Send_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/CAN_Gateway/SwcInternalBehavior/CAN_Forward_Runnable/DATA-SEND-POINTS/CAN_Tx_Access"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

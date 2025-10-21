@@ -1,0 +1,149 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "EPS_Controller",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PSafetyStatus_Pub",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Safety_Status"
+          }
+        },
+        {
+          "SHORT-NAME": "PCAN_Gateway_Pub",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Gateway_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RSteeringMotor_Client",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/SteeringMotor_Service"
+          }
+        },
+        {
+          "SHORT-NAME": "RWheelSpeed_Sr",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CanBus_WheelSpeed"
+          }
+        },
+        {
+          "SHORT-NAME": "RSafety_Status_Sub",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Safety_Status"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "EPS_Controller_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "EPS_Control_Runnable",
+          "MINIMUM-START-INTERVAL": 5,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "SteeringAngle_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/EPS_Controller/Ports/RSteeringMotor_Client"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/SteeringAngle"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "WheelSpeed_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/EPS_Controller/Ports/RWheelSpeed_Sr"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "APPLICATION-ARRAY-ELEMENT",
+                      "#text": "/DataTypes/WheelSpeed_Array4"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VehicleSpeed_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/EPS_Controller/Ports/RSafety_Status_Sub"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/VehicleSpeed"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_SteeringMotor_SetTorque",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/ExclusiveAreas/EPS_ExclArea1"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/EPS_Controller/Ports/RSteeringMotor_Client"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/SteeringMotor_Service/Operations/SetSteeringTorque"
+                  }
+                },
+                "TIMEOUT": 10
+              }
+            }
+          ],
+          "SYMBOL": "EPS_Control_Runnable_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Steering_Input_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "EPS_Main_5ms",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/ABS_Controller/ABS_Controller_Behavior/ABS_Control_Runnable"
+            },
+            "PERIOD": 5
+          }
+        ]
+      }
+    }
+  }
+}

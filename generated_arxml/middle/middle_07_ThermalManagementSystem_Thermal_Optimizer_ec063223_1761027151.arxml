@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Components</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>Thermal_Optimizer</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>OptimizationLog_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/Thermal_Optimization_Interface</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <PR-PORT-PROTOTYPE>
+              <SHORT-NAME>PumpClient_Port</SHORT-NAME>
+              <PROVIDED-REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/PumpControl_Interface</PROVIDED-REQUIRED-INTERFACE-TREF>
+            </PR-PORT-PROTOTYPE>
+            <PR-PORT-PROTOTYPE>
+              <SHORT-NAME>ValveClient_Port</SHORT-NAME>
+              <PROVIDED-REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/ValveControl_Interface</PROVIDED-REQUIRED-INTERFACE-TREF>
+            </PR-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>TempSensor_In</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Temperature_Sensor_Interface</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+            <R-PORT-PROTOTYPE>
+              <SHORT-NAME>CoolingStatus_In</SHORT-NAME>
+              <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Cooling_Status_Interface</REQUIRED-INTERFACE-TREF>
+            </R-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>Thermal_Optimizer_Behavior</SHORT-NAME>
+              <EVENTS>
+                <INTERNAL-TRIGGER-OCCURRED-EVENT>
+                  <SHORT-NAME>HighLoad_Trigger</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable</START-ON-EVENT-REF>
+                  <EVENT-SOURCE-REF DEST="INTERNAL-TRIGGERING-POINT">/Components/Thermal_Optimizer/Triggers/HighLoadTrigger</EVENT-SOURCE-REF>
+                </INTERNAL-TRIGGER-OCCURRED-EVENT>
+                <TIMING-EVENT>
+                  <SHORT-NAME>Optimizer_Cycle_200ms</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable</START-ON-EVENT-REF>
+                  <PERIOD>200</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>Optimize_Runnable</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>200</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-RECEIVE-POINT-BY-VALUES>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Recv_TemperatureArray</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/TempSensor_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">TemperatureArray</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/TempSensor_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="APPLICATION-ARRAY-ELEMENT">TemperatureArray[12]</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Recv_CoolingStatus</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/CoolingStatus_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">CoolingStatus</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/CoolingStatus_In</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="AUTOSAR-DATA-PROTOTYPE">CoolingStatus</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-RECEIVE-POINT-BY-VALUES>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Send_OptimizationPlan</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/OptimizationLog_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="IMPLEMENTATION-DATA-TYPE-ELEMENT">OptimizationPlan</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IN-IMPL-DATATYPE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/OptimizationLog_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="DATA-PROTOTYPE">OptimizationPlan</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <SERVER-CALL-POINTS>
+                    <SYNCHRONOUS-SERVER-CALL-POINT>
+                      <SHORT-NAME>Call_PumpController</SHORT-NAME>
+                      <CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA-NESTING-ORDER">/Components/Thermal_Optimizer/ExclusiveArea/OptimizeEA</CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF>
+                      <OPERATION-IREF>
+                        <CONTEXT-R-PORT-REF DEST="PR-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/PumpClient_Port</CONTEXT-R-PORT-REF>
+                        <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Interfaces/PumpControl_Interface/SetPump</TARGET-REQUIRED-OPERATION-REF>
+                      </OPERATION-IREF>
+                      <TIMEOUT>150</TIMEOUT>
+                    </SYNCHRONOUS-SERVER-CALL-POINT>
+                  </SERVER-CALL-POINTS>
+                  <SERVER-CALL-POINTS>
+                    <SYNCHRONOUS-SERVER-CALL-POINT>
+                      <SHORT-NAME>Call_ValveController</SHORT-NAME>
+                      <CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA-NESTING-ORDER">/Components/Thermal_Optimizer/ExclusiveArea/OptimizeEA</CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF>
+                      <OPERATION-IREF>
+                        <CONTEXT-R-PORT-REF DEST="PR-PORT-PROTOTYPE">/Components/Thermal_Optimizer/Ports/ValveClient_Port</CONTEXT-R-PORT-REF>
+                        <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Interfaces/ValveControl_Interface/SetValve</TARGET-REQUIRED-OPERATION-REF>
+                      </OPERATION-IREF>
+                      <TIMEOUT>150</TIMEOUT>
+                    </SYNCHRONOUS-SERVER-CALL-POINT>
+                  </SERVER-CALL-POINTS>
+                  <SYMBOL>Thermal_Optimizer.Optimize_Runnable</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

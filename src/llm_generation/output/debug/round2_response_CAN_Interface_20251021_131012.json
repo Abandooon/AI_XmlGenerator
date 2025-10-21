@@ -1,0 +1,124 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CAN_Interface",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CanSender",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Bus_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "LightingReceiver",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Lighting_SR_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "OTA_Port",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/OTA_ClientServer_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "LinBusReq",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/LIN_Bus_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CAN_Interface_InternalBehavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "CAN_Rx_Dispatch_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Rx_VarAccess_CanFrame",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Interface/Ports/CanSender"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/CAN_Frame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Tx_VarAccess_CanCmd",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Interface/Ports/CanSender"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/CAN_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "CAN_RxDispatch_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/CAN_Rx_Dispatch_Runnable"
+            }
+          }
+        ],
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Sent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/CAN_Rx_Dispatch_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/CAN_Interface/SWCInternalBehavior/CAN_Rx_Dispatch_Runnable/DataSendPoints/Tx_VarAccess_CanCmd"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Send_Queue_Check",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/CAN_Rx_Dispatch_Runnable"
+            },
+            "PERIOD": 10
+          }
+        ]
+      }
+    }
+  }
+}

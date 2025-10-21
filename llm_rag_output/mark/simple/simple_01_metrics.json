@@ -1,0 +1,341 @@
+{
+  "case_id": "simple_1",
+  "system_name": "BasicSensorDataCollector",
+  "complexity": "simple",
+  "requirement": {
+    "system_name": "BasicSensorDataCollector",
+    "description": "采集3个温度传感器数据并通过CAN总线发送",
+    "components_count": 3,
+    "component_types": [
+      "SensorInterface",
+      "DataProcessor",
+      "CANSender"
+    ],
+    "key_requirements": [
+      "SensorInterface读取3路模拟输入",
+      "DataProcessor对原始数据进行滤波和标定",
+      "CANSender将处理后的数据打包为CAN报文",
+      "数据流向：Sensor→Processor→CAN"
+    ]
+  },
+  "start_time": "2025-10-21T12:06:56.861749",
+  "phase1": {
+    "duration": 70.53265261650085,
+    "api_calls": 1,
+    "tokens": 12997,
+    "component_count": 3,
+    "interface_count": 3,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "Sensor_Interface: 读取3路模拟温度传感器并以测量值通过Sender-Receiver端口发布。Data_Processor: 接收原始测量值，执行低通滤波与线性标定，输出处理后的温度值。CAN_Sender: 接收处理后温度数据，打包成CAN报文并调用底层CAN发送接口。职责边界清晰，传感器访问限于Sensor_Interface，算法与状态管理集中在Data_Processor，CAN打包与传输由CAN_Sender负责。",
+        "data_flow_analysis": "数据流: Sensor_Interface -> SensorData_SR_Interface (Sender-Receiver) -> Data_Processor -> ProcessedData_SR_Interface (Sender-Receiver) -> CAN_Sender -> CanIf (外部)。每个数据元素类型: 原始传感器值为 RawTemp (float16/float32)，处理后为 CalibratedTemp (float32)。传输时序: 采样周期100ms，数据在采样后立即通过SR接口可用；处理在收到最新一组原始值后执行并立即输出；CAN打包在收到处理后数据后发送（允许小幅聚合，最长延时200ms）。接口承载的数据类型和通信模式在interface_plan中逐条定义。组件依赖: Data_Processor依赖Sensor_Interface的输出，CAN_Sender依赖Data_Processor输出；CAN_Sender还依赖底层CAN服务（Client-Server调用）。调用链路为定时采样触发 -> Sensor read runnable -> SR发布 -> Processor runnable (接收事件) -> 计算并SR发布 -> CAN runnable (接收/触发) -> 调用CanIf发送。",
+        "timing_requirements": "采样周期: 100ms (Sensor_Interface TIMING-EVENT)。处理时限: 数据从接收至处理完成不超过20ms。CAN发送时延: 从处理完成到调用底层发送不超过50ms；总端到端（采样到总线发出）不超过200ms。接口抖动容忍: ±10ms。若处理或总线占用超时，应以最新值覆盖策略发送。",
+        "scalability_considerations": "系统规模小，设计可横向扩展为更多传感器或更高采样率：端口采用Sender-Receiver模式便于增加数据元素；Data_Processor的runnable可扩展以支持多通道并行处理；CAN_Sender支持多报文打包策略以适配更高通道数。若扩展到大量传感器，需考虑将Data_Processor拆分或增加并发runnable、调整排程与缓冲策略。",
+        "complexity_assessment": "Simple"
+      },
+      "component_plan": [
+        {
+          "component_id": "comp_Sensor_Interface",
+          "name": "Sensor_Interface",
+          "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+          "purpose": "读取3路模拟温度传感器并通过Sender-Receiver端口发布原始测量值。",
+          "estimated_complexity": "Simple",
+          "port_estimates": {
+            "input_ports": "0 (直接访问模拟输入硬件接口由驱动抽象封装)",
+            "output_ports": "1 Sender-Receiver port 包含3个数据元素 (RawTemp1/2/3)"
+          },
+          "behavioral_characteristics": "周期性采样: 以100ms定时触发采样runnable。采样后将三路原始值经最小预处理（标识溢出/故障）写入SR输出端口并发布DATA-SEND事件。无复杂状态机，仅采样/失败统计。数据处理流程: 采样(ADC) → 缓存校验 → 发布到SR端口。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "提供端口，用于向Data_Processor发布三路RawTemp(采用Sender-Receiver)。端口对应数据原型包括 RawTemp1/RawTemp2/RawTemp3 (float32)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Sensor_Sampling_Event",
+                  "trigger": "100ms定时器"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Read_Sensors_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "将RawTemp1/2/3写到SR输出端口"
+                        }
+                      ],
+                      "notes": "触发后读取ADC并通过SR端口发送三路原始温度"
+                    }
+                  ],
+                  "notes": "周期性执行，快速完成采样与发布"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "SensorData_SR_Interface"
+          ]
+        },
+        {
+          "component_id": "comp_Data_Processor",
+          "name": "Data_Processor",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "接收原始传感器数据，执行滤波和标定，输出处理后的温度值供CAN发送组件使用。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "1 Sender-Receiver port (接收3个RawTemp)，或3个独立数据元素",
+            "output_ports": "1 Sender-Receiver port (输出3个CalibratedTemp)"
+          },
+          "behavioral_characteristics": "主要处理逻辑: 对每路数据执行一阶低通滤波（可配置时间常数）并应用线性标定系数。触发条件: 当收到新的RawTemp集合时或每100ms内部触发执行一致性检查。状态管理: 维持每路滤波器状态（上一值、时间戳）并处理失效标志。数据处理流程: 接收RawTemps → 校验有效性 → 应用滤波器 → 线性标定 → 写入Processed SR端口。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-PORT用于接收Sensor_Interface的RawTemp SR数据，P-PORT用于向CAN_Sender发布处理后数据。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "RawTemp_Received_Event",
+                  "trigger": "Sensor SR端口更新"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Processor_Periodic_Check",
+                  "trigger": "100ms备用定时触发，用于故障恢复或超时重算"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Process_Data_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从Sensor_Interface的SR输入端口读取RawTemp1/2/3"
+                        }
+                      ],
+                      "notes": "以参数方式接收三路原始温度"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "将处理后温度写到ProcessedData SR输出端口"
+                        }
+                      ],
+                      "notes": "发送滤波并标定后的温度"
+                    }
+                  ],
+                  "notes": "在接收事件触发或定时检查时运行"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "SensorData_SR_Interface",
+            "ProcessedData_SR_Interface"
+          ]
+        },
+        {
+          "component_id": "comp_CAN_Sender",
+          "name": "CAN_Sender",
+          "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+          "purpose": "接收处理后的温度数据，打包为CAN报文并调用底层CAN发送服务。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "1 Sender-Receiver port (接收3路CalibratedTemp)",
+            "output_ports": "0 (通过Client-Server调用CanIf发送报文)"
+          },
+          "behavioral_characteristics": "主要处理逻辑: 接收ProcessedData后执行报文打包（缩放、量化、CRC/标识），并调用底层CAN发送操作（同步调用带超时）。触发条件: 接收到新的ProcessedData或定时聚合窗口结束（最多200ms）。状态管理: 管理发送队列状态与发送超时重试计数。数据处理流程: 接收ProcessedTemps → 打包为CAN帧 → 调用CanIf_Transmit → 记录发送状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "通过R-PORT接收Data_Processor的ProcessedData SR端口。调用底层CAN服务采用ServerCall (Client-Server)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "ProcessedData_Received_Event",
+                  "trigger": "Data_Processor SR端口更新"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Send_CAN_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从Data_Processor的SR端口接收ProcessedTemps"
+                        }
+                      ],
+                      "notes": "接收并读取处理后的温度数据"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用底层CanIf/CanDrv的Transmit操作（同步，含超时）"
+                        }
+                      ],
+                      "notes": "用于调用CanIf发送CAN报文"
+                    }
+                  ],
+                  "notes": "在收到ProcessedData后打包并同步调用CAN发送"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "ProcessedData_SR_Interface"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if_SensorData_SR",
+          "name": "SensorData_SR_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "Sender-Receiver, 单向从Sensor_Interface到Data_Processor, 异步发布/订阅, 最新值覆盖策略",
+          "data_category": "NATIVE (float32) - RawTemp1, RawTemp2, RawTemp3",
+          "connected_components": [
+            "Sensor_Interface",
+            "Data_Processor"
+          ],
+          "performance_requirements": "更新频率10Hz (100ms)，端到端从发布到可用小于10ms，使用最新值覆盖，异常时通过标志位指示失效。",
+          "data_elements": [
+            "RawTemp1",
+            "RawTemp2",
+            "RawTemp3"
+          ],
+          "direct_paths": "Sensor_Interface.P-Port -> Data_Processor.R-Port (SR mapping)"
+        },
+        {
+          "interface_id": "if_ProcessedData_SR",
+          "name": "ProcessedData_SR_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "Sender-Receiver, 单向从Data_Processor到CAN_Sender, 异步发布/订阅, 最新值覆盖或短队列(1)以减小延时",
+          "data_category": "NATIVE (float32) - CalibratedTemp1/2/3",
+          "connected_components": [
+            "Data_Processor",
+            "CAN_Sender"
+          ],
+          "performance_requirements": "处理后数据在产生后应在50ms内可用于CAN_Sender，允许按需聚合但最大延迟200ms；错误时上报并跳过发送。",
+          "data_elements": [
+            "CalibratedTemp1",
+            "CalibratedTemp2",
+            "CalibratedTemp3"
+          ],
+          "direct_paths": "Data_Processor.P-Port -> CAN_Sender.R-Port (SR mapping)"
+        },
+        {
+          "interface_id": "if_CanIf_Tx",
+          "name": "CanIf_Transmit_Interface",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "Client-Server, CAN_Sender作为Client同步调用底层CanIf Transmit接口，调用带超时和返回状态",
+          "data_category": "OPERATION (PDU/Frame payload + id + length)",
+          "connected_components": [
+            "CAN_Sender"
+          ],
+          "performance_requirements": "调用为同步操作，期望响应<50ms，超时后执行重试或记录错误并继续处理下一个周期。",
+          "data_elements": [
+            "Can_PDU_ID",
+            "Can_Payload",
+            "Can_Length"
+          ],
+          "direct_paths": "CAN_Sender -> CanIf (synchronous operation call)"
+        }
+      ],
+      "component_generation_order": [
+        "Sensor_Interface",
+        "Data_Processor",
+        "CAN_Sender"
+      ],
+      "connection_topology": {
+        "component_connections": "Sensor_Interface (P-PORT) --[SensorData_SR_Interface]--> Data_Processor (R-PORT); Data_Processor (P-PORT) --[ProcessedData_SR_Interface]--> CAN_Sender (R-PORT); CAN_Sender --[CanIf_Transmit_Interface client-server]--> CanIf (外部服务).",
+        "data_flow_paths": "RawTemp1/2/3 (float32) 从Sensor_Interface发布 -> Data_Processor接收并生成CalibratedTemp1/2/3 -> CAN_Sender接收并打包为Can_PDU。",
+        "control_flow_paths": "定时器触发Sensor_Sampling_Event -> Read_Sensors_Runnable -> 发布SR -> RawTemp_Received_Event触发Process_Data_Runnable -> 发布ProcessedData -> ProcessedData_Received_Event触发Send_CAN_Runnable -> 同步调用CanIf.Transmit"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用三组件分层设计以实现职责分离：传感器访问、数据处理、CAN发送。Sender-Receiver用于数据流以降低耦合并简化扩展；Client-Server用于底层CAN调用以支持同步错误检测与超时处理。周期100ms满足采样需求且资源占用低，runables按事件/定时触发以保证响应性与可预测性。",
+        "tradeoff_analysis": "选择SR接口简化数据广播与扩展，但牺牲了部分确定性的交付（采用最新值覆盖策略补偿）。将CAN发送作为独立组件有利于隔离报文打包复杂性，但增加了组件间通信开销。同步调用CanIf便于错误处理，但可能阻塞runnable，需限定超时。",
+        "alternative_considerations": "可将Data_Processor内置于Sensor_Interface以减少通信延迟（适用于严格实时需求），或将CAN打包逻辑合并到Data_Processor以减少组件数量。对高频采样可采用环形缓冲和更细粒度runnable并发执行。",
+        "risk_assessment": "主要风险为CAN发送阻塞导致处理延迟（已通过同步调用超时与最大延时约束缓解）；另风险为ADC读取失败或传感器漂移，已在Data_Processor设计中加入有效性检查与失效标志。若系统扩展，需评估处理并发与内存使用，可能需将Data_Processor拆分或引入优先级调度。"
+      },
+      "session_id": "7a823658-5a22-4579-9a3b-7ebf8294e5fd",
+      "timestamp": "2025-10-21T12:08:07.390411"
+    }
+  },
+  "phase2": {
+    "duration": 115.50379133224487,
+    "tokens": 33185,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Sensor_Interface_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Data_Processor_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Sender_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\SensorData_SR_Interface_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ProcessedData_SR_Interface_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CanIf_Transmit_Interface_8726ca8f_1761019802.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_8726ca8f_1761019802.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-21T12:10:02.905174"
+}

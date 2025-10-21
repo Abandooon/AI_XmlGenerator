@@ -1,0 +1,154 @@
+{
+  "SERVICE-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Bluetooth_Stack",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "BT_Media_Out",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_MediaPlayback"
+          }
+        },
+        {
+          "SHORT-NAME": "BT_Bluetooth_Audio",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_Bluetooth_Audio"
+          }
+        },
+        {
+          "SHORT-NAME": "BT_Phone_Service",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_Phone_Control"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "VR_Command_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_Voice_Command"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Bluetooth_Stack_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Connection_Manager",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "PhoneEvent_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Bluetooth_Stack/Ports/BT_Phone_Service"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataTypes/PhoneEvent"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Async_Dial_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/Bluetooth_Stack/Ports/VR_Command_In"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/IF_Phone_Control/Operations/Dial"
+                  }
+                },
+                "TIMEOUT": 2000
+              }
+            }
+          ],
+          "SYMBOL": "Bluetooth_Stack_Connection_Manager"
+        },
+        {
+          "SHORT-NAME": "Audio_Stream_Runnable",
+          "MINIMUM-START-INTERVAL": 20,
+          "CAN-BE-INVOKED-CONCURRENTLY": "true",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Audio_Out_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Bluetooth_Stack/Ports/BT_Media_Out"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataTypes/AudioChunk"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Async_StartStream_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/Bluetooth_Stack/Ports/VR_Command_In"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/IF_Bluetooth_Audio/Operations/StartStream"
+                  }
+                },
+                "TIMEOUT": 500
+              }
+            }
+          ],
+          "SYMBOL": "Bluetooth_Stack_Audio_Stream_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT": [
+          {
+            "SHORT-NAME": "BT_Async_Call_Return",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "ASYNCHRONOUS-SERVER-CALL-RESULT-POINT",
+              "#text": "/Components/Bluetooth_Stack/AsyncResults/PhoneCallResult"
+            }
+          }
+        ],
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "BT_Data_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

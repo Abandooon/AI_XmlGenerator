@@ -1,0 +1,713 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：Data_Processor（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "Sensor_Interface: 读取3路模拟温度传感器并以测量值通过Sender-Receiver端口发布。Data_Processor: 接收原始测量值，执行低通滤波与线性标定，输出处理后的温度值。CAN_Sender: 接收处理后温度数据，打包成CAN报文并调用底层CAN发送接口。职责边界清晰，传感器访问限于Sensor_Interface，算法与状态管理集中在Data_Processor，CAN打包与传输由CAN_Sender负责。",
+  "data_flow_analysis": "数据流: Sensor_Interface -> SensorData_SR_Interface (Sender-Receiver) -> Data_Processor -> ProcessedData_SR_Interface (Sender-Receiver) -> CAN_Sender -> CanIf (外部)。每个数据元素类型: 原始传感器值为 RawTemp (float16/float32)，处理后为 CalibratedTemp (float32)。传输时序: 采样周期100ms，数据在采样后立即通过SR接口可用；处理在收到最新一组原始值后执行并立即输出；CAN打包在收到处理后数据后发送（允许小幅聚合，最长延时200ms）。接口承载的数据类型和通信模式在interface_plan中逐条定义。组件依赖: Data_Processor依赖Sensor_Interface的输出，CAN_Sender依赖Data_Processor输出；CAN_Sender还依赖底层CAN服务（Client-Server调用）。调用链路为定时采样触发 -> Sensor read runnable -> SR发布 -> Processor runnable (接收事件) -> 计算并SR发布 -> CAN runnable (接收/触发) -> 调用CanIf发送。",
+  "timing_requirements": "采样周期: 100ms (Sensor_Interface TIMING-EVENT)。处理时限: 数据从接收至处理完成不超过20ms。CAN发送时延: 从处理完成到调用底层发送不超过50ms；总端到端（采样到总线发出）不超过200ms。接口抖动容忍: ±10ms。若处理或总线占用超时，应以最新值覆盖策略发送。",
+  "scalability_considerations": "系统规模小，设计可横向扩展为更多传感器或更高采样率：端口采用Sender-Receiver模式便于增加数据元素；Data_Processor的runnable可扩展以支持多通道并行处理；CAN_Sender支持多报文打包策略以适配更高通道数。若扩展到大量传感器，需考虑将Data_Processor拆分或增加并发runnable、调整排程与缓冲策略。",
+  "complexity_assessment": "Simple"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Sensor_Interface (P-PORT) --[SensorData_SR_Interface]--> Data_Processor (R-PORT); Data_Processor (P-PORT) --[ProcessedData_SR_Interface]--> CAN_Sender (R-PORT); CAN_Sender --[CanIf_Transmit_Interface client-server]--> CanIf (外部服务).",
+  "data_flow_paths": "RawTemp1/2/3 (float32) 从Sensor_Interface发布 -> Data_Processor接收并生成CalibratedTemp1/2/3 -> CAN_Sender接收并打包为Can_PDU。",
+  "control_flow_paths": "定时器触发Sensor_Sampling_Event -> Read_Sensors_Runnable -> 发布SR -> RawTemp_Received_Event触发Process_Data_Runnable -> 发布ProcessedData -> ProcessedData_Received_Event触发Send_CAN_Runnable -> 同步调用CanIf.Transmit"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_SensorData_SR",
+    "name": "SensorData_SR_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "Sender-Receiver, 单向从Sensor_Interface到Data_Processor, 异步发布/订阅, 最新值覆盖策略",
+    "data_category": "NATIVE (float32) - RawTemp1, RawTemp2, RawTemp3",
+    "connected_components": [
+      "Sensor_Interface",
+      "Data_Processor"
+    ],
+    "performance_requirements": "更新频率10Hz (100ms)，端到端从发布到可用小于10ms，使用最新值覆盖，异常时通过标志位指示失效。",
+    "data_elements": [
+      "RawTemp1",
+      "RawTemp2",
+      "RawTemp3"
+    ],
+    "direct_paths": "Sensor_Interface.P-Port -> Data_Processor.R-Port (SR mapping)"
+  },
+  {
+    "interface_id": "if_ProcessedData_SR",
+    "name": "ProcessedData_SR_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "Sender-Receiver, 单向从Data_Processor到CAN_Sender, 异步发布/订阅, 最新值覆盖或短队列(1)以减小延时",
+    "data_category": "NATIVE (float32) - CalibratedTemp1/2/3",
+    "connected_components": [
+      "Data_Processor",
+      "CAN_Sender"
+    ],
+    "performance_requirements": "处理后数据在产生后应在50ms内可用于CAN_Sender，允许按需聚合但最大延迟200ms；错误时上报并跳过发送。",
+    "data_elements": [
+      "CalibratedTemp1",
+      "CalibratedTemp2",
+      "CalibratedTemp3"
+    ],
+    "direct_paths": "Data_Processor.P-Port -> CAN_Sender.R-Port (SR mapping)"
+  },
+  {
+    "interface_id": "if_CanIf_Tx",
+    "name": "CanIf_Transmit_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "Client-Server, CAN_Sender作为Client同步调用底层CanIf Transmit接口，调用带超时和返回状态",
+    "data_category": "OPERATION (PDU/Frame payload + id + length)",
+    "connected_components": [
+      "CAN_Sender"
+    ],
+    "performance_requirements": "调用为同步操作，期望响应<50ms，超时后执行重试或记录错误并继续处理下一个周期。",
+    "data_elements": [
+      "Can_PDU_ID",
+      "Can_Payload",
+      "Can_Length"
+    ],
+    "direct_paths": "CAN_Sender -> CanIf (synchronous operation call)"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "SensorData_SR_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/SensorData_SR_Interface"
+  },
+  {
+    "name": "ProcessedData_SR_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/ProcessedData_SR_Interface"
+  },
+  {
+    "name": "CanIf_Transmit_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/CanIf_Transmit_Interface"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/SensorData_SR_Interface
+  - /Interfaces/ProcessedData_SR_Interface
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/CanIf_Transmit_Interface
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/Sensor_Interface
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/Sensor_Interface/Sensor_Interface_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/Sensor_Interface/Sensor_Interface_Behavior/Read_Sensors_Runnable
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "comp_Data_Processor",
+  "name": "Data_Processor",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "接收原始传感器数据，执行滤波和标定，输出处理后的温度值供CAN发送组件使用。",
+  "estimated_complexity": "Medium",
+  "port_estimates": {
+    "input_ports": "1 Sender-Receiver port (接收3个RawTemp)，或3个独立数据元素",
+    "output_ports": "1 Sender-Receiver port (输出3个CalibratedTemp)"
+  },
+  "behavioral_characteristics": "主要处理逻辑: 对每路数据执行一阶低通滤波（可配置时间常数）并应用线性标定系数。触发条件: 当收到新的RawTemp集合时或每100ms内部触发执行一致性检查。状态管理: 维持每路滤波器状态（上一值、时间戳）并处理失效标志。数据处理流程: 接收RawTemps → 校验有效性 → 应用滤波器 → 线性标定 → 写入Processed SR端口。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "R-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE"
+      ],
+      "details": "R-PORT用于接收Sensor_Interface的RawTemp SR数据，P-PORT用于向CAN_Sender发布处理后数据。"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "RawTemp_Received_Event",
+          "trigger": "Sensor SR端口更新"
+        },
+        {
+          "type": "TIMING-EVENT",
+          "name": "Processor_Periodic_Check",
+          "trigger": "100ms备用定时触发，用于故障恢复或超时重算"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Process_Data_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "从Sensor_Interface的SR输入端口读取RawTemp1/2/3"
+                }
+              ],
+              "notes": "以参数方式接收三路原始温度"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "将处理后温度写到ProcessedData SR输出端口"
+                }
+              ],
+              "notes": "发送滤波并标定后的温度"
+            }
+          ],
+          "notes": "在接收事件触发或定时检查时运行"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "SensorData_SR_Interface",
+    "ProcessedData_SR_Interface"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "Data_Processor"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CanIf_Transmit_Interface",
+                          "/Interfaces/ProcessedData_SR_Interface",
+                          "/Interfaces/SensorData_SR_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/CanIf_Transmit_Interface"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CanIf_Transmit_Interface",
+                          "/Interfaces/ProcessedData_SR_Interface",
+                          "/Interfaces/SensorData_SR_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/CanIf_Transmit_Interface"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Sensor_Interface/Sensor_Interface_Behavior/Read_Sensors_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/Sensor_Interface/Sensor_Interface_Behavior/Read_Sensors_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Sensor_Interface/Sensor_Interface_Behavior/Read_Sensors_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/Sensor_Interface/Sensor_Interface_Behavior/Read_Sensors_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：Data_Processor。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

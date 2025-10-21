@@ -1,0 +1,265 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CANComm",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PPort_CAN_BMS_Status",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_BMS_Status"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RPort_CellVoltages",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Cell_Voltages_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_ThermalStatus",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Thermal_Status_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_SOC_SOH",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/SOC_SOH_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_Safety_Events",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "TRIGGER-INTERFACE",
+            "#text": "/Interfaces/Safety_Events_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_ChargeControl",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Charge_Control_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CANComm_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Transmit_Runnable",
+          "MINIMUM-START-INTERVAL": 200,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_CellVoltages",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_CellVoltages"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Cell_Voltages"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_ThermalStatus",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_ThermalStatus"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Thermal_Status"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_SOC_SOH",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_SOC_SOH"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/SOC_SOH"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_SafetyEvents",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_Safety_Events"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Safety_Event"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Rx_Placeholder_Read",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_ChargeControl"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/ChargeRequest_Arg"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_CAN_BMS_Summary",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/PPort_CAN_BMS_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/BMS_Summary"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "RTE_CANComm_TransmitRunnable"
+        },
+        {
+          "SHORT-NAME": "Receive_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_RxMessage",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/PPort_CAN_BMS_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Incoming_CAN_Message"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Map_To_ChargeController",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_ChargeControl"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/ChargeRequest_Arg"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Map_To_SafetyManager",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_Safety_Events"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/SafetyEvent_Arg"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Forward_To_ChargeController",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CANComm/Ports/RPort_ChargeControl"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/ChargeRequest"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "RTE_CANComm_ReceiveRunnable"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Can_Rx_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANComm/SWC-INTERNAL-BEHAVIOR/Receive_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Can_Transmit_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANComm/SWC-INTERNAL-BEHAVIOR/Transmit_Runnable"
+            },
+            "PERIOD": 200
+          }
+        ]
+      }
+    }
+  }
+}

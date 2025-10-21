@@ -1,0 +1,357 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Temperature_Sensor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Left_Sensor1_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Left_SenderReceiver"
+          }
+        },
+        {
+          "SHORT-NAME": "Left_Sensor2_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Left_SenderReceiver"
+          }
+        },
+        {
+          "SHORT-NAME": "Right_Sensor1_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Right_SenderReceiver"
+          }
+        },
+        {
+          "SHORT-NAME": "Right_Sensor2_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Right_SenderReceiver"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Temperature_Sensor_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Read_Sensors_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_Left_Sensor1",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Sensor1_Raw"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/LeftSensor1_ADC"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_Left_Sensor2",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor2_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Sensor2_Raw"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/LeftSensor2_ADC"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_Right_Sensor1",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Sensor1_Raw"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/RightSensor1_ADC"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_Right_Sensor2",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor2_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Sensor2_Raw"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/RightSensor2_ADC"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Store_Left_Sensor1_Buffer",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Sensor1_Buffer"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/LeftSensor1_Buffer"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Store_Left_Sensor2_Buffer",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor2_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Sensor2_Buffer"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/LeftSensor2_Buffer"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Store_Right_Sensor1_Buffer",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Sensor1_Buffer"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/RightSensor1_Buffer"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Store_Right_Sensor2_Buffer",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor2_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Sensor2_Buffer"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/RightSensor2_Buffer"
+                  }
+                }
+              }
+            ]
+          },
+          "INTERNAL-TRIGGERING-POINTS": {
+            "INTERNAL-TRIGGERING-POINT": [
+              {
+                "SHORT-NAME": "Sampling_Timer"
+              }
+            ]
+          },
+          "SYMBOL": "R_ReadSensors"
+        },
+        {
+          "SHORT-NAME": "Filter_Fuse_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_Left_Buffers",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Sensor_Fuse_Input"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/LeftSensor1_Buffer"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_Right_Buffers",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Sensor_Fuse_Input"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/RightSensor1_Buffer"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Publish_Left_Seat_Temperature",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Left_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Left_Seat_Fused_Temperature"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/Left_Seat_Fused"
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Publish_Right_Seat_Temperature",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/Ports/Right_Sensor1_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Components/Temperature_Sensor/DataPrototypes/Right_Seat_Fused_Temperature"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/Temperature_Sensor/LocalVariables/Right_Seat_Fused"
+                  }
+                }
+              }
+            ]
+          },
+          "INTERNAL-TRIGGERING-POINTS": {
+            "INTERNAL-TRIGGERING-POINT": [
+              {
+                "SHORT-NAME": "Filter_Trigger"
+              }
+            ]
+          },
+          "SYMBOL": "R_FilterFuse"
+        }
+      ],
+      "EVENTS": {
+        "DATA-WRITE-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "Publish_Completed_Event_Left",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable/DataSendPoints/VariableAccess/Publish_Left_Seat_Temperature"
+            }
+          },
+          {
+            "SHORT-NAME": "Publish_Completed_Event_Right",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable/DataSendPoints/VariableAccess/Publish_Right_Seat_Temperature"
+            }
+          }
+        ],
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_Calibration_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Runnables/Read_Sensors_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Periodic_Sample_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Runnables/Read_Sensors_Runnable"
+            },
+            "PERIOD": 100
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,612 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "ABS_Controller"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/BrakeActuator_Service",
+                          "/Interfaces/CAN_Gateway_Interface",
+                          "/Interfaces/CanBus_WheelSpeed",
+                          "/Interfaces/Safety_Status",
+                          "/Interfaces/SteeringMotor_Service"
+                        ],
+                        "examples": [
+                          "/Interfaces/BrakeActuator_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/BrakeActuator_Service",
+                          "/Interfaces/CAN_Gateway_Interface",
+                          "/Interfaces/CanBus_WheelSpeed",
+                          "/Interfaces/Safety_Status",
+                          "/Interfaces/SteeringMotor_Service"
+                        ],
+                        "examples": [
+                          "/Interfaces/BrakeActuator_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SERVER-CALL-POINTS": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "SYNCHRONOUS-SERVER-CALL-POINT": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                              "type": "object",
+                              "properties": {
+                                "@DEST": {
+                                  "type": "string",
+                                  "enum": [
+                                    "EXCLUSIVE-AREA-NESTING-ORDER"
+                                  ]
+                                },
+                                "#text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "#text",
+                                "@DEST"
+                              ],
+                              "x-xml-tag": "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                              "additionalProperties": false
+                            },
+                            "OPERATION-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-R-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE",
+                                        "R-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-R-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-REQUIRED-OPERATION-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "CLIENT-SERVER-OPERATION"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-REQUIRED-OPERATION-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-R-PORT-REF",
+                                "TARGET-REQUIRED-OPERATION-REF"
+                              ],
+                              "x-xml-tag": "OPERATION-IREF"
+                            },
+                            "TIMEOUT": {
+                              "type": "number",
+                              "x-xml-tag": "TIMEOUT"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                            "OPERATION-IREF",
+                            "SHORT-NAME",
+                            "TIMEOUT"
+                          ],
+                          "x-xml-tag": "SYNCHRONOUS-SERVER-CALL-POINT"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "SYNCHRONOUS-SERVER-CALL-POINT"
+                      ]
+                    },
+                    "x-xml-tag": "SERVER-CALL-POINTS"
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SERVER-CALL-POINTS",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable",
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Periodic_Send_Runnable",
+                              "/Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable",
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Periodic_Send_Runnable",
+                              "/Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}

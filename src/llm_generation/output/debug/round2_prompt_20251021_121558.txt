@@ -1,0 +1,375 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "系统由4个SWC组成：VoltageMonitor、CurrentMonitor、TempMonitor负责各自传感器采样、滤波并通过Sender-Receiver接口发布值；DataAggregator订阅三路数据，执行数据融合与SOC估算，并通过CAN发送电池状态。各监控组件边界仅限于传感器采集与发布，聚合器负责状态推理、阈值检测与上报。",
+  "data_flow_analysis": "VoltageMonitor/CurrentMonitor/TempMonitor各自以Sender-Receiver模式发布单变量信号(Voltage:float, Current:float, Temp:float)。DataAggregator订阅三路信号，按时间戳或最新值聚合到内部状态，计算SOC并构建BatteryState结构{soc,voltage,current,temp,status}，通过同步Client-Server调用CAN发送服务下发到CAN网络。传输时序：采样->本地滤波->发布（各监控周期）->聚合（200ms或数据变动触发）->CAN发送（每200ms或重要事件）。组件间依赖：DataAggregator依赖三监控的SR接口和CAN发送服务。",
+  "timing_requirements": "Voltage采样周期100ms，Current采样周期50ms，Temp采样周期500ms。DataAggregator聚合周期200ms，或在任一输入超阈值/显著变化时触发立即聚合并尝试发送。CAN发送应在调用后20ms内完成响应，整体端到端上报延迟目标≤100ms（典型），关键报警≤50ms。",
+  "scalability_considerations": "设计以模块化组件为单位，可增加更多传感器监控组件或替代聚合算法。接口采用Sender-Receiver和Client-Server标准，可水平扩展至更多数据源或多级聚合器。为将来高采样率增加预留更短的定时事件和可配置缓冲策略。",
+  "complexity_assessment": "Medium"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "VoltageMonitor/CurrentMonitor/TempMonitor各自通过对应Sender-Receiver接口(IF_Voltage_SR,IF_Current_SR,IF_Temp_SR)与DataAggregator相连；DataAggregator通过Client-Server接口(IF_CAN_CLIENT)调用CAN发送服务。RTE映射将各Sender端口作为提供者，DataAggregator为消费者；CAN 服务作为外部服务被DataAggregator作为客户端使用。",
+  "data_flow_paths": "VoltageMonitor -> IF_Voltage_SR -> DataAggregator; CurrentMonitor -> IF_Current_SR -> DataAggregator; TempMonitor -> IF_Temp_SR -> DataAggregator; DataAggregator -> IF_CAN_CLIENT -> CAN Driver -> CAN Bus.",
+  "control_flow_paths": "各监控组件由各自定时事件触发采样（控制流本地）；当DataAggregator的聚合Runnable完成后发起同步控制调用至CAN发送服务；异常/报警可从监控组件触发DataAggregator的紧急聚合和立即CAN发送。"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "IF_Voltage_SR",
+    "name": "Voltage_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略（no queue），典型发布频率100ms，最大允许传输抖动10ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "VoltageMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "端到端延迟目标≤100ms，订阅侧需在200ms内读取到最新值；错误处理为有效位/timeout标志",
+    "data_elements": [
+      "Voltage_Volt:float"
+    ],
+    "direct_paths": "VoltageMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_Current_SR",
+    "name": "Current_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略，典型发布频率50ms，最大抖动10ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "CurrentMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "订阅侧需在100ms内获得更新；当检测到过流报警必须立即触发聚合器紧急上报流程",
+    "data_elements": [
+      "Current_Amp:float",
+      "Overcurrent_Flag:uint8"
+    ],
+    "direct_paths": "CurrentMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_Temp_SR",
+    "name": "Temp_SR",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步发布-订阅，最新值覆盖策略，典型发布频率500ms",
+    "data_category": "telemetry",
+    "connected_components": [
+      "TempMonitor",
+      "DataAggregator"
+    ],
+    "performance_requirements": "延迟容忍度较高，订阅侧需在1s内读到更新；高温报警触发紧急上报",
+    "data_elements": [
+      "Temp_Celsius:float",
+      "Overtemp_Flag:uint8"
+    ],
+    "direct_paths": "TempMonitor -> (RTE Sender-Receiver) -> DataAggregator"
+  },
+  {
+    "interface_id": "IF_CAN_CLIENT",
+    "name": "CAN_Send_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步Client-Server，request-response，调用阻塞等待响应，超时20ms，重试策略在上层决定",
+    "data_category": "control",
+    "connected_components": [
+      "DataAggregator"
+    ],
+    "performance_requirements": "调用成功并返回应在≤50ms内完成以满足上报时序；失败时应支持重试一次并上报错误状态",
+    "data_elements": [
+      "BatteryState:{soc:float,voltage:float,current:float,temp:float,status:uint8}"
+    ],
+    "direct_paths": "DataAggregator -> CAN_Send_Service (Client-Server) -> CAN Driver -> CAN Controller"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "Voltage_SR",
+              "Current_SR",
+              "Temp_SR"
+            ]
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "DATA-ELEMENTS",
+          "IS-SERVICE"
+        ]
+      },
+      "minItems": 1
+    },
+    "CLIENT-SERVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "CAN_Send_Service"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "OPERATIONS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CLIENT-SERVER-OPERATION": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "CLIENT-SERVER-OPERATION"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "OPERATIONS"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE",
+    "CLIENT-SERVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。

@@ -1,0 +1,78 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "CAN_Rx_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "position",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "speed",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "control_mode",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Motor_Command_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "motor1_cmd",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "motor2_cmd",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "enable",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/boolean"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Diagnostic_Service",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "get_status"
+          },
+          {
+            "SHORT-NAME": "clear_fault"
+          }
+        ]
+      }
+    }
+  ]
+}

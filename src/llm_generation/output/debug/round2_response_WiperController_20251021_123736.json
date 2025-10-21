@@ -1,0 +1,384 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "WiperController",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "State_Output",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/RainSensor_To_WiperController"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Motor_PR",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/WiperControl_To_MotorDriver"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RainSensor_R",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/RainSensor_To_WiperController"
+          }
+        },
+        {
+          "SHORT-NAME": "CAN_R",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_User_Settings"
+          }
+        },
+        {
+          "SHORT-NAME": "MotorClient_R",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/WiperControl_To_MotorDriver"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "WiperController_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Can_Rx_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CanInputVar",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/CAN_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanUserSettings"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/CanSettings"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CanInputVal",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/CAN_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanUserSettings"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/CanSettings"
+                  }
+                }
+              }
+            ]
+          },
+          "MODE-SWITCH-POINTS": {
+            "MODE-SWITCH-POINT": [
+              {
+                "SHORT-NAME": "ModeSwitchPoint_CAN",
+                "MODE-GROUP-IREF": {
+                  "CONTEXT-P-PORT-REF": {
+                    "@DEST": "P-PORT-PROTOTYPE",
+                    "#text": "/Components/WiperController/Ports/State_Output"
+                  },
+                  "TARGET-MODE-GROUP-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/Components/WiperController/ModeGroups/WiperModeGroup"
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [],
+          "SYMBOL": "WIPER_CAN_RX"
+        },
+        {
+          "SHORT-NAME": "Sensor_Process_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "RainArg",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/RainSensor_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/rain_level"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/BufferedRainLevel"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "RainVal",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/RainSensor_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/rain_level"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/BufferedRainLevel"
+                  }
+                }
+              }
+            ]
+          },
+          "MODE-SWITCH-POINTS": {
+            "MODE-SWITCH-POINT": [
+              {
+                "SHORT-NAME": "ModeSwitchPoint_Sensor",
+                "MODE-GROUP-IREF": {
+                  "CONTEXT-P-PORT-REF": {
+                    "@DEST": "P-PORT-PROTOTYPE",
+                    "#text": "/Components/WiperController/Ports/State_Output"
+                  },
+                  "TARGET-MODE-GROUP-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/Components/WiperController/ModeGroups/WiperModeGroup"
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [],
+          "SYMBOL": "WIPER_SENSOR_PROC"
+        },
+        {
+          "SHORT-NAME": "Mode_Manager_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ModeInput",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/CAN_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanUserSettings"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/CurrentMode"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ModeVal",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/CAN_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanUserSettings"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/CurrentMode"
+                  }
+                }
+              }
+            ]
+          },
+          "MODE-SWITCH-POINTS": {
+            "MODE-SWITCH-POINT": [
+              {
+                "SHORT-NAME": "ModeSwitchPoint_Manager",
+                "MODE-GROUP-IREF": {
+                  "CONTEXT-P-PORT-REF": {
+                    "@DEST": "P-PORT-PROTOTYPE",
+                    "#text": "/Components/WiperController/Ports/State_Output"
+                  },
+                  "TARGET-MODE-GROUP-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/Components/WiperController/ModeGroups/WiperModeGroup"
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [],
+          "SYMBOL": "WIPER_MODE_MGR"
+        },
+        {
+          "SHORT-NAME": "Control_Logic_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ControlArgs",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/RainSensor_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/rain_level"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/FilteredRainLevel"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ControlVals",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/WiperController/Ports/CAN_R"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanUserSettings"
+                    }
+                  },
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Components/WiperController/LocalVariables/TargetSpeed"
+                  }
+                }
+              }
+            ]
+          },
+          "MODE-SWITCH-POINTS": {
+            "MODE-SWITCH-POINT": [
+              {
+                "SHORT-NAME": "ModeSwitchPoint_Control",
+                "MODE-GROUP-IREF": {
+                  "CONTEXT-P-PORT-REF": {
+                    "@DEST": "P-PORT-PROTOTYPE",
+                    "#text": "/Components/WiperController/Ports/State_Output"
+                  },
+                  "TARGET-MODE-GROUP-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/Components/WiperController/ModeGroups/WiperModeGroup"
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "CallMotorDriver",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/ExclusiveAreas/WiperControllerEA"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/WiperController/Ports/MotorClient_R"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/WiperControl_To_MotorDriver/Operations/ControlCommand"
+                  }
+                },
+                "TIMEOUT": 20
+              }
+            }
+          ],
+          "SYMBOL": "WIPER_CTRL_LOGIC"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "RainDataReceived",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+            }
+          }
+        ],
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "CANSettingsReceived",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "ControlCycleEvent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+            },
+            "PERIOD": 100
+          }
+        ]
+      }
+    }
+  }
+}

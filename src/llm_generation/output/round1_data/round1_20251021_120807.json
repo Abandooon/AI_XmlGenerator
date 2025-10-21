@@ -1,0 +1,606 @@
+{
+  "session_id": "round1_20251021_120807",
+  "timestamp": "20251021_120807",
+  "user_requirements": "系统名称: BasicSensorDataCollector\n系统描述: 采集3个温度传感器数据并通过CAN总线发送\n组件数量: 3\n组件类型: SensorInterface, DataProcessor, CANSender\n关键需求:\n  - SensorInterface读取3路模拟输入\n  - DataProcessor对原始数据进行滤波和标定\n  - CANSender将处理后的数据打包为CAN报文\n  - 数据流向：Sensor→Processor→CAN",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: BasicSensorDataCollector\n系统描述: 采集3个温度传感器数据并通过CAN总线发送\n组件数量: 3\n组件类型: SensorInterface, DataProcessor, CANSender\n关键需求:\n  - SensorInterface读取3路模拟输入\n  - DataProcessor对原始数据进行滤波和标定\n  - CANSender将处理后的数据打包为CAN报文\n  - 数据流向：Sensor→Processor→CAN\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"small\", \"estimated_components\": 3, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "Sensor_Interface: 读取3路模拟温度传感器并以测量值通过Sender-Receiver端口发布。Data_Processor: 接收原始测量值，执行低通滤波与线性标定，输出处理后的温度值。CAN_Sender: 接收处理后温度数据，打包成CAN报文并调用底层CAN发送接口。职责边界清晰，传感器访问限于Sensor_Interface，算法与状态管理集中在Data_Processor，CAN打包与传输由CAN_Sender负责。",
+      "data_flow_analysis": "数据流: Sensor_Interface -> SensorData_SR_Interface (Sender-Receiver) -> Data_Processor -> ProcessedData_SR_Interface (Sender-Receiver) -> CAN_Sender -> CanIf (外部)。每个数据元素类型: 原始传感器值为 RawTemp (float16/float32)，处理后为 CalibratedTemp (float32)。传输时序: 采样周期100ms，数据在采样后立即通过SR接口可用；处理在收到最新一组原始值后执行并立即输出；CAN打包在收到处理后数据后发送（允许小幅聚合，最长延时200ms）。接口承载的数据类型和通信模式在interface_plan中逐条定义。组件依赖: Data_Processor依赖Sensor_Interface的输出，CAN_Sender依赖Data_Processor输出；CAN_Sender还依赖底层CAN服务（Client-Server调用）。调用链路为定时采样触发 -> Sensor read runnable -> SR发布 -> Processor runnable (接收事件) -> 计算并SR发布 -> CAN runnable (接收/触发) -> 调用CanIf发送。",
+      "timing_requirements": "采样周期: 100ms (Sensor_Interface TIMING-EVENT)。处理时限: 数据从接收至处理完成不超过20ms。CAN发送时延: 从处理完成到调用底层发送不超过50ms；总端到端（采样到总线发出）不超过200ms。接口抖动容忍: ±10ms。若处理或总线占用超时，应以最新值覆盖策略发送。",
+      "scalability_considerations": "系统规模小，设计可横向扩展为更多传感器或更高采样率：端口采用Sender-Receiver模式便于增加数据元素；Data_Processor的runnable可扩展以支持多通道并行处理；CAN_Sender支持多报文打包策略以适配更高通道数。若扩展到大量传感器，需考虑将Data_Processor拆分或增加并发runnable、调整排程与缓冲策略。",
+      "complexity_assessment": "Simple"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_Sensor_Interface",
+        "name": "Sensor_Interface",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "读取3路模拟温度传感器并通过Sender-Receiver端口发布原始测量值。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0 (直接访问模拟输入硬件接口由驱动抽象封装)",
+          "output_ports": "1 Sender-Receiver port 包含3个数据元素 (RawTemp1/2/3)"
+        },
+        "behavioral_characteristics": "周期性采样: 以100ms定时触发采样runnable。采样后将三路原始值经最小预处理（标识溢出/故障）写入SR输出端口并发布DATA-SEND事件。无复杂状态机，仅采样/失败统计。数据处理流程: 采样(ADC) → 缓存校验 → 发布到SR端口。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供端口，用于向Data_Processor发布三路RawTemp(采用Sender-Receiver)。端口对应数据原型包括 RawTemp1/RawTemp2/RawTemp3 (float32)。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Sensor_Sampling_Event",
+                "trigger": "100ms定时器"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Read_Sensors_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将RawTemp1/2/3写到SR输出端口"
+                      }
+                    ],
+                    "notes": "触发后读取ADC并通过SR端口发送三路原始温度"
+                  }
+                ],
+                "notes": "周期性执行，快速完成采样与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorData_SR_Interface"
+        ]
+      },
+      {
+        "component_id": "comp_Data_Processor",
+        "name": "Data_Processor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "接收原始传感器数据，执行滤波和标定，输出处理后的温度值供CAN发送组件使用。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 Sender-Receiver port (接收3个RawTemp)，或3个独立数据元素",
+          "output_ports": "1 Sender-Receiver port (输出3个CalibratedTemp)"
+        },
+        "behavioral_characteristics": "主要处理逻辑: 对每路数据执行一阶低通滤波（可配置时间常数）并应用线性标定系数。触发条件: 当收到新的RawTemp集合时或每100ms内部触发执行一致性检查。状态管理: 维持每路滤波器状态（上一值、时间戳）并处理失效标志。数据处理流程: 接收RawTemps → 校验有效性 → 应用滤波器 → 线性标定 → 写入Processed SR端口。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT用于接收Sensor_Interface的RawTemp SR数据，P-PORT用于向CAN_Sender发布处理后数据。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawTemp_Received_Event",
+                "trigger": "Sensor SR端口更新"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Processor_Periodic_Check",
+                "trigger": "100ms备用定时触发，用于故障恢复或超时重算"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Process_Data_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Sensor_Interface的SR输入端口读取RawTemp1/2/3"
+                      }
+                    ],
+                    "notes": "以参数方式接收三路原始温度"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将处理后温度写到ProcessedData SR输出端口"
+                      }
+                    ],
+                    "notes": "发送滤波并标定后的温度"
+                  }
+                ],
+                "notes": "在接收事件触发或定时检查时运行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorData_SR_Interface",
+          "ProcessedData_SR_Interface"
+        ]
+      },
+      {
+        "component_id": "comp_CAN_Sender",
+        "name": "CAN_Sender",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "接收处理后的温度数据，打包为CAN报文并调用底层CAN发送服务。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 Sender-Receiver port (接收3路CalibratedTemp)",
+          "output_ports": "0 (通过Client-Server调用CanIf发送报文)"
+        },
+        "behavioral_characteristics": "主要处理逻辑: 接收ProcessedData后执行报文打包（缩放、量化、CRC/标识），并调用底层CAN发送操作（同步调用带超时）。触发条件: 接收到新的ProcessedData或定时聚合窗口结束（最多200ms）。状态管理: 管理发送队列状态与发送超时重试计数。数据处理流程: 接收ProcessedTemps → 打包为CAN帧 → 调用CanIf_Transmit → 记录发送状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "通过R-PORT接收Data_Processor的ProcessedData SR端口。调用底层CAN服务采用ServerCall (Client-Server)。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ProcessedData_Received_Event",
+                "trigger": "Data_Processor SR端口更新"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Send_CAN_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Data_Processor的SR端口接收ProcessedTemps"
+                      }
+                    ],
+                    "notes": "接收并读取处理后的温度数据"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用底层CanIf/CanDrv的Transmit操作（同步，含超时）"
+                      }
+                    ],
+                    "notes": "用于调用CanIf发送CAN报文"
+                  }
+                ],
+                "notes": "在收到ProcessedData后打包并同步调用CAN发送"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "ProcessedData_SR_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_SensorData_SR",
+        "name": "SensorData_SR_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Sender-Receiver, 单向从Sensor_Interface到Data_Processor, 异步发布/订阅, 最新值覆盖策略",
+        "data_category": "NATIVE (float32) - RawTemp1, RawTemp2, RawTemp3",
+        "connected_components": [
+          "Sensor_Interface",
+          "Data_Processor"
+        ],
+        "performance_requirements": "更新频率10Hz (100ms)，端到端从发布到可用小于10ms，使用最新值覆盖，异常时通过标志位指示失效。",
+        "data_elements": [
+          "RawTemp1",
+          "RawTemp2",
+          "RawTemp3"
+        ],
+        "direct_paths": "Sensor_Interface.P-Port -> Data_Processor.R-Port (SR mapping)"
+      },
+      {
+        "interface_id": "if_ProcessedData_SR",
+        "name": "ProcessedData_SR_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Sender-Receiver, 单向从Data_Processor到CAN_Sender, 异步发布/订阅, 最新值覆盖或短队列(1)以减小延时",
+        "data_category": "NATIVE (float32) - CalibratedTemp1/2/3",
+        "connected_components": [
+          "Data_Processor",
+          "CAN_Sender"
+        ],
+        "performance_requirements": "处理后数据在产生后应在50ms内可用于CAN_Sender，允许按需聚合但最大延迟200ms；错误时上报并跳过发送。",
+        "data_elements": [
+          "CalibratedTemp1",
+          "CalibratedTemp2",
+          "CalibratedTemp3"
+        ],
+        "direct_paths": "Data_Processor.P-Port -> CAN_Sender.R-Port (SR mapping)"
+      },
+      {
+        "interface_id": "if_CanIf_Tx",
+        "name": "CanIf_Transmit_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server, CAN_Sender作为Client同步调用底层CanIf Transmit接口，调用带超时和返回状态",
+        "data_category": "OPERATION (PDU/Frame payload + id + length)",
+        "connected_components": [
+          "CAN_Sender"
+        ],
+        "performance_requirements": "调用为同步操作，期望响应<50ms，超时后执行重试或记录错误并继续处理下一个周期。",
+        "data_elements": [
+          "Can_PDU_ID",
+          "Can_Payload",
+          "Can_Length"
+        ],
+        "direct_paths": "CAN_Sender -> CanIf (synchronous operation call)"
+      }
+    ],
+    "component_generation_order": [
+      "Sensor_Interface",
+      "Data_Processor",
+      "CAN_Sender"
+    ],
+    "connection_topology": {
+      "component_connections": "Sensor_Interface (P-PORT) --[SensorData_SR_Interface]--> Data_Processor (R-PORT); Data_Processor (P-PORT) --[ProcessedData_SR_Interface]--> CAN_Sender (R-PORT); CAN_Sender --[CanIf_Transmit_Interface client-server]--> CanIf (外部服务).",
+      "data_flow_paths": "RawTemp1/2/3 (float32) 从Sensor_Interface发布 -> Data_Processor接收并生成CalibratedTemp1/2/3 -> CAN_Sender接收并打包为Can_PDU。",
+      "control_flow_paths": "定时器触发Sensor_Sampling_Event -> Read_Sensors_Runnable -> 发布SR -> RawTemp_Received_Event触发Process_Data_Runnable -> 发布ProcessedData -> ProcessedData_Received_Event触发Send_CAN_Runnable -> 同步调用CanIf.Transmit"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用三组件分层设计以实现职责分离：传感器访问、数据处理、CAN发送。Sender-Receiver用于数据流以降低耦合并简化扩展；Client-Server用于底层CAN调用以支持同步错误检测与超时处理。周期100ms满足采样需求且资源占用低，runables按事件/定时触发以保证响应性与可预测性。",
+      "tradeoff_analysis": "选择SR接口简化数据广播与扩展，但牺牲了部分确定性的交付（采用最新值覆盖策略补偿）。将CAN发送作为独立组件有利于隔离报文打包复杂性，但增加了组件间通信开销。同步调用CanIf便于错误处理，但可能阻塞runnable，需限定超时。",
+      "alternative_considerations": "可将Data_Processor内置于Sensor_Interface以减少通信延迟（适用于严格实时需求），或将CAN打包逻辑合并到Data_Processor以减少组件数量。对高频采样可采用环形缓冲和更细粒度runnable并发执行。",
+      "risk_assessment": "主要风险为CAN发送阻塞导致处理延迟（已通过同步调用超时与最大延时约束缓解）；另风险为ADC读取失败或传感器漂移，已在Data_Processor设计中加入有效性检查与失效标志。若系统扩展，需评估处理并发与内存使用，可能需将Data_Processor拆分或引入优先级调度。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "Sensor_Interface: 读取3路模拟温度传感器并以测量值通过Sender-Receiver端口发布。Data_Processor: 接收原始测量值，执行低通滤波与线性标定，输出处理后的温度值。CAN_Sender: 接收处理后温度数据，打包成CAN报文并调用底层CAN发送接口。职责边界清晰，传感器访问限于Sensor_Interface，算法与状态管理集中在Data_Processor，CAN打包与传输由CAN_Sender负责。",
+      "data_flow_analysis": "数据流: Sensor_Interface -> SensorData_SR_Interface (Sender-Receiver) -> Data_Processor -> ProcessedData_SR_Interface (Sender-Receiver) -> CAN_Sender -> CanIf (外部)。每个数据元素类型: 原始传感器值为 RawTemp (float16/float32)，处理后为 CalibratedTemp (float32)。传输时序: 采样周期100ms，数据在采样后立即通过SR接口可用；处理在收到最新一组原始值后执行并立即输出；CAN打包在收到处理后数据后发送（允许小幅聚合，最长延时200ms）。接口承载的数据类型和通信模式在interface_plan中逐条定义。组件依赖: Data_Processor依赖Sensor_Interface的输出，CAN_Sender依赖Data_Processor输出；CAN_Sender还依赖底层CAN服务（Client-Server调用）。调用链路为定时采样触发 -> Sensor read runnable -> SR发布 -> Processor runnable (接收事件) -> 计算并SR发布 -> CAN runnable (接收/触发) -> 调用CanIf发送。",
+      "timing_requirements": "采样周期: 100ms (Sensor_Interface TIMING-EVENT)。处理时限: 数据从接收至处理完成不超过20ms。CAN发送时延: 从处理完成到调用底层发送不超过50ms；总端到端（采样到总线发出）不超过200ms。接口抖动容忍: ±10ms。若处理或总线占用超时，应以最新值覆盖策略发送。",
+      "scalability_considerations": "系统规模小，设计可横向扩展为更多传感器或更高采样率：端口采用Sender-Receiver模式便于增加数据元素；Data_Processor的runnable可扩展以支持多通道并行处理；CAN_Sender支持多报文打包策略以适配更高通道数。若扩展到大量传感器，需考虑将Data_Processor拆分或增加并发runnable、调整排程与缓冲策略。",
+      "complexity_assessment": "Simple"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_Sensor_Interface",
+        "name": "Sensor_Interface",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "读取3路模拟温度传感器并通过Sender-Receiver端口发布原始测量值。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0 (直接访问模拟输入硬件接口由驱动抽象封装)",
+          "output_ports": "1 Sender-Receiver port 包含3个数据元素 (RawTemp1/2/3)"
+        },
+        "behavioral_characteristics": "周期性采样: 以100ms定时触发采样runnable。采样后将三路原始值经最小预处理（标识溢出/故障）写入SR输出端口并发布DATA-SEND事件。无复杂状态机，仅采样/失败统计。数据处理流程: 采样(ADC) → 缓存校验 → 发布到SR端口。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供端口，用于向Data_Processor发布三路RawTemp(采用Sender-Receiver)。端口对应数据原型包括 RawTemp1/RawTemp2/RawTemp3 (float32)。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Sensor_Sampling_Event",
+                "trigger": "100ms定时器"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Read_Sensors_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将RawTemp1/2/3写到SR输出端口"
+                      }
+                    ],
+                    "notes": "触发后读取ADC并通过SR端口发送三路原始温度"
+                  }
+                ],
+                "notes": "周期性执行，快速完成采样与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorData_SR_Interface"
+        ]
+      },
+      {
+        "component_id": "comp_Data_Processor",
+        "name": "Data_Processor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "接收原始传感器数据，执行滤波和标定，输出处理后的温度值供CAN发送组件使用。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 Sender-Receiver port (接收3个RawTemp)，或3个独立数据元素",
+          "output_ports": "1 Sender-Receiver port (输出3个CalibratedTemp)"
+        },
+        "behavioral_characteristics": "主要处理逻辑: 对每路数据执行一阶低通滤波（可配置时间常数）并应用线性标定系数。触发条件: 当收到新的RawTemp集合时或每100ms内部触发执行一致性检查。状态管理: 维持每路滤波器状态（上一值、时间戳）并处理失效标志。数据处理流程: 接收RawTemps → 校验有效性 → 应用滤波器 → 线性标定 → 写入Processed SR端口。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT用于接收Sensor_Interface的RawTemp SR数据，P-PORT用于向CAN_Sender发布处理后数据。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawTemp_Received_Event",
+                "trigger": "Sensor SR端口更新"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Processor_Periodic_Check",
+                "trigger": "100ms备用定时触发，用于故障恢复或超时重算"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Process_Data_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Sensor_Interface的SR输入端口读取RawTemp1/2/3"
+                      }
+                    ],
+                    "notes": "以参数方式接收三路原始温度"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将处理后温度写到ProcessedData SR输出端口"
+                      }
+                    ],
+                    "notes": "发送滤波并标定后的温度"
+                  }
+                ],
+                "notes": "在接收事件触发或定时检查时运行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorData_SR_Interface",
+          "ProcessedData_SR_Interface"
+        ]
+      },
+      {
+        "component_id": "comp_CAN_Sender",
+        "name": "CAN_Sender",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "接收处理后的温度数据，打包为CAN报文并调用底层CAN发送服务。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 Sender-Receiver port (接收3路CalibratedTemp)",
+          "output_ports": "0 (通过Client-Server调用CanIf发送报文)"
+        },
+        "behavioral_characteristics": "主要处理逻辑: 接收ProcessedData后执行报文打包（缩放、量化、CRC/标识），并调用底层CAN发送操作（同步调用带超时）。触发条件: 接收到新的ProcessedData或定时聚合窗口结束（最多200ms）。状态管理: 管理发送队列状态与发送超时重试计数。数据处理流程: 接收ProcessedTemps → 打包为CAN帧 → 调用CanIf_Transmit → 记录发送状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "通过R-PORT接收Data_Processor的ProcessedData SR端口。调用底层CAN服务采用ServerCall (Client-Server)。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ProcessedData_Received_Event",
+                "trigger": "Data_Processor SR端口更新"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Send_CAN_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Data_Processor的SR端口接收ProcessedTemps"
+                      }
+                    ],
+                    "notes": "接收并读取处理后的温度数据"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用底层CanIf/CanDrv的Transmit操作（同步，含超时）"
+                      }
+                    ],
+                    "notes": "用于调用CanIf发送CAN报文"
+                  }
+                ],
+                "notes": "在收到ProcessedData后打包并同步调用CAN发送"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "ProcessedData_SR_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_SensorData_SR",
+        "name": "SensorData_SR_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Sender-Receiver, 单向从Sensor_Interface到Data_Processor, 异步发布/订阅, 最新值覆盖策略",
+        "data_category": "NATIVE (float32) - RawTemp1, RawTemp2, RawTemp3",
+        "connected_components": [
+          "Sensor_Interface",
+          "Data_Processor"
+        ],
+        "performance_requirements": "更新频率10Hz (100ms)，端到端从发布到可用小于10ms，使用最新值覆盖，异常时通过标志位指示失效。",
+        "data_elements": [
+          "RawTemp1",
+          "RawTemp2",
+          "RawTemp3"
+        ],
+        "direct_paths": "Sensor_Interface.P-Port -> Data_Processor.R-Port (SR mapping)"
+      },
+      {
+        "interface_id": "if_ProcessedData_SR",
+        "name": "ProcessedData_SR_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Sender-Receiver, 单向从Data_Processor到CAN_Sender, 异步发布/订阅, 最新值覆盖或短队列(1)以减小延时",
+        "data_category": "NATIVE (float32) - CalibratedTemp1/2/3",
+        "connected_components": [
+          "Data_Processor",
+          "CAN_Sender"
+        ],
+        "performance_requirements": "处理后数据在产生后应在50ms内可用于CAN_Sender，允许按需聚合但最大延迟200ms；错误时上报并跳过发送。",
+        "data_elements": [
+          "CalibratedTemp1",
+          "CalibratedTemp2",
+          "CalibratedTemp3"
+        ],
+        "direct_paths": "Data_Processor.P-Port -> CAN_Sender.R-Port (SR mapping)"
+      },
+      {
+        "interface_id": "if_CanIf_Tx",
+        "name": "CanIf_Transmit_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server, CAN_Sender作为Client同步调用底层CanIf Transmit接口，调用带超时和返回状态",
+        "data_category": "OPERATION (PDU/Frame payload + id + length)",
+        "connected_components": [
+          "CAN_Sender"
+        ],
+        "performance_requirements": "调用为同步操作，期望响应<50ms，超时后执行重试或记录错误并继续处理下一个周期。",
+        "data_elements": [
+          "Can_PDU_ID",
+          "Can_Payload",
+          "Can_Length"
+        ],
+        "direct_paths": "CAN_Sender -> CanIf (synchronous operation call)"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "Sensor_Interface (P-PORT) --[SensorData_SR_Interface]--> Data_Processor (R-PORT); Data_Processor (P-PORT) --[ProcessedData_SR_Interface]--> CAN_Sender (R-PORT); CAN_Sender --[CanIf_Transmit_Interface client-server]--> CanIf (外部服务).",
+      "data_flow_paths": "RawTemp1/2/3 (float32) 从Sensor_Interface发布 -> Data_Processor接收并生成CalibratedTemp1/2/3 -> CAN_Sender接收并打包为Can_PDU。",
+      "control_flow_paths": "定时器触发Sensor_Sampling_Event -> Read_Sensors_Runnable -> 发布SR -> RawTemp_Received_Event触发Process_Data_Runnable -> 发布ProcessedData -> ProcessedData_Received_Event触发Send_CAN_Runnable -> 同步调用CanIf.Transmit"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用三组件分层设计以实现职责分离：传感器访问、数据处理、CAN发送。Sender-Receiver用于数据流以降低耦合并简化扩展；Client-Server用于底层CAN调用以支持同步错误检测与超时处理。周期100ms满足采样需求且资源占用低，runables按事件/定时触发以保证响应性与可预测性。",
+      "tradeoff_analysis": "选择SR接口简化数据广播与扩展，但牺牲了部分确定性的交付（采用最新值覆盖策略补偿）。将CAN发送作为独立组件有利于隔离报文打包复杂性，但增加了组件间通信开销。同步调用CanIf便于错误处理，但可能阻塞runnable，需限定超时。",
+      "alternative_considerations": "可将Data_Processor内置于Sensor_Interface以减少通信延迟（适用于严格实时需求），或将CAN打包逻辑合并到Data_Processor以减少组件数量。对高频采样可采用环形缓冲和更细粒度runnable并发执行。",
+      "risk_assessment": "主要风险为CAN发送阻塞导致处理延迟（已通过同步调用超时与最大延时约束缓解）；另风险为ADC读取失败或传感器漂移，已在Data_Processor设计中加入有效性检查与失效标志。若系统扩展，需评估处理并发与内存使用，可能需将Data_Processor拆分或引入优先级调度。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7593,
+    "output_tokens": 5404,
+    "total_tokens": 12997,
+    "component_count": 3,
+    "interface_count": 3,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

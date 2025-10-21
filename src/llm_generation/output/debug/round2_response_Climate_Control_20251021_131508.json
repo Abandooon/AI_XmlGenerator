@@ -1,0 +1,139 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Climate_Control",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Climate_State_Out",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Climate_SR_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "Climate_CAN_Out",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Bus_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Temp_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Climate_SR_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "User_Setting_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Bus_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Climate_Control_InternalBehavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Climate_Control_Runnable",
+          "MINIMUM-START-INTERVAL": 200,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CabinTemp_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Climate_Control/Ports/Temp_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CabinTemp"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "UserSetting_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Climate_Control/Ports/User_Setting_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/UserSetting"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "HVAC_Command_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Climate_Control/Ports/Climate_CAN_Out"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/HVAC_Command"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "HVAC_State_Broadcast",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Climate_Control/Ports/Climate_State_Out"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/HVAC_State"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Climate_Control::Climate_Control_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Actuator_Feedback",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_InternalBehavior/CAN_Rx_Dispatch_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Temp_Sample_Tick",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_InternalBehavior/CAN_Rx_Dispatch_Runnable"
+            },
+            "PERIOD": 500
+          }
+        ]
+      }
+    }
+  }
+}

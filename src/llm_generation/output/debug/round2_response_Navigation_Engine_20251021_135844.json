@@ -1,0 +1,123 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Navigation_Engine",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_NavigationService",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_NavigationService"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_VehicleData",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_VehicleData"
+          }
+        },
+        {
+          "SHORT-NAME": "R_VoiceCommand",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_Voice_Command"
+          }
+        },
+        {
+          "SHORT-NAME": "R_MapService",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_NavigationService"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Navigation_Engine_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Route_Calc_Runnable",
+          "MINIMUM-START-INTERVAL": 1000,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_VehicleData",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Navigation_Engine/Ports/R_VehicleData"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/VehicleData"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_VoiceCommand",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Navigation_Engine/Ports/R_VoiceCommand"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/VoiceCommand"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_Online_Map_Service",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/Navigation_Engine/Ports/R_MapService"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/IF_NavigationService/Operations/GetRoute"
+                  }
+                },
+                "TIMEOUT": 2000
+              }
+            }
+          ],
+          "SYMBOL": "Navigation_Engine::Route_Calc_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "Route_Recalc_Trigger",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Nav_Periodic_Update",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            },
+            "PERIOD": 1000
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "TransmissionController",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_ShiftServer",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/ShiftRequest_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "P_Can",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/PowertrainCAN_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_TorqueRequest",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/TorqueRequest_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_EngineStatus",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/EngineStatus_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_DiagnosticUDS",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/DiagnosticUDS_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "TransmissionControllerBehavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Shift_Control_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Receive_ShiftRequest",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TransmissionController/Ports/R_TorqueRequest"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/ShiftRequest"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Receive_EngineStatus",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TransmissionController/Ports/R_EngineStatus"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/EngineStatus"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Receive_UDSRequests",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TransmissionController/Ports/R_DiagnosticUDS"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/UDS_Request"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_GearState",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/TransmissionController/Ports/P_Can"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/GearState"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Send_ShiftAck",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/TransmissionController/Ports/P_ShiftServer"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/ShiftAck"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Gearbox_Driver_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/TransmissionController/Ports/R_DiagnosticUDS"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Services/GearboxDriver/Operations/ExecuteShift"
+                  }
+                },
+                "TIMEOUT": 300
+              }
+            }
+          ],
+          "SYMBOL": "TransmissionController_Shift_Control_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "INTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "Shift_Timeout_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/EngineController/EngineControllerBehavior/Engine_Control_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "INTERNAL-TRIGGERING-POINT",
+              "#text": "/Components/TransmissionController/InternalTriggers/ShiftTimeout"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Shift_Evaluation_Tick",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANRouter/CANRouterBehavior/Routing_Process_Runnable"
+            },
+            "PERIOD": 50
+          }
+        ]
+      }
+    }
+  }
+}

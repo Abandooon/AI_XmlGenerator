@@ -1,0 +1,107 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Temp_Left_SenderReceiver",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Left_Sensor1_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "Left_Sensor2_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "Left_Seat_Fused_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Temp_Right_SenderReceiver",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Right_Sensor1_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "Right_Sensor2_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "Right_Seat_Fused_Temperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "CAN_Message_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Set_Level_Command",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
+              "#text": "/Project/DataTypes/HeaterLevel"
+            }
+          },
+          {
+            "SHORT-NAME": "Heater_Status_Report",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/Project/DataTypes/HeaterStatus"
+            }
+          },
+          {
+            "SHORT-NAME": "Diagnostic_Message",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/Project/DataTypes/DiagnosticMessage"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "HeatCmd_ClientServer",
+      "IS-SERVICE": "false",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SetHeaterLevel"
+          },
+          {
+            "SHORT-NAME": "GetPowerDriverStatus"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,381 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "Temperature_Sensor: 采集4路温度传感器(前排左右各2)，滤波并发布座椅温度信号。Heating_Controller: 接收温度信号与用户设定，通过控制策略决定3档加热等级并调用Power_Driver；同时通过CANComm接收外部设置并上报状态。Power_Driver: 接收加热控制命令并驱动加热片的供电输出，包含安全互锁与状态反馈。CAN_Comm: 负责接收/发送CAN消息，将外部设置转发给Heating_Controller并上报系统状态。职责边界按数据源/执行器和通信分离，控制决策集中于Heating_Controller，硬件驱动封装在Power_Driver，传感器采集集中在Temperature_Sensor，网络逻辑集中在CAN_Comm。",
+  "data_flow_analysis": "温度采集路径: Temperature_Sensor (四路) -> (Sender-Receiver) -> Heating_Controller。Heating_Controller 每200ms读取各传感器最新值、计算座椅温度（双传感器取均值或容错策略）-> 根据设定档位输出命令给 Power_Driver (Client-Server 同步调用) -> Power_Driver 执行并返回执行状态。CAN路径: CAN_Comm 接收外部CAN设置消息 -> (Client-Server 或 Event) -> Heating_Controller 的On_CAN_Command runnable，Heating_Controller 修改目标档位并通过CAN_Comm 发送状态/诊断上报。接口数据类型：温度为 float/°C (最新值语义)，命令为 enum{OFF,LOW,MED,HIGH}（3档含OFF），状态为结构体{level,heater_on,fault_flags}。传输时序：温度周期100ms产出，控制周期200ms消费，CAN 命令为异步事件驱动，状态上报按事件或周期（1s）发送。",
+  "timing_requirements": "Temperature_Sensor: 采样周期100ms，数据可用性要求在采样结束后50ms内发布。Heating_Controller: 控制周期200ms（最小启动间隔200ms），接收CAN命令需在50ms内响应并在下一个控制周期生效。Power_Driver: 接收到同步控制调用后需在20ms内完成硬件切换并返回结果。CAN_Comm: 收到消息后触发处理的最大延迟50ms，状态上报周期最大1s或状态变化立即上报。",
+  "scalability_considerations": "设计按座椅与传感器数量可水平扩展：Temperature_Sensor组件支持多通道采集配置，Heating_Controller的输入端口按座椅数量扩展；接口使用Sender-Receiver模式便于添加更多信号；CAN_Comm采用消息ID可扩展映射表以支持更多报文。为大规模系统（估计20+组件）建议将传感器采集拆分为多个实例并采用统一诊断/通信服务。",
+  "complexity_assessment": "Medium"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Temperature_Sensor.P-PORTs -> Heating_Controller.R-PORTs via Temp_Left_SenderReceiver / Temp_Right_SenderReceiver; Heating_Controller.SYNCHRONOUS-CLIENT -> Power_Driver.SERVER via HeatCmd_ClientServer; Heating_Controller <-> CAN_Comm via CAN_Message_Interface (Heating_Controller将状态发送给CAN_Comm用于CAN发送，CAN_Comm将接收到的命令触发Heating_Controller)。",
+  "data_flow_paths": "温度数据: Temperature_Sensor -> (Temp_*_SenderReceiver) -> Heating_Controller -> Control决策 -> (HeatCmd_ClientServer) -> Power_Driver -> 硬件; CAN: 外部CAN -> CAN_Comm -> Heating_Controller (命令) ; Heating_Controller 状态 -> CAN_Comm -> 外部CAN。",
+  "control_flow_paths": "周期控制: Control_Cycle_Event (Heating_Controller) 驱动决策并调用Power_Driver; 异步控制: CAN_Frame_Received 在CAN_Comm触发Heating_Controller的On_CAN_Command_Runnable; Power_Driver通过返回值/事件更新控制状态并反馈给Heating_Controller"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_temp_left_sr",
+    "name": "Temp_Left_SenderReceiver",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步最新值发布（Sender-Receiver）；无队列，latest-value语义；发布周期100ms，订阅者读取延迟要求<50ms；错误处理：异常值标志位与质量字段。",
+    "data_category": "Event/Signal (float temperature with quality and timestamp)",
+    "connected_components": [
+      "Temperature_Sensor",
+      "Heating_Controller"
+    ],
+    "performance_requirements": "发布周期100ms，端到端时延<150ms，数据有效性位必须随每次发布更新。",
+    "data_elements": [
+      "Left_Sensor1_Temperature",
+      "Left_Sensor2_Temperature",
+      "Left_Seat_Fused_Temperature"
+    ],
+    "direct_paths": "Temperature_Sensor.P-PORT -> Heating_Controller.R-PORT (latest value path)"
+  },
+  {
+    "interface_id": "if_temp_right_sr",
+    "name": "Temp_Right_SenderReceiver",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步最新值发布（Sender-Receiver）；latest-value；发布周期100ms；异常标志与timestamp随同发送。",
+    "data_category": "Event/Signal (float temperature with quality and timestamp)",
+    "connected_components": [
+      "Temperature_Sensor",
+      "Heating_Controller"
+    ],
+    "performance_requirements": "发布周期100ms，读取延迟<50ms，丢帧容忍度低",
+    "data_elements": [
+      "Right_Sensor1_Temperature",
+      "Right_Sensor2_Temperature",
+      "Right_Seat_Fused_Temperature"
+    ],
+    "direct_paths": "Temperature_Sensor.P-PORT -> Heating_Controller.R-PORT"
+  },
+  {
+    "interface_id": "if_heatcmd_cs",
+    "name": "HeatCmd_ClientServer",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步调用: Heating_Controller作为Client对Power_Driver发起同步ServerCall以设置档位并等待返回；要求调用超时配置(<=50ms)。对Power_Driver的调用为原子操作，支持在Exclusive Area内调用。",
+    "data_category": "Operation (setLevel(level) / getStatus())",
+    "connected_components": [
+      "Heating_Controller",
+      "Power_Driver"
+    ],
+    "performance_requirements": "调用-返回时延<=50ms，必须保证顺序一致性和错误码同步回传；RPC失败需重试或降级策略。",
+    "data_elements": [
+      "SetHeaterLevel(Operation)",
+      "PowerDriverStatus(Struct)"
+    ],
+    "direct_paths": "Heating_Controller.SERVER-CALL -> Power_Driver.SERVER (synchronous path)"
+  },
+  {
+    "interface_id": "if_can_msg",
+    "name": "CAN_Message_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "用于CAN消息的本地软件分发：CAN_Comm 接收外部CAN帧并以事件/信号形式转发给Heating_Controller（异步事件触发）；状态上报由Heating_Controller通过CAN_Comm封装后异步发送。缓冲策略：接收端使用最小队列(1)并以最新值替换策略进行关键信号处理；发送采用异步非阻塞与重试机制。",
+    "data_category": "Event/Messages (commands, status structs)",
+    "connected_components": [
+      "CAN_Comm",
+      "Heating_Controller"
+    ],
+    "performance_requirements": "命令响应时间<=50ms，状态上报周期<=1s或状态变化立即发送；错误处理包含报文重发与本地诊断。",
+    "data_elements": [
+      "Set_Level_Command",
+      "Heater_Status_Report",
+      "Diagnostic_Message"
+    ],
+    "direct_paths": "CAN_Comm.Rx -> Heating_Controller.EXTERNAL_TRIGGER; Heating_Controller -> CAN_Comm.Tx (status)"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "Temp_Left_SenderReceiver",
+              "Temp_Right_SenderReceiver",
+              "CAN_Message_Interface"
+            ]
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "DATA-ELEMENTS",
+          "IS-SERVICE"
+        ]
+      },
+      "minItems": 1
+    },
+    "CLIENT-SERVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "HeatCmd_ClientServer"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "OPERATIONS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CLIENT-SERVER-OPERATION": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "CLIENT-SERVER-OPERATION"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "OPERATIONS"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE",
+    "CLIENT-SERVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。

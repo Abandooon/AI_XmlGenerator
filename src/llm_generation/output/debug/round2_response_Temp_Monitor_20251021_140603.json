@@ -1,0 +1,117 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Temp_Monitor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Temperature_Publisher",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temperature_Sensor_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "Health_Publisher",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temperature_Sensor_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "SensorDriver_RPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temperature_Sensor_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Temp_Monitor_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Sampling_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_Sensors",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Temp_Monitor/Ports/SensorDriver_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/TemperatureArray"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Publish_TemperatureArray",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temp_Monitor/Ports/Temperature_Publisher"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "APPLICATION-ARRAY-ELEMENT",
+                      "#text": "/DataPrototypes/TemperatureArray"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Publish_SensorHealth",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Temp_Monitor/Ports/Health_Publisher"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/SensorHealth"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Temp_Monitor_Sampling_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "SensorDataReady",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Runnables/Sampling_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Periodic_100ms",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Runnables/Sampling_Runnable"
+            },
+            "PERIOD": 100
+          }
+        ]
+      }
+    }
+  }
+}

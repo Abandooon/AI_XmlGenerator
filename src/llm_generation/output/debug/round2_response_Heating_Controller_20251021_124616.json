@@ -1,0 +1,274 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Heating_Controller",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PPort_CAN_Status",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Message_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RPort_Temp_Left",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Left_SenderReceiver"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_Temp_Right",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_Right_SenderReceiver"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_PowerCmd",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/HeatCmd_ClientServer"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_CAN_Rx",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Message_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Heating_Controller_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Control_Loop_Runnable",
+          "MINIMUM-START-INTERVAL": 200,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_Left_Temps",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/RPort_Temp_Left"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Left_Seat_Fused_Temperature"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Read_Right_Temps",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/RPort_Temp_Right"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Right_Seat_Fused_Temperature"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_Heater_Status",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/PPort_CAN_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Heater_Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "EXTERNAL-TRIGGERING-POINTS": {
+            "EXTERNAL-TRIGGERING-POINT": [
+              {}
+            ]
+          },
+          "PARAMETER-ACCESSS": {
+            "PARAMETER-ACCESS": [
+              {
+                "SHORT-NAME": "Access_Target_Level_Param",
+                "ACCESSED-PARAMETER": {
+                  "AUTOSAR-PARAMETER-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/RPort_PowerCmd"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "PARAMETER-DATA-PROTOTYPE",
+                      "#text": "/Parameters/Target_Heater_Level"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_PowerDriver_SetLevel",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/ExclusiveAreas/ControlEA"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/Heating_Controller/Ports/RPort_PowerCmd"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Operations/SetHeaterLevel"
+                  }
+                },
+                "TIMEOUT": 50
+              }
+            }
+          ],
+          "SYMBOL": "Heating_Controller_Control_Loop"
+        },
+        {
+          "SHORT-NAME": "On_CAN_Command_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Read_CAN_Command",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/RPort_CAN_Rx"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Set_Level_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_Status_On_CAN_Command",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/PPort_CAN_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Heater_Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "EXTERNAL-TRIGGERING-POINTS": {
+            "EXTERNAL-TRIGGERING-POINT": [
+              {}
+            ]
+          },
+          "PARAMETER-ACCESSS": {
+            "PARAMETER-ACCESS": [
+              {
+                "SHORT-NAME": "Update_Target_Level_Param",
+                "ACCESSED-PARAMETER": {
+                  "AUTOSAR-PARAMETER-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Heating_Controller/Ports/RPort_CAN_Rx"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "PARAMETER-DATA-PROTOTYPE",
+                      "#text": "/Parameters/Target_Heater_Level"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [],
+          "SYMBOL": "Heating_Controller_On_CAN_Command"
+        }
+      ],
+      "EVENTS": {
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Command_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Comm/CAN_Comm_Behavior/RxHandler_Runnable"
+            }
+          }
+        ],
+        "SWC-MODE-SWITCH-EVENT": [
+          {
+            "SHORT-NAME": "Mode_Change_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Comm/CAN_Comm_Behavior/RxHandler_Runnable"
+            },
+            "ACTIVATION": "MODE-CHANGED",
+            "MODE-IREFS": {
+              "MODE-IREF": [
+                {
+                  "CONTEXT-MODE-DECLARATION-GROUP-PROTOTYPE-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/ModeGroups/SeatHeatingModeGroup"
+                  },
+                  "CONTEXT-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/Heating_Controller/Ports/RPort_CAN_Rx"
+                  },
+                  "TARGET-MODE-DECLARATION-REF": {
+                    "@DEST": "MODE-DECLARATION",
+                    "#text": "/Modes/HeatingLevelMode"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Control_Cycle_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Temperature_Sensor_Behavior/Read_Sensors_Runnable"
+            },
+            "PERIOD": 200
+          }
+        ]
+      }
+    }
+  }
+}

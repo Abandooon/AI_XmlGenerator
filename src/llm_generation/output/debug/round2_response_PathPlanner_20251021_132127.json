@@ -1,0 +1,183 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "PathPlanner",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "SystemStatus_PPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/System_Status_to_HMI_SR"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Actuation_ClientPort",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Planner_to_Actuation_CS"
+          }
+        },
+        {
+          "SHORT-NAME": "Parameter_ClientPort",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Parameter_Service_CS"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "FusionInput_RPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Fusion_to_Planner_SR"
+          }
+        },
+        {
+          "SHORT-NAME": "ModeSwitch_RPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "MODE-SWITCH-INTERFACE",
+            "#text": "/Interfaces/ADAS_Mode_Switch"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "PathPlanner_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Planner_Main_Runnable",
+          "MINIMUM-START-INTERVAL": 25,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Access_FusedObjectList",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/PathPlanner/Ports/FusionInput_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/FusedObjectList"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Access_ModeInfo",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/PathPlanner/Ports/ModeSwitch_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/ADAS_Mode"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Send_ControlCommand",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/PathPlanner/Ports/SystemStatus_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/ControlCommand"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Call_Actuation_SendCommand",
+                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                  "@DEST": "EXCLUSIVE-AREA-NESTING-ORDER",
+                  "#text": "/ExclusiveAreas/PlannerEA"
+                },
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/PathPlanner/Ports/Actuation_ClientPort"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/Planner_to_Actuation_CS/SendCommand"
+                  }
+                },
+                "TIMEOUT": 100
+              }
+            }
+          ],
+          "SYMBOL": "PathPlanner_Planner_Main"
+        }
+      ],
+      "EVENTS": {
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "Emergency_Brake_Trigger",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/FusionAlgorithm/FusionAlgorithm_Behavior/Fusion_Main_Runnable"
+            }
+          }
+        ],
+        "SWC-MODE-SWITCH-EVENT": [
+          {
+            "SHORT-NAME": "Mode_Switch_Requested",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/FusionAlgorithm/FusionAlgorithm_Behavior/Fusion_Main_Runnable"
+            },
+            "ACTIVATION": "onModeRequest",
+            "MODE-IREFS": {
+              "MODE-IREF": [
+                {
+                  "CONTEXT-MODE-DECLARATION-GROUP-PROTOTYPE-REF": {
+                    "@DEST": "MODE-DECLARATION-GROUP-PROTOTYPE",
+                    "#text": "/Interfaces/ADAS_Mode_Switch/ADASModeGroup"
+                  },
+                  "CONTEXT-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/PathPlanner/Ports/ModeSwitch_RPort"
+                  },
+                  "TARGET-MODE-DECLARATION-REF": {
+                    "@DEST": "MODE-DECLARATION",
+                    "#text": "/Modes/ADASModeDeclaration"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Planner_Cycle",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/FusionAlgorithm/FusionAlgorithm_Behavior/Fusion_Main_Runnable"
+            },
+            "PERIOD": 50
+          }
+        ]
+      }
+    }
+  }
+}

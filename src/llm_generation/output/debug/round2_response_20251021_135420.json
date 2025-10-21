@@ -1,0 +1,136 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "IF_VehicleData",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "vehicleSpeed",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/sint32"
+            }
+          },
+          {
+            "SHORT-NAME": "gear",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/sint8"
+            }
+          },
+          {
+            "SHORT-NAME": "odometer",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint32"
+            }
+          },
+          {
+            "SHORT-NAME": "brakeStatus",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/boolean"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "IF_MediaPlayback",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "audioStream",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/Project/DataTypes/AudioStream"
+            }
+          },
+          {
+            "SHORT-NAME": "metadata",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/Project/DataTypes/MediaMetadata"
+            }
+          },
+          {
+            "SHORT-NAME": "playbackControl",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/Project/DataTypes/PlaybackControl"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "IF_Voice_Command",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "command",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
+              "#text": "/Project/DataTypes/String"
+            }
+          },
+          {
+            "SHORT-NAME": "confidence",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "sessionId",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
+              "#text": "/Project/DataTypes/String"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "IF_Bluetooth_Audio",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "Control"
+          },
+          {
+            "SHORT-NAME": "StreamAudio"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "IF_NavigationService",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "RequestRoute"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "IF_Phone_Control",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "PhoneControl"
+          }
+        ]
+      }
+    }
+  ]
+}

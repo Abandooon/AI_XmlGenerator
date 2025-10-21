@@ -1,0 +1,104 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CAN_Interface",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "VehicleData_P_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_VehicleData"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Config_R_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_Phone_Control"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CAN_Interface_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Read_CAN_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_Frame_Input",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Interface/Ports/Config_R_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CanRawFrame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VehicleData_Output",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Interface/Ports/VehicleData_P_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/VehicleData"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Runnable_Read_CAN"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/Read_CAN_Runnable"
+            }
+          }
+        ],
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Init",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/Read_CAN_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Sample_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/Runnables/Read_CAN_Runnable"
+            },
+            "PERIOD": 20
+          }
+        ]
+      }
+    }
+  }
+}

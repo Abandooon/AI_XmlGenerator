@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Components</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>Temperature_Sensor</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Left_Sensor1_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Temp_Left_SenderReceiver</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Left_Sensor2_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Temp_Left_SenderReceiver</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Right_Sensor1_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Temp_Right_SenderReceiver</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Right_Sensor2_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/Temp_Right_SenderReceiver</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>Temperature_Sensor_Behavior</SHORT-NAME>
+              <EVENTS>
+                <DATA-WRITE-COMPLETED-EVENT>
+                  <SHORT-NAME>Publish_Completed_Event_Left</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable</START-ON-EVENT-REF>
+                  <EVENT-SOURCE-REF DEST="VARIABLE-ACCESS">/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable/DataSendPoints/VariableAccess/Publish_Left_Seat_Temperature</EVENT-SOURCE-REF>
+                </DATA-WRITE-COMPLETED-EVENT>
+                <DATA-WRITE-COMPLETED-EVENT>
+                  <SHORT-NAME>Publish_Completed_Event_Right</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable</START-ON-EVENT-REF>
+                  <EVENT-SOURCE-REF DEST="VARIABLE-ACCESS">/Components/Temperature_Sensor/Runnables/Filter_Fuse_Runnable/DataSendPoints/VariableAccess/Publish_Right_Seat_Temperature</EVENT-SOURCE-REF>
+                </DATA-WRITE-COMPLETED-EVENT>
+                <INIT-EVENT>
+                  <SHORT-NAME>Init_Calibration_Event</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temperature_Sensor/Runnables/Read_Sensors_Runnable</START-ON-EVENT-REF>
+                </INIT-EVENT>
+                <TIMING-EVENT>
+                  <SHORT-NAME>Periodic_Sample_Event</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/Temperature_Sensor/Runnables/Read_Sensors_Runnable</START-ON-EVENT-REF>
+                  <PERIOD>100</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>Read_Sensors_Runnable</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>100</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Left_Sensor1</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Sensor1_Raw</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/LeftSensor1_ADC</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Left_Sensor2</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor2_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Sensor2_Raw</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/LeftSensor2_ADC</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Right_Sensor1</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Sensor1_Raw</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/RightSensor1_ADC</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Right_Sensor2</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor2_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Sensor2_Raw</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/RightSensor2_ADC</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-READ-ACCESSS>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Store_Left_Sensor1_Buffer</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Sensor1_Buffer</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/LeftSensor1_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Store_Left_Sensor2_Buffer</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor2_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Sensor2_Buffer</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/LeftSensor2_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Store_Right_Sensor1_Buffer</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Sensor1_Buffer</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/RightSensor1_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Store_Right_Sensor2_Buffer</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor2_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Sensor2_Buffer</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/RightSensor2_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <INTERNAL-TRIGGERING-POINTS>
+                    <INTERNAL-TRIGGERING-POINT>
+                      <SHORT-NAME>Sampling_Timer</SHORT-NAME>
+                    </INTERNAL-TRIGGERING-POINT>
+                  </INTERNAL-TRIGGERING-POINTS>
+                  <SYMBOL>R_ReadSensors</SYMBOL>
+                </RUNNABLE-ENTITY>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>Filter_Fuse_Runnable</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>100</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-READ-ACCESSS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Left_Buffers</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Sensor_Fuse_Input</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/LeftSensor1_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Read_Right_Buffers</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Sensor_Fuse_Input</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/RightSensor1_Buffer</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-READ-ACCESSS>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Publish_Left_Seat_Temperature</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Left_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Left_Seat_Fused_Temperature</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/Left_Seat_Fused</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Publish_Right_Seat_Temperature</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Temperature_Sensor/Ports/Right_Sensor1_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/DataPrototypes/Right_Seat_Fused_Temperature</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                        <LOCAL-VARIABLE-REF DEST="VARIABLE-DATA-PROTOTYPE">/Components/Temperature_Sensor/LocalVariables/Right_Seat_Fused</LOCAL-VARIABLE-REF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <INTERNAL-TRIGGERING-POINTS>
+                    <INTERNAL-TRIGGERING-POINT>
+                      <SHORT-NAME>Filter_Trigger</SHORT-NAME>
+                    </INTERNAL-TRIGGERING-POINT>
+                  </INTERNAL-TRIGGERING-POINTS>
+                  <SYMBOL>R_FilterFuse</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

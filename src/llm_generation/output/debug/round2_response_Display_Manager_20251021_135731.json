@@ -1,0 +1,161 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Display_Manager",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Display_Output",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_MediaPlayback"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RPort_MediaPlayback",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_MediaPlayback"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_NavService",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/IF_NavigationService"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_VoiceCmd",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_Voice_Command"
+          }
+        },
+        {
+          "SHORT-NAME": "RPort_VehicleData",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_VehicleData"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Display_Manager_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Render_Runnable",
+          "MINIMUM-START-INTERVAL": 33.33,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_MediaMetadata_In",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Display_Manager/Ports/RPort_MediaPlayback"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/mediaMetadata"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_VehicleData_In",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Display_Manager/Ports/RPort_VehicleData"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/vehicleData"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_VoiceCommand_In",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Display_Manager/Ports/RPort_VoiceCmd"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/voiceCommand"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_RouteResponse_In",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Display_Manager/Ports/RPort_NavService"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/routeResponse"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_DisplayFrame_Out",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Display_Manager/Ports/P_Display_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/displayFrame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Render_Runnable_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Display_Init",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Frame_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+            },
+            "PERIOD": 33.33
+          }
+        ]
+      }
+    }
+  }
+}

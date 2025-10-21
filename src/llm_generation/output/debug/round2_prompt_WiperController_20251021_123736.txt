@@ -1,0 +1,1119 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：WiperController（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "RainSensor: 周期采样模拟雨量传感器并通过Sender-Receiver端口发布rain_level。WiperController: 接收rain_level与CAN用户设置，管理自动/手动模式、滤波与抖动抑制、决策生成雨刷命令并以同步调用/请求下发给MotorDriver。MotorDriver: 提供底层电机控制操作（启动/停止/速度/PWM），执行硬件抽象、故障检测与状态回报。",
+  "data_flow_analysis": "RainSensor -> (Sender-Receiver) -> WiperController: rain_level (float, 0.0..1.0) 周期50ms异步发布。CAN -> WiperController: user_settings (enum mode, int speed_level) 异步事件触发，最大接收抖动50ms。WiperController -> MotorDriver (Client-Server): control_command (command type, speed) 同步调用，期望响应<20ms。MotorDriver -> WiperController: status (enum, error flags) 通过Sender-Receiver或回调报告。依赖关系：WiperController依赖RainSensor数据与CAN输入并依赖MotorDriver动作接口；MotorDriver依赖硬件抽象层，但对上层无直接依赖。",
+  "timing_requirements": "RainSensor采样周期50ms；WiperController控制周期100ms（控制决策/防抖）；CAN设置异步，需在接收到后<=50ms处理并应用；WiperController到MotorDriver的同步调用端到端响应<=20ms；系统总延迟（雨量->电机动作）期望<=200ms在典型路径。",
+  "scalability_considerations": "组件化接口使系统可扩展为多通道（前/后雨刮）与多传感器。接口定义采用Sender-Receiver与Client-Server混合，可在大规模平台中批量复制组件实例或通过参数化端口映射扩展到N个电机。CAN接口可增添新的控制字段和诊断消息。",
+  "complexity_assessment": "Medium"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "RainSensor publishes rain_level to WiperController via IF_RainSensor_Sr; WiperController receives CAN via IF_CAN_UserSettings locally; WiperController calls MotorDriver via IF_WiperController_ClientServer. MotorDriver publishes status optionally to WiperController or system monitor.",
+  "data_flow_paths": "Analog sensor input -> RainSensor (sample/filter) -> IF_RainSensor_Sr -> WiperController (Sensor_Process_Runnable) -> Control_Logic_Runnable -> IF_WiperController_ClientServer -> MotorDriver (Motor_Control_Runnable) -> hardware; MotorDriver status -> IF_WiperController_ClientServer response or Sender-Receiver status channel.",
+  "control_flow_paths": "INIT sequence: all components INIT; periodic timers trigger SensorSampleEvent (RainSensor) and ControlCycleEvent (WiperController); CAN reception triggers immediate CANSettingsReceived -> Can_Rx_Runnable -> Mode_Manager; control decision triggers synchronous server-call to MotorDriver and waits for ack."
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "IF_RainSensor_Sr",
+    "name": "RainSensor_To_WiperController",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "asynchronous sender-receiver, periodic publish (50ms), latest-value semantics with optional queue of depth 1",
+    "data_category": "sensor_data",
+    "connected_components": [
+      "RainSensor",
+      "WiperController"
+    ],
+    "performance_requirements": "end-to-end latency from sample to controller <=100ms, jitter tolerance 10ms, loss-tolerant but must update every sample",
+    "data_elements": [
+      "rain_level:float",
+      "fault_status:uint8"
+    ],
+    "direct_paths": "RainSensor.P-port -> WiperController.R-port via runtime communication; direct SenderReceiver mapping"
+  },
+  {
+    "interface_id": "IF_CAN_UserSettings",
+    "name": "CAN_User_Settings",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "asynchronous event-driven receiving from CAN network, event-on-arrival, processed immediately",
+    "data_category": "configuration_command",
+    "connected_components": [
+      "WiperController"
+    ],
+    "performance_requirements": "process within 50ms of reception, tolerate occasional duplicate messages, validate CRC and reject invalid payloads",
+    "data_elements": [
+      "wiper_mode:enum{AUTO,MANUAL,OFF}",
+      "speed_level:uint8"
+    ],
+    "direct_paths": "CAN Rx stack -> WiperController R-port (mapped from CAN message)"
+  },
+  {
+    "interface_id": "IF_WiperController_ClientServer",
+    "name": "WiperControl_To_MotorDriver",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "synchronous client-server calls for control commands; blocking call with timeout and immediate acknowledgement",
+    "data_category": "command",
+    "connected_components": [
+      "WiperController",
+      "MotorDriver"
+    ],
+    "performance_requirements": "call-response <=20ms, timeout handling and retry policy (1 retry), prioritized over background tasks",
+    "data_elements": [
+      "command:{START,STOP,SET_SPEED}",
+      "speed:int16",
+      "ack:enum{OK,ERROR}"
+    ],
+    "direct_paths": "WiperController client -> MotorDriver server operation (synchronous call)"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "RainSensor_To_WiperController",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/RainSensor_To_WiperController"
+  },
+  {
+    "name": "CAN_User_Settings",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CAN_User_Settings"
+  },
+  {
+    "name": "WiperControl_To_MotorDriver",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/WiperControl_To_MotorDriver"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/RainSensor_To_WiperController
+  - /Interfaces/CAN_User_Settings
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/WiperControl_To_MotorDriver
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/RainSensor
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/RainSensor/RainSensor_Behavior
+  - /Components/MotorDriver/MotorDriver_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable
+  - /Components/MotorDriver/MotorDriver_Behavior/Motor_Control_Runnable
+  # 类型: COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE
+  - /Components/MotorDriver
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "comp_wiper_controller",
+  "name": "WiperController",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "基于雨量和用户设置进行自动/手动模式管理，生成并下发雨刮控制命令",
+  "estimated_complexity": "Complex",
+  "port_estimates": {
+    "input_ports": "1 Receiver端口接收rain_level, 1 Receiver端口接收CAN user settings",
+    "output_ports": "1 Client port调用MotorDriver操作, 1 Sender-Receiver端口用于状态广播"
+  },
+  "behavioral_characteristics": "包含模式管理（AUTO/MANUAL）、滤波与滞回、节拍控制100ms执行周期；在AUTO模式下按rain_level与历史值计算速度并向MotorDriver同步下发命令；在MANUAL模式直接采纳CAN设置；具有状态机（IDLE, RUNNING, FAULT）和切换确认；错误与超时时降级并发出fault通知。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "PR-PORT-PROTOTYPE"
+      ],
+      "details": "接收RainSensor的Sender-Receiver端口(P-port)、接收CAN消息的R-port、客户端调用MotorDriver的Client-port"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "RainDataReceived",
+          "trigger": "rain_level message arrival"
+        },
+        {
+          "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+          "name": "CANSettingsReceived",
+          "trigger": "CAN Rx interrupt / message"
+        },
+        {
+          "type": "TIMING-EVENT",
+          "name": "ControlCycleEvent",
+          "trigger": "periodic 100ms timer"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Can_Rx_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-VALUES",
+              "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "接收CAN用户设置（mode,speed_level）"
+                }
+              ],
+              "notes": "解析并更新运行模式与目标速度"
+            }
+          ],
+          "notes": "由CANSettingsReceived触发，解包并写入本地参数"
+        },
+        {
+          "name": "Sensor_Process_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "接收并缓冲最新rain_level"
+                }
+              ],
+              "notes": "由RainDataReceived触发，存储用于控制计算"
+            }
+          ],
+          "notes": "处理传感器数据、滤波与阈值判定"
+        },
+        {
+          "name": "Mode_Manager_Runnable",
+          "elements": [
+            {
+              "key": "MODE-SWITCH-POINTS",
+              "wrapper": "MODE-SWITCH-POINTS",
+              "preselect": [
+                {
+                  "of": "MODE-GROUP-IREF",
+                  "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                  "include": [
+                    "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+                  ],
+                  "notes": "管理AUTO/MANUAL模式切换引用"
+                }
+              ],
+              "notes": "执行模式切换与确认"
+            }
+          ],
+          "notes": "处理模式逻辑與持久化决策"
+        },
+        {
+          "name": "Control_Logic_Runnable",
+          "elements": [
+            {
+              "key": "MINIMUM-START-INTERVAL",
+              "wrapper": "MINIMUM-START-INTERVAL",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "LOCAL-VARIABLE-REF",
+                  "include": [
+                    "LOCAL-VARIABLE-REF"
+                  ],
+                  "notes": "使用本地变量控制最小启动间隔"
+                }
+              ],
+              "notes": "保护性限制和防抖逻辑"
+            },
+            {
+              "key": "SERVER-CALL-POINTS",
+              "wrapper": "SERVER-CALL-POINTS",
+              "preselect": [
+                {
+                  "of": "SERVER-CALL-POINTS",
+                  "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                  "include": [
+                    "OPERATION-IREF",
+                    "TIMEOUT",
+                    "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                  ],
+                  "notes": "向MotorDriver发起控制命令的同步调用"
+                }
+              ],
+              "notes": "在ControlCycleEvent或模式切换后调用MotorDriver"
+            }
+          ],
+          "notes": "基于模式与sensor/can数据计算并下发命令"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "IF_RainSensor_Sr",
+    "IF_CAN_UserSettings",
+    "IF_WiperController_ClientServer"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "WiperController"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_User_Settings",
+                          "/Interfaces/RainSensor_To_WiperController",
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ],
+                        "examples": [
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "PR-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_User_Settings",
+                          "/Interfaces/RainSensor_To_WiperController",
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ],
+                        "examples": [
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "PR-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_User_Settings",
+                          "/Interfaces/RainSensor_To_WiperController",
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ],
+                        "examples": [
+                          "/Interfaces/WiperControl_To_MotorDriver"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "PR-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                },
+                                "LOCAL-VARIABLE-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VARIABLE-DATA-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "LOCAL-VARIABLE-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF",
+                                "LOCAL-VARIABLE-REF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-RECEIVE-POINT-BY-VALUES": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                },
+                                "LOCAL-VARIABLE-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VARIABLE-DATA-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "LOCAL-VARIABLE-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF",
+                                "LOCAL-VARIABLE-REF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "MODE-SWITCH-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "MODE-SWITCH-POINT": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "MODE-GROUP-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-P-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                        "P-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-P-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-MODE-GROUP-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "MODE-DECLARATION-GROUP-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-MODE-GROUP-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-P-PORT-REF",
+                                "TARGET-MODE-GROUP-REF"
+                              ],
+                              "x-xml-tag": "MODE-GROUP-IREF"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "MODE-GROUP-IREF",
+                            "SHORT-NAME"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "MODE-SWITCH-POINT"
+                    ]
+                  },
+                  "SERVER-CALL-POINTS": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "SYNCHRONOUS-SERVER-CALL-POINT": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                              "type": "object",
+                              "properties": {
+                                "@DEST": {
+                                  "type": "string",
+                                  "enum": [
+                                    "EXCLUSIVE-AREA-NESTING-ORDER"
+                                  ]
+                                },
+                                "#text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "#text",
+                                "@DEST"
+                              ],
+                              "x-xml-tag": "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                              "additionalProperties": false
+                            },
+                            "OPERATION-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-R-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE",
+                                        "R-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-R-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-REQUIRED-OPERATION-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "CLIENT-SERVER-OPERATION"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-REQUIRED-OPERATION-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-R-PORT-REF",
+                                "TARGET-REQUIRED-OPERATION-REF"
+                              ],
+                              "x-xml-tag": "OPERATION-IREF"
+                            },
+                            "TIMEOUT": {
+                              "type": "number",
+                              "x-xml-tag": "TIMEOUT"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                            "OPERATION-IREF",
+                            "SHORT-NAME",
+                            "TIMEOUT"
+                          ],
+                          "x-xml-tag": "SYNCHRONOUS-SERVER-CALL-POINT"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "SYNCHRONOUS-SERVER-CALL-POINT"
+                      ]
+                    },
+                    "x-xml-tag": "SERVER-CALL-POINTS"
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-RECEIVE-POINT-BY-VALUES",
+                  "MINIMUM-START-INTERVAL",
+                  "MODE-SWITCH-POINTS",
+                  "SERVER-CALL-POINTS",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/MotorDriver/MotorDriver_Behavior/Motor_Control_Runnable",
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "EXTERNAL-TRIGGER-OCCURRED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/MotorDriver/MotorDriver_Behavior/Motor_Control_Runnable",
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "EXTERNAL-TRIGGER-OCCURRED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/MotorDriver/MotorDriver_Behavior/Motor_Control_Runnable",
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/RainSensor/RainSensor_Behavior/Sensor_Read_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：WiperController。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

@@ -1,0 +1,157 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Radar_to_Fusion_SR",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "ObjectList",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/DataTypes/ObjectList"
+            }
+          },
+          {
+            "SHORT-NAME": "Timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint64"
+            }
+          },
+          {
+            "SHORT-NAME": "SensorMeta",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/DataTypes/SensorMeta"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Camera_to_Fusion_SR",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "DetectionList",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/DataTypes/DetectionList"
+            }
+          },
+          {
+            "SHORT-NAME": "ImageFeatures",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/DataTypes/ImageFeatures"
+            }
+          },
+          {
+            "SHORT-NAME": "Timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint64"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Fusion_to_Planner_SR",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "FusedObjectList",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/DataTypes/FusedObjectList"
+            }
+          },
+          {
+            "SHORT-NAME": "Timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint64"
+            }
+          },
+          {
+            "SHORT-NAME": "ConfidenceMetrics",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/DataTypes/ConfidenceMetrics"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "System_Status_to_HMI_SR",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "ADAS_Status",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+              "#text": "/DataTypes/ADAS_Status"
+            }
+          },
+          {
+            "SHORT-NAME": "Alerts",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/DataTypes/AlertList"
+            }
+          },
+          {
+            "SHORT-NAME": "Timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint64"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Planner_to_Actuation_CS",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SendControlCommand"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Parameter_Service_CS",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "GetSetParameter"
+          }
+        ]
+      }
+    }
+  ],
+  "MODE-SWITCH-INTERFACE": [
+    {
+      "SHORT-NAME": "ADAS_Mode_Switch",
+      "IS-SERVICE": "true",
+      "MODE-GROUP": {
+        "SHORT-NAME": "ADASModeGroup",
+        "TYPE-TREF": {
+          "@DEST": "MODE-DECLARATION-GROUP",
+          "#text": "/ModeGroups/ADASModeGroup"
+        }
+      }
+    }
+  ]
+}

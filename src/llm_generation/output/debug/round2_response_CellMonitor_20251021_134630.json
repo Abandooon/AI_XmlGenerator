@@ -1,0 +1,200 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CellMonitor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CellVoltagesOut",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Cell_Voltages_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "BMSStatusOut",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_BMS_Status"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "BalancerControl_RPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Balancer_Control_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "Config_RPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/Charge_Control_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CellMonitor_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "MeasureCells_Runnable",
+          "MINIMUM-START-INTERVAL": 20,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ReadADC_Raw",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/Config_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataElements/ADC_RawArray"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ReceiveADCArgs",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/Config_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "ARGUMENT-DATA-PROTOTYPE",
+                      "#text": "/DataElements/ADC_RawArray"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "PublishProcessedVoltages",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/CellVoltagesOut"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "APPLICATION-ARRAY-ELEMENT",
+                      "#text": "/DataElements/Processed_CellVoltageArray"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Rte_CellMonitor_MeasureCells"
+        },
+        {
+          "SHORT-NAME": "CellFaultDetect_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ReadProcessedVoltages",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/CellVoltagesOut"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataElements/Processed_CellVoltages"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ReceiveConfigArgs",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/Config_RPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "PARAMETER-DATA-PROTOTYPE",
+                      "#text": "/DataElements/SamplingConfig"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "PublishFaultFlags",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CellMonitor/Ports/BMSStatusOut"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataElements/CellFaultFlags"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Rte_CellMonitor_CellFaultDetect"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Config_Update_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANComm/CANComm_Behavior/Receive_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Sampling_Timing_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+            },
+            "PERIOD": 20
+          }
+        ],
+        "TRANSFORMER-HARD-ERROR-EVENT": [
+          {
+            "SHORT-NAME": "Cell_Open_Circuit_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANComm/CANComm_Behavior/Receive_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

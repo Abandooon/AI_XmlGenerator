@@ -1,0 +1,202 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "TorqueCoordinator",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_TorqueRequest_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/TorqueRequest_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "P_PowertrainCAN_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/PowertrainCAN_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PR_ShiftRequest_PR_Port",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/ShiftRequest_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_EngineStatus_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/EngineStatus_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_RecoveryCapability_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/RecoveryCapability_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_ShiftRequest_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/ShiftRequest_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_DiagnosticUDS_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/DiagnosticUDS_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_PowertrainCAN_Port",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/PowertrainCAN_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "TorqueCoordinatorBehavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Torque_Arbitration_Runnable",
+          "MINIMUM-START-INTERVAL": 20,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_EngineStatus",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TorqueCoordinator/Ports/R_EngineStatus_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/EngineStatus/EngineTorqueAvailable"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_RecoveryCapability",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TorqueCoordinator/Ports/R_RecoveryCapability_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/RecoveryCapability/RecoveryTorqueCapability"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_GearState_From_CAN",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/TorqueCoordinator/Ports/R_PowertrainCAN_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/PowertrainCAN/GearState"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_TorqueRequest_To_Actuators",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/TorqueCoordinator/Ports/P_TorqueRequest_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/TorqueRequest/torque"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_CAN_Notification",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/TorqueCoordinator/Ports/P_PowertrainCAN_Port"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/PowertrainCAN/CAN_Frame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Async_Diagnostic_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/TorqueCoordinator/Ports/R_DiagnosticUDS_Port"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Operations/DiagnosticService/ReadDataByIdentifier"
+                  }
+                },
+                "TIMEOUT": 100
+              }
+            }
+          ],
+          "SYMBOL": "TorqueCoordinator_Torque_Arbitration"
+        }
+      ],
+      "EVENTS": {
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "Emergency_Brake_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/EnergyRecovery/EnergyRecoveryBehavior/Recovery_Evaluation_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Coordinator_Tick",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/EngineController/EngineControllerBehavior/Engine_Control_Runnable"
+            },
+            "PERIOD": 20
+          }
+        ]
+      }
+    }
+  }
+}

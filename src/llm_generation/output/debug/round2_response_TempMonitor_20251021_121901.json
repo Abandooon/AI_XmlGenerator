@@ -1,0 +1,76 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "TempMonitor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "TempOut",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Temp_SR"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Diag_R",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Send_Service"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "TempMonitorBehavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Temp_Read_Runnable",
+          "MINIMUM-START-INTERVAL": 500,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Temp_VarAccess",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/TempMonitor/Ports/TempOut"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/Temp_Celsius"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "TempMonitor_Temp_Read_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Temp_Init",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Temp_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/VoltageMonitor/VoltageMonitorBehavior/Voltage_Read_Runnable"
+            },
+            "PERIOD": 500
+          }
+        ]
+      }
+    }
+  }
+}

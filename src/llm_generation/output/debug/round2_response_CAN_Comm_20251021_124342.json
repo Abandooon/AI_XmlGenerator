@@ -1,0 +1,194 @@
+{
+  "SERVICE-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CAN_Comm",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CanTxPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Message_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "HeatCmd_Server_Port",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/HeatCmd_ClientServer"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CanRxPort",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_Message_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CAN_Comm_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "RxHandler_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Rx_CanFrame_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Comm/Ports/CanRxPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/Set_Level_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Forward_Command_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Comm/Ports/CanTxPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/Set_Level_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "CanDriver_Rx_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/CAN_Driver/Ports/CanDriver_R"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Services/CAN_Driver/RxOperation"
+                  }
+                },
+                "TIMEOUT": 50
+              }
+            }
+          ],
+          "SYMBOL": "CAN_Comm.RxHandler"
+        },
+        {
+          "SHORT-NAME": "TxHandler_Runnable",
+          "MINIMUM-START-INTERVAL": 1000,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Tx_Status_Input_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Comm/Ports/CanTxPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/Heater_Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Tx_Status_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CAN_Comm/Ports/CanTxPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/Heater_Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "CanDriver_Send_Call",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "R-PORT-PROTOTYPE",
+                    "#text": "/Components/CAN_Driver/Ports/CanDriver_R"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Services/CAN_Driver/SendOperation"
+                  }
+                },
+                "TIMEOUT": 50
+              }
+            }
+          ],
+          "SYMBOL": "CAN_Comm.TxHandler"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVE-ERROR-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Rx_Error",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Temperature_Sensor_Behavior/Read_Sensors_Runnable"
+            }
+          }
+        ],
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Tx_Completed",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Temperature_Sensor_Behavior/Read_Sensors_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/CAN_Comm/SWC-INTERNAL-BEHAVIOR/TxHandler_Runnable/DATA-SEND-POINTS/VARIABLE-ACCESS/Tx_Status_Access"
+            }
+          }
+        ],
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temperature_Sensor/Temperature_Sensor_Behavior/Read_Sensors_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

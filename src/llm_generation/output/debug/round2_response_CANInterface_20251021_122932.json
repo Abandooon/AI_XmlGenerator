@@ -1,0 +1,226 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "CANInterface",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CAN_Rx_PPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_RX_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "Status_Report_PPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Status_Report_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "CAN_Tx_Service_PRPort",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Status_Report_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CANInterface_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "CAN_Rx_Handler",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Headlight_Command_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Rx_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Headlight_Command"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "TailLight_Command_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Rx_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/TailLight_Command"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "TurnSignal_Command_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Rx_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/TurnSignal_Command"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Brightness_Command_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Rx_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Brightness_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Status_To_CAN_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "PR-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Tx_Service_PRPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Driver_Fault_Flag"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Immediate_Send",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/CANInterface/Ports/CAN_Tx_Service_PRPort"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Operations/Send_CAN_Frame"
+                  }
+                },
+                "TIMEOUT": 50
+              }
+            }
+          ],
+          "SYMBOL": "CAN_Rx_Handler_Symbol"
+        },
+        {
+          "SHORT-NAME": "CAN_Tx_Service",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Status_Received_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/Status_Report_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/Driver_Fault_Flag"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_Tx_Frame_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "PR-PORT-PROTOTYPE",
+                      "#text": "/Components/CANInterface/Ports/CAN_Tx_Service_PRPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototypes/CAN_Frame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "Send_Operation",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/CANInterface/Ports/CAN_Tx_Service_PRPort"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Operations/Send_CAN_Frame"
+                  }
+                },
+                "TIMEOUT": 50
+              }
+            }
+          ],
+          "SYMBOL": "CAN_Tx_Service_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVE-ERROR-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Error",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANInterface/Runnables/CAN_Rx_Handler"
+            }
+          }
+        ],
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Frame_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANInterface/Runnables/CAN_Rx_Handler"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,806 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：Display_Manager（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "将系统分为六个职责清晰的SWC：CAN_Interface负责采集并标准化车速/档位等车身数据；Bluetooth_Stack提供蓝牙音频与电话服务抽象；Media_Player负责音视频解码与播放控制；Navigation_Engine负责路径规划、在线地图交互与位置融合；Voice_Recognition负责语音输入识别并产生命令事件；Display_Manager负责双屏渲染与UI布局管理。每个组件以最小职责原则划分，交互通过明确接口传递数据或调用服务。",
+  "data_flow_analysis": "车辆数据：CAN_Interface周期采集CAN报文，作为SENDER-RECEIVER接口(IF_VehicleData)发布给Navigation_Engine、Media_Player与Display_Manager（payload: vehicleSpeed:int, gear:int, odometer:uint）。多媒体数据：Media_Player与Bluetooth_Stack通过IF_MediaPlayback交换音频流控制与元数据（payload: audioStream:binary/chunk, metadata:{title,artist,format}），采用流/分片传输。导航服务：Display_Manager作为客户端通过IF_NavigationService从Navigation_Engine请求路由（client-server，同步调用，payload: routeRequest/routeResponse JSON）。语音命令：Voice_Recognition通过IF_Voice_Command以最新值模式向各消费者发布命令事件（payload: command:string, confidence:float）。接口通信模式按用途区分：实时流（音频）使用高频低延迟异步发送/队列分片；车辆状态使用周期发布（最新值）；导航路径计算使用客户端-服务器同步调用带超时；电话控制使用异步服务器调用。",
+  "timing_requirements": "CAN采样周期：10-100ms；车辆状态发布到订阅者允许最多2次周期延迟；音频流同步率依赖采样（20-50ms帧）；UI渲染帧率30-60Hz（Display_Manager内部合并帧）；导航路径重算：触发时刻或每1s/5s为可配置周期；语音识别：端到端延迟应<300ms（唤醒+识别+命令分发）。客户端-服务器调用超时一般设为2s以内，地图在线请求链路需支持重试与回退。",
+  "scalability_considerations": "采用松耦合接口（S/R与C/S）便于组件替换或扩展；接口采用明确的数据模型，支持未来增加媒体编解码器、更多传感器或云服务；分层设计允许将Bluetooth_Stack或CAN_Interface替换为硬件/厂商专用实现；为大规模部署保留参数化的周期/缓冲大小配置（intelligent_batch模式下可调整并发数）。",
+  "complexity_assessment": "Complex"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "CAN_Interface publishes IF_VehicleData consumed by Navigation_Engine, Media_Player, Display_Manager. Bluetooth_Stack exposes IF_Bluetooth_Audio and IF_MediaPlayback to Media_Player. Media_Player and Display_Manager exchange media metadata via IF_MediaPlayback and IF_Display_Control (logical). Navigation_Engine offers IF_NavigationService consumed by Display_Manager. Voice_Recognition publishes IF_Voice_Command consumed by Navigation_Engine, Media_Player and Display_Manager. Phone control flows via IF_Phone_Control between Voice_Recognition and Bluetooth_Stack.",
+  "data_flow_paths": "Vehicle CAN -> CAN_Interface -> IF_VehicleData -> Navigation_Engine/Media_Player/Display_Manager. Media sources -> Media_Player -> IF_MediaPlayback -> Bluetooth_Stack/Display_Manager. User voice -> Voice_Recognition -> IF_Voice_Command -> consumers. Display requests -> Display_Manager <- IF_NavigationService <- Navigation_Engine.",
+  "control_flow_paths": "User/voice triggers and UI commands flow to Media_Player/Navigation_Engine via respective interfaces; Navigation_Engine may synchronously call online map services (SERVER-CALL) and return to Display_Manager. Bluetooth control uses asynchronous server calls (connect/dial) with callbacks to higher layers."
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "IF_VehicleData",
+    "name": "IF_VehicleData",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期发布（latest-value）, 同步订阅不可用；周期可配置为10-100ms；使用最新值覆盖策略，错误检测通过CRC和valid flags。",
+    "data_category": "telemetry",
+    "connected_components": [
+      "CAN_Interface",
+      "Navigation_Engine",
+      "Media_Player",
+      "Display_Manager"
+    ],
+    "performance_requirements": "端到端延迟应小于2采样周期；丢帧时使用最新值；订阅者处理延迟<50ms。",
+    "data_elements": [
+      "vehicleSpeed:int",
+      "gear:int",
+      "odometer:uint",
+      "brakeStatus:bool"
+    ],
+    "direct_paths": "CAN_Interface -> IF_VehicleData -> Navigation_Engine/Media_Player/Display_Manager"
+  },
+  {
+    "interface_id": "IF_MediaPlayback",
+    "name": "IF_MediaPlayback",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "流式异步（分片/队列）用于音频数据，meta为周期/事件驱动（latest-value）；音频帧实时性高，容忍微小延迟但需低抖动，使用小型FIFO缓冲与抖动缓冲。",
+    "data_category": "stream",
+    "connected_components": [
+      "Media_Player",
+      "Display_Manager",
+      "Bluetooth_Stack"
+    ],
+    "performance_requirements": "音频帧端到端抖动<20ms，帧丢失低于0.1%；控制命令延迟<200ms。",
+    "data_elements": [
+      "audioStream:binary",
+      "metadata:{title,artist,format}",
+      "playbackControl:{play,pause,seek}"
+    ],
+    "direct_paths": "Media_Player -> IF_MediaPlayback -> Bluetooth_Stack / Display_Manager"
+  },
+  {
+    "interface_id": "IF_Bluetooth_Audio",
+    "name": "IF_Bluetooth_Audio",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "主要为异步控制（连接/拨号）和音频流协同；控制采用异步服务器调用，音频走流接口；超时与重试策略配置化。",
+    "data_category": "control+stream",
+    "connected_components": [
+      "Bluetooth_Stack",
+      "Media_Player"
+    ],
+    "performance_requirements": "控制操作响应<1s（异步确认）；音频流实时性同IF_MediaPlayback。",
+    "data_elements": [
+      "btControl:{connect,disconnect,dial}",
+      "audioChunk:binary"
+    ],
+    "direct_paths": "Bluetooth_Stack <-> Media_Player (control + audio)"
+  },
+  {
+    "interface_id": "IF_NavigationService",
+    "name": "IF_NavigationService",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步客户端-服务器用于路由请求/响应；对在线地图请求支持超时与有限重试；同步调用需保证调用端非阻塞策略或后台线程。",
+    "data_category": "service",
+    "connected_components": [
+      "Navigation_Engine",
+      "Display_Manager"
+    ],
+    "performance_requirements": "同步响应超时<2s，常规响应<500ms；失败时提供本地缓存回退。",
+    "data_elements": [
+      "routeRequest:{origin,destination,options}",
+      "routeResponse:{maneuvers,eta}"
+    ],
+    "direct_paths": "Display_Manager -> IF_NavigationService -> Navigation_Engine"
+  },
+  {
+    "interface_id": "IF_Voice_Command",
+    "name": "IF_Voice_Command",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "事件驱动发布（latest-value for last command），高优先级事件推送给订阅者；缓冲策略采用最新值覆盖，命令需携带置信度与会话ID。",
+    "data_category": "event",
+    "connected_components": [
+      "Voice_Recognition",
+      "Navigation_Engine",
+      "Media_Player",
+      "Display_Manager"
+    ],
+    "performance_requirements": "识别后命令分发延迟<300ms；高置信命令立即生效，低置信命令需确认流程。",
+    "data_elements": [
+      "command:string",
+      "confidence:float",
+      "sessionId:string"
+    ],
+    "direct_paths": "Voice_Recognition -> IF_Voice_Command -> Navigation_Engine/Media_Player/Display_Manager"
+  },
+  {
+    "interface_id": "IF_Phone_Control",
+    "name": "IF_Phone_Control",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "异步服务器调用用于电话控制（拨号/挂断/接听），采用超时和回调机制；状态通过事件/回调回传。",
+    "data_category": "control",
+    "connected_components": [
+      "Bluetooth_Stack",
+      "Voice_Recognition"
+    ],
+    "performance_requirements": "控制操作确认<1s；失败应返回可重试错误码。",
+    "data_elements": [
+      "phoneCommand:{dial,hangup,answer}",
+      "callStatus:{ringing,connected,ended}"
+    ],
+    "direct_paths": "Voice_Recognition -> IF_Phone_Control -> Bluetooth_Stack"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "IF_VehicleData",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/IF_VehicleData"
+  },
+  {
+    "name": "IF_MediaPlayback",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/IF_MediaPlayback"
+  },
+  {
+    "name": "IF_Voice_Command",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/IF_Voice_Command"
+  },
+  {
+    "name": "IF_Bluetooth_Audio",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/IF_Bluetooth_Audio"
+  },
+  {
+    "name": "IF_NavigationService",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/IF_NavigationService"
+  },
+  {
+    "name": "IF_Phone_Control",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/IF_Phone_Control"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/IF_VehicleData
+  - /Interfaces/IF_MediaPlayback
+  - /Interfaces/IF_Voice_Command
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/IF_Bluetooth_Audio
+  - /Interfaces/IF_NavigationService
+  - /Interfaces/IF_Phone_Control
+  # 类型: ECU-ABSTRACTION-SW-COMPONENT-TYPE
+  - /Components/CAN_Interface
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/CAN_Interface/CAN_Interface_Behavior
+  - /Components/Bluetooth_Stack/Bluetooth_Stack_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable
+  - /Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Connection_Manager
+  - /Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Audio_Stream_Runnable
+  # 类型: SERVICE-SW-COMPONENT-TYPE
+  - /Components/Bluetooth_Stack
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "CMP_Display_Manager",
+  "name": "Display_Manager",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "负责双屏UI渲染、合成与显示内容调度",
+  "estimated_complexity": "Complex",
+  "port_estimates": {
+    "input_ports": "3 (video/graphics, nav updates, UI commands)",
+    "output_ports": "1 (touch/events to system)"
+  },
+  "behavioral_characteristics": "接收来自Media_Player/Navigation_Engine/Voice_Recognition的渲染内容或命令；合并图层并按帧输出到显示硬件；触发条件：帧定时器或内容更新；状态管理：当前页面/窗口栈与渲染优先级；数据流程：input->layout合成->display buffer->硬件。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE"
+      ],
+      "details": "R-PORT接收渲染内容/命令，P-PORT向下层显示驱动发布渲染缓冲"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "INIT-EVENT",
+          "name": "Display_Init",
+          "trigger": "组件启动"
+        },
+        {
+          "type": "TIMING-EVENT",
+          "name": "Frame_Timer",
+          "trigger": "渲染定时器(30-60Hz)"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Render_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "接收来自Media_Player/Navigation_Engine的渲染数据"
+                }
+              ],
+              "notes": "帧合成所需的数据接收点"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "发布合成后的帧到显示驱动"
+                }
+              ],
+              "notes": "向显示驱动发送渲染缓冲"
+            }
+          ],
+          "notes": "按帧合成并发布渲染结果"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "IF_MediaPlayback",
+    "IF_NavigationService",
+    "IF_Voice_Command",
+    "IF_VehicleData"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "Display_Manager"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/IF_Bluetooth_Audio",
+                          "/Interfaces/IF_MediaPlayback",
+                          "/Interfaces/IF_NavigationService",
+                          "/Interfaces/IF_Phone_Control",
+                          "/Interfaces/IF_VehicleData",
+                          "/Interfaces/IF_Voice_Command"
+                        ],
+                        "examples": [
+                          "/Interfaces/IF_Bluetooth_Audio"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/IF_Bluetooth_Audio",
+                          "/Interfaces/IF_MediaPlayback",
+                          "/Interfaces/IF_NavigationService",
+                          "/Interfaces/IF_Phone_Control",
+                          "/Interfaces/IF_VehicleData",
+                          "/Interfaces/IF_Voice_Command"
+                        ],
+                        "examples": [
+                          "/Interfaces/IF_Bluetooth_Audio"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "INIT-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Audio_Stream_Runnable",
+                              "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Connection_Manager",
+                              "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "INIT-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Audio_Stream_Runnable",
+                              "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Connection_Manager",
+                              "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Interface/CAN_Interface_Behavior/Read_CAN_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "INIT-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：Display_Manager。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

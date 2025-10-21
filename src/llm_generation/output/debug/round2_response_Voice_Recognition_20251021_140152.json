@@ -1,0 +1,98 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Voice_Recognition",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "command_out",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_Voice_Command"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "audio_in",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/IF_MediaPlayback"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Voice_Recognition_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Recognition_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "AudioInputAccess",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Voice_Recognition/Ports/audio_in"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/AudioFrame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CommandOutputAccess",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Voice_Recognition/Ports/command_out"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/VoiceCommand"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Voice_Recognition.Recognition_Runnable"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Audio_Frame_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Audio_Stream_Runnable"
+            }
+          }
+        ],
+        "INTERNAL-TRIGGER-OCCURRED-EVENT": [
+          {
+            "SHORT-NAME": "Recognition_Completed",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Bluetooth_Stack/Bluetooth_Stack_Behavior/Audio_Stream_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "INTERNAL-TRIGGERING-POINT",
+              "#text": "/Components/Voice_Recognition/Voice_Recognition_Behavior/Recognition_Complete_Source"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

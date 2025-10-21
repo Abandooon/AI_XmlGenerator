@@ -1,0 +1,99 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "CAN_Bus_IF",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "can_id",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint32"
+            }
+          },
+          {
+            "SHORT-NAME": "dlc",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          },
+          {
+            "SHORT-NAME": "data",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/ApplicationDataTypes/ByteArray8"
+            }
+          },
+          {
+            "SHORT-NAME": "timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint32"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "CAN_Command_IF",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "node_id",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          },
+          {
+            "SHORT-NAME": "door_id",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          },
+          {
+            "SHORT-NAME": "action",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
+              "#text": "/ApplicationDataTypes/ActionEnum"
+            }
+          },
+          {
+            "SHORT-NAME": "request_id",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint16"
+            }
+          },
+          {
+            "SHORT-NAME": "timestamp",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint32"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "UDS_Service_IF",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "DiagnosticRequest"
+          },
+          {
+            "SHORT-NAME": "DiagnosticResponse"
+          }
+        ]
+      }
+    }
+  ]
+}

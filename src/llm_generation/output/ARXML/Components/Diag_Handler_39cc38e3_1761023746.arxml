@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Components</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>Diag_Handler</SHORT-NAME>
+          <PORTS>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Diag_Request_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/OTA_ClientServer_Interface</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Diag_CAN_Tx</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/CAN_Bus_Interface</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <P-PORT-PROTOTYPE>
+              <SHORT-NAME>Diag_OTA_Port</SHORT-NAME>
+              <PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/OTA_ClientServer_Interface</PROVIDED-INTERFACE-TREF>
+            </P-PORT-PROTOTYPE>
+            <PR-PORT-PROTOTYPE>
+              <SHORT-NAME>CanTransport_Client</SHORT-NAME>
+              <PROVIDED-REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/CAN_Bus_Interface</PROVIDED-REQUIRED-INTERFACE-TREF>
+            </PR-PORT-PROTOTYPE>
+            <PR-PORT-PROTOTYPE>
+              <SHORT-NAME>LinTransport_Client</SHORT-NAME>
+              <PROVIDED-REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/LIN_Bus_Interface</PROVIDED-REQUIRED-INTERFACE-TREF>
+            </PR-PORT-PROTOTYPE>
+            <PR-PORT-PROTOTYPE>
+              <SHORT-NAME>OTA_Client</SHORT-NAME>
+              <PROVIDED-REQUIRED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE">/Interfaces/OTA_ClientServer_Interface</PROVIDED-REQUIRED-INTERFACE-TREF>
+            </PR-PORT-PROTOTYPE>
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>Diag_Handler_InternalBehavior</SHORT-NAME>
+              <EVENTS>
+                <OPERATION-INVOKED-EVENT>
+                  <SHORT-NAME>Diagnostic_Request_Received</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/CAN_Interface/CAN_Interface_InternalBehavior/CAN_Rx_Dispatch_Runnable</START-ON-EVENT-REF>
+                  <OPERATION-IREF>
+                    <CONTEXT-P-PORT-REF DEST="P-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/Diag_Request_Port</CONTEXT-P-PORT-REF>
+                    <TARGET-PROVIDED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Components/Diag_Handler/Operations/DiagnosticRequest</TARGET-PROVIDED-OPERATION-REF>
+                  </OPERATION-IREF>
+                </OPERATION-INVOKED-EVENT>
+                <TIMING-EVENT>
+                  <SHORT-NAME>OTA_Timeout_Check</SHORT-NAME>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/Components/LIN_Interface/LIN_Interface_InternalBehavior/LIN_Scheduler_Runnable</START-ON-EVENT-REF>
+                  <PERIOD>1</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>Diag_Request_Handler</SHORT-NAME>
+                  <MINIMUM-START-INTERVAL>1000</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-SEND-POINTS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>Diag_To_CAN</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/Diag_CAN_Tx</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="DATA-PROTOTYPE">/DataPrototypes/Diag_Frame</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                    <VARIABLE-ACCESS>
+                      <SHORT-NAME>OTA_Segment_Out</SHORT-NAME>
+                      <ACCESSED-VARIABLE>
+                        <AUTOSAR-VARIABLE-IREF>
+                          <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/Diag_OTA_Port</PORT-PROTOTYPE-REF>
+                          <TARGET-DATA-PROTOTYPE-REF DEST="ARGUMENT-DATA-PROTOTYPE">/DataPrototypes/FW_Segment</TARGET-DATA-PROTOTYPE-REF>
+                        </AUTOSAR-VARIABLE-IREF>
+                      </ACCESSED-VARIABLE>
+                    </VARIABLE-ACCESS>
+                  </DATA-SEND-POINTS>
+                  <SERVER-CALL-POINTS>
+                    <SYNCHRONOUS-SERVER-CALL-POINT>
+                      <SHORT-NAME>Call_CAN_Transmit</SHORT-NAME>
+                      <CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA-NESTING-ORDER">/ExclusiveAreas/Diag_Handler/EA1</CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF>
+                      <OPERATION-IREF>
+                        <CONTEXT-R-PORT-REF DEST="PR-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/CanTransport_Client</CONTEXT-R-PORT-REF>
+                        <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Components/CAN_Interface/Operations/TransmitFrame</TARGET-REQUIRED-OPERATION-REF>
+                      </OPERATION-IREF>
+                      <TIMEOUT>200</TIMEOUT>
+                    </SYNCHRONOUS-SERVER-CALL-POINT>
+                  </SERVER-CALL-POINTS>
+                  <SERVER-CALL-POINTS>
+                    <SYNCHRONOUS-SERVER-CALL-POINT>
+                      <SHORT-NAME>Call_LIN_Transmit</SHORT-NAME>
+                      <CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA-NESTING-ORDER">/ExclusiveAreas/Diag_Handler/EA1</CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF>
+                      <OPERATION-IREF>
+                        <CONTEXT-R-PORT-REF DEST="PR-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/LinTransport_Client</CONTEXT-R-PORT-REF>
+                        <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Components/LIN_Interface/Operations/TransmitFrame</TARGET-REQUIRED-OPERATION-REF>
+                      </OPERATION-IREF>
+                      <TIMEOUT>500</TIMEOUT>
+                    </SYNCHRONOUS-SERVER-CALL-POINT>
+                  </SERVER-CALL-POINTS>
+                  <SERVER-CALL-POINTS>
+                    <SYNCHRONOUS-SERVER-CALL-POINT>
+                      <SHORT-NAME>Call_OTA_Transport</SHORT-NAME>
+                      <CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF DEST="EXCLUSIVE-AREA-NESTING-ORDER">/ExclusiveAreas/Diag_Handler/EA1</CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF>
+                      <OPERATION-IREF>
+                        <CONTEXT-R-PORT-REF DEST="PR-PORT-PROTOTYPE">/Components/Diag_Handler/Ports/OTA_Client</CONTEXT-R-PORT-REF>
+                        <TARGET-REQUIRED-OPERATION-REF DEST="CLIENT-SERVER-OPERATION">/Components/CAN_Interface/Operations/OTA_Transport</TARGET-REQUIRED-OPERATION-REF>
+                      </OPERATION-IREF>
+                      <TIMEOUT>30000</TIMEOUT>
+                    </SYNCHRONOUS-SERVER-CALL-POINT>
+                  </SERVER-CALL-POINTS>
+                  <SYMBOL>Diag_Handler_Diag_Request_Handler</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

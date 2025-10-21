@@ -1,0 +1,2515 @@
+{
+  "experiment_time": "2025-10-21T14:12:31.921051",
+  "total_cases": 3,
+  "success_count": 3,
+  "failure_count": 0,
+  "by_complexity": {
+    "middle": {
+      "total": 3,
+      "success": 3,
+      "failure": 0
+    }
+  },
+  "results": [
+    {
+      "case_id": "middle_5",
+      "system_name": "BatteryManagementSystem",
+      "complexity": "middle",
+      "requirement": {
+        "system_name": "BatteryManagementSystem",
+        "description": "电动车电池包管理",
+        "components_count": 7,
+        "component_types": [
+          "CellMonitor",
+          "ThermalManager",
+          "SOCEstimator",
+          "Balancer",
+          "SafetyManager",
+          "ChargeController",
+          "CANComm"
+        ],
+        "key_requirements": [
+          "CellMonitor监控96个单体电池电压",
+          "ThermalManager控制液冷系统",
+          "SOCEstimator估算SOC和SOH",
+          "Balancer实现被动均衡",
+          "SafetyManager实现ASIL-D安全功能",
+          "ChargeController支持快充和慢充",
+          "通过CAN上报电池状态给VCU"
+        ]
+      },
+      "start_time": "2025-10-21T13:41:07.314835",
+      "phase1": {
+        "duration": 155.21845149993896,
+        "api_calls": 1,
+        "tokens": 18345,
+        "component_count": 7,
+        "interface_count": 7,
+        "blueprint": {
+          "system_analysis": {
+            "functional_decomposition": "将电池包管理系统分为7个SWC：CellMonitor负责96个单体电压采集与预处理；ThermalManager负责液冷回路控制与温度管理；SOCEstimator负责SOC/SOH估算与电量状态输出；Balancer负责被动均衡决策与下发均衡命令；SafetyManager负责ASIL-D安全监控、故障判定与安全响应；ChargeController负责充电策略（快充/慢充）与与整车/充电站交互；CANComm负责CAN报文收发与对外上报。各组件职责边界明确，数据采集与控制路径分离，安全相关逻辑集中在SafetyManager但与各数据源紧耦合。",
+            "data_flow_analysis": "主数据流：CellMonitor -> (cell voltages[96]) -> SOCEstimator, SafetyManager, Balancer, CANComm。ThermalManager -> (temperature, coolant flow) -> SOCEstimator, SafetyManager, CANComm。SOCEstimator -> (SOC, SOH, StateFlags) -> ChargeController, CANComm, SafetyManager。ChargeController -> (charge request/ack) -> SafetyManager, CANComm。Balancer <- (balancing commands) <- SOCEstimator/SafetyManager；Balancer -> (balancer status) -> CANComm。CANComm对外发送BMS状态报文并接收VCU/充电桩命令。数据类型：cell_voltage[] (96 x float32), temperatures (float32 array), SOC (float32), SOH (float32), status_flags (bitfield/uint8), balancer_cmds (enum/uint8), charge_cmds (enum/uint8)。传输时序：关键监控数据（cell voltages, temps）周期性采样10-100ms，SOC估算周期100-500ms，安全检测周期10-100ms，CAN上报周期100-500ms或事件驱动。",
+            "timing_requirements": "CellMonitor采样周期10ms~100ms（默认20ms）满足实时监控；SafetyManager关键检测任务最大响应时间<=50ms，诊断与安全停机路径需<=100ms；ThermalManager控制周期100ms以内，冷却系统控制命令容忍较长到200ms；SOCEstimator周期100-500ms；CAN上报周期100-500ms，紧急事件立即上报（<50ms）。系统需支持时间同步与监控任务优先级划分以保证安全路径时序。",
+            "scalability_considerations": "设计支持扩展电池单体数与并联模块，通过将CellMonitor设计为可实例化/数组化并采用索引化报文结构；接口采用批量/分段传输策略以容纳更多单体；接口与runnable周期参数可配置以适配不同性能ECU；CAN报文可分段并映射至多信号以扩展。",
+            "complexity_assessment": "Complex"
+          },
+          "component_plan": [
+            {
+              "component_id": "cmp_cell_monitor",
+              "name": "CellMonitor",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "采集96路单体电压，执行滤波、异常检测与打包上报",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "R-ports: configuration, balancing enable; approx 2",
+                "output_ports": "P-ports: cell_voltage[96], cell_status; approx 2"
+              },
+              "behavioral_characteristics": "周期性采样96路电压（默认20ms），应用低通滤波与变化检测；检测超限/开路并生成故障标志；按周期打包发送到SOCEstimator/ CANComm并在异常时触发SafetyManager事件；支持参数下发（采样率/滤波系数/阈值）。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "P-ports用于输出cell_voltage数组与status；R-ports用于接收配置与均衡控制命令"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Sampling_Timing_Event",
+                      "trigger": "periodic_20ms"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "Config_Update_Event",
+                      "trigger": "on_configuration_write"
+                    },
+                    {
+                      "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                      "name": "Cell_Open_Circuit_Event",
+                      "trigger": "cell_open_detected"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "MeasureCells_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取ADC驱动提供的原始电压数组"
+                            }
+                          ],
+                          "notes": "从底层ADC/driver读取原始电压"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "向SOCEstimator和CANComm发布处理后的voltages"
+                            }
+                          ],
+                          "notes": "对外发布cell_voltage数组"
+                        }
+                      ],
+                      "notes": "周期采样与预处理"
+                    },
+                    {
+                      "name": "CellFaultDetect_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-READ-ACCESSS",
+                          "wrapper": "DATA-READ-ACCESSS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取已处理电压用于故障判定"
+                            }
+                          ],
+                          "notes": "对单体进行阈值/开路检测"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布故障标志到SafetyManager与CANComm"
+                            }
+                          ],
+                          "notes": "上报故障和状态"
+                        }
+                      ],
+                      "notes": "故障检测与上报"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "SOCEstimator",
+                "SafetyManager",
+                "Balancer",
+                "CANComm",
+                "ThermalManager"
+              ]
+            },
+            {
+              "component_id": "cmp_thermal_manager",
+              "name": "ThermalManager",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "监测温度并控制液冷系统以维持电池温度在目标区间",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "R-ports: temp sensors, configuration; approx 2",
+                "output_ports": "P-ports: temperature, coolant_commands; approx 2"
+              },
+              "behavioral_characteristics": "周期性采集温度数据（默认100ms），根据PID控制或状态机调整冷却泵/阀门，支持温度均衡策略并在过温或冷却故障时触发SafetyManager。提供模式（normal/boost/standby）切换接口。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "输出温度与控制命令至驱动层并接收配置/模式切换"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Thermal_Sample_Event",
+                      "trigger": "periodic_100ms"
+                    },
+                    {
+                      "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Overtemp_Event",
+                      "trigger": "temp_threshold_exceeded"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "ThermalMonitor_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收传感器温度值"
+                            }
+                          ],
+                          "notes": "读取温度并进行滤波"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "同步调用驱动层执行泵/阀动作"
+                            }
+                          ],
+                          "notes": "调用底层执行器"
+                        }
+                      ],
+                      "notes": "温度采样与控制动作下发"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "SOCEstimator",
+                "SafetyManager",
+                "CANComm",
+                "CellMonitor"
+              ]
+            },
+            {
+              "component_id": "cmp_soc_estimator",
+              "name": "SOCEstimator",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "基于电压、温度与电流估算SOC与SOH并发布状态",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "R-ports: cell_voltage array, temperatures, current; approx 3",
+                "output_ports": "P-ports: SOC, SOH, state_flags; approx 2"
+              },
+              "behavioral_characteristics": "周期性或事件触发执行SOC/SOH估算（默认周期200ms），融合电压/温度/电流并采用卡尔曼滤波或模型融合；提供估算置信度，触发均衡建议与充电限制；支持重置/重估策略与参数化阈值。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "接收CellMonitor与ThermalManager的数据，输出SOC/SOH与建议"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Estimate_Periodic_Event",
+                      "trigger": "periodic_200ms"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "CellData_Update_Event",
+                      "trigger": "on_cell_data_receive"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Estimate_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取cell_voltage与temperature输入"
+                            }
+                          ],
+                          "notes": "获取输入数据用于估算"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布SOC/SOH与建议"
+                            }
+                          ],
+                          "notes": "输出估算结果"
+                        },
+                        {
+                          "key": "PARAMETER-ACCESSS",
+                          "wrapper": "PARAMETER-ACCESSS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-PARAMETER",
+                              "variant": "AUTOSAR-PARAMETER-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取估算参数（模型系数）"
+                            }
+                          ],
+                          "notes": "使用校准参数"
+                        }
+                      ],
+                      "notes": "SOC/SOH估算Runnable"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "CellMonitor",
+                "ThermalManager",
+                "Balancer",
+                "ChargeController",
+                "SafetyManager",
+                "CANComm"
+              ]
+            },
+            {
+              "component_id": "cmp_balancer",
+              "name": "Balancer",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "基于估算/策略执行被动均衡命令并报告均衡状态",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "R-ports: balance commands, enable; approx 2",
+                "output_ports": "P-ports: balancer_status; approx 1"
+              },
+              "behavioral_characteristics": "基于SOCEstimator或SafetyManager指令下发均衡命令；周期性评估均衡动作并通过异步调用驱动层切换均衡开关；提供状态反馈与故障指示；默认均衡评估周期1s，可被事件或策略触发提前执行。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "接收均衡指令并向驱动层下发开关控制"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "BACKGROUND-EVENT",
+                      "name": "Balancer_Background_Event",
+                      "trigger": "periodic_1s"
+                    },
+                    {
+                      "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Immediate_Balance_Event",
+                      "trigger": "on_balance_request"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "BalanceDecision_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收SOC/voltages输入用于决策"
+                            }
+                          ],
+                          "notes": "读取估算与电压数据"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "异步调用底层执行均衡切换"
+                            }
+                          ],
+                          "notes": "调用驱动异步下发均衡命令"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "上报均衡状态"
+                            }
+                          ],
+                          "notes": "发布balancer状态"
+                        }
+                      ],
+                      "notes": "均衡决策与命令下发"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "SOCEstimator",
+                "CellMonitor",
+                "SafetyManager",
+                "CANComm"
+              ]
+            },
+            {
+              "component_id": "cmp_safety_manager",
+              "name": "SafetyManager",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "实现ASIL-D安全功能：故障聚合、限入/限出、失效安全与安全停机",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "R-ports: cell status, temps, soc; approx 3",
+                "output_ports": "P-ports: safety_actions, alerts; approx 2"
+              },
+              "behavioral_characteristics": "持续聚合来自CellMonitor、ThermalManager、SOCEstimator的诊断信息；按ASIL-D路径定义故障处理策略（限流、断开充电、请求降级）；有独立高优先级检测Runnable周期<=20ms，支持冗余计时器、watchdog接口与安全相关模式切换；在必要时发出紧急上报与控制命令。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "接收诊断与状态，输出安全动作与模式切换信号"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Safety_High_Prio_Event",
+                      "trigger": "periodic_20ms"
+                    },
+                    {
+                      "type": "INIT-EVENT",
+                      "name": "Safety_Init_Event",
+                      "trigger": "on_startup"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "Diagnostic_Update_Event",
+                      "trigger": "on_diagnostic_receive"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "SafetyMonitor_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收多源诊断数据"
+                            }
+                          ],
+                          "notes": "采集诊断/状态"
+                        },
+                        {
+                          "key": "MODE-ACCESS-POINTS",
+                          "wrapper": "MODE-ACCESS-POINTS",
+                          "preselect": [
+                            {
+                              "of": "MODE-GROUP-IREF",
+                              "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                              "include": [
+                                "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+                              ],
+                              "notes": "安全管理以读取模式为主"
+                            }
+                          ],
+                          "notes": "读取与管理安全模式"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布安全动作与告警"
+                            }
+                          ],
+                          "notes": "输出安全决策"
+                        }
+                      ],
+                      "notes": "高优先级安全检测与响应"
+                    },
+                    {
+                      "name": "SafetyService_Runnable",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT",
+                                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                              ],
+                              "notes": "同步调用执行急停/断开接口"
+                            }
+                          ],
+                          "notes": "对下游执行器同步调用"
+                        },
+                        {
+                          "key": "PARAMETER-ACCESSS",
+                          "wrapper": "PARAMETER-ACCESSS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-PARAMETER",
+                              "variant": "AUTOSAR-PARAMETER-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取安全阈值/容忍时间"
+                            }
+                          ],
+                          "notes": "安全参数读取"
+                        }
+                      ],
+                      "notes": "执行安全策略与外设控制"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "CellMonitor",
+                "ThermalManager",
+                "SOCEstimator",
+                "ChargeController",
+                "CANComm",
+                "Balancer"
+              ]
+            },
+            {
+              "component_id": "cmp_charge_controller",
+              "name": "ChargeController",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "管理快充/慢充流程，执行充电策略并与SafetyManager和外部充电设备交互",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "R-ports: SOC, safety_actions, charge_requests; approx 3",
+                "output_ports": "P-ports: charge_commands, status; approx 2"
+              },
+              "behavioral_characteristics": "根据SOCEstimator与充电策略选择快充或慢充，执行限制（如线控、温度约束）；接收外部请求并执行认证/握手流程；在SafetyManager命令下能快速限入或停止充电；具有事务式启动/停止机制与超时处理。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "接收SOC/安全信号并下发充电控制；支持与CANComm的交互"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Charge_Request_Event",
+                      "trigger": "on_charge_request_from_vcu"
+                    },
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Charge_Control_Timer",
+                      "trigger": "periodic_100ms"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "ChargeControl_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收SOC与安全指令"
+                            }
+                          ],
+                          "notes": "接收输入并评估充电许可"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "与充电硬件/外部代理同步交互"
+                            }
+                          ],
+                          "notes": "发起启动/停止充电操作"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布充电状态与反馈"
+                            }
+                          ],
+                          "notes": "输出充电状态"
+                        }
+                      ],
+                      "notes": "充电流程控制Runnable"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "SOCEstimator",
+                "SafetyManager",
+                "CANComm"
+              ]
+            },
+            {
+              "component_id": "cmp_can_comm",
+              "name": "CANComm",
+              "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+              "purpose": "封装CAN传输，负责BMS状态上报与命令接收",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "R-ports: internal status inputs and external CAN rx; approx 3",
+                "output_ports": "P-ports: CAN tx messages; approx 4"
+              },
+              "behavioral_characteristics": "处理内部组件的报文封装与周期/事件驱动发送（默认周期100-500ms），解析外部VCU/充电桩命令并转发到相应组件；支持缓冲（最新值优先）及队列用于高优先级紧急报文；包含重传与错误统计并提供诊断信息。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "提供CAN TX端口并接收内部状态信号与外部CAN消息"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Can_Transmit_Timer",
+                      "trigger": "periodic_200ms"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "Can_Rx_Event",
+                      "trigger": "on_can_message_received"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Transmit_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-READ-ACCESSS",
+                          "wrapper": "DATA-READ-ACCESSS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "读取SOC/SOH/voltages摘要用于报文"
+                            }
+                          ],
+                          "notes": "读取内部状态并封装为CAN报文"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发送CAN报文到外部VCU/充电桩"
+                            }
+                          ],
+                          "notes": "CAN发送点"
+                        }
+                      ],
+                      "notes": "周期/事件驱动发送报文"
+                    },
+                    {
+                      "name": "Receive_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "解析VCU/充电桩命令并转发"
+                            }
+                          ],
+                          "notes": "接收并分发外部命令"
+                        }
+                      ],
+                      "notes": "CAN接收与分发"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "CellMonitor",
+                "ThermalManager",
+                "SOCEstimator",
+                "SafetyManager",
+                "ChargeController",
+                "Balancer"
+              ]
+            }
+          ],
+          "interface_plan": [
+            {
+              "interface_id": "if_cell_voltages",
+              "name": "Cell_Voltages_Interface",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期性发送+事件触发（latest value 优先）；周期100-20ms取决采样配置；面向批量数据(cell_voltage[96])，分段或压缩以适配CAN帧；错误处理采用CRC与故障标志上报",
+              "data_category": "measurement",
+              "connected_components": [
+                "CellMonitor",
+                "SOCEstimator",
+                "Balancer",
+                "SafetyManager",
+                "CANComm"
+              ],
+              "performance_requirements": "延迟<100ms（正常），异常或安全事件<50ms；数据完整性需检测与丢帧报告",
+              "data_elements": [
+                "cell_voltage[96]:float32_array",
+                "cell_status:uint8"
+              ],
+              "direct_paths": "CellMonitor P-port -> SOCEstimator R-port / Balancer R-port / SafetyManager R-port；CANComm订阅并映射为CAN信号"
+            },
+            {
+              "interface_id": "if_thermal_status",
+              "name": "Thermal_Status_Interface",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期性发送（100ms）+过温事件触发；最新值优先；带健康标志和故障码",
+              "data_category": "measurement",
+              "connected_components": [
+                "ThermalManager",
+                "SOCEstimator",
+                "SafetyManager",
+                "CANComm"
+              ],
+              "performance_requirements": "过温事件需<50ms上报；常规更新<200ms",
+              "data_elements": [
+                "temperatures:float32_array",
+                "coolant_flow:float32",
+                "thermal_status:uint8"
+              ],
+              "direct_paths": "ThermalManager P-port -> SOCEstimator/SafetyManager R-ports；CANComm映射上报"
+            },
+            {
+              "interface_id": "if_soc_soh",
+              "name": "SOC_SOH_Interface",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期性（200ms）发布+事件驱动（显著变化或故障）；采用最新值缓存；错误通过status_flags上报",
+              "data_category": "state",
+              "connected_components": [
+                "SOCEstimator",
+                "ChargeController",
+                "SafetyManager",
+                "CANComm"
+              ],
+              "performance_requirements": "估算输出延迟<500ms；紧急降载通知<100ms",
+              "data_elements": [
+                "SOC:float32",
+                "SOH:float32",
+                "state_flags:uint8"
+              ],
+              "direct_paths": "SOCEstimator P-port -> ChargeController/SafetyManager R-ports；CANComm发布对外"
+            },
+            {
+              "interface_id": "if_balancer_control",
+              "name": "Balancer_Control_Interface",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "客户端发起（同步/异步）调用均衡操作，异步优先用于非阻塞命令；包含命令确认与超时；队列策略用于短时聚集",
+              "data_category": "command",
+              "connected_components": [
+                "SOCEstimator",
+                "SafetyManager",
+                "Balancer"
+              ],
+              "performance_requirements": "命令下发确认<200ms；异步下发允许稍长超时（<=1s）",
+              "data_elements": [
+                "balance_cmd:uint8",
+                "balance_mask:uint96",
+                "ack:boolean"
+              ],
+              "direct_paths": "SOCEstimator/SafetyManager -> Balancer via CLIENT-SERVER calls; Balancer returns status"
+            },
+            {
+              "interface_id": "if_charge_control",
+              "name": "Charge_Control_Interface",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "客户端-服务器，充电请求为同步事务（带超时），状态回报可异步；支持握手与超时重试；安全停充命令优先",
+              "data_category": "command",
+              "connected_components": [
+                "ChargeController",
+                "SafetyManager",
+                "CANComm"
+              ],
+              "performance_requirements": "启动/停止操作确认<200ms；安全停止必须<100ms",
+              "data_elements": [
+                "charge_request:uint8",
+                "charge_status:uint8",
+                "charge_limits:struct"
+              ],
+              "direct_paths": "ChargeController -> Charger HW via SERVER-CALL; SafetyManager can invoke stop via same interface"
+            },
+            {
+              "interface_id": "if_safety_events",
+              "name": "Safety_Events_Interface",
+              "type": "TRIGGER-INTERFACE",
+              "communication_pattern": "触发/中断式事件分发，低延迟（<50ms），事件优先级队列，必须可靠上报并记录时间戳",
+              "data_category": "event",
+              "connected_components": [
+                "SafetyManager",
+                "CANComm",
+                "ChargeController",
+                "SOCEstimator"
+              ],
+              "performance_requirements": "紧急事件上报<50ms；事件不可丢失，需持久化到诊断",
+              "data_elements": [
+                "safety_event_id:uint16",
+                "severity:uint8",
+                "timestamp:uint64"
+              ],
+              "direct_paths": "SafetyManager triggers -> CANComm for external, ChargeController for immediate stop, SOCEstimator for state updates"
+            },
+            {
+              "interface_id": "if_can_bms_status",
+              "name": "CAN_BMS_Status",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期性CAN发送+紧急事件驱动，采用分段映射与压缩，优先发送高危事件；重传策略由CAN层处理",
+              "data_category": "telemetry",
+              "connected_components": [
+                "CANComm"
+              ],
+              "performance_requirements": "周期100-500ms；紧急事件<50ms",
+              "data_elements": [
+                "bms_summary:struct",
+                "fault_codes:uint32"
+              ],
+              "direct_paths": "CANComm -> 外部VCU/charger via CAN bus; 内部通过订阅接口获取数据"
+            }
+          ],
+          "component_generation_order": [
+            "CANComm",
+            "CellMonitor",
+            "ThermalManager",
+            "SOCEstimator",
+            "SafetyManager",
+            "Balancer",
+            "ChargeController"
+          ],
+          "connection_topology": {
+            "component_connections": "CellMonitor P -> SOCEstimator R, SafetyManager R, Balancer R, CANComm R; ThermalManager P -> SOCEstimator R, SafetyManager R, CANComm R; SOCEstimator P -> ChargeController R, CANComm R, Balancer R, SafetyManager R; SafetyManager P -> ChargeController R, CANComm R, Balancer R (safety actions); Balancer P -> CANComm R (status); ChargeController P -> CANComm R (status) and R <- CANComm (external commands).",
+            "data_flow_paths": "测量数据从CellMonitor/ThermalManager通过Sender-Receiver接口到SOCEstimator/SafetyManager/Balancer；估算结果从SOCEstimator经S-R或Client-Server到ChargeController和CANComm；安全事件通过Trigger接口从SafetyManager传递到CANComm及ChargeController；CANComm为最终出入口，映射内部数据到CAN报文并转发外部消息到内部组件。",
+            "control_flow_paths": "控制命令：ChargeController与Balancer通过CLIENT-SERVER接口向驱动/执行器下发命令；SafetyManager可通过同步ServerCall切断或限制充电（高优先级同步调用）；ThermalManager通过同步ServerCall控制泵/阀；CANComm接收外部控制请求并分发至ChargeController或SafetyManager。"
+          },
+          "architecture_rationale": {
+            "design_decisions": "采用模块化7 SWC分层设计以满足可维护性与可扩展性。将安全逻辑集中到SafetyManager以便实现ASIL-D路径与独立高优先级检测，同时保持数据来源多样以实现冗余检测。SOCEstimator独立以便在不同ECU/硬件上复用。CANComm作为边界层统一对外通信封装，简化内部组件。",
+            "tradeoff_analysis": "集中式SafetyManager简化安全一致性但增加单点复杂度，需要严格时序与资源保证；将CellMonitor与ThermalManager作为数据源提高可追溯性但增加数据交换开销；使用CLIENT-SERVER与SENDER-RECEIVER混合通信使得控制命令（事务性）与测量数据（流式）各取所长；在资源受限ECU上需调节周期以平衡性能与实时性。",
+            "alternative_considerations": "可将部分安全功能下放到硬件或独立安全核心以降低SafetyManager负担；均衡器可设计为分布式多实例以提升并行性；CANComm可拆分为多个网关实例以适配多CAN-FD网络。",
+            "risk_assessment": "主要风险包括SafetyManager实现与验证复杂、时序不满足导致安全响应延迟、CAN带宽不足导致cell_voltage批量上报受限、组件间接口定义不一致导致集成问题。缓解措施：早期进行时序分析与硬件性能验证，采用压缩/分段报文策略，定义严格接口契约并进行接口集成测试。"
+          },
+          "session_id": "e00422b6-442d-443f-92fd-c1b69cbcae9c",
+          "timestamp": "2025-10-21T13:43:42.527959"
+        }
+      },
+      "phase2": {
+        "duration": 494.53922724723816,
+        "tokens": 116995,
+        "output_files": [
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CANComm_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\ChargeController_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Cell_Voltages_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Thermal_Status_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\SOC_SOH_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CAN_BMS_Status_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Balancer_Control_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Charge_Control_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Safety_Events_Interface_b6fdc336_1761025917.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_b6fdc336_1761025917.json"
+        ]
+      },
+      "final_status": "success",
+      "end_time": "2025-10-21T13:51:57.081005"
+    },
+    {
+      "case_id": "middle_6",
+      "system_name": "InfotainmentSystem",
+      "complexity": "middle",
+      "requirement": {
+        "system_name": "InfotainmentSystem",
+        "description": "车载娱乐和导航系统",
+        "components_count": 6,
+        "component_types": [
+          "MediaPlayer",
+          "NavigationEngine",
+          "BluetoothStack",
+          "VoiceRecognition",
+          "DisplayManager",
+          "CANInterface"
+        ],
+        "key_requirements": [
+          "MediaPlayer支持多格式音视频播放",
+          "NavigationEngine实现在线导航",
+          "BluetoothStack支持电话和音乐",
+          "VoiceRecognition实现语音控制",
+          "DisplayManager管理双屏显示",
+          "通过CAN获取车速、档位等信息"
+        ]
+      },
+      "start_time": "2025-10-21T13:51:59.085071",
+      "phase1": {
+        "duration": 114.68375706672668,
+        "api_calls": 1,
+        "tokens": 17253,
+        "component_count": 6,
+        "interface_count": 6,
+        "blueprint": {
+          "system_analysis": {
+            "functional_decomposition": "将系统分为六个职责清晰的SWC：CAN_Interface负责采集并标准化车速/档位等车身数据；Bluetooth_Stack提供蓝牙音频与电话服务抽象；Media_Player负责音视频解码与播放控制；Navigation_Engine负责路径规划、在线地图交互与位置融合；Voice_Recognition负责语音输入识别并产生命令事件；Display_Manager负责双屏渲染与UI布局管理。每个组件以最小职责原则划分，交互通过明确接口传递数据或调用服务。",
+            "data_flow_analysis": "车辆数据：CAN_Interface周期采集CAN报文，作为SENDER-RECEIVER接口(IF_VehicleData)发布给Navigation_Engine、Media_Player与Display_Manager（payload: vehicleSpeed:int, gear:int, odometer:uint）。多媒体数据：Media_Player与Bluetooth_Stack通过IF_MediaPlayback交换音频流控制与元数据（payload: audioStream:binary/chunk, metadata:{title,artist,format}），采用流/分片传输。导航服务：Display_Manager作为客户端通过IF_NavigationService从Navigation_Engine请求路由（client-server，同步调用，payload: routeRequest/routeResponse JSON）。语音命令：Voice_Recognition通过IF_Voice_Command以最新值模式向各消费者发布命令事件（payload: command:string, confidence:float）。接口通信模式按用途区分：实时流（音频）使用高频低延迟异步发送/队列分片；车辆状态使用周期发布（最新值）；导航路径计算使用客户端-服务器同步调用带超时；电话控制使用异步服务器调用。",
+            "timing_requirements": "CAN采样周期：10-100ms；车辆状态发布到订阅者允许最多2次周期延迟；音频流同步率依赖采样（20-50ms帧）；UI渲染帧率30-60Hz（Display_Manager内部合并帧）；导航路径重算：触发时刻或每1s/5s为可配置周期；语音识别：端到端延迟应<300ms（唤醒+识别+命令分发）。客户端-服务器调用超时一般设为2s以内，地图在线请求链路需支持重试与回退。",
+            "scalability_considerations": "采用松耦合接口（S/R与C/S）便于组件替换或扩展；接口采用明确的数据模型，支持未来增加媒体编解码器、更多传感器或云服务；分层设计允许将Bluetooth_Stack或CAN_Interface替换为硬件/厂商专用实现；为大规模部署保留参数化的周期/缓冲大小配置（intelligent_batch模式下可调整并发数）。",
+            "complexity_assessment": "Complex"
+          },
+          "component_plan": [
+            {
+              "component_id": "CMP_CAN_Interface",
+              "name": "CAN_Interface",
+              "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+              "purpose": "从车载CAN网络读取原始车辆状态并标准化为可发布的数据集",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "1 (hardware CAN RX)",
+                "output_ports": "1 (IF_VehicleData publisher)"
+              },
+              "behavioral_characteristics": "周期性读取CAN报文并解析成结构化信号；触发条件为定时采样或外部CAN中断；状态管理包括总线错误计数与采样健康标志；数据处理流程：CAN帧->解析->过滤/校验->构造VehicleData->发布到IF_VehicleData。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "P-PORT用于向上层发布VehicleData；R-PORT用于接受配置/控制命令（例如采样率）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "CAN_Sample_Timer",
+                      "trigger": "周期定时器（10-100ms可配置）"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "CAN_Frame_Received",
+                      "trigger": "CAN中断/驱动回调"
+                    },
+                    {
+                      "type": "INIT-EVENT",
+                      "name": "CAN_Init",
+                      "trigger": "组件初始化"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Read_CAN_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "从底层CAN驱动接收原始帧并映射到本组件端口变量"
+                            }
+                          ],
+                          "notes": "从CAN驱动读取原始帧（值传递）"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布解析后的VehicleData到IF_VehicleData"
+                            }
+                          ],
+                          "notes": "向上层发布周期车辆状态"
+                        }
+                      ],
+                      "notes": "周期或事件触发的CAN读取与发布"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_VehicleData"
+              ]
+            },
+            {
+              "component_id": "CMP_Bluetooth_Stack",
+              "name": "Bluetooth_Stack",
+              "type": "SERVICE-SW-COMPONENT-TYPE",
+              "purpose": "管理蓝牙连接、电话控制与音频流传输抽象",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "2 (control, audio-in)",
+                "output_ports": "2 (audio-out, phone-events)"
+              },
+              "behavioral_characteristics": "维护蓝牙连接状态机（disconnected/connecting/connected/streaming），处理配对与拨号请求；音频流采用分片异步发送并支持缓冲与重传；电话控制使用异步服务调用与事件回调；数据流程：外部蓝牙硬件->协议栈解析->音频缓冲->向Media_Player或Phone控制发布。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "P-PORT用于向系统提供音频流与事件，R-PORT用于接受播放/连接控制命令"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "BT_Data_Received",
+                      "trigger": "蓝牙底层数据到达"
+                    },
+                    {
+                      "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                      "name": "BT_Async_Call_Return",
+                      "trigger": "与远端电话/设备的异步操作返回"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Connection_Manager",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "异步请求远端设备执行连接/断开/拨号"
+                            }
+                          ],
+                          "notes": "管理蓝牙连接与电话控制的异步操作"
+                        }
+                      ],
+                      "notes": "连接状态机与异步控制"
+                    },
+                    {
+                      "name": "Audio_Stream_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "向Media_Player或系统发布音频帧"
+                            }
+                          ],
+                          "notes": "音频帧的分片发送与缓冲管理"
+                        }
+                      ],
+                      "notes": "处理音频流出/入与缓冲"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_MediaPlayback",
+                "IF_Bluetooth_Audio",
+                "IF_Phone_Control"
+              ]
+            },
+            {
+              "component_id": "CMP_Display_Manager",
+              "name": "Display_Manager",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "负责双屏UI渲染、合成与显示内容调度",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "3 (video/graphics, nav updates, UI commands)",
+                "output_ports": "1 (touch/events to system)"
+              },
+              "behavioral_characteristics": "接收来自Media_Player/Navigation_Engine/Voice_Recognition的渲染内容或命令；合并图层并按帧输出到显示硬件；触发条件：帧定时器或内容更新；状态管理：当前页面/窗口栈与渲染优先级；数据流程：input->layout合成->display buffer->硬件。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "R-PORT接收渲染内容/命令，P-PORT向下层显示驱动发布渲染缓冲"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "INIT-EVENT",
+                      "name": "Display_Init",
+                      "trigger": "组件启动"
+                    },
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Frame_Timer",
+                      "trigger": "渲染定时器(30-60Hz)"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Render_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收来自Media_Player/Navigation_Engine的渲染数据"
+                            }
+                          ],
+                          "notes": "帧合成所需的数据接收点"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布合成后的帧到显示驱动"
+                            }
+                          ],
+                          "notes": "向显示驱动发送渲染缓冲"
+                        }
+                      ],
+                      "notes": "按帧合成并发布渲染结果"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_MediaPlayback",
+                "IF_NavigationService",
+                "IF_Voice_Command",
+                "IF_VehicleData"
+              ]
+            },
+            {
+              "component_id": "CMP_Navigation_Engine",
+              "name": "Navigation_Engine",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "执行路径规划、在线地图请求与位置融合（融合CAN速度/里程）",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "2 (vehicle data, GPS/position)",
+                "output_ports": "2 (route result, guidance instructions)"
+              },
+              "behavioral_characteristics": "接受周期车辆状态与位置，执行路径计算与重算；按需调用在线地图服务（同步C/S或异步重试）；状态管理包括路段缓存、网络状态和route session；数据流程：输入位置/车速->融合滤波->路径规划->发布route和导航指令。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "R-PORT接收VehicleData与位置，P-PORT向Display_Manager发布路线/引导"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Route_Recalc_Trigger",
+                      "trigger": "路线偏离或外部重算请求"
+                    },
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Nav_Periodic_Update",
+                      "trigger": "周期性重算/位置更新(1s-5s)"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Route_Calc_Runnable",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "同步请求在线地图服务以获取路段信息"
+                            }
+                          ],
+                          "notes": "与云地图服务的同步调用点"
+                        },
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收VehicleData与位置作为路由输入"
+                            }
+                          ],
+                          "notes": "路由计算所需输入数据接收"
+                        }
+                      ],
+                      "notes": "路径规划主执行体"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_NavigationService",
+                "IF_VehicleData",
+                "IF_Voice_Command"
+              ]
+            },
+            {
+              "component_id": "CMP_Voice_Recognition",
+              "name": "Voice_Recognition",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "处理语音输入并产生命令事件供系统使用",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "1 (audio_in)",
+                "output_ports": "1 (command_out)"
+              },
+              "behavioral_characteristics": "接收麦克风音频流并进行唤醒/识别；触发条件为语音活动检测或按键；状态管理包括唤醒状态与识别会话；数据流程：音频帧->预处理->识别->命令生成->发布到IF_Voice_Command。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "R-PORT-PROTOTYPE",
+                    "P-PORT-PROTOTYPE"
+                  ],
+                  "details": "R-PORT接收音频帧，P-PORT发布识别后的命令事件"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "Audio_Frame_Received",
+                      "trigger": "音频帧到达"
+                    },
+                    {
+                      "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Recognition_Completed",
+                      "trigger": "识别结束并生成命令"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Recognition_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "从音频输入端口接收帧用于识别"
+                            }
+                          ],
+                          "notes": "接收音频数据"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布识别后命令到IF_Voice_Command"
+                            }
+                          ],
+                          "notes": "发布命令到订阅者"
+                        }
+                      ],
+                      "notes": "语音识别主流程"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_Voice_Command",
+                "IF_MediaPlayback",
+                "IF_NavigationService"
+              ]
+            },
+            {
+              "component_id": "CMP_Media_Player",
+              "name": "Media_Player",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "提供多格式音视频解码、播放控制与流管理",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "3 (file/stream source, bt audio, control)",
+                "output_ports": "2 (audio_out, metadata to display)"
+              },
+              "behavioral_characteristics": "支持多格式解码与同步播放；触发条件包含用户控制、Bluetooth_Stack事件或播放队列变化；状态管理包含播放状态机（stop/play/pause/seek）；数据流程：输入源->解码->音频输出->向Display_Manager发布封面/字幕等元数据。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "R-PORT-PROTOTYPE",
+                    "P-PORT-PROTOTYPE"
+                  ],
+                  "details": "R-PORT接收音频源与控制指令，P-PORT提供音频流与元数据给Display_Manager/BT"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Playback_Timer",
+                      "trigger": "音频帧调度定时"
+                    },
+                    {
+                      "type": "DATA-WRITE-COMPLETED-EVENT",
+                      "name": "Buffer_Write_Completed",
+                      "trigger": "音频缓冲区写入完成"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Playback_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收解码前的音频分片"
+                            }
+                          ],
+                          "notes": "音频播放接收点"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "向音频输出或Bluetooth_Stack发布音频帧"
+                            }
+                          ],
+                          "notes": "发布解码后音频"
+                        }
+                      ],
+                      "notes": "实时播放处理"
+                    },
+                    {
+                      "name": "Control_Runnable",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "向Bluetooth_Stack异步发送播放/暂停/连接控制"
+                            }
+                          ],
+                          "notes": "处理用户与远端控制请求"
+                        }
+                      ],
+                      "notes": "控制命令处理与状态同步"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "IF_MediaPlayback",
+                "IF_Bluetooth_Audio",
+                "IF_Display_Control",
+                "IF_VehicleData"
+              ]
+            }
+          ],
+          "interface_plan": [
+            {
+              "interface_id": "IF_VehicleData",
+              "name": "IF_VehicleData",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期发布（latest-value）, 同步订阅不可用；周期可配置为10-100ms；使用最新值覆盖策略，错误检测通过CRC和valid flags。",
+              "data_category": "telemetry",
+              "connected_components": [
+                "CAN_Interface",
+                "Navigation_Engine",
+                "Media_Player",
+                "Display_Manager"
+              ],
+              "performance_requirements": "端到端延迟应小于2采样周期；丢帧时使用最新值；订阅者处理延迟<50ms。",
+              "data_elements": [
+                "vehicleSpeed:int",
+                "gear:int",
+                "odometer:uint",
+                "brakeStatus:bool"
+              ],
+              "direct_paths": "CAN_Interface -> IF_VehicleData -> Navigation_Engine/Media_Player/Display_Manager"
+            },
+            {
+              "interface_id": "IF_MediaPlayback",
+              "name": "IF_MediaPlayback",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "流式异步（分片/队列）用于音频数据，meta为周期/事件驱动（latest-value）；音频帧实时性高，容忍微小延迟但需低抖动，使用小型FIFO缓冲与抖动缓冲。",
+              "data_category": "stream",
+              "connected_components": [
+                "Media_Player",
+                "Display_Manager",
+                "Bluetooth_Stack"
+              ],
+              "performance_requirements": "音频帧端到端抖动<20ms，帧丢失低于0.1%；控制命令延迟<200ms。",
+              "data_elements": [
+                "audioStream:binary",
+                "metadata:{title,artist,format}",
+                "playbackControl:{play,pause,seek}"
+              ],
+              "direct_paths": "Media_Player -> IF_MediaPlayback -> Bluetooth_Stack / Display_Manager"
+            },
+            {
+              "interface_id": "IF_Bluetooth_Audio",
+              "name": "IF_Bluetooth_Audio",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "主要为异步控制（连接/拨号）和音频流协同；控制采用异步服务器调用，音频走流接口；超时与重试策略配置化。",
+              "data_category": "control+stream",
+              "connected_components": [
+                "Bluetooth_Stack",
+                "Media_Player"
+              ],
+              "performance_requirements": "控制操作响应<1s（异步确认）；音频流实时性同IF_MediaPlayback。",
+              "data_elements": [
+                "btControl:{connect,disconnect,dial}",
+                "audioChunk:binary"
+              ],
+              "direct_paths": "Bluetooth_Stack <-> Media_Player (control + audio)"
+            },
+            {
+              "interface_id": "IF_NavigationService",
+              "name": "IF_NavigationService",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "同步客户端-服务器用于路由请求/响应；对在线地图请求支持超时与有限重试；同步调用需保证调用端非阻塞策略或后台线程。",
+              "data_category": "service",
+              "connected_components": [
+                "Navigation_Engine",
+                "Display_Manager"
+              ],
+              "performance_requirements": "同步响应超时<2s，常规响应<500ms；失败时提供本地缓存回退。",
+              "data_elements": [
+                "routeRequest:{origin,destination,options}",
+                "routeResponse:{maneuvers,eta}"
+              ],
+              "direct_paths": "Display_Manager -> IF_NavigationService -> Navigation_Engine"
+            },
+            {
+              "interface_id": "IF_Voice_Command",
+              "name": "IF_Voice_Command",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "事件驱动发布（latest-value for last command），高优先级事件推送给订阅者；缓冲策略采用最新值覆盖，命令需携带置信度与会话ID。",
+              "data_category": "event",
+              "connected_components": [
+                "Voice_Recognition",
+                "Navigation_Engine",
+                "Media_Player",
+                "Display_Manager"
+              ],
+              "performance_requirements": "识别后命令分发延迟<300ms；高置信命令立即生效，低置信命令需确认流程。",
+              "data_elements": [
+                "command:string",
+                "confidence:float",
+                "sessionId:string"
+              ],
+              "direct_paths": "Voice_Recognition -> IF_Voice_Command -> Navigation_Engine/Media_Player/Display_Manager"
+            },
+            {
+              "interface_id": "IF_Phone_Control",
+              "name": "IF_Phone_Control",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "异步服务器调用用于电话控制（拨号/挂断/接听），采用超时和回调机制；状态通过事件/回调回传。",
+              "data_category": "control",
+              "connected_components": [
+                "Bluetooth_Stack",
+                "Voice_Recognition"
+              ],
+              "performance_requirements": "控制操作确认<1s；失败应返回可重试错误码。",
+              "data_elements": [
+                "phoneCommand:{dial,hangup,answer}",
+                "callStatus:{ringing,connected,ended}"
+              ],
+              "direct_paths": "Voice_Recognition -> IF_Phone_Control -> Bluetooth_Stack"
+            }
+          ],
+          "component_generation_order": [
+            "CAN_Interface",
+            "Bluetooth_Stack",
+            "Display_Manager",
+            "Navigation_Engine",
+            "Voice_Recognition",
+            "Media_Player"
+          ],
+          "connection_topology": {
+            "component_connections": "CAN_Interface publishes IF_VehicleData consumed by Navigation_Engine, Media_Player, Display_Manager. Bluetooth_Stack exposes IF_Bluetooth_Audio and IF_MediaPlayback to Media_Player. Media_Player and Display_Manager exchange media metadata via IF_MediaPlayback and IF_Display_Control (logical). Navigation_Engine offers IF_NavigationService consumed by Display_Manager. Voice_Recognition publishes IF_Voice_Command consumed by Navigation_Engine, Media_Player and Display_Manager. Phone control flows via IF_Phone_Control between Voice_Recognition and Bluetooth_Stack.",
+            "data_flow_paths": "Vehicle CAN -> CAN_Interface -> IF_VehicleData -> Navigation_Engine/Media_Player/Display_Manager. Media sources -> Media_Player -> IF_MediaPlayback -> Bluetooth_Stack/Display_Manager. User voice -> Voice_Recognition -> IF_Voice_Command -> consumers. Display requests -> Display_Manager <- IF_NavigationService <- Navigation_Engine.",
+            "control_flow_paths": "User/voice triggers and UI commands flow to Media_Player/Navigation_Engine via respective interfaces; Navigation_Engine may synchronously call online map services (SERVER-CALL) and return to Display_Manager. Bluetooth control uses asynchronous server calls (connect/dial) with callbacks to higher layers."
+          },
+          "architecture_rationale": {
+            "design_decisions": "采用分层与松耦合设计：硬件抽象层（CAN_Interface）、服务层（Bluetooth_Stack）、应用层（Media_Player, Navigation_Engine, Voice_Recognition, Display_Manager）。使用S/R接口用于高频数据流，C/S接口用于请求/响应服务。将音视频流与控制分离以优化实时性与可靠性。",
+            "tradeoff_analysis": "集中式服务（如在Bluetooth_Stack内做更多逻辑）可减少通信开销但降低可替换性；分布式将提高可测试性与可替换性但增加接口与同步复杂度。选择以可替换性与扩展性为主，接受额外接口复杂度。",
+            "alternative_considerations": "可将Media playback的解码器作为独立SWC以便热替换；Navigation offline-first策略可减小对在线服务依赖；VoiceRecognition可外包云端增强识别，但需处理网络延迟与隐私。",
+            "risk_assessment": "关键风险包括网络（在线导航/语音云）不可用导致功能降级、音视频实时性受缓冲与线程调度影响、CAN丢帧/总线错误影响导航/显示数据一致性。缓解措施：本地缓存与回退策略、超时与重试机制、优先级调度与隔离音视频处理线程。"
+          },
+          "session_id": "c64bd95f-ca9c-4240-8103-c790ca4dbab8",
+          "timestamp": "2025-10-21T13:53:53.764836"
+        }
+      },
+      "phase2": {
+        "duration": 543.6635417938232,
+        "tokens": 86152,
+        "output_files": [
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Interface_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Bluetooth_Stack_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Media_Player_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_VehicleData_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_MediaPlayback_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Voice_Command_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Bluetooth_Audio_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_NavigationService_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Phone_Control_5e06b244_1761026577.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_5e06b244_1761026577.json"
+        ]
+      },
+      "final_status": "success",
+      "end_time": "2025-10-21T14:02:57.439519"
+    },
+    {
+      "case_id": "middle_7",
+      "system_name": "ThermalManagementSystem",
+      "complexity": "middle",
+      "requirement": {
+        "system_name": "ThermalManagementSystem",
+        "description": "管理电机、电池、空调的热平衡",
+        "components_count": 7,
+        "component_types": [
+          "MotorCooling",
+          "BatteryCooling",
+          "CabinCooling",
+          "PumpController",
+          "ValveController",
+          "TempMonitor",
+          "ThermalOptimizer"
+        ],
+        "key_requirements": [
+          "MotorCooling管理电机冷却液循环",
+          "BatteryCooling管理电池液冷循环",
+          "CabinCooling管理空调制冷剂循环",
+          "PumpController控制3个水泵",
+          "ValveController控制多个电磁阀",
+          "TempMonitor采集12路温度",
+          "ThermalOptimizer协调三路散热需求"
+        ]
+      },
+      "start_time": "2025-10-21T14:02:59.442420",
+      "phase1": {
+        "duration": 128.50874209403992,
+        "api_calls": 1,
+        "tokens": 16980,
+        "component_count": 7,
+        "interface_count": 5,
+        "blueprint": {
+          "system_analysis": {
+            "functional_decomposition": "将系统分为7个SWC：Temp_Monitor负责12路温度采集并发布温度数据；Motor_Cooling、Battery_Cooling、Cabin_Cooling负责各自冷却回路的流量和热交换控制；Pump_Controller负责3路水泵的开停与转速控制；Valve_Controller负责电磁阀的开度控制与位置反馈；Thermal_Optimizer作为协调层，汇总温度、泵阀状态并计算优化策略下发给各冷却组件与执行器。组件边界以功能职责和实时性分离，传感与执行分开，优化逻辑集中。 ",
+            "data_flow_analysis": "温度数据：Temp_Monitor以SENDER-RECEIVER接口周期发布12路温度（数组或独立信号），订阅方包括Thermal_Optimizer与各Cooling SWC，传输频率100ms或更快；状态与命令：Thermal_Optimizer通过CLIENT-SERVER接口向Pump_Controller、Valve_Controller发起同步命令（开启、设速、设开度），并接收确认；各Cooling SWC向Pump_Controller/Valve_Controller发起同步或异步请求以调整泵阀；Pump_Controller/Valve_Controller通过SENDER-RECEIVER发布执行器状态；接口数据类型包括: TemperatureArray (12x float), PumpCommand (enum+uint8), ValveCommand (float/open %), CoolingStatus (struct with temperature/flow/pressure)。数据传输时序：Temp_Monitor周期发布；Thermal_Optimizer周期（200ms）或事件触发执行优化并同步下发命令；单次命令响应时延目标<50ms。依赖关系：Thermal_Optimizer依赖Temp_Monitor、Pump_Controller、Valve_Controller和各Cooling SWC的状态；Cooling SWC依赖Pump/Valve控制器和温度输入。 ",
+            "timing_requirements": "温度采样周期100ms（可配置到50ms）；Cooling SWC控制回路表示周期50-200ms；Thermal_Optimizer优化周期200ms（在高负载降到100ms）；Pump/Valve命令需在50ms内完成响应以满足短时热失衡控制；命令确认或超时机制（默认超时150ms）。非安全关键但实时性高，采用软实时保证并监控超时。 ",
+            "scalability_considerations": "设计支持增加冷却回路与更多温度通道：Temp_Monitor使用数组化温度topic并支持动态通道数；Pump_Controller与Valve_Controller可扩展到更多执行器，接口使用通用命令结构；Thermal_Optimizer采用模块化策略引擎，支持增加控制策略模块和更高并发的客户端。通信采用发布/订阅与客户端/服务器混合，利于横向扩展。 ",
+            "complexity_assessment": "Complex"
+          },
+          "component_plan": [
+            {
+              "component_id": "cmp_temp_monitor",
+              "name": "Temp_Monitor",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "采集12路温度并发布温度数据与故障状态",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "0",
+                "output_ports": "2"
+              },
+              "behavioral_characteristics": "周期性采样12路温度传感器（100ms），滤波与校准后发布TemperatureArray；检测传感器故障并发布健康状态；支持按需触发快速采样。数据流：采样→滤波→故障检测→发布。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "提供TemperatureArray输出（P-PORT），提供HealthStatus（P-PORT）；从底层传感器抽象读取（R-PORT到ECU/driver）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Periodic_100ms",
+                      "trigger": "周期100ms采样"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "SensorDataReady",
+                      "trigger": "底层ADC/driver采样完成"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Sampling_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "从硬件抽象端口读取原始传感器值"
+                            }
+                          ],
+                          "notes": "读取底层传感器数据"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布TemperatureArray到订阅者"
+                            }
+                          ],
+                          "notes": "发布温度数组及健康状态"
+                        }
+                      ],
+                      "notes": "周期采样、滤波、发布逻辑"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "Thermal_Optimization_Interface",
+                "Temperature_Sensor_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_pump_controller",
+              "name": "Pump_Controller",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "控制3个水泵的开停与转速并报告状态",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "3",
+                "output_ports": "3"
+              },
+              "behavioral_characteristics": "接收PumpCommand并对指定泵执行开停/转速设置；支持同步命令（客户端-服务器）与异步状态发布；维护每泵状态与故障计数。处理流程：接收命令→执行驱动→确认/报告。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "PR-PORT-PROTOTYPE",
+                    "P-PORT-PROTOTYPE"
+                  ],
+                  "details": "提供PumpControl服务（PR-PORT作为提供端），发布PumpStatus（P-PORT）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "OPERATION-INVOKED-EVENT",
+                      "name": "PumpCommandInvoked",
+                      "trigger": "接收到PumpControl的同步调用"
+                    },
+                    {
+                      "type": "DATA-WRITE-COMPLETED-EVENT",
+                      "name": "ActuatorWriteComplete",
+                      "trigger": "驱动命令写入完成"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Execute_PumpCommand",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "提供同步控制操作，响应调用方确认"
+                            }
+                          ],
+                          "notes": "作为Pump control服务的同步入口"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布单泵状态"
+                            }
+                          ],
+                          "notes": "发布PumpStatus给订阅方"
+                        }
+                      ],
+                      "notes": "执行命令、驱动交互与状态发布"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "PumpControl_Interface",
+                "Actuator_Driver_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_valve_controller",
+              "name": "Valve_Controller",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "控制多个电磁阀开度并上报位置与故障",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "4",
+                "output_ports": "4"
+              },
+              "behavioral_characteristics": "接收ValveCommand并设置阀门开度；支持角度/百分比命令，提供位置反馈与故障检测；命令可同步响应或异步确认。流程：接收命令→执行→反馈/超时重试。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "PR-PORT-PROTOTYPE",
+                    "P-PORT-PROTOTYPE"
+                  ],
+                  "details": "提供ValveControl服务（PR-PORT），发布ValveStatus（P-PORT）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "OPERATION-INVOKED-EVENT",
+                      "name": "ValveCommandInvoked",
+                      "trigger": "接收到Valve控制调用"
+                    },
+                    {
+                      "type": "DATA-SEND-COMPLETED-EVENT",
+                      "name": "PositionReportSent",
+                      "trigger": "位置反馈发布完成"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Execute_ValveCommand",
+                      "elements": [
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "同步执行阀门操作并反馈结果"
+                            }
+                          ],
+                          "notes": "处理外部或优化器的阀门设置请求"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布阀门位置与状态"
+                            }
+                          ],
+                          "notes": "发布执行器状态"
+                        }
+                      ],
+                      "notes": "阀门执行与状态管理"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "ValveControl_Interface",
+                "Actuator_Driver_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_motor_cooling",
+              "name": "Motor_Cooling",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "管理电机冷却液循环，控制泵与阀以维持目标温度",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "3",
+                "output_ports": "2"
+              },
+              "behavioral_characteristics": "周期性接收温度与流量数据（100ms），在本地控制环路中计算目标泵速/阀门开度并请求执行；支持本地PID与限定策略；接收Thermal_Optimizer的优化命令并执行优先级切换。处理流程：温度输入→环路计算→生成命令→调用执行器→监控反馈。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "订阅TemperatureArray与PumpStatus（R-PORT），调用Pump/Valve控制服务（PR-PORT或R-PORT），发布CoolingStatus（P-PORT）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "ControlCycle_100ms",
+                      "trigger": "周期控制循环100ms"
+                    },
+                    {
+                      "type": "DATA-RECEIVED-EVENT",
+                      "name": "TempUpdate",
+                      "trigger": "接收到温度发布"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Control_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收温度与泵状态作为输入"
+                            }
+                          ],
+                          "notes": "获取输入数据用于控制计算"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "调用Pump_Controller设置泵速"
+                            }
+                          ],
+                          "notes": "同步下发泵命令并等待确认"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布本回路状态与诊断信息"
+                            }
+                          ],
+                          "notes": "输出CoolingStatus"
+                        }
+                      ],
+                      "notes": "本地控制环路的执行单元"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "Temp_Sensor_Interface",
+                "PumpControl_Interface",
+                "ValveControl_Interface",
+                "Thermal_Optimization_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_battery_cooling",
+              "name": "Battery_Cooling",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "管理电池液冷循环，保持电池温度在安全范围",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "3",
+                "output_ports": "2"
+              },
+              "behavioral_characteristics": "订阅温度数据并运行电池专用控制算法（带安全限幅），可接收Thermal_Optimizer的协调要求并调整回路；周期100-200ms执行控制，超温触发紧急冷却模式。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "订阅Temp_Monitor，调用Pump/Valve服务，发布BatteryCoolingStatus。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Battery_Control_200ms",
+                      "trigger": "周期200ms控制"
+                    },
+                    {
+                      "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "Emergency_Cooling_Triggered",
+                      "trigger": "温度超阈值触发"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Battery_Control_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收电池温度与系统状态"
+                            }
+                          ],
+                          "notes": "输入数据访问"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "请求Pump/Valve执行紧急或调节命令"
+                            }
+                          ],
+                          "notes": "下发控制命令"
+                        }
+                      ],
+                      "notes": "电池冷却控制Runnable，含紧急模式"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "Temp_Sensor_Interface",
+                "PumpControl_Interface",
+                "ValveControl_Interface",
+                "Thermal_Optimization_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_cabin_cooling",
+              "name": "Cabin_Cooling",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "管理空调制冷剂循环，满足客舱温度设定",
+              "estimated_complexity": "Medium",
+              "port_estimates": {
+                "input_ports": "2",
+                "output_ports": "2"
+              },
+              "behavioral_characteristics": "接收Cabin温度目标与实际温度，控制压缩机/阀门与泵以匹配设定；周期100-200ms控制，支持节能模式与快速冷却模式；与Thermal_Optimizer共享优化策略。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "订阅温度数据，调用Pump/Valve服务，发布CabinCoolingStatus与节能标志。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Cabin_Control_200ms",
+                      "trigger": "周期200ms控制循环"
+                    },
+                    {
+                      "type": "MODE-SWITCHED-ACK-EVENT",
+                      "name": "ModeSwitchAck",
+                      "trigger": "节能/快速模式切换确认"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Cabin_Control_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收温度与用户设定值"
+                            }
+                          ],
+                          "notes": "控制输入"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT"
+                              ],
+                              "notes": "异步请求执行器以降低响应耦合"
+                            }
+                          ],
+                          "notes": "向执行器发起异步控制请求"
+                        }
+                      ],
+                      "notes": "空调控制的主要Runnable"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "Temp_Sensor_Interface",
+                "PumpControl_Interface",
+                "ValveControl_Interface",
+                "Thermal_Optimization_Interface"
+              ]
+            },
+            {
+              "component_id": "cmp_thermal_optimizer",
+              "name": "Thermal_Optimizer",
+              "type": "APPLICATION-SW-COMPONENT-TYPE",
+              "purpose": "协调三路散热需求，计算全局优化策略并下发执行命令",
+              "estimated_complexity": "Complex",
+              "port_estimates": {
+                "input_ports": "4",
+                "output_ports": "4"
+              },
+              "behavioral_characteristics": "聚合来自Temp_Monitor和各Cooling SWC的温度与状态，运行优化算法（周期性或事件触发，默认200ms）生成泵速/阀门设定与优先级，并通过同步客户端调用下发命令；包含策略选择、约束检查与冲突解决。数据流：收集→评估→优化→下发→确认/回退。",
+              "element_design": {
+                "ports": {
+                  "needed": true,
+                  "types": [
+                    "PR-PORT-PROTOTYPE",
+                    "P-PORT-PROTOTYPE",
+                    "R-PORT-PROTOTYPE"
+                  ],
+                  "details": "作为Pump/Valve的客户端（PR-PORT），订阅温度与状态（R-PORT），发布优化决策日志（P-PORT）。"
+                },
+                "internal_behaviors": {
+                  "needed": true,
+                  "events": [
+                    {
+                      "type": "TIMING-EVENT",
+                      "name": "Optimizer_Cycle_200ms",
+                      "trigger": "周期200ms执行优化"
+                    },
+                    {
+                      "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                      "name": "HighLoad_Trigger",
+                      "trigger": "负载或温度突变触发快速优化"
+                    }
+                  ],
+                  "runnables": [
+                    {
+                      "name": "Optimize_Runnable",
+                      "elements": [
+                        {
+                          "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "接收温度数组与设备状态"
+                            }
+                          ],
+                          "notes": "聚合输入数据用于优化计算"
+                        },
+                        {
+                          "key": "SERVER-CALL-POINTS",
+                          "wrapper": "SERVER-CALL-POINTS",
+                          "preselect": [
+                            {
+                              "of": "SERVER-CALL-POINTS",
+                              "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                              "include": [
+                                "OPERATION-IREF",
+                                "TIMEOUT",
+                                "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                              ],
+                              "notes": "以事务方式下发关键命令并等待确认"
+                            }
+                          ],
+                          "notes": "向Pump_Controller与Valve_Controller下发优化命令"
+                        },
+                        {
+                          "key": "DATA-SEND-POINTS",
+                          "wrapper": "DATA-SEND-POINTS",
+                          "preselect": [
+                            {
+                              "of": "ACCESSED-VARIABLE",
+                              "variant": "AUTOSAR-VARIABLE-IREF",
+                              "include": [
+                                "PORT-PROTOTYPE-REF",
+                                "TARGET-DATA-PROTOTYPE-REF"
+                              ],
+                              "notes": "发布优化决策摘要与日志"
+                            }
+                          ],
+                          "notes": "输出优化结果与诊断"
+                        }
+                      ],
+                      "notes": "核心优化算法Runnable，含同步命令下发"
+                    }
+                  ]
+                }
+              },
+              "direct_references": [
+                "Temp_Sensor_Interface",
+                "PumpControl_Interface",
+                "ValveControl_Interface",
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling"
+              ]
+            }
+          ],
+          "interface_plan": [
+            {
+              "interface_id": "if_temp_sensor",
+              "name": "Temperature_Sensor_Interface",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "周期发布（100ms），最新值覆盖策略，发布/订阅模型，传输延迟目标<20ms，接收方按最新值读取；缓冲：单最新值保留；错误处理：传感器故障标志与重复失效检测。",
+              "data_category": "EVENT",
+              "connected_components": [
+                "Temp_Monitor",
+                "Thermal_Optimizer",
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling"
+              ],
+              "performance_requirements": "周期100ms，端到端抖动<20ms，丢包应通过超时检测触发故障处理。",
+              "data_elements": [
+                "TemperatureArray[12]:float",
+                "SensorHealth:uint8"
+              ],
+              "direct_paths": "Temp_Monitor -> (publish) -> subscribers (Thermal_Optimizer, Cooling SWCs)"
+            },
+            {
+              "interface_id": "if_pump_control",
+              "name": "PumpControl_Interface",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "同步调用为主（命令/确认），可支持异步事件；命令响应目标<50ms，超时机制与重试（一次）；缓冲策略：命令队列以FIFO短队列，优先级区分紧急/普通。",
+              "data_category": "SERVICE",
+              "connected_components": [
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling",
+                "Pump_Controller",
+                "Thermal_Optimizer"
+              ],
+              "performance_requirements": "同步调用延迟<50ms，吞吐低（按需命令），高优先级命令抢占。",
+              "data_elements": [
+                "PumpCommand(struct):{pumpId:uint8,mode:enum,speed:uint8}",
+                "PumpStatus(struct):{pumpId:uint8,state:enum,feedback:uint8}"
+              ],
+              "direct_paths": "Cooling SWCs -> (sync call) -> Pump_Controller; Pump_Controller -> (publish) -> Cooling SWCs"
+            },
+            {
+              "interface_id": "if_valve_control",
+              "name": "ValveControl_Interface",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "以同步调用为主，支持异步确认；响应目标<50ms；缓冲：短队列，命令覆盖策略对非关键调整。",
+              "data_category": "SERVICE",
+              "connected_components": [
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling",
+                "Valve_Controller",
+                "Thermal_Optimizer"
+              ],
+              "performance_requirements": "命令确认<50ms，位置反馈周期100-200ms。",
+              "data_elements": [
+                "ValveCommand:{valveId:uint8,position:float}",
+                "ValveStatus:{valveId:uint8,position:float,health:uint8}"
+              ],
+              "direct_paths": "Cooling SWCs -> Valve_Controller (sync/async); Valve_Controller -> publish status"
+            },
+            {
+              "interface_id": "if_thermal_optimization",
+              "name": "Thermal_Optimization_Interface",
+              "type": "CLIENT-SERVER-INTERFACE",
+              "communication_pattern": "周期性或事件驱动（200ms默认）发起优化并同步下发命令；对关键命令使用事务/阻塞确认；缓冲：不保留历史命令，实时覆盖策略；错误处理：命令失败回退与本地兜底策略。",
+              "data_category": "SERVICE",
+              "connected_components": [
+                "Thermal_Optimizer",
+                "Pump_Controller",
+                "Valve_Controller",
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling"
+              ],
+              "performance_requirements": "优化周期200ms，关键命令确认<150ms，支持事务性下发多个命令。",
+              "data_elements": [
+                "OptimizationPlan:{timestamp:uint32,commands:array}",
+                "OptimizationAck:{status:uint8,details:string}"
+              ],
+              "direct_paths": "Thermal_Optimizer -> (sync calls) -> Pump_Controller/Valve_Controller; feedback loops返回至Thermal_Optimizer"
+            },
+            {
+              "interface_id": "if_cooling_status",
+              "name": "Cooling_Status_Interface",
+              "type": "SENDER-RECEIVER-INTERFACE",
+              "communication_pattern": "各Cooling SWC周期发布状态（100-200ms），采用最新值覆盖策略；错误处理通过status字段传递，订阅方为Thermal_Optimizer与监控系统。",
+              "data_category": "EVENT",
+              "connected_components": [
+                "Motor_Cooling",
+                "Battery_Cooling",
+                "Cabin_Cooling",
+                "Thermal_Optimizer"
+              ],
+              "performance_requirements": "周期100-200ms，丢失或延迟需要触发超时流程。",
+              "data_elements": [
+                "CoolingStatus:{temperature:float,flow:float,pressure:float,health:uint8}"
+              ],
+              "direct_paths": "Cooling SWCs -> publish -> Thermal_Optimizer"
+            }
+          ],
+          "component_generation_order": [
+            "Temp_Monitor",
+            "Pump_Controller",
+            "Valve_Controller",
+            "Motor_Cooling",
+            "Battery_Cooling",
+            "Cabin_Cooling",
+            "Thermal_Optimizer"
+          ],
+          "connection_topology": {
+            "component_connections": "Temp_Monitor publishes Temperature_Sensor_Interface consumed by Motor_Cooling, Battery_Cooling, Cabin_Cooling and Thermal_Optimizer; Thermal_Optimizer invokes PumpControl_Interface and ValveControl_Interface on Pump_Controller and Valve_Controller; Cooling SWCs invoke PumpControl_Interface/ValveControl_Interface as clients; Pump_Controller and Valve_Controller publish actuator status on Cooling_Status_Interface.",
+            "data_flow_paths": "Temp_Monitor -> Temperature_Sensor_Interface -> {Thermal_Optimizer, Motor_Cooling, Battery_Cooling, Cabin_Cooling}; Thermal_Optimizer -> PumpControl_Interface/ValveControl_Interface -> {Pump_Controller, Valve_Controller} -> Actuator status -> Cooling_Status_Interface -> Thermal_Optimizer and Cooling SWCs.",
+            "control_flow_paths": "Thermal_Optimizer (periodic/event) -> synchronous calls -> Pump_Controller/Valve_Controller -> confirm -> Cooling SWCs adapt local loops; Cooling SWCs (periodic) -> local control -> may call Pump/Valve services for adjustments; Temp_Monitor triggers events to Thermal_Optimizer on rapid temp changes."
+          },
+          "architecture_rationale": {
+            "design_decisions": "采用发布/订阅（温度与状态）与客户端/服务器（执行器命令）混合架构：发布/订阅实现可扩展的多订阅温度分发，客户端/服务器确保命令的同步确认与事务性。将优化逻辑集中在Thermal_Optimizer便于全局调度与策略一致性，局部控制保留以保证基础稳定性和降级能力。Temp_Monitor为单一数据源降低冗余传感复杂性。Pump和Valve分离以便独立扩展驱动和故障隔离。",
+            "tradeoff_analysis": "集中优化（优点：一致性、全局最优；缺点：单点复杂度与延迟）与分布式本地控制（优点：低延迟、鲁棒；缺点：可能非全局最优）结合，Thermal_Optimizer负责策略汇总，本地SWC保留低级回路以保证实时性。同步调用保证命令确认但增加延迟，故对非关键命令使用异步调用以降低耦合。",
+            "alternative_considerations": "可选将优化逻辑分片到各Cooling SWC以减少中心负载；或增加冗余Temp_Monitor以提高可靠性；对于高可靠场景可将Pump/Valve控制器移入ECU抽象层或CDD以获得更低层硬实时保证。",
+            "risk_assessment": "风险包括集中优化器成为性能瓶颈或单点故障；通信超时导致控制失效；传感器故障导致优化错误。缓解措施：设置本地兜底策略、超时与确认机制、监控健康信号并降级到安全模式；在Round2建议增加诊断接口与故障隔离策略。"
+          },
+          "session_id": "5f5ff4ef-bc18-4947-b64d-65eeb235ae91",
+          "timestamp": "2025-10-21T14:05:07.944187"
+        }
+      },
+      "phase2": {
+        "duration": 443.9619388580322,
+        "tokens": 98611,
+        "output_files": [
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Thermal_Optimizer_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Temperature_Sensor_Interface_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Cooling_Status_Interface_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\PumpControl_Interface_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ValveControl_Interface_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Thermal_Optimization_Interface_ec063223_1761027151.arxml",
+          "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_ec063223_1761027151.json"
+        ]
+      },
+      "final_status": "success",
+      "end_time": "2025-10-21T14:12:31.919057"
+    }
+  ]
+}

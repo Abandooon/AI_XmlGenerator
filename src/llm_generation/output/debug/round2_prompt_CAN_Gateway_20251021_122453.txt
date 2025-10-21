@@ -1,0 +1,846 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：CAN_Gateway（类型：SERVICE-PROXY-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "划分为四个主要软件组件：CAN_Gateway负责CAN帧接收、解码与路由；Door_Lock_Controller负责4个门锁电机的命令解译与闭环/开环控制；Window_Controller负责4个车窗电机的升降控制与限位管理；Diagnostic_Manager负责UDS服务、诊断会话管理与DTC存储。组件边界按照职责划分，控制逻辑和硬件抽象分离，诊断服务集中管理。",
+  "data_flow_analysis": "外部中控命令通过CAN总线进入CAN_Gateway（Sender-Receiver模式，消息为原始CAN帧，周期/事件触发）。CAN_Gateway解码后以命令消息（锁/解锁、窗升/降）通过内部Sender-Receiver接口分发到Door_Lock_Controller和Window_Controller（数据元素：door_id:int、action:enum、timestamp:uint32）。各控制器内部产生电机控制输出（PWM指令或开关命令）并通过同步ServerCall（ECU抽象或驱动层）下发到硬件（数据元素：motor_cmd:int、enable:bool）。诊断请求以UDS（TP片段或单帧）形式由CAN_Gateway转发到Diagnostic_Manager（Client-Server），Diagnostic_Manager返回UDS响应。数据传输时序为：CAN帧接收(异步)→解码(<5ms)→分发(周期/事件触发)→控制器执行(<=10ms控制周期)→驱动调用(同步，超时50ms)。",
+  "timing_requirements": "CAN帧到控制器命令分发延时应<=10ms；控制器内控制循环周期建议10ms（窗/锁电机控制）；电机驱动同步调用超时<=50ms；UDS诊断P2/P2*响应时间遵循UDS配置（默认P2 100ms可配置）；关键命令（锁定/解锁）优先级高，须在两次重试内完成反馈。",
+  "scalability_considerations": "设计支持多门扩展（4→>4）和更多功能模块：消息ID解码和路由以表驱动方式扩展；控制器 runnable 采用参数化支持多实例；接口使用抽象数据原型方便新增字段；当组件数量增加，可将解码/路由拆分为多实例CAN解析组件以分担负载。",
+  "complexity_assessment": "Medium"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "CAN_Bus_IF连接外部CAN硬件与CAN_Gateway；CAN_Gateway通过CAN_Command_IF向Door_Lock_Controller和Window_Controller发布解码后的命令；CAN_Gateway通过UDS_Service_IF与Diagnostic_Manager建立Client-Server关系。",
+  "data_flow_paths": "外部CAN->CAN_Gateway(CAN_Bus_IF)->内部解码->CAN_Command_IF->Door_Lock_Controller/Window_Controller; 诊断帧: CAN_Gateway->UDS_Service_IF->Diagnostic_Manager->响应返回。",
+  "control_flow_paths": "控制命令触发控制器runnable（事件驱动）并在Control_Cycle中执行伺服逻辑；Diagnostic_Manager对NV访问为同步ServerCall；CAN_Gateway对Diagnostic_Manager支持异步与同步两种调用模式。"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_can_bus_01",
+    "name": "CAN_Bus_IF",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步事件驱动接收原始CAN帧；最新值与队列并存（帧处理使用队列以避免丢帧）",
+    "data_category": "Raw_CAN_Frame",
+    "connected_components": [
+      "CAN_Gateway"
+    ],
+    "performance_requirements": "接收处理延时<5ms；丢帧率低于0.1%；使用硬件中断+软件队列缓冲（深度可配置）",
+    "data_elements": [
+      "can_id:uint32",
+      "dlc:uint8",
+      "data:byte[8]",
+      "timestamp:uint32"
+    ],
+    "direct_paths": "硬件CAN控制器 -> CAN_Gateway R-Port (中断触发 -> 软件队列)"
+  },
+  {
+    "interface_id": "if_cmd_01",
+    "name": "CAN_Command_IF",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "解码后命令以Sender-Receiver发布（事件触发）；采用最新值策略并支持短期队列用于突发负载",
+    "data_category": "Control_Command",
+    "connected_components": [
+      "CAN_Gateway",
+      "Door_Lock_Controller",
+      "Window_Controller"
+    ],
+    "performance_requirements": "端到端延时（CAN_Gateway解码到控制器接收）<=10ms；消息优先级支持锁命令优先。",
+    "data_elements": [
+      "node_id:uint8",
+      "door_id:uint8",
+      "action:enum{LOCK,UNLOCK,STOP}",
+      "request_id:uint16",
+      "timestamp:uint32"
+    ],
+    "direct_paths": "CAN_Gateway Decode_Runnable -> SR publish -> Controllers R-Port"
+  },
+  {
+    "interface_id": "if_uds_01",
+    "name": "UDS_Service_IF",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "客户端（CAN_Gateway）发起异步或同步服务调用到Diagnostic_Manager（支持同步调用用于敏感NV访问，支持异步用于转发场景）；传输可能为分帧TP，需上层重组；错误处理遵循UDS（NRC/timeout/retry）。",
+    "data_category": "Diagnostic_TP",
+    "connected_components": [
+      "CAN_Gateway",
+      "Diagnostic_Manager"
+    ],
+    "performance_requirements": "P2响应时间遵循UDS配置（典型<=100ms），超时与重试策略配置化；分帧重组有缓冲与超时保护。",
+    "data_elements": [
+      "uds_payload:byte[]",
+      "session_type:uint8",
+      "request_id:uint16"
+    ],
+    "direct_paths": "CAN_Gateway SERVER-CALL -> Diagnostic_Manager R-Port -> Diagnostic_Manager processes -> response via CLIENT callback"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "CAN_Bus_IF",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CAN_Bus_IF"
+  },
+  {
+    "name": "CAN_Command_IF",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CAN_Command_IF"
+  },
+  {
+    "name": "UDS_Service_IF",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/UDS_Service_IF"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/CAN_Bus_IF
+  - /Interfaces/CAN_Command_IF
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/UDS_Service_IF
+  # 类型: SERVICE-SW-COMPONENT-TYPE
+  - /Components/Diagnostic_Manager
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/Diagnostic_Manager/Diagnostic_Manager_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Request_Handler
+  - /Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Response_Runnable
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "comp_cangw_01",
+  "name": "CAN_Gateway",
+  "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+  "purpose": "接收CAN帧，解码消息并路由到相应的内部组件；负责UDS帧的转发到Diagnostic_Manager",
+  "estimated_complexity": "Medium",
+  "port_estimates": {
+    "input_ports": "1 R-Port 接收原始CAN帧",
+    "output_ports": "Multiple P-Ports 或 Sender-Receiver 接口向Door_Lock_Controller和Window_Controller发布解码命令；Client端口向Diagnostic_Manager发起UDS请求"
+  },
+  "behavioral_characteristics": "行为：异步接收CAN帧→解码（基于ID表）→若为控制命令则发布内部SR消息→若为诊断则通过Client-Server转发到Diagnostic_Manager→提供重发与超时管理；触发：CAN帧到达（事件驱动）；时序：解码与路由延时<5ms以保证控制延迟。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "R-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE"
+      ],
+      "details": "R-Port接收CAN RAW消息；P-Port/发送者用于内部命令广播；Client P-Port用于UDS请求到Diagnostic_Manager。端口数据原型包括raw_frame, decoded_cmd, uds_tp."
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "CAN_Frame_Received",
+          "trigger": "CAN_bus_interrupt"
+        },
+        {
+          "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+          "name": "UDS_Response_Returned",
+          "trigger": "Diagnostic_Manager_response"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "CAN_Rx_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-VALUES",
+              "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "接收原始CAN帧数据"
+                }
+              ],
+              "notes": "从CAN硬件端口接收帧"
+            }
+          ],
+          "notes": "CAN帧接收与初步校验"
+        },
+        {
+          "name": "Decode_Route_Runnable",
+          "elements": [
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "将解码后的命令发送到各控制器"
+                }
+              ],
+              "notes": "解码并发布内部命令"
+            },
+            {
+              "key": "SERVER-CALL-POINTS",
+              "wrapper": "SERVER-CALL-POINTS",
+              "preselect": [
+                {
+                  "of": "SERVER-CALL-POINTS",
+                  "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                  "include": [
+                    "OPERATION-IREF",
+                    "TIMEOUT"
+                  ],
+                  "notes": "将UDS请求异步转发给Diagnostic_Manager"
+                }
+              ],
+              "notes": "UDS转发调用点"
+            }
+          ],
+          "notes": "消息分发与UDS转发"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "CAN_Bus_IF",
+    "CAN_Command_IF",
+    "UDS_Service_IF"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SERVICE-PROXY-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "CAN_Gateway"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_Bus_IF",
+                          "/Interfaces/CAN_Command_IF",
+                          "/Interfaces/UDS_Service_IF"
+                        ],
+                        "examples": [
+                          "/Interfaces/UDS_Service_IF"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/CAN_Bus_IF",
+                          "/Interfaces/CAN_Command_IF",
+                          "/Interfaces/UDS_Service_IF"
+                        ],
+                        "examples": [
+                          "/Interfaces/UDS_Service_IF"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-VALUES": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SERVER-CALL-POINTS": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ASYNCHRONOUS-SERVER-CALL-POINT": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "OPERATION-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-R-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE",
+                                        "R-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-R-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-REQUIRED-OPERATION-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "CLIENT-SERVER-OPERATION"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-REQUIRED-OPERATION-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-R-PORT-REF",
+                                "TARGET-REQUIRED-OPERATION-REF"
+                              ],
+                              "x-xml-tag": "OPERATION-IREF"
+                            },
+                            "TIMEOUT": {
+                              "type": "number",
+                              "x-xml-tag": "TIMEOUT"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "OPERATION-IREF",
+                            "SHORT-NAME",
+                            "TIMEOUT"
+                          ],
+                          "x-xml-tag": "ASYNCHRONOUS-SERVER-CALL-POINT"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "ASYNCHRONOUS-SERVER-CALL-POINT"
+                      ]
+                    },
+                    "x-xml-tag": "SERVER-CALL-POINTS"
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-VALUES",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SERVER-CALL-POINTS",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Request_Handler",
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Response_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Request_Handler"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "EVENT-SOURCE-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "ASYNCHRONOUS-SERVER-CALL-RESULT-POINT"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "EVENT-SOURCE-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "EVENT-SOURCE-REF",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT"
+                },
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Request_Handler",
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Response_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/Diagnostic_Manager/Diagnostic_Manager_Behavior/UDS_Request_Handler"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "DATA-RECEIVED-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "SERVICE-PROXY-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 SERVICE-PROXY-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：CAN_Gateway。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

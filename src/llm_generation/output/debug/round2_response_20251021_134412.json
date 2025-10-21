@@ -1,0 +1,149 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Cell_Voltages_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "cell_voltage_array",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/BMS/Types/CellVoltageArray96"
+            }
+          },
+          {
+            "SHORT-NAME": "cell_status",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Thermal_Status_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "temperatures",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/BMS/Types/TemperatureArray"
+            }
+          },
+          {
+            "SHORT-NAME": "coolant_flow",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "thermal_status",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "SOC_SOH_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "SOC",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "SOH",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/float32"
+            }
+          },
+          {
+            "SHORT-NAME": "state_flags",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "CAN_BMS_Status",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "bms_summary",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-COMPOSITE-DATA-TYPE",
+              "#text": "/BMS/Types/BMS_SummaryType"
+            }
+          },
+          {
+            "SHORT-NAME": "fault_codes",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint32"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Balancer_Control_Interface",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SetBalanceCmd"
+          },
+          {
+            "SHORT-NAME": "GetBalanceAck"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Charge_Control_Interface",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "RequestCharge"
+          },
+          {
+            "SHORT-NAME": "GetChargeStatus"
+          }
+        ]
+      }
+    }
+  ],
+  "TRIGGER-INTERFACE": [
+    {
+      "SHORT-NAME": "Safety_Events_Interface",
+      "IS-SERVICE": "false",
+      "TRIGGERS": {
+        "TRIGGER": [
+          {
+            "SHORT-NAME": "SafetyEventTriggered"
+          }
+        ]
+      }
+    }
+  ]
+}

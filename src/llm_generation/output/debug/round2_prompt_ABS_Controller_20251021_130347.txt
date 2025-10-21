@@ -1,0 +1,913 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：ABS_Controller（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "将系统划分为6个SWC：CAN_Gateway负责多CAN总线报文路由与收发；Wheel_Speed_Processor负责4轮速信号的解码、滤波与故障检测；ABS_Controller实现防抱死控制闭环，与制动执行器同步调用；EPS_Controller实现转向助力控制并调用电机驱动服务；ESP_Controller融合车身动力学数据，生成横摆/制动力分配策略并协调ABS/EPS；Safety_Monitor作为ASIL-D服务对关键数据、健康状态、模式切换与Watchdog进行监控与安全反应。各组件职责边界基于数据源与控制目标划分，控制命令仅由控制器产生，底层CAN收发由CAN_Gateway抽象。",
+  "data_flow_analysis": "CAN_Gateway接收各CAN总线帧并按路由表转发到Wheel_Speed_Processor、ABS_Controller、EPS_Controller、ESP_Controller和Safety_Monitor；Wheel_Speed_Processor输出聚合后的WheelSpeed (FL/FR/RL/RR)通过SENDER-RECEIVER接口分发给ABS/EPS/ESP及Safety_Monitor；ABS/EPS/ESP通过CLIENT-SERVER接口调用制动与电机执行服务（BrakeActuator_Service/SteeringMotor_Service）或通过CAN_Gateway下发CAN命令；Safety_Monitor订阅各关键状态与诊断信号并在检测到违例时通过MODE-SWITCH或直接调用诊断重置接口通知其他组件。数据类型明确：WheelSpeed: float[4], BrakeCommand: struct{torque,enable}, SteeringCommand: struct{torque,angle}, CAN_Frame: raw bytes。传输时序：轮速按CAN帧到达事件驱动（最高100Hz），控制回路ABS 1ms周期，ESP 5ms，EPS 5ms，Safety监控1ms Watchdog。",
+  "timing_requirements": "关键时序：WheelSpeed采样和转发端到端延迟<=10ms；ABS控制周期=1ms（硬实时优先级最高），ABS到执行器命令确认超时<5ms；ESP主周期=5ms；EPS主周期=5ms；CAN_Gateway转发延迟应<2ms；Safety_Monitor诊断与隔离反应时间<=10ms内能发起安全措施。网络报文优先级需映射为CAN优先。",
+  "scalability_considerations": "设计支持增加额外传感器或控制器（如更多CAN通道或额外车辆控制逻辑）。采用松耦合的S/R和C/S接口便于横向扩展，CAN_Gateway使用可配置路由表，Wheel_Speed_Processor支持扩展到更多通道。为未来增加功能保留服务端点与状态广播接口。",
+  "complexity_assessment": "Complex"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "CAN_Gateway 与物理CAN总线相连；Wheel_Speed_Processor订阅CAN_Gateway解码数据并发布WheelSpeed到S/R总线；ABS/EPS/ESP订阅WheelSpeed并通过Client-Server接口调用执行服务或通过CAN_Gateway发送命令；Safety_Monitor订阅各组件心跳与关键状态并可通过ModeSwitch或Service调用影响目标组件。",
+  "data_flow_paths": "CAN_Frame -> CAN_Gateway -> Wheel_Speed_Processor -> WheelSpeed_S/R -> ABS/EPS/ESP/Safety_Monitor；ABS/EPS命令路径：Controller -> BrakeActuator/SteeringMotor Service -> CAN_Gateway -> Actuator_CAN。",
+  "control_flow_paths": "ABS/EPS/ESP按各自周期触发控制Runnable；Wheel_Speed_Processor事件驱动+周期融合；CAN_Gateway通过中断触发转发；Safety_Monitor以1ms周期与事件触发混合，能下发ModeSwitch或调用诊断服务影响控制器运行模式。"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_001",
+    "name": "CanBus_WheelSpeed",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步事件驱动（S/R），发布-订阅；发布端Wheel_Speed_Processor，订阅端ABS_Controller,ESP_Controller,EPS_Controller,Safety_Monitor；采用最新值策略（覆盖），缓冲仅保留最新一帧",
+    "data_category": "signals",
+    "connected_components": [
+      "Wheel_Speed_Processor",
+      "ABS_Controller",
+      "ESP_Controller",
+      "EPS_Controller",
+      "Safety_Monitor"
+    ],
+    "performance_requirements": "端到端延迟<=10ms，更新频率最高100Hz，错误处理为丢帧则使用上次有效值并上报诊断",
+    "data_elements": [
+      "WheelSpeed_FL",
+      "WheelSpeed_FR",
+      "WheelSpeed_RL",
+      "WheelSpeed_RR",
+      "WheelSpeed_Health"
+    ],
+    "direct_paths": "Wheel_Speed_Processor -> S/R总线 -> ABS/EPS/ESP/Safety_Monitor（本地内存映射或采样点直连）"
+  },
+  {
+    "interface_id": "if_002",
+    "name": "BrakeActuator_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步RPC（Client-Server），ABS_Controller作为Client，执行器服务为Server；严格超时与确认机制",
+    "data_category": "operations",
+    "connected_components": [
+      "ABS_Controller",
+      "CAN_Gateway"
+    ],
+    "performance_requirements": "调用超时<=5ms，必须有确认或快速重试路径，错误处理包括回退制动策略与Safety_Monitor报警",
+    "data_elements": [
+      "BrakeCommand",
+      "BrakeAck",
+      "BrakeDiagnostic"
+    ],
+    "direct_paths": "ABS_Controller -> BrakeActuator_Service (同步调用) -> 执行器/通过CAN_Gateway下发"
+  },
+  {
+    "interface_id": "if_003",
+    "name": "SteeringMotor_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步RPC，EPS_Controller作为Client，电机驱动作为Server；短超时与状态确认",
+    "data_category": "operations",
+    "connected_components": [
+      "EPS_Controller",
+      "CAN_Gateway"
+    ],
+    "performance_requirements": "命令确认时间<=10ms，支持异步错误上报与重试",
+    "data_elements": [
+      "SteeringCommand",
+      "SteeringAck",
+      "SteeringDiagnostic"
+    ],
+    "direct_paths": "EPS_Controller -> SteeringMotor_Service -> MotorDriver (通过CAN或本地总线)"
+  },
+  {
+    "interface_id": "if_004",
+    "name": "CAN_Gateway_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "事件驱动原始CAN帧传输与解码后信号分发，支持按优先级排队与直接转发；对于关键帧使用确保传输策略（重试/确认）",
+    "data_category": "frames",
+    "connected_components": [
+      "CAN_Gateway",
+      "Wheel_Speed_Processor",
+      "ABS_Controller",
+      "EPS_Controller",
+      "ESP_Controller",
+      "Safety_Monitor"
+    ],
+    "performance_requirements": "转发延迟<2ms，丢帧检测与诊断上报，支持优先级映射",
+    "data_elements": [
+      "CAN_Frame_Rx",
+      "CAN_Frame_Tx",
+      "Gateway_Status"
+    ],
+    "direct_paths": "多CAN总线 -> CAN_Gateway -> 上层订阅/转发路径"
+  },
+  {
+    "interface_id": "if_005",
+    "name": "Safety_Status",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "广播型S/R接口，Safety_Monitor发布安全模式与故障状态，控制组件订阅；使用最新值策略并带条件事件通知",
+    "data_category": "status",
+    "connected_components": [
+      "Safety_Monitor",
+      "ABS_Controller",
+      "EPS_Controller",
+      "ESP_Controller",
+      "Wheel_Speed_Processor"
+    ],
+    "performance_requirements": "安全事件必须在<=10ms内可达订阅者；支持冗余路径与确认请求机制",
+    "data_elements": [
+      "SafetyMode",
+      "SafetyAlert",
+      "Component_Heartbeat"
+    ],
+    "direct_paths": "Safety_Monitor -> S/R广播 -> 全体控制组件"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "CanBus_WheelSpeed",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CanBus_WheelSpeed"
+  },
+  {
+    "name": "CAN_Gateway_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CAN_Gateway_Interface"
+  },
+  {
+    "name": "Safety_Status",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Safety_Status"
+  },
+  {
+    "name": "BrakeActuator_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/BrakeActuator_Service"
+  },
+  {
+    "name": "SteeringMotor_Service",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/SteeringMotor_Service"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/CanBus_WheelSpeed
+  - /Interfaces/CAN_Gateway_Interface
+  - /Interfaces/Safety_Status
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/BrakeActuator_Service
+  - /Interfaces/SteeringMotor_Service
+  # 类型: ECU-ABSTRACTION-SW-COMPONENT-TYPE
+  - /Components/CAN_Gateway
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/CAN_Gateway/CAN_Gateway_Behavior
+  - /Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable
+  - /Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Periodic_Send_Runnable
+  - /Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/Wheel_Speed_Processor
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "cmp_003",
+  "name": "ABS_Controller",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "实现防抱死制动控制，基于轮速与踏板输入计算制动命令并调用制动执行服务",
+  "estimated_complexity": "Complex",
+  "port_estimates": {
+    "input_ports": "WheelSpeed集合、BrakePedalPosition、VehicleSpeed、Safety_Status",
+    "output_ports": "BrakeCommand client-server调用或CAN命令"
+  },
+  "behavioral_characteristics": "主控制循环1ms周期（TIMING-EVENT），响应轮速变化和滑移阈值触发；包含状态机（Disabled, Standby, Active, Release）；数据流程：接收WheelSpeed->滑移计算->决策->调用BrakeActuator_Service同步执行->监测反馈->发布诊断与状态。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE"
+      ],
+      "details": "R-ports订阅WheelSpeed；P-ports作为C/S客户端调用制动执行服务或向CAN_Gateway写入CAN命令"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "TIMING-EVENT",
+          "name": "ABS_Main_1ms",
+          "trigger": "1ms"
+        },
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "ABS_WheelSpeed_Update",
+          "trigger": "WheelSpeed_Subscriber_Event"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "ABS_Control_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "读取WheelSpeed与踏板等输入"
+                }
+              ],
+              "notes": "获取控制入口数据"
+            },
+            {
+              "key": "SERVER-CALL-POINTS",
+              "wrapper": "SERVER-CALL-POINTS",
+              "preselect": [
+                {
+                  "of": "SERVER-CALL-POINTS",
+                  "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                  "include": [
+                    "OPERATION-IREF",
+                    "TIMEOUT",
+                    "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                  ],
+                  "notes": "同步调用BrakeActuator服务，要求短超时和保护互斥区域"
+                }
+              ],
+              "notes": "向制动执行器发出命令并等待确认"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "发布ABS状态和诊断"
+                }
+              ],
+              "notes": "输出控制状态与诊断信息"
+            }
+          ],
+          "notes": "实现ABS控制环与执行调用"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "Wheel_Speed_Processor",
+    "CAN_Gateway",
+    "Safety_Monitor"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "ABS_Controller"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/BrakeActuator_Service",
+                          "/Interfaces/CAN_Gateway_Interface",
+                          "/Interfaces/CanBus_WheelSpeed",
+                          "/Interfaces/Safety_Status",
+                          "/Interfaces/SteeringMotor_Service"
+                        ],
+                        "examples": [
+                          "/Interfaces/BrakeActuator_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/BrakeActuator_Service",
+                          "/Interfaces/CAN_Gateway_Interface",
+                          "/Interfaces/CanBus_WheelSpeed",
+                          "/Interfaces/Safety_Status",
+                          "/Interfaces/SteeringMotor_Service"
+                        ],
+                        "examples": [
+                          "/Interfaces/BrakeActuator_Service"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SERVER-CALL-POINTS": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "SYNCHRONOUS-SERVER-CALL-POINT": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF": {
+                              "type": "object",
+                              "properties": {
+                                "@DEST": {
+                                  "type": "string",
+                                  "enum": [
+                                    "EXCLUSIVE-AREA-NESTING-ORDER"
+                                  ]
+                                },
+                                "#text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "#text",
+                                "@DEST"
+                              ],
+                              "x-xml-tag": "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                              "additionalProperties": false
+                            },
+                            "OPERATION-IREF": {
+                              "type": "object",
+                              "properties": {
+                                "CONTEXT-R-PORT-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                        "PR-PORT-PROTOTYPE",
+                                        "R-PORT-PROTOTYPE"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "CONTEXT-R-PORT-REF",
+                                  "additionalProperties": false
+                                },
+                                "TARGET-REQUIRED-OPERATION-REF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "@DEST": {
+                                      "type": "string",
+                                      "enum": [
+                                        "CLIENT-SERVER-OPERATION"
+                                      ]
+                                    },
+                                    "#text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "#text",
+                                    "@DEST"
+                                  ],
+                                  "x-xml-tag": "TARGET-REQUIRED-OPERATION-REF",
+                                  "additionalProperties": false
+                                }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                "CONTEXT-R-PORT-REF",
+                                "TARGET-REQUIRED-OPERATION-REF"
+                              ],
+                              "x-xml-tag": "OPERATION-IREF"
+                            },
+                            "TIMEOUT": {
+                              "type": "number",
+                              "x-xml-tag": "TIMEOUT"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF",
+                            "OPERATION-IREF",
+                            "SHORT-NAME",
+                            "TIMEOUT"
+                          ],
+                          "x-xml-tag": "SYNCHRONOUS-SERVER-CALL-POINT"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "SYNCHRONOUS-SERVER-CALL-POINT"
+                      ]
+                    },
+                    "x-xml-tag": "SERVER-CALL-POINTS"
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SERVER-CALL-POINTS",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable",
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Periodic_Send_Runnable",
+                              "/Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable",
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Periodic_Send_Runnable",
+                              "/Components/Wheel_Speed_Processor/Wheel_Speed_Processor_Behavior/Process_WheelSpeeds"
+                            ],
+                            "examples": [
+                              "/Components/CAN_Gateway/CAN_Gateway_Behavior/CAN_Forward_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：ABS_Controller。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

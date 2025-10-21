@@ -1,0 +1,410 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "将系统分为7个SWC：Temp_Monitor负责12路温度采集并发布温度数据；Motor_Cooling、Battery_Cooling、Cabin_Cooling负责各自冷却回路的流量和热交换控制；Pump_Controller负责3路水泵的开停与转速控制；Valve_Controller负责电磁阀的开度控制与位置反馈；Thermal_Optimizer作为协调层，汇总温度、泵阀状态并计算优化策略下发给各冷却组件与执行器。组件边界以功能职责和实时性分离，传感与执行分开，优化逻辑集中。 ",
+  "data_flow_analysis": "温度数据：Temp_Monitor以SENDER-RECEIVER接口周期发布12路温度（数组或独立信号），订阅方包括Thermal_Optimizer与各Cooling SWC，传输频率100ms或更快；状态与命令：Thermal_Optimizer通过CLIENT-SERVER接口向Pump_Controller、Valve_Controller发起同步命令（开启、设速、设开度），并接收确认；各Cooling SWC向Pump_Controller/Valve_Controller发起同步或异步请求以调整泵阀；Pump_Controller/Valve_Controller通过SENDER-RECEIVER发布执行器状态；接口数据类型包括: TemperatureArray (12x float), PumpCommand (enum+uint8), ValveCommand (float/open %), CoolingStatus (struct with temperature/flow/pressure)。数据传输时序：Temp_Monitor周期发布；Thermal_Optimizer周期（200ms）或事件触发执行优化并同步下发命令；单次命令响应时延目标<50ms。依赖关系：Thermal_Optimizer依赖Temp_Monitor、Pump_Controller、Valve_Controller和各Cooling SWC的状态；Cooling SWC依赖Pump/Valve控制器和温度输入。 ",
+  "timing_requirements": "温度采样周期100ms（可配置到50ms）；Cooling SWC控制回路表示周期50-200ms；Thermal_Optimizer优化周期200ms（在高负载降到100ms）；Pump/Valve命令需在50ms内完成响应以满足短时热失衡控制；命令确认或超时机制（默认超时150ms）。非安全关键但实时性高，采用软实时保证并监控超时。 ",
+  "scalability_considerations": "设计支持增加冷却回路与更多温度通道：Temp_Monitor使用数组化温度topic并支持动态通道数；Pump_Controller与Valve_Controller可扩展到更多执行器，接口使用通用命令结构；Thermal_Optimizer采用模块化策略引擎，支持增加控制策略模块和更高并发的客户端。通信采用发布/订阅与客户端/服务器混合，利于横向扩展。 ",
+  "complexity_assessment": "Complex"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Temp_Monitor publishes Temperature_Sensor_Interface consumed by Motor_Cooling, Battery_Cooling, Cabin_Cooling and Thermal_Optimizer; Thermal_Optimizer invokes PumpControl_Interface and ValveControl_Interface on Pump_Controller and Valve_Controller; Cooling SWCs invoke PumpControl_Interface/ValveControl_Interface as clients; Pump_Controller and Valve_Controller publish actuator status on Cooling_Status_Interface.",
+  "data_flow_paths": "Temp_Monitor -> Temperature_Sensor_Interface -> {Thermal_Optimizer, Motor_Cooling, Battery_Cooling, Cabin_Cooling}; Thermal_Optimizer -> PumpControl_Interface/ValveControl_Interface -> {Pump_Controller, Valve_Controller} -> Actuator status -> Cooling_Status_Interface -> Thermal_Optimizer and Cooling SWCs.",
+  "control_flow_paths": "Thermal_Optimizer (periodic/event) -> synchronous calls -> Pump_Controller/Valve_Controller -> confirm -> Cooling SWCs adapt local loops; Cooling SWCs (periodic) -> local control -> may call Pump/Valve services for adjustments; Temp_Monitor triggers events to Thermal_Optimizer on rapid temp changes."
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_temp_sensor",
+    "name": "Temperature_Sensor_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期发布（100ms），最新值覆盖策略，发布/订阅模型，传输延迟目标<20ms，接收方按最新值读取；缓冲：单最新值保留；错误处理：传感器故障标志与重复失效检测。",
+    "data_category": "EVENT",
+    "connected_components": [
+      "Temp_Monitor",
+      "Thermal_Optimizer",
+      "Motor_Cooling",
+      "Battery_Cooling",
+      "Cabin_Cooling"
+    ],
+    "performance_requirements": "周期100ms，端到端抖动<20ms，丢包应通过超时检测触发故障处理。",
+    "data_elements": [
+      "TemperatureArray[12]:float",
+      "SensorHealth:uint8"
+    ],
+    "direct_paths": "Temp_Monitor -> (publish) -> subscribers (Thermal_Optimizer, Cooling SWCs)"
+  },
+  {
+    "interface_id": "if_pump_control",
+    "name": "PumpControl_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步调用为主（命令/确认），可支持异步事件；命令响应目标<50ms，超时机制与重试（一次）；缓冲策略：命令队列以FIFO短队列，优先级区分紧急/普通。",
+    "data_category": "SERVICE",
+    "connected_components": [
+      "Motor_Cooling",
+      "Battery_Cooling",
+      "Cabin_Cooling",
+      "Pump_Controller",
+      "Thermal_Optimizer"
+    ],
+    "performance_requirements": "同步调用延迟<50ms，吞吐低（按需命令），高优先级命令抢占。",
+    "data_elements": [
+      "PumpCommand(struct):{pumpId:uint8,mode:enum,speed:uint8}",
+      "PumpStatus(struct):{pumpId:uint8,state:enum,feedback:uint8}"
+    ],
+    "direct_paths": "Cooling SWCs -> (sync call) -> Pump_Controller; Pump_Controller -> (publish) -> Cooling SWCs"
+  },
+  {
+    "interface_id": "if_valve_control",
+    "name": "ValveControl_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "以同步调用为主，支持异步确认；响应目标<50ms；缓冲：短队列，命令覆盖策略对非关键调整。",
+    "data_category": "SERVICE",
+    "connected_components": [
+      "Motor_Cooling",
+      "Battery_Cooling",
+      "Cabin_Cooling",
+      "Valve_Controller",
+      "Thermal_Optimizer"
+    ],
+    "performance_requirements": "命令确认<50ms，位置反馈周期100-200ms。",
+    "data_elements": [
+      "ValveCommand:{valveId:uint8,position:float}",
+      "ValveStatus:{valveId:uint8,position:float,health:uint8}"
+    ],
+    "direct_paths": "Cooling SWCs -> Valve_Controller (sync/async); Valve_Controller -> publish status"
+  },
+  {
+    "interface_id": "if_thermal_optimization",
+    "name": "Thermal_Optimization_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "周期性或事件驱动（200ms默认）发起优化并同步下发命令；对关键命令使用事务/阻塞确认；缓冲：不保留历史命令，实时覆盖策略；错误处理：命令失败回退与本地兜底策略。",
+    "data_category": "SERVICE",
+    "connected_components": [
+      "Thermal_Optimizer",
+      "Pump_Controller",
+      "Valve_Controller",
+      "Motor_Cooling",
+      "Battery_Cooling",
+      "Cabin_Cooling"
+    ],
+    "performance_requirements": "优化周期200ms，关键命令确认<150ms，支持事务性下发多个命令。",
+    "data_elements": [
+      "OptimizationPlan:{timestamp:uint32,commands:array}",
+      "OptimizationAck:{status:uint8,details:string}"
+    ],
+    "direct_paths": "Thermal_Optimizer -> (sync calls) -> Pump_Controller/Valve_Controller; feedback loops返回至Thermal_Optimizer"
+  },
+  {
+    "interface_id": "if_cooling_status",
+    "name": "Cooling_Status_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "各Cooling SWC周期发布状态（100-200ms），采用最新值覆盖策略；错误处理通过status字段传递，订阅方为Thermal_Optimizer与监控系统。",
+    "data_category": "EVENT",
+    "connected_components": [
+      "Motor_Cooling",
+      "Battery_Cooling",
+      "Cabin_Cooling",
+      "Thermal_Optimizer"
+    ],
+    "performance_requirements": "周期100-200ms，丢失或延迟需要触发超时流程。",
+    "data_elements": [
+      "CoolingStatus:{temperature:float,flow:float,pressure:float,health:uint8}"
+    ],
+    "direct_paths": "Cooling SWCs -> publish -> Thermal_Optimizer"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "Temperature_Sensor_Interface",
+              "Cooling_Status_Interface"
+            ]
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "DATA-ELEMENTS",
+          "IS-SERVICE"
+        ]
+      },
+      "minItems": 1
+    },
+    "CLIENT-SERVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "PumpControl_Interface",
+              "ValveControl_Interface",
+              "Thermal_Optimization_Interface"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "OPERATIONS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CLIENT-SERVER-OPERATION": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "CLIENT-SERVER-OPERATION"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "OPERATIONS"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE",
+    "CLIENT-SERVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。

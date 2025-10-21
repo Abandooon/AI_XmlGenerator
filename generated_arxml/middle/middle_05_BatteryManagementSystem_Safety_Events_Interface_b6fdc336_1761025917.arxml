@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Interfaces</SHORT-NAME>
+      <ELEMENTS>
+        <TRIGGER-INTERFACE>
+          <SHORT-NAME>Safety_Events_Interface</SHORT-NAME>
+          <IS-SERVICE>false</IS-SERVICE>
+          <TRIGGERS>
+            <TRIGGER>
+              <SHORT-NAME>SafetyEventTriggered</SHORT-NAME>
+            </TRIGGER>
+          </TRIGGERS>
+        </TRIGGER-INTERFACE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

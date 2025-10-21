@@ -1,0 +1,1022 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+
+            组件：CellMonitor（类型：APPLICATION-SW-COMPONENT-TYPE）
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "将电池包管理系统分为7个SWC：CellMonitor负责96个单体电压采集与预处理；ThermalManager负责液冷回路控制与温度管理；SOCEstimator负责SOC/SOH估算与电量状态输出；Balancer负责被动均衡决策与下发均衡命令；SafetyManager负责ASIL-D安全监控、故障判定与安全响应；ChargeController负责充电策略（快充/慢充）与与整车/充电站交互；CANComm负责CAN报文收发与对外上报。各组件职责边界明确，数据采集与控制路径分离，安全相关逻辑集中在SafetyManager但与各数据源紧耦合。",
+  "data_flow_analysis": "主数据流：CellMonitor -> (cell voltages[96]) -> SOCEstimator, SafetyManager, Balancer, CANComm。ThermalManager -> (temperature, coolant flow) -> SOCEstimator, SafetyManager, CANComm。SOCEstimator -> (SOC, SOH, StateFlags) -> ChargeController, CANComm, SafetyManager。ChargeController -> (charge request/ack) -> SafetyManager, CANComm。Balancer <- (balancing commands) <- SOCEstimator/SafetyManager；Balancer -> (balancer status) -> CANComm。CANComm对外发送BMS状态报文并接收VCU/充电桩命令。数据类型：cell_voltage[] (96 x float32), temperatures (float32 array), SOC (float32), SOH (float32), status_flags (bitfield/uint8), balancer_cmds (enum/uint8), charge_cmds (enum/uint8)。传输时序：关键监控数据（cell voltages, temps）周期性采样10-100ms，SOC估算周期100-500ms，安全检测周期10-100ms，CAN上报周期100-500ms或事件驱动。",
+  "timing_requirements": "CellMonitor采样周期10ms~100ms（默认20ms）满足实时监控；SafetyManager关键检测任务最大响应时间<=50ms，诊断与安全停机路径需<=100ms；ThermalManager控制周期100ms以内，冷却系统控制命令容忍较长到200ms；SOCEstimator周期100-500ms；CAN上报周期100-500ms，紧急事件立即上报（<50ms）。系统需支持时间同步与监控任务优先级划分以保证安全路径时序。",
+  "scalability_considerations": "设计支持扩展电池单体数与并联模块，通过将CellMonitor设计为可实例化/数组化并采用索引化报文结构；接口采用批量/分段传输策略以容纳更多单体；接口与runnable周期参数可配置以适配不同性能ECU；CAN报文可分段并映射至多信号以扩展。",
+  "complexity_assessment": "Complex"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "CellMonitor P -> SOCEstimator R, SafetyManager R, Balancer R, CANComm R; ThermalManager P -> SOCEstimator R, SafetyManager R, CANComm R; SOCEstimator P -> ChargeController R, CANComm R, Balancer R, SafetyManager R; SafetyManager P -> ChargeController R, CANComm R, Balancer R (safety actions); Balancer P -> CANComm R (status); ChargeController P -> CANComm R (status) and R <- CANComm (external commands).",
+  "data_flow_paths": "测量数据从CellMonitor/ThermalManager通过Sender-Receiver接口到SOCEstimator/SafetyManager/Balancer；估算结果从SOCEstimator经S-R或Client-Server到ChargeController和CANComm；安全事件通过Trigger接口从SafetyManager传递到CANComm及ChargeController；CANComm为最终出入口，映射内部数据到CAN报文并转发外部消息到内部组件。",
+  "control_flow_paths": "控制命令：ChargeController与Balancer通过CLIENT-SERVER接口向驱动/执行器下发命令；SafetyManager可通过同步ServerCall切断或限制充电（高优先级同步调用）；ThermalManager通过同步ServerCall控制泵/阀；CANComm接收外部控制请求并分发至ChargeController或SafetyManager。"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_cell_voltages",
+    "name": "Cell_Voltages_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性发送+事件触发（latest value 优先）；周期100-20ms取决采样配置；面向批量数据(cell_voltage[96])，分段或压缩以适配CAN帧；错误处理采用CRC与故障标志上报",
+    "data_category": "measurement",
+    "connected_components": [
+      "CellMonitor",
+      "SOCEstimator",
+      "Balancer",
+      "SafetyManager",
+      "CANComm"
+    ],
+    "performance_requirements": "延迟<100ms（正常），异常或安全事件<50ms；数据完整性需检测与丢帧报告",
+    "data_elements": [
+      "cell_voltage[96]:float32_array",
+      "cell_status:uint8"
+    ],
+    "direct_paths": "CellMonitor P-port -> SOCEstimator R-port / Balancer R-port / SafetyManager R-port；CANComm订阅并映射为CAN信号"
+  },
+  {
+    "interface_id": "if_thermal_status",
+    "name": "Thermal_Status_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性发送（100ms）+过温事件触发；最新值优先；带健康标志和故障码",
+    "data_category": "measurement",
+    "connected_components": [
+      "ThermalManager",
+      "SOCEstimator",
+      "SafetyManager",
+      "CANComm"
+    ],
+    "performance_requirements": "过温事件需<50ms上报；常规更新<200ms",
+    "data_elements": [
+      "temperatures:float32_array",
+      "coolant_flow:float32",
+      "thermal_status:uint8"
+    ],
+    "direct_paths": "ThermalManager P-port -> SOCEstimator/SafetyManager R-ports；CANComm映射上报"
+  },
+  {
+    "interface_id": "if_soc_soh",
+    "name": "SOC_SOH_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性（200ms）发布+事件驱动（显著变化或故障）；采用最新值缓存；错误通过status_flags上报",
+    "data_category": "state",
+    "connected_components": [
+      "SOCEstimator",
+      "ChargeController",
+      "SafetyManager",
+      "CANComm"
+    ],
+    "performance_requirements": "估算输出延迟<500ms；紧急降载通知<100ms",
+    "data_elements": [
+      "SOC:float32",
+      "SOH:float32",
+      "state_flags:uint8"
+    ],
+    "direct_paths": "SOCEstimator P-port -> ChargeController/SafetyManager R-ports；CANComm发布对外"
+  },
+  {
+    "interface_id": "if_balancer_control",
+    "name": "Balancer_Control_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "客户端发起（同步/异步）调用均衡操作，异步优先用于非阻塞命令；包含命令确认与超时；队列策略用于短时聚集",
+    "data_category": "command",
+    "connected_components": [
+      "SOCEstimator",
+      "SafetyManager",
+      "Balancer"
+    ],
+    "performance_requirements": "命令下发确认<200ms；异步下发允许稍长超时（<=1s）",
+    "data_elements": [
+      "balance_cmd:uint8",
+      "balance_mask:uint96",
+      "ack:boolean"
+    ],
+    "direct_paths": "SOCEstimator/SafetyManager -> Balancer via CLIENT-SERVER calls; Balancer returns status"
+  },
+  {
+    "interface_id": "if_charge_control",
+    "name": "Charge_Control_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "客户端-服务器，充电请求为同步事务（带超时），状态回报可异步；支持握手与超时重试；安全停充命令优先",
+    "data_category": "command",
+    "connected_components": [
+      "ChargeController",
+      "SafetyManager",
+      "CANComm"
+    ],
+    "performance_requirements": "启动/停止操作确认<200ms；安全停止必须<100ms",
+    "data_elements": [
+      "charge_request:uint8",
+      "charge_status:uint8",
+      "charge_limits:struct"
+    ],
+    "direct_paths": "ChargeController -> Charger HW via SERVER-CALL; SafetyManager can invoke stop via same interface"
+  },
+  {
+    "interface_id": "if_safety_events",
+    "name": "Safety_Events_Interface",
+    "type": "TRIGGER-INTERFACE",
+    "communication_pattern": "触发/中断式事件分发，低延迟（<50ms），事件优先级队列，必须可靠上报并记录时间戳",
+    "data_category": "event",
+    "connected_components": [
+      "SafetyManager",
+      "CANComm",
+      "ChargeController",
+      "SOCEstimator"
+    ],
+    "performance_requirements": "紧急事件上报<50ms；事件不可丢失，需持久化到诊断",
+    "data_elements": [
+      "safety_event_id:uint16",
+      "severity:uint8",
+      "timestamp:uint64"
+    ],
+    "direct_paths": "SafetyManager triggers -> CANComm for external, ChargeController for immediate stop, SOCEstimator for state updates"
+  },
+  {
+    "interface_id": "if_can_bms_status",
+    "name": "CAN_BMS_Status",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性CAN发送+紧急事件驱动，采用分段映射与压缩，优先发送高危事件；重传策略由CAN层处理",
+    "data_category": "telemetry",
+    "connected_components": [
+      "CANComm"
+    ],
+    "performance_requirements": "周期100-500ms；紧急事件<50ms",
+    "data_elements": [
+      "bms_summary:struct",
+      "fault_codes:uint32"
+    ],
+    "direct_paths": "CANComm -> 外部VCU/charger via CAN bus; 内部通过订阅接口获取数据"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "Cell_Voltages_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Cell_Voltages_Interface"
+  },
+  {
+    "name": "Thermal_Status_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Thermal_Status_Interface"
+  },
+  {
+    "name": "SOC_SOH_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/SOC_SOH_Interface"
+  },
+  {
+    "name": "CAN_BMS_Status",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/CAN_BMS_Status"
+  },
+  {
+    "name": "Balancer_Control_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/Balancer_Control_Interface"
+  },
+  {
+    "name": "Charge_Control_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/Charge_Control_Interface"
+  },
+  {
+    "name": "Safety_Events_Interface",
+    "type": "TRIGGER-INTERFACE",
+    "path": "/Interfaces/Safety_Events_Interface"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/Cell_Voltages_Interface
+  - /Interfaces/Thermal_Status_Interface
+  - /Interfaces/SOC_SOH_Interface
+  - /Interfaces/CAN_BMS_Status
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/Balancer_Control_Interface
+  - /Interfaces/Charge_Control_Interface
+  # 类型: TRIGGER-INTERFACE
+  - /Interfaces/Safety_Events_Interface
+  # 类型: ECU-ABSTRACTION-SW-COMPONENT-TYPE
+  - /Components/CANComm
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/CANComm/CANComm_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/CANComm/CANComm_Behavior/Transmit_Runnable
+  - /Components/CANComm/CANComm_Behavior/Receive_Runnable
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "cmp_cell_monitor",
+  "name": "CellMonitor",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "采集96路单体电压，执行滤波、异常检测与打包上报",
+  "estimated_complexity": "Complex",
+  "port_estimates": {
+    "input_ports": "R-ports: configuration, balancing enable; approx 2",
+    "output_ports": "P-ports: cell_voltage[96], cell_status; approx 2"
+  },
+  "behavioral_characteristics": "周期性采样96路电压（默认20ms），应用低通滤波与变化检测；检测超限/开路并生成故障标志；按周期打包发送到SOCEstimator/ CANComm并在异常时触发SafetyManager事件；支持参数下发（采样率/滤波系数/阈值）。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE"
+      ],
+      "details": "P-ports用于输出cell_voltage数组与status；R-ports用于接收配置与均衡控制命令"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "TIMING-EVENT",
+          "name": "Sampling_Timing_Event",
+          "trigger": "periodic_20ms"
+        },
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "Config_Update_Event",
+          "trigger": "on_configuration_write"
+        },
+        {
+          "type": "TRANSFORMER-HARD-ERROR-EVENT",
+          "name": "Cell_Open_Circuit_Event",
+          "trigger": "cell_open_detected"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "MeasureCells_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "读取ADC驱动提供的原始电压数组"
+                }
+              ],
+              "notes": "从底层ADC/driver读取原始电压"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "向SOCEstimator和CANComm发布处理后的voltages"
+                }
+              ],
+              "notes": "对外发布cell_voltage数组"
+            }
+          ],
+          "notes": "周期采样与预处理"
+        },
+        {
+          "name": "CellFaultDetect_Runnable",
+          "elements": [
+            {
+              "key": "DATA-READ-ACCESSS",
+              "wrapper": "DATA-READ-ACCESSS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "读取已处理电压用于故障判定"
+                }
+              ],
+              "notes": "对单体进行阈值/开路检测"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "发布故障标志到SafetyManager与CANComm"
+                }
+              ],
+              "notes": "上报故障和状态"
+            }
+          ],
+          "notes": "故障检测与上报"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "SOCEstimator",
+    "SafetyManager",
+    "Balancer",
+    "CANComm",
+    "ThermalManager"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "CellMonitor"
+          ]
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Balancer_Control_Interface",
+                          "/Interfaces/CAN_BMS_Status",
+                          "/Interfaces/Cell_Voltages_Interface",
+                          "/Interfaces/Charge_Control_Interface",
+                          "/Interfaces/SOC_SOH_Interface",
+                          "/Interfaces/Safety_Events_Interface",
+                          "/Interfaces/Thermal_Status_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/Balancer_Control_Interface"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Balancer_Control_Interface",
+                          "/Interfaces/CAN_BMS_Status",
+                          "/Interfaces/Cell_Voltages_Interface",
+                          "/Interfaces/Charge_Control_Interface",
+                          "/Interfaces/SOC_SOH_Interface",
+                          "/Interfaces/Safety_Events_Interface",
+                          "/Interfaces/Thermal_Status_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/Balancer_Control_Interface"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string"
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-READ-ACCESSS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-READ-ACCESSS",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CANComm/CANComm_Behavior/Receive_Runnable",
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CANComm/CANComm_Behavior/Receive_Runnable",
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                },
+                "TRANSFORMER-HARD-ERROR-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "enum": [
+                              "/Components/CANComm/CANComm_Behavior/Receive_Runnable",
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ],
+                            "examples": [
+                              "/Components/CANComm/CANComm_Behavior/Transmit_Runnable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TRANSFORMER-HARD-ERROR-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "TIMING-EVENT",
+                "TRANSFORMER-HARD-ERROR-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：CellMonitor。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

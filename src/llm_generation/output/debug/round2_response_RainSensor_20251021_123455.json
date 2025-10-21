@@ -1,0 +1,67 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "RainSensor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_RainSensor_RainLevel",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/RainSensor_To_WiperController"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "RainSensor_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Sensor_Read_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Rain_Level_SendPoint",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/RainSensor/Ports/P_RainSensor_RainLevel"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/RainSensor/rain_level"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "RainSensor_Sensor_Read"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "SensorInitEvent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/RainSensor/Runnables/Sensor_Read_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "SensorSampleEvent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/RainSensor/Runnables/Sensor_Read_Runnable"
+            },
+            "PERIOD": 50
+          }
+        ]
+      }
+    }
+  }
+}

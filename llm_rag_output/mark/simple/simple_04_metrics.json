@@ -1,0 +1,542 @@
+{
+  "case_id": "simple_4",
+  "system_name": "DoorControlSystem",
+  "complexity": "simple",
+  "requirement": {
+    "system_name": "DoorControlSystem",
+    "description": "控制4个车门的锁止和车窗升降",
+    "components_count": 4,
+    "component_types": [
+      "DoorLockController",
+      "WindowController",
+      "CANGateway",
+      "DiagnosticManager"
+    ],
+    "key_requirements": [
+      "DoorLockController管理4个门锁电机",
+      "WindowController管理4个车窗电机",
+      "通过CAN接收中控指令",
+      "支持UDS诊断协议"
+    ]
+  },
+  "start_time": "2025-10-21T12:19:56.758814",
+  "phase1": {
+    "duration": 103.74362397193909,
+    "api_calls": 1,
+    "tokens": 15702,
+    "component_count": 4,
+    "interface_count": 3,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "划分为四个主要软件组件：CAN_Gateway负责CAN帧接收、解码与路由；Door_Lock_Controller负责4个门锁电机的命令解译与闭环/开环控制；Window_Controller负责4个车窗电机的升降控制与限位管理；Diagnostic_Manager负责UDS服务、诊断会话管理与DTC存储。组件边界按照职责划分，控制逻辑和硬件抽象分离，诊断服务集中管理。",
+        "data_flow_analysis": "外部中控命令通过CAN总线进入CAN_Gateway（Sender-Receiver模式，消息为原始CAN帧，周期/事件触发）。CAN_Gateway解码后以命令消息（锁/解锁、窗升/降）通过内部Sender-Receiver接口分发到Door_Lock_Controller和Window_Controller（数据元素：door_id:int、action:enum、timestamp:uint32）。各控制器内部产生电机控制输出（PWM指令或开关命令）并通过同步ServerCall（ECU抽象或驱动层）下发到硬件（数据元素：motor_cmd:int、enable:bool）。诊断请求以UDS（TP片段或单帧）形式由CAN_Gateway转发到Diagnostic_Manager（Client-Server），Diagnostic_Manager返回UDS响应。数据传输时序为：CAN帧接收(异步)→解码(<5ms)→分发(周期/事件触发)→控制器执行(<=10ms控制周期)→驱动调用(同步，超时50ms)。",
+        "timing_requirements": "CAN帧到控制器命令分发延时应<=10ms；控制器内控制循环周期建议10ms（窗/锁电机控制）；电机驱动同步调用超时<=50ms；UDS诊断P2/P2*响应时间遵循UDS配置（默认P2 100ms可配置）；关键命令（锁定/解锁）优先级高，须在两次重试内完成反馈。",
+        "scalability_considerations": "设计支持多门扩展（4→>4）和更多功能模块：消息ID解码和路由以表驱动方式扩展；控制器 runnable 采用参数化支持多实例；接口使用抽象数据原型方便新增字段；当组件数量增加，可将解码/路由拆分为多实例CAN解析组件以分担负载。",
+        "complexity_assessment": "Medium"
+      },
+      "component_plan": [
+        {
+          "component_id": "comp_doorlock_01",
+          "name": "Door_Lock_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理4个门锁电机：接收锁/解锁命令、执行电机驱动调用并上报状态与故障",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "1 R-Port for command inputs from CAN_Gateway (per-door commands aggregated); 1 R-Port for diagnostic control/status",
+            "output_ports": "1 P-Port to ECU abstraction driver (motor command); 1 P-Port status publisher"
+          },
+          "behavioral_characteristics": "主要逻辑：解码并缓存来自CAN_Gateway的门锁命令→状态检测→生成电机控制命令；触发：外部命令到达（异步触发）和定时控制周期（10ms）；状态管理：每门保持状态机（LOCKED, UNLOCKED, MOVING, ERROR），在执行中处理限位和故障检测；数据流程：命令输入→安全/优先级判断→产生电机输出→状态/反馈输出。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port 接收命令与诊断控制；P-Port 调用 ECU 抽象层执行电机动作并发布状态。端口使用明确的数据原型（door_id, action, request_id, status, fault_code）。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Cmd_Received_Event",
+                  "trigger": "CAN_command_arrival_via_RPort"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Control_Cycle_Event",
+                  "trigger": "10ms_periodic"
+                },
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Init_Event",
+                  "trigger": "component_initialization"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Lock_Control_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从输入端口按door_id接收锁/解锁命令"
+                        }
+                      ],
+                      "notes": "接收并解析门锁命令参数"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步调用ECU抽象驱动以下发PWM或开关命令"
+                        }
+                      ],
+                      "notes": "调用驱动层执行电机动作"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布执行结果和当前门锁状态"
+                        }
+                      ],
+                      "notes": "输出状态与诊断信息"
+                    }
+                  ],
+                  "notes": "核心控制runnable：响应命令并驱动电机"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "CAN_Command_IF",
+            "Motor_Control_IF",
+            "UDS_Service_IF"
+          ]
+        },
+        {
+          "component_id": "comp_window_01",
+          "name": "Window_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理4个车窗电机：接收窗升/降命令、执行电机控制与限位/防夹逻辑并上报状态",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "1 R-Port 接收来自CAN_Gateway的窗控制命令；1 R-Port 用于诊断",
+            "output_ports": "1 P-Port 到驱动层（电机控制）；1 P-Port 状态上报"
+          },
+          "behavioral_characteristics": "主要逻辑：接收并排队窗命令→执行限位与力控防夹算法→生成电机驱动指令；触发条件：命令到达异步触发与10ms周期控制；状态机：UP/DOWN/STOP/MOVING/ERROR；数据流程：命令输入→限位/安全检查→驱动调用→状态输出。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port接收解码命令（door/window id, action）；P-Port为驱动同步接口，提供motor_cmd 与 enable 信号。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "WindowCmd_Received",
+                  "trigger": "CAN_command_via_RPort"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Window_Control_Tick",
+                  "trigger": "10ms_periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Window_Control_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收窗控制命令（window_id/action）"
+                        }
+                      ],
+                      "notes": "接收并缓存窗命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布当前窗位置/状态与故障"
+                        }
+                      ],
+                      "notes": "输出状态到总线或管理单元"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步驱动调用以控制电机"
+                        }
+                      ],
+                      "notes": "与驱动层的同步操作点"
+                    }
+                  ],
+                  "notes": "窗控制核心runnable：执行限位和防夹策略"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "CAN_Command_IF",
+            "Motor_Control_IF",
+            "UDS_Service_IF"
+          ]
+        },
+        {
+          "component_id": "comp_cangw_01",
+          "name": "CAN_Gateway",
+          "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+          "purpose": "接收CAN帧，解码消息并路由到相应的内部组件；负责UDS帧的转发到Diagnostic_Manager",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "1 R-Port 接收原始CAN帧",
+            "output_ports": "Multiple P-Ports 或 Sender-Receiver 接口向Door_Lock_Controller和Window_Controller发布解码命令；Client端口向Diagnostic_Manager发起UDS请求"
+          },
+          "behavioral_characteristics": "行为：异步接收CAN帧→解码（基于ID表）→若为控制命令则发布内部SR消息→若为诊断则通过Client-Server转发到Diagnostic_Manager→提供重发与超时管理；触发：CAN帧到达（事件驱动）；时序：解码与路由延时<5ms以保证控制延迟。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port接收CAN RAW消息；P-Port/发送者用于内部命令广播；Client P-Port用于UDS请求到Diagnostic_Manager。端口数据原型包括raw_frame, decoded_cmd, uds_tp."
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "CAN_Frame_Received",
+                  "trigger": "CAN_bus_interrupt"
+                },
+                {
+                  "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                  "name": "UDS_Response_Returned",
+                  "trigger": "Diagnostic_Manager_response"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CAN_Rx_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收原始CAN帧数据"
+                        }
+                      ],
+                      "notes": "从CAN硬件端口接收帧"
+                    }
+                  ],
+                  "notes": "CAN帧接收与初步校验"
+                },
+                {
+                  "name": "Decode_Route_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "将解码后的命令发送到各控制器"
+                        }
+                      ],
+                      "notes": "解码并发布内部命令"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "将UDS请求异步转发给Diagnostic_Manager"
+                        }
+                      ],
+                      "notes": "UDS转发调用点"
+                    }
+                  ],
+                  "notes": "消息分发与UDS转发"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "CAN_Bus_IF",
+            "CAN_Command_IF",
+            "UDS_Service_IF"
+          ]
+        },
+        {
+          "component_id": "comp_diag_01",
+          "name": "Diagnostic_Manager",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "实现UDS诊断服务（会话管理、服务处理、DTC管理、NV存储访问），响应来自CAN_Gateway的诊断请求",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "1 R-Port 接收UDS请求（来自CAN_Gateway）",
+            "output_ports": "1 P-Port 返回UDS响应；可能的P-Port访问NV存储（或通过ServerCall访问NV组件）"
+          },
+          "behavioral_characteristics": "行为：接收UDS请求→会话/安全性检查→执行服务（读DTC、清DTC、服务例程）→准备并返回UDS响应；触发：收到UDS请求（异步）或诊断周期任务；状态管理：会话状态（DEFAULT, PROGRAMMING, EXTENDED）与安全访问授权；数据流程：UDS请求→服务处理→NV访问(如需)→响应发送。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port接收由CAN_Gateway转发的UDS请求；P-Port用于发送UDS响应；对NV存储的访问通过同步ServerCall或专用P-Port抽象。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "UDS_Service_Invoked",
+                  "trigger": "incoming_UDS_request"
+                },
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Diag_Init",
+                  "trigger": "component_initialization"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "UDS_Request_Handler",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收并解析UDS请求帧"
+                        }
+                      ],
+                      "notes": "UDS请求解析入口"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步访问NV存储或持久化服务以读写DTC"
+                        }
+                      ],
+                      "notes": "对NV或持久化的同步调用"
+                    }
+                  ],
+                  "notes": "处理UDS请求并进行必要的NV访问"
+                },
+                {
+                  "name": "UDS_Response_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "将UDS响应发送回CAN_Gateway"
+                        }
+                      ],
+                      "notes": "发送UDS响应"
+                    }
+                  ],
+                  "notes": "构建并发送UDS响应帧"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "UDS_Service_IF",
+            "NV_Storage_IF"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if_can_bus_01",
+          "name": "CAN_Bus_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步事件驱动接收原始CAN帧；最新值与队列并存（帧处理使用队列以避免丢帧）",
+          "data_category": "Raw_CAN_Frame",
+          "connected_components": [
+            "CAN_Gateway"
+          ],
+          "performance_requirements": "接收处理延时<5ms；丢帧率低于0.1%；使用硬件中断+软件队列缓冲（深度可配置）",
+          "data_elements": [
+            "can_id:uint32",
+            "dlc:uint8",
+            "data:byte[8]",
+            "timestamp:uint32"
+          ],
+          "direct_paths": "硬件CAN控制器 -> CAN_Gateway R-Port (中断触发 -> 软件队列)"
+        },
+        {
+          "interface_id": "if_cmd_01",
+          "name": "CAN_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "解码后命令以Sender-Receiver发布（事件触发）；采用最新值策略并支持短期队列用于突发负载",
+          "data_category": "Control_Command",
+          "connected_components": [
+            "CAN_Gateway",
+            "Door_Lock_Controller",
+            "Window_Controller"
+          ],
+          "performance_requirements": "端到端延时（CAN_Gateway解码到控制器接收）<=10ms；消息优先级支持锁命令优先。",
+          "data_elements": [
+            "node_id:uint8",
+            "door_id:uint8",
+            "action:enum{LOCK,UNLOCK,STOP}",
+            "request_id:uint16",
+            "timestamp:uint32"
+          ],
+          "direct_paths": "CAN_Gateway Decode_Runnable -> SR publish -> Controllers R-Port"
+        },
+        {
+          "interface_id": "if_uds_01",
+          "name": "UDS_Service_IF",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "客户端（CAN_Gateway）发起异步或同步服务调用到Diagnostic_Manager（支持同步调用用于敏感NV访问，支持异步用于转发场景）；传输可能为分帧TP，需上层重组；错误处理遵循UDS（NRC/timeout/retry）。",
+          "data_category": "Diagnostic_TP",
+          "connected_components": [
+            "CAN_Gateway",
+            "Diagnostic_Manager"
+          ],
+          "performance_requirements": "P2响应时间遵循UDS配置（典型<=100ms），超时与重试策略配置化；分帧重组有缓冲与超时保护。",
+          "data_elements": [
+            "uds_payload:byte[]",
+            "session_type:uint8",
+            "request_id:uint16"
+          ],
+          "direct_paths": "CAN_Gateway SERVER-CALL -> Diagnostic_Manager R-Port -> Diagnostic_Manager processes -> response via CLIENT callback"
+        }
+      ],
+      "component_generation_order": [
+        "Diagnostic_Manager",
+        "CAN_Gateway",
+        "Door_Lock_Controller",
+        "Window_Controller"
+      ],
+      "connection_topology": {
+        "component_connections": "CAN_Bus_IF连接外部CAN硬件与CAN_Gateway；CAN_Gateway通过CAN_Command_IF向Door_Lock_Controller和Window_Controller发布解码后的命令；CAN_Gateway通过UDS_Service_IF与Diagnostic_Manager建立Client-Server关系。",
+        "data_flow_paths": "外部CAN->CAN_Gateway(CAN_Bus_IF)->内部解码->CAN_Command_IF->Door_Lock_Controller/Window_Controller; 诊断帧: CAN_Gateway->UDS_Service_IF->Diagnostic_Manager->响应返回。",
+        "control_flow_paths": "控制命令触发控制器runnable（事件驱动）并在Control_Cycle中执行伺服逻辑；Diagnostic_Manager对NV访问为同步ServerCall；CAN_Gateway对Diagnostic_Manager支持异步与同步两种调用模式。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用集中式CAN解码与路由(CAN_Gateway)以避免每个控制器重复解析CAN帧，便于消息过滤和安全性检查；控制器专注电机控制逻辑并通过同步ServerCall访问驱动，保持硬件抽象；Diagnostic_Manager集中处理UDS以保证一致的诊断行为和NV管理。",
+        "tradeoff_analysis": "集中解码简化控制器实现但增加了CAN_Gateway负载，选择表驱动解码和可扩展解析线程以应对负载；同步ServerCall保证一致的NV访问但可能增加延迟，针对非关键路径使用异步转发以提高响应性；将诊断集中有利于一致性但在高负载下可能成为瓶颈，需增加优先级管理。",
+        "alternative_considerations": "可选方案为分布式CAN解析（每控制器解析各自ID）以降低Gateway负载，但增加重复代码与一致性风险；另一方案是将驱动抽象单独作为ECU_Abstraction组件，当前设计将驱动访问通过ServerCall抽象以便Round2扩展为单独组件。",
+        "risk_assessment": "风险：CAN_Gateway成为单点性能瓶颈或故障点（缓解：队列深度/多线程/优先级）；UDS处理逻辑错误可能影响车辆诊断（缓解：单元测试与故障隔离）；电机控制超时或ServerCall失败可能导致功能不可用（缓解：超时与回退策略、故障上报）。"
+      },
+      "session_id": "12f65636-f08c-4ab2-9e76-26e0c6c86e3c",
+      "timestamp": "2025-10-21T12:21:40.496389"
+    }
+  },
+  "phase2": {
+    "duration": 300.8570911884308,
+    "tokens": 59495,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Diagnostic_Manager_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Gateway_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Window_Controller_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CAN_Bus_IF_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CAN_Command_IF_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\UDS_Service_IF_6eacfa16_1761020801.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_6eacfa16_1761020801.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-21T12:26:41.366391"
+}

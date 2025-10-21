@@ -1,0 +1,85 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Temperature_Sensor_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "TemperatureArray",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-ARRAY-DATA-TYPE",
+              "#text": "/DataTypes/TemperatureArray"
+            }
+          },
+          {
+            "SHORT-NAME": "SensorHealth",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    },
+    {
+      "SHORT-NAME": "Cooling_Status_Interface",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "CoolingStatus",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-COMPOSITE-DATA-TYPE",
+              "#text": "/DataTypes/CoolingStatus"
+            }
+          }
+        ]
+      },
+      "IS-SERVICE": "false"
+    }
+  ],
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "PumpControl_Interface",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SetPumpCommand"
+          },
+          {
+            "SHORT-NAME": "GetPumpStatus"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "ValveControl_Interface",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SetValvePosition"
+          },
+          {
+            "SHORT-NAME": "GetValveStatus"
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Thermal_Optimization_Interface",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "SubmitOptimizationPlan"
+          },
+          {
+            "SHORT-NAME": "GetOptimizationAck"
+          }
+        ]
+      }
+    }
+  ]
+}

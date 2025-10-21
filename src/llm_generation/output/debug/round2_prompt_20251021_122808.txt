@@ -1,0 +1,310 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "LightController: 解析CAN命令、决策灯光开关与亮度、故障检测与上报。PWMGenerator: 接收亮度命令，生成PWM信号驱动灯组并反馈硬件状态。CANInterface: 与车载CAN总线交互，解析/转发报文，提供接收与发送服务。",
+  "data_flow_analysis": "CANInterface接收CAN帧(HeadlightCmd,TailLightCmd,TurnSignalCmd,BrightnessCmd) -> 以S/R信号格式发布到CAN_RX接口 -> LightController订阅并解析命令(布尔开关、亮度百分比、灯组ID) -> LightController生成PWM控制命令(通道、占空比)通过PWM_IF发送至PWMGenerator -> PWMGenerator输出PWM到驱动器并测量驱动器故障/电流异常，故障状态通过Status_IF以S/R上报至CANInterface，再由CANInterface封装为诊断/状态CAN帧上报。时序：CAN到LightController处理目标延迟<20ms，LightController到PWMGenerator命令下发并生效<10ms，故障上报端到端<50ms。",
+  "timing_requirements": "CAN消息处理周期按报文事件触发，关键命令应在首次接收后20ms内完成状态更新。PWM更新频率50-200Hz（默认100Hz），亮度变化平滑过渡最大抖动<5%/周期。故障检测周期100ms，紧急闪烁/安全熄灭需在检测到故障200ms内触发安全动作。",
+  "scalability_considerations": "组件采用松耦合接口(S/R、C/S)，可通过新增PWM通道或灯组扩展。接口与数据原型可复用以支持更多灯路。若系统扩展到更多ECU，可将CANInterface替换或复用以支持多通道CAN监听。建议为大规模部署预留可配置的通道映射表与动态参数。",
+  "complexity_assessment": "Medium"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "CANInterface提供CAN_RX Interface向LightController发布命令；LightController通过PWM_Control_Interface向PWMGenerator下发命令；PWMGenerator通过Status_Report_Interface向LightController和CANInterface上报状态；CANInterface可通过Status_Report_Interface发布到总线。",
+  "data_flow_paths": "CAN bus -> CANInterface (frame decode) -> CAN_RX_Interface -> LightController -> PWM_Control_Interface -> PWMGenerator -> Status_Report_Interface -> CANInterface -> CAN bus",
+  "control_flow_paths": "事件驱动控制路径：CAN_Frame_Received触发LightController RCV_CAN_Process -> 可能触发PWM_Scheduler更新 -> PWM_Update在PWMGenerator执行并返回状态 -> Fault_Detector在LightController处理并触发状态上报"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "if_can_rx_001",
+    "name": "CAN_RX_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步事件驱动S/R，CAN帧到达触发发布，订阅者按事件处理；使用最新值语义（可缓冲单一最新值），丢帧不排队。",
+    "data_category": "Signals",
+    "connected_components": [
+      "CANInterface",
+      "LightController"
+    ],
+    "performance_requirements": "端到端延迟<=20ms，抖动<=5ms，优先级高于非安全诊断报文。",
+    "data_elements": [
+      "Headlight_Command",
+      "TailLight_Command",
+      "TurnSignal_Command",
+      "Brightness_Command"
+    ],
+    "direct_paths": "CANInterface发布->LightController订阅（S/R），单向数据流，按信号ID映射"
+  },
+  {
+    "interface_id": "if_pwm_ctrl_001",
+    "name": "PWM_Control_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "同步下发命令并可选择确认，命令使用最新值语义并在PWM周期更新，支持QoS：可靠传输与重试机制（应用层超时）",
+    "data_category": "ActuatorCommands",
+    "connected_components": [
+      "LightController",
+      "PWMGenerator"
+    ],
+    "performance_requirements": "命令下发到PWM生效<=10ms，PWM更新频率50-200Hz，确认超时默认50ms",
+    "data_elements": [
+      "PWM_Channel_Command",
+      "Brightness_Value",
+      "Enable_Flag"
+    ],
+    "direct_paths": "LightController -> PWMGenerator，为双向（命令下发 + 状态反馈通道）"
+  },
+  {
+    "interface_id": "if_status_001",
+    "name": "Status_Report_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步周期或事件驱动上报，状态采用队列最新值语义并保留最后已知状态，关键故障支持优先立即上报（同步发送由CANInterface封装）",
+    "data_category": "Diagnostics",
+    "connected_components": [
+      "PWMGenerator",
+      "LightController",
+      "CANInterface"
+    ],
+    "performance_requirements": "故障上报端到端<=50ms，周期性心跳1000ms，可配置",
+    "data_elements": [
+      "Driver_Fault_Flag",
+      "Overcurrent_Status",
+      "Channel_Temperature",
+      "Lamp_Status"
+    ],
+    "direct_paths": "PWMGenerator->LightController->CANInterface或PWMGenerator直接发布至CANInterface取决于部署"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "CAN_RX_Interface",
+              "PWM_Control_Interface",
+              "Status_Report_Interface"
+            ]
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "x-xml-tag": "IS-SERVICE"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "DATA-ELEMENTS",
+          "IS-SERVICE"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。

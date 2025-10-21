@@ -1,0 +1,788 @@
+{
+  "case_id": "middle_1",
+  "system_name": "PowertrainDomainController",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "PowertrainDomainController",
+    "description": "管理发动机、变速箱、能量回收系统",
+    "components_count": 6,
+    "component_types": [
+      "EngineController",
+      "TransmissionController",
+      "EnergyRecovery",
+      "TorqueCoordinator",
+      "CANRouter",
+      "DiagnosticService"
+    ],
+    "key_requirements": [
+      "EngineController管理燃油喷射、点火正时",
+      "TransmissionController控制换挡逻辑",
+      "EnergyRecovery管理制动能量回收",
+      "TorqueCoordinator协调三者的扭矩请求",
+      "CANRouter连接动力CAN和车身CAN",
+      "DiagnosticService提供UDS服务"
+    ]
+  },
+  "start_time": "2025-10-21T12:48:50.576326",
+  "phase1": {
+    "duration": 140.65665078163147,
+    "api_calls": 1,
+    "tokens": 17459,
+    "component_count": 6,
+    "interface_count": 6,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "将PowertrainDomainController划分为六个职责明确的组件：EngineController负责燃油喷射与点火时序控制；TransmissionController负责变速箱换挡决策与执行请求；EnergyRecovery负责制动能量回收管理与回馈策略；TorqueCoordinator聚合并仲裁来自发动机、变速箱和能量回收的扭矩请求并输出目标扭矩分配；CANRouter负责动力CAN与车身CAN之间的网关/消息路由与时序映射；DiagnosticService提供UDS/诊断会话、故障上报与配置信息访问。每个组件职责边界以清晰的输入/输出接口与运行周期划分，避免职能重叠，协调器仅负责仲裁和策略，不直接驱动硬件。",
+        "data_flow_analysis": "主要数据流：1) 传感与命令：EngineController接收点火/喷射目标（来自TorqueCoordinator via TorqueRequest_Interface）并输出发动机反馈（EngineStatus）到TorqueCoordinator与CANRouter；TransmissionController接收换挡请求(ShiftRequest)来自TorqueCoordinator或本地策略，输出GearState与ShiftAck到TorqueCoordinator与CANRouter；EnergyRecovery接收BrakeTorqueRequest与VehicleSpeed，产出RecoveryTorqueCapability到TorqueCoordinator。2) 仲裁：TorqueCoordinator接收 EngineStatus/GearState/RecoveryCapability，通过算法生成 TorqueRequest 给 EngineController/TransmissionController/EnergyRecovery。3) 诊断与配置：DiagnosticService通过DiagnosticUDS 接口对各组件提供读/写和故障清除，组件通过DiagnosticEvents上报故障。4) CAN边界：CANRouter承载PowertrainCAN<->BodyCAN的映射，承担定时转发、信号打包与延迟限制。数据类型与传输时序：控制命令为定长结构（TorqueRequest: float torque, uint8 source, timestamp），状态上报为周期0.02-0.1s（EngineStatus周期20ms），仲裁输出周期10-100ms，可触发型Command以事件驱动。接口承载模式包括Sender-Receiver（周期/最新值）、Client-Server（同步请求/响应用于参数读写与诊断）、Trigger（事件通知）。依赖关系：TorqueCoordinator依赖EngineController/TransmissionController/EnergyRecovery的数据与能力查询；各控制器依赖CANRouter提供外部CAN消息转发；DiagnosticService为所有组件提供服务端点，被动监听或被调用。",
+        "timing_requirements": "关键时序：EngineController状态上报周期20ms，命令接受最小触发响应<5ms；TorqueCoordinator工作周期10-50ms（默认20ms），对紧急扭矩更改支持事件触发并在下一个调度周期内下发；TransmissionController换挡决策在50-200ms范围内完成，换挡命令到执行确认须在300ms内；EnergyRecovery控制回馈启动在100ms内响应刹车事件；CANRouter转发延迟目标<10ms，最大抖动<2ms。诊断UDS响应依据服务类型，常规读写<100ms，安全关键故障上报低于50ms。从调度角度，runnable以定时触发（TIMING-EVENT）和事件触发混合，优先级分配保证Engine命令路径最低延迟。",
+        "scalability_considerations": "设计采用分层接口与松耦合消息模式（Sender-Receiver + Client-Server），便于在未来扩展更多控制器或替换算法。接口使用版本化数据元素和明确的消息ID映射，CANRouter支持动态映射表扩展。TorqueCoordinator逻辑通过策略模块化（可插拔算法）支持算法升级。为了应对系统规模增大，建议在Round2中将可选功能封装为可配置的模式组（mode groups）和参数化runnables。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "comp_CANRouter",
+          "name": "CANRouter",
+          "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+          "purpose": "在动力CAN与车身CAN之间执行消息路由、映射与定时转发，提供统一的CAN访问抽象",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "4",
+            "output_ports": "4"
+          },
+          "behavioral_characteristics": "持续运行的路由服务：处理周期性转发与事件触发的消息映射，支持硬实时转发规则和优先级，提供队列与最新值两种缓冲策略，支持动态映射表更新。触发条件：收到CAN帧或映射表更新。状态管理：维护映射表與统计计数器，并在映射冲突时降级部分转发。数据处理流程：接收CAN帧→解码信号ID→查找映射策略→应用转换/过滤→按优先级选择转发通道→输出帧。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "提供Sender-Receiver端口用于CAN信号发送/接收（P-PORT用于上报/周期发送，R-PORT用于配置读取或命令），同时提供Client-Server端口用于映射表配置与诊断查询。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Routing_Periodic_Event",
+                  "trigger": "周期20ms调度用于批量转发与心跳"
+                },
+                {
+                  "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                  "name": "CAN_Frame_Received_Event",
+                  "trigger": "外部CAN帧到达触发即时处理"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Routing_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收来自Powertrain CAN的信号"
+                        }
+                      ],
+                      "notes": "按帧/信号接收输入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向车身CAN或其他ECU发送映射后的信号"
+                        }
+                      ],
+                      "notes": "执行帧构建与发送"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "用于映射表同步查询与配置更新"
+                        }
+                      ],
+                      "notes": "调用配置管理服务"
+                    }
+                  ],
+                  "notes": "处理接收、映射、发送的主循环 runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "TorqueCoordinator",
+            "DiagnosticService"
+          ]
+        },
+        {
+          "component_id": "comp_EngineController",
+          "name": "EngineController",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理燃油喷射与点火时序，执行燃烧控制闭环以满足目标扭矩",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "6",
+            "output_ports": "5"
+          },
+          "behavioral_characteristics": "按控制周期执行复杂控制算法（燃油量与点火时刻计算），以TorqueRequest为目标并结合传感器反馈（RPM、MAP、温度）执行PID/前馈控制。触发条件：定时20ms或收到高优先级TorqueRequest事件。状态管理包含工作模式（Idle, Running, Limp），在故障或模式切换时降级控制。数据流程：接收TorqueRequest/EngineMode→读取传感器→计算喷射/点火命令→下发到硬件驱动并上报EngineStatus与诊断事件。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "提供周期性状态上报（P-ports）；需要Client（R-ports）用于接收TorqueRequest和参数查询；提供服务端点供DiagnosticService读取内部状态。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Engine_Control_Tick",
+                  "trigger": "周期20ms控制周期"
+                },
+                {
+                  "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                  "name": "TorqueRequest_Event",
+                  "trigger": "来自TorqueCoordinator的高优先级扭矩请求"
+                },
+                {
+                  "type": "SWC-MODE-SWITCH-EVENT",
+                  "name": "Engine_Mode_Switch",
+                  "trigger": "工况或故障导致的控制模式变更"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Engine_Control_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从TorqueCoordinator接收目标扭矩"
+                        }
+                      ],
+                      "notes": "接收目标扭矩与传感器输入"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT",
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                          ],
+                          "notes": "调用硬件抽象层的喷射/点火命令接口"
+                        }
+                      ],
+                      "notes": "向低层驱动同步下发命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "上报发动机状态给TorqueCoordinator与CANRouter"
+                        }
+                      ],
+                      "notes": "输出EngineStatus与diagnostic events"
+                    }
+                  ],
+                  "notes": "主控制runnable，负责闭环控制与命令下发"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "TorqueCoordinator",
+            "CANRouter",
+            "DiagnosticService"
+          ]
+        },
+        {
+          "component_id": "comp_TransmissionController",
+          "name": "TransmissionController",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理变速箱换挡逻辑，执行换挡命令并上报齿比与状态",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "4",
+            "output_ports": "3"
+          },
+          "behavioral_characteristics": "周期性与事件驱动结合：周期50ms评估换挡条件，接收ShiftRequest和当前齿比/转速以做最终决策；在换挡过程中管理状态机（Idle, Shifting, Locked），提供换挡确认与超时处理。数据流程：接收ShiftRequest/VehicleState→评估换挡需求→执行换挡序列（通过Server调用变速器驱动）→输出GearState/ShiftAck并上报诊断。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R-ports用于接收仲裁命令和车辆状态，P-ports用于周期性上报齿比与换挡确认。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Shift_Evaluation_Tick",
+                  "trigger": "周期50ms评估换挡条件"
+                },
+                {
+                  "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                  "name": "Shift_Timeout_Event",
+                  "trigger": "换挡超时由内部计时器触发"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Shift_Control_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收来自TorqueCoordinator的换挡建议与车辆状态"
+                        }
+                      ],
+                      "notes": "接收输入信号"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用变速箱执行操作的同步接口"
+                        }
+                      ],
+                      "notes": "同步执行业务操作"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "输出GearState与ShiftAck"
+                        }
+                      ],
+                      "notes": "上报换挡状态"
+                    }
+                  ],
+                  "notes": "负责换挡评估与执行的runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "TorqueCoordinator",
+            "CANRouter",
+            "DiagnosticService"
+          ]
+        },
+        {
+          "component_id": "comp_EnergyRecovery",
+          "name": "EnergyRecovery",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理制动能量回收策略，根据车辆状态决定回馈扭矩与允许能力",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "3",
+            "output_ports": "3"
+          },
+          "behavioral_characteristics": "根据制动踏板信号与车辆运行状态计算最大可回收扭矩，支持事件触发（紧急制动）与周期评估（50ms）。状态管理包括Enable/Disable和能力限制模式。数据流程：接收BrakeRequest/VehicleSpeed→评估回收能力→输出RecoveryTorqueCapability→接受TorqueCoordinator的分配命令并调整输出至执行器。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "P-ports用于发布回收能力与状态，R-ports用于接收BrakeRequest与仲裁命令。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                  "name": "Brake_Press_Event",
+                  "trigger": "制动踏板触发，立即评估回收"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Recovery_Eval_Tick",
+                  "trigger": "周期50ms评估支持能力"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Recovery_Evaluation_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收刹车请求与车速"
+                        }
+                      ],
+                      "notes": "输入采集"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布回收能力与目标扭矩"
+                        }
+                      ],
+                      "notes": "输出回收能力"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "向功率电子模块异步发起回收命令"
+                        }
+                      ],
+                      "notes": "异步通知下层执行回馈"
+                    }
+                  ],
+                  "notes": "评估与发布回收能力的runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "TorqueCoordinator",
+            "CANRouter",
+            "DiagnosticService"
+          ]
+        },
+        {
+          "component_id": "comp_TorqueCoordinator",
+          "name": "TorqueCoordinator",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "聚合并仲裁发动机、变速箱与能量回收的扭矩请求，产生面向执行者的协调命令",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "6",
+            "output_ports": "6"
+          },
+          "behavioral_characteristics": "周期性主循环（默认20ms）与事件优先级处理：收集EngineStatus/GearState/RecoveryCapability，运行仲裁算法（基于优先级、约束和驾驶策略）生成分配的TorqueRequest。支持紧急事件优先处理（刹车或防抱死事件）。状态管理包含策略模式（Economy/Performance/Default）与冲突解决策略。数据流程：接收各组件能力及状态→执行限制检查→执行仲裁算法→按目标下发TorqueRequest并监控执行反馈。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE",
+                "PR-PORT-PROTOTYPE"
+              ],
+              "details": "R-ports用于读取各控制器能力（要求数据），P-ports用于发布仲裁命令和监控上报，PR用于可选参数访问。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Coordinator_Tick",
+                  "trigger": "周期20ms主循环"
+                },
+                {
+                  "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                  "name": "Emergency_Brake_Event",
+                  "trigger": "刹车紧急事件触发立即仲裁"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Torque_Arbitration_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收EngineStatus/RecoveryCapability/GearState"
+                        }
+                      ],
+                      "notes": "聚合各组件状态数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布仲裁后的TorqueRequest到执行组件"
+                        }
+                      ],
+                      "notes": "发送仲裁结果"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "用于向DiagnosticService或配置服务异步请求能力/健康信息"
+                        }
+                      ],
+                      "notes": "异步服务调用用于能力查询或异常上报"
+                    }
+                  ],
+                  "notes": "执行仲裁与发送命令的核心runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "CANRouter",
+            "DiagnosticService"
+          ]
+        },
+        {
+          "component_id": "comp_DiagnosticService",
+          "name": "DiagnosticService",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "提供UDS诊断服务、读取/清除故障码、在线参数访问与诊断事件汇总",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2",
+            "output_ports": "2"
+          },
+          "behavioral_characteristics": "作为诊断服务端，按需响应UDS Client请求（同步Client-Server模式）并监听组件上报的诊断事件。提供故障码管理、诊断会话切换、以及向各组件请求内部状态的能力。触发条件包括外部UDS请求与组件上报的故障事件。数据流程：接收UDS请求→验证会话与权限→访问目标组件数据或清除故障→返回响应，并在必要时触发系统级日志或状态广播。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-ports用于接收UDS请求Client端调用，P-ports用于发布诊断状态与广播故障事件。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "UDS_Request_Event",
+                  "trigger": "外部UDS会话请求触发"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Component_Diagnostic_Event",
+                  "trigger": "组件上报诊断事件触发聚合处理"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "UDS_Service_Runnable",
+                  "elements": [
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步服务点用于读取组件内部数据与执行清除故障操作"
+                        }
+                      ],
+                      "notes": "提供UDS同步响应能力"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收来自组件的诊断事件或状态上报"
+                        }
+                      ],
+                      "notes": "诊断事件输入"
+                    }
+                  ],
+                  "notes": "处理UDS请求与聚合组件诊断信息"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "CANRouter",
+            "TorqueCoordinator"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if_TorqueRequest_Interface",
+          "name": "TorqueRequest_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "周期性/事件混合的Sender-Receiver，默认周期20ms，支持事件触发以保证紧急扭矩修改低延迟；缓冲策略为最新值优先（overwrite），并在紧急事件路径使用短队列（depth=2）以减轻抖动；错误处理为CRC与超时重发/报警。",
+          "data_category": "control-command",
+          "connected_components": [
+            "TorqueCoordinator",
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "CANRouter"
+          ],
+          "performance_requirements": "默认周期20ms，事件触发响应<5ms，传输延迟<10ms",
+          "data_elements": [
+            "TorqueRequest(torque:float,source:uint8,timestamp:uint32)",
+            "TorqueAck(status:uint8,timestamp:uint32)"
+          ],
+          "direct_paths": "TorqueCoordinator -> EngineController/TransmissionController/EnergyRecovery (via CANRouter when跨域)"
+        },
+        {
+          "interface_id": "if_EngineStatus_Interface",
+          "name": "EngineStatus_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "周期性Sender-Receiver，周期20ms，最新值缓冲；支持诊断标志位传播；错误处理为缺失检测与状态降级。",
+          "data_category": "status",
+          "connected_components": [
+            "EngineController",
+            "TorqueCoordinator",
+            "CANRouter",
+            "DiagnosticService"
+          ],
+          "performance_requirements": "周期20ms，最大延迟10ms，丢帧检测阈值50ms",
+          "data_elements": [
+            "EngineRPM(uint16)",
+            "EngineTorqueAvailable(float)",
+            "EngineFaultFlags(uint32)"
+          ],
+          "direct_paths": "EngineController -> TorqueCoordinator, DiagnosticService via CANRouter"
+        },
+        {
+          "interface_id": "if_ShiftRequest_Interface",
+          "name": "ShiftRequest_Interface",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "Client-Server用于请求换挡或策略查询，主要同步调用，允许异步确认；请求超时100-300ms；缓冲策略为请求序列化，错误处理为重试与fallback。",
+          "data_category": "control-command",
+          "connected_components": [
+            "TorqueCoordinator",
+            "TransmissionController",
+            "CANRouter"
+          ],
+          "performance_requirements": "请求-响应<300ms，关键路径优先",
+          "data_elements": [
+            "ShiftRequest(desiredGear:int,priority:uint8)",
+            "ShiftAck(result:uint8,timeoutInfo:uint16)"
+          ],
+          "direct_paths": "TorqueCoordinator (client) -> TransmissionController (server) ; CANRouter用于跨网络转发"
+        },
+        {
+          "interface_id": "if_RecoveryCapability_Interface",
+          "name": "RecoveryCapability_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "周期性/事件混合Sender-Receiver，周期50ms，事件触发用于紧急刹车；缓冲模式为最新值覆盖，错误处理为降级为0能力并上报故障。",
+          "data_category": "status/capability",
+          "connected_components": [
+            "EnergyRecovery",
+            "TorqueCoordinator",
+            "CANRouter"
+          ],
+          "performance_requirements": "事件响应<100ms，周期50ms",
+          "data_elements": [
+            "RecoveryTorqueCapability(float,maxDuration:ms)",
+            "RecoveryStatus(uint8)"
+          ],
+          "direct_paths": "EnergyRecovery -> TorqueCoordinator"
+        },
+        {
+          "interface_id": "if_PowertrainCAN_Interface",
+          "name": "PowertrainCAN_Interface",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "基于CAN的发送-接收接口，消息定时表管理，周期和事件混合；采用队列+最新值组合策略，优先级映射用于紧急消息；错误处理包含CAN错误计数与转发降级。",
+          "data_category": "network-signals",
+          "connected_components": [
+            "CANRouter",
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "TorqueCoordinator",
+            "DiagnosticService"
+          ],
+          "performance_requirements": "转发延迟<10ms，丢帧率低于1e-4",
+          "data_elements": [
+            "CAN_Frame(id:uint32,data:bytes,timestamp:uint32)"
+          ],
+          "direct_paths": "各控制器 <-> CANRouter <-> 车身/动力CAN"
+        },
+        {
+          "interface_id": "if_DiagnosticUDS_Interface",
+          "name": "DiagnosticUDS_Interface",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步Client-Server模式用于UDS服务（ReadDataByIdentifier, ClearDTC等），响应时间依据服务类型一般<100ms，带会话/安全授权管理；缓冲策略为请求队列化，错误处理遵循UDS标准。",
+          "data_category": "diagnostic",
+          "connected_components": [
+            "DiagnosticService",
+            "EngineController",
+            "TransmissionController",
+            "EnergyRecovery",
+            "CANRouter",
+            "TorqueCoordinator"
+          ],
+          "performance_requirements": "一般服务<100ms，复杂操作<300ms，安全会话切换受限时延",
+          "data_elements": [
+            "UDS_Request(serviceID:uint8,payload:bytes)",
+            "UDS_Response(positive:boolean,data:bytes)"
+          ],
+          "direct_paths": "UDS Client -> DiagnosticService -> 各组件（通过ServerCall或直接读取端口）"
+        }
+      ],
+      "component_generation_order": [
+        "CANRouter",
+        "DiagnosticService",
+        "EngineController",
+        "TransmissionController",
+        "EnergyRecovery",
+        "TorqueCoordinator"
+      ],
+      "connection_topology": {
+        "component_connections": "CANRouter 与所有控制器（EngineController, TransmissionController, EnergyRecovery）通过 PowertrainCAN_Interface 互联，TorqueCoordinator通过TorqueRequest_Interface与三者交互，DiagnosticService通过DiagnosticUDS_Interface与各组件建立Client-Server关系。EngineController/TransmissionController/ EnergyRecovery 向 TorqueCoordinator 提供状态（EngineStatus, GearState, RecoveryCapability）。",
+        "data_flow_paths": "TorqueCoordinator <- {EngineStatus, GearState, RecoveryCapability} (S-R) ; TorqueCoordinator -> {EngineController, TransmissionController, EnergyRecovery} (S-R/Client-Server) ; All <-> CANRouter (PowertrainCAN messages) ; DiagnosticService <-> Components (UDS synchronous calls)。",
+        "control_flow_paths": "控制主链路：TorqueCoordinator (仲裁) -> EngineController/TransmissionController/EnergyRecovery (下发控制命令)；TransmissionController执行换挡通过ServerCall方式调用下层驱动；DiagnosticService作为中央服务被调用用于读取与清除故障；CANRouter在网络层提供控制/状态消息的传输与映射。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用分层与消息驱动架构：控制逻辑分布在应用组件，网络边界由CANRouter集中管理，诊断功能独立为服务组件，仲裁逻辑集中在TorqueCoordinator。通信采用Sender-Receiver承载周期性/最新值信息，复杂交互与配置使用Client-Server以保证事务语义。此设计支持模块化替换、控制策略升级与网络变化隔离。",
+        "tradeoff_analysis": "集中仲裁（TorqueCoordinator）简化协调策略实现和一致性，但增加此节点的复杂度与潜在单点瓶颈；将CAN路由集中在CANRouter便于跨域映射与管理，但增加单点转发延迟。选择消息最新值优先减少队列延迟但增加了丢失历史数据的风险；对关键路径采用事件触发与短队列折中以兼顾实时性与可靠性。",
+        "alternative_considerations": "可选方案包括将仲裁分散到各控制器以减轻Coordinator负载或在CANRouter中引入冗余节点以提高可用性；对于高安全等级需求，可将部分控制逻辑下移到ECU抽象层或硬件安全模块。另一备选是采用更细粒度的mode groups管理运行模式以简化模式切换逻辑。",
+        "risk_assessment": "主要风险：TorqueCoordinator成为性能瓶颈或单点故障；CANRouter映射错误导致跨域消息丢失；诊断服务响应延迟影响维护流程。缓解措施：在Round2中为TorqueCoordinator和CANRouter设计优先级调度与健康监测，增加超时与降级策略，并为关键链路（Engine command path）设置更高优先级和更短的调度周期。"
+      },
+      "session_id": "12eec2b5-959a-4146-a15c-a47305267c75",
+      "timestamp": "2025-10-21T12:51:11.228958"
+    }
+  },
+  "phase2": {
+    "duration": 402.46608901023865,
+    "tokens": 96546,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CANRouter_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\DiagnosticService_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\TorqueCoordinator_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\TorqueRequest_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\EngineStatus_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\RecoveryCapability_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\PowertrainCAN_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ShiftRequest_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\DiagnosticUDS_Interface_bb58516e_1761022673.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_bb58516e_1761022673.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-21T12:57:53.706727"
+}

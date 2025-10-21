@@ -1,0 +1,107 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Valve_Controller",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "ValveStatus_PPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Cooling_Status_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "ValveControl_PRPort",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/ValveControl_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Valve_Controller_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Execute_ValveCommand",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ValveStatus_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Valve_Controller/Ports/ValveStatus_PPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/ValveStatus"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "SetValvePosition_ServerCall",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/Valve_Controller/Ports/ValveControl_PRPort"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/ValveControl_Interface/SetValvePosition"
+                  }
+                },
+                "TIMEOUT": 150
+              }
+            }
+          ],
+          "SYMBOL": "Valve_Controller.Execute_ValveCommand"
+        }
+      ],
+      "EVENTS": {
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "PositionReportSent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Pump_Controller/Pump_Controller_Behavior/Execute_PumpCommand"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Valve_Controller/Valve_Controller_Behavior/Execute_ValveCommand/ValveStatus_Access"
+            }
+          }
+        ],
+        "OPERATION-INVOKED-EVENT": [
+          {
+            "SHORT-NAME": "ValveCommandInvoked",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Pump_Controller/Pump_Controller_Behavior/Execute_PumpCommand"
+            },
+            "OPERATION-IREF": {
+              "CONTEXT-P-PORT-REF": {
+                "@DEST": "PR-PORT-PROTOTYPE",
+                "#text": "/Components/Valve_Controller/Ports/ValveControl_PRPort"
+              },
+              "TARGET-PROVIDED-OPERATION-REF": {
+                "@DEST": "CLIENT-SERVER-OPERATION",
+                "#text": "/Interfaces/ValveControl_Interface/SetValvePosition"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

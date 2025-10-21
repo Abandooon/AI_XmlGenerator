@@ -1,0 +1,272 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "LightController",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_PWM_Control",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/PWM_Control_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "P_Status_Report_Out",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Status_Report_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_CAN_RX",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/CAN_RX_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_Status_Report_In",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Status_Report_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "LightController_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "RCV_CAN_Process",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_RX_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/R_CAN_RX"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/CAN_Frame"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CAN_RX_Value",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/R_CAN_RX"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/Parsed_CAN_Signals"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "PWM_Command_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/P_PWM_Control"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/PWM_Channel_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "LightController_RCV_CAN_Process"
+        },
+        {
+          "SHORT-NAME": "PWM_Scheduler",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Scheduler_Input_Access",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/P_PWM_Control"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/PWM_Scheduler_Input"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Scheduler_State_Value",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/P_PWM_Control"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/PWM_Scheduler_State"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Scheduler_PWM_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/P_PWM_Control"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/PWM_Channel_Command"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "LightController_PWM_Scheduler"
+        },
+        {
+          "SHORT-NAME": "Fault_Detector",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Status_Feedback_Arg",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/R_Status_Report_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Status_Feedback_Value",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/R_Status_Report_In"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Status_Report_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/LightController/Ports/P_Status_Report_Out"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "DATA-PROTOTYPE",
+                      "#text": "/DataPrototype/Status_Report"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "LightController_Fault_Detector"
+        }
+      ],
+      "EVENTS": {
+        "BACKGROUND-EVENT": [
+          {
+            "SHORT-NAME": "Fault_Monitor_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/PWMGenerator/PWMGenerator_Behavior/HW_Monitor"
+            }
+          }
+        ],
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CAN_Command_Received_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANInterface/CANInterface_Behavior/CAN_Rx_Handler"
+            }
+          }
+        ],
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/CANInterface/CANInterface_Behavior/CAN_Tx_Service"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "PWM_Update_Timing_Event",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/PWMGenerator/PWMGenerator_Behavior/PWM_Update"
+            },
+            "PERIOD": 10
+          }
+        ]
+      }
+    }
+  }
+}

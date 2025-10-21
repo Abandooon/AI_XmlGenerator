@@ -1,0 +1,107 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Pump_Controller",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PumpStatusPort",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Cooling_Status_Interface"
+          }
+        }
+      ],
+      "PR-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PumpControlPort",
+          "PROVIDED-REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/PumpControl_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Pump_Controller_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Execute_PumpCommand",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "PumpStatusAccess",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Pump_Controller/Ports/PumpStatusPort"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "AUTOSAR-DATA-PROTOTYPE",
+                      "#text": "/DataTypes/PumpStatus"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SERVER-CALL-POINTS": [
+            {
+              "SYNCHRONOUS-SERVER-CALL-POINT": {
+                "SHORT-NAME": "PumpControlSyncCall",
+                "OPERATION-IREF": {
+                  "CONTEXT-R-PORT-REF": {
+                    "@DEST": "PR-PORT-PROTOTYPE",
+                    "#text": "/Components/Pump_Controller/Ports/PumpControlPort"
+                  },
+                  "TARGET-REQUIRED-OPERATION-REF": {
+                    "@DEST": "CLIENT-SERVER-OPERATION",
+                    "#text": "/Interfaces/PumpControl_Interface/Operations/SetPump"
+                  }
+                },
+                "TIMEOUT": 150
+              }
+            }
+          ],
+          "SYMBOL": "Pump_Controller_Execute_PumpCommand"
+        }
+      ],
+      "EVENTS": {
+        "DATA-WRITE-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "ActuatorWriteComplete",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Pump_Controller/PumpStatusAccess"
+            }
+          }
+        ],
+        "OPERATION-INVOKED-EVENT": [
+          {
+            "SHORT-NAME": "PumpCommandInvoked",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Temp_Monitor/Temp_Monitor_Behavior/Sampling_Runnable"
+            },
+            "OPERATION-IREF": {
+              "CONTEXT-P-PORT-REF": {
+                "@DEST": "PR-PORT-PROTOTYPE",
+                "#text": "/Components/Pump_Controller/Ports/PumpControlPort"
+              },
+              "TARGET-PROVIDED-OPERATION-REF": {
+                "@DEST": "CLIENT-SERVER-OPERATION",
+                "#text": "/Interfaces/PumpControl_Interface/Operations/SetPump"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
