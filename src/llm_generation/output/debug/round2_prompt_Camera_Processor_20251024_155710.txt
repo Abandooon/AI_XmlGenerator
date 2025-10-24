@@ -1,0 +1,1016 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方"组件 JSON Schema"）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配"组件 JSON Schema"。
+
+            组件：Camera_Processor（类型：SENSOR-ACTUATOR-SW-COMPONENT-TYPE）
+
+
+
+            ## AUTOSAR 组件封装原则（严格遵守）
+
+            **关键规则：组件内部行为只能引用本组件自己的运行时元素**
+
+            1. **事件启动约束**：
+               - 所有 EVENT 的 START-ON-EVENT-REF 必须且只能引用【本组件 Camera_Processor】的 RUNNABLE-ENTITY
+
+               **路径构造规则**：
+               - 格式：/Components/Camera_Processor/{Runnable名称}
+               - 示例（正确）：
+                 * /Components/Camera_Processor/Init_Runnable
+                 * /Components/Camera_Processor/Control_Process_Runnable
+                 * /Components/Camera_Processor/Periodic_Task_100ms
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomeRunnable  （引用了其他组件）
+                 * ❌ /Components/Camera_Processor/Internal/SubRunnable  （路径层级错误）
+
+            2. **端口访问约束**：
+               - DATA-SEND-POINTS / DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-READ-ACCESSS 中的 PORT-PROTOTYPE-REF 必须指向【本组件 Camera_Processor】的端口
+
+               **路径构造规则**：
+               - 格式：/Components/Camera_Processor/{端口名称}
+               - 示例（正确）：
+                 * /Components/Camera_Processor/P_Port_Status
+                 * /Components/Camera_Processor/R_Port_TempSensor
+                 * /Components/Camera_Processor/PR_Port_ServiceInterface
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomePort  （引用了其他组件的端口）
+                 * ❌ /Components/Camera_Processor/Ports/P_Port_Status  （多了Ports容器层级）
+
+            3. **服务调用约束**：
+               - SERVER-CALL-POINTS 中的 CONTEXT-R-PORT-REF / CONTEXT-P-PORT-REF 必须是【本组件 Camera_Processor】的端口
+               - 路径格式同上（端口访问）
+
+            4. **数据元素引用**（可跨组件）：
+               - TARGET-DATA-PROTOTYPE-REF 可以引用任何接口中的数据元素
+               - 这些路径在Schema的enum中已经为您列出，请直接选择使用
+
+               **路径格式**：
+               - 格式：/Interfaces/{接口名}/{数据元素名}
+               - 示例：
+                 * /Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp
+                 * /Interfaces/CAN_Setting_Interface/Requested_Level_Left
+
+            **特别注意**：
+            - 对于本组件的端口和Runnable引用，Schema中**没有提供enum列表**（因为生成时尚未创建）
+            - 您需要根据Round1设计中的端口和Runnable名称，**手动构造正确的路径**
+            - 路径必须严格遵循格式：/Components/Camera_Processor/{元素名}，不要添加额外的层级
+
+            **为什么有这些限制？**
+            组件间的通信和触发必须通过端口连接间接实现，而不是直接引用。这是AUTOSAR确保组件可复用性和独立性的核心机制。
+            跨组件的数据流由RTE根据端口连接（AssemblyConnector）在系统组合层面建立，而不是在组件定义层面硬编码。
+
+            **如何正确实现跨组件通信？**
+            - 组件A要触发组件B的行为：A通过自己的P-Port发送数据 → RTE传递 → B的DataReceivedEvent触发B的Runnable
+            - 组件A要访问组件B的数据：A通过自己的R-Port读取 → RTE从B的P-Port获取数据
+            - 组件A要调用组件B的服务：A通过自己的R-Port调用 → RTE路由到B的P-Port实现的服务
+
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "RadarProcessor 提供毫米波雷达数据输入、初步滤波和数据封装；CameraProcessor 提供前视摄像头图像输入、特征提取与畸变矫正；FusionAlgorithm 负责多传感器数据融合与态势推断；PathPlanner 根据融合结果生成纵向与横向路径/指令；ActuationInterface 将指令转换为底盘域可执行的控制命令并下发；HMIManager 将系统状态与警告信息在仪表盘显示给用户。各组件通过 RTE Port 进行数据交换，形成从传感器到执行端的高层流水线，并通过接口实现解耦与可替换性。",
+  "data_flow_analysis": "RadarProcessor 与 CameraProcessor 产出传感数据；FusionAlgorithm 同步接收 RadarData、CameraData，输出 FusionResult；PathPlanner 接收 FusionResult，输出 PathCommand；ActuationInterface 接收 PathCommand，输出 ActuatorCommand；HMIManager 通过 HMI_Status_Interface 订阅 SystemStatus。数据以时间戳对齐，主要数据类型包括 RadarData、CameraImageData、FusionResult、PathCommand、ActuatorCommand、SystemStatus。数据流采用单向数据流 + 触发事件的组合模式，确保封装性与确定性。",
+  "timing_requirements": "端到端时延对关键路径要求低于 40 ms，雷达与相机数据的采样周期 < 20 ms；融合与路径规划的处理延迟应低于 15 ms；对 HMI 的状态刷新周期设定为 100 ms 级别。",
+  "scalability_considerations": "模块化的接口与元素设计，支持新增传感器（如超声/光学）或新算法插件的替换；Round2 可通过增加新组件与接口来扩展功能，保持现有接口兼容性；RTE 端口的数量预计在 8-16 之间，系统可以水平扩展方式增加算力节点。",
+  "complexity_assessment": "Complex"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Radar_Processor --out--> Fusion_Algorithm; Camera_Processor --out--> Fusion_Algorithm; Fusion_Algorithm --out--> Path_Planner; Path_Planner --out--> Actuation_Interface; Path_Planner --out--> HMI_Manager",
+  "data_flow_paths": "RadarData, CameraImageData -> Fusion_Algorithm -> FusionResult -> Path_Planner -> PathCommand -> Actuation_Interface -> ActuatorCommand; SystemStatus -> HMI_Manager",
+  "control_flow_paths": "通过 RTE 端口进行数据流控制，Runnable 调度与事件触发在各自组件内部完成，跨组件控制仅通过接口调用实现"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "Sensor_Data_Interface_RadarCamera",
+    "name": "Sensor_Data_Interface_RadarCamera",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步周期性数据传输，雷达与摄像头数据以时间戳对齐后发送给 Fusion_Algorithm",
+    "data_category": "SensorData",
+    "connected_components": [
+      "Radar_Processor",
+      "Fusion_Algorithm",
+      "Camera_Processor"
+    ],
+    "performance_requirements": "端到端延迟 < 20 ms，抖动 < 5 ms",
+    "data_elements": [
+      "RadarData",
+      "CameraImageData",
+      "Timestamp"
+    ],
+    "direct_paths": "Radar_Processor -> Fusion_Algorithm, Camera_Processor -> Fusion_Algorithm"
+  },
+  {
+    "interface_id": "Actuation_Command_Interface",
+    "name": "Actuation_Command_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步请求-响应，带有限时超时",
+    "data_category": "ActuationCommand",
+    "connected_components": [
+      "Path_Planner",
+      "Actuation_Interface"
+    ],
+    "performance_requirements": "端到端延迟 < 40 ms",
+    "data_elements": [
+      "ActuationCommand",
+      "CommandID",
+      "Timestamp"
+    ],
+    "direct_paths": "Path_Planner -> Actuation_Interface"
+  },
+  {
+    "interface_id": "HMI_Status_Interface",
+    "name": "HMI_Status_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "轮询/请求-响应，超时 100 ms",
+    "data_category": "SystemStatus",
+    "connected_components": [
+      "Path_Planner",
+      "HMI_Manager"
+    ],
+    "performance_requirements": "状态刷新频率 10 Hz",
+    "data_elements": [
+      "SystemStatus",
+      "StatusDetails"
+    ],
+    "direct_paths": "Path_Planner -> HMI_Manager"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "Sensor_Data_Interface_RadarCamera",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Sensor_Data_Interface_RadarCamera"
+  },
+  {
+    "name": "RadarData",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Sensor_Data_Interface_RadarCamera/RadarData"
+  },
+  {
+    "name": "CameraImageData",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData"
+  },
+  {
+    "name": "Timestamp",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Sensor_Data_Interface_RadarCamera/Timestamp"
+  },
+  {
+    "name": "Actuation_Command_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/Actuation_Command_Interface"
+  },
+  {
+    "name": "SubmitActuationCommand",
+    "type": "CLIENT-SERVER-OPERATION",
+    "path": "/Interfaces/Actuation_Command_Interface/SubmitActuationCommand"
+  },
+  {
+    "name": "HMI_Status_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/HMI_Status_Interface"
+  },
+  {
+    "name": "RequestSystemStatus",
+    "type": "CLIENT-SERVER-OPERATION",
+    "path": "/Interfaces/HMI_Status_Interface/RequestSystemStatus"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/Sensor_Data_Interface_RadarCamera
+  # 类型: VARIABLE-DATA-PROTOTYPE
+  - /Interfaces/Sensor_Data_Interface_RadarCamera/RadarData
+  - /Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData
+  - /Interfaces/Sensor_Data_Interface_RadarCamera/Timestamp
+  # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/Actuation_Command_Interface
+  - /Interfaces/HMI_Status_Interface
+  # 类型: CLIENT-SERVER-OPERATION
+  - /Interfaces/Actuation_Command_Interface/SubmitActuationCommand
+  - /Interfaces/HMI_Status_Interface/RequestSystemStatus
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/Radar_Processor
+  # 类型: P-PORT-PROTOTYPE
+  - /Components/Radar_Processor/P_Port_RadarDataIn
+  # 类型: R-PORT-PROTOTYPE
+  - /Components/Radar_Processor/R_Port_RadarDataOut
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV
+  # 类型: RUNNABLE-ENTITY
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV/RadarDataAcquisition_Runnable
+  # 类型: VARIABLE-ACCESS
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV/RadarDataAcquisition_Runnable/RadarDataInput
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV/RadarDataAcquisition_Runnable/RadarDataOutput
+  # 类型: DATA-RECEIVED-EVENT
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV/RadarDataReady
+  # 类型: DATA-SEND-COMPLETED-EVENT
+  - /Components/Radar_Processor/RadarDataAcquisition_BHV/RadarDataSent
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "Camera_Processor",
+  "name": "Camera_Processor",
+  "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+  "purpose": "接收前视摄像头图像数据、执行初步处理并输出供融合算法使用",
+  "estimated_complexity": "Medium",
+  "port_estimates": {
+    "input_ports": "Camera_Driver_Port",
+    "output_ports": "Camera_Image_Port"
+  },
+  "behavioral_characteristics": "周期性获取摄像头图像，执行畸变矫正与特征提取，输出给 FusionAlgorithm。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE"
+      ],
+      "details": "输入端口接收图像，输出端口提供处理后的图像数据"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "DATA-RECEIVED-EVENT",
+          "name": "CameraImageReady",
+          "trigger": "CameraDriver_ImageReady"
+        },
+        {
+          "type": "DATA-SEND-COMPLETED-EVENT",
+          "name": "CameraImageSent",
+          "trigger": "AfterCameraImageSend"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "CameraDataAcquisition_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "从输入端口读取图像数据"
+                }
+              ],
+              "notes": "读取图像数据并进行初步处理"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "发送处理后的图像数据"
+                }
+              ],
+              "notes": "将图像数据发送给融合组件"
+            }
+          ]
+        }
+      ]
+    },
+    "notes": "实现对摄像头图像的读取与输出"
+  },
+  "direct_references": []
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "Camera_Processor"
+          ],
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Actuation_Command_Interface",
+                          "/Interfaces/HMI_Status_Interface",
+                          "/Interfaces/Sensor_Data_Interface_RadarCamera"
+                        ],
+                        "examples": [
+                          "/Interfaces/Actuation_Command_Interface"
+                        ],
+                        "x-scope": "global_type",
+                        "x-filter-info": "从3个候选路径过滤到3个"
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Actuation_Command_Interface",
+                          "/Interfaces/HMI_Status_Interface",
+                          "/Interfaces/Sensor_Data_Interface_RadarCamera"
+                        ],
+                        "examples": [
+                          "/Interfaces/Actuation_Command_Interface"
+                        ],
+                        "x-scope": "global_type",
+                        "x-filter-info": "从3个候选路径过滤到3个"
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+              "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "pattern": "0|1|true|false",
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "IMPLEMENTATION-DATA-TYPE-ELEMENT"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE"
+                                },
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Camera_Processor/.*$",
+                                          "description": "必须引用本组件(Camera_Processor)的实例。路径格式：/Components/Camera_Processor/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData",
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/RadarData",
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/Timestamp"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/RadarData"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从3个候选路径过滤到3个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "IMPLEMENTATION-DATA-TYPE-ELEMENT"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE"
+                                },
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Camera_Processor/.*$",
+                                          "description": "必须引用本组件(Camera_Processor)的实例。路径格式：/Components/Camera_Processor/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData",
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/RadarData",
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/Timestamp"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/Sensor_Data_Interface_RadarCamera/RadarData"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从3个候选路径过滤到3个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z_][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-RECEIVED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "pattern": "^/Components/Camera_Processor/.*$",
+                            "description": "必须引用本组件(Camera_Processor)的实例。路径格式：/Components/Camera_Processor/{元素名称}",
+                            "x-scope": "component_local",
+                            "x-constraint-type": "pattern (component_local)"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-RECEIVED-EVENT"
+                },
+                "DATA-SEND-COMPLETED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "pattern": "^/Components/Camera_Processor/.*$",
+                            "description": "必须引用本组件(Camera_Processor)的实例。路径格式：/Components/Camera_Processor/{元素名称}",
+                            "x-scope": "component_local",
+                            "x-constraint-type": "pattern (component_local)"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "EVENT-SOURCE-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "VARIABLE-ACCESS"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "EVENT-SOURCE-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "EVENT-SOURCE-REF",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-SEND-COMPLETED-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-RECEIVED-EVENT",
+                "DATA-SEND-COMPLETED-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 SENSOR-ACTUATOR-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：Camera_Processor。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+
+            **引用路径填写规则**（重要）：
+            所有 *REF 字段为对象，包含 @DEST 与 #text 两个字段：
+            - @DEST：引用目标的类型（从Schema的enum中选择）
+            - #text：引用目标的路径（AUTOSAR绝对路径）
+
+            **路径填写策略**：
+            1. 如果Schema的#text字段有enum列表 → 从enum中选择一个路径
+            2. 如果Schema的#text字段没有enum（通常是本组件引用）→ 手动构造路径
+               - 格式：/Components/Camera_Processor/{元素名}
+               - 元素名从Round1设计的element_design中获取
+
+            示例（正确）：
+            ```json
+            {
+              "START-ON-EVENT-REF": {
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/Components/Camera_Processor/Control_Process_Runnable"
+              },
+              "PORT-PROTOTYPE-REF": {
+                "@DEST": "R-PORT-PROTOTYPE",
+                "#text": "/Components/Camera_Processor/R_Port_TempSR"
+              },
+              "TARGET-DATA-PROTOTYPE-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp"
+              }
+            }
+            ```
+
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

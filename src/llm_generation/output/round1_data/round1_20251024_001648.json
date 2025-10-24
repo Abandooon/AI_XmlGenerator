@@ -1,0 +1,1211 @@
+{
+  "session_id": "round1_20251024_001648",
+  "timestamp": "20251024_001648",
+  "user_requirements": "\"system_name\": \"ADASController\",\"description\": \"实现ACC、LKA、AEB功能\",\"components_count\": 6,\"key_requirements\": \"RadarProcessor处理毫米波雷达数据\",\"CameraProcessor处理前视摄像头图像\",\"FusionAlgorithm融合多传感器数据\",\"PathPlanner规划纵向和横向控制指令\",\"ActuationInterface对接动力和底盘域\",\"HMIManager在仪表显示ADAS状态\"",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n            你的预选决策将直接指导Round2的Schema生成：\n            - 每个选择都会影响最终生成的XML结构\n            - preselect中的include列表决定了哪些子元素会被包含\n            - 联合类型的variant选择决定了数据访问的具体实现方式\n            \n            **重要提醒**：AUTOSAR组件必须遵守封装原则\n            - 组件的事件只能触发本组件的Runnable，不能跨组件触发\n            - 组件访问数据必须通过本组件的端口，不能直接引用其他组件的端口\n            - 跨组件通信通过RTE的端口连接机制实现，而非直接引用\n            - 因此在设计Runnable的数据访问时，应规划使用本组件的R-Port/P-Port进行通信\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        \"system_name\": \"ADASController\",\"description\": \"实现ACC、LKA、AEB功能\",\"components_count\": 6,\"key_requirements\": \"RadarProcessor处理毫米波雷达数据\",\"CameraProcessor处理前视摄像头图像\",\"FusionAlgorithm融合多传感器数据\",\"PathPlanner规划纵向和横向控制指令\",\"ActuationInterface对接动力和底盘域\",\"HMIManager在仪表显示ADAS状态\"\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "Radar_Processor与Camera_Processor负责原始传感器数据采集与预处理，Fusion_Algorithm对多传感器数据进行融合，Path_Planner基于融合结果生成控制指令，Actuation_Interface将指令下发至底盘域并反馈状态，HMI_Manager显示系统状态并接收人机输入。各组件边界清晰，低耦合高内聚，RTE端口实现跨组件通信。",
+      "data_flow_analysis": "雷达数据与图像数据经各自处理单元产生特征向量，经过Fusion_Algorithm进行融合，路径规划模块Path_Planner输出纵横向控制指令，经Actuation_Interface下达至底盘域，Actuation_Interface状态回传与HMI_Manager显示，HMI_Manager可向上层提供状态视图与简单输入。数据流为单向输入-处理-输出模式，关键数据通过RTE端口传递。",
+      "timing_requirements": "传感器数据到Fusion的总延迟需小于50ms，雷达/摄像头数据源更新周期在10-20ms级，融合与路径规划环节在25-30ms内完成，整体端到端 latency 目标<100ms。",
+      "scalability_considerations": "模块化组件划分便于增加传感器类型、引入更多传感器或扩展Fusion_Algorithm能力，使用可配置的队列缓冲以应对峰值流量，Round2可对单个组件内部Runnable进行并行化扩展。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "RADAR_PROCESSOR",
+        "name": "Radar_Processor",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "处理毫米波雷达数据，输出雷达特征向量",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Radar_Data_In",
+          "output_ports": "Radar_Features_Out"
+        },
+        "behavioral_characteristics": "周期性处理雷达数据，执行降噪、目标检测与特征提取，输出可供融合的特征向量",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "输入数据通过 R-Port 读取，输出特征通过 P-Port 提供给融合模块"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Radar_Data_Received",
+                "trigger": "Radar data arrival"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Radar_Tick",
+                "trigger": "Periodic 5-10ms timer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Radar_Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取输入端口数据"
+                      }
+                    ],
+                    "notes": "读取雷达输入数据并准备特征向量"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出雷达特征向量给融合模块"
+                      }
+                    ],
+                    "notes": "输出雷达特征向量"
+                  }
+                ],
+                "notes": "Radar Processing Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "RADAR_SENSOR_INTERFACE",
+          "FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "CAMERA_PROCESSOR",
+        "name": "Camera_Processor",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "处理前视摄像头图像，输出摄像头特征向量",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Camera_Image_In",
+          "output_ports": "Camera_Features_Out"
+        },
+        "behavioral_characteristics": "周期性处理摄像头图像，执行预处理、特征提取，输出特征向量",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "输入图像通过 R-Port 获取，输出特征通过 P-Port 提供"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Camera_Data_Received",
+                "trigger": "Image data arrival"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Camera_Tick",
+                "trigger": "Periodic 10ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Camera_Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取输入端口数据"
+                      }
+                    ],
+                    "notes": "读取摄像头输入并提取特征"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出摄像头特征向量给融合模块"
+                      }
+                    ],
+                    "notes": "输出摄像头特征向量"
+                  }
+                ],
+                "notes": "Camera Processing Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAMERA_SENSOR_INTERFACE",
+          "FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "FUSION_ALGORITHM",
+        "name": "Fusion_Algorithm",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对雷达与摄像头特征进行多传感器融合，输出融合结果",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Radar_Features_In,Camera_Features_In",
+          "output_ports": "Fusion_Output_Out"
+        },
+        "behavioral_characteristics": "接收雷达与摄像头特征，执行融合策略，输出融合结果以供路径规划",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port用于输入特征，P-Port用于输出融合结果"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Fusion_Tick",
+                "trigger": "Periodic 20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取雷达与摄像头特征"
+                      }
+                    ],
+                    "notes": "Collect features for fusion"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出融合结果"
+                      }
+                    ],
+                    "notes": "Provide fused features to Path_Planner"
+                  }
+                ],
+                "notes": "Fusion Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "R-FUSION_INTERFACE",
+          "C-FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "PATH_PLANNER",
+        "name": "Path_Planner",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于融合结果规划纵向与横向控制指令，输出给执行域",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Fusion_Output_In",
+          "output_ports": "Path_Planner_Commands_Out"
+        },
+        "behavioral_characteristics": "根据融合结果生成纵向/横向控制指令，考虑约束与安全边界，输出执行命令",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port接收融合结果，P-Port输出控制指令"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Planner_Tick",
+                "trigger": "Periodic 25ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Planner_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取融合结果"
+                      }
+                    ],
+                    "notes": "Receive fused data"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出路径计划指令"
+                      }
+                    ],
+                    "notes": "Publish path plan to actuators"
+                  }
+                ],
+                "notes": "Path_Planner Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "FUSION_ALGORITHM_INTERFACE",
+          "ACTUATION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "ACTUATION_INTERFACE",
+        "name": "Actuation_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "将路径指令转化为执行命令，驱动底盘域，并上报状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Path_Planner_Commands_In",
+          "output_ports": "Actuation_Status_Out"
+        },
+        "behavioral_characteristics": "将指令转译为底盘可执行的命令，控制执行并汇报状态，提供必要的安全检查",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port接收路径指令，P-Port输出执行结果与状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Actuation_Command_Sent",
+                "trigger": "Command dispatched"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Actuation_Tick",
+                "trigger": "Periodic 20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取路径指令"
+                      }
+                    ],
+                    "notes": "Translate commands to actuation signals"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出执行状态"
+                      }
+                    ],
+                    "notes": "Report actuation status"
+                  }
+                ],
+                "notes": "Actuation Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "PATH_PLANNER_INTERFACE",
+          "VEHICLE_BUS_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "HMI_MANAGER",
+        "name": "HMI_Manager",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "显示ADAS状态，处理人机输入并向系统发送控制请求",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "HMI_Status_In",
+          "output_ports": "HMI_Input_Out"
+        },
+        "behavioral_characteristics": "将系统状态以仪表形式显示，处理简单的人机输入如暂停/重试等",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "与显示模块交互的端口，P-Port提供显示数据，R-Port接收输入数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "HMI_Update",
+                "trigger": "State change"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "HMI_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收系统状态数据"
+                      }
+                    ],
+                    "notes": "Prepare display data"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "更新显示"
+                      }
+                    ],
+                    "notes": "Update HMI display"
+                  }
+                ],
+                "notes": "HMI_Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_DISPLAY_INTERFACE",
+          "ACTUATION_INTERFACE"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "RADAR_DATA_INTERFACE",
+        "name": "Radar_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic streaming, low latency",
+        "data_category": "RadarDataFrame",
+        "connected_components": [
+          "Radar_Processor",
+          "Fusion_Algorithm"
+        ],
+        "performance_requirements": "Latency <20ms, DataRate ~100Hz",
+        "data_elements": [
+          "Radar_Data_Frame",
+          "Radar_Features"
+        ],
+        "direct_paths": "Radar_Processor.RadarOutput -> Fusion_Algorithm.RadarInput"
+      },
+      {
+        "interface_id": "CAMERA_DATA_INTERFACE",
+        "name": "Camera_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic streaming, low latency",
+        "data_category": "CameraDataFrame",
+        "connected_components": [
+          "Camera_Processor",
+          "Fusion_Algorithm"
+        ],
+        "performance_requirements": "Latency <20ms, DataRate ~60Hz",
+        "data_elements": [
+          "Camera_Image",
+          "Camera_Features"
+        ],
+        "direct_paths": "Camera_Processor.CameraOutput -> Fusion_Algorithm.CameraInput"
+      },
+      {
+        "interface_id": "FUSION_TO_PATHPLANNER_INTERFACE",
+        "name": "Fusion_To_PathPlanner_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic data sharing",
+        "data_category": "FusionData",
+        "connected_components": [
+          "Fusion_Algorithm",
+          "Path_Planner"
+        ],
+        "performance_requirements": "Latency <25ms",
+        "data_elements": [
+          "Fusion_Output"
+        ],
+        "direct_paths": "Fusion_Algorithm.FusionOutput -> Path_Planner.Input"
+      },
+      {
+        "interface_id": "PATHPLANNER_TO_ACTUATION_INTERFACE",
+        "name": "PathPlanner_To_Actuation_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic command stream",
+        "data_category": "ActuationCommand",
+        "connected_components": [
+          "Path_Planner",
+          "Actuation_Interface"
+        ],
+        "performance_requirements": "Latency <30ms",
+        "data_elements": [
+          "PathPlan_Command"
+        ],
+        "direct_paths": "Path_Planner.CommandOutput -> Actuation_Interface.CommandInput"
+      },
+      {
+        "interface_id": "ACTUATION_STATUS_INTERFACE",
+        "name": "Actuation_Status_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Event-driven status update",
+        "data_category": "ActuationStatus",
+        "connected_components": [
+          "Actuation_Interface",
+          "HMI_Manager"
+        ],
+        "performance_requirements": "Latency <20ms",
+        "data_elements": [
+          "Actuation_Status"
+        ],
+        "direct_paths": "Actuation_Interface.StatusOutput -> HMI_Manager.StatusInput"
+      },
+      {
+        "interface_id": "HMI_STATUS_INTERFACE",
+        "name": "HMI_Status_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Event-driven status view",
+        "data_category": "HMIStatus",
+        "connected_components": [
+          "HMI_Manager",
+          "Actuation_Interface"
+        ],
+        "performance_requirements": "Latency <50ms",
+        "data_elements": [
+          "HMI_Status"
+        ],
+        "direct_paths": "Actuation_Interface.StatusOutput -> HMI_Manager.DisplayInput"
+      }
+    ],
+    "component_generation_order": [
+      "Radar_Processor",
+      "Camera_Processor",
+      "Fusion_Algorithm",
+      "Path_Planner",
+      "Actuation_Interface",
+      "HMI_Manager"
+    ],
+    "connection_topology": {
+      "component_connections": "Radar_Processor <-> Fusion_Algorithm via Radar_Data_Interface; Camera_Processor <-> Fusion_Algorithm via Camera_Data_Interface; Fusion_Algorithm <-> Path_Planner via Fusion_To_PathPlanner_Interface; Path_Planner <-> Actuation_Interface via PathPlanner_To_Actuation_Interface; Actuation_Interface <-> HMI_Manager via Actuation_Status_Interface",
+      "data_flow_paths": "Radar_Data_In -> Radar_Features_Out -> Fusion_Input; Camera_Image_In -> Camera_Features_Out -> Fusion_Input; Fusion_Output -> PathPlanner_Input -> ActuationInterface_Input; PathPlanner_Output -> Actuation_Interface_Input; Actuation_Status -> HMI_Display",
+      "control_flow_paths": "Periodic_Ticks: Radar_Processor -> Fusion_Algorithm -> Path_Planner -> Actuation_Interface; User_Inputs via HMI_Manager may trigger interrupts to Path_Planner"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用两阶段生成架构，Round1完成整体结构与元素预选，Round2基于Round1细化ARXML。明确各组件边界和RTE端口通信，确保封装与数据流向符合AUTOSAR封装原则，HMI采用NV_BLOCk_COMPONENT以保持状态持久性与显示解耦。",
+      "tradeoff_analysis": "模块化实现增加了初始设计复杂度，但提升了可维护性和可扩展性；将传感器融合放在独立Fusion_Algorithm中降低耦合；若考虑更低延迟，可在Round2引入更高频率的数据队列与并行 runnable；",
+      "alternative_considerations": "全集成单体组件以减少接口数量，但会降低灵活性和可扩展性；引入更多实时性优化将增加实现成本。",
+      "risk_assessment": "数据在多阶段传递中可能引入延迟与丢失风险，需在Round2中引入缓冲、超时保护和数据版本化策略，并确保RTE端口映射正确，避免直接跨组件调用。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "Radar_Processor与Camera_Processor负责原始传感器数据采集与预处理，Fusion_Algorithm对多传感器数据进行融合，Path_Planner基于融合结果生成控制指令，Actuation_Interface将指令下发至底盘域并反馈状态，HMI_Manager显示系统状态并接收人机输入。各组件边界清晰，低耦合高内聚，RTE端口实现跨组件通信。",
+      "data_flow_analysis": "雷达数据与图像数据经各自处理单元产生特征向量，经过Fusion_Algorithm进行融合，路径规划模块Path_Planner输出纵横向控制指令，经Actuation_Interface下达至底盘域，Actuation_Interface状态回传与HMI_Manager显示，HMI_Manager可向上层提供状态视图与简单输入。数据流为单向输入-处理-输出模式，关键数据通过RTE端口传递。",
+      "timing_requirements": "传感器数据到Fusion的总延迟需小于50ms，雷达/摄像头数据源更新周期在10-20ms级，融合与路径规划环节在25-30ms内完成，整体端到端 latency 目标<100ms。",
+      "scalability_considerations": "模块化组件划分便于增加传感器类型、引入更多传感器或扩展Fusion_Algorithm能力，使用可配置的队列缓冲以应对峰值流量，Round2可对单个组件内部Runnable进行并行化扩展。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "RADAR_PROCESSOR",
+        "name": "Radar_Processor",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "处理毫米波雷达数据，输出雷达特征向量",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Radar_Data_In",
+          "output_ports": "Radar_Features_Out"
+        },
+        "behavioral_characteristics": "周期性处理雷达数据，执行降噪、目标检测与特征提取，输出可供融合的特征向量",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "输入数据通过 R-Port 读取，输出特征通过 P-Port 提供给融合模块"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Radar_Data_Received",
+                "trigger": "Radar data arrival"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Radar_Tick",
+                "trigger": "Periodic 5-10ms timer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Radar_Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取输入端口数据"
+                      }
+                    ],
+                    "notes": "读取雷达输入数据并准备特征向量"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出雷达特征向量给融合模块"
+                      }
+                    ],
+                    "notes": "输出雷达特征向量"
+                  }
+                ],
+                "notes": "Radar Processing Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "RADAR_SENSOR_INTERFACE",
+          "FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "CAMERA_PROCESSOR",
+        "name": "Camera_Processor",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "处理前视摄像头图像，输出摄像头特征向量",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Camera_Image_In",
+          "output_ports": "Camera_Features_Out"
+        },
+        "behavioral_characteristics": "周期性处理摄像头图像，执行预处理、特征提取，输出特征向量",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "输入图像通过 R-Port 获取，输出特征通过 P-Port 提供"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Camera_Data_Received",
+                "trigger": "Image data arrival"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Camera_Tick",
+                "trigger": "Periodic 10ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Camera_Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取输入端口数据"
+                      }
+                    ],
+                    "notes": "读取摄像头输入并提取特征"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出摄像头特征向量给融合模块"
+                      }
+                    ],
+                    "notes": "输出摄像头特征向量"
+                  }
+                ],
+                "notes": "Camera Processing Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAMERA_SENSOR_INTERFACE",
+          "FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "FUSION_ALGORITHM",
+        "name": "Fusion_Algorithm",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对雷达与摄像头特征进行多传感器融合，输出融合结果",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Radar_Features_In,Camera_Features_In",
+          "output_ports": "Fusion_Output_Out"
+        },
+        "behavioral_characteristics": "接收雷达与摄像头特征，执行融合策略，输出融合结果以供路径规划",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port用于输入特征，P-Port用于输出融合结果"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Fusion_Tick",
+                "trigger": "Periodic 20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取雷达与摄像头特征"
+                      }
+                    ],
+                    "notes": "Collect features for fusion"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出融合结果"
+                      }
+                    ],
+                    "notes": "Provide fused features to Path_Planner"
+                  }
+                ],
+                "notes": "Fusion Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "R-FUSION_INTERFACE",
+          "C-FUSION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "PATH_PLANNER",
+        "name": "Path_Planner",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于融合结果规划纵向与横向控制指令，输出给执行域",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Fusion_Output_In",
+          "output_ports": "Path_Planner_Commands_Out"
+        },
+        "behavioral_characteristics": "根据融合结果生成纵向/横向控制指令，考虑约束与安全边界，输出执行命令",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port接收融合结果，P-Port输出控制指令"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Planner_Tick",
+                "trigger": "Periodic 25ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Planner_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取融合结果"
+                      }
+                    ],
+                    "notes": "Receive fused data"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出路径计划指令"
+                      }
+                    ],
+                    "notes": "Publish path plan to actuators"
+                  }
+                ],
+                "notes": "Path_Planner Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "FUSION_ALGORITHM_INTERFACE",
+          "ACTUATION_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "ACTUATION_INTERFACE",
+        "name": "Actuation_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "将路径指令转化为执行命令，驱动底盘域，并上报状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Path_Planner_Commands_In",
+          "output_ports": "Actuation_Status_Out"
+        },
+        "behavioral_characteristics": "将指令转译为底盘可执行的命令，控制执行并汇报状态，提供必要的安全检查",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-Port接收路径指令，P-Port输出执行结果与状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Actuation_Command_Sent",
+                "trigger": "Command dispatched"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Actuation_Tick",
+                "trigger": "Periodic 20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取路径指令"
+                      }
+                    ],
+                    "notes": "Translate commands to actuation signals"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出执行状态"
+                      }
+                    ],
+                    "notes": "Report actuation status"
+                  }
+                ],
+                "notes": "Actuation Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "PATH_PLANNER_INTERFACE",
+          "VEHICLE_BUS_INTERFACE"
+        ]
+      },
+      {
+        "component_id": "HMI_MANAGER",
+        "name": "HMI_Manager",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "显示ADAS状态，处理人机输入并向系统发送控制请求",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "HMI_Status_In",
+          "output_ports": "HMI_Input_Out"
+        },
+        "behavioral_characteristics": "将系统状态以仪表形式显示，处理简单的人机输入如暂停/重试等",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "与显示模块交互的端口，P-Port提供显示数据，R-Port接收输入数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "HMI_Update",
+                "trigger": "State change"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "HMI_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收系统状态数据"
+                      }
+                    ],
+                    "notes": "Prepare display data"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "更新显示"
+                      }
+                    ],
+                    "notes": "Update HMI display"
+                  }
+                ],
+                "notes": "HMI_Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_DISPLAY_INTERFACE",
+          "ACTUATION_INTERFACE"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "RADAR_DATA_INTERFACE",
+        "name": "Radar_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic streaming, low latency",
+        "data_category": "RadarDataFrame",
+        "connected_components": [
+          "Radar_Processor",
+          "Fusion_Algorithm"
+        ],
+        "performance_requirements": "Latency <20ms, DataRate ~100Hz",
+        "data_elements": [
+          "Radar_Data_Frame",
+          "Radar_Features"
+        ],
+        "direct_paths": "Radar_Processor.RadarOutput -> Fusion_Algorithm.RadarInput"
+      },
+      {
+        "interface_id": "CAMERA_DATA_INTERFACE",
+        "name": "Camera_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic streaming, low latency",
+        "data_category": "CameraDataFrame",
+        "connected_components": [
+          "Camera_Processor",
+          "Fusion_Algorithm"
+        ],
+        "performance_requirements": "Latency <20ms, DataRate ~60Hz",
+        "data_elements": [
+          "Camera_Image",
+          "Camera_Features"
+        ],
+        "direct_paths": "Camera_Processor.CameraOutput -> Fusion_Algorithm.CameraInput"
+      },
+      {
+        "interface_id": "FUSION_TO_PATHPLANNER_INTERFACE",
+        "name": "Fusion_To_PathPlanner_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic data sharing",
+        "data_category": "FusionData",
+        "connected_components": [
+          "Fusion_Algorithm",
+          "Path_Planner"
+        ],
+        "performance_requirements": "Latency <25ms",
+        "data_elements": [
+          "Fusion_Output"
+        ],
+        "direct_paths": "Fusion_Algorithm.FusionOutput -> Path_Planner.Input"
+      },
+      {
+        "interface_id": "PATHPLANNER_TO_ACTUATION_INTERFACE",
+        "name": "PathPlanner_To_Actuation_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Periodic command stream",
+        "data_category": "ActuationCommand",
+        "connected_components": [
+          "Path_Planner",
+          "Actuation_Interface"
+        ],
+        "performance_requirements": "Latency <30ms",
+        "data_elements": [
+          "PathPlan_Command"
+        ],
+        "direct_paths": "Path_Planner.CommandOutput -> Actuation_Interface.CommandInput"
+      },
+      {
+        "interface_id": "ACTUATION_STATUS_INTERFACE",
+        "name": "Actuation_Status_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Event-driven status update",
+        "data_category": "ActuationStatus",
+        "connected_components": [
+          "Actuation_Interface",
+          "HMI_Manager"
+        ],
+        "performance_requirements": "Latency <20ms",
+        "data_elements": [
+          "Actuation_Status"
+        ],
+        "direct_paths": "Actuation_Interface.StatusOutput -> HMI_Manager.StatusInput"
+      },
+      {
+        "interface_id": "HMI_STATUS_INTERFACE",
+        "name": "HMI_Status_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "Event-driven status view",
+        "data_category": "HMIStatus",
+        "connected_components": [
+          "HMI_Manager",
+          "Actuation_Interface"
+        ],
+        "performance_requirements": "Latency <50ms",
+        "data_elements": [
+          "HMI_Status"
+        ],
+        "direct_paths": "Actuation_Interface.StatusOutput -> HMI_Manager.DisplayInput"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "Radar_Processor <-> Fusion_Algorithm via Radar_Data_Interface; Camera_Processor <-> Fusion_Algorithm via Camera_Data_Interface; Fusion_Algorithm <-> Path_Planner via Fusion_To_PathPlanner_Interface; Path_Planner <-> Actuation_Interface via PathPlanner_To_Actuation_Interface; Actuation_Interface <-> HMI_Manager via Actuation_Status_Interface",
+      "data_flow_paths": "Radar_Data_In -> Radar_Features_Out -> Fusion_Input; Camera_Image_In -> Camera_Features_Out -> Fusion_Input; Fusion_Output -> PathPlanner_Input -> ActuationInterface_Input; PathPlanner_Output -> Actuation_Interface_Input; Actuation_Status -> HMI_Display",
+      "control_flow_paths": "Periodic_Ticks: Radar_Processor -> Fusion_Algorithm -> Path_Planner -> Actuation_Interface; User_Inputs via HMI_Manager may trigger interrupts to Path_Planner"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用两阶段生成架构，Round1完成整体结构与元素预选，Round2基于Round1细化ARXML。明确各组件边界和RTE端口通信，确保封装与数据流向符合AUTOSAR封装原则，HMI采用NV_BLOCk_COMPONENT以保持状态持久性与显示解耦。",
+      "tradeoff_analysis": "模块化实现增加了初始设计复杂度，但提升了可维护性和可扩展性；将传感器融合放在独立Fusion_Algorithm中降低耦合；若考虑更低延迟，可在Round2引入更高频率的数据队列与并行 runnable；",
+      "alternative_considerations": "全集成单体组件以减少接口数量，但会降低灵活性和可扩展性；引入更多实时性优化将增加实现成本。",
+      "risk_assessment": "数据在多阶段传递中可能引入延迟与丢失风险，需在Round2中引入缓冲、超时保护和数据版本化策略，并确保RTE端口映射正确，避免直接跨组件调用。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7687,
+    "output_tokens": 11279,
+    "total_tokens": 18966,
+    "component_count": 6,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-nano",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

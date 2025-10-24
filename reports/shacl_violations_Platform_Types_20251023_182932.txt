@@ -1,0 +1,24 @@
+SHACL违规专门报告
+验证文件: C:\Users\54239\PycharmProjects\AI_XmlGenerator\generated_arxml\complex\Platform_Types.arxml
+生成时间: 2025-10-23 18:29:32
+================================================================================
+📊 SHACL违规详细分析报告
+============================================================
+验证模式: hybrid
+违规总数: 1
+
+📈 严重性分布:
+  ℹ️  格式建议: 1 个 (100.0%)
+
+📋 详细违规列表:
+     ℹ️ 格式建议 (1 个):
+       1. RECOMMENDATION: COMPU-METHOD-REF should be one of: BITFIELD_TEXTTABLE or TEXTTABLE
+          详情: 焦点节点: SW-DATA-DEF-PROPS-CONDITIONAL_0 | 结果路径: COMPU-METHOD-REF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1158_ATTR_id_1009940230 | 语义类型: value_restriction
+     📊 违规模式分析:
+       🔧 约束组件分布:
+         InConstraintComponent: 1 次 (100.0%)
+       💡 语义类型分布:
+         value_restriction: 1 次 (100.0%)
+
+💡 修复建议:
+  5. 考虑格式建议，提升文档的规范性

@@ -1,0 +1,43 @@
+验证文件: C:\Users\54239\PycharmProjects\AI_XmlGenerator\generated_arxml\complex\complex_01_CrossDomainController_Ethernet_Backbone_e6549826_1761146976.arxml
+验证时间: 2025-10-23 03:15:16
+================================================================================
+================================================================================
+AUTOSAR XML 超详细验证报告
+================================================================================
+📋 XML文档信息:
+   根元素: {http://autosar.org/schema/r4.0}AUTOSAR
+   文档大小: 1.31 KB
+   元素总数: 18
+   元素类型: 10 种
+
+🎯 验证结果: ✅ 通过
+⏱️  执行时间: 0.342秒
+📊 验证进度: 1/1 阶段通过
+🔄 验证流程: structure → semantic → constraint
+
+🧠 语义验证 (SHACL Shapes): ✅ 通过 (0.340s)
+   🔧 验证模式: hybrid
+   🔗 RDF三元组: 42
+   📐 SHACL形状: 19964
+   🔧 映射功能: 已启用 (3658 个映射)
+   📊 违规发现: 3 个
+     ℹ️ 格式建议 (3 个):
+       1. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_0 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+       2. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_1 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+       3. RECOMMENDATION: TYPE-TREF should be one of: DATA_REFERENCE
+          详情: 焦点节点: VARIABLE-DATA-PROTOTYPE_2 | 结果路径: TYPE-TREF | 约束组件: InConstraintComponent | 源约束: http://example.com/CID_constr_1296_ATTR_id_615537788 | 语义类型: value_restriction
+     📊 违规模式分析:
+       🔧 约束组件分布:
+         InConstraintComponent: 3 次 (100.0%)
+       💡 语义类型分布:
+         value_restriction: 3 次 (100.0%)
+
+⚠️  警告信息:
+   - structure 验证器不可用
+   - constraint 验证器不可用
+
+🔧 功能使用统计:
+   ✅ SHACL映射功能: 已启用
+   📝 SMT增强验证: 标准模式

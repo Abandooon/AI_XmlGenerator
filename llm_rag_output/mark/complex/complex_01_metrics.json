@@ -1,0 +1,1536 @@
+{
+  "case_id": "complex_1",
+  "system_name": "CrossDomainController",
+  "complexity": "complex",
+  "requirement": {
+    "system_name": "CrossDomainController",
+    "description": "融合动力、底盘、车身三域功能",
+    "components_count": 10,
+    "component_types": [
+      "VehicleMotionController",
+      "PowerManager",
+      "ChassisCoordinator",
+      "BodyFunctionManager",
+      "EthernetGateway",
+      "CANRouter",
+      "DiagnosticRouter",
+      "OTAManager",
+      "CyberSecurityModule",
+      "HealthMonitor"
+    ],
+    "key_requirements": [
+      "VehicleMotionController实现整车运动控制",
+      "PowerManager协调能量分配",
+      "ChassisCoordinator协调底盘各子系统",
+      "BodyFunctionManager管理车身舒适功能",
+      "EthernetGateway连接车载以太网",
+      "CANRouter管理5条CAN总线",
+      "DiagnosticRouter实现全车UDS诊断路由",
+      "OTAManager支持分区OTA更新",
+      "CyberSecurityModule实现SecOC认证",
+      "HealthMonitor监控所有ECU健康状态"
+    ]
+  },
+  "start_time": "2025-10-23T21:45:53.307690",
+  "phase1": {
+    "duration": 225.55542063713074,
+    "api_calls": 1,
+    "tokens": 27838,
+    "component_count": 10,
+    "interface_count": 12,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "VehicleMotion_Controller: 整车纵横向控制与协调输出底盘指令。\nPower_Manager: 能量分配与功率预算、SOC与限值管理。\nChassis_Coordinator: 底盘子系统协调与车辆状态融合发布。\nBodyFunction_Manager: 车身舒适功能控制（HVAC/座椅/氛围灯）。\nEthernet_Gateway: 以太网帧在域间转发与过滤。\nCAN_Router: 5条CAN总线帧路由、过滤与转发表管理。\nDiagnostic_Router: UDS诊断请求路由、会话与安全状态协调。\nOTA_Manager: 分区级OTA下载/校验/安装与回滚管理。\nCyberSecurity_Module: SecOC鉴权标签生成/验证与密钥策略。\nHealth_Monitor: ECU健康状态采集、聚合与上报。",
+        "data_flow_analysis": "主要数据通道：\n- 状态上行：Chassis_Coordinator -> VehicleMotion_Controller 经 IF_Vehicle_State_SR（速度/姿态/转角等）。\n- 能量信息：Power_Manager -> VehicleMotion_Controller 经 IF_Power_Status_SR（SOC/功率可用/回收限值）。\n- 控制下行：VehicleMotion_Controller -> Chassis_Coordinator 经 IF_Chassis_Commands_SR（驱动/制动/转向/悬架模式）。\n- 车身舒适：BodyFunction_Manager -> 其他域经 IF_Body_Comfort_SR（HVAC/座椅/氛围灯设定）。\n- 通信路由：CAN_Router 与 Ethernet_Gateway 通过 IF_CAN_Frame_SR 与 IF_Ethernet_Frame_SR 转运帧，Diagnostic_Router 与 OTA_Manager 作为上层使用者。\n- 诊断路由：Diagnostic_Router <-> 各应用组件经 IF_Diagnostic_CS（同步请求/响应）。\n- 安全服务：CyberSecurity_Module <-> CAN_Router/Ethernet_Gateway/Diagnostic_Router 经 IF_SecOC_CS（标签生成/验证）。\n- 健康监控：各组件 -> Health_Monitor 经 IF_Health_Status_SR（健康/电压/温度/故障码）。\n- 参数/标定：VehicleMotion_Controller/Power_Manager/CyberSecurity_Module 经 IF_Config_Params_PI 读参数。\n- OTA持久化：OTA_Manager <-> NV 经 IF_OTA_NV（分区元数据/映射）。\n接口模式：SR接口承载周期/事件数据，CS接口承载操作调用；帧接口承载以太网/CAN复用数据；参数接口为只读标定；NV接口持久化块读写。\n依赖链路：VehicleMotion_Controller 依赖 Power_Manager 与 Chassis_Coordinator；上层路由 Diagnostic_Router/OTA_Manager 依赖 CAN_Router/Ethernet_Gateway 与 CyberSecurity_Module。",
+        "timing_requirements": "VehicleMotion_Controller: 10ms控制周期，端到端输入->输出不超过20ms。\nPower_Manager: 10ms预算更新，策略边界100ms内一致。\nChassis_Coordinator: 10ms状态融合，接收->发布抖动<5ms。\nBodyFunction_Manager: 50ms舒适控制循环。\nEthernet_Gateway: RX事件处理<2ms，TX调度5ms周期，端到端<10ms。\nCAN_Router: RX事件处理<1ms，TX调度5ms周期，端到端<8ms。\nDiagnostic_Router: 单请求往返<100ms（链路与ECU响应除外）。\nOTA_Manager: 会话维护100ms周期，分块下载超时可配置（500ms-2s）。\nCyberSecurity_Module: SecOC同步校验<2ms，异步批处理<5ms。\nHealth_Monitor: 100ms聚合与上报。",
+        "scalability_considerations": "接口信号与操作采用版本化命名，路由器支持多总线扩展与策略表动态加载；VehicleMotion_Controller、Power_Manager与Chassis_Coordinator可水平扩展为多域实例；Diagnostic_Router与OTA_Manager支持多会话并行；CyberSecurity_Module提供同步与异步两类服务；所有SR接口采用最新值缓冲与可配队列深度；参数接口支持增量配置；NV接口支持分区化块管理。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "CDC_001",
+          "name": "VehicleMotion_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "融合车辆动力与底盘信息，生成驱动/制动/转向等控制指令。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-PORT:3 (Vehicle_State, Power_Status, Config_Params)",
+            "output_ports": "P-PORT:1 (Chassis_Commands)"
+          },
+          "behavioral_characteristics": "主要逻辑：状态融合与控制律计算（纵向/横向控制）。\n触发：INIT与10ms周期，状态更新事件。\n状态管理：运行/降级/安全停机模式。\n数据流程：读取车辆状态与能量边界->控制计算->输出底盘指令。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Vehicle_State_SR, IF_Power_Status_SR, IF_Config_Params_PI; P: IF_Chassis_Commands_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "VMC_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "VMC_Cyclic_10ms",
+                  "trigger": "every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "VMC_PowerStatus_Update",
+                  "trigger": "on_power_status_received"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "VMC_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取控制器初始标定参数。"
+                        }
+                      ],
+                      "notes": "初始化参数与状态。"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R端口读取车辆状态。"
+                        }
+                      ],
+                      "notes": "输入状态读取。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P端口发布底盘控制指令。"
+                        }
+                      ],
+                      "notes": "输出控制命令。"
+                    }
+                  ],
+                  "notes": "上电初始化。"
+                },
+                {
+                  "name": "VMC_Cycle_10ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取能量边界与状态。"
+                        }
+                      ],
+                      "notes": "周期读取输入。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送实时底盘指令。"
+                        }
+                      ],
+                      "notes": "周期输出。"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取在线限值参数。"
+                        }
+                      ],
+                      "notes": "限值与模式参数访问。"
+                    }
+                  ],
+                  "notes": "10ms控制循环。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Vehicle_State_SR",
+            "IF_Power_Status_SR",
+            "IF_Chassis_Commands_SR",
+            "IF_Config_Params_PI",
+            "IF_Health_Status_SR"
+          ]
+        },
+        {
+          "component_id": "CDC_002",
+          "name": "Power_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "协调能量分配与功率预算，提供SOC与限值信息。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:2 (Config_Params, Health_Status)",
+            "output_ports": "P-PORT:1 (Power_Status)"
+          },
+          "behavioral_characteristics": "主要逻辑：能量状态估计与功率分配约束。\n触发：INIT与10ms周期。\n状态管理：正常/限功/保护模式。\n数据流程：读取参数与健康->计算功率边界->发布能量状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Config_Params_PI, IF_Health_Status_SR; P: IF_Power_Status_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "PM_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "PM_Cyclic_10ms",
+                  "trigger": "every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "PM_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取功率预算与SOC估计参数。"
+                        }
+                      ],
+                      "notes": "初始化能量模型。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始能量状态。"
+                        }
+                      ],
+                      "notes": "输出初始状态。"
+                    }
+                  ],
+                  "notes": "上电配置。"
+                },
+                {
+                  "name": "PM_Cycle_10ms",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取健康与电压温度数据。"
+                        }
+                      ],
+                      "notes": "输入采集。"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入并发布功率边界。"
+                        }
+                      ],
+                      "notes": "发布计算结果。"
+                    }
+                  ],
+                  "notes": "能量循环计算。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Power_Status_SR",
+            "IF_Health_Status_SR",
+            "IF_Config_Params_PI"
+          ]
+        },
+        {
+          "component_id": "CDC_003",
+          "name": "Chassis_Coordinator",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "协调底盘子系统，融合状态并发布车辆运动状态。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:1 (Chassis_Commands)",
+            "output_ports": "P-PORT:1 (Vehicle_State)"
+          },
+          "behavioral_characteristics": "主要逻辑：底盘执行命令分发与状态融合。\n触发：INIT与10ms周期，命令到达事件。\n状态管理：正常/降级/故障安全。\n数据流程：接收控制指令->分发至底盘->融合传感数据->发布车辆状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Chassis_Commands_SR; P: IF_Vehicle_State_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CC_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CC_Cyclic_10ms",
+                  "trigger": "every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "CC_CommandReceived",
+                  "trigger": "on_chassis_command"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CC_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取底盘协调参数。"
+                        }
+                      ],
+                      "notes": "初始化协调器。"
+                    }
+                  ],
+                  "notes": "配置与参数加载。"
+                },
+                {
+                  "name": "CC_Cycle_10ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收底盘控制指令。"
+                        }
+                      ],
+                      "notes": "接收命令。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布车辆状态。"
+                        }
+                      ],
+                      "notes": "发布状态。"
+                    }
+                  ],
+                  "notes": "执行分发与融合。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Chassis_Commands_SR",
+            "IF_Vehicle_State_SR",
+            "IF_Health_Status_SR"
+          ]
+        },
+        {
+          "component_id": "CDC_004",
+          "name": "BodyFunction_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "车身舒适功能控制与状态管理。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:2 (Diagnostic_CS, Health_Status)",
+            "output_ports": "P-PORT:1 (Body_Comfort_SR)"
+          },
+          "behavioral_characteristics": "主要逻辑：HVAC/座椅/氛围灯控制。\n触发：INIT与50ms周期。\n状态管理：用户设定与能量/温度约束。\n数据流程：读取设定与约束->计算输出->发布舒适控制。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Diagnostic_CS, IF_Health_Status_SR; P: IF_Body_Comfort_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "BFM_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "BFM_Cyclic_50ms",
+                  "trigger": "every_50ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "BFM_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取舒适功能初始参数。"
+                        }
+                      ],
+                      "notes": "初始化配置。"
+                    }
+                  ],
+                  "notes": "上电参数加载。"
+                },
+                {
+                  "name": "BFM_Cycle_50ms",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取健康状态约束。"
+                        }
+                      ],
+                      "notes": "约束读取。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布舒适控制设定。"
+                        }
+                      ],
+                      "notes": "输出设定。"
+                    }
+                  ],
+                  "notes": "舒适控制循环。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Body_Comfort_SR",
+            "IF_Diagnostic_CS",
+            "IF_Health_Status_SR"
+          ]
+        },
+        {
+          "component_id": "CDC_005",
+          "name": "Ethernet_Gateway",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "以太网帧路由与过滤，桥接上层服务。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:2 (SecOC_CS, Ethernet_Frame_SR)",
+            "output_ports": "P-PORT:2 (Ethernet_Frame_SR, Diagnostic_CS)"
+          },
+          "behavioral_characteristics": "主要逻辑：帧接收与分类、转发表匹配与转发。\n触发：RX事件与5ms调度。\n状态管理：链路状态/负载控制。\n数据流程：接收以太网帧->可选鉴权->转发至诊断/OTA/内部接口。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Ethernet_Frame_SR, IF_SecOC_CS; P: IF_Ethernet_Frame_SR, IF_Diagnostic_CS。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "EG_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "EG_FrameRx",
+                  "trigger": "on_eth_frame_received"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "EG_TxSchedule",
+                  "trigger": "every_5ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "EG_Rx_Handler",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收以太网帧。"
+                        }
+                      ],
+                      "notes": "RX路径。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "异步调用SecOC验证标签。"
+                        }
+                      ],
+                      "notes": "异步SecOC校验。"
+                    }
+                  ],
+                  "notes": "帧接收与安全校验。"
+                },
+                {
+                  "name": "EG_Tx_Scheduler",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "转发或发送以太网帧。"
+                        }
+                      ],
+                      "notes": "TX路径。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT",
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                          ],
+                          "notes": "同步调用SecOC生成标签。"
+                        }
+                      ],
+                      "notes": "同步SecOC加签。"
+                    }
+                  ],
+                  "notes": "调度与转发。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Ethernet_Frame_SR",
+            "IF_SecOC_CS",
+            "IF_Diagnostic_CS"
+          ]
+        },
+        {
+          "component_id": "CDC_006",
+          "name": "CAN_Router",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "管理5条CAN总线帧路由与转发表。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:2 (SecOC_CS, CAN_Frame_SR)",
+            "output_ports": "P-PORT:2 (CAN_Frame_SR, Diagnostic_CS)"
+          },
+          "behavioral_characteristics": "主要逻辑：CAN帧接收、路由选择、优先级与队列管理。\n触发：RX事件与5ms调度。\n状态管理：总线负载/错误恢复。\n数据流程：接收CAN帧->鉴权->转发至诊断/应用或外部总线。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_CAN_Frame_SR, IF_SecOC_CS; P: IF_CAN_Frame_SR, IF_Diagnostic_CS。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CANR_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "CANR_FrameRx",
+                  "trigger": "on_can_frame_received"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CANR_TxSchedule",
+                  "trigger": "every_5ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CANR_Rx_Handler",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收CAN帧。"
+                        }
+                      ],
+                      "notes": "RX路径。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "异步调用SecOC验证标签。"
+                        }
+                      ],
+                      "notes": "异步SecOC校验。"
+                    }
+                  ],
+                  "notes": "帧接收与校验。"
+                },
+                {
+                  "name": "CANR_Tx_Scheduler",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "按转发表发送CAN帧。"
+                        }
+                      ],
+                      "notes": "TX路径。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT",
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                          ],
+                          "notes": "同步调用SecOC生成标签。"
+                        }
+                      ],
+                      "notes": "同步SecOC加签。"
+                    }
+                  ],
+                  "notes": "调度与转发。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CAN_Frame_SR",
+            "IF_SecOC_CS",
+            "IF_Diagnostic_CS"
+          ]
+        },
+        {
+          "component_id": "CDC_007",
+          "name": "Diagnostic_Router",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "UDS诊断请求路由与响应聚合，统一会话安全管理。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-PORT:3 (CAN_Frame_SR, Ethernet_Frame_SR, SecOC_CS)",
+            "output_ports": "P-PORT:2 (Diagnostic_CS, CAN/Ethernet_Frame_SR)"
+          },
+          "behavioral_characteristics": "主要逻辑：诊断请求解析与目的地选择、会话与安全状态、传输桥接。\n触发：RX事件与10ms调度。\n状态管理：默认/扩展/编程会话。\n数据流程：接收诊断请求->可选鉴权->同步调用应用服务->拼接响应->发送。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_CAN_Frame_SR, IF_Ethernet_Frame_SR, IF_SecOC_CS; P: IF_Diagnostic_CS, IF_CAN_Frame_SR/IF_Ethernet_Frame_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "DR_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "DR_RequestRx",
+                  "trigger": "on_diag_request_received"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "DR_DispatchSchedule",
+                  "trigger": "every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "DR_Dispatch",
+                  "elements": [
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT",
+                            "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                          ],
+                          "notes": "同步调用各应用诊断服务。"
+                        }
+                      ],
+                      "notes": "同步服务调用。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向链路发送诊断响应。"
+                        }
+                      ],
+                      "notes": "响应发送。"
+                    }
+                  ],
+                  "notes": "请求解析与分发。"
+                },
+                {
+                  "name": "DR_TransportBridge",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收诊断请求帧。"
+                        }
+                      ],
+                      "notes": "链路RX。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "异步调用SecOC验证。"
+                        }
+                      ],
+                      "notes": "安全校验。"
+                    }
+                  ],
+                  "notes": "链路桥接。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Diagnostic_CS",
+            "IF_CAN_Frame_SR",
+            "IF_Ethernet_Frame_SR",
+            "IF_SecOC_CS"
+          ]
+        },
+        {
+          "component_id": "CDC_008",
+          "name": "OTA_Manager",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "分区级OTA更新，包括下载、校验、安装与回滚。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-PORT:3 (Ethernet_Frame_SR, SecOC_CS, OTA_NV)",
+            "output_ports": "P-PORT:1 (OTA_CS)"
+          },
+          "behavioral_characteristics": "主要逻辑：会话管理与分块下载、签名校验与写入、安装触发与回滚策略。\n触发：INIT、会话事件与100ms周期。\n状态管理：空闲/下载中/校验/安装/回滚。\n数据流程：接收OTA数据->验证签名->写入NV->触发安装。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Ethernet_Frame_SR, IF_SecOC_CS, IF_OTA_NV; P: IF_OTA_CS。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "OTA_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "OTA_SessionCyclic",
+                  "trigger": "every_100ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "OTA_Session_Handler",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收OTA数据帧。"
+                        }
+                      ],
+                      "notes": "OTA数据接收。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步调用SecOC验证分块签名。"
+                        }
+                      ],
+                      "notes": "同步安全校验。"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入NV分区元数据或镜像。"
+                        }
+                      ],
+                      "notes": "NV写入。"
+                    }
+                  ],
+                  "notes": "处理会话与分块。"
+                },
+                {
+                  "name": "OTA_Install",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF",
+                            "PORT-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取NV映像校验信息。"
+                        }
+                      ],
+                      "notes": "安装前检查。"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "异步通知上层安装结果。"
+                        }
+                      ],
+                      "notes": "安装结果回传。"
+                    }
+                  ],
+                  "notes": "安装流程。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_OTA_CS",
+            "IF_Ethernet_Frame_SR",
+            "IF_SecOC_CS",
+            "IF_OTA_NV",
+            "IF_Health_Status_SR"
+          ]
+        },
+        {
+          "component_id": "CDC_009",
+          "name": "CyberSecurity_Module",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "提供SecOC标签生成与验证，管理密钥与策略。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:1 (Config_Params)",
+            "output_ports": "P-PORT:1 (SecOC_CS)"
+          },
+          "behavioral_characteristics": "主要逻辑：消息鉴权与加签、密钥轮换与策略控制。\n触发：INIT与服务调用事件。\n状态管理：正常/轮换/降级。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: IF_Config_Params_PI; P: IF_SecOC_CS。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CSM_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "CSM_ServiceInvoked",
+                  "trigger": "on_secoc_operation"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CSM_Auth_Service",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取密钥与策略参数。"
+                        }
+                      ],
+                      "notes": "策略参数访问。"
+                    }
+                  ],
+                  "notes": "提供鉴权服务。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_SecOC_CS",
+            "IF_Config_Params_PI"
+          ]
+        },
+        {
+          "component_id": "CDC_010",
+          "name": "Health_Monitor",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "采集并聚合各ECU健康状态，提供统一上报。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-PORT:5 (来自各域组件健康数据)",
+            "output_ports": "P-PORT:1 (Health_Status_SR)"
+          },
+          "behavioral_characteristics": "主要逻辑：健康指标采集、故障聚合与上报。\n触发：INIT与100ms周期。\n状态管理：正常/告警/故障。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: 多源健康数据; P: IF_Health_Status_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "HM_InitEvent",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "HM_Cyclic_100ms",
+                  "trigger": "every_100ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "HM_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始健康状态。"
+                        }
+                      ],
+                      "notes": "初始上报。"
+                    }
+                  ],
+                  "notes": "初始化状态。"
+                },
+                {
+                  "name": "HM_Cycle_100ms",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "聚合来自各域的健康指标。"
+                        }
+                      ],
+                      "notes": "数据聚合。"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "上报聚合健康状态。"
+                        }
+                      ],
+                      "notes": "统一上报。"
+                    }
+                  ],
+                  "notes": "周期健康上报。"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Health_Status_SR"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "IF_001",
+          "name": "IF_Vehicle_State_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值缓冲，10ms发布频率，延迟<5ms；丢包以最后值保留；错误：数据无效标志与质量位。",
+          "data_category": "Vehicle dynamics state",
+          "connected_components": [
+            "Chassis_Coordinator",
+            "VehicleMotion_Controller",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "吞吐支持4-8个信号组，每周期不超过2KB；抖动<2ms。",
+          "data_elements": [
+            "vehicle_speed",
+            "yaw_rate",
+            "longitudinal_accel",
+            "steering_angle"
+          ],
+          "direct_paths": "Chassis_Coordinator -> VehicleMotion_Controller; 广播给 Health_Monitor。"
+        },
+        {
+          "interface_id": "IF_002",
+          "name": "IF_Power_Status_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值，10ms更新；错误：过期与限值越界标志；缓冲深度1。",
+          "data_category": "Energy and power budget",
+          "connected_components": [
+            "Power_Manager",
+            "VehicleMotion_Controller",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "端到端<10ms；信号组大小<=1KB。",
+          "data_elements": [
+            "soc",
+            "power_available",
+            "regen_limit",
+            "thermal_derate"
+          ],
+          "direct_paths": "Power_Manager -> VehicleMotion_Controller; 广播给 Health_Monitor。"
+        },
+        {
+          "interface_id": "IF_003",
+          "name": "IF_Chassis_Commands_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值，10ms下发；错误：命令有效位与安全停机标志；队列深度1。",
+          "data_category": "Chassis control commands",
+          "connected_components": [
+            "VehicleMotion_Controller",
+            "Chassis_Coordinator"
+          ],
+          "performance_requirements": "端到端<10ms；命令集<=512B。",
+          "data_elements": [
+            "torque_request",
+            "brake_pressure_cmd",
+            "steering_cmd",
+            "suspension_mode"
+          ],
+          "direct_paths": "VehicleMotion_Controller -> Chassis_Coordinator。"
+        },
+        {
+          "interface_id": "IF_004",
+          "name": "IF_Body_Comfort_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值，50ms更新；缓冲深度1；错误：设备故障与拒绝服务标志。",
+          "data_category": "Body comfort controls",
+          "connected_components": [
+            "BodyFunction_Manager",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "端到端<50ms；数据量<=256B。",
+          "data_elements": [
+            "hvac_setpoint",
+            "seat_heater_level",
+            "ambient_light_level"
+          ],
+          "direct_paths": "BodyFunction_Manager -> Health_Monitor 监听。"
+        },
+        {
+          "interface_id": "IF_005",
+          "name": "IF_CAN_Frame_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "事件驱动；队列缓冲按优先级；延迟<3ms；错误：总线错误/超时标志。",
+          "data_category": "CAN frames multiplexed",
+          "connected_components": [
+            "CAN_Router",
+            "Diagnostic_Router",
+            "CyberSecurity_Module",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "支持5总线并行，每总线吞吐<=8k帧/s。",
+          "data_elements": [
+            "can_frame",
+            "can_bus_status"
+          ],
+          "direct_paths": "CAN_Router <-> Diagnostic_Router；CAN_Router <-> Health_Monitor 监控。"
+        },
+        {
+          "interface_id": "IF_006",
+          "name": "IF_Ethernet_Frame_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "事件驱动；队列缓冲；延迟<5ms；错误：链路中断与校验失败标志。",
+          "data_category": "Ethernet frames multiplexed",
+          "connected_components": [
+            "Ethernet_Gateway",
+            "Diagnostic_Router",
+            "OTA_Manager",
+            "CyberSecurity_Module",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "带宽<=100Mbps；单帧最大1500B。",
+          "data_elements": [
+            "ethernet_frame",
+            "vlan_tag",
+            "link_status"
+          ],
+          "direct_paths": "Ethernet_Gateway <-> Diagnostic_Router/OTA_Manager；广播状态给 Health_Monitor。"
+        },
+        {
+          "interface_id": "IF_007",
+          "name": "IF_Diagnostic_CS",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步请求响应；超时50-100ms可配；错误：负载过高/安全拒绝，重试策略。",
+          "data_category": "UDS diagnostic operations",
+          "connected_components": [
+            "Diagnostic_Router",
+            "VehicleMotion_Controller",
+            "Power_Manager",
+            "Chassis_Coordinator",
+            "BodyFunction_Manager",
+            "CAN_Router",
+            "Ethernet_Gateway"
+          ],
+          "performance_requirements": "并行会话<=8；平均响应<80ms。",
+          "data_elements": [
+            "Diag_Request_Op",
+            "Diag_Response_Op",
+            "ReadDataByIdentifier_Op",
+            "RoutineControl_Op"
+          ],
+          "direct_paths": "Diagnostic_Router <-> 各应用组件。"
+        },
+        {
+          "interface_id": "IF_008",
+          "name": "IF_OTA_CS",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步控制操作，部分异步通知；超时500ms-2s；错误：校验失败/写入失败，回滚通知。",
+          "data_category": "OTA control operations",
+          "connected_components": [
+            "OTA_Manager",
+            "Ethernet_Gateway",
+            "Diagnostic_Router"
+          ],
+          "performance_requirements": "并行会话<=4；控制操作响应<500ms。",
+          "data_elements": [
+            "Check_Update_Op",
+            "Download_Partition_Op",
+            "Verify_Partition_Op",
+            "Install_Partition_Op"
+          ],
+          "direct_paths": "OTA_Manager <-> Ethernet_Gateway/Diagnostic_Router。"
+        },
+        {
+          "interface_id": "IF_009",
+          "name": "IF_SecOC_CS",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步加签与验证，可异步批量校验；超时2-5ms；错误：密钥失效与策略拒绝。",
+          "data_category": "Security operations",
+          "connected_components": [
+            "CyberSecurity_Module",
+            "CAN_Router",
+            "Ethernet_Gateway",
+            "Diagnostic_Router",
+            "OTA_Manager"
+          ],
+          "performance_requirements": "每秒调用<=50k次（批处理）；单次<2ms。",
+          "data_elements": [
+            "Generate_Auth_Tag_Op",
+            "Verify_Auth_Tag_Op",
+            "Rotate_Key_Op"
+          ],
+          "direct_paths": "CyberSecurity_Module <-> 路由器/诊断/OTA。"
+        },
+        {
+          "interface_id": "IF_010",
+          "name": "IF_Health_Status_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值，100ms更新；错误：健康等级与故障码提供。",
+          "data_category": "Health and diagnostics",
+          "connected_components": [
+            "Health_Monitor",
+            "VehicleMotion_Controller",
+            "Power_Manager",
+            "Chassis_Coordinator",
+            "BodyFunction_Manager",
+            "CAN_Router",
+            "Ethernet_Gateway",
+            "Diagnostic_Router",
+            "OTA_Manager",
+            "CyberSecurity_Module"
+          ],
+          "performance_requirements": "端到端<100ms；数据<=512B。",
+          "data_elements": [
+            "ecu_health",
+            "temperature",
+            "voltage",
+            "fault_code"
+          ],
+          "direct_paths": "各组件 -> Health_Monitor；Health_Monitor -> 全局广播。"
+        },
+        {
+          "interface_id": "IF_011",
+          "name": "IF_Config_Params_PI",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问；初始化与周期性读取；无缓冲，读取返回最新配置；错误：参数缺失与版本不匹配。",
+          "data_category": "Calibration parameters",
+          "connected_components": [
+            "VehicleMotion_Controller",
+            "Power_Manager",
+            "CyberSecurity_Module"
+          ],
+          "performance_requirements": "初始化读取<10ms；运行期读取<5ms。",
+          "data_elements": [
+            "controller_gains",
+            "limits",
+            "security_policy",
+            "key_ref"
+          ],
+          "direct_paths": "参数存储 -> 组件读取。"
+        },
+        {
+          "interface_id": "IF_012",
+          "name": "IF_OTA_NV",
+          "type": "NV-DATA-INTERFACE",
+          "communication_pattern": "读写分区化块；写入保障顺序与校验；错误：写入失败回滚；队列按事务管理。",
+          "data_category": "OTA partitions metadata",
+          "connected_components": [
+            "OTA_Manager",
+            "CyberSecurity_Module",
+            "Health_Monitor"
+          ],
+          "performance_requirements": "单块<=128KB；写入事务<2s。",
+          "data_elements": [
+            "ota_metadata_block",
+            "partition_map",
+            "image_hash",
+            "install_status"
+          ],
+          "direct_paths": "OTA_Manager <-> NV 存储；状态广播给 Health_Monitor。"
+        }
+      ],
+      "component_generation_order": [
+        "CyberSecurity_Module",
+        "Ethernet_Gateway",
+        "CAN_Router",
+        "Diagnostic_Router",
+        "OTA_Manager",
+        "Health_Monitor",
+        "Power_Manager",
+        "Chassis_Coordinator",
+        "BodyFunction_Manager",
+        "VehicleMotion_Controller"
+      ],
+      "connection_topology": {
+        "component_connections": "VehicleMotion_Controller R: IF_Vehicle_State_SR, IF_Power_Status_SR, IF_Config_Params_PI; P: IF_Chassis_Commands_SR。\nPower_Manager P: IF_Power_Status_SR; R: IF_Config_Params_PI, IF_Health_Status_SR。\nChassis_Coordinator R: IF_Chassis_Commands_SR; P: IF_Vehicle_State_SR。\nBodyFunction_Manager P: IF_Body_Comfort_SR; R: IF_Diagnostic_CS, IF_Health_Status_SR。\nEthernet_Gateway R: IF_Ethernet_Frame_SR, IF_SecOC_CS; P: IF_Ethernet_Frame_SR, IF_Diagnostic_CS。\nCAN_Router R: IF_CAN_Frame_SR, IF_SecOC_CS; P: IF_CAN_Frame_SR, IF_Diagnostic_CS。\nDiagnostic_Router R: IF_CAN_Frame_SR, IF_Ethernet_Frame_SR, IF_SecOC_CS; P: IF_Diagnostic_CS。\nOTA_Manager R: IF_Ethernet_Frame_SR, IF_SecOC_CS, IF_OTA_NV; P: IF_OTA_CS。\nCyberSecurity_Module R: IF_Config_Params_PI; P: IF_SecOC_CS。\nHealth_Monitor P: IF_Health_Status_SR。",
+        "data_flow_paths": "Chassis_Coordinator -> IF_Vehicle_State_SR -> VehicleMotion_Controller。\nPower_Manager -> IF_Power_Status_SR -> VehicleMotion_Controller。\nVehicleMotion_Controller -> IF_Chassis_Commands_SR -> Chassis_Coordinator。\nBodyFunction_Manager -> IF_Body_Comfort_SR -> Health_Monitor。\nCAN_Router <-> IF_CAN_Frame_SR <-> Diagnostic_Router；Ethernet_Gateway <-> IF_Ethernet_Frame_SR <-> Diagnostic_Router/OTA_Manager。\nCyberSecurity_Module <-> IF_SecOC_CS <-> CAN_Router/Ethernet_Gateway/Diagnostic_Router/OTA_Manager。\n各组件 -> IF_Health_Status_SR -> Health_Monitor。\n参数存储 -> IF_Config_Params_PI -> VMC/PM/CSM。\nOTA_Manager <-> IF_OTA_NV -> NV。",
+        "control_flow_paths": "Diagnostic_Router 同步调用各应用的 IF_Diagnostic_CS；OTA_Manager 同步/异步调用 IF_SecOC_CS；CAN_Router/Ethernet_Gateway 同步调用 SecOC 加签，异步校验；VehicleMotion_Controller 内部循环受TIMING-EVENT调度。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用SR承载周期状态与控制，CS承载诊断与安全操作；路由器与安全模块解耦，保证性能与安全可独立扩展；控制域与底盘域通过清晰的命令/状态接口分离；参数与NV接口独立，保证标定与持久化安全。",
+        "tradeoff_analysis": "同步SecOC加签保证关键路径确定性，但增加调用开销；异步校验提升吞吐并降低RX抖动。诊断统一路由简化上层，但需要复杂会话管理。将VMC与底盘协调分离提高模块化与可测试性，代价是接口数量增加。",
+        "alternative_considerations": "可选将CAN/Ethernet路由合并为统一通信网关；将CyberSecurity分为轻量客户端与集中式服务；将Health_Monitor分散到域内再聚合。",
+        "risk_assessment": "风险：通信拥塞与延迟、密钥轮换失败、OTA写入中断、诊断高并发。缓解：优先级与队列控制、密钥回退策略、事务性NV写入与回滚、会话限流与超时重试。"
+      },
+      "session_id": "e197dbd9-92b1-45ee-89f9-118b746b4bf3",
+      "timestamp": "2025-10-23T21:49:38.854119"
+    }
+  },
+  "phase2": {
+    "duration": 750.4695975780487,
+    "tokens": 336328,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CyberSecurity_Module_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Ethernet_Gateway_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Router_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Diagnostic_Router_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\OTA_Manager_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Health_Monitor_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Power_Manager_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Chassis_Coordinator_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\BodyFunction_Manager_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\VehicleMotion_Controller_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Vehicle_State_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Power_Status_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Chassis_Commands_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Body_Comfort_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_CAN_Frame_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Ethernet_Frame_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Health_Status_SR_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Diagnostic_CS_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_OTA_CS_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_SecOC_CS_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Config_Params_PI_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_OTA_NV_16a66f0e_1761228129.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_16a66f0e_1761228129.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T22:02:09.347960"
+}

@@ -1,0 +1,1606 @@
+{
+  "session_id": "round1_20251022_221529",
+  "timestamp": "20251022_221529",
+  "user_requirements": "系统名称: BodyComfortController\n系统描述: 管理门窗、座椅、空调、氛围灯\n组件数量: 7\n组件类型: DoorWindowManager, SeatManager, ClimateControl, AmbientLighting, CANInterface, LINInterface, DiagHandler\n关键需求:\n  - DoorWindowManager控制4门4窗\n  - SeatManager控制电动座椅调节和加热\n  - ClimateControl实现自动空调\n  - AmbientLighting控制64色氛围灯\n  - 通过CAN和LIN总线通信\n  - 支持OTA固件更新",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: BodyComfortController\n系统描述: 管理门窗、座椅、空调、氛围灯\n组件数量: 7\n组件类型: DoorWindowManager, SeatManager, ClimateControl, AmbientLighting, CANInterface, LINInterface, DiagHandler\n关键需求:\n  - DoorWindowManager控制4门4窗\n  - SeatManager控制电动座椅调节和加热\n  - ClimateControl实现自动空调\n  - AmbientLighting控制64色氛围灯\n  - 通过CAN和LIN总线通信\n  - 支持OTA固件更新\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "将系统划分为7个SWC：DoorWindow_Manager负责4门4窗的位置/状态控制与安全限位；Seat_Manager负责电动座椅位置、记忆与加热控制；Climate_Control负责传感器融合、温度设定、风量与自动管控策略；Ambient_Lighting负责64色灯带的场景与渐变控制；CAN_Interface与LIN_Interface作为总线适配层，做报文封解、周期收发与错误处理；Diag_Handler负责诊断、OTA触发与固件管理。组件间职责清晰，Bus层提供公共通信服务，Diag_Handler提供跨组件诊断与OTA入口。",
+      "data_flow_analysis": "命令流：用户/ECU上层或HMI→CAN_Interface/LIN_Interface→对应管理器（Door/Seat/Climate/Ambient）。传感器流：温度/湿度/内外温度传感器→CAN_Interface→Climate_Control。状态流：管理器→状态广播→CAN_Interface/LIN_Interface→其他ECU。诊断/OTA：Diag_Handler以CLIENT-SERVER模式调用各管理器提供的状态与升级接口。数据类型：Door/WindowCmd:uint8/position_pct, DoorState:uint8, SeatPosition:int16, SeatHeaterLevel:uint8, TempSensors:float32, HVAC_Setpoint:float32, LightColor:rgb888/uint24。传输时序：关键控制（门窗、座椅调整）命令要求10-50ms端到端，状态广播周期100-500ms，环境感知周期200-1000ms，OTA为事务式长时间会话。",
+      "timing_requirements": "门窗控制：控制闭环周期10-20ms，最低命令响应50ms；座椅位置与加热：控制循环20-100ms；空调自动控制：采样周期200-500ms，控制输出≤200ms响应；氛围灯：非硬实时，更新≤100ms即可；总线传输遵循CAN报文周期和LIN周期，紧急/安全消息优先级较高。",
+      "scalability_considerations": "采用分层总线接口与消息驱动设计，新增功能（更多座椅轴、更多灯区）只需扩展应用SWC与消息定义；接口采用Sender-Receiver与Client-Server混合，支持多实例与参数化端口。建议未来按功能域增设子ECU或分区以应对大规模系统。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp001",
+        "name": "DoorWindow_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "控制4门4窗的开闭位置、限位保护与状态广播",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "4 CAN command inputs, 4 sensor inputs (position/limit), OTA/Diag client ports",
+          "output_ports": "4 actuator command outputs, status broadcast outputs"
+        },
+        "behavioral_characteristics": "周期性位置闭环控制与事件驱动的安全停机。主要算法：限位检查、位置PID（简单比例＋限幅）、故障检测与重试。触发：CAN命令到达（异步）或周期Timing_Event（10ms）进行位置跟踪。状态管理：每门窗维持状态机（Idle→Moving→Stopped→Fault）；遇到阻塞进入Fault并上报。数据流程：接收命令→验证/安全检查→生成控制量→调用驱动发送→广播状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports用于接收CAN/LIN输入与Diag请求，P-ports用于向Actuator驱动和广播状态。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Position_Update_Event",
+                "trigger": "10ms timer"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_DoorCommand_Event",
+                "trigger": "CAN_Interface indicates new door command"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "Actuator_Fault_Event",
+                "trigger": "actuator error reported"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DoorWindow_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取来自CAN_Interface的门窗命令"
+                      }
+                    ],
+                    "notes": "接收门窗命令并作为参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用Actuator驱动以异步下发控制命令"
+                      }
+                    ],
+                    "notes": "调用底层驱动接口"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向状态广播端口发送门窗当前位置/状态"
+                      }
+                    ],
+                    "notes": "发送状态到总线"
+                  }
+                ],
+                "notes": "主控制runnable，周期/事件触发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Door",
+          "IF_DIAG",
+          "IF_OTA",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp002",
+        "name": "Seat_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理电动座椅位置调整、记忆与座椅加热",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Seat position sensors, HMI/CAN commands, memory recall requests",
+          "output_ports": "Actuator commands for axes, heater control outputs, status reports"
+        },
+        "behavioral_characteristics": "按命令或记忆配置执行多轴位置规划与安全限位。算法：分段位置插补、简单PID限幅、加热PWM控制。触发条件：命令到达（异步）或周期性监控（50ms）。状态机管理：Idle/Moving/MemoryRecall/Calibration/Fault。数据处理流程：解析命令→路径规划→生成轴控制→调用驱动→反馈位置与状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports接收HMI/CAN、P-ports发送到座椅驱动和状态广播"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Seat_Command_Event",
+                "trigger": "CAN_Interface or local HMI command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Seat_Control_Tick",
+                "trigger": "50ms timer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Seat_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取座椅移动或记忆指令"
+                      }
+                    ],
+                    "notes": "接收命令参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "同步调用底层驱动以保证位置原子性"
+                      }
+                    ],
+                    "notes": "调用座椅驱动服务"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布座椅实时位置与加热状态"
+                      }
+                    ],
+                    "notes": "状态发布"
+                  }
+                ],
+                "notes": "多轴位置与加热控制主循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Seat",
+          "IF_DIAG",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp003",
+        "name": "Climate_Control",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "自动空调：传感器融合、控制策略与执行风扇/温度设定",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "外/内温湿度传感器输入、驾驶设定、座舱占用/风向开关",
+          "output_ports": "HVAC控制命令（压缩机、风扇风量、混合门）、状态广播"
+        },
+        "behavioral_characteristics": "基于PID/模糊逻辑的温度调节策略与节能模式，进行传感器融合与模式切换（自动/manual/eco）。触发：环境采样周期200-500ms或用户设定变化。状态管理：Mode切换管理（AUTO→MANUAL→ECO）、故障退化策略。数据处理：采集传感器→估计舱温→计算设定→生成控制指令→发送驱动。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "PR-port用于参数/配置读取（温度设定），R用于传感器输入，P用于输出控制"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Env_Sample_Event",
+                "trigger": "200ms timer"
+              },
+              {
+                "type": "MODE-SWITCHED-ACK-EVENT",
+                "name": "Mode_Switched_Event",
+                "trigger": "user or algorithm triggers mode change"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Climate_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取温湿度与设定值（按值读取）"
+                      }
+                    ],
+                    "notes": "采集传感器与设定"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出HVAC控制命令"
+                      }
+                    ],
+                    "notes": "发送控制命令到驱动层"
+                  },
+                  {
+                    "key": "MODE-ACCESS-POINTS",
+                    "wrapper": "MODE-ACCESS-POINTS",
+                    "preselect": [
+                      {
+                        "of": "MODE-GROUP-IREF",
+                        "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取运行模式组引用（只读模式访问）"
+                      }
+                    ],
+                    "notes": "模式访问点"
+                  }
+                ],
+                "notes": "环境采样与控制输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Climate",
+          "IF_PARAM_Temp",
+          "CAN_Interface",
+          "IF_DIAG"
+        ]
+      },
+      {
+        "component_id": "cmp004",
+        "name": "Ambient_Lighting",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "控制64色氛围灯场景、渐变与效果引擎",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "HMI场景命令、LIN或CAN输入、OTA/Diag",
+          "output_ports": "灯区控制输出（PWM/RGB）、状态反馈"
+        },
+        "behavioral_characteristics": "事件驱动与时间线执行的效果引擎。处理：场景解析→渐变插值→分区输出。触发：场景命令（异步）、定时器（50-100ms）推进渐变。状态：Idle→Playing→Paused。数据流程：接收效果命令→解码场景曲线→按周期计算并发送RGB输出→确认或反馈。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports接收场景命令，P-ports送出PWM/RGB到驱动"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Lighting_Command_Event",
+                "trigger": "LIN_Interface or HMI command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Lighting_Tick",
+                "trigger": "50ms timer for interpolation"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Lighting_Effect_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收灯光场景与参数"
+                      }
+                    ],
+                    "notes": "接收场景命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向驱动下发RGB输出值"
+                      }
+                    ],
+                    "notes": "发送RGB输出"
+                  }
+                ],
+                "notes": "场景解码和插值执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_LIN_Ambient",
+          "IF_DIAG",
+          "LIN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp005",
+        "name": "CAN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "CAN总线适配：报文收发、信号解封装、周期管理、错误与重传管理",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Raw CAN frames from BSW",
+          "output_ports": "Decoded signals to SWCs, framed transmit requests"
+        },
+        "behavioral_characteristics": "处理CAN收发中断与周期任务，提供Sender-Receiver风格的信号分发与Client-Server用于请求-响应。触发：报文接收中断（异步）与周期调度（1-100ms）。支持报文优先级、缓冲队列（FIFO）与最新值策略。对重要命令实现确认与重发机制。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供信号级R/P端口给应用组件；接口内部与BSW驱动以ServerCall交互"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "CAN hardware interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "CAN_Periodic_Task",
+                "trigger": "configurable scheduler (1-100ms)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CAN_RxTx_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收原始帧并解码到信号"
+                      }
+                    ],
+                    "notes": "帧解包"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "同步调用底层CAN Driver服务"
+                      }
+                    ],
+                    "notes": "与CAN Driver同步交互"
+                  }
+                ],
+                "notes": "收发与解/封装主循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Door",
+          "IF_CAN_Seat",
+          "IF_CAN_Climate",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Diag_Handler"
+        ]
+      },
+      {
+        "component_id": "cmp006",
+        "name": "LIN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "LIN总线适配：报文收发、节拍管理与从节点通信抽象",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Raw LIN frames",
+          "output_ports": "Decoded signals to application, transmission requests"
+        },
+        "behavioral_characteristics": "处理主从节点调度、节拍管理与低带宽消息合并。触发：LIN帧接收中断与schedule事件（10-200ms）。采用最新值策略及轻量化缓冲。错误处理：总线校验与重试。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "为Ambient_Lighting等低速外设提供信号接口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "LIN_Frame_Received",
+                "trigger": "LIN hardware interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "LIN_Schedule_Tick",
+                "trigger": "schedule tick (10-200ms)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "LIN_RxTx_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收LIN信号并解码"
+                      }
+                    ],
+                    "notes": "LIN帧解码"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送LIN帧请求"
+                      }
+                    ],
+                    "notes": "帧封装/发送"
+                  }
+                ],
+                "notes": "收发与schedule管理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_LIN_Ambient",
+          "Ambient_Lighting",
+          "Diag_Handler"
+        ]
+      },
+      {
+        "component_id": "cmp007",
+        "name": "Diag_Handler",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "诊断与OTA管理：处理诊断会话、错误码、固件分发与触发升级",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Diagnostic request ports (CAN/LIN), OTA triggers",
+          "output_ports": "Diagnostic responses, OTA transfer to components, status reports"
+        },
+        "behavioral_characteristics": "提供Client-Server接口供外部诊断工具与OTA服务器交互。管理长事务（固件上传/验证/切换），并协调各SWC进入升级模式。触发：诊断请求、OTA开始命令、组件上报错误。状态机：Idle→Upload→Verify→Commit→Rollback。数据流程：接收OTA块→校验与缓存→调用目标组件的写接口→提交并重启。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "PR用于参数化OTA配置，R用于接收外部诊断请求"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "OTA_Start_Event",
+                "trigger": "外部工具下发OTA开始命令"
+              },
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "Write_Result_Event",
+                "trigger": "目标组件写入返回"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Service_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "向目标组件异步下发固件块或写命令"
+                      }
+                    ],
+                    "notes": "与应用SWC进行OTA/诊断调用"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送诊断/OTA状态到外部工具或总线"
+                      }
+                    ],
+                    "notes": "发送诊断响应与OTA进度"
+                  }
+                ],
+                "notes": "处理诊断会话与OTA事务"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_OTA",
+          "IF_DIAG",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting",
+          "CAN_Interface",
+          "LIN_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Door",
+        "name": "CAN_Door_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期/事件混合，接收门窗命令（异步事件触发）并周期性广播门窗状态。优先级高，使用最新值策略和有限队列用于命令确认。",
+        "data_category": "Signal/State",
+        "connected_components": [
+          "DoorWindow_Manager",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "命令端到端延迟≤50ms，状态广播周期≤200ms；丢失命令需可重发/确认。",
+        "data_elements": [
+          "DoorCommand:uint8",
+          "WindowCommand:uint8",
+          "DoorPosition:uint8",
+          "DoorFault:uint8"
+        ],
+        "direct_paths": "CAN_Interface→DoorWindow_Manager (Rx); DoorWindow_Manager→CAN_Interface (Tx status)"
+      },
+      {
+        "interface_id": "IF_CAN_Seat",
+        "name": "CAN_Seat_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件驱动命令接收与周期性位置上报，命令优先，使用确认/重试机制。",
+        "data_category": "Command/Status",
+        "connected_components": [
+          "Seat_Manager",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "调整命令响应≤100ms，位置上报周期≤500ms。",
+        "data_elements": [
+          "SeatMoveCmd:int16",
+          "SeatHeaterCmd:uint8",
+          "SeatPosition:int16",
+          "SeatFault:uint8"
+        ],
+        "direct_paths": "CAN_Interface→Seat_Manager (Rx); Seat_Manager→CAN_Interface (Tx)"
+      },
+      {
+        "interface_id": "IF_CAN_Climate",
+        "name": "CAN_Climate_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性传感器上报与设定广播，低延迟需求中等。采取最新值覆盖策略，关键控制命令有确认。",
+        "data_category": "Sensor/Control",
+        "connected_components": [
+          "Climate_Control",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "传感器上报周期200-500ms，控制响应≤200ms。",
+        "data_elements": [
+          "CabinTemp:float32",
+          "ExternalTemp:float32",
+          "HVACCommand:uint8",
+          "HVACMode:uint8"
+        ],
+        "direct_paths": "Sensors→CAN_Interface→Climate_Control; Climate_Control→CAN_Interface (actuator commands)"
+      },
+      {
+        "interface_id": "IF_LIN_Ambient",
+        "name": "LIN_Ambient_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "低速周期/节拍通信，命令优先采用最新值覆盖，缓冲最小化以节省带宽。",
+        "data_category": "Command/Effect",
+        "connected_components": [
+          "Ambient_Lighting",
+          "LIN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "渐变控制周期50-100ms，命令响应≤200ms。",
+        "data_elements": [
+          "LightSceneID:uint8",
+          "LightColor:uint24",
+          "LightIntensity:uint8"
+        ],
+        "direct_paths": "HMI/Host→LIN_Interface→Ambient_Lighting；Ambient_Lighting→LIN_Interface (status)"
+      },
+      {
+        "interface_id": "IF_OTA",
+        "name": "OTA_ClientServer",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server长事务式，支持异步块传输与确认，提供分段重试与校验。会话控制与超时严格管理。",
+        "data_category": "Service/Parameter",
+        "connected_components": [
+          "Diag_Handler",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting"
+        ],
+        "performance_requirements": "支持大数据块传输、高可靠性校验；单块超时配置与重传策略。",
+        "data_elements": [
+          "OTA_Start:bool",
+          "OTA_Block:blob",
+          "OTA_Status:uint8",
+          "OTA_Commit:bool"
+        ],
+        "direct_paths": "Diag_Handler (server) ↔各管理器 (client calls for write/verify)"
+      },
+      {
+        "interface_id": "IF_DIAG",
+        "name": "Diag_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "诊断会话基于Client-Server，支持同步请求/响应与异步事件上报，错误与会话管理有严格超时。",
+        "data_category": "Service/Diagnostic",
+        "connected_components": [
+          "Diag_Handler",
+          "CAN_Interface",
+          "LIN_Interface",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting"
+        ],
+        "performance_requirements": "诊断请求响应需在可配置超时时间内完成（短事务≤500ms，长事务视情况配置）。",
+        "data_elements": [
+          "DiagRequest:struct",
+          "DiagResponse:struct",
+          "DTC_List:array"
+        ],
+        "direct_paths": "ExternalTester→CAN_Interface/LIN_Interface→Diag_Handler→Target SWC"
+      }
+    ],
+    "component_generation_order": [
+      "CAN_Interface",
+      "LIN_Interface",
+      "Diag_Handler",
+      "DoorWindow_Manager",
+      "Seat_Manager",
+      "Climate_Control",
+      "Ambient_Lighting"
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Interface与LIN_Interface作为总线适配器连接到各应用SWC（DoorWindow_Manager, Seat_Manager, Climate_Control, Ambient_Lighting）与Diag_Handler。应用组件通过Sender-Receiver接口与总线适配器通信；Diag_Handler作为Service provider/consumer与应用组件交互以协调OTA与诊断。",
+      "data_flow_paths": "外部HMI/ECU→(CAN/LIN)→CAN_Interface/LIN_Interface→对应管理器→(P-ports)→Actuator Driver；管理器状态→(P-ports)→CAN_Interface/LIN_Interface→其他ECU/HMI。Diag_Handler↔应用组件用于OTA与诊断的Client-Server通路。",
+      "control_flow_paths": "命令控制路径：HMI→CAN/LIN→Application (事件触发)→ServerCall to drivers。OTA控制路径：ExternalTool→CAN_Interface→Diag_Handler (启动会话)→Diag_Handler异步调用各管理器写接口→提交/切换。模式切换与紧急停止由各管理器内的Mode Access/Mode Switch流程控制。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层架构：总线适配层(CAN_Interface/LIN_Interface)隔离通信细节，应用层聚焦域功能，Diag_Handler集中管理诊断与OTA。接口优先使用Sender-Receiver用于周期/状态广播，Client-Server用于事务性服务（OTA/诊断）。Runnables按功能（周期/事件）划分，ServerCall用于与底层驱动的同步/异步交互。",
+      "tradeoff_analysis": "集中Diag_Handler简化OTA逻辑但增加依赖；将总线逻辑放入ECU-ABSTRACTION提高复用性，但需注意性能瓶颈与优先级管理。选择Sender-Receiver以降低调用开销，Client-Server用于可靠事务。实时性关键路径（门窗、座椅）采用更短周期与同步驱动调用以降低不确定性。",
+      "alternative_considerations": "可选方案：将OTA分散到各管理器以减少Diag_Handler复杂性；或将部分应用移到不同ECU以分担CAN_Interface负载。对于高实时需求，可将关键控制直接与驱动组件合并为Complex-Device-Driver类型。",
+      "risk_assessment": "主要风险为总线适配层成为瓶颈与OTA事务对系统稳定性影响。缓解措施：优先级调度、队列限流、在Diag_Handler中实现事务回滚与配套超时、对关键控制使用同步确认与硬实时监控。安全风险（门窗夹手等）通过本地限位与快速故障转移策略降低。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "将系统划分为7个SWC：DoorWindow_Manager负责4门4窗的位置/状态控制与安全限位；Seat_Manager负责电动座椅位置、记忆与加热控制；Climate_Control负责传感器融合、温度设定、风量与自动管控策略；Ambient_Lighting负责64色灯带的场景与渐变控制；CAN_Interface与LIN_Interface作为总线适配层，做报文封解、周期收发与错误处理；Diag_Handler负责诊断、OTA触发与固件管理。组件间职责清晰，Bus层提供公共通信服务，Diag_Handler提供跨组件诊断与OTA入口。",
+      "data_flow_analysis": "命令流：用户/ECU上层或HMI→CAN_Interface/LIN_Interface→对应管理器（Door/Seat/Climate/Ambient）。传感器流：温度/湿度/内外温度传感器→CAN_Interface→Climate_Control。状态流：管理器→状态广播→CAN_Interface/LIN_Interface→其他ECU。诊断/OTA：Diag_Handler以CLIENT-SERVER模式调用各管理器提供的状态与升级接口。数据类型：Door/WindowCmd:uint8/position_pct, DoorState:uint8, SeatPosition:int16, SeatHeaterLevel:uint8, TempSensors:float32, HVAC_Setpoint:float32, LightColor:rgb888/uint24。传输时序：关键控制（门窗、座椅调整）命令要求10-50ms端到端，状态广播周期100-500ms，环境感知周期200-1000ms，OTA为事务式长时间会话。",
+      "timing_requirements": "门窗控制：控制闭环周期10-20ms，最低命令响应50ms；座椅位置与加热：控制循环20-100ms；空调自动控制：采样周期200-500ms，控制输出≤200ms响应；氛围灯：非硬实时，更新≤100ms即可；总线传输遵循CAN报文周期和LIN周期，紧急/安全消息优先级较高。",
+      "scalability_considerations": "采用分层总线接口与消息驱动设计，新增功能（更多座椅轴、更多灯区）只需扩展应用SWC与消息定义；接口采用Sender-Receiver与Client-Server混合，支持多实例与参数化端口。建议未来按功能域增设子ECU或分区以应对大规模系统。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp001",
+        "name": "DoorWindow_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "控制4门4窗的开闭位置、限位保护与状态广播",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "4 CAN command inputs, 4 sensor inputs (position/limit), OTA/Diag client ports",
+          "output_ports": "4 actuator command outputs, status broadcast outputs"
+        },
+        "behavioral_characteristics": "周期性位置闭环控制与事件驱动的安全停机。主要算法：限位检查、位置PID（简单比例＋限幅）、故障检测与重试。触发：CAN命令到达（异步）或周期Timing_Event（10ms）进行位置跟踪。状态管理：每门窗维持状态机（Idle→Moving→Stopped→Fault）；遇到阻塞进入Fault并上报。数据流程：接收命令→验证/安全检查→生成控制量→调用驱动发送→广播状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports用于接收CAN/LIN输入与Diag请求，P-ports用于向Actuator驱动和广播状态。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Position_Update_Event",
+                "trigger": "10ms timer"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_DoorCommand_Event",
+                "trigger": "CAN_Interface indicates new door command"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "Actuator_Fault_Event",
+                "trigger": "actuator error reported"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DoorWindow_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取来自CAN_Interface的门窗命令"
+                      }
+                    ],
+                    "notes": "接收门窗命令并作为参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用Actuator驱动以异步下发控制命令"
+                      }
+                    ],
+                    "notes": "调用底层驱动接口"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向状态广播端口发送门窗当前位置/状态"
+                      }
+                    ],
+                    "notes": "发送状态到总线"
+                  }
+                ],
+                "notes": "主控制runnable，周期/事件触发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Door",
+          "IF_DIAG",
+          "IF_OTA",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp002",
+        "name": "Seat_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理电动座椅位置调整、记忆与座椅加热",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Seat position sensors, HMI/CAN commands, memory recall requests",
+          "output_ports": "Actuator commands for axes, heater control outputs, status reports"
+        },
+        "behavioral_characteristics": "按命令或记忆配置执行多轴位置规划与安全限位。算法：分段位置插补、简单PID限幅、加热PWM控制。触发条件：命令到达（异步）或周期性监控（50ms）。状态机管理：Idle/Moving/MemoryRecall/Calibration/Fault。数据处理流程：解析命令→路径规划→生成轴控制→调用驱动→反馈位置与状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports接收HMI/CAN、P-ports发送到座椅驱动和状态广播"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Seat_Command_Event",
+                "trigger": "CAN_Interface or local HMI command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Seat_Control_Tick",
+                "trigger": "50ms timer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Seat_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取座椅移动或记忆指令"
+                      }
+                    ],
+                    "notes": "接收命令参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "同步调用底层驱动以保证位置原子性"
+                      }
+                    ],
+                    "notes": "调用座椅驱动服务"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布座椅实时位置与加热状态"
+                      }
+                    ],
+                    "notes": "状态发布"
+                  }
+                ],
+                "notes": "多轴位置与加热控制主循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Seat",
+          "IF_DIAG",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp003",
+        "name": "Climate_Control",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "自动空调：传感器融合、控制策略与执行风扇/温度设定",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "外/内温湿度传感器输入、驾驶设定、座舱占用/风向开关",
+          "output_ports": "HVAC控制命令（压缩机、风扇风量、混合门）、状态广播"
+        },
+        "behavioral_characteristics": "基于PID/模糊逻辑的温度调节策略与节能模式，进行传感器融合与模式切换（自动/manual/eco）。触发：环境采样周期200-500ms或用户设定变化。状态管理：Mode切换管理（AUTO→MANUAL→ECO）、故障退化策略。数据处理：采集传感器→估计舱温→计算设定→生成控制指令→发送驱动。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "PR-port用于参数/配置读取（温度设定），R用于传感器输入，P用于输出控制"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Env_Sample_Event",
+                "trigger": "200ms timer"
+              },
+              {
+                "type": "MODE-SWITCHED-ACK-EVENT",
+                "name": "Mode_Switched_Event",
+                "trigger": "user or algorithm triggers mode change"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Climate_Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取温湿度与设定值（按值读取）"
+                      }
+                    ],
+                    "notes": "采集传感器与设定"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出HVAC控制命令"
+                      }
+                    ],
+                    "notes": "发送控制命令到驱动层"
+                  },
+                  {
+                    "key": "MODE-ACCESS-POINTS",
+                    "wrapper": "MODE-ACCESS-POINTS",
+                    "preselect": [
+                      {
+                        "of": "MODE-GROUP-IREF",
+                        "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取运行模式组引用（只读模式访问）"
+                      }
+                    ],
+                    "notes": "模式访问点"
+                  }
+                ],
+                "notes": "环境采样与控制输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Climate",
+          "IF_PARAM_Temp",
+          "CAN_Interface",
+          "IF_DIAG"
+        ]
+      },
+      {
+        "component_id": "cmp004",
+        "name": "Ambient_Lighting",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "控制64色氛围灯场景、渐变与效果引擎",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "HMI场景命令、LIN或CAN输入、OTA/Diag",
+          "output_ports": "灯区控制输出（PWM/RGB）、状态反馈"
+        },
+        "behavioral_characteristics": "事件驱动与时间线执行的效果引擎。处理：场景解析→渐变插值→分区输出。触发：场景命令（异步）、定时器（50-100ms）推进渐变。状态：Idle→Playing→Paused。数据流程：接收效果命令→解码场景曲线→按周期计算并发送RGB输出→确认或反馈。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports接收场景命令，P-ports送出PWM/RGB到驱动"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Lighting_Command_Event",
+                "trigger": "LIN_Interface or HMI command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Lighting_Tick",
+                "trigger": "50ms timer for interpolation"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Lighting_Effect_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收灯光场景与参数"
+                      }
+                    ],
+                    "notes": "接收场景命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向驱动下发RGB输出值"
+                      }
+                    ],
+                    "notes": "发送RGB输出"
+                  }
+                ],
+                "notes": "场景解码和插值执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_LIN_Ambient",
+          "IF_DIAG",
+          "LIN_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp005",
+        "name": "CAN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "CAN总线适配：报文收发、信号解封装、周期管理、错误与重传管理",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Raw CAN frames from BSW",
+          "output_ports": "Decoded signals to SWCs, framed transmit requests"
+        },
+        "behavioral_characteristics": "处理CAN收发中断与周期任务，提供Sender-Receiver风格的信号分发与Client-Server用于请求-响应。触发：报文接收中断（异步）与周期调度（1-100ms）。支持报文优先级、缓冲队列（FIFO）与最新值策略。对重要命令实现确认与重发机制。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供信号级R/P端口给应用组件；接口内部与BSW驱动以ServerCall交互"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "CAN hardware interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "CAN_Periodic_Task",
+                "trigger": "configurable scheduler (1-100ms)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CAN_RxTx_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收原始帧并解码到信号"
+                      }
+                    ],
+                    "notes": "帧解包"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "同步调用底层CAN Driver服务"
+                      }
+                    ],
+                    "notes": "与CAN Driver同步交互"
+                  }
+                ],
+                "notes": "收发与解/封装主循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Door",
+          "IF_CAN_Seat",
+          "IF_CAN_Climate",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Diag_Handler"
+        ]
+      },
+      {
+        "component_id": "cmp006",
+        "name": "LIN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "LIN总线适配：报文收发、节拍管理与从节点通信抽象",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Raw LIN frames",
+          "output_ports": "Decoded signals to application, transmission requests"
+        },
+        "behavioral_characteristics": "处理主从节点调度、节拍管理与低带宽消息合并。触发：LIN帧接收中断与schedule事件（10-200ms）。采用最新值策略及轻量化缓冲。错误处理：总线校验与重试。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "为Ambient_Lighting等低速外设提供信号接口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "LIN_Frame_Received",
+                "trigger": "LIN hardware interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "LIN_Schedule_Tick",
+                "trigger": "schedule tick (10-200ms)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "LIN_RxTx_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收LIN信号并解码"
+                      }
+                    ],
+                    "notes": "LIN帧解码"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送LIN帧请求"
+                      }
+                    ],
+                    "notes": "帧封装/发送"
+                  }
+                ],
+                "notes": "收发与schedule管理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_LIN_Ambient",
+          "Ambient_Lighting",
+          "Diag_Handler"
+        ]
+      },
+      {
+        "component_id": "cmp007",
+        "name": "Diag_Handler",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "诊断与OTA管理：处理诊断会话、错误码、固件分发与触发升级",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Diagnostic request ports (CAN/LIN), OTA triggers",
+          "output_ports": "Diagnostic responses, OTA transfer to components, status reports"
+        },
+        "behavioral_characteristics": "提供Client-Server接口供外部诊断工具与OTA服务器交互。管理长事务（固件上传/验证/切换），并协调各SWC进入升级模式。触发：诊断请求、OTA开始命令、组件上报错误。状态机：Idle→Upload→Verify→Commit→Rollback。数据流程：接收OTA块→校验与缓存→调用目标组件的写接口→提交并重启。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "PR用于参数化OTA配置，R用于接收外部诊断请求"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "OTA_Start_Event",
+                "trigger": "外部工具下发OTA开始命令"
+              },
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "Write_Result_Event",
+                "trigger": "目标组件写入返回"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Service_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "向目标组件异步下发固件块或写命令"
+                      }
+                    ],
+                    "notes": "与应用SWC进行OTA/诊断调用"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送诊断/OTA状态到外部工具或总线"
+                      }
+                    ],
+                    "notes": "发送诊断响应与OTA进度"
+                  }
+                ],
+                "notes": "处理诊断会话与OTA事务"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_OTA",
+          "IF_DIAG",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting",
+          "CAN_Interface",
+          "LIN_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Door",
+        "name": "CAN_Door_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期/事件混合，接收门窗命令（异步事件触发）并周期性广播门窗状态。优先级高，使用最新值策略和有限队列用于命令确认。",
+        "data_category": "Signal/State",
+        "connected_components": [
+          "DoorWindow_Manager",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "命令端到端延迟≤50ms，状态广播周期≤200ms；丢失命令需可重发/确认。",
+        "data_elements": [
+          "DoorCommand:uint8",
+          "WindowCommand:uint8",
+          "DoorPosition:uint8",
+          "DoorFault:uint8"
+        ],
+        "direct_paths": "CAN_Interface→DoorWindow_Manager (Rx); DoorWindow_Manager→CAN_Interface (Tx status)"
+      },
+      {
+        "interface_id": "IF_CAN_Seat",
+        "name": "CAN_Seat_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件驱动命令接收与周期性位置上报，命令优先，使用确认/重试机制。",
+        "data_category": "Command/Status",
+        "connected_components": [
+          "Seat_Manager",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "调整命令响应≤100ms，位置上报周期≤500ms。",
+        "data_elements": [
+          "SeatMoveCmd:int16",
+          "SeatHeaterCmd:uint8",
+          "SeatPosition:int16",
+          "SeatFault:uint8"
+        ],
+        "direct_paths": "CAN_Interface→Seat_Manager (Rx); Seat_Manager→CAN_Interface (Tx)"
+      },
+      {
+        "interface_id": "IF_CAN_Climate",
+        "name": "CAN_Climate_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性传感器上报与设定广播，低延迟需求中等。采取最新值覆盖策略，关键控制命令有确认。",
+        "data_category": "Sensor/Control",
+        "connected_components": [
+          "Climate_Control",
+          "CAN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "传感器上报周期200-500ms，控制响应≤200ms。",
+        "data_elements": [
+          "CabinTemp:float32",
+          "ExternalTemp:float32",
+          "HVACCommand:uint8",
+          "HVACMode:uint8"
+        ],
+        "direct_paths": "Sensors→CAN_Interface→Climate_Control; Climate_Control→CAN_Interface (actuator commands)"
+      },
+      {
+        "interface_id": "IF_LIN_Ambient",
+        "name": "LIN_Ambient_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "低速周期/节拍通信，命令优先采用最新值覆盖，缓冲最小化以节省带宽。",
+        "data_category": "Command/Effect",
+        "connected_components": [
+          "Ambient_Lighting",
+          "LIN_Interface",
+          "Diag_Handler"
+        ],
+        "performance_requirements": "渐变控制周期50-100ms，命令响应≤200ms。",
+        "data_elements": [
+          "LightSceneID:uint8",
+          "LightColor:uint24",
+          "LightIntensity:uint8"
+        ],
+        "direct_paths": "HMI/Host→LIN_Interface→Ambient_Lighting；Ambient_Lighting→LIN_Interface (status)"
+      },
+      {
+        "interface_id": "IF_OTA",
+        "name": "OTA_ClientServer",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server长事务式，支持异步块传输与确认，提供分段重试与校验。会话控制与超时严格管理。",
+        "data_category": "Service/Parameter",
+        "connected_components": [
+          "Diag_Handler",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting"
+        ],
+        "performance_requirements": "支持大数据块传输、高可靠性校验；单块超时配置与重传策略。",
+        "data_elements": [
+          "OTA_Start:bool",
+          "OTA_Block:blob",
+          "OTA_Status:uint8",
+          "OTA_Commit:bool"
+        ],
+        "direct_paths": "Diag_Handler (server) ↔各管理器 (client calls for write/verify)"
+      },
+      {
+        "interface_id": "IF_DIAG",
+        "name": "Diag_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "诊断会话基于Client-Server，支持同步请求/响应与异步事件上报，错误与会话管理有严格超时。",
+        "data_category": "Service/Diagnostic",
+        "connected_components": [
+          "Diag_Handler",
+          "CAN_Interface",
+          "LIN_Interface",
+          "DoorWindow_Manager",
+          "Seat_Manager",
+          "Climate_Control",
+          "Ambient_Lighting"
+        ],
+        "performance_requirements": "诊断请求响应需在可配置超时时间内完成（短事务≤500ms，长事务视情况配置）。",
+        "data_elements": [
+          "DiagRequest:struct",
+          "DiagResponse:struct",
+          "DTC_List:array"
+        ],
+        "direct_paths": "ExternalTester→CAN_Interface/LIN_Interface→Diag_Handler→Target SWC"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Interface与LIN_Interface作为总线适配器连接到各应用SWC（DoorWindow_Manager, Seat_Manager, Climate_Control, Ambient_Lighting）与Diag_Handler。应用组件通过Sender-Receiver接口与总线适配器通信；Diag_Handler作为Service provider/consumer与应用组件交互以协调OTA与诊断。",
+      "data_flow_paths": "外部HMI/ECU→(CAN/LIN)→CAN_Interface/LIN_Interface→对应管理器→(P-ports)→Actuator Driver；管理器状态→(P-ports)→CAN_Interface/LIN_Interface→其他ECU/HMI。Diag_Handler↔应用组件用于OTA与诊断的Client-Server通路。",
+      "control_flow_paths": "命令控制路径：HMI→CAN/LIN→Application (事件触发)→ServerCall to drivers。OTA控制路径：ExternalTool→CAN_Interface→Diag_Handler (启动会话)→Diag_Handler异步调用各管理器写接口→提交/切换。模式切换与紧急停止由各管理器内的Mode Access/Mode Switch流程控制。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层架构：总线适配层(CAN_Interface/LIN_Interface)隔离通信细节，应用层聚焦域功能，Diag_Handler集中管理诊断与OTA。接口优先使用Sender-Receiver用于周期/状态广播，Client-Server用于事务性服务（OTA/诊断）。Runnables按功能（周期/事件）划分，ServerCall用于与底层驱动的同步/异步交互。",
+      "tradeoff_analysis": "集中Diag_Handler简化OTA逻辑但增加依赖；将总线逻辑放入ECU-ABSTRACTION提高复用性，但需注意性能瓶颈与优先级管理。选择Sender-Receiver以降低调用开销，Client-Server用于可靠事务。实时性关键路径（门窗、座椅）采用更短周期与同步驱动调用以降低不确定性。",
+      "alternative_considerations": "可选方案：将OTA分散到各管理器以减少Diag_Handler复杂性；或将部分应用移到不同ECU以分担CAN_Interface负载。对于高实时需求，可将关键控制直接与驱动组件合并为Complex-Device-Driver类型。",
+      "risk_assessment": "主要风险为总线适配层成为瓶颈与OTA事务对系统稳定性影响。缓解措施：优先级调度、队列限流、在Diag_Handler中实现事务回滚与配套超时、对关键控制使用同步确认与硬实时监控。安全风险（门窗夹手等）通过本地限位与快速故障转移策略降低。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7619,
+    "output_tokens": 9313,
+    "total_tokens": 16932,
+    "component_count": 7,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

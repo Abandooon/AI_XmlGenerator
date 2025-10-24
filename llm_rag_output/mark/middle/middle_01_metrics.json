@@ -1,0 +1,1211 @@
+{
+  "case_id": "middle_1",
+  "system_name": "PowertrainDomainController",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "PowertrainDomainController",
+    "description": "管理发动机、变速箱、能量回收系统",
+    "components_count": 6,
+    "component_types": [
+      "EngineController",
+      "TransmissionController",
+      "EnergyRecovery",
+      "TorqueCoordinator",
+      "CANRouter",
+      "DiagnosticService"
+    ],
+    "key_requirements": [
+      "EngineController管理燃油喷射、点火正时",
+      "TransmissionController控制换挡逻辑",
+      "EnergyRecovery管理制动能量回收",
+      "TorqueCoordinator协调三者的扭矩请求",
+      "CANRouter连接动力CAN和车身CAN",
+      "DiagnosticService提供UDS服务"
+    ]
+  },
+  "start_time": "2025-10-23T20:02:48.238879",
+  "phase1": {
+    "duration": 140.47359895706177,
+    "api_calls": 1,
+    "tokens": 24518,
+    "component_count": 6,
+    "interface_count": 10,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "Engine_Controller: 计算喷油量与点火正时, 发布发动机扭矩能力与执行命令。\nTransmission_Controller: 计算换挡时机与传动效率, 发布变速箱扭矩能力与执行命令。\nEnergy_Recovery: 依据制动与车速计算可回收扭矩, 下发能量回收执行命令。\nTorque_Coordinator: 聚合驾驶员扭矩请求与各子系统能力, 分配最终扭矩与换挡指令。\nCAN_Router: 在动力CAN与车身CAN间进行信号路由与转发, 提供车辆状态与诊断帧。\nDiagnostic_Service: 提供UDS服务, 作为客户端调用各控制器的数据读写/例行控制操作。",
+        "data_flow_analysis": "主要S/R接口: Vehicle_Status_IF(CAN_Router→Engine_Controller/Transmission_Controller/Energy_Recovery/Torque_Coordinator): vehicle_speed_kph, brake_status, engine_rpm。\nTorque_Request_IF(CAN_Router→Torque_Coordinator): driver_torque_request_nm。\nEngine/Transmission/Regen_Torque_Capability_IF(各控制器→Torque_Coordinator): *_torque_capability_nm。\nTorque_Command_IF(Torque_Coordinator→各控制器): engine_torque_cmd_nm, trans_torque_cmd_nm, regen_torque_cmd_nm。\nGear_Command_IF(Torque_Coordinator→Transmission_Controller): gear_cmd。\nUDS_Frame_IF(CAN_Router↔Diagnostic_Service): uds_request_frame, uds_response_frame。\nCS接口: UDS_Service_IF(Diagnostic_Service→各控制器): read_did, write_did, routine_control。\n调用链: Diagnostic_Service作为客户端调用各控制器的CS操作; Torque_Coordinator依赖三控制器能力并向其下发命令; 各控制器依赖CAN_Router提供的车辆状态; Torque_Coordinator依赖CAN_Router提供的驾驶员扭矩请求。",
+        "timing_requirements": "周期: CAN_Router接收/转发周期5–10ms; Engine/Transmission/Energy_Recovery主循环10ms; Torque_Coordinator分配周期10ms。\n端到端: 驾驶员请求至各控制器执行≤30ms。\nCS超时: 诊断读写/例行控制超时50–200ms; 通信错误重试3次。\n事件: INIT在上电时触发; 数据到达触发DATA-RECEIVED; 周期性TIMING触发。",
+        "scalability_considerations": "接口抽象为S/R与CS, 可扩展更多控制器与数据元素; CAN_Router可按通道扩展; Diagnostic_Service可扩展DID与例行; 通过参数接口与标定提升可移植性; 遵循RTE端口通信可横向扩展至混合动力或四驱域。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "comp_001",
+          "name": "Engine_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "计算喷油与点火正时; 提供发动机扭矩能力; 接收协调后的扭矩与执行命令。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: 3 (torque_request_in, vehicle_status_in, torque_cmd_in)",
+            "output_ports": "P-Ports: 2 (engine_torque_capability_out, engine_actuation_cmd_out)"
+          },
+          "behavioral_characteristics": "主循环10ms计算扭矩能力; 接收Torque_Coordinator下发的扭矩命令并转为喷油与点火控制; 上电INIT加载标定; 数据到达事件驱动快速更新。\n状态: INIT→RUN; RUN内根据故障/工况切换子状态(功率受限/正常)。\n处理流程: 输入车辆状态与扭矩请求→估算能力→发布能力→接收最终命令→生成执行信号。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: torque_request_in(Torque_Request_IF), vehicle_status_in(Vehicle_Status_IF), torque_cmd_in(Torque_Command_IF)。P: engine_torque_capability_out(Engine_Torque_Capability_IF), engine_actuation_cmd_out(Control_Command_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Engine_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Engine_Periodic_10ms",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Torque_Command_Update",
+                  "trigger": "On_RTE_Data_Received"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_ReadData_Invoked",
+                  "trigger": "UDS_ReadDataByIdentifier"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Engine_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载喷油/点火标定参数"
+                        }
+                      ],
+                      "notes": "初始化标定与内部状态"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "Engine_Torque_Calc_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取driver_torque_request_nm"
+                        }
+                      ],
+                      "notes": "读取扭矩请求"
+                    },
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取vehicle_speed_kph/engine_rpm"
+                        }
+                      ],
+                      "notes": "读取车辆状态用于能力估算"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布engine_torque_capability_nm"
+                        }
+                      ],
+                      "notes": "输出发动机扭矩能力"
+                    }
+                  ],
+                  "notes": "10ms周期能力计算"
+                },
+                {
+                  "name": "Engine_Actuation_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取engine_torque_cmd_nm"
+                        }
+                      ],
+                      "notes": "接收最终发动机扭矩命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送engine_actuation_cmd_out"
+                        }
+                      ],
+                      "notes": "下发执行控制信号"
+                    }
+                  ],
+                  "notes": "命令转执行"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Vehicle_Status_IF",
+            "Torque_Request_IF",
+            "Engine_Torque_Capability_IF",
+            "Torque_Command_IF",
+            "UDS_Service_IF",
+            "Control_Command_IF"
+          ]
+        },
+        {
+          "component_id": "comp_002",
+          "name": "Transmission_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "计算换挡逻辑与传动效率; 发布变速箱扭矩能力; 接收协调后的扭矩与换挡指令并执行。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: 3 (vehicle_status_in, torque_cmd_in, gear_cmd_in)",
+            "output_ports": "P-Ports: 2 (trans_torque_capability_out, gear_command_out)"
+          },
+          "behavioral_characteristics": "周期10ms进行挡位评估与能力估算; 接收Torque_Coordinator下发的扭矩与挡位指令; 状态机含加速/巡航/降挡策略切换。\n流程: 输入车速/发动机转速→评估挡位与扭矩能力→发布能力→接收最终命令→输出换挡与执行命令。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: vehicle_status_in(Vehicle_Status_IF), torque_cmd_in(Torque_Command_IF), gear_cmd_in(Gear_Command_IF)。P: trans_torque_capability_out(Transmission_Torque_Capability_IF), gear_command_out(Control_Command_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Trans_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Trans_Periodic_10ms",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Gear_Command_Update",
+                  "trigger": "On_RTE_Data_Received"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_ReadData_Invoked",
+                  "trigger": "UDS_ReadDataByIdentifier"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Trans_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载换挡标定与效率曲线"
+                        }
+                      ],
+                      "notes": "初始化标定与内部状态"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "Gear_Calc_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取vehicle_speed_kph与engine_rpm"
+                        }
+                      ],
+                      "notes": "输入车辆状态用于挡位评估"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布trans_torque_capability_nm"
+                        }
+                      ],
+                      "notes": "输出变速箱扭矩能力"
+                    }
+                  ],
+                  "notes": "10ms周期能力与挡位计算"
+                },
+                {
+                  "name": "Trans_Apply_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取trans_torque_cmd_nm与gear_cmd"
+                        }
+                      ],
+                      "notes": "接收最终扭矩与换挡命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送gear_command_out"
+                        }
+                      ],
+                      "notes": "输出执行控制命令"
+                    }
+                  ],
+                  "notes": "命令转执行"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Vehicle_Status_IF",
+            "Transmission_Torque_Capability_IF",
+            "Torque_Command_IF",
+            "Gear_Command_IF",
+            "UDS_Service_IF",
+            "Control_Command_IF"
+          ]
+        },
+        {
+          "component_id": "comp_003",
+          "name": "Energy_Recovery",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "依据制动与速度计算可回收扭矩能力; 接收协调后的回收扭矩命令并输出执行控制。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: 2 (vehicle_status_in, torque_cmd_in)",
+            "output_ports": "P-Ports: 2 (regen_torque_capability_out, regen_actuation_cmd_out)"
+          },
+          "behavioral_characteristics": "周期10ms评估制动与SOC约束计算回收能力; 接收Torque_Coordinator下发的回收扭矩命令; INIT加载标定与限值。\n流程: 输入车速/制动状态→估算回收能力→发布能力→接收命令→输出逆变器/制动动能回收控制。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: vehicle_status_in(Vehicle_Status_IF), torque_cmd_in(Torque_Command_IF)。P: regen_torque_capability_out(Regen_Torque_Capability_IF), regen_actuation_cmd_out(Control_Command_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "ER_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "ER_Periodic_10ms",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Regen_Command_Update",
+                  "trigger": "On_RTE_Data_Received"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_ReadData_Invoked",
+                  "trigger": "UDS_ReadDataByIdentifier"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ER_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载SOC/制动约束参数"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "ER_Calc_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取brake_status与vehicle_speed_kph"
+                        }
+                      ],
+                      "notes": "输入车辆状态用于回收能力估算"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布regen_torque_capability_nm"
+                        }
+                      ],
+                      "notes": "输出回收扭矩能力"
+                    }
+                  ],
+                  "notes": "10ms周期能力计算"
+                },
+                {
+                  "name": "ER_Apply_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取regen_torque_cmd_nm"
+                        }
+                      ],
+                      "notes": "接收最终回收扭矩命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送regen_actuation_cmd_out"
+                        }
+                      ],
+                      "notes": "输出回收执行控制信号"
+                    }
+                  ],
+                  "notes": "命令转执行"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Vehicle_Status_IF",
+            "Regen_Torque_Capability_IF",
+            "Torque_Command_IF",
+            "UDS_Service_IF",
+            "Control_Command_IF"
+          ]
+        },
+        {
+          "component_id": "comp_004",
+          "name": "Torque_Coordinator",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "接收驾驶员扭矩请求与各子系统能力, 进行协调分配, 下发最终扭矩与挡位指令。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: 4 (torque_request_in, engine_capability_in, trans_capability_in, regen_capability_in)",
+            "output_ports": "P-Ports: 2 (torque_command_out, gear_command_out)"
+          },
+          "behavioral_characteristics": "周期10ms进行资源分配与限值融合; 数据到达触发快速重分配; INIT加载协调策略参数。\n状态: INIT→RUN; RUN包含功率限制/牵引控制子状态。\n流程: 读取驾驶员请求与三方能力→分配扭矩与挡位→下发各控制器命令。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: torque_request_in(Torque_Request_IF), engine_capability_in(Engine_Torque_Capability_IF), trans_capability_in(Transmission_Torque_Capability_IF), regen_capability_in(Regen_Torque_Capability_IF)。P: torque_command_out(Torque_Command_IF), gear_command_out(Gear_Command_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "TC_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "TC_Periodic_10ms",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Capabilities_Update",
+                  "trigger": "On_RTE_Data_Received"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "TC_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载协调策略参数与限值"
+                        }
+                      ],
+                      "notes": "初始化策略参数"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "TC_Calc_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取driver_torque_request_nm"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取engine_torque_capability_nm"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取trans_torque_capability_nm"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取regen_torque_capability_nm"
+                        }
+                      ],
+                      "notes": "汇聚请求与能力用于分配计算"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送engine_torque_cmd_nm/trans_torque_cmd_nm/regen_torque_cmd_nm"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送gear_cmd"
+                        }
+                      ],
+                      "notes": "输出协调后的命令"
+                    }
+                  ],
+                  "notes": "10ms周期协调分配"
+                },
+                {
+                  "name": "TC_Status_R",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取分配状态用于诊断"
+                        }
+                      ],
+                      "notes": "诊断状态采集"
+                    }
+                  ],
+                  "notes": "供诊断查询"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Torque_Request_IF",
+            "Engine_Torque_Capability_IF",
+            "Transmission_Torque_Capability_IF",
+            "Regen_Torque_Capability_IF",
+            "Torque_Command_IF",
+            "Gear_Command_IF",
+            "UDS_Service_IF"
+          ]
+        },
+        {
+          "component_id": "comp_005",
+          "name": "CAN_Router",
+          "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+          "purpose": "路由动力CAN与车身CAN的信号与诊断帧, 提供车辆状态与UDS帧传输。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: 2 (powertrain_can_rx, body_can_rx)",
+            "output_ports": "P-Ports: 3 (vehicle_status_out, torque_request_out, uds_frame_out)"
+          },
+          "behavioral_characteristics": "接收CAN报文并按路由规则转发; 周期打包最新值发布车辆状态与驾驶员扭矩请求; 处理UDS请求/响应帧转发。\n流程: 输入CAN报文→解码→映射到S/R数据元素→发布或转发帧。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: powertrain_can_rx(UDS_Frame_IF/低层信号), body_can_rx(车身侧帧)。P: vehicle_status_out(Vehicle_Status_IF), torque_request_out(Torque_Request_IF), uds_frame_out(UDS_Frame_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CAN_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CAN_Periodic_5ms",
+                  "trigger": "Every_5ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "CAN_Rx_Event",
+                  "trigger": "On_Frame_Received"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CAN_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载路由表与信号映射"
+                        }
+                      ],
+                      "notes": "初始化路由配置"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "CAN_Rx_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收powertrain_can_rx帧并解码"
+                        }
+                      ],
+                      "notes": "接收动力CAN帧"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布vehicle_status_out"
+                        }
+                      ],
+                      "notes": "发布车辆状态数据元素"
+                    }
+                  ],
+                  "notes": "帧接收与状态发布"
+                },
+                {
+                  "name": "CAN_Tx_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取uds_response_frame或控制命令以转发"
+                        }
+                      ],
+                      "notes": "读取待发送帧/数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送至body_can_tx或powertrain_can_tx"
+                        }
+                      ],
+                      "notes": "转发至目标CAN通道"
+                    }
+                  ],
+                  "notes": "帧发送路由"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Vehicle_Status_IF",
+            "Torque_Request_IF",
+            "UDS_Frame_IF"
+          ]
+        },
+        {
+          "component_id": "comp_006",
+          "name": "Diagnostic_Service",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "提供UDS服务, 聚合各控制器数据, 执行DID读写与例行控制。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: 2 (uds_request_in, cs_targets_in)",
+            "output_ports": "P-Ports: 1 (uds_response_out)"
+          },
+          "behavioral_characteristics": "事件驱动处理UDS请求; 作为CS客户端调用各控制器数据; 超时与错误回退; 周期性健康监控。\n流程: 接收UDS请求→解析→调用目标控制器CS操作→聚合响应→下发UDS响应。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: uds_request_in(UDS_Frame_IF), cs_targets_in(UDS_Service_IF客户端)。P: uds_response_out(UDS_Frame_IF)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Diag_Init",
+                  "trigger": "On_ECU_PowerOn"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "UDS_Request_Invoked",
+                  "trigger": "On_UDS_Request"
+                },
+                {
+                  "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                  "name": "CS_Returns",
+                  "trigger": "On_Async_Return"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Diag_Init_R",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载DID映射与访问控制"
+                        }
+                      ],
+                      "notes": "初始化诊断参数"
+                    }
+                  ],
+                  "notes": "上电初始化"
+                },
+                {
+                  "name": "Diag_Dispatch_R",
+                  "elements": [
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "同步调用read_did/write_did"
+                        },
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "异步调用routine_control"
+                        }
+                      ],
+                      "notes": "根据UDS请求调度CS调用"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送uds_response_frame"
+                        }
+                      ],
+                      "notes": "输出UDS响应"
+                    }
+                  ],
+                  "notes": "诊断请求处理与响应生成"
+                },
+                {
+                  "name": "Diag_Notification_R",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收uds_request_frame"
+                        }
+                      ],
+                      "notes": "接收UDS请求帧"
+                    }
+                  ],
+                  "notes": "通知与排队处理"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "UDS_Service_IF",
+            "UDS_Frame_IF",
+            "Vehicle_Status_IF"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if_001",
+          "name": "Vehicle_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值/无队列; 周期发布5–10ms; 订阅者拉取或DATA-RECEIVED事件触发; 错误: 超时则保持上次有效值并上报。",
+          "data_category": "vehicle_state_signals",
+          "connected_components": [
+            "CAN_Router",
+            "Engine_Controller",
+            "Transmission_Controller",
+            "Energy_Recovery",
+            "Torque_Coordinator"
+          ],
+          "performance_requirements": "发布抖动<2ms; 端到端延迟≤20ms; 丢包率<1e-6。",
+          "data_elements": [
+            "vehicle_speed_kph",
+            "brake_status",
+            "engine_rpm"
+          ],
+          "direct_paths": "CAN_Router→各控制器: vehicle_speed_kph, brake_status, engine_rpm"
+        },
+        {
+          "interface_id": "if_002",
+          "name": "Torque_Request_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; Producer(CAN_Router)写入, Consumer(Torque_Coordinator)读取; 错误: 超时使用安全降级值。",
+          "data_category": "driver_request",
+          "connected_components": [
+            "CAN_Router",
+            "Torque_Coordinator"
+          ],
+          "performance_requirements": "端到端≤15ms; 数据新鲜度≤20ms。",
+          "data_elements": [
+            "driver_torque_request_nm"
+          ],
+          "direct_paths": "CAN_Router→Torque_Coordinator: driver_torque_request_nm"
+        },
+        {
+          "interface_id": "if_003",
+          "name": "Engine_Torque_Capability_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; 单生产者Engine_Controller; 错误: 失效时标记不可用。",
+          "data_category": "capability",
+          "connected_components": [
+            "Engine_Controller",
+            "Torque_Coordinator"
+          ],
+          "performance_requirements": "读取延迟≤5ms; 可用性>99.99%。",
+          "data_elements": [
+            "engine_torque_capability_nm"
+          ],
+          "direct_paths": "Engine_Controller→Torque_Coordinator: engine_torque_capability_nm"
+        },
+        {
+          "interface_id": "if_004",
+          "name": "Transmission_Torque_Capability_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; 单生产者Transmission_Controller。",
+          "data_category": "capability",
+          "connected_components": [
+            "Transmission_Controller",
+            "Torque_Coordinator"
+          ],
+          "performance_requirements": "读取延迟≤5ms; 可用性>99.99%。",
+          "data_elements": [
+            "trans_torque_capability_nm"
+          ],
+          "direct_paths": "Transmission_Controller→Torque_Coordinator: trans_torque_capability_nm"
+        },
+        {
+          "interface_id": "if_005",
+          "name": "Regen_Torque_Capability_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; 单生产者Energy_Recovery。",
+          "data_category": "capability",
+          "connected_components": [
+            "Energy_Recovery",
+            "Torque_Coordinator"
+          ],
+          "performance_requirements": "读取延迟≤5ms; 可用性>99.99%。",
+          "data_elements": [
+            "regen_torque_capability_nm"
+          ],
+          "direct_paths": "Energy_Recovery→Torque_Coordinator: regen_torque_capability_nm"
+        },
+        {
+          "interface_id": "if_006",
+          "name": "Torque_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; 单生产者Torque_Coordinator; 消费者为三个控制器; 错误: 命令超时则输出0或安全降级。",
+          "data_category": "command",
+          "connected_components": [
+            "Torque_Coordinator",
+            "Engine_Controller",
+            "Transmission_Controller",
+            "Energy_Recovery"
+          ],
+          "performance_requirements": "端到端≤15ms; 抖动<2ms; 命令一致性校验。",
+          "data_elements": [
+            "engine_torque_cmd_nm",
+            "trans_torque_cmd_nm",
+            "regen_torque_cmd_nm"
+          ],
+          "direct_paths": "Torque_Coordinator→Engine/Transmission/Energy_Recovery: 三路扭矩命令"
+        },
+        {
+          "interface_id": "if_007",
+          "name": "Gear_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; Producer(Torque_Coordinator); Consumer(Transmission_Controller)。",
+          "data_category": "command",
+          "connected_components": [
+            "Torque_Coordinator",
+            "Transmission_Controller"
+          ],
+          "performance_requirements": "端到端≤15ms; 抖动<2ms。",
+          "data_elements": [
+            "gear_cmd"
+          ],
+          "direct_paths": "Torque_Coordinator→Transmission_Controller: gear_cmd"
+        },
+        {
+          "interface_id": "if_008",
+          "name": "UDS_Service_IF",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "CS调用; 同步读写超时50–200ms; 例行控制可异步返回; 错误: 超时/否认返回相应NRC并记录。",
+          "data_category": "diagnostic_operations",
+          "connected_components": [
+            "Diagnostic_Service",
+            "Engine_Controller",
+            "Transmission_Controller",
+            "Energy_Recovery",
+            "Torque_Coordinator",
+            "CAN_Router"
+          ],
+          "performance_requirements": "支持并发请求1–3; 保证响应≤200ms; 错误率<1e-4。",
+          "data_elements": [
+            "read_did",
+            "write_did",
+            "routine_control"
+          ],
+          "direct_paths": "Diagnostic_Service→各控制器: CS操作调用"
+        },
+        {
+          "interface_id": "if_009",
+          "name": "UDS_Frame_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "帧转发; 最新值/可队列1; 事件触发优先; 错误: 帧丢弃与重试策略。",
+          "data_category": "diagnostic_frames",
+          "connected_components": [
+            "CAN_Router",
+            "Diagnostic_Service"
+          ],
+          "performance_requirements": "单帧端到端≤50ms; 丢帧率<1e-5。",
+          "data_elements": [
+            "uds_request_frame",
+            "uds_response_frame"
+          ],
+          "direct_paths": "Diagnostic_Service↔CAN_Router: UDS请求/响应帧"
+        },
+        {
+          "interface_id": "if_010",
+          "name": "Control_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值; 周期10ms; 用于各控制器对执行层的控制指令输出; 错误: 安全降级清零。",
+          "data_category": "actuation_command",
+          "connected_components": [
+            "Engine_Controller",
+            "Transmission_Controller",
+            "Energy_Recovery",
+            "CAN_Router"
+          ],
+          "performance_requirements": "端到端≤20ms; 可用性>99.99%。",
+          "data_elements": [
+            "engine_actuation_cmd_out",
+            "gear_command_out",
+            "regen_actuation_cmd_out"
+          ],
+          "direct_paths": "各控制器→CAN_Router: 执行层控制命令"
+        }
+      ],
+      "component_generation_order": [
+        "CAN_Router",
+        "Engine_Controller",
+        "Transmission_Controller",
+        "Energy_Recovery",
+        "Torque_Coordinator",
+        "Diagnostic_Service"
+      ],
+      "connection_topology": {
+        "component_connections": "CAN_Router提供Vehicle_Status_IF与Torque_Request_IF至各控制器与Torque_Coordinator; 三控制器通过各自Capability_IF向Torque_Coordinator提供能力; Torque_Coordinator通过Torque_Command_IF与Gear_Command_IF向三控制器与Transmission_Controller下发命令; Diagnostic_Service与CAN_Router通过UDS_Frame_IF交换诊断帧, 并通过UDS_Service_IF调用各控制器CS操作。",
+        "data_flow_paths": "driver_torque_request_nm: CAN_Router→Torque_Coordinator→(engine/trans/regen)_torque_cmd_nm→各控制器→Control_Command_IF→CAN_Router→执行层。\nvehicle_status: CAN_Router→所有控制器与协调器。\ncapabilities: 各控制器→Torque_Coordinator。\nUDS帧: Diagnostic_Service↔CAN_Router→外部测试器。",
+        "control_flow_paths": "CS调用链: Diagnostic_Service(客户端)→Engine/Transmission/Energy_Recovery/Torque_Coordinator/CAN_Router(服务端)。\n周期控制: 各控制器与协调器由TIMING事件驱动; 数据到达由DATA-RECEIVED事件驱动。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用S/R承载状态与命令, CS承载诊断操作; 将协调逻辑集中在Torque_Coordinator以实现统一分配; CAN_Router承担跨域路由以解耦网络与功能组件; 组件端口严格通过RTE连接, 防止跨组件直接访问。",
+        "tradeoff_analysis": "集中式协调简化一致性但增加单点复杂度; S/R最新值降低队列开销, 适合控制环; CS用于诊断的同步/异步兼容; CAN_Router设为ECU抽象便于与BSW对齐。",
+        "alternative_considerations": "可将诊断服务拆分为DEM/DCM代理与应用诊断SWC; 可将CAN_Router改为CDD提升性能; 扭矩协调可分布到各控制器但将增加接口复杂度。",
+        "risk_assessment": "协调器为关键点需冗余监测与降级策略; CAN路由异常影响广泛需超时/重试与故障隔离; 诊断并发需限流避免资源耗尽; 接口数据一致性需版本与类型管理。"
+      },
+      "session_id": "fae35494-4dc7-4ecd-98c5-2bb71a8e31a8",
+      "timestamp": "2025-10-23T20:05:08.706459"
+    }
+  },
+  "phase2": {
+    "duration": 484.9500787258148,
+    "tokens": 189759,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Router_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Engine_Controller_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Transmission_Controller_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Energy_Recovery_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Torque_Coordinator_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Diagnostic_Service_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Vehicle_Status_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Torque_Request_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Engine_Torque_Capability_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Transmission_Torque_Capability_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Regen_Torque_Capability_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Torque_Command_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Gear_Command_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\UDS_Frame_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Control_Command_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\UDS_Service_IF_85af0520_1761221593.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_85af0520_1761221593.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T20:13:13.675523"
+}

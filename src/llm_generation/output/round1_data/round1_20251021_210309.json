@@ -1,0 +1,2032 @@
+{
+  "session_id": "round1_20251021_210309",
+  "timestamp": "20251021_210309",
+  "user_requirements": "系统名称: EnergyManagementSystem\n系统描述: 混动车能量流优化\n组件数量: 9\n组件类型: BatterySystem, EngineSystem, MotorSystem, DCDCConverter, OnboardCharger, PowerDistribution, EnergyOptimizer, PredictiveController, GridInterface\n关键需求:\n  - BatterySystem管理动力电池包\n  - EngineSystem控制增程式发动机\n  - MotorSystem控制前后双电机\n  - DCDCConverter转换高压到低压\n  - OnboardCharger支持AC/DC充电\n  - PowerDistribution分配高压电能\n  - EnergyOptimizer基于导航信息优化能耗\n  - PredictiveController预测性能量管理\n  - GridInterface实现V2G双向充放电\n  - 多个组件需ASIL-D安全等级",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: EnergyManagementSystem\n系统描述: 混动车能量流优化\n组件数量: 9\n组件类型: BatterySystem, EngineSystem, MotorSystem, DCDCConverter, OnboardCharger, PowerDistribution, EnergyOptimizer, PredictiveController, GridInterface\n关键需求:\n  - BatterySystem管理动力电池包\n  - EngineSystem控制增程式发动机\n  - MotorSystem控制前后双电机\n  - DCDCConverter转换高压到低压\n  - OnboardCharger支持AC/DC充电\n  - PowerDistribution分配高压电能\n  - EnergyOptimizer基于导航信息优化能耗\n  - PredictiveController预测性能量管理\n  - GridInterface实现V2G双向充放电\n  - 多个组件需ASIL-D安全等级\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "将系统划分为九个功能组件：BatterySystem负责电池状态估计、充放电控制与安全管理；EngineSystem负责增程发动机控制与扭矩管理；MotorSystem管理双电机扭矩分配与再生制动；DCDCConverter负责高压到低压转换与状态监控；OnboardCharger处理车载充电（AC/DC）与充电控制逻辑；PowerDistribution负责高压总线的开关分配与故障隔离；EnergyOptimizer基于导航/驾驶策略在车辆层面做能量分配优化决策；PredictiveController基于路况/导航/历史数据生成能耗/续航预测并提供约束；GridInterface实现V2G双向能量与电网交互。职责边界按控制层（Optimizer/Controller）、电源管理层（Battery/DCDC/PD/Charger/Grid）和执行层（Engine/Motor）划分，安全关键路径（SOC边界、过流、短路、绝缘故障）采用ASIL-D级别设计与接口约束。",
+      "data_flow_analysis": "测量数据（SOC、电流、电压、温度）由BatterySystem通过Sender-Receiver接口广播至EnergyOptimizer、PredictiveController和PowerDistribution；MotorSystem与EngineSystem通过Sender-Receiver发布驱动状态与可用功率；EnergyOptimizer向MotorSystem/EngineSystem/BatterySystem和PowerDistribution发送控制建议（Client-Server或Client-Server-like调用），包含目标功率分配和优先级；PredictiveController周期性输出预测窗口（路段负载、预计能耗）到EnergyOptimizer（Sender-Receiver）；GridInterface与OnboardCharger和PowerDistribution以Client-Server交互实现并网/放电授权与计量；DCDCConverter接收PowerDistribution命令与BatterySystem电压信息以调整转换比。数据类型分为：fast telemetry (float32 current/voltage, int16 temperature)；state (SOC float32, SOH float32)；commands (int16 torque_pct, float power_kW)；predictions (time_series arrays). 传输时序：关键控制环路（Battery State、Motor torque）周期10ms~100ms，优化与预测周期500ms~5s，V2G事务为事件驱动（响应≤200ms），接口按实时等级分类并使用最新值或队列策略视需求而定。",
+      "timing_requirements": "硬实时环路：电驱与电池监测采样周期10ms~50ms，控制下发不超过100ms；能量优化周期500ms~1s，可容忍延迟至2s；预测器以1s~5s窗口输出预测，允许较大计算延迟但需在优化周期之前完成；V2G交易响应目标≤200ms；诊断与日志异步后台处理。各组件应提供定时事件（TIMING-EVENT）并在ARXML中标注周期。",
+      "scalability_considerations": "模块化接口和清晰的客户端/服务器与发送/接收契约以支持未来扩展（额外电机、并联电池、远程优化服务）。采用松耦合的数据契约（标准化数据元素名称与单位）便于横向扩展。预测和优化组件设计为可横向扩展到分布式计算节点（RPC/Service Proxy替换）以满足大规模车辆车队部署。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_battery_system",
+        "name": "BatterySystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "电池包状态估计、充放电控制、热管理与安全保护（ASIL-D关键路径）",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "4"
+        },
+        "behavioral_characteristics": "周期性采样电压、电流、温度（10ms-100ms），运行SOC/SOH估计算法，执行电流限制与均衡，响应来自EnergyOptimizer和GridInterface的充放电命令，状态机管理正常/限制/故障三态，遇安全越限触发故障隔离和上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供SOC/Voltage/Temp发送端口；需要命令输入端口（充放电、均衡请求）；诊断与配置参数端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Battery",
+                "trigger": "startup"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Battery_10ms",
+                "trigger": "periodic_10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_BMS_Status",
+                "trigger": "on_CAN_receive"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Measure_Update",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取电压/电流/温度传感器端口"
+                      }
+                    ],
+                    "notes": "周期读取硬件传感器"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送估计的SOC/SOH到总线上"
+                      }
+                    ],
+                    "notes": "广播电池状态"
+                  }
+                ],
+                "notes": "执行测量与状态估计"
+              },
+              {
+                "name": "Control_Executor",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用均衡器或硬件控制操作"
+                      }
+                    ],
+                    "notes": "在接收到充放电命令时调用底层驱动"
+                  }
+                ],
+                "notes": "执行充放电与安全限制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_BatteryState_SR",
+          "If_BatteryCommand_CS",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_engine_system",
+        "name": "EngineSystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "增程发动机点火/喷油/扭矩管理与整合故障管理",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "接收扭矩请求、扭矩上线管理与发动机启动命令（事件或同步调用），维护发动机状态机（停机/预热/运行/限载），周期性诊断与温度管理，执行低延迟控制（10ms~100ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供发动机状态输出；需要扭矩/启停命令输入"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Engine_Control_20ms",
+                "trigger": "periodic_20ms"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Start_Request",
+                "trigger": "from_EnergyOptimizer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Engine_ControlLoop",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收扭矩请求与约束"
+                      }
+                    ],
+                    "notes": "处理上位扭矩请求"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布发动机状态和可用功率"
+                      }
+                    ],
+                    "notes": "输出发动机执行结果"
+                  }
+                ],
+                "notes": "短周期控制循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_EngineCommand_CS",
+          "If_Optimizer_CS",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_motor_system",
+        "name": "MotorSystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "双电机扭矩分配、再生控制与驱动状态监控",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "3"
+        },
+        "behavioral_characteristics": "接受EnergyOptimizer的功率/扭矩分配和再生策略，执行电机控制闭环（10ms），管理温度与故障切换，支持各电机单独命令与同步调用以满足动态性能。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "前后电机独立命令端口；电机状态与测量广播端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Motor_10ms",
+                "trigger": "periodic_10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Torque_Request",
+                "trigger": "on_receive_from_Optimizer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Motor_Control",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收扭矩/再生命令"
+                      }
+                    ],
+                    "notes": "接收并转换为电机驱动命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布电机速度/电流/故障"
+                      }
+                    ],
+                    "notes": "输出执行状态"
+                  }
+                ],
+                "notes": "电机控制与监测"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_MotorCommand_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_dcdc_converter",
+        "name": "DCDCConverter",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "高压到低压转换控制、状态监测与保护",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "根据PowerDistribution或BatterySystem指令调节输出电压/电流，监测热与效率，响应快速保护（过流、短路），周期性汇报状态（100ms）并支持同步驱动调用以改变模式。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供状态上报接口；需要控制端口用于设定输出/模式"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "PD_Control_Command",
+                "trigger": "on_receive"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "DCDC_100ms",
+                "trigger": "periodic_100ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DCDC_Control",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "与底层驱动同步交互以设置转换参数"
+                      }
+                    ],
+                    "notes": "执行驱动级命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "上报DCDC状态"
+                      }
+                    ],
+                    "notes": "发布状态到PD与Battery"
+                  }
+                ],
+                "notes": "控制与状态上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_PowerDistribution_SR",
+          "If_DCDC_Control_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_onboard_charger",
+        "name": "OnboardCharger",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "车载充电管理（AC/DC）、充电会话管理与V2G交互适配",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "事件驱动充电会话管理，支持AC和DC模式，基于GridInterface与BatterySystem的约束做功率限制，充电流程具状态机和安全隔离，操作为事务式Client-Server与Grid交互，性能要求实时性中等（响应≤200ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "充电命令输入端口、会话状态上报端口、与Grid的服务接口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Start_Charge_Event",
+                "trigger": "user_or_grid_request"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Charger_500ms",
+                "trigger": "periodic_500ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Charge_Session_Manager",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步与GridInterface发起V2G/计费交易"
+                      }
+                    ],
+                    "notes": "管理V2G交互与会话"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "上报充电状态与计量"
+                      }
+                    ],
+                    "notes": "会话和计量广播"
+                  }
+                ],
+                "notes": "充电流程与V2G事务处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_Charger_Control_CS",
+          "If_GridInterface_CS",
+          "If_BatteryCommand_CS"
+        ]
+      },
+      {
+        "component_id": "cmp_power_distribution",
+        "name": "PowerDistribution",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "高压总线开关、负载分配、故障隔离与拓扑管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "4"
+        },
+        "behavioral_characteristics": "维护高压拓扑状态，接收EnergyOptimizer/Operator命令进行分配，快速断路与再连接以保护系统，周期性广播拓扑与总线电量信息，支持命令优先级与仲裁逻辑。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "提供拓扑状态输出；接受分配与开关命令端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Switch_Operation",
+                "trigger": "on_command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PD_100ms",
+                "trigger": "periodic_100ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Topology_Manager",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收优化器分配指令"
+                      }
+                    ],
+                    "notes": "接收分配命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布拓扑与总线状态"
+                      }
+                    ],
+                    "notes": "广播高压拓扑与测量"
+                  }
+                ],
+                "notes": "执行分配与故障隔离"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_PowerDistribution_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_energy_optimizer",
+        "name": "EnergyOptimizer",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于导航与实时状态对整车能量流进行优化决策（含ASIL-D决策路径）",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "5",
+          "output_ports": "5"
+        },
+        "behavioral_characteristics": "周期性（500ms~1s）收集Battery/Motor/Engine/PD的状态与PredictiveController的预测，运行优化求解（多目标：能耗、排放、续航），输出功率分配策略与约束，支持策略优先级、再入与失败降级策略，作为系统级决策器与安全策略交互。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "需要多个输入端口用于接收状态与预测，输出端口用于下发控制策略"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Optimizer_500ms",
+                "trigger": "periodic_500ms"
+              },
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Prediction_Updated",
+                "trigger": "on_PredictiveController_update"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Optimization_Task",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收SOC、motor/engine可用功率、预测窗口"
+                      }
+                    ],
+                    "notes": "接收所有必要输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用下游执行组件以确认命令可执行性"
+                      }
+                    ],
+                    "notes": "在发出强控制命令前做同步确认"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "下发分配策略至Motor/Engine/Battery/PD"
+                      }
+                    ],
+                    "notes": "输出优化结果"
+                  }
+                ],
+                "notes": "执行优化算法并下发结果"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_BatteryState_SR",
+          "If_MotorCommand_SR",
+          "If_EngineCommand_CS",
+          "If_Predictive_SR",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_predictive_controller",
+        "name": "PredictiveController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于导航/历史/车辆状态生成短期负载与能耗预测，为Optimizer提供约束与前瞻信息",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "以1s~5s窗口周期生成预测（可变周期1s~5s），使用路况与驾驶风格模型，提供置信度与约束，若数据不足提供退化模式并标注可信度，输出为时间序列与统计特征。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收导航与车辆实时状态，输出预测时间序列"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Predictive_1s",
+                "trigger": "periodic_1s"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Model_Update",
+                "trigger": "background_training"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Prediction_Generator",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航与车辆速度/坡度等输入"
+                      }
+                    ],
+                    "notes": "收集输入用于预测"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布预测序列与置信度"
+                      }
+                    ],
+                    "notes": "输出预测结果"
+                  }
+                ],
+                "notes": "周期性生成并发布预测"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_Predictive_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_grid_interface",
+        "name": "GridInterface",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "实现V2G交互、计费与并网授权服务，向OnboardCharger和EnergyOptimizer提供电网状态与交易结果",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "支持异步事务（授权、计费确认）和同步查询（电价、可用功率），响应延迟目标≤200ms，对于关键授权采用事务确认并回滚策略，具备故障重试与安全认证流程。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "提供V2G服务端API（Client-Server），广播电网状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "V2G_Transaction_Return",
+                "trigger": "on_async_response"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Grid_Status_Update",
+                "trigger": "on_grid_message"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "V2G_Service_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "对外部电网/后台服务发起异步交易"
+                      }
+                    ],
+                    "notes": "处理V2G会话和计费"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布电网状态和授权结果"
+                      }
+                    ],
+                    "notes": "输出V2G交互结果"
+                  }
+                ],
+                "notes": "服务层事务处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_GridInterface_CS",
+          "If_Charger_Control_CS",
+          "If_PowerDistribution_SR"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "If_BatteryState_SR",
+        "name": "BatteryState_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "广播，最新值策略；周期性发送（10ms~100ms）或事件触发；接收方以最新值覆盖为主，关键诊断有队列保存",
+        "data_category": "telemetry/state",
+        "connected_components": [
+          "BatterySystem",
+          "EnergyOptimizer",
+          "PredictiveController",
+          "PowerDistribution",
+          "MotorSystem"
+        ],
+        "performance_requirements": "周期10ms~100ms，端到端延迟<200ms，最新值优先",
+        "data_elements": [
+          "SOC_float32",
+          "Voltage_float32",
+          "Current_float32",
+          "Temp_array"
+        ],
+        "direct_paths": "BatterySystem -> EnergyOptimizer/PredictiveController/PowerDistribution (SR direct)"
+      },
+      {
+        "interface_id": "If_BatteryCommand_CS",
+        "name": "BatteryCommand_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server，同步优先用于关键限制（timeout 100ms），非关键可异步；调用时需确认执行结果",
+        "data_category": "command/control",
+        "connected_components": [
+          "EnergyOptimizer",
+          "BatterySystem",
+          "OnboardCharger"
+        ],
+        "performance_requirements": "同步命令响应<100ms；失败回滚策略与确认",
+        "data_elements": [
+          "ChargeEnable_bool",
+          "Target_Current_float32",
+          "Balance_Command_struct"
+        ],
+        "direct_paths": "EnergyOptimizer -> BatterySystem (CS synchronous)"
+      },
+      {
+        "interface_id": "If_MotorCommand_SR",
+        "name": "MotorCommand_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性/事件驱动发送最新值；高优先级循环10ms；使用最新值覆盖策略",
+        "data_category": "command/telemetry",
+        "connected_components": [
+          "EnergyOptimizer",
+          "MotorSystem"
+        ],
+        "performance_requirements": "周期<=10ms，端到端延迟<=50ms",
+        "data_elements": [
+          "Torque_Request_front_int16",
+          "Torque_Request_rear_int16",
+          "Regen_Level_int8"
+        ],
+        "direct_paths": "EnergyOptimizer -> MotorSystem (SR)"
+      },
+      {
+        "interface_id": "If_EngineCommand_CS",
+        "name": "EngineCommand_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server，同步调用发动机启动/停止与扭矩确认，timeout约100ms；非实时命令可延迟",
+        "data_category": "command",
+        "connected_components": [
+          "EnergyOptimizer",
+          "EngineSystem"
+        ],
+        "performance_requirements": "响应<100ms，需确认执行成功",
+        "data_elements": [
+          "Start_Command_bool",
+          "Torque_Request_float32",
+          "Engine_Mode_enum"
+        ],
+        "direct_paths": "EnergyOptimizer -> EngineSystem (CS)"
+      },
+      {
+        "interface_id": "If_DCDC_Control_CS",
+        "name": "DCDC_Control_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用以设定输出模式，频率低（事件或100ms），需确认与错误码回传",
+        "data_category": "control",
+        "connected_components": [
+          "PowerDistribution",
+          "DCDCConverter"
+        ],
+        "performance_requirements": "响应<200ms，支持超时重试",
+        "data_elements": [
+          "Set_OutputVoltage_float32",
+          "Enable_bool",
+          "Fault_Status_enum"
+        ],
+        "direct_paths": "PowerDistribution -> DCDCConverter (CS)"
+      },
+      {
+        "interface_id": "If_Charger_Control_CS",
+        "name": "Charger_Control_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "事务型Client-Server（同步/异步混合），V2G交易使用异步，授权查询同步，timeout<=200ms",
+        "data_category": "service/transaction",
+        "connected_components": [
+          "OnboardCharger",
+          "GridInterface",
+          "BatterySystem"
+        ],
+        "performance_requirements": "授权响应<=200ms，计量需可靠记录",
+        "data_elements": [
+          "Charge_Session_Start_struct",
+          "Charge_PowerLimit_float32",
+          "Metering_Data_struct"
+        ],
+        "direct_paths": "OnboardCharger <-> GridInterface (CS), OnboardCharger -> BatterySystem (CS)"
+      },
+      {
+        "interface_id": "If_Predictive_SR",
+        "name": "Predictive_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性（1s~5s）发送预测序列，采用最新值策略并附带置信度字段",
+        "data_category": "prediction",
+        "connected_components": [
+          "PredictiveController",
+          "EnergyOptimizer"
+        ],
+        "performance_requirements": "预测需在优化周期之前完成；端到端延迟<1s",
+        "data_elements": [
+          "Power_Prediction_array",
+          "Confidence_float32",
+          "Time_Window_ms"
+        ],
+        "direct_paths": "PredictiveController -> EnergyOptimizer (SR)"
+      },
+      {
+        "interface_id": "If_PowerDistribution_SR",
+        "name": "PowerDistribution_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性/事件驱动发送拓扑与总线测量，最新值主导；控制端使用Client-Server与PD交互",
+        "data_category": "telemetry/control",
+        "connected_components": [
+          "PowerDistribution",
+          "BatterySystem",
+          "DCDCConverter",
+          "EnergyOptimizer",
+          "GridInterface"
+        ],
+        "performance_requirements": "周期100ms以内，故障事件需立即广播",
+        "data_elements": [
+          "BusVoltage_float32",
+          "SwitchState_bitmask",
+          "BusCurrent_float32"
+        ],
+        "direct_paths": "PowerDistribution -> BatterySystem/DCDC/Optimizer (SR)"
+      },
+      {
+        "interface_id": "If_Optimizer_CS",
+        "name": "Optimizer_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "EnergyOptimizer作为Client调用底层组件的服务（同步），关键命令需确认（timeout 100ms），非关键使用异步或批处理",
+        "data_category": "command/service",
+        "connected_components": [
+          "EnergyOptimizer",
+          "BatterySystem",
+          "MotorSystem",
+          "EngineSystem",
+          "PowerDistribution"
+        ],
+        "performance_requirements": "同步确认路径<200ms，支持重试与回滚",
+        "data_elements": [
+          "Allocation_Command_struct",
+          "Constraint_List",
+          "Ack_Status_enum"
+        ],
+        "direct_paths": "EnergyOptimizer -> Execution components (CS)"
+      },
+      {
+        "interface_id": "If_GridInterface_CS",
+        "name": "GridInterface_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "对外网服务的客户端/服务端接口，支持同步查询与异步交易回调，事务超时<=200ms",
+        "data_category": "service/transaction",
+        "connected_components": [
+          "GridInterface",
+          "OnboardCharger",
+          "PowerDistribution"
+        ],
+        "performance_requirements": "授权/计费事务响应<=200ms，安全与认证必须满足",
+        "data_elements": [
+          "Grid_Availability_bool",
+          "Price_float32",
+          "V2G_Authorization_struct"
+        ],
+        "direct_paths": "OnboardCharger <-> GridInterface (CS)"
+      }
+    ],
+    "component_generation_order": [
+      "BatterySystem",
+      "EngineSystem",
+      "MotorSystem",
+      "DCDCConverter",
+      "OnboardCharger",
+      "PowerDistribution",
+      "GridInterface",
+      "PredictiveController",
+      "EnergyOptimizer"
+    ],
+    "connection_topology": {
+      "component_connections": "BatterySystem publishes BatteryState_SR consumed by EnergyOptimizer, PredictiveController, PowerDistribution, MotorSystem. EnergyOptimizer connects as client to BatteryCommand_CS, EngineCommand_CS and Optimizer_CS endpoints on MotorSystem/EngineSystem/PowerDistribution. PredictiveController publishes Predictive_SR consumed by EnergyOptimizer. OnboardCharger and GridInterface interact via Charger_Control_CS and GridInterface_CS. DCDCConverter and PowerDistribution interact via DCDC_Control_CS and PowerDistribution_SR. Components connect using Sender-Receiver for telemetry and Client-Server for commands/services.",
+      "data_flow_paths": "Telemetry: BatterySystem -> (BatteryState_SR) -> EnergyOptimizer/PredictiveController/MotorSystem/PowerDistribution. Predictions: PredictiveController -> (Predictive_SR) -> EnergyOptimizer. Control: EnergyOptimizer -> (BatteryCommand_CS/EngineCommand_CS/Optimizer_CS) -> BatterySystem/EngineSystem/MotorSystem/PowerDistribution. V2G: OnboardCharger <-> (Charger_Control_CS) <-> GridInterface. DCDC control: PowerDistribution -> (DCDC_Control_CS) -> DCDCConverter.",
+      "control_flow_paths": "Optimization loop: PredictiveController -> EnergyOptimizer (prediction event) -> EnergyOptimizer computes -> synchronous calls to BatterySystem/EngineSystem/DCDCConverter/PowerDistribution to apply commands. Charger V2G flow: User/Grid trigger -> OnboardCharger -> GridInterface (async transaction) -> OnboardCharger applies charging constraints -> BatterySystem enacted. Safety interrupts: BatterySystem/PowerDistribution can preempt control via fault events to stop charging/discharge."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰分层（感知/执行/优化/服务）和混合通信模式（Sender-Receiver用于状态广播，Client-Server用于关键命令/事务）以达到松耦合与可验证性。将安全关键路径（电池保护与事务确认）设计为同步确认与明确超时，便于ASIL-D的可追踪证明。预测与优化分离，使预测可独立扩展和替换。",
+      "tradeoff_analysis": "将优化器设为单一集中式组件简化全局最优性但增加单点复杂度；为降低实时风险，关键控制仍在执行层中以短周期环路完成；使用同步Client-Server确保关键命令确认但增加延迟，故只对必须路径使用；异步用于V2G以提高可伸缩性。",
+      "alternative_considerations": "可考虑将EnergyOptimizer拆分为本地快速策略与远程复杂求解服务，或将PredictiveController作为边缘服务分布式部署以减轻ECU负载。另一种方案是使用事件驱动总线替代部分Client-Server以降低耦合但会降低事务一致性。",
+      "risk_assessment": "风险包括同步调用超时导致功能降级、网络拥塞影响广播数据可用性、软件复杂性带来的ASIL-D认证难度。缓解措施：超时与回退策略、端到端优先级与队列管理、模块化测试与形式化验证针对ASIL-D路径。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "将系统划分为九个功能组件：BatterySystem负责电池状态估计、充放电控制与安全管理；EngineSystem负责增程发动机控制与扭矩管理；MotorSystem管理双电机扭矩分配与再生制动；DCDCConverter负责高压到低压转换与状态监控；OnboardCharger处理车载充电（AC/DC）与充电控制逻辑；PowerDistribution负责高压总线的开关分配与故障隔离；EnergyOptimizer基于导航/驾驶策略在车辆层面做能量分配优化决策；PredictiveController基于路况/导航/历史数据生成能耗/续航预测并提供约束；GridInterface实现V2G双向能量与电网交互。职责边界按控制层（Optimizer/Controller）、电源管理层（Battery/DCDC/PD/Charger/Grid）和执行层（Engine/Motor）划分，安全关键路径（SOC边界、过流、短路、绝缘故障）采用ASIL-D级别设计与接口约束。",
+      "data_flow_analysis": "测量数据（SOC、电流、电压、温度）由BatterySystem通过Sender-Receiver接口广播至EnergyOptimizer、PredictiveController和PowerDistribution；MotorSystem与EngineSystem通过Sender-Receiver发布驱动状态与可用功率；EnergyOptimizer向MotorSystem/EngineSystem/BatterySystem和PowerDistribution发送控制建议（Client-Server或Client-Server-like调用），包含目标功率分配和优先级；PredictiveController周期性输出预测窗口（路段负载、预计能耗）到EnergyOptimizer（Sender-Receiver）；GridInterface与OnboardCharger和PowerDistribution以Client-Server交互实现并网/放电授权与计量；DCDCConverter接收PowerDistribution命令与BatterySystem电压信息以调整转换比。数据类型分为：fast telemetry (float32 current/voltage, int16 temperature)；state (SOC float32, SOH float32)；commands (int16 torque_pct, float power_kW)；predictions (time_series arrays). 传输时序：关键控制环路（Battery State、Motor torque）周期10ms~100ms，优化与预测周期500ms~5s，V2G事务为事件驱动（响应≤200ms），接口按实时等级分类并使用最新值或队列策略视需求而定。",
+      "timing_requirements": "硬实时环路：电驱与电池监测采样周期10ms~50ms，控制下发不超过100ms；能量优化周期500ms~1s，可容忍延迟至2s；预测器以1s~5s窗口输出预测，允许较大计算延迟但需在优化周期之前完成；V2G交易响应目标≤200ms；诊断与日志异步后台处理。各组件应提供定时事件（TIMING-EVENT）并在ARXML中标注周期。",
+      "scalability_considerations": "模块化接口和清晰的客户端/服务器与发送/接收契约以支持未来扩展（额外电机、并联电池、远程优化服务）。采用松耦合的数据契约（标准化数据元素名称与单位）便于横向扩展。预测和优化组件设计为可横向扩展到分布式计算节点（RPC/Service Proxy替换）以满足大规模车辆车队部署。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_battery_system",
+        "name": "BatterySystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "电池包状态估计、充放电控制、热管理与安全保护（ASIL-D关键路径）",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "4"
+        },
+        "behavioral_characteristics": "周期性采样电压、电流、温度（10ms-100ms），运行SOC/SOH估计算法，执行电流限制与均衡，响应来自EnergyOptimizer和GridInterface的充放电命令，状态机管理正常/限制/故障三态，遇安全越限触发故障隔离和上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供SOC/Voltage/Temp发送端口；需要命令输入端口（充放电、均衡请求）；诊断与配置参数端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Battery",
+                "trigger": "startup"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Battery_10ms",
+                "trigger": "periodic_10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_BMS_Status",
+                "trigger": "on_CAN_receive"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Measure_Update",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取电压/电流/温度传感器端口"
+                      }
+                    ],
+                    "notes": "周期读取硬件传感器"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送估计的SOC/SOH到总线上"
+                      }
+                    ],
+                    "notes": "广播电池状态"
+                  }
+                ],
+                "notes": "执行测量与状态估计"
+              },
+              {
+                "name": "Control_Executor",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用均衡器或硬件控制操作"
+                      }
+                    ],
+                    "notes": "在接收到充放电命令时调用底层驱动"
+                  }
+                ],
+                "notes": "执行充放电与安全限制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_BatteryState_SR",
+          "If_BatteryCommand_CS",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_engine_system",
+        "name": "EngineSystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "增程发动机点火/喷油/扭矩管理与整合故障管理",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "接收扭矩请求、扭矩上线管理与发动机启动命令（事件或同步调用），维护发动机状态机（停机/预热/运行/限载），周期性诊断与温度管理，执行低延迟控制（10ms~100ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供发动机状态输出；需要扭矩/启停命令输入"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Engine_Control_20ms",
+                "trigger": "periodic_20ms"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Start_Request",
+                "trigger": "from_EnergyOptimizer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Engine_ControlLoop",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收扭矩请求与约束"
+                      }
+                    ],
+                    "notes": "处理上位扭矩请求"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布发动机状态和可用功率"
+                      }
+                    ],
+                    "notes": "输出发动机执行结果"
+                  }
+                ],
+                "notes": "短周期控制循环"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_EngineCommand_CS",
+          "If_Optimizer_CS",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_motor_system",
+        "name": "MotorSystem",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "双电机扭矩分配、再生控制与驱动状态监控",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "3"
+        },
+        "behavioral_characteristics": "接受EnergyOptimizer的功率/扭矩分配和再生策略，执行电机控制闭环（10ms），管理温度与故障切换，支持各电机单独命令与同步调用以满足动态性能。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "前后电机独立命令端口；电机状态与测量广播端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Motor_10ms",
+                "trigger": "periodic_10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Torque_Request",
+                "trigger": "on_receive_from_Optimizer"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Motor_Control",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收扭矩/再生命令"
+                      }
+                    ],
+                    "notes": "接收并转换为电机驱动命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布电机速度/电流/故障"
+                      }
+                    ],
+                    "notes": "输出执行状态"
+                  }
+                ],
+                "notes": "电机控制与监测"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_MotorCommand_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_dcdc_converter",
+        "name": "DCDCConverter",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "高压到低压转换控制、状态监测与保护",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "根据PowerDistribution或BatterySystem指令调节输出电压/电流，监测热与效率，响应快速保护（过流、短路），周期性汇报状态（100ms）并支持同步驱动调用以改变模式。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供状态上报接口；需要控制端口用于设定输出/模式"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "PD_Control_Command",
+                "trigger": "on_receive"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "DCDC_100ms",
+                "trigger": "periodic_100ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DCDC_Control",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "与底层驱动同步交互以设置转换参数"
+                      }
+                    ],
+                    "notes": "执行驱动级命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "上报DCDC状态"
+                      }
+                    ],
+                    "notes": "发布状态到PD与Battery"
+                  }
+                ],
+                "notes": "控制与状态上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_PowerDistribution_SR",
+          "If_DCDC_Control_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_onboard_charger",
+        "name": "OnboardCharger",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "车载充电管理（AC/DC）、充电会话管理与V2G交互适配",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "事件驱动充电会话管理，支持AC和DC模式，基于GridInterface与BatterySystem的约束做功率限制，充电流程具状态机和安全隔离，操作为事务式Client-Server与Grid交互，性能要求实时性中等（响应≤200ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "充电命令输入端口、会话状态上报端口、与Grid的服务接口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Start_Charge_Event",
+                "trigger": "user_or_grid_request"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Charger_500ms",
+                "trigger": "periodic_500ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Charge_Session_Manager",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步与GridInterface发起V2G/计费交易"
+                      }
+                    ],
+                    "notes": "管理V2G交互与会话"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "上报充电状态与计量"
+                      }
+                    ],
+                    "notes": "会话和计量广播"
+                  }
+                ],
+                "notes": "充电流程与V2G事务处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_Charger_Control_CS",
+          "If_GridInterface_CS",
+          "If_BatteryCommand_CS"
+        ]
+      },
+      {
+        "component_id": "cmp_power_distribution",
+        "name": "PowerDistribution",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "高压总线开关、负载分配、故障隔离与拓扑管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "4"
+        },
+        "behavioral_characteristics": "维护高压拓扑状态，接收EnergyOptimizer/Operator命令进行分配，快速断路与再连接以保护系统，周期性广播拓扑与总线电量信息，支持命令优先级与仲裁逻辑。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "提供拓扑状态输出；接受分配与开关命令端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Switch_Operation",
+                "trigger": "on_command"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PD_100ms",
+                "trigger": "periodic_100ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Topology_Manager",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收优化器分配指令"
+                      }
+                    ],
+                    "notes": "接收分配命令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布拓扑与总线状态"
+                      }
+                    ],
+                    "notes": "广播高压拓扑与测量"
+                  }
+                ],
+                "notes": "执行分配与故障隔离"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_PowerDistribution_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_energy_optimizer",
+        "name": "EnergyOptimizer",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于导航与实时状态对整车能量流进行优化决策（含ASIL-D决策路径）",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "5",
+          "output_ports": "5"
+        },
+        "behavioral_characteristics": "周期性（500ms~1s）收集Battery/Motor/Engine/PD的状态与PredictiveController的预测，运行优化求解（多目标：能耗、排放、续航），输出功率分配策略与约束，支持策略优先级、再入与失败降级策略，作为系统级决策器与安全策略交互。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "需要多个输入端口用于接收状态与预测，输出端口用于下发控制策略"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Optimizer_500ms",
+                "trigger": "periodic_500ms"
+              },
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Prediction_Updated",
+                "trigger": "on_PredictiveController_update"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Optimization_Task",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收SOC、motor/engine可用功率、预测窗口"
+                      }
+                    ],
+                    "notes": "接收所有必要输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用下游执行组件以确认命令可执行性"
+                      }
+                    ],
+                    "notes": "在发出强控制命令前做同步确认"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "下发分配策略至Motor/Engine/Battery/PD"
+                      }
+                    ],
+                    "notes": "输出优化结果"
+                  }
+                ],
+                "notes": "执行优化算法并下发结果"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_BatteryState_SR",
+          "If_MotorCommand_SR",
+          "If_EngineCommand_CS",
+          "If_Predictive_SR",
+          "If_PowerDistribution_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_predictive_controller",
+        "name": "PredictiveController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于导航/历史/车辆状态生成短期负载与能耗预测，为Optimizer提供约束与前瞻信息",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "以1s~5s窗口周期生成预测（可变周期1s~5s），使用路况与驾驶风格模型，提供置信度与约束，若数据不足提供退化模式并标注可信度，输出为时间序列与统计特征。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收导航与车辆实时状态，输出预测时间序列"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Predictive_1s",
+                "trigger": "periodic_1s"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Model_Update",
+                "trigger": "background_training"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Prediction_Generator",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航与车辆速度/坡度等输入"
+                      }
+                    ],
+                    "notes": "收集输入用于预测"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布预测序列与置信度"
+                      }
+                    ],
+                    "notes": "输出预测结果"
+                  }
+                ],
+                "notes": "周期性生成并发布预测"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_Predictive_SR",
+          "If_Optimizer_CS",
+          "If_BatteryState_SR"
+        ]
+      },
+      {
+        "component_id": "cmp_grid_interface",
+        "name": "GridInterface",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "实现V2G交互、计费与并网授权服务，向OnboardCharger和EnergyOptimizer提供电网状态与交易结果",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "支持异步事务（授权、计费确认）和同步查询（电价、可用功率），响应延迟目标≤200ms，对于关键授权采用事务确认并回滚策略，具备故障重试与安全认证流程。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "提供V2G服务端API（Client-Server），广播电网状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "V2G_Transaction_Return",
+                "trigger": "on_async_response"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Grid_Status_Update",
+                "trigger": "on_grid_message"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "V2G_Service_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "对外部电网/后台服务发起异步交易"
+                      }
+                    ],
+                    "notes": "处理V2G会话和计费"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布电网状态和授权结果"
+                      }
+                    ],
+                    "notes": "输出V2G交互结果"
+                  }
+                ],
+                "notes": "服务层事务处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "If_GridInterface_CS",
+          "If_Charger_Control_CS",
+          "If_PowerDistribution_SR"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "If_BatteryState_SR",
+        "name": "BatteryState_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "广播，最新值策略；周期性发送（10ms~100ms）或事件触发；接收方以最新值覆盖为主，关键诊断有队列保存",
+        "data_category": "telemetry/state",
+        "connected_components": [
+          "BatterySystem",
+          "EnergyOptimizer",
+          "PredictiveController",
+          "PowerDistribution",
+          "MotorSystem"
+        ],
+        "performance_requirements": "周期10ms~100ms，端到端延迟<200ms，最新值优先",
+        "data_elements": [
+          "SOC_float32",
+          "Voltage_float32",
+          "Current_float32",
+          "Temp_array"
+        ],
+        "direct_paths": "BatterySystem -> EnergyOptimizer/PredictiveController/PowerDistribution (SR direct)"
+      },
+      {
+        "interface_id": "If_BatteryCommand_CS",
+        "name": "BatteryCommand_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server，同步优先用于关键限制（timeout 100ms），非关键可异步；调用时需确认执行结果",
+        "data_category": "command/control",
+        "connected_components": [
+          "EnergyOptimizer",
+          "BatterySystem",
+          "OnboardCharger"
+        ],
+        "performance_requirements": "同步命令响应<100ms；失败回滚策略与确认",
+        "data_elements": [
+          "ChargeEnable_bool",
+          "Target_Current_float32",
+          "Balance_Command_struct"
+        ],
+        "direct_paths": "EnergyOptimizer -> BatterySystem (CS synchronous)"
+      },
+      {
+        "interface_id": "If_MotorCommand_SR",
+        "name": "MotorCommand_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性/事件驱动发送最新值；高优先级循环10ms；使用最新值覆盖策略",
+        "data_category": "command/telemetry",
+        "connected_components": [
+          "EnergyOptimizer",
+          "MotorSystem"
+        ],
+        "performance_requirements": "周期<=10ms，端到端延迟<=50ms",
+        "data_elements": [
+          "Torque_Request_front_int16",
+          "Torque_Request_rear_int16",
+          "Regen_Level_int8"
+        ],
+        "direct_paths": "EnergyOptimizer -> MotorSystem (SR)"
+      },
+      {
+        "interface_id": "If_EngineCommand_CS",
+        "name": "EngineCommand_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server，同步调用发动机启动/停止与扭矩确认，timeout约100ms；非实时命令可延迟",
+        "data_category": "command",
+        "connected_components": [
+          "EnergyOptimizer",
+          "EngineSystem"
+        ],
+        "performance_requirements": "响应<100ms，需确认执行成功",
+        "data_elements": [
+          "Start_Command_bool",
+          "Torque_Request_float32",
+          "Engine_Mode_enum"
+        ],
+        "direct_paths": "EnergyOptimizer -> EngineSystem (CS)"
+      },
+      {
+        "interface_id": "If_DCDC_Control_CS",
+        "name": "DCDC_Control_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用以设定输出模式，频率低（事件或100ms），需确认与错误码回传",
+        "data_category": "control",
+        "connected_components": [
+          "PowerDistribution",
+          "DCDCConverter"
+        ],
+        "performance_requirements": "响应<200ms，支持超时重试",
+        "data_elements": [
+          "Set_OutputVoltage_float32",
+          "Enable_bool",
+          "Fault_Status_enum"
+        ],
+        "direct_paths": "PowerDistribution -> DCDCConverter (CS)"
+      },
+      {
+        "interface_id": "If_Charger_Control_CS",
+        "name": "Charger_Control_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "事务型Client-Server（同步/异步混合），V2G交易使用异步，授权查询同步，timeout<=200ms",
+        "data_category": "service/transaction",
+        "connected_components": [
+          "OnboardCharger",
+          "GridInterface",
+          "BatterySystem"
+        ],
+        "performance_requirements": "授权响应<=200ms，计量需可靠记录",
+        "data_elements": [
+          "Charge_Session_Start_struct",
+          "Charge_PowerLimit_float32",
+          "Metering_Data_struct"
+        ],
+        "direct_paths": "OnboardCharger <-> GridInterface (CS), OnboardCharger -> BatterySystem (CS)"
+      },
+      {
+        "interface_id": "If_Predictive_SR",
+        "name": "Predictive_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性（1s~5s）发送预测序列，采用最新值策略并附带置信度字段",
+        "data_category": "prediction",
+        "connected_components": [
+          "PredictiveController",
+          "EnergyOptimizer"
+        ],
+        "performance_requirements": "预测需在优化周期之前完成；端到端延迟<1s",
+        "data_elements": [
+          "Power_Prediction_array",
+          "Confidence_float32",
+          "Time_Window_ms"
+        ],
+        "direct_paths": "PredictiveController -> EnergyOptimizer (SR)"
+      },
+      {
+        "interface_id": "If_PowerDistribution_SR",
+        "name": "PowerDistribution_SR",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性/事件驱动发送拓扑与总线测量，最新值主导；控制端使用Client-Server与PD交互",
+        "data_category": "telemetry/control",
+        "connected_components": [
+          "PowerDistribution",
+          "BatterySystem",
+          "DCDCConverter",
+          "EnergyOptimizer",
+          "GridInterface"
+        ],
+        "performance_requirements": "周期100ms以内，故障事件需立即广播",
+        "data_elements": [
+          "BusVoltage_float32",
+          "SwitchState_bitmask",
+          "BusCurrent_float32"
+        ],
+        "direct_paths": "PowerDistribution -> BatterySystem/DCDC/Optimizer (SR)"
+      },
+      {
+        "interface_id": "If_Optimizer_CS",
+        "name": "Optimizer_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "EnergyOptimizer作为Client调用底层组件的服务（同步），关键命令需确认（timeout 100ms），非关键使用异步或批处理",
+        "data_category": "command/service",
+        "connected_components": [
+          "EnergyOptimizer",
+          "BatterySystem",
+          "MotorSystem",
+          "EngineSystem",
+          "PowerDistribution"
+        ],
+        "performance_requirements": "同步确认路径<200ms，支持重试与回滚",
+        "data_elements": [
+          "Allocation_Command_struct",
+          "Constraint_List",
+          "Ack_Status_enum"
+        ],
+        "direct_paths": "EnergyOptimizer -> Execution components (CS)"
+      },
+      {
+        "interface_id": "If_GridInterface_CS",
+        "name": "GridInterface_CS",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "对外网服务的客户端/服务端接口，支持同步查询与异步交易回调，事务超时<=200ms",
+        "data_category": "service/transaction",
+        "connected_components": [
+          "GridInterface",
+          "OnboardCharger",
+          "PowerDistribution"
+        ],
+        "performance_requirements": "授权/计费事务响应<=200ms，安全与认证必须满足",
+        "data_elements": [
+          "Grid_Availability_bool",
+          "Price_float32",
+          "V2G_Authorization_struct"
+        ],
+        "direct_paths": "OnboardCharger <-> GridInterface (CS)"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "BatterySystem publishes BatteryState_SR consumed by EnergyOptimizer, PredictiveController, PowerDistribution, MotorSystem. EnergyOptimizer connects as client to BatteryCommand_CS, EngineCommand_CS and Optimizer_CS endpoints on MotorSystem/EngineSystem/PowerDistribution. PredictiveController publishes Predictive_SR consumed by EnergyOptimizer. OnboardCharger and GridInterface interact via Charger_Control_CS and GridInterface_CS. DCDCConverter and PowerDistribution interact via DCDC_Control_CS and PowerDistribution_SR. Components connect using Sender-Receiver for telemetry and Client-Server for commands/services.",
+      "data_flow_paths": "Telemetry: BatterySystem -> (BatteryState_SR) -> EnergyOptimizer/PredictiveController/MotorSystem/PowerDistribution. Predictions: PredictiveController -> (Predictive_SR) -> EnergyOptimizer. Control: EnergyOptimizer -> (BatteryCommand_CS/EngineCommand_CS/Optimizer_CS) -> BatterySystem/EngineSystem/MotorSystem/PowerDistribution. V2G: OnboardCharger <-> (Charger_Control_CS) <-> GridInterface. DCDC control: PowerDistribution -> (DCDC_Control_CS) -> DCDCConverter.",
+      "control_flow_paths": "Optimization loop: PredictiveController -> EnergyOptimizer (prediction event) -> EnergyOptimizer computes -> synchronous calls to BatterySystem/EngineSystem/DCDCConverter/PowerDistribution to apply commands. Charger V2G flow: User/Grid trigger -> OnboardCharger -> GridInterface (async transaction) -> OnboardCharger applies charging constraints -> BatterySystem enacted. Safety interrupts: BatterySystem/PowerDistribution can preempt control via fault events to stop charging/discharge."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰分层（感知/执行/优化/服务）和混合通信模式（Sender-Receiver用于状态广播，Client-Server用于关键命令/事务）以达到松耦合与可验证性。将安全关键路径（电池保护与事务确认）设计为同步确认与明确超时，便于ASIL-D的可追踪证明。预测与优化分离，使预测可独立扩展和替换。",
+      "tradeoff_analysis": "将优化器设为单一集中式组件简化全局最优性但增加单点复杂度；为降低实时风险，关键控制仍在执行层中以短周期环路完成；使用同步Client-Server确保关键命令确认但增加延迟，故只对必须路径使用；异步用于V2G以提高可伸缩性。",
+      "alternative_considerations": "可考虑将EnergyOptimizer拆分为本地快速策略与远程复杂求解服务，或将PredictiveController作为边缘服务分布式部署以减轻ECU负载。另一种方案是使用事件驱动总线替代部分Client-Server以降低耦合但会降低事务一致性。",
+      "risk_assessment": "风险包括同步调用超时导致功能降级、网络拥塞影响广播数据可用性、软件复杂性带来的ASIL-D认证难度。缓解措施：超时与回退策略、端到端优先级与队列管理、模块化测试与形式化验证针对ASIL-D路径。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7664,
+    "output_tokens": 11292,
+    "total_tokens": 18956,
+    "component_count": 9,
+    "interface_count": 10,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

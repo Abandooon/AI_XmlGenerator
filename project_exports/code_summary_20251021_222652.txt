@@ -1,0 +1,2879 @@
+================================================================================
+代码文件摘要
+================================================================================
+
+📄 completeness_checker.py
+------------------------------------------------------------
+📝 文档:
+  """
+  AUTOSAR ARXML 完整性检查脚本
+  检查生成文件的完整性：文件存在性、大小、结构完整性
+  """
+  """检查单个文件的完整性"""
+  ... (还有 4 行)
+
+🏗️ 类:
+  class CompletenessChecker:
+
+⚙️ 函数:
+  def __init__(self, base_dir: str = "generated_arxml"):
+  def check_file_structure(self, filepath: Path) -> Dict:
+  def check_xml_wellformed(self, filepath: Path) -> Tuple[bool, str]:
+  def analyze_category(self, category: str) -> Dict:
+  def run_full_check(self) -> Dict:
+  def print_report(self, results: Dict):
+  def main():
+
+📊 统计: 241 行, 1 个类, 7 个函数
+
+
+📄 cross_reference_checker.py
+------------------------------------------------------------
+📝 文档:
+  """
+  AUTOSAR ARXML 跨文件引用完整性检查脚本
+  检查所有REF引用的目标是否存在
+  """
+  """解析ARXML文件，返回根节点"""
+  ... (还有 10 行)
+
+🏗️ 类:
+  class CrossReferenceChecker:
+
+⚙️ 函数:
+  def __init__(self, base_dir: str = "generated_arxml"):
+  def parse_arxml(self, filepath: Path) -> Tuple[etree._Element, bool]:
+  def extract_definitions(self, root: etree._Element, filepath: Path) -> Dict[str, Dict]:
+  def extract_references(self, root: etree._Element, filepath: Path) -> List[Dict]:
+  def _clean_tag(self, tag) -> str:
+  def _get_xpath(self, elem: etree._Element) -> str:
+  def _find_context_name(self, elem: etree._Element) -> str:
+  def build_global_symbol_table(self, category: str) -> Dict[str, Dict]:
+  def check_references(self, category: str) -> Dict:
+  def _group_by_file(self, references: List[Dict]) -> Dict[str, int]:
+  ... (还有 3 个函数)
+
+📊 统计: 337 行, 1 个类, 13 个函数
+
+
+📄 experimental_data\data_analysis\analysis_llm.py
+------------------------------------------------------------
+📝 文档:
+  """
+  UMM-ICM-PCG 实验指标计算脚本
+  用于计算 No Guard 和 RAG 两种方案的性能指标
+  """
+
+⚙️ 函数:
+  def main():
+
+📊 统计: 164 行, 0 个类, 1 个函数
+
+
+📄 experimental_data\data_analysis\analysis_vllm.py
+------------------------------------------------------------
+📝 文档:
+  """加载单个 vLLM 统计 JSON"""
+  """根据 prompt 序号划分组别"""
+  """把一个 vLLM JSON 转成扁平 DataFrame，并打上 Method 列"""
+  """生成指定格式的汇总表"""
+
+⚙️ 函数:
+  def load_vllm_json(path: str) -> dict:
+  def classify_group(prompt_idx: int) -> str:
+  def json_to_df(jdata: dict, method_name: str) -> pd.DataFrame:
+  def summarize(df: pd.DataFrame) -> pd.DataFrame:
+  def main():
+
+📊 统计: 106 行, 0 个类, 5 个函数
+
+
+📄 experimental_data\llm\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 experimental_data\llm\analysis_llm.py
+------------------------------------------------------------
+📝 文档:
+  """
+  UMM-ICM-PCG 实验指标计算脚本
+  用于计算 No Guard 和 RAG 两种方案的性能指标
+  """
+
+⚙️ 函数:
+  def main():
+
+📊 统计: 164 行, 0 个类, 1 个函数
+
+
+📄 experimental_data\llm\full_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 experimental_data\llm\full_promote_No Guard\txt_to_arxml.py
+------------------------------------------------------------
+📝 文档:
+  """
+  遍历指定目录下的所有txt文件，去除markdown代码块标记，转换为arxml文件
+  
+  Args:
+  input_dir: 输入目录，默认为当前目录
+  ... (还有 1 行)
+
+⚙️ 函数:
+  def convert_txt_to_arxml(input_dir="."):
+
+📊 统计: 59 行, 0 个类, 1 个函数
+
+
+📄 experimental_data\llm\mid_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 experimental_data\llm\min_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 experimental_data\vllm\gbnf\analysis_vllm_gbnf.py
+------------------------------------------------------------
+📝 文档:
+  """加载vLLM GBNF数据"""
+  """将JSON数据转换为与CSV格式一致的DataFrame"""
+  """计算vLLM GBNF的性能指标"""
+  """对比三种方法的性能"""
+  """为对比计算统一格式的指标"""
+  ... (还有 2 行)
+
+⚙️ 函数:
+  def load_vllm_data(json_file='generation_stats_yaml_files.json'):
+  def json_to_dataframe(json_data):
+  def get_group(prompt_idx):
+  def calculate_vllm_metrics(df):
+  def compare_all_methods(df_no_guard, df_rag, df_vllm):
+  def calculate_metrics_for_comparison(df, method_name):
+  def main_analysis():
+  def prepare_visualization_data(all_metrics):
+
+📊 统计: 276 行, 0 个类, 8 个函数
+
+
+📄 experimental_data\vllm\gbnf\wrap_arxml\wrap_arxml_files.py
+------------------------------------------------------------
+📝 文档:
+  """
+  处理arxml文件：1.补全未闭合标签 2.包装 3.格式化
+  
+  Args:
+  input_dir: 输入目录，默认为当前目录
+  ... (还有 17 行)
+
+⚙️ 函数:
+  def process_arxml_files(input_dir="."):
+  def wrap_with_autosar_simple(content):
+  def format_xml_simple(root):
+  def complete_unclosed_tags(content):
+  def indent_content(content, spaces):
+  def indent_xml(elem, level=0):
+
+📊 统计: 185 行, 0 个类, 6 个函数
+
+
+📄 experimental_data\vllm\gbnf+rag\wrap_arxml\wrap_arxml_files.py
+------------------------------------------------------------
+📝 文档:
+  """
+  处理arxml文件：1.补全未闭合标签 2.包装 3.格式化
+  
+  Args:
+  input_dir: 输入目录，默认为当前目录
+  ... (还有 17 行)
+
+⚙️ 函数:
+  def process_arxml_files(input_dir="."):
+  def wrap_with_autosar_simple(content):
+  def format_xml_simple(root):
+  def complete_unclosed_tags(content):
+  def indent_content(content, spaces):
+  def indent_xml(elem, level=0):
+
+📊 统计: 185 行, 0 个类, 6 个函数
+
+
+📄 experimental_data\vllm_70b\wrap_xml\wrap_arxml_files.py
+------------------------------------------------------------
+📝 文档:
+  """
+  处理arxml文件：1.补全未闭合标签 2.包装 3.格式化
+  
+  Args:
+  input_dir: 输入目录，默认为当前目录
+  ... (还有 17 行)
+
+⚙️ 函数:
+  def process_arxml_files(input_dir="."):
+  def wrap_with_autosar_simple(content):
+  def format_xml_simple(root):
+  def complete_unclosed_tags(content):
+  def indent_content(content, spaces):
+  def indent_xml(elem, level=0):
+
+📊 统计: 185 行, 0 个类, 6 个函数
+
+
+📄 export_project_structure.py
+------------------------------------------------------------
+📝 文档:
+  """
+  自动导出PyCharm项目结构
+  """
+  """检查是否应该忽略某个路径"""
+  """获取项目结构"""
+  ... (还有 8 行)
+
+⚙️ 函数:
+  def should_ignore(path: Path, ignore_patterns: list) -> bool:
+  def get_project_structure(root_path: Path, ignore_patterns: list = None) -> list:
+  def add_directory(current_path: Path, prefix: str = ""):
+  def export_detailed_structure(root_path: Path) -> str:
+  def export_code_summary(root_path: Path) -> str:
+  def main():
+
+📊 统计: 296 行, 0 个类, 6 个函数
+
+
+📄 llm_rag_generator_auto.py
+------------------------------------------------------------
+📝 文档:
+  """llm_rag_generator.py - LLM RAG AUTOSAR组件生成器主程序
+  
+  基于对话式逐层深入设计系统的AUTOSAR组件生成器
+  支持两轮对话：Round1架构设计 + Round2详细生成
+  支持多组件生成，动态Schema生成，支持文档上传
+  ... (还有 61 行)
+
+🏗️ 类:
+  class LLMRAGGenerator:
+
+⚙️ 函数:
+  def __init__(self):
+  def run_batch_experiment(self):
+  def _process_single_requirement(
+  def _build_prompt_from_requirement(self, requirement: Dict[str, Any]) -> str:
+  def _move_generated_files(
+  def _save_metrics(self, metrics: Dict[str, Any], complexity: str, index: int):
+  def _save_batch_summary(self, all_results: List[Dict[str, Any]]):
+  def analyze_metrics(self):
+  def _calculate_statistics(self, all_metrics: List[Dict[str, Any]]):
+  def run_interactive_session(self):
+  ... (还有 14 个函数)
+
+📊 统计: 1114 行, 1 个类, 24 个函数
+
+
+📄 llm_rag_generator_human.py
+------------------------------------------------------------
+📝 文档:
+  """llm_rag_generator.py - LLM RAG AUTOSAR组件生成器主程序
+  
+  基于对话式逐层深入设计系统的AUTOSAR组件生成器
+  支持两轮对话：Round1架构设计 + Round2详细生成
+  支持多组件生成，动态Schema生成，支持文档上传
+  ... (还有 88 行)
+
+🏗️ 类:
+  class LLMRAGGenerator:
+
+⚙️ 函数:
+  def __init__(self):
+  def run_interactive_session(self):
+  def _handle_document_upload(self):
+  def _clear_documents(self):
+  def _start_new_conversation(self, user_input: str):
+  def _execute_round1(self):
+  def _handle_user_feedback_loop(self):
+  def _force_confirm_design(self):
+  def _execute_round2(self):
+  def _show_arxml_summary(self, arxml_data):
+  ... (还有 9 个函数)
+
+📊 统计: 854 行, 1 个类, 19 个函数
+
+
+📄 Private_International_Law\pil_experiment.py
+------------------------------------------------------------
+📝 文档:
+  """
+  Private International Law (Brussels I bis) — API-only A/B 实验（路由+判别归一+修复写回）
+  """
+  """根据证据先选的条文集合，按优先序计算应当的类别。"""
+  EVIDENCE_PROMPT = """你是法律研究助理。请在候选条文内选择本案“可能相关”的条例条号，按 JSON 对象输出：
+  ... (还有 18 行)
+
+⚙️ 函数:
+  def expected_forum_from_evidence(evidence: List[str], rules: Dict[str, Any]) -> str:
+  def token_to_cat(tok: str) -> str:
+  def provision_category(p: str) -> str:
+  def expected_category_from_evidence(evidence: list, priority_order: list) -> str:
+  def metric_promote_hit(evidence: list, pred_forum_type: str, rules: dict) -> int:
+  def load_json(p: Path) -> Any:
+  def load_jsonl(p: Path) -> List[Dict[str, Any]]:
+  def ensure_dir(p: Path):
+  def norm(s: str) -> str:
+  def extract_provisions_from_text(text: str) -> List[str]:
+  ... (还有 20 个函数)
+
+📊 统计: 570 行, 0 个类, 30 个函数
+
+
+📄 run_validation.py
+------------------------------------------------------------
+📝 文档:
+  """
+  AUTOSAR XML验证系统 - 一键运行脚本 (修复版)
+  支持main_config.yaml配置文件
+  """
+  """检查项目结构完整性"""
+  ... (还有 149 行)
+
+⚙️ 函数:
+  def check_project_structure():
+  def check_dependencies():
+  def create_default_validation_config():
+  def check_config_files():
+  def create_missing_validation_files():
+  def check_validation_files():
+  def create_sample_xml():
+  def run_validation_system():
+  def validate_constraint_files():
+  def main():
+
+📊 统计: 570 行, 0 个类, 10 个函数
+
+
+📄 src\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\client\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\client\cloud_client.py
+------------------------------------------------------------
+📝 文档:
+  """简化的云端服务客户端"""
+  """发送生成请求"""
+
+🏗️ 类:
+  class CloudServiceClient:
+
+⚙️ 函数:
+  def __init__(self, config: Dict[str, Any]):
+  async def __aenter__(self):
+  async def __aexit__(self, exc_type, exc_val, exc_tb):
+  async def connect(self):
+  async def close(self):
+  async def enhanced_generate(self, request: EnhancedGenerationRequest) -> CloudGenerationResponse:
+
+📊 统计: 76 行, 1 个类, 6 个函数
+
+
+📄 src\client\constraint_models.py
+------------------------------------------------------------
+📝 文档:
+  """约束信息模型 - 支持引用和传统模式"""
+  """增强生成请求模型"""
+  """约束应用信息模型 - 与云端服务保持一致"""
+  """云端生成响应模型 - 🔥 修复字段类型"""
+  """提取传统格式的constraints_applied信息，用于向后兼容"""
+  ... (还有 8 行)
+
+🏗️ 类:
+  class ConstraintInfo(BaseModel):
+  class EnhancedGenerationRequest(BaseModel):
+  class ConstraintsAppliedInfo(BaseModel):
+  class CloudGenerationResponse(BaseModel):
+  class ConstraintPreparer:
+
+⚙️ 函数:
+  def extract_legacy_constraints_applied(constraints_applied: ConstraintsAppliedInfo) -> Dict[str, Any]:
+  def __init__(self, artifacts_dir: str):
+  def _check_local_fsm(self) -> bool:
+  def _check_local_gbnf(self) -> bool:
+  def prepare_constraint_info(self, constraint_level: str = "mixed",
+  def _load_gbnf_grammar(self) -> str:
+  def _load_allowed_tokens(self) -> List[str]:
+  def _get_default_autosar_tokens(self) -> List[str]:
+  def get_constraint_summary(self) -> Dict[str, Any]:
+
+📊 统计: 288 行, 5 个类, 9 个函数
+
+
+📄 src\client\constraint_preparer.py
+------------------------------------------------------------
+📝 文档:
+  """本地约束准备器 - 准备约束信息发送到云端"""
+  """加载GBNF语法文件"""
+  """加载FSM数据"""
+  """加载 autosar_allowed_tokens.py 里的 ALLOWED_TOKENS 列表"""
+  """获取默认AUTOSAR tokens"""
+  ... (还有 2 行)
+
+🏗️ 类:
+  class ConstraintPreparer:
+
+⚙️ 函数:
+  def __init__(self, artifacts_dir: str):
+  def _load_gbnf_grammar(self) -> str:
+  def _load_fsm_data(self) -> Dict:
+  def _load_allowed_tokens(self) -> List[str]:
+  def _get_default_autosar_tokens(self) -> List[str]:
+  def prepare_constraint_info(self, constraint_level: str = "mixed",
+  def get_constraint_summary(self) -> Dict[str, Any]:
+
+📊 统计: 183 行, 1 个类, 7 个函数
+
+
+📄 src\client\constraint_sender.py
+------------------------------------------------------------
+📝 文档:
+  """约束信息发送器 - 支持配置化提示词"""
+  """构建增强的生成请求 - 传递提示词配置"""
+  """🔥 修复：根据配置构建提示词 - 处理列表和字符串模板"""
+  """构建上下文字符串"""
+  """默认提示词"""
+  ... (还有 18 行)
+
+🏗️ 类:
+  class ConstraintSender:
+
+⚙️ 函数:
+  def __init__(self, artifacts_dir: str, config: Dict = None):
+  def build_enhanced_request(
+  def _build_prompt_from_config(
+  def _build_context_string(self, autosar_context: Dict) -> str:
+  def _get_default_prompt(self, task: str, autosar_context: Dict) -> str:
+  def _build_constraint_info_from_config(self, constraint_level: str, xml_context: List[str]) -> ConstraintInfo:
+  def _merge_generation_params(self, generation_params: Dict) -> Dict:
+  def _extract_current_state(self, xml_context: List[str]) -> str:
+  def get_constraint_summary(self) -> Dict:
+
+📊 统计: 283 行, 1 个类, 9 个函数
+
+
+📄 src\client\data_models.py
+------------------------------------------------------------
+📝 文档:
+  """生成响应模型"""
+  """验证结果模型"""
+  """客户端完整响应模型"""
+
+🏗️ 类:
+  class GenerationResponse(BaseModel):
+  class ValidationResult(BaseModel):
+  class ClientResponse(BaseModel):
+
+📊 统计: 27 行, 3 个类, 0 个函数
+
+
+📄 src\client\full_client.py
+------------------------------------------------------------
+📝 文档:
+  """简化的AUTOSAR客户端 - 🔥 修复模型兼容性"""
+  """简化的生成方法 - 🔥 修复模型处理"""
+  """🔥 修复：转换云端响应 - 正确处理seed_results"""
+  """创建简单验证结果"""
+  """简化的云端服务客户端 - 🔥 修复响应处理"""
+  ... (还有 24 行)
+
+🏗️ 类:
+  class FullAutosarClient:
+  class SimpleValidation:
+  class CloudServiceClient:
+  class ConstraintSender:
+
+⚙️ 函数:
+  def __init__(self, config: Dict):
+  async def generate_and_validate_full(
+  def _convert_cloud_response(self, cloud_response: CloudGenerationResponse):
+  def _create_simple_validation(self, is_valid: bool):
+  def __init__(self, valid):
+  def __init__(self, config: Dict[str, Any]):
+  async def __aenter__(self):
+  async def __aexit__(self, exc_type, exc_val, exc_tb):
+  async def connect(self):
+  async def close(self):
+  ... (还有 10 个函数)
+
+📊 统计: 499 行, 4 个类, 20 个函数
+
+
+📄 src\client\implementation_V1\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\client\implementation_V1\cloud_vllm_service.py
+------------------------------------------------------------
+📝 文档:
+  """约束信息模型 - 支持引用和传统模式"""
+  """增强生成请求模型"""
+  """云端生成响应模型"""
+  """GBNF约束引擎 - 修复换行符处理"""
+  """修复换行符问题"""
+  ... (还有 127 行)
+
+🏗️ 类:
+  class ConstraintInfo(BaseModel):
+  class EnhancedGenerationRequest(BaseModel):
+  class CloudGenerationResponse(BaseModel):
+  class GBNFConstraintEngine:
+  class GBNFPriorityStrategy:
+  class FSMConstraintEngine:
+  class FixedAutosarXMLBuilder:
+  class ImprovedXMLBuilder:
+  class EnhancedFSMStrategy:
+  class EnhancedCloudService:
+
+⚙️ 函数:
+  def __init__(self, gbnf_grammar: str):
+  def _fix_newlines(self, grammar: str) -> str:
+  def _validate_grammar(self) -> bool:
+  def __init__(self, gbnf_engine):
+  async def generate(self, vllm_endpoint: str, request: EnhancedGenerationRequest) -> tuple[str, dict]:
+  def __init__(self, fsm_data: Dict):
+  def get_allowed_tokens(self, current_path: List[str] = None) -> List[str]:
+  def _fuzzy_match_state(self, target_state: str) -> List[str]:
+  def _debug_similar_states(self, target_state: str, max_show: int = 5):
+  def reset(self):
+  ... (还有 63 个函数)
+
+📊 统计: 1969 行, 10 个类, 73 个函数
+
+
+📄 src\client\implementation_V1\cloud_vllm_service_generic.py
+------------------------------------------------------------
+📝 文档:
+  """约束信息模型 - 支持引用和传统模式"""
+  """增强生成请求模型"""
+  """云端生成响应模型"""
+  """GBNF约束引擎 - 修复换行符处理"""
+  """修复换行符问题"""
+  ... (还有 57 行)
+
+🏗️ 类:
+  class ConstraintInfo(BaseModel):
+  class EnhancedGenerationRequest(BaseModel):
+  class CloudGenerationResponse(BaseModel):
+  class GBNFConstraintEngine:
+  class FSMConstraintEngine:
+  class GBNFPriorityStrategy:
+  class GenericEnhancedFSMStrategy:
+  class EnhancedCloudService:
+
+⚙️ 函数:
+  def __init__(self, gbnf_grammar: str):
+  def _fix_newlines(self, grammar: str) -> str:
+  def _validate_grammar(self) -> bool:
+  def __init__(self, fsm_data: Dict):
+  def get_allowed_tokens(self, current_path: List[str] = None) -> List[str]:
+  def _fuzzy_match_state(self, target_state: str) -> List[str]:
+  def reset(self):
+  def __init__(self, gbnf_engine):
+  async def generate(self, vllm_endpoint: str, request: EnhancedGenerationRequest) -> tuple[str, dict]:
+  def __init__(self, fsm_engine, config=None):
+  ... (还有 23 个函数)
+
+📊 统计: 1209 行, 8 个类, 33 个函数
+
+
+📄 src\client\implementation_V1\gad_enhanced_fsm_strategy.py
+------------------------------------------------------------
+📝 文档:
+  """Expected Future Grammaticality缓存管理器"""
+  """动态Expected Future Grammaticality估计器"""
+  """从示例中提取具体的值"""
+  """估计Expected Future Grammaticality"""
+  """改进的重复惩罚 - 更严格"""
+  ... (还有 45 行)
+
+🏗️ 类:
+  class EFGCache:
+  class DynamicEFGEstimator:
+  class GADEnhancedFSMStrategy:
+
+⚙️ 函数:
+  def __init__(self, max_size: int = 10000, decay_factor: float = 0.95):
+  def get(self, path_str: str) -> Optional[Dict[str, float]]:
+  def set(self, path_str: str, estimate: Dict[str, float]):
+  def update(self, path_str: str, was_successful: bool, confidence: float = 0.1):
+  def decay_all(self):
+  def get_statistics(self) -> Dict[str, Any]:
+  def __init__(self, fsm_engine, gbnf_engine, config: Dict[str, Any]):
+  def _extract_values_from_example(self) -> Dict[str, List[str]]:
+  def estimate_efg(self, current_path: List[str], candidate_token: str,
+  def _evaluate_repetition_penalty_v2(self, current_path: List[str], candidate_token: str,
+  ... (还有 30 个函数)
+
+📊 统计: 1272 行, 3 个类, 40 个函数
+
+
+📄 src\client\implementation_V1\generic_gad_enhanced_fsm_strategy.py
+------------------------------------------------------------
+📝 文档:
+  """Expected Future Grammaticality缓存管理器"""
+  """通用的Expected Future Grammaticality估计器"""
+  """估计Expected Future Grammaticality"""
+  """评估结构有效性"""
+  """评估语法有效性"""
+  ... (还有 179 行)
+
+🏗️ 类:
+  class EFGCache:
+  class GenericEFGEstimator:
+  class FixedGenericGADEnhancedFSMStrategy:
+  class GenericGADEnhancedFSMStrategy:
+
+⚙️ 函数:
+  def __init__(self, max_size: int = 10000, decay_factor: float = 0.95):
+  def get(self, path_str: str) -> Optional[Dict[str, float]]:
+  def set(self, path_str: str, estimate: Dict[str, float]):
+  def update(self, path_str: str, was_successful: bool, confidence: float = 0.1):
+  def decay_all(self):
+  def get_statistics(self) -> Dict[str, Any]:
+  def __init__(self, fsm_engine, gbnf_engine, config: Dict[str, Any]):
+  def estimate_efg(self, current_path: List[str], candidate_token: str,
+  def _evaluate_structural_validity(self, path: List[str], candidate: str) -> float:
+  def _evaluate_grammatical_validity(self, path: List[str]) -> float:
+  ... (还有 37 个函数)
+
+📊 统计: 1633 行, 4 个类, 47 个函数
+
+
+📄 src\client\implementation_V2\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\client\implementation_V2\block_level_fsm_strategy.py
+------------------------------------------------------------
+📝 文档:
+  """FSM路径表示"""
+  """扩展路径"""
+  """动态识别的块"""
+  """获取所有路径的公共前缀"""
+  """FSM驱动的动态块级生成策略（AUTOSAR优化版）"""
+  ... (还有 97 行)
+
+🏗️ 类:
+  class FSMPath:
+  class DynamicBlock:
+  class BlockLevelFSMStrategy:
+
+⚙️ 函数:
+  def __init__(self, states: List[str], tokens: List[str], cost: float = 0.0):
+  def extend(self, token: str, next_state: str, additional_cost: float = 1.0):
+  def __init__(self, name: str, start_state: str, paths: List[FSMPath]):
+  def get_common_prefix(self) -> List[str]:
+  def __init__(self, fsm_engine, config: Dict[str, Any] = None):
+  def _analyze_fsm_structure(self) -> Dict[str, Any]:
+  def _extract_autosar_requirements(self, prompt: str) -> Dict[str, Any]:
+  async def generate(self, vllm_endpoint: str, request) -> Tuple[str, Dict]:
+  def _plan_blocks_for_autosar(self, requirements: Dict) -> List[Dict]:
+  def _get_paths_for_planned_block(self, start_state: str, planned_block: Dict,
+  ... (还有 14 个函数)
+
+📊 统计: 956 行, 3 个类, 24 个函数
+
+
+📄 src\client\implementation_V2\cloud_vllm_service_block_level.py
+------------------------------------------------------------
+📝 文档:
+  """约束信息模型 - 支持引用和传统模式"""
+  """增强生成请求模型"""
+  """约束应用信息模型 - 与客户端保持一致"""
+  """云端生成响应模型 - 修复字段类型"""
+  """GBNF约束引擎 - 修复换行符处理"""
+  ... (还有 39 行)
+
+🏗️ 类:
+  class ConstraintInfo(BaseModel):
+  class EnhancedGenerationRequest(BaseModel):
+  class ConstraintsAppliedInfo(BaseModel):
+  class CloudGenerationResponse(BaseModel):
+  class GBNFConstraintEngine:
+  class FSMConstraintEngine:
+  class EnhancedCloudService:
+
+⚙️ 函数:
+  def __init__(self, gbnf_grammar: str):
+  def _fix_newlines(self, grammar: str) -> str:
+  def _validate_grammar(self) -> bool:
+  def __init__(self, fsm_data: Dict):
+  def get_allowed_tokens(self, current_path: List[str] = None) -> List[str]:
+  def _fuzzy_match_state(self, target_state: str) -> List[str]:
+  def reset(self):
+  def __init__(self):
+  def update_strategy_config(self, config: Dict[str, Any]):
+  async def _load_constraint_files(self):
+  ... (还有 18 个函数)
+
+📊 统计: 994 行, 7 个类, 28 个函数
+
+
+📄 src\client\implementation_V2\dynamic_gbnf_strategy.py
+------------------------------------------------------------
+📝 文档:
+  """验证和规范化需求 - 修复data_element字段"""
+  """获取默认需求配置 - 确保包含data_element字段"""
+  """加载GBNF模板"""
+  return '''start: autosar_component
+  
+  ... (还有 108 行)
+
+🏗️ 类:
+  class DynamicGBNFStrategy:
+
+⚙️ 函数:
+  def __init__(self, template_path: str = "autosar_template.gbnf"):
+  def _validate_and_normalize_requirements(self, requirements: Dict[str, Any]) -> Dict[str, Any]:
+  def _get_default_requirements(self) -> Dict[str, Any]:
+  def _load_template(self) -> str:
+  def generate_gbnf_from_requirements(self, requirements: Dict[str, Any]) -> str:
+  async def generate(self, vllm_endpoint: str, request: Any) -> Tuple[str, Dict[str, Any]]:
+
+📊 统计: 419 行, 1 个类, 6 个函数
+
+
+📄 src\client\implementation_V2\prompt_mapper.py
+------------------------------------------------------------
+📝 文档:
+  """增强版 - 完整覆盖所有格式，支持批量处理"""
+  """🎯 解析批量prompts（支持YAML列表格式）"""
+  """🎯 使用增强的映射表提取信息"""
+  """主入口：映射prompt"""
+  """获取结构化prompt文本"""
+  ... (还有 108 行)
+
+🏗️ 类:
+  class AutosarPromptMapper:
+
+⚙️ 函数:
+  def __init__(self):
+  def parse_batch_prompts(self, batch_prompt_text: str) -> List[Dict[str, Any]]:
+  def _extract_all_info(self, prompt: str) -> Dict[str, Any]:
+  def map_prompt(self, original_prompt: str) -> str:
+  def get_structured_prompt(self, prompt_type: str) -> str:
+
+📊 统计: 814 行, 1 个类, 5 个函数
+
+
+📄 src\client\implementation_V2\safe_dynamic_gbnf_strategy.py
+------------------------------------------------------------
+📝 文档:
+  """增强版安全GBNF策略 - 支持批量处理、参数配置和多样性生成"""
+  """最小格式的GBNF模板（只有P-PORT）"""
+  return '''start: autosar_component
+  
+  autosar_component: "<APPLICATION-SW-COMPONENT-TYPE>" component_content "</APPLICATION-SW-COMPONENT-TYPE>"
+  ... (还有 264 行)
+
+🏗️ 类:
+  class SafeDynamicGBNFStrategy:
+
+⚙️ 函数:
+  def __init__(self, template_path: str = "autosar_template.gbnf"):
+  def _get_min_gbnf_template(self) -> str:
+  def _get_mid_gbnf_template(self) -> str:
+  def _get_standard_gbnf_template(self) -> str:
+  def _get_full_gbnf_template(self) -> str:
+  def _get_full_with_special_template(self) -> str:
+  def _validate_and_normalize_requirements(self, requirements: Dict[str, Any]) -> Dict[str, Any]:
+  def generate_gbnf_from_requirements(self, requirements: Dict[str, Any]) -> str:
+  def _get_generation_params(self, index: int, total: int) -> Dict[str, Any]:
+  def _get_template_type(self, requirements: Dict[str, Any]) -> str:
+  ... (还有 4 个函数)
+
+📊 统计: 830 行, 1 个类, 14 个函数
+
+
+📄 src\client\vllm_adapter.py
+------------------------------------------------------------
+📝 文档:
+  """vLLM API适配器"""
+  """检查vLLM服务健康状态"""
+  """执行生成请求"""
+  """清理XML输出"""
+  """增强AUTOSAR提示词"""
+  ... (还有 21 行)
+
+🏗️ 类:
+  class VLLMAdapter:
+
+⚙️ 函数:
+  def __init__(self, config: Dict[str, Any]):
+  async def check_health(self) -> Dict[str, Any]:
+  async def generate(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+  def clean_xml_output(self, raw_text: str) -> str:
+  def enhance_autosar_prompt(self, prompt: str, autosar_context: Dict[str, Any] = None) -> str:
+
+📊 统计: 169 行, 1 个类, 5 个函数
+
+
+📄 src\constraint_graph\__init__.py
+------------------------------------------------------------
+📝 文档:
+  """Unified Constraint Graph – converts KG constraints to executable artefacts.
+  
+  Exposes high‑level API:
+  
+  from constraint_graph.cli import main
+  ... (还有 3 行)
+
+📊 统计: 18 行, 0 个类, 0 个函数
+
+
+📄 src\constraint_graph\artifacts\raw\autosar_allowed_tokens.py
+------------------------------------------------------------
+📝 文档:
+  """autosar_allowed_tokens – AUTO-GENERATED
+  ------------------------------------------------
+  • FSM file : autosar.fsm
+  • Compress : True
+  • On-demand: True
+  ... (还有 8 行)
+
+⚙️ 函数:
+  def allowed(prefix_tokens: List[str]) -> Optional[List[str]]:
+  def allowed_token_ids(prefix_ids, tokenizer) -> Optional[List[int]]:
+
+📊 统计: 57 行, 0 个类, 2 个函数
+
+
+📄 src\constraint_graph\canonicalizer.py
+------------------------------------------------------------
+📝 文档:
+  """canonicalizer.py (v1.4) - 进一步改进None值处理和字符清理
+  --------------------------------
+  新增功能：
+  1. 更强健的字符串清理
+  2. 改进的CID处理
+  ... (还有 13 行)
+
+🏗️ 类:
+  class Canonicalizer:
+
+⚙️ 函数:
+  def canonicalize(self, raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+  def _clean_string(self, text: Any) -> str:
+  def _clean_enum_value(self, value: str) -> str:
+  def _hash_from_original(self, original_cid: str, record: Dict[str, Any]) -> str:
+  def _ensure_integer(self, value: Any) -> int:
+  def _infer_type(self, c: Dict[str, Any]) -> str:
+  def _hash(self, record: Dict[str, Any]) -> str:
+  def _parse_enum_from_expression(expr: str) -> List[str]:
+  def run(raw_path: str | pathlib.Path,
+
+📊 统计: 377 行, 1 个类, 9 个函数
+
+
+📄 src\constraint_graph\cfg.py
+------------------------------------------------------------
+📝 文档:
+  """按优先级查找并解析 build.toml。"""
+
+⚙️ 函数:
+  def _load_build_cfg(path: str | None = None) -> dict[str, Any]:
+
+📊 统计: 17 行, 0 个类, 1 个函数
+
+
+📄 src\constraint_graph\cli.py
+------------------------------------------------------------
+📝 文档:
+  """cli.py — one‑click KG → XML pipeline
+  ================================================
+  Right‑click / double‑click to run without any command‑line arguments.
+  Internal constants define the KG connection and output directory.
+  
+  ... (还有 26 行)
+
+⚙️ 函数:
+  def _load_build_cfg(path: str | pathlib.Path | None = None) -> dict[str, Any]:
+  def _ensure_dir(p: pathlib.Path) -> pathlib.Path:
+  def _print_step(msg: str) -> None:
+  def _load_roots(explicit: str | None = None) -> list[str | int] | None:
+  def _cmd_dump_raw(args: argparse.Namespace) -> None:
+  def _cmd_canonicalize(args: argparse.Namespace) -> None:
+  def _cmd_enrich(args: argparse.Namespace) -> None:
+  def _cmd_export_grammar(args: argparse.Namespace) -> None:
+  def _cmd_export_shacl(args: argparse.Namespace) -> None:
+  def _cmd_compile_dfa(args: argparse.Namespace) -> None:
+  ... (还有 6 个函数)
+
+📊 统计: 512 行, 0 个类, 16 个函数
+
+
+📄 src\constraint_graph\dfa_compiler.py
+------------------------------------------------------------
+📝 文档:
+  """dfa_compiler.py
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Compile a GBNF grammar into a *prefix-closed* DFA and emit:
+  
+  • <name>.fsm               –  JSON  (FSM v2, possibly compressed)
+  ... (还有 90 行)
+
+⚙️ 函数:
+  def _build_prefix_dfa(parser: Lark, all_terms: List[str], *, progress: bool = False, roots: set[str] | None = None,) -> Tuple[EdgeTable, Set[State]]:
+  def _hopcroft_minimise(trans: EdgeTable, accepting: Set[State]) -> Tuple[EdgeTable, Set[State]]:
+  def _path_compress(trans: EdgeTable, accepting: Set[State]) -> Tuple[EdgeTable, Set[State]]:
+  def compile_gbnf(
+  def _render_runtime_stub(
+  def allowed(prefix_tokens: List[str]) -> Optional[List[str]]:
+  def allowed_token_ids(prefix_ids, tokenizer) -> Optional[List[int]]:
+  def _cli() -> None:  # pragma: no cover
+  def _sym_name(sym) -> str:
+  def _follow_set(parser: Lark, toks: Tuple[str, ...]) -> List[str]:
+  ... (还有 7 个函数)
+
+📊 统计: 933 行, 0 个类, 17 个函数
+
+
+📄 src\constraint_graph\enricher.py
+------------------------------------------------------------
+📝 文档:
+  """enricher.py (v1.3) - 高优先级修复：目标解析标准化
+  ---------------------
+  修复：统一处理多种目标格式 (targets, targetRefs, targets_json)
+  """
+  """增强的约束enricher，支持完整的映射和约束类型处理"""
+  ... (还有 28 行)
+
+🏗️ 类:
+  class ConstraintEnricher:
+
+⚙️ 函数:
+  def __init__(self, attr_idx: Dict[str, Dict[str, Any]], enum_idx: Dict[str, List[str]],
+  def enrich(self, cons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+  def _enrich_single_constraint(self, c: Dict[str, Any]) -> Dict[str, Any] | None:
+  def _process_all_target_formats(self, c: Dict[str, Any], enriched: Dict[str, Any]):
+  def _parse_target_ref(self, target_ref: str) -> Dict[str, Any] | None:
+  def _parse_targets_json(self, targets_json) -> List[Dict[str, Any]]:
+  def _parse_legacy_targets(self, targets: List) -> List[Dict[str, Any]]:
+  def _create_default_target(self) -> Dict[str, Any]:
+  def _populate_target_details(self, target: Dict[str, Any], enriched: Dict[str, Any]):
+  def _add_target_to_enriched(self, target: Dict[str, Any], enriched: Dict[str, Any]):
+  ... (还有 19 个函数)
+
+📊 统计: 724 行, 1 个类, 29 个函数
+
+
+📄 src\constraint_graph\grammar_exporter.py
+------------------------------------------------------------
+📝 文档:
+  """
+  完整的XML标签格式解决方案
+  ================================
+  
+  问题分析：
+  ... (还有 35 行)
+
+🏗️ 类:
+  class TagFormatManager:
+  class GrammarExporter:
+
+⚙️ 函数:
+  def __init__(self):
+  def original_to_gbnf_rule(self, xml_tag: str) -> str:
+  def original_to_gbnf_token(self, xml_tag: str) -> str:
+  def gbnf_rule_to_original(self, rule_name: str) -> str:
+  def create_format_mapping(self, xml_tags: Set[str]) -> Dict[str, Dict[str, str]]:
+  def normalize_for_gbnf(xml_tag: str) -> str:
+  def normalize_for_fsm(xml_tag: str) -> str:
+  def normalize_for_token(xml_tag: str) -> str:
+  def _iter_jsonl(fp: pathlib.Path):
+  def __init__(
+  ... (还有 10 个函数)
+
+📊 统计: 486 行, 2 个类, 20 个函数
+
+
+📄 src\constraint_graph\loader.py
+------------------------------------------------------------
+📝 文档:
+  """Unified KG loader that now exposes all indices required by the token‑export
+  pipeline.
+  
+  修复：更新所有Neo4j查询使用elementId()替代已弃用的id()函数
+  
+  ... (还有 84 行)
+
+🏗️ 类:
+  class KGLoader:
+
+⚙️ 函数:
+  def __init__(
+  def _load(self) -> None:
+  def _load_neo4j(self) -> None:  # noqa: C901 – a bit long but linear
+  def _get_id_function(self, session) -> str:
+  def _normalize_id(self, node_id) -> int:
+  def _load_json(self) -> None:  # noqa: C901 – similar linear loader
+  def class_name_index(self) -> Dict[str, int]:
+  def close(self):
+  def __enter__(self):
+  def __exit__(self, exc_type, exc, tb):
+
+📊 统计: 396 行, 1 个类, 10 个函数
+
+
+📄 src\constraint_graph\shacl_exporter.py
+------------------------------------------------------------
+📝 文档:
+  """shacl_exporter.py (v2.6) - 完全修复MINUS问题和约束跳过机制
+  ------------------------------------------
+  关键修复：
+  1. 彻底移除所有MINUS子句，使用FILTER NOT EXISTS或简化约束
+  2. 增加约束跳过机制和统计功能
+  ... (还有 28 行)
+
+🏗️ 类:
+  class ShaclExporter:
+
+⚙️ 函数:
+  def __init__(self, out_dir: str | pathlib.Path):
+  def export(self, constraints: List[Dict[str, Any]]) -> pathlib.Path:
+  def _should_skip_constraint(self, constraint: Dict[str, Any]) -> bool:
+  def _try_get_target_class_name(self, target: Dict[str, Any]) -> str:
+  def _try_get_path_name(self, target: Dict[str, Any]) -> str:
+  def _record_skipped_constraint(self, constraint: Dict[str, Any], constraint_category: str, reason: str):
+  def _generate_skip_report(self):
+  def _get_target_class_name(self, target: Dict[str, Any]) -> str:
+  def _get_path_name(self, target: Dict[str, Any]) -> str:
+  def _export_structural_constraint(self, constraint: Dict[str, Any]):
+  ... (还有 16 个函数)
+
+📊 统计: 853 行, 1 个类, 26 个函数
+
+
+📄 src\constraint_graph\smt_exporter.py
+------------------------------------------------------------
+📝 文档:
+  """smt_exporter.py (v4.0) - 修复生成实际可验证的SMT约束
+  --------------------------------------------
+  核心修复：生成具体的、可验证的SMT约束实例，而非抽象模板
+  """
+  """SMT导出器 - 生成实际可验证的SMT约束实例"""
+  ... (还有 22 行)
+
+🏗️ 类:
+  class SmtExporter:
+
+⚙️ 函数:
+  def __init__(self, out_dir: str | pathlib.Path):
+  def export(self, constraints: List[Dict[str, Any]]) -> pathlib.Path:
+  def _add_concrete_header(self):
+  def _declare_concrete_base_types(self):
+  def _export_concrete_structural_constraints(self, structural_constraints: List[Dict[str, Any]]):
+  def _export_concrete_structural_constraint(self, constraint: Dict[str, Any]) -> str:
+  def _export_concrete_semantic_constraints(self, semantic_constraints: List[Dict[str, Any]]):
+  def _export_concrete_semantic_constraint(self, constraint: Dict[str, Any]) -> str:
+  def _export_concrete_existence_constraint(self, constraint: Dict[str, Any], constraint_name: str) -> str:
+  def _export_concrete_value_restriction_constraint(self, constraint: Dict[str, Any], constraint_name: str) -> str:
+  ... (还有 13 个函数)
+
+📊 统计: 735 行, 1 个类, 23 个函数
+
+
+📄 src\constraint_graph\token_extractor.py
+------------------------------------------------------------
+📝 文档:
+  """Extract flattened JSONL tables containing everything needed to build the
+  terminal‑token map (structure labels, attribute names, enum literals, etc.).
+  
+  修复：更新Neo4j查询以使用elementId()替代已弃用的id()函数
+  """
+  ... (还有 29 行)
+
+🏗️ 类:
+  class TokenExtractor:
+
+⚙️ 函数:
+  def from_connection(
+  def from_kg(cls, kg_url: str, roots: List[str | int] | None = None) -> "TokenExtractor":
+  def __init__(self, loader: KGLoader, roots: List[str | int]):
+  def serialisable_classes(self) -> Set[int]:
+  def aggregate_attributes(self, cls_id: int) -> List[int]:
+  def dump(self, out_dir: pathlib.Path | str) -> None:
+  def _normalise_roots(self, roots: Iterable[str | int]) -> List[int]:
+  def _collect_value_restrictions(self) -> Dict[int, List[str]]:
+
+📊 统计: 339 行, 1 个类, 8 个函数
+
+
+📄 src\constraint_graph\utils.py
+------------------------------------------------------------
+⚙️ 函数:
+  def normalize(tag: str) -> str:
+
+📊 统计: 6 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\__init__.py
+------------------------------------------------------------
+📊 统计: 1 行, 0 个类, 0 个函数
+
+
+📄 src\kg_builder\additional_xsd_parser.py
+------------------------------------------------------------
+📝 文档:
+  """
+  additional_xsd_parser.py ____ 目的是将由于属性“内联其值类型”而引用的 group ref="XXX"提取到元数据中
+  -------------------------------------------------
+  • 仅扫描 XSD 第一层 <complexType> → 采集 group ref
+  • 只补 groups 节点，不动 complexTypes
+  ... (还有 4 行)
+
+⚙️ 函数:
+  def collect_inline_map(xsd_path: Path) -> dict[str, set[str]]:
+  def patch_json(in_json: Path, out_json: Path, inline_map: dict[str, set[str]]) -> None:
+  def ancestors(cls: str) -> set[str]:
+  def parse_args() -> argparse.Namespace:
+  def main() -> None:
+
+📊 统计: 107 行, 0 个类, 5 个函数
+
+
+📄 src\kg_builder\cli.py
+------------------------------------------------------------
+📝 文档:
+  """
+  KG Builder 命令行入口
+  ====================================================
+  零参数运行：python -m kg_builder.cli
+  如需切换配置文件：python -m kg_builder.cli --cfg my_cfg.yaml
+  ... (还有 1 行)
+
+⚙️ 函数:
+  def _parse_args() -> argparse.Namespace:
+  def clear_neo4j_database(uri: str, user: str, password: str) -> None:
+  def main() -> None:  # pragma: no cover
+
+📊 统计: 151 行, 0 个类, 3 个函数
+
+
+📄 src\kg_builder\config.py
+------------------------------------------------------------
+📝 文档:
+  """
+  配置读取模块
+  ====================================================
+  优先级（高 → 低）：
+  1. CLI --cfg 指定 YAML
+  ... (还有 10 行)
+
+🏗️ 类:
+  class KgConfig(dict):
+
+⚙️ 函数:
+  def __getattr__(self, item: str):  # type: ignore[override]  # pragma: no cover
+  def load_config(cfg_path: str | Path | None) -> KgConfig:
+
+📊 统计: 84 行, 1 个类, 2 个函数
+
+
+📄 src\kg_builder\constraint_parser.py
+------------------------------------------------------------
+📝 文档:
+  """
+  解析结构化约束，生成 :Constraint 节点及内部层标签
+  ====================================================
+  • 按 constraint_type / id_type → layer label
+  • 输出节点列表，边 (:PARENT_OF, :REFERS_TO) 由 EdgeBuilder 追加
+  ... (还有 3 行)
+
+🏗️ 类:
+  class ConstraintGraphBuilder:
+
+⚙️ 函数:
+  def __init__(self, domain: str, version: str) -> None:
+  def build(self, constraints: list[dict[str, Any]]) -> list[ConstraintNode]:
+  def _create_constraint_node(self, raw: dict[str, Any]) -> ConstraintNode:
+  def _decide_layer(self, raw: dict[str, Any]) -> str:
+
+📊 统计: 89 行, 1 个类, 4 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\config.py
+------------------------------------------------------------
+📊 统计: 231 行, 0 个类, 0 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\context_injector.py
+------------------------------------------------------------
+📝 文档:
+  """
+  从元数据中获取指定类的属性（包括所有父类的属性、以及根据新规则从 'Content' 类获取的属性）、
+  直接继承关系和直接子类信息。
+  """
+
+⚙️ 函数:
+  def get_enum_literals(metadata, enum_name):
+  def to_camel_case(s):
+  def get_class_info(metadata, class_name):
+  def inject_local_context(markdown_content, metadata):
+  def process_document_for_llm(markdown_content, metadata):
+
+📊 统计: 289 行, 0 个类, 5 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\doc_llm_preprocessor.py
+------------------------------------------------------------
+📝 文档:
+  """
+  从 unified_metadata.json 加载 AUTOSAR 类名。
+  遍历 "groups" 字典中的每个组对象。如果组对象的 "Package" 列表
+  以 ["AUTOSAR Templates", "SWComponentTemplate"] 开头，
+  则将其 "name" 属性（即组名/类名本身）添加到类名列表。
+  ... (还有 43 行)
+
+⚙️ 函数:
+  def load_autosar_classes_from_metadata(metadata_file_path: str) -> list[str]:
+  def build_llm_prompt(raw_section_content: str, autosar_classes: list[str]) -> str:
+  def call_llm_api(client: OpenAI, model_name: str, full_prompt_for_llm: str) -> str | None:
+  def main():
+
+📊 统计: 256 行, 0 个类, 4 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\linker_validator.py
+------------------------------------------------------------
+📝 文档:
+  """根据 item['targets'] 列表生成 targetRef 列表。"""
+
+⚙️ 函数:
+  def generate_target_refs_for_item(item):
+  def validate_and_link_constraints(raw_extracted_data, metadata):
+
+📊 统计: 148 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\llm_extractor.py
+------------------------------------------------------------
+📝 文档:
+  prompt = f"""
+  # 角色
+  你是一位 AUTOSAR 规范助手，负责把文档片段转换为结构化约束 JSON。
+  
+  # 输出格式
+  ... (还有 189 行)
+
+🏗️ 类:
+  class LlmExtractor:
+
+⚙️ 函数:
+  def count_tokens(text):
+  def __init__(self):
+  def _build_extraction_prompt(self, text_block_for_llm):
+  def extract_constraints_from_block(self, text_block_for_llm):
+  def _split_text_by_paragraphs(self, text, max_tokens_for_sub_chunk, parent_section_context_str=""):
+  def _split_document_into_chunks(self, enhanced_markdown_content, max_tokens_for_chunk_content):
+  def remove_duplicates(self, constraints):
+  def extract_constraints_from_text(self, enhanced_markdown_content):
+  def get_text_chunks(self, enhanced_markdown: str) -> List[str]:
+  def extract_constraints_from_text(
+  ... (还有 3 个函数)
+
+📊 统计: 591 行, 1 个类, 13 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\main.py
+------------------------------------------------------------
+⚙️ 函数:
+  def main():
+
+📊 统计: 115 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\multimodal_processor.py
+------------------------------------------------------------
+📝 文档:
+  """
+  Parse `unified_metadata.json` and return all AUTOSAR class names that
+  are under package path ["AUTOSAR Templates", "SWComponentTemplate"].
+  """
+  """Initialise extractor."""
+  ... (还有 44 行)
+
+🏗️ 类:
+  class AutosarImageFactExtractor:
+
+⚙️ 函数:
+  def load_autosar_classes_from_metadata(metadata_file_path: str) -> List[str]:
+  def __init__(self) -> None:
+  def encode_image(image_path: str) -> str:
+  def extract_identifier_from_filename(filename: str) -> Optional[str]:
+  def call_llm_api(self, image_path: str, identifier: str) -> str:
+  def process_images(self, figures_dir: str) -> Dict[str, str]:
+  def find_insertion_points(self, content: str) -> Dict[str, int]:
+  def inject_image_facts(self, markdown_file: str, image_facts: Dict[str, str], output_file: str = None) -> bool:
+  def run(self, figures_dir: str = None, markdown_file: str = None, output_file: str = None):
+  def main():
+
+📊 统计: 414 行, 1 个类, 10 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\relink.py
+------------------------------------------------------------
+⚙️ 函数:
+  def main():
+
+📊 统计: 76 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\S2D2_test.py
+------------------------------------------------------------
+📝 文档:
+  self.metadata =f"""{{
+  "schema_definitions": {{
+  "SwcInternalBehavior": {{
+  "qualifiedName": "SwcInternalBehavior",
+  "description": "The SwcInternalBehavior of an AtomicSwComponentType describes the relevant aspects of the software-component with respect to the RTE, i.e. the RunnableEntities and the RTEEvents they respond to.",
+  ... (还有 610 行)
+
+🏗️ 类:
+  class LlmExtractor:
+
+⚙️ 函数:
+  def count_tokens(text):
+  def __init__(self):
+  def _build_llm_prompt(self, text_block_for_llm):
+  def _build_llm_metadata_prompt(self, text_block_for_llm):
+  def generate_xml(self, prompt: str):
+
+📊 统计: 739 行, 1 个类, 5 个函数
+
+
+📄 src\kg_builder\doc_constr_parser\utils.py
+------------------------------------------------------------
+📝 文档:
+  """加载 JSON 文件。"""
+  """将数据保存到 JSON 文件。"""
+  """将字典列表保存到 JSONL 文件。"""
+  """加载 JSONL 文件，返回字典列表。"""
+  """加载 Markdown 文件。"""
+  ... (还有 1 行)
+
+⚙️ 函数:
+  def load_json(file_path):
+  def save_json(data, file_path):
+  def save_jsonl(data_list, file_path):
+  def load_jsonl(file_path):
+  def load_markdown(file_path):
+  def save_dataframe_to_csv(df, file_path):
+
+📊 统计: 57 行, 0 个类, 6 个函数
+
+
+📄 src\kg_builder\edge_builder.py
+------------------------------------------------------------
+📝 文档:
+  """
+  根据 Ontology + Constraint 构建语义关系边
+  ====================================================
+  • 目标：补全
+  - :CONSTRAINS
+  ... (还有 5 行)
+
+🏗️ 类:
+  class EdgeAssembler:
+
+⚙️ 函数:
+  def __init__(
+  def build_edges(
+  def _build_constrains_edges(self, node: dict[str, Any], c_iri: str) -> list[Edge]:
+  def _get_or_create_section(
+  def _find_ancestor_with_attr(self, cls: str, attr: str) -> str | None:
+
+📊 统计: 134 行, 1 个类, 5 个函数
+
+
+📄 src\kg_builder\graph_exporter.py
+------------------------------------------------------------
+📝 文档:
+  """
+  导出图到 Neo4j 或 RDF
+  ====================================================
+  • 默认使用 neo4j-driver 批量 `UNWIND`
+  • 若 cfg.graph_backend = rdf_hdt，则序列化 Turtle
+  ... (还有 41 行)
+
+🏗️ 类:
+  class Neo4jExporter:
+  class RdfExporter:
+
+⚙️ 函数:
+  def __init__(self, uri: str, user: str, password: str) -> None:
+  def export(self, nodes: list[Node], edges: list[Edge]) -> None:
+  def _create_constraints(sess: neo4j.Session) -> None:
+  def _batch_nodes(
+  def _batch_edges(self, sess: neo4j.Session, edges: list[Edge]) -> None:
+  def _batch_exec(sess: neo4j.Session, cypher: str, data: list[Any], batch_size: int = 1000) -> None:
+  def export(self, nodes: list[Node], edges: list[Edge], ttl_path: str) -> None:
+
+📊 统计: 144 行, 2 个类, 7 个函数
+
+
+📄 src\kg_builder\loader.py
+------------------------------------------------------------
+📝 文档:
+  """
+  JSON 输入加载器
+  ====================================================
+  • 负责把 unified_metadata.json 与 constraints_linked.json
+  解析为 Python dict，并做基础字段预处理
+  ... (还有 5 行)
+
+🏗️ 类:
+  class MetadataLoader:
+  class ConstraintLoader:
+
+⚙️ 函数:
+  def __init__(self) -> None:
+  def load(self, json_path: str | Path) -> dict[str, Any]:
+  def _light_load(json_path: str | Path) -> dict[str, Any]:
+  def _clean_nulls(data: dict[str, Any]) -> None:
+  def __init__(self) -> None:
+  def load(self, json_path: str | Path) -> list[dict[str, Any]]:
+
+📊 统计: 99 行, 2 个类, 6 个函数
+
+
+📄 src\kg_builder\normalizer.py
+------------------------------------------------------------
+📝 文档:
+  """
+  Metadata Normalizer
+  ----------------------------------------------------
+  • 为每个实体统一生成 IRI
+  • Attribute: qualifiedName ← document_name 末段 │ name
+  ... (还有 1 行)
+
+🏗️ 类:
+  class _N:
+
+⚙️ 函数:
+  def _slug(text: str) -> str:
+  def __init__(self, domain: str, version: str):
+  def iri(self, name: str) -> str:
+  def _write_to_file(self, name: str, iri: str) -> None:
+  def _norm_attr(self, attr: dict[str, Any], pcls: str) -> None:
+  def normalize(self, m: dict[str, Any]) -> None:
+  def normalize_metadata(meta: dict[str, Any], *, domain="AUTOSAR", version="UNSPECIFIED") -> dict[str, Any]:
+
+📊 统计: 97 行, 1 个类, 7 个函数
+
+
+📄 src\kg_builder\ontology_builder.py
+------------------------------------------------------------
+📝 文档:
+  """
+  Ontology Graph Builder – refactored (v1.1)
+  =========================================
+  ✅ 补全 `parentClass` / `ownerClass` 字段，解决 CLI KeyError。
+  
+  ... (还有 16 行)
+
+🏗️ 类:
+  class OntologyGraphBuilder:
+
+⚙️ 函数:
+  def slug(txt: str) -> str:
+  def ensure_iter(x: Any) -> List[Any]:
+  def __init__(self) -> None:
+  def build(self, meta: Dict[str, Any]) -> Tuple[List[Node], List[Edge]]:
+  def _add_node(self, iri: str, label: str, props: dict[str, Any]) -> None:
+  def _edge_exists(self, s: str, r: str, e: str) -> bool:
+  def _add_edge(self, s: str, r: str, e: str) -> None:
+  def _pass_class_nodes(self, classes: Dict[str, Any], *, source: str, meta: Dict[str, Any]) -> None:
+  def _attach_package(self, pkg_path: List[str], cls_iri: str) -> None:
+  def _get_or_create_attrgroup(self, name: str, meta: Dict[str, Any]) -> str:
+  ... (还有 7 个函数)
+
+📊 统计: 299 行, 1 个类, 17 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\merge_xmi_xsd.py
+------------------------------------------------------------
+📝 文档:
+  """尝试加载JSON文件，如果格式有问题则尝试修复"""
+  """修复常见的JSON格式问题"""
+  """保存数据到JSON文件"""
+  """从metadata的groups中删除innerClasses字段"""
+  """从structure中删除Aggregation和parents字段"""
+  ... (还有 2 行)
+
+⚙️ 函数:
+  def load_json_file(file_path):
+  def fix_json(content):
+  def save_json_file(data, file_path):
+  def remove_inner_classes_from_groups(metadata):
+  def remove_fields_from_structure(structure):
+  def remove_duplicate_complex_types(metadata):
+  def merge_elements(metadata_groups, structure):
+  def main():
+
+📊 统计: 216 行, 0 个类, 8 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\xmi_parser.py
+------------------------------------------------------------
+📝 文档:
+  """构建全局类ID到类名的映射"""
+  """处理链接关系并将结果存入class_info字典"""
+  """处理继承关系并存入class_info"""
+  """递归处理元素并收集类信息"""
+  """处理整个模型并构建数据字典"""
+
+🏗️ 类:
+  class XmiProcessor:
+
+⚙️ 函数:
+  def __init__(self):
+  def build_class_mapping(self, root):
+  def process_links(self, xml_element, class_info, root):
+  def process_generalizations(self, xml_class, class_info):
+  def process_element(self, xml_elem, root, package_path):
+  def process_model(self, model_root):
+  def main():
+
+📊 统计: 147 行, 1 个类, 7 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\xsd_parser.py
+------------------------------------------------------------
+📝 文档:
+  """更智能地序列化元素，保留JSON兼容的数据结构"""
+  """从对象尝试获取字段值"""
+
+⚙️ 函数:
+  def improved_serialize_element(value):
+  def get_field_value(obj, field):
+
+📊 统计: 142 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\Expansion\GenerateInterface.py
+------------------------------------------------------------
+⚙️ 函数:
+  def generate_interface(input_dir, output_dir, groups, interface_package_name,package_name):
+
+📊 统计: 42 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\Expansion\GenerateRefObj.py
+------------------------------------------------------------
+📝 文档:
+  """
+  从 ComplexRef.arxml 文件中提取所有 <xsd:complexType> 的 name 属性值，并将其转换为 PascalCase。
+  
+  :param input_dir: 包含 ComplexRef.arxml 文件的目录路径
+  :return: 一个包含 PascalCase 格式的 complexType name 的列表
+  ... (还有 7 行)
+
+⚙️ 函数:
+  def get_subtypes(input_dir, enumType):
+  def get_complex_ref(input_dir):
+  def get_different_tag_elements(input_dir):
+
+📊 统计: 98 行, 0 个类, 3 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\Expansion\GenerateWrapper.py
+------------------------------------------------------------
+⚙️ 函数:
+  def collect_wrapper_class_names(complexTypeClassesInfo):
+  def generate_wrapper_classes(input_dir, complexTypeClassesInfo, output_dir, wrapper_package_name, wrapper_class_names, package_name):
+
+📊 统计: 182 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\Expansion\InnerInnerExtractor.py
+------------------------------------------------------------
+⚙️ 函数:
+  def extract_internals_classes(complexType, output_dir, package_name, class_template, interfaces_name,groups,generate_abstract_interface,input_dir,interface_package_name):
+  def update_parent_attributes(parent_class, old_inner_class_name, new_inner_class_name):
+  def update_group_attributes(groups, old_inner_class_name, new_inner_class_name,source_group):
+
+📊 统计: 165 行, 0 个类, 3 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractAttributeGroup.py
+------------------------------------------------------------
+⚙️ 函数:
+  def extractAttributeGroup(root):
+
+📊 统计: 48 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractChoiceElement.py
+------------------------------------------------------------
+⚙️ 函数:
+  def process_choice_elements(root, choice, maxOccurs, fatherElementName, element_wrapper):
+
+📊 统计: 247 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractChoiceGroup.py
+------------------------------------------------------------
+⚙️ 函数:
+  def process_choiceRef(root, refName, maxOccurs,element_wrapper):
+  def extract_element(root, sequence, maxOccurs, element_wrapper):
+
+📊 统计: 212 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractComplexType.py
+------------------------------------------------------------
+⚙️ 函数:
+  def process_complex_type(complexType, root, element_wrapper, groups, attributeGroups):
+  def extractComplexType(root, element_wrapper, groups, attributeGroups):
+
+📊 统计: 208 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractExtensionBaseType.py
+------------------------------------------------------------
+⚙️ 函数:
+  def extractBaseType(root, baseName):
+
+📊 统计: 41 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractGroup.py
+------------------------------------------------------------
+⚙️ 函数:
+  def extractGroup(root, element_wrapper):
+  def process_elements(root, sequenceOrChoice, element_wrapper):
+  def extract_annotation(group_element):
+
+📊 统计: 327 行, 0 个类, 3 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\ExtractSimpleType.py
+------------------------------------------------------------
+⚙️ 函数:
+  def extractSimpleType(root):
+
+📊 统计: 42 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\generateObjFactory.py
+------------------------------------------------------------
+⚙️ 函数:
+  def generate_object_factory(output_dir, package_name, mappings,objectFactoryTemplate):
+
+📊 统计: 13 行, 0 个类, 1 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\GroupInnerComplexType.py
+------------------------------------------------------------
+⚙️ 函数:
+  def process_group_inner_complex_type(root, element, element_wrapper):
+  def process_choice(root, choice, element_name, element_wrapper):
+
+📊 统计: 93 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\TypeMapping.py
+------------------------------------------------------------
+⚙️ 函数:
+  def mapXsdTypeToJava(xsdType, context='default'):
+  def to_pascal_case(snake_str):
+  def to_camel_case(snake_str):
+
+📊 统计: 233 行, 0 个类, 3 个函数
+
+
+📄 src\kg_builder\uml_metadata_parser\XsdParser\Utils.py
+------------------------------------------------------------
+⚙️ 函数:
+  def to_pascal_case(snake_str):
+  def to_camel_case(snake_str):
+
+📊 统计: 162 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\utils\exceptions.py
+------------------------------------------------------------
+📝 文档:
+  """
+  kg_builder 自定义异常定义
+  ====================================================
+  所有业务层异常均继承自 KgBuilderError，方便统一捕获
+  """
+  ... (还有 5 行)
+
+🏗️ 类:
+  class KgBuilderError(Exception):
+  class SchemaValidationError(KgBuilderError):
+  class MissingTargetError(KgBuilderError):
+  class VersionConflictError(KgBuilderError):
+  class ExportError(KgBuilderError):
+
+⚙️ 函数:
+  def __init__(self, message: str, *, payload: Any | None = None) -> None:
+
+📊 统计: 31 行, 5 个类, 1 个函数
+
+
+📄 src\kg_builder\utils\logger.py
+------------------------------------------------------------
+📝 文档:
+  """
+  统一日志封装
+  ====================================================
+  • 控制台输出 INFO+
+  • 文件输出 DEBUG+
+  ... (还有 1 行)
+
+⚙️ 函数:
+  def _build_logger(name: str) -> logging.Logger:
+  def get_logger(module_name: str) -> logging.Logger:
+
+📊 统计: 52 行, 0 个类, 2 个函数
+
+
+📄 src\kg_builder\utils\validators.py
+------------------------------------------------------------
+📝 文档:
+  """
+  输入文件校验工具
+  ====================================================
+  1. 使用 jsonschema 对 unified_metadata.json / constraints_linked.json 进行结构校验
+  2. 进行关键字段完整性检查（如 id 唯一性、targets 可解析性等）
+  ... (还有 2 行)
+
+🏗️ 类:
+  class JsonValidator:
+
+⚙️ 函数:
+  def __init__(self, schema: dict[str, Any]) -> None:
+  def validate_file(self, filepath: str | Path) -> dict[str, Any]:
+
+📊 统计: 42 行, 1 个类, 2 个函数
+
+
+📄 src\llm_generation\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\llm_generation\config.py
+------------------------------------------------------------
+📝 文档:
+  """config.py - 系统配置管理
+  
+  统一管理LLM API、知识图谱、对话系统等配置参数
+  完全基于YAML配置文件，无硬编码
+  """
+  ... (还有 37 行)
+
+🏗️ 类:
+  class ComponentTypesConfig:
+  class ConstraintEngineConfig:
+  class InterfaceTypesConfig:
+  class ModeDeclarationGroupConfig:
+  class OutputSchemaFieldConfig:
+  class OutputSchemaConfig:
+  class PortType:
+  class EventType:
+  class Round1ElementDesignConfig:
+  class RunnableElementDef:
+  class RunnableEntityConfig:
+  class UnionBranch:
+  class UnionSpec:
+  class Round1PreselectConfig:
+  class Round1SchemaConfig:
+  class ComponentType:
+  class InterfaceType:
+  class DesignPattern:
+  class TerminologyConfig:
+  class LLMConfig:
+  class ConversationConfig:
+  class MemoryConfig:
+  class KnowledgeGraphConfig:
+  class TerminationRulesConfig:
+  class CacheConfig:
+  class SchemaPerformanceConfig:
+  class SchemaGenerationConfig:
+  class StandardTypesConfig:
+  class GenerationConfig:
+  class SemanticPattern:
+  class SemanticResolutionConfig:
+  class MetamodelInjectionConfig:
+  class SystemConfig:
+
+⚙️ 函数:
+  def get_temperature(self, stage: str = None) -> float:
+  def _load_round1_schema_config(yaml_config: dict) -> Round1SchemaConfig:
+  def _field_cfg(sec: str) -> OutputSchemaFieldConfig:
+  def _append_elem(defs: List[RunnableElementDef], e: dict):
+  def _create_component_types(data: List[Dict]) -> List[ComponentType]:
+  def _create_interface_types(data: List[Dict]) -> List[InterfaceType]:
+  def _create_design_patterns(data: List[Dict]) -> List[DesignPattern]:
+  def load_config(config_path: Optional[Path] = None) -> SystemConfig:
+  def _validate_config(config: SystemConfig):
+  def get_config_info() -> Dict[str, Any]:
+
+📊 统计: 755 行, 33 个类, 10 个函数
+
+
+📄 src\llm_generation\core\component_registry.py
+------------------------------------------------------------
+📝 文档:
+  """core/component_registry.py - 简化的组件注册表
+  
+  优化为支持直接引用，移除语义占位符处理
+  """
+  """组件接口信息"""
+  ... (还有 21 行)
+
+🏗️ 类:
+  class ComponentInterface:
+  class ComponentRegistration:
+  class ComponentRegistry:
+
+⚙️ 函数:
+  def __init__(self):
+  def initialize_session(
+  def register_generated_component(self, component_data: Dict[str, Any]):
+  def _extract_interfaces_direct(
+  def validate_reference_path(self, path: str) -> bool:
+  def get_element_by_path(self, path: str) -> Optional[Dict[str, Any]]:
+  def get_all_valid_paths(self) -> List[str]:
+  def get_component_paths(self) -> List[str]:
+  def get_interface_paths(self) -> List[str]:
+  def get_port_paths(self, component_name: str = None) -> List[str]:
+  ... (还有 11 个函数)
+
+📊 统计: 394 行, 3 个类, 21 个函数
+
+
+📄 src\llm_generation\core\conversation_manager.py
+------------------------------------------------------------
+📝 文档:
+  """core/conversation_manager.py - 优化的对话管理核心
+  
+  简化流程，充分利用长上下文能力
+  """
+  """对话状态枚举"""
+  ... (还有 15 行)
+
+🏗️ 类:
+  class ConversationState(Enum):
+  class ConversationManager:
+
+⚙️ 函数:
+  def __init__(self):
+  def start_conversation(
+  def process_round1(self, session_id: str) -> Dict[str, Any]:
+  def process_round2(
+  def get_system_stats(self) -> Dict[str, Any]:
+  def _analyze_system_scale(self, session_info: Dict[str, Any], user_input: str):
+  def _generate_performance_report(
+  def _calculate_efficiency_score(
+  def _save_optimized_results(
+  def handle_user_feedback(
+  ... (还有 4 个函数)
+
+📊 统计: 614 行, 2 个类, 14 个函数
+
+
+📄 src\llm_generation\core\dependency_analyzer.py
+------------------------------------------------------------
+📝 文档:
+  """core/dependency_analyzer.py - 简化的依赖分析器
+  
+  优化为支持大规模单批生成，仅在必要时提供分批建议
+  """
+  """组件依赖信息"""
+  ... (还有 11 行)
+
+🏗️ 类:
+  class ComponentDependency:
+  class DependencyAnalyzer:
+
+⚙️ 函数:
+  def __init__(self):
+  def should_use_batch_generation(
+  def analyze_and_batch(
+  def _calculate_total_complexity(
+  def _create_optimized_batches(
+  def _get_component_complexity(self, component: Dict[str, Any]) -> int:
+  def _create_batch_info(
+  def _determine_batch_type(self, components: List[Dict[str, Any]]) -> str:
+  def get_optimization_suggestions(
+  def _estimate_token_usage(self, component_plans: List[Dict[str, Any]]) -> int:
+
+📊 统计: 276 行, 2 个类, 10 个函数
+
+
+📄 src\llm_generation\core\memory_manager.py
+------------------------------------------------------------
+📝 文档:
+  """core/memory_manager.py - 短期记忆管理
+  
+  管理会话级别的短期记忆，支持对话上下文保持和用户偏好学习
+  """
+  """短期记忆管理器"""
+  ... (还有 19 行)
+
+🏗️ 类:
+  class MemoryManager:
+
+⚙️ 函数:
+  def __init__(self):
+  def create_session(self, user_id: str = None) -> str:
+  def _init_context(self, user_id: str = None) -> Dict[str, Any]:
+  def get_session(self, session_id: str) -> Optional[SessionMemory]:
+  def _is_session_expired(self, session: SessionMemory) -> bool:
+  def add_conversation_turn(
+  def _update_accumulated_context(self, session: SessionMemory, turn: ConversationTurn):
+  def _analyze_design_preferences(self, context: Dict[str, Any], artifacts: Dict[str, Any]):
+  def _analyze_user_feedback(self, context: Dict[str, Any], feedback: str):
+  def update_design_state(self, session_id: str, design: ArchitectureDesign) -> bool:
+  ... (还有 9 个函数)
+
+📊 统计: 374 行, 1 个类, 19 个函数
+
+
+📄 src\llm_generation\core\reference_resolver.py
+------------------------------------------------------------
+📝 文档:
+  """core/reference_resolver.py - 引用解析器
+  
+  使用配置化的语义模式，避免硬编码关键词
+  """
+  """引用解析器 - 配置化语义模式"""
+  ... (还有 10 行)
+
+🏗️ 类:
+  class ReferenceResolver:
+
+⚙️ 函数:
+  def __init__(self):
+  def _load_semantic_patterns_from_config(self) -> List[Dict[str, Any]]:
+  def resolve_all_references(
+  def _resolve_component_references(
+  def resolve_recursive(obj, path=""):
+  def _is_semantic_reference(self, text: str) -> bool:
+  def _resolve_semantic_reference(
+  def _apply_pattern_template(
+  def _find_component_by_description(
+  def get_resolution_statistics(self) -> Dict[str, Any]:
+  ... (还有 1 个函数)
+
+📊 统计: 206 行, 1 个类, 11 个函数
+
+
+📄 src\llm_generation\core\round1_designer.py
+------------------------------------------------------------
+📝 文档:
+  """core/round1_designer.py - Round 1架构设计器
+  
+  执行第一轮对话：高层架构设计，确定组件类型、接口类型、连接关系
+  移除了冗余的函数调用，保留核心架构设计功能
+  """
+  ... (还有 8 行)
+
+🏗️ 类:
+  class Round1Designer:
+
+⚙️ 函数:
+  def __init__(self):
+  def _load_terminology_from_config(self) -> Dict[str, Any]:
+  def design_architecture(
+  def _build_architecture_schema(self) -> Dict[str, Any]:
+  def _enum_or_string(values, desc: str = None):
+  def _prepare_design_context(
+  def _parse_response_to_design(self, response_data: Dict[str, Any]) -> ArchitectureDesign:
+  def save_round1_data(self,
+
+📊 统计: 642 行, 1 个类, 8 个函数
+
+
+📄 src\llm_generation\core\round2_generator.py
+------------------------------------------------------------
+📝 文档:
+  """core/round2_generator.py - 修复版Round 2生成器
+  
+  修复了参数调用不匹配问题和查询字段问题
+  专注于结构化输出，确保Schema生成流程正确
+  """
+  ... (还有 58 行)
+
+🏗️ 类:
+  class Round2Generator:
+
+⚙️ 函数:
+  def __init__(self):
+  def generate_arxml(
+  def _build_single_component_schema(self, comp: Dict[str, Any]) -> Dict[str, Any]:
+  def _extract_instance_paths(self, component_json: Dict[str, Any], component_name: str) -> Dict[str, List[str]]:
+  def recurse_children(parent_node: Dict[str, Any], parent_path: str):
+  def _inject_paths_into_schema(self, schema: Dict[str, Any], known_paths: Dict[str, List[str]]) -> Dict[str, Any]:
+  def recurse(node):
+  def _build_detailed_interface_index(self, normalized_ifaces: Dict[str, Any]) -> List[Dict[str, str]]:
+  def recurse_children(parent_node: Dict[str, Any], parent_path: str):
+  def _enforce_includes_required(self, comp_plan: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
+  ... (还有 20 个函数)
+
+📊 统计: 892 行, 1 个类, 30 个函数
+
+
+📄 src\llm_generation\core\user_interaction.py
+------------------------------------------------------------
+📝 文档:
+  """core/user_interaction.py - 用户交互管理
+  
+  处理Round 1结果的用户确认、反馈和修改
+  """
+  """用户交互管理器"""
+  ... (还有 54 行)
+
+🏗️ 类:
+  class UserInteraction:
+
+⚙️ 函数:
+  def __init__(self):
+  def _build_feedback_patterns(self) -> Dict[str, List[str]]:
+  def present_architecture_design(self, design: ArchitectureDesign) -> str:
+  def _translate_key(self, key: str) -> str:
+  def _translate_component_type(self, comp_type: str) -> str:
+  def _translate_interface_type(self, intf_type: str) -> str:
+  def analyze_user_feedback(self, feedback: str) -> Dict[str, Any]:
+  def _determine_action_type(self, intent: str, feedback: str, is_final: bool = False) -> str:
+  def handle_user_feedback(
+  def _handle_final_confirmation(self, design: ArchitectureDesign) -> Tuple[str, ArchitectureDesign, bool]:
+  ... (还有 10 个函数)
+
+📊 统计: 491 行, 1 个类, 20 个函数
+
+
+📄 src\llm_generation\generator_schema.py
+------------------------------------------------------------
+📝 文档:
+  """把组件名等规范化为文件名友好格式"""
+  """在 CONFIG.output_dir/round1_data 下寻找最新的 round1_*.json"""
+  """兼容不同保存格式：design / response_data"""
+  """schema 预览输出根目录"""
+  """Round2 调试输出根目录（本脚本额外保存 ARXML）"""
+  ... (还有 23 行)
+
+⚙️ 函数:
+  def _ts() -> str:
+  def _safe_name(name: str) -> str:
+  def _read_json(p: Path) -> Dict[str, Any]:
+  def _write_json(p: Path, obj: Any) -> None:
+  def _latest_round1_json() -> Path | None:
+  def load_round1_design(path: Path) -> Dict[str, Any]:
+  def _schema_out_root() -> Path:
+  def _round2_out_root() -> Path:
+  def _snapshot_prompt_files() -> List[Path]:
+  def _diff_new_files(before: List[Path], after: List[Path]) -> List[Path]:
+  ... (还有 4 个函数)
+
+📊 统计: 257 行, 0 个类, 14 个函数
+
+
+📄 src\llm_generation\json_to_xml.py
+------------------------------------------------------------
+📝 文档:
+  """
+  通用 JSON 转 AUTOSAR ARXML 转换器
+  自动处理任意 JSON 结构，无需硬编码标签
+  """
+  """通用 JSON 转 ARXML 转换器"""
+  ... (还有 49 行)
+
+🏗️ 类:
+  class GenericJsonToArxmlConverter:
+
+⚙️ 函数:
+  def __init__(self):
+  def convert_folder(self, input_folder: str, output_folder: str):
+  def convert_file(self, json_path: Union[str, Path], output_path: Union[str, Path]):
+  def convert_json_to_xml(self, json_data: Dict[str, Any]) -> str:
+  def _reorder_element(self, elem: ET.Element):
+  def _convert_json_to_element(self, parent: ET.Element, data: Any, tag_name: str = None):
+  def _prettify_xml(self, elem: ET.Element) -> str:
+  def main():
+
+📊 统计: 468 行, 1 个类, 8 个函数
+
+
+📄 src\llm_generation\knowledge\constraint_engine.py
+------------------------------------------------------------
+📝 文档:
+  """knowledge/constraint_engine.py - 约束规则引擎
+  
+  从KG查询和管理AUTOSAR约束规则，移除验证逻辑，专注于约束信息提供
+  """
+  """约束类型枚举"""
+  ... (还有 27 行)
+
+🏗️ 类:
+  class ConstraintType(Enum):
+  class ConstraintInfo:
+  class ConstraintEngine:
+
+⚙️ 函数:
+  def __init__(self):
+  def _init_neo4j_connection(self):
+  def query_constraints_for_elements(self, element_types: List[str]) -> List[ConstraintInfo]:
+  def _query_constraints_from_kg(self, element_types: List[str]) -> List[ConstraintInfo]:
+  def _parse_constraint_type(self, constraint_type: str, id_type: str, labels: List[str]) -> ConstraintType:
+  def _get_mock_constraints(self, element_types: List[str]) -> List[ConstraintInfo]:
+  def generate_constraint_prompt(self, element_types: List[str]) -> str:
+  def get_constraint_summary(self, element_types: List[str]) -> Dict[str, Any]:
+  def get_constraints_by_target(self, target_element: str) -> List[ConstraintInfo]:
+  def clear_cache(self):
+  ... (还有 2 个函数)
+
+📊 统计: 368 行, 3 个类, 12 个函数
+
+
+📄 src\llm_generation\knowledge\dynamic_query_engine.py
+------------------------------------------------------------
+📝 文档:
+  """
+  Dynamic Query Engine — Clean Single-Path Implementation (patched)
+  
+  变更要点（2025-09-10）
+  - 终止型类型支持：当 Attribute 的 TYPE_OF 指向的 Class 为 “原子/别名/枚举” 时，直接落基元/enum，不再递归；
+  ... (还有 159 行)
+
+🏗️ 类:
+  class KGQueryError(RuntimeError):
+  class Neo4jConfig:
+  class DynamicQueryEngine:
+
+⚙️ 函数:
+  def _norm(s: Optional[str]) -> str:
+  def _up(s: Optional[str]) -> str:
+  def _is_array_occurs(max_occurs) -> bool:
+  def _emit_ref_object_schema(is_array: bool, dest_enum: list[str] | None = None) -> dict:
+  def _override_container_shape(prop_key_upper: str, default_is_array: bool) -> bool:
+  def __init__(self):
+  def _init_neo4j_connection(self):
+  def _build_design_index(self, element_design: dict) -> dict[str, set[str]]:
+  def U(x):
+  def _query_class_attributes(self, session, class_ident: str) -> dict:
+  ... (还有 20 个函数)
+
+📊 统计: 1405 行, 3 个类, 30 个函数
+
+
+📄 src\llm_generation\knowledge\terminology_builder.py
+------------------------------------------------------------
+📝 文档:
+  """knowledge/terminology_builder.py - 高层术语库构建
+  
+  从元模型定义中提取核心概念，为Round 1提供纯粹的元模型信息
+  """
+  """属性定义"""
+  ... (还有 19 行)
+
+🏗️ 类:
+  class AttributeDefinition:
+  class ComponentTypeDefinition:
+  class InterfaceTypeDefinition:
+  class ModeDeclarationGroupDefinition:
+  class TerminologyBuilder:
+
+⚙️ 函数:
+  def __init__(self):
+  def _load_component_types(self) -> Dict[str, ComponentTypeDefinition]:
+  def _load_interface_types(self) -> Dict[str, InterfaceTypeDefinition]:
+  def _load_mode_declaration_group(self) -> ModeDeclarationGroupDefinition:
+  def build_element_context_for_round2(
+  def get_round1_metamodel_context(self) -> str:
+  def get_component_types(self) -> Dict[str, ComponentTypeDefinition]:
+  def get_interface_types(self) -> Dict[str, InterfaceTypeDefinition]:
+  def get_concrete_component_types(self) -> List[ComponentTypeDefinition]:
+  def get_concrete_interface_types(self) -> List[InterfaceTypeDefinition]:
+  ... (还有 5 个函数)
+
+📊 统计: 485 行, 5 个类, 15 个函数
+
+
+📄 src\llm_generation\llm\gemini_client.py
+------------------------------------------------------------
+📝 文档:
+  """llm/gemini_client.py - Gemini API客户端
+  
+  封装Gemini API调用，支持Response Schema、重试机制、文档处理和函数调用
+  支持配置化的文件上传功能（默认关闭）
+  基于llm_xml_generator.py的实现进行优化
+  ... (还有 70 行)
+
+🏗️ 类:
+  class GeminiClient:
+
+⚙️ 函数:
+  def __init__(self):
+  def _check_file_upload_support(self):
+  def _normalize_api_endpoint(self, api_url: str) -> str:
+  def register_function(self, name: str, parameters: Dict[str, Any],
+  def clear_functions(self):
+  def _make_generation_config(
+  def generate_with_functions(
+  def generate_with_schema_and_functions(
+  def _convert_json_schema_to_gemini(self, json_schema: Dict) -> Dict:
+  def convert_type(json_type: str) -> str:
+  ... (还有 8 个函数)
+
+📊 统计: 660 行, 1 个类, 18 个函数
+
+
+📄 src\llm_generation\llm\openai_client.py
+------------------------------------------------------------
+📝 文档:
+  """
+  OpenAI-compatible GPT client via CloseAI proxy.
+  - Drop-in 替代 GeminiClient：方法签名一致 (generate_with_schema / generate_text)
+  - 支持 Structured Outputs（优先）→ 自动降级到 JSON mode → 纯文本 + 解析修复
+  - 兼容 token 统计字段差异
+  ... (还有 13 行)
+
+🏗️ 类:
+  class OpenAIClient:
+
+⚙️ 函数:
+  def __init__(self):
+  def generate_with_schema(
+  def generate_text(
+  def _generate_with_schema_impl(
+  def _normalize_base(self, url: str) -> str:
+  def _extract_usage(self, resp) -> Tuple[int, int, int]:
+  def _enhance_prompt_for_json(self, prompt: str) -> str:
+  def _extract_json_from_text(self, text: str) -> Dict[str, Any]:
+  def _repair_json_text(self, text: str) -> str:
+
+📊 统计: 295 行, 1 个类, 9 个函数
+
+
+📄 src\llm_generation\llm\prompt_templates.py
+------------------------------------------------------------
+📝 文档:
+  """llm/prompt_templates.py - 优化的提示词模板管理
+  
+  充分利用Gemini长上下文能力，减少分批，提供完整信息
+  """
+  """提示词模板管理器 - 优化版"""
+  ... (还有 235 行)
+
+🏗️ 类:
+  class PromptTemplateManager:
+
+⚙️ 函数:
+  def __init__(self):
+  def _get_enhanced_round1_template(self) -> Template:
+  def get_round1_prompt(
+  def _fmt_allowed(title, items):
+  def get_round2_prompt_interfaces(
+  def get_round2_prompt_single(
+  def _translate_analysis_key(self, key: str) -> str:
+  def get_template(self, template_name: str) -> Optional[Template]:
+
+📊 统计: 389 行, 1 个类, 8 个函数
+
+
+📄 src\llm_generation\llm_xml_generator.py
+------------------------------------------------------------
+📝 文档:
+  """llm_xml_generator.py
+  
+  Batch-generate AUTOSAR ARXML (JSON via tool-calling) with Gemini
+  ────────────────────────────────────────────────────────────────
+  * Prompts: promote.yaml  (min/mid/full ± rag)
+  ... (还有 49 行)
+
+⚙️ 函数:
+  def load_prompts(path: Path) -> Dict[str, List[str]]:
+  def load_schema(path: Path) -> dict:
+  def clean_schema(obj):
+  def ensure_dir(p: Path) -> None:
+  def init_metrics_file() -> None:
+  def write_metrics(row: List) -> None:
+  def extract_token_usage(response) -> Tuple[int, int, int]:
+  def make_gen_config(seed: int):
+  def convert_json_schema_to_gemini_schema(json_schema: dict) -> dict:
+  def convert_type(json_type: str) -> str:
+  ... (还有 9 个函数)
+
+📊 统计: 763 行, 0 个类, 19 个函数
+
+
+📄 src\llm_generation\output\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\llm_generation\output\full_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\llm_generation\output\full_promote_No Guard\txt_to_arxml.py
+------------------------------------------------------------
+📝 文档:
+  """
+  遍历指定目录下的所有txt文件，去除markdown代码块标记，转换为arxml文件
+  
+  Args:
+  input_dir: 输入目录，默认为当前目录
+  ... (还有 1 行)
+
+⚙️ 函数:
+  def convert_txt_to_arxml(input_dir="."):
+
+📊 统计: 59 行, 0 个类, 1 个函数
+
+
+📄 src\llm_generation\output\mid_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\llm_generation\output\min_promote_No Guard\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\llm_generation\standard_types\standard_types.py
+------------------------------------------------------------
+📝 文档:
+  """knowledge/standard_types.py - 标准类型管理器
+  
+  从ARXML文件中提取AUTOSAR标准类型信息，供LLM使用
+  """
+  """SW-BASE-TYPE定义"""
+  ... (还有 15 行)
+
+🏗️ 类:
+  class BaseType:
+  class ImplementationType:
+  class CompuMethod:
+  class Unit:
+  class StandardTypeManager:
+
+⚙️ 函数:
+  def __init__(self, standard_types_path: Optional[Path] = None):
+  def _load_all_types(self):
+  def _load_base_types(self, filepath: Path):
+  def _load_implementation_types(self, filepath: Path):
+  def _load_compu_methods_and_units(self, filepath: Path):
+  def _get_text(self, element, path: str, default: str = "") -> str:
+  def _get_ref(self, element, path: str) -> Optional[str]:
+  def get_type_context_for_llm(self, filter_categories: List[str] = None) -> str:
+  def get_type_by_name(self, type_name: str) -> Optional[Dict[str, Any]]:
+  def list_available_types(self, category: str = None) -> List[str]:
+  ... (还有 1 个函数)
+
+📊 统计: 333 行, 5 个类, 11 个函数
+
+
+📄 src\llm_generation\test\check_round1_designer.py
+------------------------------------------------------------
+📝 文档:
+  """Round1架构设计器测试类"""
+  """测试前设置"""
+  """测试后清理"""
+  """测试架构设计输出结构的完整性"""
+  """验证架构设计输出结构，返回错误列表"""
+  ... (还有 56 行)
+
+🏗️ 类:
+  class checkRound1ArchitectureDesigner(unittest.TestCase):
+  class checkRound1DesignerIntegration(unittest.TestCase):
+
+⚙️ 函数:
+  def setUp(self):
+  def tearDown(self):
+  def check_architecture_output_structure_completeness(self):
+  def validate_structure(design_output: Dict[str, Any]) -> List[str]:
+  def validate_component_structure(comp: Dict[str, Any], index: int) -> List[str]:
+  def validate_interface_structure(intf: Dict[str, Any], index: int) -> List[str]:
+  def check_element_design_correctness(self):
+  def validate_element_design_for_type(
+  def check_multi_component_scenarios(self):
+  def generate_mock_architecture(comp_count: int, intf_count: int) -> Dict[str, Any]:
+  ... (还有 9 个函数)
+
+📊 统计: 1157 行, 2 个类, 19 个函数
+
+
+📄 src\llm_generation\test\round1_gemini.py
+------------------------------------------------------------
+📝 文档:
+  """
+  测试 Round1 Designer 实际调用 Gemini API 的输出
+  """
+  """测试 Round1 实际调用 Gemini API"""
+  user_requirements = """
+  ... (还有 15 行)
+
+⚙️ 函数:
+  def test_round1_gemini_api():
+  def test_with_functions():
+
+📊 统计: 218 行, 0 个类, 2 个函数
+
+
+📄 src\llm_generation\test\round2test.py
+------------------------------------------------------------
+📝 文档:
+  """
+  生产级Round2 Schema生成测试
+  验证BMS系统的完整Schema生成
+  """
+  """创建BMS系统的组件计划（模拟Round1输出）"""
+  ... (还有 2 行)
+
+⚙️ 函数:
+  def create_bms_component_plans() -> List[Dict[str, Any]]:
+  def test_bms_schema_generation():
+  def verify_schema_completeness(schema: Dict[str, Any]):
+
+📊 统计: 244 行, 0 个类, 3 个函数
+
+
+📄 src\llm_generation\utils\document_processor.py
+------------------------------------------------------------
+📝 文档:
+  """document_processor.py - 文档处理器（模拟版本）
+  
+  由于使用gemini代理API，代理节点不支持状态对话，实际不支持文件上传，这里提供模拟实现
+  """
+  """模拟的文件对象"""
+  ... (还有 9 行)
+
+🏗️ 类:
+  class MockFile:
+  class DocumentProcessor:
+
+⚙️ 函数:
+  def __init__(self):
+  def validate_file(self, file_path: str) -> Tuple[bool, str]:
+  def get_mime_type(self, file_path: str) -> str:
+  def upload_file(self, file_path: str) -> Optional[MockFile]:
+  def extract_document_content(self, file_obj: MockFile) -> str:
+  def delete_file(self, file_obj: MockFile):
+  def cleanup_all_files(self):
+  def get_uploaded_files_info(self) -> List[Dict[str, Any]]:
+
+📊 统计: 169 行, 2 个类, 8 个函数
+
+
+📄 src\llm_generation\utils\exceptions.py
+------------------------------------------------------------
+📝 文档:
+  """utils/exceptions.py - 系统异常定义
+  
+  定义系统中使用的各种异常类型
+  """
+  """LLM生成系统顶层异常基类"""
+  ... (还有 10 行)
+
+🏗️ 类:
+  class LLMGenerationException(Exception):
+  class ConfigurationError(LLMGenerationException):
+  class ResourceNotFoundError(LLMGenerationException):
+  class ArchitectureDesignError(LLMGenerationException):
+  class ValidationError(LLMGenerationException):
+  class ConversationError(LLMGenerationException):
+  class LLMAPIError(LLMGenerationException):
+  class KGQueryError(LLMGenerationException):
+  class MemoryError(LLMGenerationException):
+  class SchemaGenerationError(LLMGenerationException):
+  class PromptTemplateError(LLMGenerationException):
+
+⚙️ 函数:
+  def __init__(self, message: str, status_code: int = None, response_text: str = None):
+
+📊 统计: 54 行, 11 个类, 1 个函数
+
+
+📄 src\llm_generation\utils\monitoring.py
+------------------------------------------------------------
+📝 文档:
+  """utils/monitoring.py - Schema生成性能监控"""
+  """Schema生成指标"""
+  """记录组件处理"""
+  """记录查询"""
+  """记录缓存命中"""
+  ... (还有 12 行)
+
+🏗️ 类:
+  class SchemaGenerationMetrics:
+  class SchemaGenerationMonitor:
+
+⚙️ 函数:
+  def record_component(self, comp_name: str, duration: float):
+  def record_query(self, duration: float, success: bool = True):
+  def record_cache_hit(self, cache_type: str = "type"):
+  def record_cache_miss(self):
+  def record_schema_properties(self, properties_count: int):
+  def record_termination(self, reason: str):
+  def record_cache_access(self, hit: bool):
+  def finalize(self) -> Dict[str, Any]:
+  def __init__(self):
+  def monitor(self, operation_name: str = "schema_generation"):
+  ... (还有 5 个函数)
+
+📊 统计: 227 行, 2 个类, 15 个函数
+
+
+📄 src\llm_generation\utils\serializers.py
+------------------------------------------------------------
+📝 文档:
+  """utils/serializers.py - 序列化工具
+  
+  提供对象序列化和反序列化功能
+  """
+  """生成UUID字符串"""
+  ... (还有 10 行)
+
+🏗️ 类:
+  class ArchitectureDesign:
+  class ConversationTurn:
+  class SessionMemory:
+  class EnhancedJSONEncoder(json.JSONEncoder):
+
+⚙️ 函数:
+  def generate_uuid() -> str:
+  def current_timestamp() -> str:
+  def __post_init__(self):
+  def __post_init__(self):
+  def __post_init__(self):
+  def default(self, obj):
+  def to_json(obj: Any, indent: int = 2) -> str:
+  def from_json(json_str: str, target_class: type = None) -> Any:
+  def save_json(obj: Any, file_path: Union[str, Path]) -> None:
+  def load_json(file_path: Union[str, Path], target_class: type = None) -> Any:
+  ... (还有 1 个函数)
+
+📊 统计: 149 行, 4 个类, 11 个函数
+
+
+📄 src\llm_generation\utils\validators.py
+------------------------------------------------------------
+📝 文档:
+  """utils/validators.py - 验证工具
+  
+  提供数据验证和完整性检查功能
+  """
+  """验证UUID格式"""
+  ... (还有 6 行)
+
+⚙️ 函数:
+  def validate_uuid(uuid_str: str) -> bool:
+  def validate_autosar_name(name: str) -> bool:
+  def validate_json_schema(data: Dict, schema: Dict) -> tuple[bool, List[str]]:
+  def validate_object(obj: Dict, schema_obj: Dict, path: str = ""):
+  def validate_field(value: Any, schema: Dict, path: str):
+  def validate_architecture_design(design: Dict) -> tuple[bool, List[str]]:
+  def validate_arxml_structure(arxml_data: Dict) -> tuple[bool, List[str]]:
+  def validate_file_path(file_path: Union[str, Path], must_exist: bool = True) -> tuple[bool, str]:
+  def sanitize_input(text: str, max_length: int = 10000) -> str:
+
+📊 统计: 206 行, 0 个类, 9 个函数
+
+
+📄 src\utils\logger.py
+------------------------------------------------------------
+📝 文档:
+  """获取配置好的logger"""
+
+⚙️ 函数:
+  def get_logger(name: str) -> logging.Logger:
+
+📊 统计: 36 行, 0 个类, 1 个函数
+
+
+📄 src\validation\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\validation\check_smt_fixes.py
+------------------------------------------------------------
+📝 文档:
+  """
+  测试SMT验证器修复效果
+  确保修复后的验证器能正确处理各种情况
+  """
+  """测试SMT验证器的修复"""
+  ... (还有 40 行)
+
+⚙️ 函数:
+  def test_smt_fixes():
+  def test_wrapper_counting():
+
+📊 统计: 204 行, 0 个类, 2 个函数
+
+
+📄 src\validation\check_type_conversion.py
+------------------------------------------------------------
+📝 文档:
+  """
+  快速验证SMT修复效果
+  直接测试关键的修复点
+  """
+  """测试类型转换修复"""
+  ... (还有 3 行)
+
+⚙️ 函数:
+  def test_type_conversion():
+  def test_wrapper_counting():
+  def test_constraint_validation():
+  def main():
+
+📊 统计: 132 行, 0 个类, 4 个函数
+
+
+📄 src\validation\checksmt.py
+------------------------------------------------------------
+📝 文档:
+  """简化SMT验证演示 - 修复效果展示
+  ------------------------------------------
+  直接运行以查看修复前后的差异
+  """
+  """运行SMT验证演示"""
+  ... (还有 82 行)
+
+⚙️ 函数:
+  def run_smt_validation_demo():
+  def demonstrate_old_logic():
+  def validate_xml_fixed(xml_content: str, attr_tag: str, class_tag: str, min_occurs: int, max_occurs: int):
+  def count_with_wrapper_support(element_counts, class_tag, attr_tag, wrapper_relationships, root):
+  def print_validation_result(result, description):
+  def print_validation_result(result, description):
+  def generate_smt_instance_example(validation_result):
+  def summarize_fix_results(result1, result2, result3):
+  def demonstrate_wrapper_detection():
+  def show_smt_comparison():
+
+📊 统计: 383 行, 0 个类, 10 个函数
+
+
+📄 src\validation\constraints\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\validation\constraints\smt_validator.py
+------------------------------------------------------------
+📝 文档:
+  """smt_validator.py (v4.0) - 修复XML到SMT的实际连接
+  --------------------------------------------
+  核心修复：将实际XML数据转换为SMT事实，实现非抽象的约束验证
+  """
+  """SMT约束验证器 - 实现XML数据到SMT模型的完整映射"""
+  ... (还有 51 行)
+
+🏗️ 类:
+  class SMTValidator:
+
+⚙️ 函数:
+  def __init__(self, smt_template_file: str,
+  def _filter_constraints_by_config(self):
+  def validate_constraints(self, xml_content: str) -> Dict:
+  def _validate_structural_only(self, xml_model: Dict) -> Dict:
+  def _validate_semantic_only(self, xml_model: Dict) -> Dict:
+  def _analyze_validation_results(self, structural_results: List[Dict], semantic_results: List[Dict]) -> Dict:
+  def _build_detailed_constraint_breakdown(self, structural_results: List[Dict],
+  def _build_complete_xml_model(self, xml_content: str) -> Optional[Dict]:
+  def build_parent_map(element, parent=None):
+  def _detect_wrapper_relationships(self, xml_model: Dict) -> Dict[str, str]:
+  ... (还有 28 个函数)
+
+📊 统计: 1777 行, 1 个类, 38 个函数
+
+
+📄 src\validation\main_validator.py
+------------------------------------------------------------
+📝 文档:
+  """
+  AUTOSAR XML验证系统主入口
+  支持从配置文件读取所有路径，避免硬编码
+  """
+  """AUTOSAR XML验证系统主类"""
+  ... (还有 16 行)
+
+🏗️ 类:
+  class AutosarValidator:
+
+⚙️ 函数:
+  def __init__(self, config_path: str = "config/main_config.yaml"):
+  def _save_report(self, xml_file: str, report: str, results: Dict):
+  def _make_serializable(self, obj):
+  def _validate_environment(self):
+  def _scan_xml_folder(self, folder_path: Path) -> List[str]:
+  def _load_config(self) -> Dict:
+  def _initialize_orchestrator(self):
+  def validate_single_file(self, xml_file: str, validation_mode: str = None) -> Dict:
+  def validate_all_files(self, validation_mode: str = None) -> List[Dict]:
+  def run_interactive(self):
+  ... (还有 6 个函数)
+
+📊 统计: 574 行, 1 个类, 16 个函数
+
+
+📄 src\validation\orchestrator\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\validation\orchestrator\config_driven_orchestrator.py
+------------------------------------------------------------
+📝 文档:
+  """
+  配置驱动的验证编排器 - 增强版（支持映射文件传递）
+  """
+  """配置驱动的验证编排器 - 支持增强功能"""
+  """初始化验证编排器"""
+  ... (还有 15 行)
+
+🏗️ 类:
+  class ConfigDrivenOrchestrator:
+
+⚙️ 函数:
+  def __init__(self, config: Dict):
+  def _print_stage_details(self, stage: str, result: Dict):
+  def _print_all_shacl_violations(self, result: Dict):
+  def generate_validation_report(self, validation_results: Dict) -> str:
+  def _generate_detailed_shacl_violation_report(self, result: Dict) -> List[str]:
+  def generate_shacl_violation_summary_report(self, validation_results: Dict) -> str:
+  def _print_failure_details(self, stage: str, result: Dict):
+  def _init_validators(self):
+  def execute_validation(self, xml_content: str, validation_stages: list = None) -> Dict:
+  def _analyze_xml_info(self, xml_content: str, validation_results: Dict):
+  ... (还有 6 个函数)
+
+📊 统计: 1589 行, 1 个类, 16 个函数
+
+
+📄 src\validation\orchestrator\validation_orchestrator.py
+------------------------------------------------------------
+📝 文档:
+  """验证流程编排器"""
+  """
+  初始化验证编排器
+  
+  Args:
+  ... (还有 6 行)
+
+🏗️ 类:
+  class ValidationOrchestrator:
+
+⚙️ 函数:
+  def __init__(self, validator_config: Dict):
+  def _init_validators(self):
+  def execute_full_validation(self, xml_content: str, validation_level: str = "full") -> Dict:
+  def _finalize_results(self, validation_results: Dict, start_time: float) -> Dict:
+  def generate_validation_report(self, validation_results: Dict) -> str:
+
+📊 统计: 296 行, 1 个类, 5 个函数
+
+
+📄 src\validation\semantic\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\validation\semantic\shacl_validator.py
+------------------------------------------------------------
+📝 文档:
+  """SHACL语义约束验证器 - 增强版（支持细粒度控制）"""
+  """
+  初始化SHACL验证器
+  
+  Args:
+  ... (还有 31 行)
+
+🏗️ 类:
+  class SHACLValidator:
+
+⚙️ 函数:
+  def __init__(self, shapes_file: str,
+  def validate_semantics(self, xml_content: str) -> Dict:
+  def _validate_structural_only(self, xml_content: str) -> Dict:
+  def _validate_semantic_only(self, xml_content: str) -> Dict:
+  def _validate_hybrid_mode(self, xml_content: str) -> Dict:
+  def _xml_to_rdf_with_config(self, xml_content: str) -> rdflib.Graph:
+  def _execute_shacl_validation(self, rdf_graph: rdflib.Graph) -> Dict:
+  def _filter_structural_violations(self, violations: List[Dict]) -> List[Dict]:
+  def _filter_semantic_violations(self, violations: List[Dict]) -> List[Dict]:
+  def _filter_violations_by_config(self, violations: List[Dict]) -> List[Dict]:
+  ... (还有 25 个函数)
+
+📊 统计: 1222 行, 1 个类, 35 个函数
+
+
+📄 src\validation\structure\__init__.py
+------------------------------------------------------------
+📊 统计: 0 行, 0 个类, 0 个函数
+
+
+📄 src\validation\structure\xsd_validator.py
+------------------------------------------------------------
+📝 文档:
+  """基于 XML Schema 的结构验证器 - 调试增强版"""
+  """初始化XSD验证器"""
+  """创建一个简化的AUTOSAR XSD Schema"""
+  """加载XSD Schema"""
+  """校验 XML 是否符合 XSD - 增强调试版本"""
+  ... (还有 1 行)
+
+🏗️ 类:
+  class XSDValidator:
+
+⚙️ 函数:
+  def __init__(self, xsd_file: Optional[str] = None):
+  def _create_simplified_autosar_xsd(self) -> str:
+  def _load_schema(self):
+  def validate_structure(self, xml_content: str) -> Dict:
+  def _basic_xml_validation(self, xml_content: str) -> Dict:
+
+📊 统计: 157 行, 1 个类, 5 个函数
+
+
+📄 vllm_local_main.py
+------------------------------------------------------------
+📝 文档:
+  """主函数 - 支持两种prompt来源模式"""
+
+⚙️ 函数:
+  async def main():
+
+📊 统计: 466 行, 0 个类, 1 个函数
+

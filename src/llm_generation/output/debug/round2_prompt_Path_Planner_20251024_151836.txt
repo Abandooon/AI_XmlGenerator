@@ -1,0 +1,976 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方"组件 JSON Schema"）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配"组件 JSON Schema"。
+
+            组件：Path_Planner（类型：APPLICATION-SW-COMPONENT-TYPE）
+
+
+
+            ## AUTOSAR 组件封装原则（严格遵守）
+
+            **关键规则：组件内部行为只能引用本组件自己的运行时元素**
+
+            1. **事件启动约束**：
+               - 所有 EVENT 的 START-ON-EVENT-REF 必须且只能引用【本组件 Path_Planner】的 RUNNABLE-ENTITY
+
+               **路径构造规则**：
+               - 格式：/Components/Path_Planner/{Runnable名称}
+               - 示例（正确）：
+                 * /Components/Path_Planner/Init_Runnable
+                 * /Components/Path_Planner/Control_Process_Runnable
+                 * /Components/Path_Planner/Periodic_Task_100ms
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomeRunnable  （引用了其他组件）
+                 * ❌ /Components/Path_Planner/Internal/SubRunnable  （路径层级错误）
+
+            2. **端口访问约束**：
+               - DATA-SEND-POINTS / DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-READ-ACCESSS 中的 PORT-PROTOTYPE-REF 必须指向【本组件 Path_Planner】的端口
+
+               **路径构造规则**：
+               - 格式：/Components/Path_Planner/{端口名称}
+               - 示例（正确）：
+                 * /Components/Path_Planner/P_Port_Status
+                 * /Components/Path_Planner/R_Port_TempSensor
+                 * /Components/Path_Planner/PR_Port_ServiceInterface
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomePort  （引用了其他组件的端口）
+                 * ❌ /Components/Path_Planner/Ports/P_Port_Status  （多了Ports容器层级）
+
+            3. **服务调用约束**：
+               - SERVER-CALL-POINTS 中的 CONTEXT-R-PORT-REF / CONTEXT-P-PORT-REF 必须是【本组件 Path_Planner】的端口
+               - 路径格式同上（端口访问）
+
+            4. **数据元素引用**（可跨组件）：
+               - TARGET-DATA-PROTOTYPE-REF 可以引用任何接口中的数据元素
+               - 这些路径在Schema的enum中已经为您列出，请直接选择使用
+
+               **路径格式**：
+               - 格式：/Interfaces/{接口名}/{数据元素名}
+               - 示例：
+                 * /Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp
+                 * /Interfaces/CAN_Setting_Interface/Requested_Level_Left
+
+            **特别注意**：
+            - 对于本组件的端口和Runnable引用，Schema中**没有提供enum列表**（因为生成时尚未创建）
+            - 您需要根据Round1设计中的端口和Runnable名称，**手动构造正确的路径**
+            - 路径必须严格遵循格式：/Components/Path_Planner/{元素名}，不要添加额外的层级
+
+            **为什么有这些限制？**
+            组件间的通信和触发必须通过端口连接间接实现，而不是直接引用。这是AUTOSAR确保组件可复用性和独立性的核心机制。
+            跨组件的数据流由RTE根据端口连接（AssemblyConnector）在系统组合层面建立，而不是在组件定义层面硬编码。
+
+            **如何正确实现跨组件通信？**
+            - 组件A要触发组件B的行为：A通过自己的P-Port发送数据 → RTE传递 → B的DataReceivedEvent触发B的Runnable
+            - 组件A要访问组件B的数据：A通过自己的R-Port读取 → RTE从B的P-Port获取数据
+            - 组件A要调用组件B的服务：A通过自己的R-Port调用 → RTE路由到B的P-Port实现的服务
+
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "ADASC Controller 系统将六个组件分工明确：Radar_Processor 负责雷达数据采集与初步处理；Camera_Processor 负责前视摄像头数据处理；Fusion_Algorithm 负责多传感数据融合；Path_Planner 负责纵横向控制指令的规划；Actuation_Interface 将规划指令落地到执行域；HMI_Manager 提供状态显示与告警。组件通过 RTE 的 R-Port/P-Port 进行通信，保持封装与可替换性。",
+  "data_flow_analysis": "数据流按阶段串行与并行组合：雷达与摄像头数据经各自处理组件输出，送入融合组件进行时序对齐和权重融合，融合结果传给路径规划组件，路径规划产生控制指令送往执行接口，执行接口输出到底盘域，HMI_Manager 订阅相关状态信息用于显示。数据类型在各端口统一定义，跨组件通信走 RTE 端口。",
+  "timing_requirements": "雷达/摄像头数据采集周期20-50ms，融合50ms内完成，路径规划40-60ms，执行落地10-20ms，HMI刷新100-200ms。",
+  "scalability_considerations": "模块化设计，易于增加传感器、增加复杂的融合策略、扩展路径规划与执行策略；接口采用标准化的 NV-DATA/SENDER-RECEIVER 模式以便扩展。",
+  "complexity_assessment": "Medium"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Radar_Processor -> Fusion_Algorithm via Radar_Data_Interface; Camera_Processor -> Fusion_Algorithm via Camera_Data_Interface; Fusion_Algorithm -> Path_Planner via Fusion_Data_Interface; Path_Planner -> Actuation_Interface via Actuation_Command_Interface; Fusion_Algorithm -> HMI_Manager via HMI_Status_Interface",
+  "data_flow_paths": "Radar_Data -> Fusion -> Path_Planner -> Actuation; Camera_Data -> Fusion -> Path_Planner; Fusion_Status -> HMI",
+  "control_flow_paths": "Timer-driven runnable activations: Radar_Timer, Camera_Timer, Fusion_Timer, Planner_Timer, Actuation_Timer"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "Radar_Data_Interface",
+    "name": "Radar_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性数据传输，带缓冲，低延迟",
+    "data_category": "RADAR_DATA",
+    "connected_components": [
+      "Radar_Processor",
+      "Fusion_Algorithm"
+    ],
+    "performance_requirements": "<= 20 ms",
+    "data_elements": [
+      "Radar_Data"
+    ],
+    "direct_paths": "Radar_Processor -> Fusion_Algorithm"
+  },
+  {
+    "interface_id": "Camera_Data_Interface",
+    "name": "Camera_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性数据传输，带缓冲，低延迟",
+    "data_category": "CAMERA_IMAGE",
+    "connected_components": [
+      "Camera_Processor",
+      "Fusion_Algorithm"
+    ],
+    "performance_requirements": "<= 20 ms",
+    "data_elements": [
+      "Camera_Image"
+    ],
+    "direct_paths": "Camera_Processor -> Fusion_Algorithm"
+  },
+  {
+    "interface_id": "Fusion_Data_Interface",
+    "name": "Fusion_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "周期性数据传输，带缓冲，低延迟",
+    "data_category": "FUSED_DATA",
+    "connected_components": [
+      "Fusion_Algorithm",
+      "Path_Planner",
+      "HMI_Manager"
+    ],
+    "performance_requirements": "<= 40 ms",
+    "data_elements": [
+      "Fused_Data"
+    ],
+    "direct_paths": "Fusion_Algorithm -> Path_Planner; Fusion_Algorithm -> HMI_Manager"
+  },
+  {
+    "interface_id": "Actuation_Command_Interface",
+    "name": "Actuation_Command_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "实时性要求高，点对点传输",
+    "data_category": "ACTUATION_COMMAND",
+    "connected_components": [
+      "Path_Planner",
+      "Actuation_Interface"
+    ],
+    "performance_requirements": "<= 20 ms",
+    "data_elements": [
+      "Actuation_Command"
+    ],
+    "direct_paths": "Path_Planner -> Actuation_Interface"
+  },
+  {
+    "interface_id": "HMI_Status_Interface",
+    "name": "HMI_Status_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "实时状态更新，单向至 HMI",
+    "data_category": "ADAS_STATUS",
+    "connected_components": [
+      "Fusion_Algorithm",
+      "HMI_Manager"
+    ],
+    "performance_requirements": "<= 100 ms",
+    "data_elements": [
+      "ADAS_Status"
+    ],
+    "direct_paths": "Fusion_Algorithm -> HMI_Manager"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "Radar_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Radar_Data_Interface"
+  },
+  {
+    "name": "Radar_Data",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Radar_Data_Interface/Radar_Data"
+  },
+  {
+    "name": "Camera_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Camera_Data_Interface"
+  },
+  {
+    "name": "Camera_Image",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Camera_Data_Interface/Camera_Image"
+  },
+  {
+    "name": "Fusion_Data_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Fusion_Data_Interface"
+  },
+  {
+    "name": "Fused_Data",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Fusion_Data_Interface/Fused_Data"
+  },
+  {
+    "name": "Actuation_Command_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/Actuation_Command_Interface"
+  },
+  {
+    "name": "Actuation_Command",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/Actuation_Command_Interface/Actuation_Command"
+  },
+  {
+    "name": "HMI_Status_Interface",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "path": "/Interfaces/HMI_Status_Interface"
+  },
+  {
+    "name": "ADAS_Status",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/HMI_Status_Interface/ADAS_Status"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: SENDER-RECEIVER-INTERFACE
+  - /Interfaces/Radar_Data_Interface
+  - /Interfaces/Camera_Data_Interface
+  - /Interfaces/Fusion_Data_Interface
+  - /Interfaces/Actuation_Command_Interface
+  - /Interfaces/HMI_Status_Interface
+  # 类型: VARIABLE-DATA-PROTOTYPE
+  - /Interfaces/Radar_Data_Interface/Radar_Data
+  - /Interfaces/Camera_Data_Interface/Camera_Image
+  - /Interfaces/Fusion_Data_Interface/Fused_Data
+  - /Interfaces/Actuation_Command_Interface/Actuation_Command
+  - /Interfaces/HMI_Status_Interface/ADAS_Status
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/Radar_Processor
+  - /Components/Camera_Processor
+  # 类型: P-PORT-PROTOTYPE
+  - /Components/Radar_Processor/P_Radar_Processed_Data
+  - /Components/Camera_Processor/P_Port_Camera_Output
+  - /Components/Fusion_Algorithm/P_Fusion_Output
+  # 类型: R-PORT-PROTOTYPE
+  - /Components/Radar_Processor/R_Radar_Data_Input
+  - /Components/Camera_Processor/R_Port_Camera_Input
+  - /Components/Fusion_Algorithm/R_Radar_Data_Input
+  - /Components/Fusion_Algorithm/R_Camera_Data_Input
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior/Radar_Data_Processing_Runnable
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior/Camera_Data_Processing_Runnable
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Runnable
+  # 类型: VARIABLE-ACCESS
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior/Radar_Data_Processing_Runnable/Radar_Data_Input
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior/Radar_Data_Processing_Runnable/Radar_Data_Output
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior/Camera_Data_Processing_Runnable/Camera_Image_Input
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior/Camera_Data_Processing_Runnable/Camera_Image_Output
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Runnable/Radar_Data_Input_Variable
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Runnable/Camera_Data_Input_Variable
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Runnable/Fused_Data_Output_Variable
+  # 类型: DATA-SEND-COMPLETED-EVENT
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior/Radar_Data_Sent
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior/Camera_Data_Sent
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Data_Sent
+  # 类型: TIMING-EVENT
+  - /Components/Radar_Processor/Radar_Proc_Internal_Behavior/Radar_Periodic_Timer
+  - /Components/Camera_Processor/Camera_Proc_Internal_Behavior/Camera_Periodic_Timer
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Fusion_Timer
+  # 类型: APPLICATION-SW-COMPONENT-TYPE
+  - /Components/Fusion_Algorithm
+  # 类型: DATA-RECEIVED-EVENT
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Radar_Data_Received
+  - /Components/Fusion_Algorithm/Fusion_Algorithm_Internal_Behavior/Camera_Data_Received
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "PATH_PLANNER",
+  "name": "Path_Planner",
+  "type": "APPLICATION-SW-COMPONENT-TYPE",
+  "purpose": "基于融合结果规划纵向与横向控制指令",
+  "estimated_complexity": "Medium",
+  "port_estimates": {
+    "input_ports": "1",
+    "output_ports": "1"
+  },
+  "behavioral_characteristics": "根据融合数据、车辆状态等信息计算纵向速度、横向偏航/转向角度的控制指令。",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "R-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE"
+      ],
+      "details": "输入融合数据和输出控制指令"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "TIMING-EVENT",
+          "name": "Planner_Tick",
+          "trigger": "Planner_Timer"
+        },
+        {
+          "type": "DATA-SEND-COMPLETED-EVENT",
+          "name": "Plan_Sent",
+          "trigger": "After_Send"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Path_Planning_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "读取融合数据"
+                }
+              ],
+              "notes": "读取融合数据以生成路径规划指令"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "发送控制指令到执行端口"
+                }
+              ],
+              "notes": "输出控制指令"
+            }
+          ],
+          "notes": "执行轨迹与指令规划"
+        }
+      ]
+    }
+  },
+  "direct_references": []
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "APPLICATION-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "Path_Planner"
+          ],
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Actuation_Command_Interface",
+                          "/Interfaces/Camera_Data_Interface",
+                          "/Interfaces/Fusion_Data_Interface",
+                          "/Interfaces/HMI_Status_Interface",
+                          "/Interfaces/Radar_Data_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/Radar_Data_Interface"
+                        ],
+                        "x-scope": "global_type",
+                        "x-filter-info": "从5个候选路径过滤到5个"
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            },
+            "R-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "REQUIRED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/Actuation_Command_Interface",
+                          "/Interfaces/Camera_Data_Interface",
+                          "/Interfaces/Fusion_Data_Interface",
+                          "/Interfaces/HMI_Status_Interface",
+                          "/Interfaces/Radar_Data_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/Radar_Data_Interface"
+                        ],
+                        "x-scope": "global_type",
+                        "x-filter-info": "从5个候选路径过滤到5个"
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "REQUIRED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "REQUIRED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "R-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE",
+            "R-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+              "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "pattern": "0|1|true|false",
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Path_Planner/.*$",
+                                          "description": "必须引用本组件(Path_Planner)的实例。路径格式：/Components/Path_Planner/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/Actuation_Command_Interface/Actuation_Command",
+                                            "/Interfaces/Camera_Data_Interface/Camera_Image",
+                                            "/Interfaces/Fusion_Data_Interface/Fused_Data",
+                                            "/Interfaces/HMI_Status_Interface/ADAS_Status",
+                                            "/Interfaces/Radar_Data_Interface/Radar_Data"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/Radar_Data_Interface/Radar_Data"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从5个候选路径过滤到5个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Path_Planner/.*$",
+                                          "description": "必须引用本组件(Path_Planner)的实例。路径格式：/Components/Path_Planner/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/Actuation_Command_Interface/Actuation_Command",
+                                            "/Interfaces/Camera_Data_Interface/Camera_Image",
+                                            "/Interfaces/Fusion_Data_Interface/Fused_Data",
+                                            "/Interfaces/HMI_Status_Interface/ADAS_Status",
+                                            "/Interfaces/Radar_Data_Interface/Radar_Data"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/Radar_Data_Interface/Radar_Data"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从5个候选路径过滤到5个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z_][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "DATA-SEND-COMPLETED-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "pattern": "^/Components/Path_Planner/.*$",
+                            "description": "必须引用本组件(Path_Planner)的实例。路径格式：/Components/Path_Planner/{元素名称}",
+                            "x-scope": "component_local",
+                            "x-constraint-type": "pattern (component_local)"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "EVENT-SOURCE-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "VARIABLE-ACCESS"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "EVENT-SOURCE-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "EVENT-SOURCE-REF",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "DATA-SEND-COMPLETED-EVENT"
+                },
+                "TIMING-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "pattern": "^/Components/Path_Planner/.*$",
+                            "description": "必须引用本组件(Path_Planner)的实例。路径格式：/Components/Path_Planner/{元素名称}",
+                            "x-scope": "component_local",
+                            "x-constraint-type": "pattern (component_local)"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      },
+                      "PERIOD": {
+                        "type": "number",
+                        "x-xml-tag": "PERIOD"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "PERIOD",
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "TIMING-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "DATA-SEND-COMPLETED-EVENT",
+                "TIMING-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "APPLICATION-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 APPLICATION-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：Path_Planner。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+
+            **引用路径填写规则**（重要）：
+            所有 *REF 字段为对象，包含 @DEST 与 #text 两个字段：
+            - @DEST：引用目标的类型（从Schema的enum中选择）
+            - #text：引用目标的路径（AUTOSAR绝对路径）
+
+            **路径填写策略**：
+            1. 如果Schema的#text字段有enum列表 → 从enum中选择一个路径
+            2. 如果Schema的#text字段没有enum（通常是本组件引用）→ 手动构造路径
+               - 格式：/Components/Path_Planner/{元素名}
+               - 元素名从Round1设计的element_design中获取
+
+            示例（正确）：
+            ```json
+            {
+              "START-ON-EVENT-REF": {
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/Components/Path_Planner/Control_Process_Runnable"
+              },
+              "PORT-PROTOTYPE-REF": {
+                "@DEST": "R-PORT-PROTOTYPE",
+                "#text": "/Components/Path_Planner/R_Port_TempSR"
+              },
+              "TARGET-DATA-PROTOTYPE-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp"
+              }
+            }
+            ```
+
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

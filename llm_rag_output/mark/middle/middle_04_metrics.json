@@ -1,0 +1,903 @@
+{
+  "case_id": "middle_4",
+  "system_name": "ADASController",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "ADASController",
+    "description": "实现ACC、LKA、AEB功能",
+    "components_count": 6,
+    "component_types": [
+      "RadarProcessor",
+      "CameraProcessor",
+      "FusionAlgorithm",
+      "PathPlanner",
+      "ActuationInterface",
+      "HMIManager"
+    ],
+    "key_requirements": [
+      "RadarProcessor处理毫米波雷达数据",
+      "CameraProcessor处理前视摄像头图像",
+      "FusionAlgorithm融合多传感器数据",
+      "PathPlanner规划纵向和横向控制指令",
+      "ActuationInterface对接动力和底盘域",
+      "HMIManager在仪表显示ADAS状态"
+    ]
+  },
+  "start_time": "2025-10-23T20:39:15.678798",
+  "phase1": {
+    "duration": 931.7409181594849,
+    "api_calls": 1,
+    "tokens": 21909,
+    "component_count": 6,
+    "interface_count": 6,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "Radar_Processor: 提供雷达点云与目标轨迹；Camera_Processor: 提供车道线与前方目标；Fusion_Algorithm: 融合雷达/摄像数据生成环境感知与自车状态；Path_Planner: 基于感知与模式生成纵向/横向控制与ADAS状态；Actuation_Interface: 接收控制指令并下发至动力/底盘域；HMI_Manager: 接收ADAS状态并显示，同时提供ADAS模式切换。",
+        "data_flow_analysis": "S/R接口承载主数据流：\n- Radar_Data_IF: Radar_Processor→Fusion_Algorithm，数据类型=Radar_PointCloud,Radar_Tracks，周期~20Hz，最新值缓冲。\n- Camera_Data_IF: Camera_Processor→Fusion_Algorithm,Path_Planner，数据类型=Camera_LaneModel,Camera_ObjectList，周期~30Hz，最新值缓冲。\n- Fused_Perception_IF: Fusion_Algorithm→Path_Planner,HMI_Manager，数据类型=Fused_ObjectList,Ego_State，周期~20Hz，最新值缓冲。\n- Control_Command_IF: Path_Planner→Actuation_Interface，数据类型=Longitudinal_Command,Lateral_Command，周期~50Hz，最新值缓冲。\n- ADAS_Status_IF: Path_Planner→HMI_Manager，数据类型=ACC_Status,LKA_Status,AEB_Status，周期~10Hz，最新值缓冲。\n- ADAS_Mode_IF: HMI_Manager→Fusion_Algorithm,Path_Planner，Mode-Switch接口承载模式组（ACC/LKA/AEB On/Off），事件式切换，时延<50ms。\n依赖与调用链：传感器处理→融合→规划→执行→状态/HMI；HMI模式影响融合与规划的启停/策略。",
+        "timing_requirements": "Radar_Processor: 20ms周期；Camera_Processor: 33ms周期；Fusion_Algorithm: 20ms周期并在模式切换事件下即时响应<50ms；Path_Planner: 20-50ms周期（推荐20ms），控制指令端到端抖动<10ms；Actuation_Interface: 10-20ms周期下发，控制通道端到端时延<30ms；HMI_Manager: 100ms刷新，模式切换反馈<100ms。整体管线端到端（感知→规划→执行）<100ms。",
+        "scalability_considerations": "接口数据元素可扩展（增加传感器/高精地图等）；通过S/R解耦感知与规划，便于并行扩展与替换算法；Mode-Switch隔离策略切换；参数访问统一化，支持标定变体；可引入更多服务组件（诊断、日志、健康监测）而不影响主数据通路。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "CMP001",
+          "name": "Radar_Processor",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "处理毫米波雷达原始帧，输出点云与目标轨迹供下游融合。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R:0",
+            "output_ports": "P:1 (Radar_Data_IF)"
+          },
+          "behavioral_characteristics": "主要逻辑: 去噪、聚类、跟踪与目标筛选；触发: 周期20ms；状态: Init→Running；数据流程: 载入参数→处理帧→输出点云/轨迹。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "P: Radar_Data_IF(Radar_PointCloud,Radar_Tracks)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Radar_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Radar_Process_Event",
+                  "trigger": "Every 20ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Radar_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入雷达标定/阈值参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Radar_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向 Radar_Data_IF 发送 Radar_Tracks/Radar_PointCloud"
+                        }
+                      ],
+                      "notes": "输出处理结果"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取阈值/滤波参数"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "周期处理与发送"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Radar_Data_IF"
+          ]
+        },
+        {
+          "component_id": "CMP002",
+          "name": "Camera_Processor",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "处理前视摄像头图像，输出车道线模型与前方目标列表。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R:0",
+            "output_ports": "P:1 (Camera_Data_IF)"
+          },
+          "behavioral_characteristics": "主要逻辑: 感兴趣区域、检测/分割、几何拟合与目标分类；触发: 周期33ms；状态: Init→Running；数据流程: 载入参数→图像处理→输出车道/目标。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "P: Camera_Data_IF(Camera_LaneModel,Camera_ObjectList)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Camera_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Camera_Process_Event",
+                  "trigger": "Every 33ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Camera_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入相机内参与检测阈值"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Camera_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向 Camera_Data_IF 发送 LaneModel/ObjectList"
+                        }
+                      ],
+                      "notes": "输出处理结果"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取阈值/ROI参数"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "周期处理与发送"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Camera_Data_IF"
+          ]
+        },
+        {
+          "component_id": "CMP003",
+          "name": "Fusion_Algorithm",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "融合雷达与摄像信息，输出环境感知（目标列表、车道融合）与自车状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R:2 (Radar_Data_IF, Camera_Data_IF)",
+            "output_ports": "P:1 (Fused_Perception_IF)"
+          },
+          "behavioral_characteristics": "主要逻辑: 时空对齐、关联与滤波、置信度融合、目标/车道一致性评估；触发: 周期20ms；状态: Init→Running；数据流程: 读雷达/摄像→融合估计→输出融合感知。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: Radar_Data_IF(Radar_PointCloud,Radar_Tracks), Camera_Data_IF(Camera_LaneModel,Camera_ObjectList);\nP: Fused_Perception_IF(Fused_ObjectList,Ego_State)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Fusion_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Fusion_Process_Event",
+                  "trigger": "Every 20ms"
+                },
+                {
+                  "type": "SWC-MODE-SWITCH-EVENT",
+                  "name": "Fusion_Mode_Switch_Event",
+                  "trigger": "On ADAS_Mode_IF change"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Fusion_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入融合权重与时间同步参数"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Fusion_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 Radar_Data_IF 读取 Radar_Tracks/Radar_PointCloud"
+                        }
+                      ],
+                      "notes": "接收雷达数据"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 Camera_Data_IF 读取 LaneModel/ObjectList"
+                        }
+                      ],
+                      "notes": "接收摄像数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向 Fused_Perception_IF 发送 Fused_ObjectList/Ego_State"
+                        }
+                      ],
+                      "notes": "发送融合结果"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取融合阈值/权重"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "周期融合处理"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Radar_Data_IF",
+            "Camera_Data_IF",
+            "Fused_Perception_IF",
+            "ADAS_Mode_IF"
+          ]
+        },
+        {
+          "component_id": "CMP004",
+          "name": "Path_Planner",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "根据融合感知与模式规划纵向速度/距离与横向轨迹，并输出执行指令与ADAS状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R:2 (Fused_Perception_IF, Camera_Data_IF)",
+            "output_ports": "P:2 (Control_Command_IF, ADAS_Status_IF)"
+          },
+          "behavioral_characteristics": "主要逻辑: ACC跟驰控制、LKA车道保持、AEB紧急制动决策；触发: 周期20ms；状态: Init→Running（按模式启停子策略）；数据流程: 读融合/车道→规划→输出纵向/横向命令与ADAS状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: Fused_Perception_IF(Fused_ObjectList,Ego_State), Camera_Data_IF(Camera_LaneModel);\nP: Control_Command_IF(Longitudinal_Command,Lateral_Command), ADAS_Status_IF(ACC_Status,LKA_Status,AEB_Status)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Planner_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Planner_Process_Event",
+                  "trigger": "Every 20ms"
+                },
+                {
+                  "type": "SWC-MODE-SWITCH-EVENT",
+                  "name": "Planner_Mode_Switch_Event",
+                  "trigger": "On ADAS_Mode_IF change"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Planner_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入控制器标定、约束参数"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Planner_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 Fused_Perception_IF 读取 Fused_ObjectList/Ego_State"
+                        }
+                      ],
+                      "notes": "接收融合感知"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 Camera_Data_IF 读取 Camera_LaneModel"
+                        }
+                      ],
+                      "notes": "接收车道模型"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向 Control_Command_IF 发送 Longitudinal/Lateral 指令"
+                        }
+                      ],
+                      "notes": "发送控制指令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向 ADAS_Status_IF 发送 ACC/LKA/AEB 状态"
+                        }
+                      ],
+                      "notes": "发送ADAS状态"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取控制器参数/限值"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "周期规划处理"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Fused_Perception_IF",
+            "Camera_Data_IF",
+            "Control_Command_IF",
+            "ADAS_Status_IF",
+            "ADAS_Mode_IF"
+          ]
+        },
+        {
+          "component_id": "CMP005",
+          "name": "Actuation_Interface",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "对接动力与底盘域，接收控制指令并转换为底层执行命令。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R:1 (Control_Command_IF)",
+            "output_ports": "P:0"
+          },
+          "behavioral_characteristics": "主要逻辑: 指令合法性检查、限值与协调、协议打包；触发: 周期10-20ms；状态: Init→Running；数据流程: 读取控制指令→转换→下发至底盘/动力域。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R: Control_Command_IF(Longitudinal_Command,Lateral_Command)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Actuation_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Actuation_Process_Event",
+                  "trigger": "Every 10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Actuation_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入执行限值与故障策略"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Actuation_Process_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 Control_Command_IF 读取纵向/横向控制指令"
+                        }
+                      ],
+                      "notes": "接收控制指令"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取限值/降级策略参数"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "协议打包与下发"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Control_Command_IF"
+          ]
+        },
+        {
+          "component_id": "CMP006",
+          "name": "HMI_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "在仪表显示ADAS状态，并提供模式切换输入。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R:1 (ADAS_Status_IF)",
+            "output_ports": "P:1 (ADAS_Mode_IF mode provider)"
+          },
+          "behavioral_characteristics": "主要逻辑: 状态汇总与UI渲染、模式切换发布；触发: 周期100ms刷新；状态: Init→Running；数据流程: 读取状态→合成显示数据→更新UI与发布模式。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: ADAS_Status_IF(ACC_Status,LKA_Status,AEB_Status);\nP: ADAS_Mode_IF(Mode group: ACC/LKA/AEB On/Off)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "HMI_Init_Event",
+                  "trigger": "On RTE init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "HMI_Update_Event",
+                  "trigger": "Every 100ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "HMI_Init_Runnable",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "载入显示配置/告警阈值"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "HMI_Update_Runnable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从 ADAS_Status_IF 读取 ACC/LKA/AEB 状态"
+                        }
+                      ],
+                      "notes": "接收ADAS状态"
+                    },
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "运行期读取UI配置参数"
+                        }
+                      ],
+                      "notes": "运行期参数读取"
+                    }
+                  ],
+                  "notes": "UI渲染与模式发布"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "ADAS_Status_IF",
+            "ADAS_Mode_IF"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "IF001",
+          "name": "Radar_Data_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步发布/订阅；20Hz；延迟<20ms；缓冲为最新值（单缓冲），丢弃过期帧；错误：提供数据有效位与质量标记，消费者在无效时保持上次有效输出或触发降级。",
+          "data_category": "Perception_Radar",
+          "connected_components": [
+            "Radar_Processor",
+            "Fusion_Algorithm"
+          ],
+          "performance_requirements": "吞吐支持每周期最多128目标；丢包率<0.1%；抖动<5ms。",
+          "data_elements": [
+            "Radar_PointCloud",
+            "Radar_Tracks"
+          ],
+          "direct_paths": "Radar_Processor→Fusion_Algorithm"
+        },
+        {
+          "interface_id": "IF002",
+          "name": "Camera_Data_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步发布/订阅；30Hz；延迟<33ms；缓冲最新值；错误：提供置信度与遮挡标记，消费者依据阈值滤除。",
+          "data_category": "Perception_Camera",
+          "connected_components": [
+            "Camera_Processor",
+            "Fusion_Algorithm",
+            "Path_Planner"
+          ],
+          "performance_requirements": "支持LaneModel三次多项式与目标列表最多64项；抖动<5ms。",
+          "data_elements": [
+            "Camera_LaneModel",
+            "Camera_ObjectList"
+          ],
+          "direct_paths": "Camera_Processor→Fusion_Algorithm,Path_Planner"
+        },
+        {
+          "interface_id": "IF003",
+          "name": "Fused_Perception_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步发布/订阅；20Hz；延迟<20ms；缓冲最新值；错误：提供融合质量评估，消费者降级处理。",
+          "data_category": "Perception_Fused",
+          "connected_components": [
+            "Fusion_Algorithm",
+            "Path_Planner",
+            "HMI_Manager"
+          ],
+          "performance_requirements": "目标列表最多128项；Ego_State更新抖动<5ms。",
+          "data_elements": [
+            "Fused_ObjectList",
+            "Ego_State"
+          ],
+          "direct_paths": "Fusion_Algorithm→Path_Planner,HMI_Manager"
+        },
+        {
+          "interface_id": "IF004",
+          "name": "Control_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步发送/接收；20-50Hz；延迟<10ms；缓冲最新值；错误：含限值/有效位检查，接收端在无效时保持安全默认。",
+          "data_category": "Control_Command",
+          "connected_components": [
+            "Path_Planner",
+            "Actuation_Interface"
+          ],
+          "performance_requirements": "端到端延迟<30ms；指令步进分辨率满足底盘/动力域协议要求。",
+          "data_elements": [
+            "Longitudinal_Command",
+            "Lateral_Command"
+          ],
+          "direct_paths": "Path_Planner→Actuation_Interface"
+        },
+        {
+          "interface_id": "IF005",
+          "name": "ADAS_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步发布/订阅；10Hz；延迟<50ms；缓冲最新值；错误：提供状态有效性与故障码，HMI显示降级提示。",
+          "data_category": "Status_ADAS",
+          "connected_components": [
+            "Path_Planner",
+            "HMI_Manager"
+          ],
+          "performance_requirements": "显示刷新稳定；状态抖动<10ms。",
+          "data_elements": [
+            "ACC_Status",
+            "LKA_Status",
+            "AEB_Status"
+          ],
+          "direct_paths": "Path_Planner→HMI_Manager"
+        },
+        {
+          "interface_id": "IF006",
+          "name": "ADAS_Mode_IF",
+          "type": "MODE-SWITCH-INTERFACE",
+          "communication_pattern": "事件式模式切换；响应<50ms；无缓冲（即时）；错误：非法组合拒绝，提供切换失败反馈。",
+          "data_category": "Mode_ADAS",
+          "connected_components": [
+            "HMI_Manager",
+            "Fusion_Algorithm",
+            "Path_Planner"
+          ],
+          "performance_requirements": "模式切换抖动<20ms；防抖策略避免误切换。",
+          "data_elements": [
+            "ACC_Mode",
+            "LKA_Mode",
+            "AEB_Mode"
+          ],
+          "direct_paths": "HMI_Manager→Fusion_Algorithm,Path_Planner"
+        }
+      ],
+      "component_generation_order": [
+        "Radar_Processor",
+        "Camera_Processor",
+        "Fusion_Algorithm",
+        "Path_Planner",
+        "Actuation_Interface",
+        "HMI_Manager"
+      ],
+      "connection_topology": {
+        "component_connections": "Radar_Processor→Fusion_Algorithm(Radar_Data_IF);\nCamera_Processor→Fusion_Algorithm,Path_Planner(Camera_Data_IF);\nFusion_Algorithm→Path_Planner,HMI_Manager(Fused_Perception_IF);\nPath_Planner→Actuation_Interface(Control_Command_IF);\nPath_Planner→HMI_Manager(ADAS_Status_IF);\nHMI_Manager→Fusion_Algorithm,Path_Planner(ADAS_Mode_IF)。",
+        "data_flow_paths": "传感器链路: Radar_Processor/Camera_Processor→Fusion_Algorithm→Path_Planner→Actuation_Interface；状态链路: Path_Planner→HMI_Manager；模式链路: HMI_Manager→Fusion_Algorithm/Path_Planner。",
+        "control_flow_paths": "模式控制: HMI_Manager发布模式切换→Fusion_Algorithm与Path_Planner根据模式启停ACC/LKA/AEB策略；降级控制: Actuation_Interface在命令无效时回落到安全默认。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用S/R接口实现感知/规划/执行解耦；模式通过Mode-Switch接口传播，避免数据耦合；参数访问统一化以支持标定与变体；事件与定时驱动结合保障实时性。",
+        "tradeoff_analysis": "S/R最新值缓冲降低延迟但可能丢失历史；融合集中在单组件简化一致性但增加计算负载；Path_Planner周期较高以满足控制响应，牺牲部分计算余量。",
+        "alternative_considerations": "可将Fusion_Algorithm拆分为对象融合与车道融合两个组件；引入地图与定位接口提升规划稳定性；使用Client-Server对接底盘服务代理提升错误反馈能力。",
+        "risk_assessment": "传感器抖动与丢帧风险→通过质量标记与阈值降级；模式切换抖动→加入防抖与确认机制；控制指令合法性→限值与协调策略；端到端时延超限→优化Runnable优先级与周期。"
+      },
+      "session_id": "2d86501f-46a9-4d6d-a131-21544ce6f647",
+      "timestamp": "2025-10-23T20:54:47.401484"
+    }
+  },
+  "phase2": {
+    "duration": 452.85220170021057,
+    "tokens": 127894,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Radar_Processor_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Camera_Processor_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Fusion_Algorithm_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Path_Planner_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Actuation_Interface_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\HMI_Manager_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Radar_Data_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Camera_Data_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Fused_Perception_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Control_Command_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ADAS_Status_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ADAS_Mode_IF_08b28608_1761224540.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_08b28608_1761224540.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T21:02:20.281892"
+}

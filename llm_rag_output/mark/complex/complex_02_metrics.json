@@ -1,0 +1,1417 @@
+{
+  "case_id": "complex_2",
+  "system_name": "AutonomousDrivingController",
+  "complexity": "complex",
+  "requirement": {
+    "system_name": "AutonomousDrivingController",
+    "description": "L3级自动驾驶功能",
+    "components_count": 9,
+    "component_types": [
+      "SensorFusion",
+      "Perception",
+      "Prediction",
+      "Planning",
+      "Control",
+      "Localization",
+      "MapManager",
+      "V2XCommunication",
+      "FailsafeManager"
+    ],
+    "key_requirements": [
+      "SensorFusion融合8个摄像头、5个毫米波雷达、12个超声波雷达、1个激光雷达数据",
+      "Perception实现目标检测和跟踪",
+      "Prediction预测周围车辆行为",
+      "Planning规划全局和局部路径",
+      "Control执行纵向和横向控制",
+      "Localization实现厘米级定位",
+      "MapManager管理高精地图",
+      "V2XCommunication实现V2V和V2I通信",
+      "FailsafeManager实现MRC和SOS降级策略"
+    ]
+  },
+  "start_time": "2025-10-23T22:02:11.354538",
+  "phase1": {
+    "duration": 159.07882380485535,
+    "api_calls": 1,
+    "tokens": 29095,
+    "component_count": 9,
+    "interface_count": 11,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "Sensor_Fusion: 融合8摄像头、5毫米波雷达、12超声波雷达、1激光雷达及IMU/GNSS, 输出融合感知数据与占据栅格。\nPerception: 目标检测与多目标跟踪, 生成Tracked_Objects。\nPrediction: 基于Tracked_Objects与V2X消息预测周边车辆行为与轨迹。\nPlanning: 结合预测、定位与高精地图规划全局与局部路径及速度曲线。\nControl: 执行纵向与横向控制, 输出转向/油门/制动命令。\nLocalization: 融合GNSS/IMU/雷达/激光等实现厘米级定位, 广播Ego_Pose。\nMap_Manager: 管理高精地图数据, 提供HD Map查询服务与更新推送。\nV2X_Communication: 处理V2V/V2I消息, 广播SPaT/MAP/BSM/RSI等。\nFailsafe_Manager: 监控系统健康, 下发MRC与SOS降级指令。",
+        "data_flow_analysis": "数据通道与模式:\n- BSW_Sensor_Hub->Sensor_Fusion: S/R, 周期帧与点云, 最新值缓冲; 元素: Camera_Frames, Radar_Detections, Ultrasonic_Detections, Lidar_PointCloud, IMU_Data, GNSS_Fix。\n- Sensor_Fusion->Perception: S/R, Fused_Object_List与Occupancy_Grid, 周期推送。\n- Perception->Prediction: S/R, Tracked_Objects。\n- Prediction->Planning: S/R, Predicted_Trajectories。\n- Localization->(SF/Per/Plan/Ctrl): S/R, Ego_Pose与状态, 周期广播。\n- Planning/Localization->Map_Manager: C/S, 同步查询HD Map Tile/Lane属性/Routing Graph。\n- Map_Manager->(Planning/Localization): S/R, Map_Tile_Update与版本广播。\n- V2X_Communication->(Perception/Prediction/Planning): S/R, BSM/SPaT/MAP/RSI广播。\n- Planning->Control: S/R, Target_Trajectory/Speed_Profile/Behavior_Cmd。\n- Control->BSW_Actuator_Driver: S/R, Steering_Angle/Throttle_Command/Brake_Command。\n- Failsafe_Manager->全组件: S/R, MRC_Command/SOS_Command/Failsafe_Status。\n调用链与依赖:\nSensor_Fusion依赖Localization的Ego_Pose; Perception依赖Sensor_Fusion与V2X; Prediction依赖Perception与V2X; Planning依赖Prediction、Localization与Map_Manager(C/S); Control依赖Planning; 所有组件接收Failsafe命令。",
+        "timing_requirements": "推荐周期:\n- Sensor_Fusion: 10ms-20ms融合周期, 输入最大抖动±5ms, 输出延迟<15ms。\n- Perception: 20ms检测跟踪, 处理延迟<30ms。\n- Prediction: 50ms更新预测, 延迟<40ms。\n- Planning: 50ms局部规划, 全局规划按需(>100ms), 地图查询同步调用超时<30ms。\n- Control: 10ms控制环, 命令下发抖动<2ms。\n- Localization: 10ms定位更新, 延迟<20ms。\n- V2X广播: 50ms处理, 端到端<100ms。\n- Map更新广播: 500ms-按事件触发, 推送延迟<200ms。\n- Failsafe: 100ms监控与指令下发, 响应<200ms。",
+        "scalability_considerations": "支持传感器数量与带宽扩展(增加摄像头/雷达通道); 接口数据元素可版本化; Map服务可分片与边缓存; V2X协议扩展(BSM/SPaT/MAP/RSI新增字段); 通过R-Port/P-Port分层隔离算法与服务; 可水平拆分Perception与Prediction子链路以提升并行度。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "SWC_001",
+          "name": "Sensor_Fusion",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "多源传感器与定位信息融合, 输出融合对象与占据栅格供后续感知与规划。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Camera_Frames(8), Radar_Detections(5), Ultrasonic_Detections(12), Lidar_PointCloud(1), IMU_Data, GNSS_Fix, Ego_Pose(1)",
+            "output_ports": "P: Fused_Object_List, Occupancy_Grid, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 时间同步、时空校准、状态估计与关联融合(点云/检测融合)。\n- 触发: INIT启动加载标定; TIMING 10-20ms周期融合; 可能数据接收事件触发队列处理。\n- 状态: 维护传感器有效性/时钟偏差/置信度; 健康状态变化触发Failsafe。\n- 数据流程: R端口读取多源数据→时间同步→融合→P端口输出Fused_Object_List与Occupancy_Grid。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Camera_Frames, Radar_Detections, Ultrasonic_Detections, Lidar_PointCloud, IMU_Data, GNSS_Fix, Ego_Pose。\nP-Ports: Fused_Object_List, Occupancy_Grid, Health_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Sensor_Fusion_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Sensor_Fusion_10ms",
+                  "trigger": "periodic_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Sensor_Fusion",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载融合标定参数与时钟校准配置"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化加载标定与资源"
+                },
+                {
+                  "name": "Fuse_Measurements_10ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Camera_Frames/Radar/Ultrasonic/Lidar输入"
+                        }
+                      ],
+                      "notes": "多源传感器数据接收"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Localization的Ego_Pose与速度"
+                        }
+                      ],
+                      "notes": "定位信息接收"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入内部融合状态与健康指标"
+                        }
+                      ],
+                      "notes": "内部状态写访问"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Fused_Object_List与Occupancy_Grid"
+                        }
+                      ],
+                      "notes": "输出融合结果到Perception"
+                    }
+                  ],
+                  "notes": "周期融合主循环"
+                },
+                {
+                  "name": "Publish_Status_100ms",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Health_Status供Failsafe使用"
+                        }
+                      ],
+                      "notes": "健康状态发布"
+                    }
+                  ],
+                  "notes": "周期健康状态上报"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Sensor_Hub_To_Sensor_Fusion",
+            "IF_Sensor_Fusion_To_Perception",
+            "IF_Localization_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_002",
+          "name": "Perception",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "基于融合数据进行目标检测与多目标跟踪, 输出Tracked_Objects。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Fused_Object_List, Occupancy_Grid, V2X_Messages, Ego_Pose",
+            "output_ports": "P: Tracked_Objects, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 检测分类、数据关联、轨迹初始化与更新、遮挡处理。\n- 触发: 周期20ms; 初始化加载阈值与模型。\n- 状态: 追踪器集合与对象生命周期管理。\n- 数据流程: 接收融合数据与V2X→检测与跟踪→输出Tracked_Objects。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Fused_Object_List, Occupancy_Grid, V2X_Messages, Ego_Pose。\nP-Ports: Tracked_Objects, Health_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Perception_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Perception_20ms",
+                  "trigger": "periodic_20ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Perception",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载检测模型与跟踪阈值参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Detect_And_Track_20ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Fused_Object_List与Occupancy_Grid"
+                        }
+                      ],
+                      "notes": "融合数据接收"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取V2X_Messages用于增强识别"
+                        }
+                      ],
+                      "notes": "V2X信息接收"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入内部Track状态与计数器"
+                        }
+                      ],
+                      "notes": "内部状态写入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Tracked_Objects到Prediction"
+                        }
+                      ],
+                      "notes": "输出跟踪对象"
+                    }
+                  ],
+                  "notes": "检测与跟踪主循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Sensor_Fusion_To_Perception",
+            "IF_V2X_Broadcast",
+            "IF_Perception_To_Prediction",
+            "IF_Localization_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_003",
+          "name": "Prediction",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "基于Tracked_Objects与V2X消息预测周边车辆行为与轨迹。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Tracked_Objects, V2X_Messages, Ego_Pose",
+            "output_ports": "P: Predicted_Trajectories, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 行为意图分类、轨迹预测(交互/车道约束)、不确定性评估。\n- 触发: 周期50ms; 初始化加载模型参数。\n- 状态: 维护历史轨迹与意图概率。\n- 数据流程: 接收Tracked_Objects与V2X→预测→输出Predicted_Trajectories。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Tracked_Objects, V2X_Messages, Ego_Pose。\nP-Ports: Predicted_Trajectories, Health_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Prediction_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Prediction_50ms",
+                  "trigger": "periodic_50ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Prediction",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载预测模型与意图分类参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Predict_Behavior_50ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Tracked_Objects"
+                        }
+                      ],
+                      "notes": "跟踪对象接收"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取V2X_Messages用于意图辅助"
+                        }
+                      ],
+                      "notes": "V2X消息接收"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入预测内部历史与不确定性"
+                        }
+                      ],
+                      "notes": "内部状态写入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Predicted_Trajectories到Planning"
+                        }
+                      ],
+                      "notes": "输出预测轨迹"
+                    }
+                  ],
+                  "notes": "行为预测主循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Perception_To_Prediction",
+            "IF_V2X_Broadcast",
+            "IF_Prediction_To_Planning",
+            "IF_Localization_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_004",
+          "name": "Planning",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "结合地图与定位在约束下规划全局与局部路径及速度。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Predicted_Trajectories, Ego_Pose, Map_Update",
+            "output_ports": "P: Target_Trajectory, Speed_Profile, Behavior_Cmd, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 路径搜索(路网/栅格)、轨迹优化、速度规划、行为决策。\n- 触发: 周期50ms; 地图查询同步调用; 地图更新触发重规划。\n- 状态: 维护局部窗口与障碍缓存、目标航路。\n- 数据流程: 接收预测与定位→C/S查询HD Map→规划→输出轨迹与速度。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Predicted_Trajectories, Ego_Pose, Map_Update。\nP-Ports: Target_Trajectory, Speed_Profile, Behavior_Cmd, Health_Status。\n同时具备R-端调用Map服务的客户端接口。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Planning_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Planning_50ms",
+                  "trigger": "periodic_50ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Planning",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载规划约束与优化参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Plan_Path_50ms",
+                  "elements": [
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用Map_Manager: GetHDMapTile/GetLaneAttributes"
+                        }
+                      ],
+                      "notes": "地图查询同步调用"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Predicted_Trajectories与Ego_Pose"
+                        }
+                      ],
+                      "notes": "预测与定位接收"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Target_Trajectory/Speed_Profile/Behavior_Cmd到Control"
+                        }
+                      ],
+                      "notes": "输出规划结果"
+                    }
+                  ],
+                  "notes": "规划主循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Prediction_To_Planning",
+            "IF_Map_Manager_Service",
+            "IF_Map_Update_Broadcast",
+            "IF_Planning_To_Control",
+            "IF_Localization_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_005",
+          "name": "Control",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "执行纵向与横向控制, 输出转向/油门/制动命令至执行器。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Target_Trajectory, Speed_Profile, Behavior_Cmd, Ego_Pose",
+            "output_ports": "P: Steering_Angle, Throttle_Command, Brake_Command, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 轨迹跟踪控制(LQR/MPPI/Stanley)、速度控制(PID/前馈)、约束限幅与故障保护。\n- 触发: 周期10ms。\n- 状态: 控制器积分/状态估计与限幅状态。\n- 数据流程: 接收规划与定位→控制运算→输出命令到执行器。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Target_Trajectory, Speed_Profile, Behavior_Cmd, Ego_Pose。\nP-Ports: Steering_Angle, Throttle_Command, Brake_Command, Health_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Control_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Control_10ms",
+                  "trigger": "periodic_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Control",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载控制器增益与限幅参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Control_Loop_10ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Target_Trajectory/Speed_Profile/Behavior_Cmd"
+                        }
+                      ],
+                      "notes": "规划输出接收"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入控制内部状态(积分/误差)"
+                        }
+                      ],
+                      "notes": "内部状态写入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送Steering_Angle/Throttle_Command/Brake_Command到BSW_Actuator_Driver"
+                        }
+                      ],
+                      "notes": "输出控制命令"
+                    }
+                  ],
+                  "notes": "10ms控制主循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Planning_To_Control",
+            "IF_Control_To_Actuator_Driver",
+            "IF_Localization_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_006",
+          "name": "Localization",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "融合GNSS/IMU/雷达/激光与地图, 实现厘米级定位并广播Ego_Pose。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: IMU_Data, GNSS_Fix, Lidar_PointCloud(可选), Map_Update",
+            "output_ports": "P: Ego_Pose, Ego_Velocity, Localization_Status, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 传感器融合(SLAM/因子图/扩展卡尔曼), 地图匹配。\n- 触发: 周期10ms; 地图查询同步。\n- 状态: 位姿与协方差, 地图匹配质量。\n- 数据流程: 接收IMU/GNSS→地图服务查询→定位更新→广播Ego_Pose。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: IMU_Data, GNSS_Fix, Lidar_PointCloud(可选), Map_Update。\nP-Ports: Ego_Pose, Ego_Velocity, Localization_Status, Health_Status。\n同时具备调用Map服务的客户端接口。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Localization_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Localization_10ms",
+                  "trigger": "periodic_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Localization",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载定位滤波器与传感器标定参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Localize_10ms",
+                  "elements": [
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用Map_Manager: GetHDMapTile用于匹配"
+                        }
+                      ],
+                      "notes": "地图查询同步调用"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取IMU_Data/GNSS_Fix"
+                        }
+                      ],
+                      "notes": "基础传感器接收"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "广播Ego_Pose/Ego_Velocity/Localization_Status"
+                        }
+                      ],
+                      "notes": "定位结果广播"
+                    }
+                  ],
+                  "notes": "定位主循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Sensor_Hub_To_Sensor_Fusion",
+            "IF_Localization_Broadcast",
+            "IF_Map_Manager_Service",
+            "IF_Map_Update_Broadcast",
+            "IF_Failsafe_Commands"
+          ]
+        },
+        {
+          "component_id": "SWC_007",
+          "name": "Map_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理高精地图数据, 提供查询服务与推送更新。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R: Map_Update_Request(内部或外部触发)",
+            "output_ports": "P: Map_Tile_Update, Map_Version; C/S服务: GetHDMapTile, GetLaneAttributes, GetRoutingGraph"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 地图分片管理、索引检索、缓存与一致性维护。\n- 触发: INIT加载地图索引; OPERATION_INVOCATION触发查询; 更新事件触发广播。\n- 状态: 维护版本与缓存命中率。\n- 数据流程: 处理客户端查询→返回结果; 接收更新→广播Map_Tile_Update。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "P-Ports: Map_Tile_Update, Map_Version; R-端提供C/S服务器操作入口(服务端)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Map_Manager_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Map_Request_Invoked",
+                  "trigger": "IF_Map_Manager_Service_operation_invoked"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Map_Manager",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载地图索引与缓存参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Map_Update_Broadcast",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                          "include": [
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取最新地图分片与版本"
+                        }
+                      ],
+                      "notes": "内部数据读取"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "广播Map_Tile_Update/Map_Version到Planning/Localization"
+                        }
+                      ],
+                      "notes": "地图更新广播"
+                    }
+                  ],
+                  "notes": "地图更新推送"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Map_Manager_Service",
+            "IF_Map_Update_Broadcast"
+          ]
+        },
+        {
+          "component_id": "SWC_008",
+          "name": "V2X_Communication",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "处理V2V/V2I消息, 解析并广播SPaT/MAP/BSM/RSI等供上层使用。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R: V2X_Rx_From_BSW",
+            "output_ports": "P: BSM, SPaT, MAP, RSI, Health_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 接入协议栈、消息解析与校验、语义提取。\n- 触发: 数据接收事件/周期50ms。\n- 状态: 解析统计与质量评估。\n- 数据流程: 从BSW接收V2X帧→解析→广播结构化消息到Perception/Prediction/Planning。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: V2X_Rx_From_BSW。\nP-Ports: BSM, SPaT, MAP, RSI, Health_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "V2X_Frame_Received",
+                  "trigger": "BSW_V2X_stack_rx"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "V2X_50ms",
+                  "trigger": "periodic_50ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_V2X",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载通信与安全校验参数"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "V2X_Rx_Processing_50ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取V2X_Rx_From_BSW帧流"
+                        }
+                      ],
+                      "notes": "接收原始V2X帧"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "广播BSM/SPaT/MAP/RSI"
+                        }
+                      ],
+                      "notes": "输出结构化V2X消息"
+                    }
+                  ],
+                  "notes": "V2X接收与解析处理"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_V2X_Broadcast"
+          ]
+        },
+        {
+          "component_id": "SWC_009",
+          "name": "Failsafe_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "监控系统健康并下发MRC与SOS降级策略与状态。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R: Health_Status(SF/Per/Pred/Plan/Ctrl/Loc)",
+            "output_ports": "P: MRC_Command, SOS_Command, Failsafe_Status"
+          },
+          "behavioral_characteristics": "运行时行为:\n- 逻辑: 健康聚合、阈值判断、策略选择(MRC/SOS)。\n- 触发: 周期100ms; 异常事件触发即时下发。\n- 状态: 当前降级级别与触发原因。\n- 数据流程: 接收各组件Health_Status→策略决策→下发MRC/SOS与状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Health_Status聚合自各组件。\nP-Ports: MRC_Command, SOS_Command, Failsafe_Status。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Failsafe_Init",
+                  "trigger": "on_startup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Failsafe_100ms",
+                  "trigger": "periodic_100ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Init_Failsafe",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载健康阈值与策略配置"
+                        }
+                      ],
+                      "notes": "初始化参数访问"
+                    }
+                  ],
+                  "notes": "组件初始化"
+                },
+                {
+                  "name": "Monitor_And_Command_100ms",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取各组件Health_Status"
+                        }
+                      ],
+                      "notes": "健康状态汇聚"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "下发MRC_Command与SOS_Command"
+                        }
+                      ],
+                      "notes": "降级指令下发"
+                    }
+                  ],
+                  "notes": "周期监控与指令下发"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Failsafe_Commands"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "IF_001",
+          "name": "IF_Sensor_Hub_To_Sensor_Fusion",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期推送10-30ms; 传感器独立通道; 缓冲策略: 最新值+有限队列; 错误处理: 帧校验/时间戳失配丢弃。\n时延要求: 端到端<15ms。",
+          "data_category": "Sensor_Data",
+          "connected_components": [
+            "BSW_Sensor_Hub",
+            "Sensor_Fusion"
+          ],
+          "performance_requirements": "采样10-30ms; 支持同时接入8摄像头/5毫米波/12超声波/1激光; 丢包<1%; 抖动<5ms。",
+          "data_elements": [
+            "Camera_Frames",
+            "Radar_Detections",
+            "Ultrasonic_Detections",
+            "Lidar_PointCloud",
+            "IMU_Data",
+            "GNSS_Fix"
+          ],
+          "direct_paths": "BSW_Sensor_Hub->Sensor_Fusion"
+        },
+        {
+          "interface_id": "IF_002",
+          "name": "IF_Sensor_Fusion_To_Perception",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步周期20ms; 缓冲最新值; 错误处理: 校验与一致性检查, 异常丢弃。",
+          "data_category": "Fused_Perception_Data",
+          "connected_components": [
+            "Sensor_Fusion",
+            "Perception"
+          ],
+          "performance_requirements": "端到端<25ms; 数据齐性校验通过率>99%。",
+          "data_elements": [
+            "Fused_Object_List",
+            "Occupancy_Grid"
+          ],
+          "direct_paths": "Sensor_Fusion->Perception"
+        },
+        {
+          "interface_id": "IF_003",
+          "name": "IF_Perception_To_Prediction",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步周期20-50ms; 最新值+队列1; 错误处理: 对象列表一致性检查。",
+          "data_category": "Tracking_Data",
+          "connected_components": [
+            "Perception",
+            "Prediction"
+          ],
+          "performance_requirements": "端到端<30ms; 丢包<1%。",
+          "data_elements": [
+            "Tracked_Objects"
+          ],
+          "direct_paths": "Perception->Prediction"
+        },
+        {
+          "interface_id": "IF_004",
+          "name": "IF_Prediction_To_Planning",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步周期50ms; 最新值缓冲; 错误处理: 时效性校验。",
+          "data_category": "Prediction_Data",
+          "connected_components": [
+            "Prediction",
+            "Planning"
+          ],
+          "performance_requirements": "端到端<40ms; 数据时间窗<100ms。",
+          "data_elements": [
+            "Predicted_Trajectories"
+          ],
+          "direct_paths": "Prediction->Planning"
+        },
+        {
+          "interface_id": "IF_005",
+          "name": "IF_Planning_To_Control",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步周期10-50ms; 最新值; 错误处理: 越界与安全约束检查。",
+          "data_category": "Control_Inputs",
+          "connected_components": [
+            "Planning",
+            "Control"
+          ],
+          "performance_requirements": "端到端<20ms; 抖动<5ms。",
+          "data_elements": [
+            "Target_Trajectory",
+            "Speed_Profile",
+            "Behavior_Cmd"
+          ],
+          "direct_paths": "Planning->Control"
+        },
+        {
+          "interface_id": "IF_006",
+          "name": "IF_Control_To_Actuator_Driver",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步10ms; 最新值; 错误处理: 输出命令限幅与CRC校验。",
+          "data_category": "Actuator_Commands",
+          "connected_components": [
+            "Control",
+            "BSW_Actuator_Driver"
+          ],
+          "performance_requirements": "端到端<10ms; 命令抖动<2ms。",
+          "data_elements": [
+            "Steering_Angle",
+            "Throttle_Command",
+            "Brake_Command"
+          ],
+          "direct_paths": "Control->BSW_Actuator_Driver"
+        },
+        {
+          "interface_id": "IF_007",
+          "name": "IF_Localization_Broadcast",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步10ms广播; 最新值; 错误处理: 置信度与协方差检查。",
+          "data_category": "Localization_Data",
+          "connected_components": [
+            "Localization",
+            "Sensor_Fusion",
+            "Perception",
+            "Planning",
+            "Control"
+          ],
+          "performance_requirements": "端到端<20ms; 丢包<1%; 位姿精度<0.1m。",
+          "data_elements": [
+            "Ego_Pose",
+            "Ego_Velocity",
+            "Localization_Status"
+          ],
+          "direct_paths": "Localization->Sensor_Fusion/Perception/Planning/Control"
+        },
+        {
+          "interface_id": "IF_008",
+          "name": "IF_Map_Manager_Service",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步调用; 超时保护30ms; 错误处理: 超时与无结果返回错误码; 可重试策略。",
+          "data_category": "HD_Map_Service",
+          "connected_components": [
+            "Planning",
+            "Localization",
+            "Map_Manager"
+          ],
+          "performance_requirements": "典型查询<20ms; 峰值<30ms; 可并发查询数>=4。",
+          "data_elements": [
+            "GetHDMapTile",
+            "GetLaneAttributes",
+            "GetRoutingGraph"
+          ],
+          "direct_paths": "Planning/Localization->Map_Manager"
+        },
+        {
+          "interface_id": "IF_009",
+          "name": "IF_Map_Update_Broadcast",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步事件触发(<=500ms); 最新值; 错误处理: 版本兼容检查与回退。",
+          "data_category": "Map_Update",
+          "connected_components": [
+            "Map_Manager",
+            "Planning",
+            "Localization"
+          ],
+          "performance_requirements": "端到端<200ms; 丢包<1%; 版本一致性100%。",
+          "data_elements": [
+            "Map_Tile_Update",
+            "Map_Version"
+          ],
+          "direct_paths": "Map_Manager->Planning/Localization"
+        },
+        {
+          "interface_id": "IF_010",
+          "name": "IF_V2X_Broadcast",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步50ms; 最新值+队列2; 错误处理: 签名/完整性校验失败丢弃。",
+          "data_category": "V2X_Messages",
+          "connected_components": [
+            "V2X_Communication",
+            "Perception",
+            "Prediction",
+            "Planning"
+          ],
+          "performance_requirements": "端到端<100ms; 丢包<2%; 校验失败率<1%。",
+          "data_elements": [
+            "BSM",
+            "SPaT",
+            "MAP",
+            "RSI"
+          ],
+          "direct_paths": "V2X_Communication->Perception/Prediction/Planning"
+        },
+        {
+          "interface_id": "IF_011",
+          "name": "IF_Failsafe_Commands",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步事件+100ms周期; 最新值; 错误处理: 冲突策略最新覆盖, 带来源标记。",
+          "data_category": "Failsafe_Control",
+          "connected_components": [
+            "Failsafe_Manager",
+            "Sensor_Fusion",
+            "Perception",
+            "Prediction",
+            "Planning",
+            "Control",
+            "Localization"
+          ],
+          "performance_requirements": "指令下发<200ms; 状态广播<200ms。",
+          "data_elements": [
+            "MRC_Command",
+            "SOS_Command",
+            "Failsafe_Status"
+          ],
+          "direct_paths": "Failsafe_Manager->All"
+        }
+      ],
+      "component_generation_order": [
+        "Map_Manager",
+        "V2X_Communication",
+        "Localization",
+        "Failsafe_Manager",
+        "Sensor_Fusion",
+        "Perception",
+        "Prediction",
+        "Planning",
+        "Control"
+      ],
+      "connection_topology": {
+        "component_connections": "BSW_Sensor_Hub->Sensor_Fusion; Sensor_Fusion->Perception; Perception->Prediction; Prediction->Planning; Planning->Control; Control->BSW_Actuator_Driver; Localization->(Sensor_Fusion/Perception/Planning/Control); Planning/Localization->Map_Manager(C/S); Map_Manager->(Planning/Localization); V2X_Communication->(Perception/Prediction/Planning); Failsafe_Manager->All。",
+        "data_flow_paths": "Sensors→Sensor_Fusion→Perception→Prediction→Planning→Control→Actuators; Localization广播Ego_Pose贯穿链路; Map服务提供规划与定位查询; V2X广播增强感知与预测; Failsafe命令在异常时介入。",
+        "control_flow_paths": "Map查询由Planning/Localization发起同步调用到Map_Manager; Failsafe_Manager根据健康状态下发控制指令; Control执行命令至执行器。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用分层流水线(感知→预测→规划→控制)与服务化地图查询; 数据通道统一使用S/R接口, 地图使用C/S接口; Failsafe单点管理降级; 定位广播供各模块使用以降低耦合。",
+        "tradeoff_analysis": "S/R低耦合高吞吐, C/S满足地图同步一致性; 周期性触发简化时序控制, 牺牲部分事件实时性; 广播定位减少接口复杂度, 增加带宽开销。",
+        "alternative_considerations": "可将Perception/Prediction进一步拆分为专用子SWC以提高并行度; 地图查询可改为异步缓存+预取; 控制可采用统一轨迹跟踪器或模型预测控制以提升稳健性。",
+        "risk_assessment": "风险: 传感器时钟漂移导致融合误差; 地图查询超时影响规划; V2X数据质量不稳定; 降级指令冲突。\n缓解: 时间同步与健康监控; 查询超时与回退策略; V2X校验与冗余; Failsafe规则优先级与最新覆盖策略。"
+      },
+      "session_id": "d8b29b93-dd15-4fc5-b508-bcb8336ce7ba",
+      "timestamp": "2025-10-23T22:04:50.416402"
+    }
+  },
+  "phase2": {
+    "duration": 766.7349216938019,
+    "tokens": 322914,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Map_Manager_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\V2X_Communication_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Localization_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Failsafe_Manager_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Sensor_Fusion_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Perception_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Prediction_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Planning_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Control_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Sensor_Hub_To_Sensor_Fusion_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Sensor_Fusion_To_Perception_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Perception_To_Prediction_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Prediction_To_Planning_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Planning_To_Control_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Control_To_Actuator_Driver_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Localization_Broadcast_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Map_Update_Broadcast_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_V2X_Broadcast_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Failsafe_Commands_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Map_Manager_Service_7ec12199_1761229057.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_7ec12199_1761229057.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T22:17:37.183302"
+}

@@ -1,0 +1,30 @@
+验证文件: C:\Users\54239\PycharmProjects\AI_XmlGenerator\generated_arxml\middle\middle_02_ChassisDomainController_CAN_Gateway_0a304e31_1761023221.arxml
+验证时间: 2025-10-22 14:54:14
+================================================================================
+================================================================================
+AUTOSAR XML 超详细验证报告
+================================================================================
+📋 XML文档信息:
+   根元素: {http://autosar.org/schema/r4.0}AUTOSAR
+   文档大小: 6.25 KB
+   元素总数: 73
+   元素类型: 30 种
+
+🎯 验证结果: ❌ 失败
+⏱️  执行时间: 0.016秒
+📊 验证进度: 0/1 阶段通过
+🔄 验证流程: structure → semantic → constraint
+🛑 失败阶段: structure
+
+🏗️  结构验证 (XSD Schema): ❌ 失败 (0.016s)
+   验证方式: XSD
+   Schema: AUTOSAR_4-2-2.xsd
+   错误详情: failed validating '/Components/CAN_Gateway/SwcInternalBehavior/CAN_Forward_Runnable/DATA-SEND-POINTS...
+
+💡 验证建议:
+   🔧 结构问题: 检查XML元素名称和属性
+   📚 参考: AUTOSAR 4.2.2 规范文档
+
+🔧 功能使用统计:
+   📝 SHACL映射功能: 标准模式
+   📝 SMT增强验证: 标准模式

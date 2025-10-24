@@ -1,0 +1,59 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "HMI_Manager",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_HMI_Status",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/HMI_Status_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Port_HMI_Status",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "CLIENT-SERVER-INTERFACE",
+            "#text": "/Interfaces/HMI_Status_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "HMI_Manager_BHV",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "HMI_Display_Runnable",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "SystemStatus",
+                "ACCESSED-VARIABLE": {}
+              },
+              {
+                "SHORT-NAME": "StatusDetails",
+                "ACCESSED-VARIABLE": {}
+              }
+            ]
+          },
+          "SYMBOL": "HMI_Update_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "StatusUpdate",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/HMI_Manager/HMI_Display_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

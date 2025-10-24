@@ -1,0 +1,1155 @@
+{
+  "case_id": "middle_2",
+  "system_name": "ChassisDomainController",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "ChassisDomainController",
+    "description": "集成ABS、EPS、ESP功能",
+    "components_count": 6,
+    "component_types": [
+      "ABSController",
+      "EPSController",
+      "ESPController",
+      "WheelSpeedProcessor",
+      "CANGateway",
+      "SafetyMonitor"
+    ],
+    "key_requirements": [
+      "ABSController防抱死制动",
+      "EPSController电动助力转向",
+      "ESPController车身稳定控制",
+      "WheelSpeedProcessor处理4个轮速传感器数据",
+      "SafetyMonitor实现ASIL-D安全监控",
+      "多条CAN总线互联"
+    ]
+  },
+  "start_time": "2025-10-23T20:13:15.679250",
+  "phase1": {
+    "duration": 160.6391966342926,
+    "api_calls": 1,
+    "tokens": 24403,
+    "component_count": 6,
+    "interface_count": 15,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "ABS_Controller: 采集轮速与车轮状态并计算制动防抱死策略, 通过CAN_Gateway下发ABS相关命令并发布ABS状态。\nEPS_Controller: 基于驾驶员转矩与车速计算电动助力策略, 通过CAN_Gateway下发EPS相关命令并发布EPS状态。\nESP_Controller: 基于轮速与横摆率计算车身稳定控制策略, 通过CAN_Gateway下发ESP相关命令并发布ESP状态。\nWheelSpeed_Processor: 从CAN_Gateway接收原始轮速并滤波融合, 发布4路处理后轮速数据。\nCAN_Gateway: 跨多条CAN总线路由与归一化域内信号, 提供同步请求接口以转发控制命令, 发布来自车网的原始传感器数据。\nSafety_Monitor: ASIL-D级别安全监控, 聚合ABS/EPS/ESP状态与故障, 生成安全告警与安全模式。",
+        "data_flow_analysis": "主要S/R数据: CAN_Wheel_Speed_Rx_IF(raw_fl,raw_fr,raw_rl,raw_rr)由CAN_Gateway提供->WheelSpeed_Processor消费; WheelSpeed_IF(wheel_speed_fl, wheel_speed_fr, wheel_speed_rl, wheel_speed_rr)由WheelSpeed_Processor提供->ABS_Controller与ESP_Controller(EPS_Controller可选)消费。YawRate_IF(yaw_rate)与Steer_Torque_Rx_IF(steer_torque)由CAN_Gateway提供->ESP_Controller与EPS_Controller消费。状态接口: ABS_Status_IF(abs_active,abs_fault_code)、EPS_Status_IF(eps_active,eps_fault_code)、ESP_Status_IF(esp_active,esp_fault_code)分别由各控制器提供->Safety_Monitor消费。告警接口: Fault_Report_IF(fault_id,severity)由Safety_Monitor提供。请求/响应C/S: CAN_Routing_IF含SendABSCommand/SendEPSCommand/SendESPCommand操作, 控制器作为Client调用, CAN_Gateway作为Server提供。时序: 原始传感器数据10ms周期发布; 处理后轮速10ms; ABS/ESP控制10ms, EPS控制5ms; 状态发布跟随控制周期。依赖链: 控制器依赖WheelSpeed_Processor与CAN_Gateway; Safety_Monitor依赖控制器状态。\n类型一致性: 轮速使用WheelSpeed_t, 横摆率YawRate_t, 转矩SteerTorque_t, 状态FaultCode_t/Boolean。通信匹配: S/R接口采用最新值缓冲; C/S接口使用同步调用带超时; 错误通过状态接口与告警接口传递。",
+        "timing_requirements": "WheelSpeed_Processor: 周期10ms, 输入到输出端到端延迟<=5ms, 抖动<=1ms。\nABS_Controller: 周期10ms, 轮速到ABS命令调用延迟<=6ms, CAN_Routing_IF调用超时<=5ms。\nESP_Controller: 周期10ms, 轮速/横摆率到ESP命令延迟<=6ms, 调用超时<=5ms。\nEPS_Controller: 周期5ms, 转矩到EPS命令延迟<=4ms, 调用超时<=3ms。\nCAN_Gateway: 传感器归一化发布10ms; C/S服务处理时间<=2ms。\nSafety_Monitor: 周期20ms, 状态聚合到告警发布<=10ms。",
+        "scalability_considerations": "多CAN总线可扩展为更多信号与网段, 通过新增S/R接口与在CAN_Gateway内增加路由映射实现; 控制器可水平扩展更多子功能(如TCS/ACC)以复用CAN_Routing_IF; 参数接口为标定扩展预留; 采用最新值缓冲减小队列管理复杂度；接口命名与数据类型标准化便于批量生成与跨域复用。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "cmp.abs",
+          "name": "ABS_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "实现防抱死制动策略与命令下发, 并发布状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: WheelSpeed_IF, CAN_Routing_IF(client调用)",
+            "output_ports": "P-Ports: ABS_Status_IF"
+          },
+          "behavioral_characteristics": "周期10ms运行; 读取四轮轮速, 计算打滑率与制动调节, 通过同步C/S调用向CAN_Gateway发送ABS命令; 管理激活/故障状态并发布; 初始化阶段加载参数; 发生传感器异常时降级策略。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: WheelSpeed_IF, CAN_Routing_IF(Client)\nP: ABS_Status_IF"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "ABS_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "ABS_Periodic_Event",
+                  "trigger": "周期10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ABS_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取ABS参数(如滑移阈值)"
+                        }
+                      ],
+                      "notes": "初始化读取标定参数"
+                    }
+                  ],
+                  "notes": "参数加载与内部状态初始化"
+                },
+                {
+                  "name": "ABS_Periodic",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从WheelSpeed_IF读取四轮速度"
+                        }
+                      ],
+                      "notes": "读取输入数据"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用CAN_Routing_IF的SendABSCommand操作"
+                        }
+                      ],
+                      "notes": "下发ABS命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向ABS_Status_IF发布状态与故障码"
+                        }
+                      ],
+                      "notes": "发布状态"
+                    }
+                  ],
+                  "notes": "核心ABS控制循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "WheelSpeed_IF",
+            "CAN_Routing_IF",
+            "ABS_Status_IF",
+            "ABS_Params_IF"
+          ]
+        },
+        {
+          "component_id": "cmp.eps",
+          "name": "EPS_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "计算电动助力转向控制并下发命令, 发布EPS状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: Steer_Torque_Rx_IF, WheelSpeed_IF, CAN_Routing_IF(client调用)",
+            "output_ports": "P-Ports: EPS_Status_IF"
+          },
+          "behavioral_characteristics": "周期5ms运行; 读取驾驶员转矩与车速, 计算助力指令, 同步调用CAN_Gateway路由命令; 管理EPS状态与故障并发布; 初始化加载标定。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: Steer_Torque_Rx_IF, WheelSpeed_IF, CAN_Routing_IF(Client)\nP: EPS_Status_IF"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "EPS_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "EPS_Periodic_Event",
+                  "trigger": "周期5ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "EPS_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取EPS标定参数(增益/限幅)"
+                        }
+                      ],
+                      "notes": "参数加载"
+                    }
+                  ],
+                  "notes": "初始化"
+                },
+                {
+                  "name": "EPS_Periodic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Steer_Torque_Rx_IF驾驶员转矩"
+                        }
+                      ],
+                      "notes": "输入转矩"
+                    },
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取WheelSpeed_IF车速用于助力随速"
+                        }
+                      ],
+                      "notes": "输入车速"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用CAN_Routing_IF的SendEPSCommand操作"
+                        }
+                      ],
+                      "notes": "下发EPS命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布EPS状态与故障码"
+                        }
+                      ],
+                      "notes": "发布状态"
+                    }
+                  ],
+                  "notes": "EPS主控制循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Steer_Torque_Rx_IF",
+            "WheelSpeed_IF",
+            "CAN_Routing_IF",
+            "EPS_Status_IF",
+            "EPS_Params_IF"
+          ]
+        },
+        {
+          "component_id": "cmp.esp",
+          "name": "ESP_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "车身稳定控制策略计算与命令下发, 发布ESP状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: WheelSpeed_IF, YawRate_IF, CAN_Routing_IF(client调用)",
+            "output_ports": "P-Ports: ESP_Status_IF"
+          },
+          "behavioral_characteristics": "周期10ms运行; 使用车速与横摆率估计侧滑与姿态, 计算稳定控制命令并同步调用CAN_Gateway; 管理状态与故障; 初始化加载标定。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: WheelSpeed_IF, YawRate_IF, CAN_Routing_IF(Client)\nP: ESP_Status_IF"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "ESP_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "ESP_Periodic_Event",
+                  "trigger": "周期10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ESP_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载ESP参数(阈值/控制增益)"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "初始化"
+                },
+                {
+                  "name": "ESP_Periodic",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取WheelSpeed_IF四轮速度"
+                        }
+                      ],
+                      "notes": "输入轮速"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取YawRate_IF横摆率"
+                        }
+                      ],
+                      "notes": "输入横摆率"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用CAN_Routing_IF的SendESPCommand操作"
+                        }
+                      ],
+                      "notes": "下发ESP命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布ESP状态与故障码"
+                        }
+                      ],
+                      "notes": "发布状态"
+                    }
+                  ],
+                  "notes": "ESP控制循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "WheelSpeed_IF",
+            "YawRate_IF",
+            "CAN_Routing_IF",
+            "ESP_Status_IF",
+            "ESP_Params_IF"
+          ]
+        },
+        {
+          "component_id": "cmp.wsp",
+          "name": "WheelSpeed_Processor",
+          "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+          "purpose": "接收CAN原始轮速并滤波融合, 输出4路车轮速度。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: CAN_Wheel_Speed_Rx_IF",
+            "output_ports": "P-Ports: WheelSpeed_IF"
+          },
+          "behavioral_characteristics": "周期10ms运行; 读取原始轮速, 执行去噪与故障检测, 融合输出四轮速度; 初始化加载滤波参数; 异常时输出质量标志或默认值。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: CAN_Wheel_Speed_Rx_IF\nP: WheelSpeed_IF"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "WSP_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "WSP_Periodic_Event",
+                  "trigger": "周期10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "WSP_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取滤波器参数(时间常数等)"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "初始化"
+                },
+                {
+                  "name": "WSP_Periodic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取CAN_Wheel_Speed_Rx_IF原始四轮速度"
+                        }
+                      ],
+                      "notes": "读取原始数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向WheelSpeed_IF发布处理后的四轮速度"
+                        }
+                      ],
+                      "notes": "发布处理后数据"
+                    }
+                  ],
+                  "notes": "核心轮速处理循环"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "CAN_Wheel_Speed_Rx_IF",
+            "WheelSpeed_IF",
+            "WSP_Params_IF"
+          ]
+        },
+        {
+          "component_id": "cmp.cangw",
+          "name": "CAN_Gateway",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "跨多CAN总线的信号归一化与路由, 提供控制命令转发服务, 发布原始传感器数据。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: 无(作为Server与Provider被动接收调用与数据源自BSW)",
+            "output_ports": "P-Ports: CAN_Wheel_Speed_Rx_IF, YawRate_IF, Steer_Torque_Rx_IF, CAN_Routing_IF(Server)"
+          },
+          "behavioral_characteristics": "周期10ms轮询并发布原始传感器数据; 当接收到控制器的同步调用时, 路由命令到目标CAN总线; 维护多总线映射与故障屏蔽; 初始化构建路由表。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "P: CAN_Wheel_Speed_Rx_IF, YawRate_IF, Steer_Torque_Rx_IF, CAN_Routing_IF(Server)"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CAN_GW_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CAN_GW_Rx_Event",
+                  "trigger": "周期10ms发布传感器数据"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "CAN_GW_Service_Invoke",
+                  "trigger": "当CAN_Routing_IF操作被调用时触发"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CAN_GW_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "初始化时发布初始总线状态/占位数据"
+                        }
+                      ],
+                      "notes": "发布初始占位值"
+                    }
+                  ],
+                  "notes": "初始化路由表与发布占位数据"
+                },
+                {
+                  "name": "CAN_GW_Rx_Dispatch",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向CAN_Wheel_Speed_Rx_IF发布原始四轮速度"
+                        }
+                      ],
+                      "notes": "发布原始轮速"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向YawRate_IF发布横摆率"
+                        }
+                      ],
+                      "notes": "发布横摆率"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向Steer_Torque_Rx_IF发布驾驶员转矩"
+                        }
+                      ],
+                      "notes": "发布转矩"
+                    }
+                  ],
+                  "notes": "原始传感器数据发布循环"
+                },
+                {
+                  "name": "CAN_GW_Service",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "服务调用处理中发布路由状态/反馈"
+                        }
+                      ],
+                      "notes": "服务处理反馈"
+                    }
+                  ],
+                  "notes": "同步服务调用的处理与反馈"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "CAN_Wheel_Speed_Rx_IF",
+            "YawRate_IF",
+            "Steer_Torque_Rx_IF",
+            "CAN_Routing_IF"
+          ]
+        },
+        {
+          "component_id": "cmp.sm",
+          "name": "Safety_Monitor",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "ASIL-D安全监控, 聚合控制器状态与故障, 发布告警与安全模式。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "R-Ports: ABS_Status_IF, EPS_Status_IF, ESP_Status_IF",
+            "output_ports": "P-Ports: Fault_Report_IF, Safety_Mode_IF"
+          },
+          "behavioral_characteristics": "周期20ms聚合状态; 规则引擎评估故障与一致性; 发布告警并根据策略生成安全模式; 初始化加载安全策略参数。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: ABS_Status_IF, EPS_Status_IF, ESP_Status_IF\nP: Fault_Report_IF, Safety_Mode_IF"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "SM_Init_Event",
+                  "trigger": "组件初始化时触发"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "SM_Periodic_Event",
+                  "trigger": "周期20ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "SM_Init",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "加载安全策略参数"
+                        }
+                      ],
+                      "notes": "初始化安全策略"
+                    }
+                  ],
+                  "notes": "初始化"
+                },
+                {
+                  "name": "SM_Periodic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取ABS_Status_IF"
+                        }
+                      ],
+                      "notes": "ABS状态输入"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取EPS_Status_IF"
+                        }
+                      ],
+                      "notes": "EPS状态输入"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取ESP_Status_IF"
+                        }
+                      ],
+                      "notes": "ESP状态输入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向Fault_Report_IF发布告警"
+                        }
+                      ],
+                      "notes": "发布告警"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向Safety_Mode_IF发布安全模式状态"
+                        }
+                      ],
+                      "notes": "发布安全模式"
+                    }
+                  ],
+                  "notes": "状态聚合与安全评估"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "ABS_Status_IF",
+            "EPS_Status_IF",
+            "ESP_Status_IF",
+            "Fault_Report_IF",
+            "Safety_Mode_IF",
+            "Safety_Params_IF"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if.wheel.proc",
+          "name": "WheelSpeed_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期10ms发布, RTE单元素缓冲, 接收端采用最新值读取; 错误通过质量标志或缺省值处理。",
+          "data_category": "车辆速度信号(四轮)",
+          "connected_components": [
+            "WheelSpeed_Processor",
+            "ABS_Controller",
+            "ESP_Controller",
+            "EPS_Controller"
+          ],
+          "performance_requirements": "端到端延迟<=5ms, 数据新鲜度<=20ms, 丢失率<1e-6。",
+          "data_elements": [
+            "wheel_speed_fl",
+            "wheel_speed_fr",
+            "wheel_speed_rl",
+            "wheel_speed_rr"
+          ],
+          "direct_paths": "WheelSpeed_Processor->ABS_Controller/ESP_Controller/EPS_Controller"
+        },
+        {
+          "interface_id": "if.can.raw.ws",
+          "name": "CAN_Wheel_Speed_Rx_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期10ms, 无队列, 最新值覆盖; 错误采用校验与默认值替代。",
+          "data_category": "原始轮速(四轮)",
+          "connected_components": [
+            "CAN_Gateway",
+            "WheelSpeed_Processor"
+          ],
+          "performance_requirements": "发布延迟<=2ms, 抖动<=1ms。",
+          "data_elements": [
+            "raw_wheel_speed_fl",
+            "raw_wheel_speed_fr",
+            "raw_wheel_speed_rl",
+            "raw_wheel_speed_rr"
+          ],
+          "direct_paths": "CAN_Gateway->WheelSpeed_Processor"
+        },
+        {
+          "interface_id": "if.yawrate",
+          "name": "YawRate_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期10ms, 最新值缓冲; 错误使用质量标志。",
+          "data_category": "横摆率信号",
+          "connected_components": [
+            "CAN_Gateway",
+            "ESP_Controller"
+          ],
+          "performance_requirements": "延迟<=5ms, 抖动<=1ms。",
+          "data_elements": [
+            "yaw_rate"
+          ],
+          "direct_paths": "CAN_Gateway->ESP_Controller"
+        },
+        {
+          "interface_id": "if.steer.torque",
+          "name": "Steer_Torque_Rx_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期5-10ms, 最新值缓冲, 错误采用默认值与告警。",
+          "data_category": "驾驶员转矩",
+          "connected_components": [
+            "CAN_Gateway",
+            "EPS_Controller"
+          ],
+          "performance_requirements": "延迟<=4ms, 抖动<=1ms。",
+          "data_elements": [
+            "steer_torque"
+          ],
+          "direct_paths": "CAN_Gateway->EPS_Controller"
+        },
+        {
+          "interface_id": "if.abs.status",
+          "name": "ABS_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 与ABS控制周期一致(10ms), 最新值缓冲; 错误通过fault_code传播。",
+          "data_category": "ABS状态与故障",
+          "connected_components": [
+            "ABS_Controller",
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "状态更新延迟<=5ms。",
+          "data_elements": [
+            "abs_active",
+            "abs_fault_code"
+          ],
+          "direct_paths": "ABS_Controller->Safety_Monitor"
+        },
+        {
+          "interface_id": "if.eps.status",
+          "name": "EPS_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期5ms, 最新值缓冲; 错误通过fault_code传播。",
+          "data_category": "EPS状态与故障",
+          "connected_components": [
+            "EPS_Controller",
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "状态更新延迟<=4ms。",
+          "data_elements": [
+            "eps_active",
+            "eps_fault_code"
+          ],
+          "direct_paths": "EPS_Controller->Safety_Monitor"
+        },
+        {
+          "interface_id": "if.esp.status",
+          "name": "ESP_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期10ms, 最新值缓冲; 错误通过fault_code传播。",
+          "data_category": "ESP状态与故障",
+          "connected_components": [
+            "ESP_Controller",
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "状态更新延迟<=5ms。",
+          "data_elements": [
+            "esp_active",
+            "esp_fault_code"
+          ],
+          "direct_paths": "ESP_Controller->Safety_Monitor"
+        },
+        {
+          "interface_id": "if.safety.mode",
+          "name": "Safety_Mode_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 周期20ms或事件触发更新, 最新值缓冲; 错误通过告警伴随。",
+          "data_category": "安全模式状态",
+          "connected_components": [
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "模式更新延迟<=10ms。",
+          "data_elements": [
+            "safety_mode_state"
+          ],
+          "direct_paths": "Safety_Monitor->(外部或其他域使用)"
+        },
+        {
+          "interface_id": "if.fault.report",
+          "name": "Fault_Report_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值, 事件触发更新(故障发生/清除), 最新值缓冲; 错误通过冗余发布。",
+          "data_category": "安全告警",
+          "connected_components": [
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "告警发布延迟<=10ms。",
+          "data_elements": [
+            "fault_id",
+            "severity"
+          ],
+          "direct_paths": "Safety_Monitor->系统诊断接收者(外部)"
+        },
+        {
+          "interface_id": "if.can.routing",
+          "name": "CAN_Routing_IF",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步请求/响应; 控制器调用操作, CAN_Gateway处理并应答; 超时管理, 无队列; 错误使用返回码与故障上报。",
+          "data_category": "控制命令路由服务",
+          "connected_components": [
+            "CAN_Gateway",
+            "ABS_Controller",
+            "EPS_Controller",
+            "ESP_Controller"
+          ],
+          "performance_requirements": "服务处理时间<=2ms, 客户端超时ABS/ESP<=5ms, EPS<=3ms。",
+          "data_elements": [
+            "SendABSCommand",
+            "SendEPSCommand",
+            "SendESPCommand"
+          ],
+          "direct_paths": "ABS_Controller/EPS_Controller/ESP_Controller->CAN_Gateway(请求), CAN_Gateway->目标CAN总线(转发)"
+        },
+        {
+          "interface_id": "if.params.abs",
+          "name": "ABS_Params_IF",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问, 初始化时加载, 运行时可更新(可选)。",
+          "data_category": "ABS标定参数",
+          "connected_components": [
+            "ABS_Controller"
+          ],
+          "performance_requirements": "初始化完成前可用。",
+          "data_elements": [
+            "abs_slip_threshold",
+            "abs_gain"
+          ],
+          "direct_paths": "参数存储->ABS_Controller"
+        },
+        {
+          "interface_id": "if.params.eps",
+          "name": "EPS_Params_IF",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问, 初始化时加载。",
+          "data_category": "EPS标定参数",
+          "connected_components": [
+            "EPS_Controller"
+          ],
+          "performance_requirements": "初始化完成前可用。",
+          "data_elements": [
+            "eps_assist_gain",
+            "eps_limit"
+          ],
+          "direct_paths": "参数存储->EPS_Controller"
+        },
+        {
+          "interface_id": "if.params.esp",
+          "name": "ESP_Params_IF",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问, 初始化时加载。",
+          "data_category": "ESP标定参数",
+          "connected_components": [
+            "ESP_Controller"
+          ],
+          "performance_requirements": "初始化完成前可用。",
+          "data_elements": [
+            "esp_yaw_gain",
+            "esp_slip_threshold"
+          ],
+          "direct_paths": "参数存储->ESP_Controller"
+        },
+        {
+          "interface_id": "if.params.wsp",
+          "name": "WSP_Params_IF",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问, 初始化时加载。",
+          "data_category": "轮速处理参数",
+          "connected_components": [
+            "WheelSpeed_Processor"
+          ],
+          "performance_requirements": "初始化完成前可用。",
+          "data_elements": [
+            "wsp_filter_time_constant",
+            "wsp_quality_threshold"
+          ],
+          "direct_paths": "参数存储->WheelSpeed_Processor"
+        },
+        {
+          "interface_id": "if.params.safety",
+          "name": "Safety_Params_IF",
+          "type": "PARAMETER-INTERFACE",
+          "communication_pattern": "只读参数访问, 初始化时加载。",
+          "data_category": "安全策略参数",
+          "connected_components": [
+            "Safety_Monitor"
+          ],
+          "performance_requirements": "初始化完成前可用。",
+          "data_elements": [
+            "safety_mode_ruleset",
+            "fault_escalation_threshold"
+          ],
+          "direct_paths": "参数存储->Safety_Monitor"
+        }
+      ],
+      "component_generation_order": [
+        "CAN_Gateway",
+        "WheelSpeed_Processor",
+        "ABS_Controller",
+        "EPS_Controller",
+        "ESP_Controller",
+        "Safety_Monitor"
+      ],
+      "connection_topology": {
+        "component_connections": "CAN_Gateway提供CAN_Wheel_Speed_Rx_IF/YawRate_IF/Steer_Torque_Rx_IF与CAN_Routing_IF(Server)。WheelSpeed_Processor消费原始轮速并提供WheelSpeed_IF。ABS/EPS/ESP控制器消费对应输入并通过CAN_Routing_IF下发命令, 各自提供状态接口。Safety_Monitor消费三路状态并提供Fault_Report_IF与Safety_Mode_IF。",
+        "data_flow_paths": "CAN_Gateway(raw轮速)->WheelSpeed_Processor(滤波)->WheelSpeed_IF->ABS/ESP; CAN_Gateway(yaw_rate)->ESP; CAN_Gateway(steer_torque)->EPS; ABS/EPS/ESP状态->Safety_Monitor; Safety_Monitor告警->Fault_Report_IF。",
+        "control_flow_paths": "ABS/EPS/ESP通过CAN_Routing_IF同步调用CAN_Gateway服务; CAN_Gateway响应并路由到目标CAN网络。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "将多总线接入与路由集中在CAN_Gateway以隔离网络复杂性; 轮速处理前置统一提供标准化WheelSpeed_IF; 控制器以C/S调用路由服务保证命令一致性与超时控制; 状态与安全监控采用S/R最新值缓冲简化并发与丢包处理。",
+        "tradeoff_analysis": "S/R最新值降低缓冲与延迟但不保留历史; 若需要序列分析可引入队列接口。同步C/S简化调用时序但引入阻塞风险, 通过严格超时与CAN_Gateway快速响应控制风险。安全监控集中化提升一致性但增加对状态接口的依赖。",
+        "alternative_considerations": "可将控制命令改为S/R队列以去除同步阻塞; 轮速处理可拆分为传感器融合与质量评估两个SWC; 安全模式亦可采用Mode-Switch接口实现模式管理(本设计用S/R简单状态以降低预选复杂度)。",
+        "risk_assessment": "多总线延迟与丢包风险: 通过Gateway时间预算与质量标志缓解。控制器阻塞风险: 限制超时并在故障时降级策略。参数不一致风险: 采用统一参数接口与初始化校验。安全监控误判风险: 使用多源状态交叉验证与阈值防抖。"
+      },
+      "session_id": "cc56f485-af40-4788-8fc2-7dcedf945d68",
+      "timestamp": "2025-10-23T20:15:56.300422"
+    }
+  },
+  "phase2": {
+    "duration": 484.1383812427521,
+    "tokens": 186122,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Gateway_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\WheelSpeed_Processor_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\ABS_Controller_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\EPS_Controller_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\ESP_Controller_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Safety_Monitor_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\WheelSpeed_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CAN_Wheel_Speed_Rx_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\YawRate_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Steer_Torque_Rx_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ABS_Status_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\EPS_Status_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ESP_Status_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Safety_Mode_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Fault_Report_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\CAN_Routing_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ABS_Params_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\EPS_Params_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\ESP_Params_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\WSP_Params_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Safety_Params_IF_9d2f9f53_1761222240.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_9d2f9f53_1761222240.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T20:24:00.471787"
+}

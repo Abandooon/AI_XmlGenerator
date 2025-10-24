@@ -1,0 +1,1054 @@
+{
+  "case_id": "middle_3",
+  "system_name": "BodyComfortController",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "BodyComfortController",
+    "description": "管理门窗、座椅、空调、氛围灯",
+    "components_count": 7,
+    "component_types": [
+      "DoorWindowManager",
+      "SeatManager",
+      "ClimateControl",
+      "AmbientLighting",
+      "CANInterface",
+      "LINInterface",
+      "DiagHandler"
+    ],
+    "key_requirements": [
+      "DoorWindowManager控制4门4窗",
+      "SeatManager控制电动座椅调节和加热",
+      "ClimateControl实现自动空调",
+      "AmbientLighting控制64色氛围灯",
+      "通过CAN和LIN总线通信",
+      "支持OTA固件更新"
+    ]
+  },
+  "start_time": "2025-10-23T20:24:02.475704",
+  "phase1": {
+    "duration": 138.67392301559448,
+    "api_calls": 1,
+    "tokens": 22498,
+    "component_count": 7,
+    "interface_count": 6,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "BodyComfortController将功能划分为7个组件：\n- DoorWindow_Manager：门锁与窗升降控制策略、状态管理、抗夹控制。\n- Seat_Manager：电动座椅位置/轮廓调节、加热控制、限流与防夹参数应用。\n- Climate_Control：自动空调控制（温度/风量/模式）、除雾除霜、能耗管理。\n- Ambient_Lighting：64色氛围灯色彩/亮度控制、主题/效果管理。\n- CAN_Interface：通过CAN与车身网络交换门锁、空调、诊断相关信号。\n- LIN_Interface：通过LIN与座椅与氛围灯等节点交换命令与反馈。\n- Diag_Handler：诊断服务与OTA流程编排（开始/进度/错误处理/回滚）。\n边界：应用组件仅通过RTE端口与总线接口或诊断服务交互，不直接访问其他组件内部数据。",
+        "data_flow_analysis": "数据接口与流向：\n- DoorWindow_Control_SRI：DoorWindow_Manager→(命令)→CAN_Interface/LIN_Interface；CAN_Interface/LIN_Interface→(状态)→DoorWindow_Manager。\n- Seat_Control_SRI：Seat_Manager↔LIN_Interface（命令与反馈）。\n- Climate_Control_SRI：Climate_Control↔CAN_Interface（命令与反馈）。\n- AmbientLighting_SRI：Ambient_Lighting↔LIN_Interface（命令与状态）。\n- Diag_Service_CSI：CAN_Interface（客户端）→Diag_Handler（服务端）；应用组件可经Diag_Handler查询OTA状态。\n- Bus_Status_SRI：CAN_Interface/LIN_Interface→应用组件/Diag_Handler（总线在线、错误计数、带宽）。\n类型与模式：\n- SENDER-RECEIVER：最新值缓冲，周期刷新（10–50ms），关键信号无队列，仅覆盖；错误通过Data-Receive-Error事件与状态位。\n- CLIENT-SERVER：诊断/OTA同步调用，超时保护（500–2000ms），出错返回码；请求-响应一次性无缓冲。\n调用链：\n- 应用组件→(S/R命令)→总线接口→外设；外设→总线接口→(S/R状态)→应用组件。\n- CAN_Interface(客户端)→Diag_Handler(服务端)进行OTA控制；Diag_Handler向应用组件曝光进度与状态（S/R），必要时应用组件降级策略。",
+        "timing_requirements": "主循环：\n- DoorWindow_Manager：10ms周期，抗夹与位置控制。\n- Seat_Manager：20ms周期，位置/加热控制。\n- Climate_Control：50ms周期，PID/策略计算；除雾事件最高10ms。\n- Ambient_Lighting：20ms周期，效果渲染；主题切换事件驱动。\n- CAN_Interface：10ms发送调度，接收事件至多1ms内发布；诊断CSI调用超时1s默认、OTA阶段2s。\n- LIN_Interface：20ms主调度，节点轮询50–100ms。\n- Diag_Handler：诊断请求事件驱动；OTA状态心跳500ms。\n端到端：应用命令到外设响应≤100ms；安全相关（车窗防夹）≤50ms。",
+        "scalability_considerations": "支持增加车门/座椅/灯区数量，通过扩展S/R数据元素与端口不影响现有组件；可添加新总线（FlexRay）通过新Interface组件；Diag_Handler可扩展更多诊断操作；组件内runnable与参数访问抽象，便于按配置变体扩展。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "C1",
+          "name": "DoorWindow_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理4门4窗的命令、位置与防夹策略，协调与CAN/LIN的交互。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "3 R-Ports（用户命令、总线状态、诊断状态）",
+            "output_ports": "2 P-Ports（门锁/窗命令下发、状态发布）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 主要逻辑：输入命令与状态融合，执行防夹/限位策略，生成门锁与窗升降输出；异常与降级处理。\n- 触发：初始化；10ms周期；收到总线状态变化。\n- 状态管理：门锁状态、窗位置、防夹启停、超时计数与故障位。\n- 数据流程：R端口读取命令/状态→策略计算→P端口下发命令并回写状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: DoorWindow_Control_SRI输入命令、Bus_Status_SRI；P-Ports: DoorWindow_Control_SRI输出命令与状态；另经R-PORT访问Diag_Service_CSI为客户端调用。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "DoorWindow_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "DoorWindow_Main_Cycle",
+                  "trigger": "10ms periodic"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "BusStatus_Update",
+                  "trigger": "Bus_Status_SRI updated"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "doorwindow_init_r",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取防夹阈值、限位参数"
+                        }
+                      ],
+                      "notes": "初始化参数与状态"
+                    }
+                  ],
+                  "notes": "初始化runnable，加载标定参数与故障清零"
+                },
+                {
+                  "name": "doorwindow_main_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取用户门锁与窗命令"
+                        }
+                      ],
+                      "notes": "从命令R端口读入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "下发门锁与窗控制命令至总线接口"
+                        }
+                      ],
+                      "notes": "向P端口发送命令与状态"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "查询OTA更新状态以协调降级策略"
+                        }
+                      ],
+                      "notes": "同步调用Diag_Service_CSI"
+                    }
+                  ],
+                  "notes": "周期控制runnable，融合状态与执行策略"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "DoorWindow_Control_SRI",
+            "Bus_Status_SRI",
+            "Diag_Service_CSI"
+          ]
+        },
+        {
+          "component_id": "C2",
+          "name": "Seat_Manager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "控制座椅位置/轮廓与加热，基于LIN交互并管理限位与安全。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2 R-Ports（座椅命令、Bus状态）",
+            "output_ports": "2 P-Ports（座椅执行与状态）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：位置/轮廓控制、加热开闭与档位、过流保护、限位。\n- 触发：初始化；20ms周期。\n- 状态：位置坐标、加热级别、过流/过温告警。\n- 数据流程：R读取命令→计算→P发送执行并发布反馈。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Seat_Control_SRI输入命令、Bus_Status_SRI；P-Ports: Seat_Control_SRI输出执行与反馈；R-PORT可调用Diag_Service_CSI。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Seat_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Seat_Main_Cycle",
+                  "trigger": "20ms periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "seat_init_r",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取位置限位、加热温度阈值"
+                        }
+                      ],
+                      "notes": "初始化标定"
+                    }
+                  ],
+                  "notes": "初始化runnable"
+                },
+                {
+                  "name": "seat_main_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取座椅位置与加热命令"
+                        }
+                      ],
+                      "notes": "命令读取"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "下发执行并发布反馈"
+                        }
+                      ],
+                      "notes": "发送执行与状态"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "查询OTA状态（必要时限功）"
+                        }
+                      ],
+                      "notes": "同步调用Diag_Service_CSI"
+                    }
+                  ],
+                  "notes": "周期控制runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Seat_Control_SRI",
+            "Bus_Status_SRI",
+            "Diag_Service_CSI"
+          ]
+        },
+        {
+          "component_id": "C3",
+          "name": "Climate_Control",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "自动空调策略，目标温度/风量/模式控制，与CAN交互并管理能耗与除雾。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "3 R-Ports（驾驶员输入、舱内温度反馈、Bus状态）",
+            "output_ports": "2 P-Ports（HVAC命令、状态）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：基于PID/前馈的温控策略，风量与模式选择，除雾加速路径。\n- 触发：初始化；50ms周期；除雾加速10ms事件。\n- 状态：目标温度、当前温度、能耗/压缩机状态。\n- 数据流程：R读取输入与反馈→策略→P下发HVAC命令与状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Climate_Control_SRI输入命令与环境反馈、Bus_Status_SRI；P-Ports: Climate_Control_SRI输出控制与状态；R-PORT用于调用Diag_Service_CSI。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Climate_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Climate_Main_Cycle",
+                  "trigger": "50ms periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "climate_init_r",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取PID参数与能耗限值"
+                        }
+                      ],
+                      "notes": "初始化参数"
+                    }
+                  ],
+                  "notes": "初始化runnable"
+                },
+                {
+                  "name": "climate_main_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取目标温度、风量命令与舱内温度反馈"
+                        }
+                      ],
+                      "notes": "读取策略输入"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "下发压缩机/风机/门阀控制命令"
+                        }
+                      ],
+                      "notes": "发送HVAC命令"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "读取OTA状态用于能耗/性能降级"
+                        }
+                      ],
+                      "notes": "同步调用Diag_Service_CSI"
+                    }
+                  ],
+                  "notes": "周期策略runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Climate_Control_SRI",
+            "Bus_Status_SRI",
+            "Diag_Service_CSI"
+          ]
+        },
+        {
+          "component_id": "C4",
+          "name": "Ambient_Lighting",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "控制64色氛围灯颜色/亮度与主题效果，主要通过LIN交互。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2 R-Ports（色彩/亮度命令、Bus状态）",
+            "output_ports": "2 P-Ports（灯控命令与状态）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：颜色/亮度控制，主题效果渲染（渐变/呼吸），冲突与优先级管理。\n- 触发：初始化；20ms周期。\n- 状态：当前色彩、亮度与主题状态；错误位。\n- 数据流程：R读取命令→效果渲染→P下发命令并回写状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: AmbientLighting_SRI命令、Bus_Status_SRI；P-Ports: AmbientLighting_SRI状态/命令；R-PORT可调用Diag_Service_CSI。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Ambient_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Ambient_Main_Cycle",
+                  "trigger": "20ms periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ambient_init_r",
+                  "elements": [
+                    {
+                      "key": "PARAMETER-ACCESSS",
+                      "wrapper": "PARAMETER-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-PARAMETER",
+                          "variant": "AUTOSAR-PARAMETER-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取主题与效果参数"
+                        }
+                      ],
+                      "notes": "初始化主题配置"
+                    }
+                  ],
+                  "notes": "初始化runnable"
+                },
+                {
+                  "name": "ambient_main_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取色彩与亮度命令"
+                        }
+                      ],
+                      "notes": "读取命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布当前状态并下发灯控命令"
+                        }
+                      ],
+                      "notes": "状态与命令输出"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "查询OTA状态用于效果降级"
+                        }
+                      ],
+                      "notes": "同步调用Diag_Service_CSI"
+                    }
+                  ],
+                  "notes": "周期效果渲染runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "AmbientLighting_SRI",
+            "Bus_Status_SRI",
+            "Diag_Service_CSI"
+          ]
+        },
+        {
+          "component_id": "C5",
+          "name": "CAN_Interface",
+          "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+          "purpose": "与CAN网络交互，桥接应用S/R与诊断CSI至底层通信栈。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "4 R-Ports（门窗/空调命令、诊断请求、调度配置）",
+            "output_ports": "4 P-Ports（门窗/空调状态、诊断响应、总线状态）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：发送调度与优先级、接收解析与发布、诊断请求转发与响应、错误计数与总线状态发布。\n- 触发：初始化；10ms发送调度；接收事件驱动；诊断调用事件。\n- 状态：总线在线、错误计数、队列占用。\n- 数据流程：R读取应用命令/诊断请求→编码发送；接收帧→解析→P发布状态与响应。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: DoorWindow/Climate命令、Diag_Service_CSI客户端；P-Ports: 状态回写与Bus_Status_SRI发布。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CAN_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CAN_Tx_Schedule",
+                  "trigger": "10ms periodic"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "CAN_Diag_Call",
+                  "trigger": "CSI client call"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "can_tx_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取应用命令用于编码与发送"
+                        }
+                      ],
+                      "notes": "读取S/R命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布发送完成状态与队列占用"
+                        }
+                      ],
+                      "notes": "发布总线状态"
+                    }
+                  ],
+                  "notes": "CAN发送调度runnable"
+                },
+                {
+                  "name": "can_rx_r",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "解析接收帧并发布到应用状态P端口"
+                        }
+                      ],
+                      "notes": "发布状态与反馈"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "向Diag_Handler发起诊断/OTA服务调用"
+                        }
+                      ],
+                      "notes": "CSI客户端调用Diag服务"
+                    }
+                  ],
+                  "notes": "CAN接收处理runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "DoorWindow_Control_SRI",
+            "Climate_Control_SRI",
+            "Diag_Service_CSI",
+            "Bus_Status_SRI"
+          ]
+        },
+        {
+          "component_id": "C6",
+          "name": "LIN_Interface",
+          "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+          "purpose": "与LIN网络交互，桥接座椅与氛围灯应用S/R至底层LIN。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "3 R-Ports（座椅命令、灯控命令、调度配置）",
+            "output_ports": "3 P-Ports（座椅/灯控反馈、总线状态）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：LIN主节点轮询、帧编解码、错误与在线状态发布。\n- 触发：初始化；20ms主调度；接收事件驱动。\n- 状态：在线、错误计数、通道负载。\n- 数据流程：R读取应用命令→发送；接收帧→解析→P发布反馈与Bus状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: Seat_Control_SRI、AmbientLighting_SRI命令；P-Ports: 反馈与Bus_Status_SRI发布。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "LIN_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "LIN_Main_Schedule",
+                  "trigger": "20ms periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "lin_tx_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取座椅与灯控命令进行编解码发送"
+                        }
+                      ],
+                      "notes": "读取S/R命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布总线状态心跳"
+                        }
+                      ],
+                      "notes": "发布Bus状态"
+                    }
+                  ],
+                  "notes": "LIN发送调度runnable"
+                },
+                {
+                  "name": "lin_rx_r",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "解析接收帧并发布反馈到应用"
+                        }
+                      ],
+                      "notes": "发布反馈"
+                    }
+                  ],
+                  "notes": "LIN接收处理runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Seat_Control_SRI",
+            "AmbientLighting_SRI",
+            "Bus_Status_SRI"
+          ]
+        },
+        {
+          "component_id": "C7",
+          "name": "Diag_Handler",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "诊断与OTA服务编排，提供客户端-服务端接口，管理流程与状态。",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "2 R-Ports（总线状态、服务内部参数访问）",
+            "output_ports": "2 P-Ports（Diag服务提供、OTA状态发布）"
+          },
+          "behavioral_characteristics": "运行时行为：\n- 逻辑：处理诊断请求，执行StartOTA、进度上报、错误回滚，发布OTA状态。\n- 触发：初始化；服务调用事件；500ms心跳。\n- 状态：OTA阶段、进度、错误码、回滚标志。\n- 数据流程：接收CSI操作→执行流程→发布状态S/R→返回操作结果。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "P-PORT提供Diag_Service_CSI；P-PORT发布OTA状态（S/R）；R-PORT读取Bus_Status_SRI与内部参数。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Diag_Init",
+                  "trigger": "Component initialization"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_Operation_Invoked",
+                  "trigger": "Diag_Service_CSI operation called"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Diag_Heartbeat",
+                  "trigger": "500ms periodic"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "diag_op_handler_r",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取服务调用参数（例如OTA触发、分区）"
+                        }
+                      ],
+                      "notes": "接收服务参数"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布OTA进度与状态到S/R"
+                        }
+                      ],
+                      "notes": "发布服务状态"
+                    }
+                  ],
+                  "notes": "处理客户端操作并返回结果"
+                },
+                {
+                  "name": "diag_heartbeat_r",
+                  "elements": [
+                    {
+                      "key": "DATA-READ-ACCESSS",
+                      "wrapper": "DATA-READ-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取Bus_Status以判断网络可用性"
+                        }
+                      ],
+                      "notes": "读取总线状态"
+                    },
+                    {
+                      "key": "DATA-WRITE-ACCESSS",
+                      "wrapper": "DATA-WRITE-ACCESSS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "写入心跳状态/错误码到状态端口"
+                        }
+                      ],
+                      "notes": "更新心跳与错误状态"
+                    }
+                  ],
+                  "notes": "心跳状态维护runnable"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Diag_Service_CSI",
+            "Bus_Status_SRI"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "I1",
+          "name": "DoorWindow_Control_SRI",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值（无队列），周期10ms刷新；CAN/LIN双发布；接收端按最后写入读取；错误通过状态位与接收错误事件；时延端到端≤100ms。",
+          "data_category": "门锁与窗控制/状态",
+          "connected_components": [
+            "DoorWindow_Manager",
+            "CAN_Interface",
+            "LIN_Interface"
+          ],
+          "performance_requirements": "10ms发送调度；关键门窗状态传播≤50ms；丢包自动覆盖。",
+          "data_elements": [
+            "door_lock_cmd",
+            "window_move_cmd",
+            "door_status",
+            "window_position"
+          ],
+          "direct_paths": "DoorWindow_Manager→CAN_Interface/LIN_Interface（命令）；CAN_Interface/LIN_Interface→DoorWindow_Manager（状态）"
+        },
+        {
+          "interface_id": "I2",
+          "name": "Seat_Control_SRI",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值，20ms周期；LIN主轮询；错误位与超时计数；状态覆盖写。",
+          "data_category": "座椅位置/加热命令与反馈",
+          "connected_components": [
+            "Seat_Manager",
+            "LIN_Interface"
+          ],
+          "performance_requirements": "轮询周期20–50ms；位置反馈≤100ms；加热状态≤200ms。",
+          "data_elements": [
+            "seat_position_cmd",
+            "seat_heater_cmd",
+            "seat_position_feedback",
+            "seat_heater_status"
+          ],
+          "direct_paths": "Seat_Manager↔LIN_Interface（命令与反馈）"
+        },
+        {
+          "interface_id": "I3",
+          "name": "Climate_Control_SRI",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值，50ms周期；CAN调度；异常通过状态位；除雾高优先级10ms。",
+          "data_category": "空调控制与环境反馈",
+          "connected_components": [
+            "Climate_Control",
+            "CAN_Interface"
+          ],
+          "performance_requirements": "HVAC命令至执行≤100ms；除雾路径≤50ms。",
+          "data_elements": [
+            "hvac_target_temp",
+            "fan_speed_cmd",
+            "ac_on_cmd",
+            "cabin_temp_feedback",
+            "ac_status"
+          ],
+          "direct_paths": "Climate_Control↔CAN_Interface（命令与反馈）"
+        },
+        {
+          "interface_id": "I4",
+          "name": "AmbientLighting_SRI",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值，20ms循环；LIN主节点广播；错误位与在线标志。",
+          "data_category": "氛围灯色彩/亮度与状态",
+          "connected_components": [
+            "Ambient_Lighting",
+            "LIN_Interface"
+          ],
+          "performance_requirements": "颜色/亮度更新≤100ms；主题切换≤200ms。",
+          "data_elements": [
+            "ambient_color_cmd",
+            "ambient_brightness_cmd",
+            "ambient_status"
+          ],
+          "direct_paths": "Ambient_Lighting↔LIN_Interface（命令与状态）"
+        },
+        {
+          "interface_id": "I5",
+          "name": "Diag_Service_CSI",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步调用；请求-响应一次性；默认超时1s，OTA阶段2s；错误返回码；不缓冲；调用栈保护。",
+          "data_category": "诊断与OTA服务",
+          "connected_components": [
+            "CAN_Interface",
+            "DoorWindow_Manager",
+            "Seat_Manager",
+            "Climate_Control",
+            "Ambient_Lighting",
+            "Diag_Handler"
+          ],
+          "performance_requirements": "普通诊断响应≤200ms；OTA控制≤2s超时管理。",
+          "data_elements": [
+            "StartOTAUpdate(op)",
+            "GetUpdateStatus(op)",
+            "ReadDTC(op)",
+            "ClearDTC(op)"
+          ],
+          "direct_paths": "CAN_Interface（客户端）→Diag_Handler（服务端）；应用组件可直接作为客户端调用获取状态"
+        },
+        {
+          "interface_id": "I6",
+          "name": "Bus_Status_SRI",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "最新值心跳；CAN 10ms，LIN 20ms；错误计数与在线标志；无队列。",
+          "data_category": "总线健康与在线状态",
+          "connected_components": [
+            "CAN_Interface",
+            "LIN_Interface",
+            "DoorWindow_Manager",
+            "Seat_Manager",
+            "Climate_Control",
+            "Ambient_Lighting",
+            "Diag_Handler"
+          ],
+          "performance_requirements": "在线/错误状态传播≤50ms；心跳丢失3个周期触发降级。",
+          "data_elements": [
+            "bus_online",
+            "bus_error_count",
+            "bus_load"
+          ],
+          "direct_paths": "CAN_Interface/LIN_Interface→所有应用组件/Diag_Handler（广播状态）"
+        }
+      ],
+      "component_generation_order": [
+        "CAN_Interface",
+        "LIN_Interface",
+        "Diag_Handler",
+        "DoorWindow_Manager",
+        "Seat_Manager",
+        "Climate_Control",
+        "Ambient_Lighting"
+      ],
+      "connection_topology": {
+        "component_connections": "应用组件通过S/R接口与对应总线接口连接；CAN_Interface作为Diag_Service_CSI客户端连接Diag_Handler服务端；Bus_Status由总线接口发布至所有组件。",
+        "data_flow_paths": "命令流：应用→总线接口→外设；反馈流：外设→总线接口→应用；诊断流：CAN_Interface→Diag_Handler（CSI）→状态S/R广播。",
+        "control_flow_paths": "周期runnable驱动数据处理；事件包括接收数据、服务调用与心跳触发；降级控制由Diag_Handler状态与Bus_Status共同作用于应用策略。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用应用组件+总线接口+诊断服务分层；应用均以S/R传输业务数据，诊断与OTA以CSI实现原子操作与超时控制；总线状态统一通过S/R广播以简化降级策略。",
+        "tradeoff_analysis": "S/R最新值避免队列复杂性，满足车身控制实时性；CSI用于诊断确保事务性与错误可控；将CAN/LIN封装为CDD SWC提升可移植性，牺牲部分与BSW的直接耦合。",
+        "alternative_considerations": "可改用BSW COM直连并将总线接口下移，但会降低应用可测试性；诊断可改为事件驱动异步调用，但对时序与错误处理更复杂。",
+        "risk_assessment": "OTA期间总线拥塞风险：通过调度优先与心跳降级控制缓解；跨组件接口不一致风险：统一数据元素与刷新周期；诊断操作阻塞风险：设定超时与回滚流程；LIN节点丢失风险：心跳监测与回退默认配置。"
+      },
+      "session_id": "8af706bf-0958-4a86-96ec-78076fcfb944",
+      "timestamp": "2025-10-23T20:26:21.139625"
+    }
+  },
+  "phase2": {
+    "duration": 772.5153748989105,
+    "tokens": 194951,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Interface_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\LIN_Interface_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Diag_Handler_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\DoorWindow_Manager_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Seat_Manager_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Climate_Control_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Ambient_Lighting_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\DoorWindow_Control_SRI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Seat_Control_SRI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Climate_Control_SRI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\AmbientLighting_SRI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Bus_Status_SRI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Diag_Service_CSI_ab6896f2_1761223153.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_ab6896f2_1761223153.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T20:39:13.673978"
+}

@@ -1,0 +1,621 @@
+{
+  "case_id": "simple_2",
+  "system_name": "SimpleActuatorControl",
+  "complexity": "simple",
+  "requirement": {
+    "system_name": "SimpleActuatorControl",
+    "description": "通过CAN接收指令控制2个电机",
+    "components_count": 3,
+    "component_types": [
+      "CANReceiver",
+      "ControlLogic",
+      "ActuatorDriver"
+    ],
+    "key_requirements": [
+      "CANReceiver解析速度和位置指令",
+      "ControlLogic实现PID控制算法",
+      "ActuatorDriver输出PWM信号到2个电机",
+      "包含故障诊断接口"
+    ]
+  },
+  "start_time": "2025-10-23T19:27:15.116028",
+  "phase1": {
+    "duration": 123.99506878852844,
+    "api_calls": 1,
+    "tokens": 18371,
+    "component_count": 3,
+    "interface_count": 4,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "CAN_Receiver: 从CAN/COM层解析两路电机的速度/位置指令并发布到控制链路，同时订阅驱动的反馈与诊断并转发到CAN。\nControl_Logic: 执行双路PID控制（速度/位置混合），根据指令与反馈计算PWM占空比/扭矩指令并下发，必要时基于诊断降级/限幅。\nActuator_Driver: 接收控制指令并输出PWM至两电机，采集编码器/霍尔反馈（速度/位置）并上报，生成并上报故障诊断状态。",
+        "data_flow_analysis": "接口与数据:\n- Cmd_In_IF(S/R): CAN_Receiver->Control_Logic，元素: m1_speed_cmd(float32), m1_pos_cmd(float32), m2_speed_cmd(float32), m2_pos_cmd(float32)。10ms刷新，最新值语义。\n- Feedback_IF(S/R): Actuator_Driver->Control_Logic(+CAN_Receiver订阅转发)，元素: m1_speed_meas(float32), m1_pos_meas(float32), m2_speed_meas(float32), m2_pos_meas(float32)。10ms刷新，最新值语义。\n- Actuator_Command_IF(S/R): Control_Logic->Actuator_Driver，元素: m1_pwm_duty(float32,0..1), m2_pwm_duty(float32,0..1)。10ms刷新，最新值语义。\n- Diag_Status_IF(S/R): Actuator_Driver->Control_Logic, CAN_Receiver，元素: diag_status(uint32位掩码), fault_code(uint16)。事件驱动+10ms刷新，最新值语义。\n调用/依赖链路: CAN_Receiver 产生指令->Control_Logic PID计算->Actuator_Driver 执行与反馈；Actuator_Driver 产生诊断->Control_Logic与CAN_Receiver订阅以降级与上报。",
+        "timing_requirements": "系统周期10ms基准周期。Cmd_In_IF与Actuator_Command_IF、Feedback_IF在10ms内完成端到端数据更新，RTE传输抖动<1ms，端到端延迟<5ms。Diag_Status_IF允许事件触发，常规轮询10ms；故障产生到上报<20ms。初始化在上电后50ms内完成端口初始化与内部状态复位。",
+        "scalability_considerations": "可通过扩展接口元素或新增实例化端口扩展到N电机；将PID参数抽象为可标定参数以支持不同平台；接口保持S/R最新值语义，便于广播到多消费者；驱动与控制逻辑解耦，可替换为不同PWM或传感器方案；诊断接口可扩展更多DTC与健康度字段。",
+        "complexity_assessment": "Medium"
+      },
+      "component_plan": [
+        {
+          "component_id": "SWC_001",
+          "name": "CAN_Receiver",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "解析CAN信号为两路电机的速度/位置指令并发布；订阅反馈与诊断并转发到CAN。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: Feedback_IF, Diag_Status_IF",
+            "output_ports": "P-Ports: Cmd_In_IF"
+          },
+          "behavioral_characteristics": "周期性解析（10ms）并更新命令；在初始化时完成状态复位；在接收到反馈/诊断后按周期聚合并上传。数据处理流程: 读取CAN/COM内部缓冲->生成m1/m2速度/位置命令->通过P-Port发布；读取Feedback/Diag->打包供CAN发送。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "P: Cmd_In_IF；R: Feedback_IF, Diag_Status_IF。Cmd_In_IF向Control_Logic广播命令；Feedback_IF与Diag_Status_IF作为订阅源用于CAN转发。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CAN_Receiver_Init",
+                  "trigger": "On_Component_Init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CAN_Receiver_Cycle",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CAN_Parse_Update",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P:Cmd_In_IF写m1_speed_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P:Cmd_In_IF写m1_pos_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P:Cmd_In_IF写m2_speed_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P:Cmd_In_IF写m2_pos_cmd"
+                        }
+                      ],
+                      "notes": "发布解析后的两路指令"
+                    }
+                  ],
+                  "notes": "10ms解析CAN/COM并发布命令"
+                },
+                {
+                  "name": "CAN_Publish_Status",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Feedback_IF读m1_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Feedback_IF读m1_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Feedback_IF读m2_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Feedback_IF读m2_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Diag_Status_IF读diag_status"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R:Diag_Status_IF读fault_code"
+                        }
+                      ],
+                      "notes": "聚合反馈与诊断以供CAN发送"
+                    }
+                  ],
+                  "notes": "10ms读取反馈/诊断并组帧上报"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Cmd_In_IF",
+            "Feedback_IF",
+            "Diag_Status_IF"
+          ]
+        },
+        {
+          "component_id": "SWC_002",
+          "name": "Control_Logic",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "执行双路PID控制，根据指令与反馈输出PWM占空比至驱动，必要时依据诊断状态进行限幅或关闭。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: Cmd_In_IF, Feedback_IF, Diag_Status_IF",
+            "output_ports": "P-Ports: Actuator_Command_IF"
+          },
+          "behavioral_characteristics": "周期10ms的PID控制循环；初始化时清零积分、设定初值；运行时读取命令与反馈，计算误差与PID输出，进行饱和与斜率限制，发布两路PWM占空比；若诊断为故障则切至安全输出（0占空比）。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: Cmd_In_IF, Feedback_IF, Diag_Status_IF；P: Actuator_Command_IF。单发送者多订阅者模式用于Diag与Feedback分发。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Control_Logic_Init",
+                  "trigger": "On_Component_Init"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Control_Logic_Cycle",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "PID_Update",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Cmd_In_IF 读取 m1_speed_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Cmd_In_IF 读取 m1_pos_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Cmd_In_IF 读取 m2_speed_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Cmd_In_IF 读取 m2_pos_cmd"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Feedback_IF 读取 m1_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Feedback_IF 读取 m1_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Feedback_IF 读取 m2_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Feedback_IF 读取 m2_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Diag_Status_IF 读取 diag_status"
+                        }
+                      ],
+                      "notes": "读取命令/反馈/诊断作为PID输入与安全条件"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Actuator_Command_IF 写 m1_pwm_duty"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Actuator_Command_IF 写 m2_pwm_duty"
+                        }
+                      ],
+                      "notes": "发布两路PWM占空比指令"
+                    }
+                  ],
+                  "notes": "10ms周期PID控制与限幅/故障安全处理"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Cmd_In_IF",
+            "Feedback_IF",
+            "Actuator_Command_IF",
+            "Diag_Status_IF"
+          ]
+        },
+        {
+          "component_id": "SWC_003",
+          "name": "Actuator_Driver",
+          "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+          "purpose": "接收并执行PWM指令驱动两电机，采集速度/位置反馈并上报，生成故障诊断状态。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R-Ports: Actuator_Command_IF",
+            "output_ports": "P-Ports: Feedback_IF, Diag_Status_IF"
+          },
+          "behavioral_characteristics": "在指令更新和10ms周期下发PWM；周期采样编码器计算速度与位置并上报；监测过流/过温/传感器异常并上报诊断。状态管理：INIT->RUN->FAULT（故障置0占空比，持续上报DTC）。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R: Actuator_Command_IF；P: Feedback_IF, Diag_Status_IF。驱动作为反馈与诊断的源头，控制指令的接收端。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Actuator_Driver_Init",
+                  "trigger": "On_Component_Init"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "Actuator_Command_Updated",
+                  "trigger": "On_Command_Update"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Actuator_Driver_Cycle",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Apply_Command",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Actuator_Command_IF 读取 m1_pwm_duty"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "R:Actuator_Command_IF 读取 m2_pwm_duty"
+                        }
+                      ],
+                      "notes": "根据收到的PWM占空比更新两路输出"
+                    }
+                  ],
+                  "notes": "在指令更新或周期到达时应用控制量"
+                },
+                {
+                  "name": "Feedback_Update",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Feedback_IF 写 m1_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Feedback_IF 写 m1_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Feedback_IF 写 m2_speed_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Feedback_IF 写 m2_pos_meas"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Diag_Status_IF 写 diag_status"
+                        },
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "P:Diag_Status_IF 写 fault_code"
+                        }
+                      ],
+                      "notes": "发布反馈与诊断状态"
+                    }
+                  ],
+                  "notes": "10ms采样反馈与诊断评估后上报"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "Actuator_Command_IF",
+            "Feedback_IF",
+            "Diag_Status_IF"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "IF_001",
+          "name": "Cmd_In_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步S/R，周期更新10ms；最新值（single-buffer）策略，无队列；接收端获取最新指令；错误时采用COM/RTE默认无效值策略并由上层限幅。",
+          "data_category": "ControlCommands",
+          "connected_components": [
+            "CAN_Receiver",
+            "Control_Logic"
+          ],
+          "performance_requirements": "端到端延迟<5ms，抖动<1ms；丢包容忍：采用最新值语义，连续两周期未更新则保持上次值。",
+          "data_elements": [
+            "m1_speed_cmd",
+            "m1_pos_cmd",
+            "m2_speed_cmd",
+            "m2_pos_cmd"
+          ],
+          "direct_paths": "CAN_Receiver(P) -> Control_Logic(R)"
+        },
+        {
+          "interface_id": "IF_002",
+          "name": "Feedback_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步S/R，周期10ms，最新值语义；缓冲单元素；错误处理：当传感器失败时发布诊断位并冻结上次有效值。",
+          "data_category": "FeedbackSignals",
+          "connected_components": [
+            "Actuator_Driver",
+            "Control_Logic",
+            "CAN_Receiver"
+          ],
+          "performance_requirements": "端到端<5ms；时间同步与抖动<1ms；一致性：同一周期内四元素共同更新时间戳。",
+          "data_elements": [
+            "m1_speed_meas",
+            "m1_pos_meas",
+            "m2_speed_meas",
+            "m2_pos_meas"
+          ],
+          "direct_paths": "Actuator_Driver(P) -> Control_Logic(R), CAN_Receiver(R)"
+        },
+        {
+          "interface_id": "IF_003",
+          "name": "Actuator_Command_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步S/R，周期10ms，最新值语义；缓冲单元素；控制量饱和在0..1范围；超时保持0占空比安全状态。",
+          "data_category": "ActuatorCommands",
+          "connected_components": [
+            "Control_Logic",
+            "Actuator_Driver"
+          ],
+          "performance_requirements": "端到端<5ms；若两个周期无更新，驱动应进入安全输出。",
+          "data_elements": [
+            "m1_pwm_duty",
+            "m2_pwm_duty"
+          ],
+          "direct_paths": "Control_Logic(P) -> Actuator_Driver(R)"
+        },
+        {
+          "interface_id": "IF_004",
+          "name": "Diag_Status_IF",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步S/R，事件驱动并带10ms心跳刷新；最新值语义；错误处理：诊断位优先，fault_code为最近故障码。",
+          "data_category": "Diagnostics",
+          "connected_components": [
+            "Actuator_Driver",
+            "Control_Logic",
+            "CAN_Receiver"
+          ],
+          "performance_requirements": "故障检测到上报<20ms；心跳丢失3个周期触发通信故障位。",
+          "data_elements": [
+            "diag_status",
+            "fault_code"
+          ],
+          "direct_paths": "Actuator_Driver(P) -> Control_Logic(R), CAN_Receiver(R)"
+        }
+      ],
+      "component_generation_order": [
+        "CAN_Receiver",
+        "Control_Logic",
+        "Actuator_Driver"
+      ],
+      "connection_topology": {
+        "component_connections": "Cmd_In_IF: CAN_Receiver(P) -> Control_Logic(R)。Actuator_Command_IF: Control_Logic(P) -> Actuator_Driver(R)。Feedback_IF: Actuator_Driver(P) -> Control_Logic(R), CAN_Receiver(R)。Diag_Status_IF: Actuator_Driver(P) -> Control_Logic(R), CAN_Receiver(R)。",
+        "data_flow_paths": "CAN_Receiver ->(Cmd_In_IF)-> Control_Logic ->(Actuator_Command_IF)-> Actuator_Driver ->(Feedback_IF, Diag_Status_IF)-> Control_Logic 与 CAN_Receiver。",
+        "control_flow_paths": "控制主循环在Control_Logic 10ms触发；Actuator_Driver在数据到达和10ms周期执行；CAN_Receiver 10ms周期解析与上报。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用S/R最新值语义以简化控制回路并支持单源多订阅；将CAN解析与控制及驱动解耦，提升复用与可测试性；诊断独立接口，便于多消费者使用与CAN上报。",
+        "tradeoff_analysis": "与Client-Server相比，S/R减少阻塞与耦合，适合周期控制；放弃队列化避免延迟累积；将参数内置而非专设参数SWC以控制规模与复杂度。",
+        "alternative_considerations": "可选使用Mode-Switch进行故障降级模式管理；可将PID参数通过PARAMETER-INTERFACE与NvM存储；可将CAN_Receiver拆分为信号抽象与打包两个SWC。",
+        "risk_assessment": "风险：反馈丢失导致控制不稳；缓解：心跳超时安全输出。风险：诊断延迟；缓解：事件触发+10ms心跳。风险：多接收者一致性；缓解：统一10ms基准与最新值语义。"
+      },
+      "session_id": "74d9e444-3e21-4719-b641-338145457ea7",
+      "timestamp": "2025-10-23T19:29:19.106144"
+    }
+  },
+  "phase2": {
+    "duration": 255.52373433113098,
+    "tokens": 66267,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Receiver_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Control_Logic_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Actuator_Driver_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Cmd_In_IF_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Feedback_IF_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Actuator_Command_IF_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\Diag_Status_IF_852c3eb8_1761219214.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_852c3eb8_1761219214.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T19:33:34.651489"
+}

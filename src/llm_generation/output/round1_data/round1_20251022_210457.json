@@ -1,0 +1,838 @@
+{
+  "session_id": "round1_20251022_210457",
+  "timestamp": "20251022_210457",
+  "user_requirements": "系统名称: SimpleActuatorControl\n系统描述: 通过CAN接收指令控制2个电机\n组件数量: 3\n组件类型: CANReceiver, ControlLogic, ActuatorDriver\n关键需求:\n  - CANReceiver解析速度和位置指令\n  - ControlLogic实现PID控制算法\n  - ActuatorDriver输出PWM信号到2个电机\n  - 包含故障诊断接口",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: SimpleActuatorControl\n系统描述: 通过CAN接收指令控制2个电机\n组件数量: 3\n组件类型: CANReceiver, ControlLogic, ActuatorDriver\n关键需求:\n  - CANReceiver解析速度和位置指令\n  - ControlLogic实现PID控制算法\n  - ActuatorDriver输出PWM信号到2个电机\n  - 包含故障诊断接口\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"small\", \"estimated_components\": 3, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "CAN_Receiver: 从CAN总线接收并解析速度与位置指令，输出标准化信号到Control_Logic；Control_Logic: 接收传感/指令信号，运行PID控制，生成两路电机PWM命令并执行故障判断；Actuator_Driver: 接收PWM命令并驱动两路电机PWM输出，执行低级诊断并响应诊断请求。",
+      "data_flow_analysis": "CAN frames -> CAN_Receiver (解析为 vehicle_speed, motor_position signals) -> Control_Logic (周期性采样，计算PID后输出 motor1_pwm, motor2_pwm, enable) -> Actuator_Driver (接收命令并产生PWM)。诊断通道：Control_Logic 发起同步诊断 RPC 到 Actuator_Driver 查询/复位故障。数据类型：vehicle_speed (float), motor_position (float), motorX_pwm (int16 / duty cycle), enable (boolean), diag_report (struct/status code)。传输时序：CAN -> parsing event-driven (on frame arrival, <10ms处理完成)；控制回路定时 10ms 周期；命令下发至Actuator 延迟目标 <=5ms；诊断为按需同步调用，超时50ms。",
+      "timing_requirements": "CAN接收解析完成端到端<10ms；控制周期周期性10ms（100Hz）为主循环；命令到PWM输出传递延迟<=5ms；诊断调用超时50ms；关键路径（sensor->control->actuator）最大抖动<2ms。",
+      "scalability_considerations": "系统规模小但设计为可扩展：接口采用信号集合（sender-receiver）便于新增电机或参数；Control_Logic 内部以可替换控制算法模块化实现，可扩展到更多轴；通信频率与数据量小，对ECU资源要求低，允许未来合并多路CAN消息解析逻辑。",
+      "complexity_assessment": "Simple"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_CAN_001",
+        "name": "CAN_Receiver",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "接收并解析来自CAN的速度与位置指令，发布标准化信号供控制器使用；提供原始帧级诊断信息。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 R-port from CAN-BSW (raw frames)",
+          "output_ports": "1 P-port publishing parsed signals (vehicle_speed, motor_position); 1 P-port for diag signals"
+        },
+        "behavioral_characteristics": "基于帧到达触发解析Runnable；解析包括帧校验与字段抽取；当合法帧解析出速度/位置时立即通过sender-receiver端口发布最新值；支持错误计数与简单故障标志发布；无状态或仅短期缓存最新值。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收下层CAN帧抽象接口；P-port用于发布 vehicle_speed 与 motor_position；额外P-port用于diagnostic status"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "下层CAN驱动回调/中断"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Health_Check_Timer",
+                "trigger": "周期性1s用于发布诊断心跳"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Parse_CAN_Frame",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从R-port接收原始CAN帧作为输入变量引用"
+                      }
+                    ],
+                    "notes": "按CAN ID解包并校验帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向Control_Logic发布 vehicle_speed 与 motor_position"
+                      }
+                    ],
+                    "notes": "发布最新解析出的信号"
+                  }
+                ],
+                "notes": "核心解析Runnable，事件驱动"
+              },
+              {
+                "name": "Publish_Diag_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布diagnostic status到Control_Logic"
+                      }
+                    ],
+                    "notes": "周期或错误事件触发"
+                  }
+                ],
+                "notes": "诊断发布Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Signals_Interface",
+          "Diagnostics_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp_CTRL_001",
+        "name": "Control_Logic",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现PID控制算法，接收速度/位置信号并计算两路电机PWM；管理使能与故障策略；发起诊断请求并处理诊断结果。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 R-port接收 vehicle_speed/motor_position; 1 R-port接收 diag status",
+          "output_ports": "1 P-port发布 motor1_pwm/motor2_pwm/enable; 1 Client (server-call) 到Actuator_Driver用于诊断RPC"
+        },
+        "behavioral_characteristics": "主控制Runnable以10ms周期触发，读取最新sensor信号，执行PID计算（支持独立参数/饱和与反windup），状态管理包含 NORMAL、FAULT、SAFE_STOP；在FAULT时停止输出并发诊断请求；数据流为读取输入->执行控制->更新命令输出->（按需）调用诊断RPC。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-port接收CAN_Receiver的信号；P-port发布到Actuator_Driver；PR-port用于同步诊断Client-Server调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Control_Cycle",
+                "trigger": "10ms定时器"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Diag_Request_Event",
+                "trigger": "故障检测触发或外部请求"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取 vehicle_speed 与 motor_position 的最新值"
+                      }
+                    ],
+                    "notes": "周期性读取输入信号"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出计算后的 motor_pwm 与 enable"
+                      }
+                    ],
+                    "notes": "发布控制命令"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "用于同步读取Actuator_Driver诊断状态或执行ResetFault"
+                      }
+                    ],
+                    "notes": "在检测到异常或按需进行诊断查询"
+                  }
+                ],
+                "notes": "控制主循环Runnable，周期触发并可能发起同步诊断调用"
+              },
+              {
+                "name": "State_Manager",
+                "elements": [
+                  {
+                    "key": "INTERNAL-TRIGGERING-POINTS",
+                    "wrapper": "INTERNAL-TRIGGERING-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "访问本地或输入状态变量"
+                      }
+                    ],
+                    "notes": "管理 NORMAL/FAULT/SAFE_STOP 状态转换"
+                  }
+                ],
+                "notes": "状态管理与故障响应"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Signals_Interface",
+          "Motor_Commands_Interface",
+          "Diagnostics_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp_ACT_DRV_001",
+        "name": "Actuator_Driver",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "接收控制器命令并驱动两路PWM输出；执行低级诊断、反馈故障状态并响应Control_Logic的诊断RPC。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 R-port接收 motor commands (motor1_pwm,motor2_pwm,enable); 1 PR-port接收诊断RPC",
+          "output_ports": "无P-port输出到外设（内部直接映射到HAL），但有diag status P-port返回"
+        },
+        "behavioral_characteristics": "接收命令后执行安全检查（范围、使能位），平滑命令并更新PWM硬件寄存器；在检测到硬件错误（过流/失步）时置FAULT并通过diag端口报告；支持同步诊断操作（GetFaults/ResetFault）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收Control_Logic命令；P-port用于发布诊断状态；PR-port用于暴露诊断server操作"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Command_Received",
+                "trigger": "Control_Logic发布新命令"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "PWM_Update_Complete",
+                "trigger": "PWM寄存器写入完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Apply_PWM",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收 motorX_pwm 与 enable 命令"
+                      }
+                    ],
+                    "notes": "接收并验证命令后写入PWM硬件"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入本地诊断/状态变量"
+                      }
+                    ],
+                    "notes": "更新诊断与状态寄存"
+                  }
+                ],
+                "notes": "负责与硬件交互的Runnable"
+              },
+              {
+                "name": "Diag_Server",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "用于异步上报或处理来自Control_Logic的诊断请求（可异步或作为Server实现）"
+                      }
+                    ],
+                    "notes": "处理诊断操作并返回状态"
+                  }
+                ],
+                "notes": "诊断服务入口Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Motor_Commands_Interface",
+          "Diagnostics_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_CAN_001",
+        "name": "CAN_Signals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步事件驱动（基于CAN帧到达）；采用最新值语义（覆盖式），不排队；期望解析并发布在帧到达后<10ms完成；错包或CRC错误通过diagnostic字段上报。",
+        "data_category": "signal",
+        "connected_components": [
+          "CAN_Receiver",
+          "Control_Logic"
+        ],
+        "performance_requirements": "最大数据延迟<10ms，支持高达100Hz更新频率；丢帧时保留上次值；错误通过diag字段上报并触发Control_Logic故障处理。",
+        "data_elements": [
+          "vehicle_speed",
+          "motor_position",
+          "can_diag_status"
+        ],
+        "direct_paths": "CAN_Receiver.P-port.publish -> Control_Logic.R-port.consume (sender->receiver latest-value)"
+      },
+      {
+        "interface_id": "if_MOTOR_001",
+        "name": "Motor_Commands_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布（Control_Logic作为定期发布者，10ms/100Hz）；使用最新值覆盖策略，低延迟优先（目标端到端<=5ms）；在命令失效或安全停机时立即发布disable命令。",
+        "data_category": "command",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Driver"
+        ],
+        "performance_requirements": "周期100Hz，命令端到端延迟<=5ms；对关键命令使用双稳态enable，丢失命令须进入安全停机。",
+        "data_elements": [
+          "motor1_pwm",
+          "motor2_pwm",
+          "enable"
+        ],
+        "direct_paths": "Control_Logic.P-port.publish -> Actuator_Driver.R-port.consume"
+      },
+      {
+        "interface_id": "if_DIAG_001",
+        "name": "Diagnostics_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步客户端-服务器调用（Control_Logic为Client，Actuator_Driver为Server）；调用用于GetFaults/ResetFault；超时50ms；错误以返回码和diag_report结构体现。",
+        "data_category": "diagnostic",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Driver"
+        ],
+        "performance_requirements": "同步响应，90%请求在<50ms内完成；异常或通信失败触发重试与故障策略。",
+        "data_elements": [
+          "GetFaults()",
+          "ResetFault()",
+          "diag_report"
+        ],
+        "direct_paths": "Control_Logic.PR-port.call -> Actuator_Driver.PR-port.serve (RPC synchronous)"
+      }
+    ],
+    "component_generation_order": [
+      "CAN_Receiver",
+      "Control_Logic",
+      "Actuator_Driver"
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Receiver -> Control_Logic via CAN_Signals_Interface (sender-receiver); Control_Logic -> Actuator_Driver via Motor_Commands_Interface (sender-receiver); Control_Logic <-> Actuator_Driver via Diagnostics_Interface (client-server).",
+      "data_flow_paths": "CAN frames enter CAN_Receiver (R-port) -> parsed signals vehicle_speed/motor_position published (P-port) -> Control_Logic R-port consumes -> Control_Logic computes motorX_pwm -> publishes to Actuator_Driver R-port -> Actuator_Driver applies PWM to hardware. Diagnostic path: Control_Logic (client) -> Actuator_Driver (server) synchronous RPC for GetFaults/ResetFault.",
+      "control_flow_paths": "CAN frame arrival triggers Parse_CAN_Frame (event-driven) -> may trigger Control_Runnable if enabled; Control_Runnable is timer-triggered (10ms) driving command outputs; faults detected in Control_Runnable trigger synchronous diagnostic RPC to Actuator_Driver; Actuator_Driver signals hardware fault via diag P-port which influences Control_Logic state manager."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰的三层划分（接收/控制/驱动）以隔离职责并降低耦合；信号类使用sender-receiver简化数据流，诊断采用client-server以支持请求/响应语义；控制周期固定为10ms满足PID稳定性要求；接口使用最新值策略以减少延迟与资源占用。",
+      "tradeoff_analysis": "选择sender-receiver在低延迟信号传递上简单高效，但牺牲了消息队列历史能力；同步诊断RPC提供明确成功/失败语义但占用时间窗口（50ms超时），对实时路径采用异步/最新值以保证控制周期；在资源受限环境避免复杂消息队列和大量缓冲以降低内存占用。",
+      "alternative_considerations": "可将CAN解析直接合并入Control_Logic以减少组件间通信开销，但会降低模块重用性与可测试性；另一方案为将Actuator_Driver实现为COMPLEX-DEVICE-DRIVER以直接暴露更底层硬件接口，增加性能但复杂度上升。",
+      "risk_assessment": "主要风险为诊断RPC阻塞导致控制响应延迟；已通过将诊断设置为按需同步并限制超时（50ms）及将控制路径保持周期性优先来缓解。CAN帧异常或丢失可能影响控制稳定性，已通过最新值策略与故障检测进入SAFE_STOP减少风险。硬件驱动错误由Actuator_Driver本地检测并上报以规避级联故障。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "CAN_Receiver: 从CAN总线接收并解析速度与位置指令，输出标准化信号到Control_Logic；Control_Logic: 接收传感/指令信号，运行PID控制，生成两路电机PWM命令并执行故障判断；Actuator_Driver: 接收PWM命令并驱动两路电机PWM输出，执行低级诊断并响应诊断请求。",
+      "data_flow_analysis": "CAN frames -> CAN_Receiver (解析为 vehicle_speed, motor_position signals) -> Control_Logic (周期性采样，计算PID后输出 motor1_pwm, motor2_pwm, enable) -> Actuator_Driver (接收命令并产生PWM)。诊断通道：Control_Logic 发起同步诊断 RPC 到 Actuator_Driver 查询/复位故障。数据类型：vehicle_speed (float), motor_position (float), motorX_pwm (int16 / duty cycle), enable (boolean), diag_report (struct/status code)。传输时序：CAN -> parsing event-driven (on frame arrival, <10ms处理完成)；控制回路定时 10ms 周期；命令下发至Actuator 延迟目标 <=5ms；诊断为按需同步调用，超时50ms。",
+      "timing_requirements": "CAN接收解析完成端到端<10ms；控制周期周期性10ms（100Hz）为主循环；命令到PWM输出传递延迟<=5ms；诊断调用超时50ms；关键路径（sensor->control->actuator）最大抖动<2ms。",
+      "scalability_considerations": "系统规模小但设计为可扩展：接口采用信号集合（sender-receiver）便于新增电机或参数；Control_Logic 内部以可替换控制算法模块化实现，可扩展到更多轴；通信频率与数据量小，对ECU资源要求低，允许未来合并多路CAN消息解析逻辑。",
+      "complexity_assessment": "Simple"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_CAN_001",
+        "name": "CAN_Receiver",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "接收并解析来自CAN的速度与位置指令，发布标准化信号供控制器使用；提供原始帧级诊断信息。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 R-port from CAN-BSW (raw frames)",
+          "output_ports": "1 P-port publishing parsed signals (vehicle_speed, motor_position); 1 P-port for diag signals"
+        },
+        "behavioral_characteristics": "基于帧到达触发解析Runnable；解析包括帧校验与字段抽取；当合法帧解析出速度/位置时立即通过sender-receiver端口发布最新值；支持错误计数与简单故障标志发布；无状态或仅短期缓存最新值。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收下层CAN帧抽象接口；P-port用于发布 vehicle_speed 与 motor_position；额外P-port用于diagnostic status"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "下层CAN驱动回调/中断"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Health_Check_Timer",
+                "trigger": "周期性1s用于发布诊断心跳"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Parse_CAN_Frame",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从R-port接收原始CAN帧作为输入变量引用"
+                      }
+                    ],
+                    "notes": "按CAN ID解包并校验帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向Control_Logic发布 vehicle_speed 与 motor_position"
+                      }
+                    ],
+                    "notes": "发布最新解析出的信号"
+                  }
+                ],
+                "notes": "核心解析Runnable，事件驱动"
+              },
+              {
+                "name": "Publish_Diag_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布diagnostic status到Control_Logic"
+                      }
+                    ],
+                    "notes": "周期或错误事件触发"
+                  }
+                ],
+                "notes": "诊断发布Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Signals_Interface",
+          "Diagnostics_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp_CTRL_001",
+        "name": "Control_Logic",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现PID控制算法，接收速度/位置信号并计算两路电机PWM；管理使能与故障策略；发起诊断请求并处理诊断结果。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 R-port接收 vehicle_speed/motor_position; 1 R-port接收 diag status",
+          "output_ports": "1 P-port发布 motor1_pwm/motor2_pwm/enable; 1 Client (server-call) 到Actuator_Driver用于诊断RPC"
+        },
+        "behavioral_characteristics": "主控制Runnable以10ms周期触发，读取最新sensor信号，执行PID计算（支持独立参数/饱和与反windup），状态管理包含 NORMAL、FAULT、SAFE_STOP；在FAULT时停止输出并发诊断请求；数据流为读取输入->执行控制->更新命令输出->（按需）调用诊断RPC。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-port接收CAN_Receiver的信号；P-port发布到Actuator_Driver；PR-port用于同步诊断Client-Server调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Control_Cycle",
+                "trigger": "10ms定时器"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Diag_Request_Event",
+                "trigger": "故障检测触发或外部请求"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取 vehicle_speed 与 motor_position 的最新值"
+                      }
+                    ],
+                    "notes": "周期性读取输入信号"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出计算后的 motor_pwm 与 enable"
+                      }
+                    ],
+                    "notes": "发布控制命令"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "用于同步读取Actuator_Driver诊断状态或执行ResetFault"
+                      }
+                    ],
+                    "notes": "在检测到异常或按需进行诊断查询"
+                  }
+                ],
+                "notes": "控制主循环Runnable，周期触发并可能发起同步诊断调用"
+              },
+              {
+                "name": "State_Manager",
+                "elements": [
+                  {
+                    "key": "INTERNAL-TRIGGERING-POINTS",
+                    "wrapper": "INTERNAL-TRIGGERING-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "访问本地或输入状态变量"
+                      }
+                    ],
+                    "notes": "管理 NORMAL/FAULT/SAFE_STOP 状态转换"
+                  }
+                ],
+                "notes": "状态管理与故障响应"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Signals_Interface",
+          "Motor_Commands_Interface",
+          "Diagnostics_Interface"
+        ]
+      },
+      {
+        "component_id": "cmp_ACT_DRV_001",
+        "name": "Actuator_Driver",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "接收控制器命令并驱动两路PWM输出；执行低级诊断、反馈故障状态并响应Control_Logic的诊断RPC。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 R-port接收 motor commands (motor1_pwm,motor2_pwm,enable); 1 PR-port接收诊断RPC",
+          "output_ports": "无P-port输出到外设（内部直接映射到HAL），但有diag status P-port返回"
+        },
+        "behavioral_characteristics": "接收命令后执行安全检查（范围、使能位），平滑命令并更新PWM硬件寄存器；在检测到硬件错误（过流/失步）时置FAULT并通过diag端口报告；支持同步诊断操作（GetFaults/ResetFault）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收Control_Logic命令；P-port用于发布诊断状态；PR-port用于暴露诊断server操作"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Command_Received",
+                "trigger": "Control_Logic发布新命令"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "PWM_Update_Complete",
+                "trigger": "PWM寄存器写入完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Apply_PWM",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收 motorX_pwm 与 enable 命令"
+                      }
+                    ],
+                    "notes": "接收并验证命令后写入PWM硬件"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入本地诊断/状态变量"
+                      }
+                    ],
+                    "notes": "更新诊断与状态寄存"
+                  }
+                ],
+                "notes": "负责与硬件交互的Runnable"
+              },
+              {
+                "name": "Diag_Server",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "用于异步上报或处理来自Control_Logic的诊断请求（可异步或作为Server实现）"
+                      }
+                    ],
+                    "notes": "处理诊断操作并返回状态"
+                  }
+                ],
+                "notes": "诊断服务入口Runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Motor_Commands_Interface",
+          "Diagnostics_Interface"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_CAN_001",
+        "name": "CAN_Signals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步事件驱动（基于CAN帧到达）；采用最新值语义（覆盖式），不排队；期望解析并发布在帧到达后<10ms完成；错包或CRC错误通过diagnostic字段上报。",
+        "data_category": "signal",
+        "connected_components": [
+          "CAN_Receiver",
+          "Control_Logic"
+        ],
+        "performance_requirements": "最大数据延迟<10ms，支持高达100Hz更新频率；丢帧时保留上次值；错误通过diag字段上报并触发Control_Logic故障处理。",
+        "data_elements": [
+          "vehicle_speed",
+          "motor_position",
+          "can_diag_status"
+        ],
+        "direct_paths": "CAN_Receiver.P-port.publish -> Control_Logic.R-port.consume (sender->receiver latest-value)"
+      },
+      {
+        "interface_id": "if_MOTOR_001",
+        "name": "Motor_Commands_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布（Control_Logic作为定期发布者，10ms/100Hz）；使用最新值覆盖策略，低延迟优先（目标端到端<=5ms）；在命令失效或安全停机时立即发布disable命令。",
+        "data_category": "command",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Driver"
+        ],
+        "performance_requirements": "周期100Hz，命令端到端延迟<=5ms；对关键命令使用双稳态enable，丢失命令须进入安全停机。",
+        "data_elements": [
+          "motor1_pwm",
+          "motor2_pwm",
+          "enable"
+        ],
+        "direct_paths": "Control_Logic.P-port.publish -> Actuator_Driver.R-port.consume"
+      },
+      {
+        "interface_id": "if_DIAG_001",
+        "name": "Diagnostics_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步客户端-服务器调用（Control_Logic为Client，Actuator_Driver为Server）；调用用于GetFaults/ResetFault；超时50ms；错误以返回码和diag_report结构体现。",
+        "data_category": "diagnostic",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Driver"
+        ],
+        "performance_requirements": "同步响应，90%请求在<50ms内完成；异常或通信失败触发重试与故障策略。",
+        "data_elements": [
+          "GetFaults()",
+          "ResetFault()",
+          "diag_report"
+        ],
+        "direct_paths": "Control_Logic.PR-port.call -> Actuator_Driver.PR-port.serve (RPC synchronous)"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Receiver -> Control_Logic via CAN_Signals_Interface (sender-receiver); Control_Logic -> Actuator_Driver via Motor_Commands_Interface (sender-receiver); Control_Logic <-> Actuator_Driver via Diagnostics_Interface (client-server).",
+      "data_flow_paths": "CAN frames enter CAN_Receiver (R-port) -> parsed signals vehicle_speed/motor_position published (P-port) -> Control_Logic R-port consumes -> Control_Logic computes motorX_pwm -> publishes to Actuator_Driver R-port -> Actuator_Driver applies PWM to hardware. Diagnostic path: Control_Logic (client) -> Actuator_Driver (server) synchronous RPC for GetFaults/ResetFault.",
+      "control_flow_paths": "CAN frame arrival triggers Parse_CAN_Frame (event-driven) -> may trigger Control_Runnable if enabled; Control_Runnable is timer-triggered (10ms) driving command outputs; faults detected in Control_Runnable trigger synchronous diagnostic RPC to Actuator_Driver; Actuator_Driver signals hardware fault via diag P-port which influences Control_Logic state manager."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰的三层划分（接收/控制/驱动）以隔离职责并降低耦合；信号类使用sender-receiver简化数据流，诊断采用client-server以支持请求/响应语义；控制周期固定为10ms满足PID稳定性要求；接口使用最新值策略以减少延迟与资源占用。",
+      "tradeoff_analysis": "选择sender-receiver在低延迟信号传递上简单高效，但牺牲了消息队列历史能力；同步诊断RPC提供明确成功/失败语义但占用时间窗口（50ms超时），对实时路径采用异步/最新值以保证控制周期；在资源受限环境避免复杂消息队列和大量缓冲以降低内存占用。",
+      "alternative_considerations": "可将CAN解析直接合并入Control_Logic以减少组件间通信开销，但会降低模块重用性与可测试性；另一方案为将Actuator_Driver实现为COMPLEX-DEVICE-DRIVER以直接暴露更底层硬件接口，增加性能但复杂度上升。",
+      "risk_assessment": "主要风险为诊断RPC阻塞导致控制响应延迟；已通过将诊断设置为按需同步并限制超时（50ms）及将控制路径保持周期性优先来缓解。CAN帧异常或丢失可能影响控制稳定性，已通过最新值策略与故障检测进入SAFE_STOP减少风险。硬件驱动错误由Actuator_Driver本地检测并上报以规避级联故障。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7580,
+    "output_tokens": 6489,
+    "total_tokens": 14069,
+    "component_count": 3,
+    "interface_count": 3,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

@@ -1,0 +1,2045 @@
+{
+  "session_id": "round1_20251022_234714",
+  "timestamp": "20251022_234714",
+  "user_requirements": "系统名称: SmartCockpitController\n系统描述: 集成仪表、中控、HUD、流媒体后视镜\n组件数量: 8\n组件类型: InstrumentCluster, CenterDisplay, HUDRenderer, StreamingMirror, VoiceAssistant, GestureRecognition, DriverMonitoring, MultiModalInteraction\n关键需求:\n  - InstrumentCluster渲染全液晶仪表\n  - CenterDisplay管理15.6寸中控屏\n  - HUDRenderer投影AR导航信息\n  - StreamingMirror处理3路摄像头流媒体\n  - VoiceAssistant实现多轮对话\n  - GestureRecognition识别驾驶员手势\n  - DriverMonitoring监控驾驶员状态（DMS）\n  - MultiModalInteraction融合语音、手势、触摸交互\n  - 所有组件通过以太网AVB/TSN通信",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: SmartCockpitController\n系统描述: 集成仪表、中控、HUD、流媒体后视镜\n组件数量: 8\n组件类型: InstrumentCluster, CenterDisplay, HUDRenderer, StreamingMirror, VoiceAssistant, GestureRecognition, DriverMonitoring, MultiModalInteraction\n关键需求:\n  - InstrumentCluster渲染全液晶仪表\n  - CenterDisplay管理15.6寸中控屏\n  - HUDRenderer投影AR导航信息\n  - StreamingMirror处理3路摄像头流媒体\n  - VoiceAssistant实现多轮对话\n  - GestureRecognition识别驾驶员手势\n  - DriverMonitoring监控驾驶员状态（DMS）\n  - MultiModalInteraction融合语音、手势、触摸交互\n  - 所有组件通过以太网AVB/TSN通信\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "系统划分为八个应用级SWC，各自职责明确：InstrumentCluster负责仪表渲染与驾驶信息展示；CenterDisplay负责中控UI、触控与多媒体管理；HUDRenderer负责AR投影与导航叠加；StreamingMirror负责3路摄像头采集、编码与网络传输；VoiceAssistant负责语音识别、多轮对话管理与NLU/Dialog管理；GestureRecognition负责摄像头/传感器手势检测并产生活动事件；DriverMonitoring负责DMS算法、疲劳/注视检测与告警；MultiModalInteraction负责融合语音、手势、触摸与DMS信息并下发统一交互命令。组件间以职责边界最小化交叉，交互通过明确定义的接口（流媒体、事件、命令、状态）进行。",
+      "data_flow_analysis": "主要数据流：1) 摄像头帧：摄像头→StreamingMirror（原始帧）→编码后通过AVB/TSN SENDER-RECEIVER接口分发到CenterDisplay与InstrumentCluster与HUDRenderer（实时视频流，binary frame/codec packet）；2) 交互事件：GestureRecognition/VoiceAssistant/Touch→MultiModalInteraction（事件/意图，JSON-like结构或简单枚举），融合后产生UI_Command通过CLIENT-SERVER或SENDER-RECEIVER分发至CenterDisplay/InstrumentCluster/HUDRenderer；3) DMS状态：DriverMonitoring→MultiModalInteraction与InstrumentCluster（结构化状态，周期性数据包）；4) AR数据：CenterDisplay/Navigation→HUDRenderer（位置、导航叠加数据，低延迟定时更新）；5) 控制与配置：CenterDisplay ↔ StreamingMirror/VoiceAssistant 为Client-Server请求（启动/停止流、配置参数）。每个接口的数据类型在interface_plan中列明，传输时序采用AVB/TSN保障同步性与带宽，控制消息采用TCP-like可靠RPC或可靠TSN队列。组件依赖链：StreamingMirror提供流，MultiModalInteraction依赖输入源（Voice/Gesture/DMS），显示端依赖MultiModalInteraction与流源与AR数据。",
+      "timing_requirements": "视频流：至少30-60fps，端到端延迟<50ms（捕获到显示）；关键UI命令到渲染：<100ms；DMS心跳/状态：周期50-200ms；HUD导航更新：周期20-100ms，优先级高；语音对话延迟容忍度<300ms交互响应。全部时间约束通过TSN流分类与调度、优先级分层实现。",
+      "scalability_considerations": "采用模块化SWC，接口抽象化（S/R与C/S分离），便于增加摄像头或新识别算法；AVB/TSN网络使带宽可扩展；组件间使用标准化数据原型方便扩展数据元素；在高负载下支持降级策略（降低帧率、合并事件）与动态资源分配。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_001",
+        "name": "InstrumentCluster",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "渲染全液晶仪表、显示车辆状态、告警与来自MMI的交互命令",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (video stream, MMICmd, DMS state)",
+          "output_ports": "2 (render status, telemetry)"
+        },
+        "behavioral_characteristics": "主循环基于定时刷新和事件触发：定时渲染Runnable（20-100ms）负责合成视频/图表/告警；事件驱动Runnable处理MMI命令与DMS告警；状态机管理显示模式与夜间/日间切换；输入→处理→输出流程：接收流与命令→布局合成与图形渲染→驱动显示与发出render-ready事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收视频流与MMI命令的提供/要求端口，输出渲染状态与telemetry端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Render_Timer_Event",
+                "trigger": "周期性20-100ms触发渲染"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "MMI_Command_Received",
+                "trigger": "收到MMI命令时触发"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Render",
+                "trigger": "组件初始化时触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收合成所需的视频帧或AR数据"
+                      }
+                    ],
+                    "notes": "依据定时触发读取输入数据进行渲染"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布渲染状态与telemetry"
+                      }
+                    ],
+                    "notes": "发布渲染完成标志和状态"
+                  }
+                ],
+                "notes": "包含周期渲染与输出点"
+              },
+              {
+                "name": "Command_Handler_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收MultiModalInteraction下发的UI命令"
+                      }
+                    ],
+                    "notes": "事件驱动处理MMI命令"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "可能同步请求CenterDisplay或配置服务"
+                      }
+                    ],
+                    "notes": "必要时调用配置服务"
+                  }
+                ],
+                "notes": "处理外部命令并触发状态变化"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "MultiModalInteraction",
+          "DriverMonitoring"
+        ]
+      },
+      {
+        "component_id": "comp_002",
+        "name": "CenterDisplay",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理15.6寸中控屏UI、多媒体、触控以及流媒体显示与配置",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (camera streams, UI commands, voice events, DMS state)",
+          "output_ports": "4 (render output, AR data to HUD, control to peripherals, telemetry)"
+        },
+        "behavioral_characteristics": "包含独立UI渲染循环与触控事件处理；Stream_Manager负责接收并解码AVB流；配置/控制通过Client-Server接口对StreamingMirror与VoiceAssistant下发指令；状态机管理UI模式切换；输入→处理→输出：流媒体解码→UI合成→触控回馈/命令上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "需要接收视频的提供端口，触控/命令的要求端口以及对外提供AR/telemetry端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "UI_Refresh",
+                "trigger": "周期性16-33ms刷新UI"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Stream_Frame_Received",
+                "trigger": "收到视频帧时触发"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Touch_Event",
+                "trigger": "触控输入发生时触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "UI_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收解码后的视频帧与应用数据"
+                      }
+                    ],
+                    "notes": "按优先级合成UI与视频"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向HUDRenderer或InstrumentCluster发送AR/状态数据"
+                      }
+                    ],
+                    "notes": "输出合成结果与AR数据"
+                  }
+                ],
+                "notes": "UI渲染与AR输出"
+              },
+              {
+                "name": "Stream_Manager_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收AVB TSN流的帧包"
+                      }
+                    ],
+                    "notes": "流接收与缓冲解码"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步控制StreamingMirror开始/停止流"
+                      }
+                    ],
+                    "notes": "控制流的启动与停止"
+                  }
+                ],
+                "notes": "处理流接收与控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "StreamingMirror",
+          "HUDRenderer",
+          "MultiModalInteraction"
+        ]
+      },
+      {
+        "component_id": "comp_003",
+        "name": "HUDRenderer",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "生成AR投影层，合成导航与驾驶信息并在HUD投影",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (AR data, vehicle pose, UI commands)",
+          "output_ports": "1 (HUD frame)"
+        },
+        "behavioral_characteristics": "以高优先级定时Runnable驱动渲染（20-100ms）；接收来自CenterDisplay/InstrumentCluster的导航与叠加数据，并根据驾驶模式调整渲染；低延迟路径优先保证导航信息实时性；输入→融合→输出为主流程。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收AR数据与pose的端口，输出HUD帧端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "HUD_Render_Timer",
+                "trigger": "高频定时触发渲染"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "AR_Data_Received",
+                "trigger": "接收到新导航叠加数据"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "HUD_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航叠加和pose数据"
+                      }
+                    ],
+                    "notes": "合成HUD可视层"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出HUD帧或状态信息"
+                      }
+                    ],
+                    "notes": "发送到HUD硬件驱动"
+                  }
+                ],
+                "notes": "保证低延迟展示"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "InstrumentCluster"
+        ]
+      },
+      {
+        "component_id": "comp_004",
+        "name": "StreamingMirror",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采集3路摄像头、预处理、编码并通过AVB/TSN分发流",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (camera sensors)",
+          "output_ports": "3 (AVB streams to CenterDisplay/InstrumentCluster/HUD)"
+        },
+        "behavioral_characteristics": "包含采集、前处理（去噪/裁剪）、编码与网络发包链路；高优先级实时pipeline：Capture→Encode→Transmit，帧丢失优先采用最新值策略；支持按需启动/停止流与分辨率切换；数据处理流程严格按时间戳与流缓冲策略执行。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "摄像头输入端口和AVB发送端口，支持多路并行传输"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Capture_Timer",
+                "trigger": "采集频率驱动，如30/60fps"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "Encode_Complete",
+                "trigger": "编码完成后触发发送"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Sensor_Error",
+                "trigger": "传感器或链路错误"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Capture_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从摄像头端口读取原始帧"
+                      }
+                    ],
+                    "notes": "帧捕获与时间戳标注"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入编码输入缓冲"
+                      }
+                    ],
+                    "notes": "传递到编码模块"
+                  }
+                ],
+                "notes": "负责实时捕获"
+              },
+              {
+                "name": "Encode_Transmit_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取待编码帧"
+                      }
+                    ],
+                    "notes": "编码并发送到AVB/TSN网卡"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "通过AVB接口发送编码包"
+                      }
+                    ],
+                    "notes": "发包并确保时间戳/优先级"
+                  }
+                ],
+                "notes": "编码与网络传输"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ]
+      },
+      {
+        "component_id": "comp_005",
+        "name": "VoiceAssistant",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "语音唤醒、ASR、NLU与多轮对话管理，提供对外对话服务",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (audio stream, control)",
+          "output_ports": "2 (intent/events, TTS)"
+        },
+        "behavioral_characteristics": "由事件驱动与后台任务组合：ASR实时处理音频流并产生文本事件；Dialog_Manager维持会话状态与上下文；支持异步ServerCall到云或域服务；输入→NLU→对话决策→输出（意图/TTS），对话状态保存在本地管理器。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收音频流的端口与对外提供对话服务的要求端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Wakeup_Event",
+                "trigger": "唤醒词或触发按键"
+              },
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "Cloud_Resp",
+                "trigger": "异步云服务返回结果"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "NLU_Background",
+                "trigger": "会话维护与超时管理"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ASR_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收音频帧缓冲"
+                      }
+                    ],
+                    "notes": "音频到文本转换"
+                  }
+                ],
+                "notes": "实时ASR线程"
+              },
+              {
+                "name": "Dialog_Manager_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "向云服务或本地NLU发起异步请求"
+                      }
+                    ],
+                    "notes": "会话管理与外部服务交互"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出意图/事件到MultiModalInteraction"
+                      }
+                    ],
+                    "notes": "发布对话结果"
+                  }
+                ],
+                "notes": "管理会话状态并分发意图"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "CenterDisplay"
+        ]
+      },
+      {
+        "component_id": "comp_006",
+        "name": "GestureRecognition",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实时识别驾驶员手势/空中手势并产生活动事件",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (camera frames)",
+          "output_ports": "1 (gesture events)"
+        },
+        "behavioral_characteristics": "以帧驱动处理管线：帧接收→检测→分类→事件化，支持置信度过滤与抖动抑制；当置信度高时即时发出事件到MultiModalInteraction；周期或事件触发均可。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收摄像头帧端口与输出事件端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Frame_Incoming",
+                "trigger": "接收新帧触发识别"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Gesture_Event_Sent",
+                "trigger": "事件发送完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Gesture_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取来自摄像头的帧"
+                      }
+                    ],
+                    "notes": "检测与分类手势"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送手势事件到MultiModalInteraction"
+                      }
+                    ],
+                    "notes": "输出结构化手势事件"
+                  }
+                ],
+                "notes": "对外提供可靠事件流"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "StreamingMirror"
+        ]
+      },
+      {
+        "component_id": "comp_007",
+        "name": "DriverMonitoring",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "监测驾驶员状态（注视、疲劳、分心），并发出告警与状态更新",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (camera/IR frames)",
+          "output_ports": "2 (DMS state, alerts)"
+        },
+        "behavioral_characteristics": "周期性运行DMS算法（50-200ms），维护司机状态机（警告、介入等级），当检测到风险时发出高优先级告警并将状态推送到MultiModalInteraction与InstrumentCluster。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收传感器数据端口，输出状态与告警端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "DMS_Heartbeat",
+                "trigger": "周期性50-200ms触发检测"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "DMS_Error",
+                "trigger": "模型失败或数据异常"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DMS_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取摄像头/传感器帧"
+                      }
+                    ],
+                    "notes": "执行DMS推理与状态更新"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "推送DMS状态与告警"
+                      }
+                    ],
+                    "notes": "发布给MMI与InstrumentCluster"
+                  }
+                ],
+                "notes": "周期性检测并报告"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "InstrumentCluster"
+        ]
+      },
+      {
+        "component_id": "comp_008",
+        "name": "MultiModalInteraction",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合语音/手势/触控/DMS输入，生成统一的UI命令和策略决策",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (voice events, gesture events, touch, DMS state)",
+          "output_ports": "3 (UI commands, feedback, control requests)"
+        },
+        "behavioral_characteristics": "事件驱动与融合Runnable：接收多源事件并基于优先级与置信度进行融合，包含冲突解决与会话上下文维护；对关键命令进行确认流程并通过Client-Server接口调用目标组件；融合结果通过低延迟通道下发，支持策略升级与学习模块的后台更新。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "多个事件输入端口与命令输出端口；支持高优先级控制与可靠RPC"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "MMI_Event_In",
+                "trigger": "收到来自Voice/Gesture/Touch/DMS的事件"
+              },
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Policy_Update",
+                "trigger": "策略或配置更新触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收多路事件输入（voice/gesture/touch/DMS）"
+                      }
+                    ],
+                    "notes": "融合输入并产生意图"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布统一的UI command到CenterDisplay/InstrumentCluster"
+                      }
+                    ],
+                    "notes": "下发融合结果"
+                  }
+                ],
+                "notes": "融合与优先级裁决"
+              },
+              {
+                "name": "Decision_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "在必要时异步调用VoiceAssistant或CenterDisplay的服务"
+                      }
+                    ],
+                    "notes": "执行需要确认或外部服务交互的决策"
+                  },
+                  {
+                    "key": "MINIMUM-START-INTERVAL",
+                    "wrapper": "MINIMUM-START-INTERVAL",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "最小触发间隔以防止命令风暴"
+                      }
+                    ],
+                    "notes": "防抖与节流控制"
+                  }
+                ],
+                "notes": "策略决策与外部调用"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VoiceAssistant",
+          "GestureRecognition",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "DriverMonitoring"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_001",
+        "name": "IF_AVB_Video_Stream",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "实时S/R流，基于AVB/TSN，使用流优先级与时间同步；传输采用最新值语义并支持小队列缓冲；时延要求端到端<50ms，丢帧优先保留最新帧，错误恢复通过重同步和FEC/重传策略",
+        "data_category": "Streaming",
+        "connected_components": [
+          "StreamingMirror",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ],
+        "performance_requirements": "30-60fps, latency<50ms, bandwidth per stream configurable, TSN scheduled",
+        "data_elements": [
+          "Camera1_Frame",
+          "Camera2_Frame",
+          "Camera3_Frame",
+          "Encoded_Packet"
+        ],
+        "direct_paths": "StreamingMirror -> AVB Switch -> {CenterDisplay,InstrumentCluster,HUDRenderer} via TSN streams; DMA offload when possible"
+      },
+      {
+        "interface_id": "if_002",
+        "name": "IF_UI_Commands",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "主为Client-Server（异步优先，必要时同步确认），消息可靠传输，低延迟<100ms；缓冲采用队列（FIFO）和最新值策略结合；错误处理：请求重试、失败回退与用户提示",
+        "data_category": "Control",
+        "connected_components": [
+          "MultiModalInteraction",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ],
+        "performance_requirements": "请求响应<100ms, 丢失重试策略, at-least-once semantics for critical commands",
+        "data_elements": [
+          "UI_Command",
+          "Command_Ack",
+          "Command_Status"
+        ],
+        "direct_paths": "MultiModalInteraction -> CenterDisplay/InstrumentCluster/HUDRenderer via reliable RPC over TSN/TCP-like channel"
+      },
+      {
+        "interface_id": "if_003",
+        "name": "IF_Voice_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "异步Client-Server，支持长轮次会话及事件流；超时与重试策略，部分请求可走异步回调；缓冲策略为事件队列",
+        "data_category": "Service",
+        "connected_components": [
+          "VoiceAssistant",
+          "MultiModalInteraction",
+          "CenterDisplay"
+        ],
+        "performance_requirements": "ASR latency<300ms内响应，云交互超时可配置，可靠交互与回调机制",
+        "data_elements": [
+          "StartDialog",
+          "EndDialog",
+          "Intent_Event",
+          "TTS_Payload"
+        ],
+        "direct_paths": "MultiModalInteraction -> VoiceAssistant (start dialog); VoiceAssistant -> MultiModalInteraction callbacks"
+      },
+      {
+        "interface_id": "if_004",
+        "name": "IF_Gesture_Events",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件型S/R，低延迟事件推送，采用最新值或小队列保证吞吐；错误处理本地重试与丢弃策略",
+        "data_category": "Event",
+        "connected_components": [
+          "GestureRecognition",
+          "MultiModalInteraction"
+        ],
+        "performance_requirements": "事件延迟<100ms，丢弃低置信事件",
+        "data_elements": [
+          "Gesture_Event_Type",
+          "Gesture_Confidence",
+          "Timestamp"
+        ],
+        "direct_paths": "GestureRecognition -> MultiModalInteraction event channel"
+      },
+      {
+        "interface_id": "if_005",
+        "name": "IF_DMS_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期S/R（周期50-200ms）并支持事件上报（告警），采用最新值语义，可靠度中等；错误处理为重复发送与上报故障状态",
+        "data_category": "Status",
+        "connected_components": [
+          "DriverMonitoring",
+          "MultiModalInteraction",
+          "InstrumentCluster"
+        ],
+        "performance_requirements": "周期性心跳50-200ms, 高优先级告警即时推送",
+        "data_elements": [
+          "DMS_State",
+          "Alert_Level",
+          "Timestamp"
+        ],
+        "direct_paths": "DriverMonitoring -> MultiModalInteraction & InstrumentCluster via TSN prioritized path"
+      },
+      {
+        "interface_id": "if_006",
+        "name": "IF_AR_Data",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "低延迟定期更新S/R，严格按时间戳同步，使用最新值语义与小缓冲区；错误处理为重传或降级显示",
+        "data_category": "AR",
+        "connected_components": [
+          "CenterDisplay",
+          "HUDRenderer",
+          "InstrumentCluster"
+        ],
+        "performance_requirements": "更新周期20-100ms, latency<50ms for overlay updates",
+        "data_elements": [
+          "Nav_Overlay",
+          "Vehicle_Pose",
+          "Timestamp"
+        ],
+        "direct_paths": "CenterDisplay/Navigation -> HUDRenderer via prioritized TSN path"
+      },
+      {
+        "interface_id": "if_007",
+        "name": "IF_Stream_Control",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server控制通道，同步确认或异步回调，可靠传输；缓冲为命令队列",
+        "data_category": "Control",
+        "connected_components": [
+          "CenterDisplay",
+          "StreamingMirror"
+        ],
+        "performance_requirements": "控制响应<200ms, 启停/参数调整需可靠确认",
+        "data_elements": [
+          "Start_Stream",
+          "Stop_Stream",
+          "Configure_Stream"
+        ],
+        "direct_paths": "CenterDisplay -> StreamingMirror control RPC"
+      }
+    ],
+    "component_generation_order": [
+      "StreamingMirror",
+      "DriverMonitoring",
+      "GestureRecognition",
+      "VoiceAssistant",
+      "MultiModalInteraction",
+      "CenterDisplay",
+      "InstrumentCluster",
+      "HUDRenderer"
+    ],
+    "connection_topology": {
+      "component_connections": "StreamingMirror提供AVB/TSN视频流到CenterDisplay、InstrumentCluster和HUDRenderer；GestureRecognition与DriverMonitoring将事件/状态发送至MultiModalInteraction；VoiceAssistant与MultiModalInteraction通过Client-Server接口交互；MultiModalInteraction将融合命令发送至CenterDisplay、InstrumentCluster和HUDRenderer；CenterDisplay可通过Stream_Control接口控制StreamingMirror。",
+      "data_flow_paths": "摄像头帧：StreamingMirror -> IF_AVB_Video_Stream -> {CenterDisplay,InstrumentCluster,HUDRenderer}; 交互：{VoiceAssistant,GestureRecognition,Touch} -> IF_UI_Commands -> MultiModalInteraction -> IF_UI_Commands -> {CenterDisplay,InstrumentCluster,HUDRenderer}; DMS状态：DriverMonitoring -> IF_DMS_Status -> MultiModalInteraction & InstrumentCluster; AR数据：CenterDisplay -> IF_AR_Data -> HUDRenderer。",
+      "control_flow_paths": "Control和配置命令由CenterDisplay或MultiModalInteraction发起，经过IF_Stream_Control或IF_UI_Commands调用目标组件的Server接口；VoiceAssistant异步调用外部服务并通过回调驱动会话变化；关键控制路径使用Client-Server同步确认，非关键路径使用异步回调。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "选择模块化SWC以隔离功能域；流媒体使用AVB/TSN保证时间敏感性；交互融合由独立MMI组件完成以降低显示端复杂度；使用S/R接口承载高频数据，C/S接口承载控制与会话；预选元素遵循AUTOSAR变量引用（AUTOSAR-VARIABLE-IREF）与异步/同步ServerCall分支，确保Round2可直接映射为ARXML结构。",
+      "tradeoff_analysis": "将渲染与交互分离提高可维护性，但增加了接口数量与延迟管理复杂度；选择AVB/TSN增加网络配置复杂性但满足严格时序；将MMI集中在单组件简化策略但可能成为瓶颈，需通过优先级与节流缓解。",
+      "alternative_considerations": "可考虑把部分融合移到CenterDisplay以减轻MMI，但会增加CenterDisplay复杂性；采用更轻量级UDP流代替TSN可简化网络但无法满足时序保证；将VoiceAssistant拆分为独立ASR模块与Dialog模块以便于云/本地部署。",
+      "risk_assessment": "主要风险：网络拥塞导致视频/AR延迟（缓解：TSN调度、FEC、降级策略）；MMI成为性能瓶颈（缓解：优先级、节流、分布式部署）；语音/视觉识别误判导致错误命令（缓解：置信度阈值、多模态验证）；组件间接口定义不一致（缓解：Round1明确数据原型并在Round2严格生成ARXML）。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "系统划分为八个应用级SWC，各自职责明确：InstrumentCluster负责仪表渲染与驾驶信息展示；CenterDisplay负责中控UI、触控与多媒体管理；HUDRenderer负责AR投影与导航叠加；StreamingMirror负责3路摄像头采集、编码与网络传输；VoiceAssistant负责语音识别、多轮对话管理与NLU/Dialog管理；GestureRecognition负责摄像头/传感器手势检测并产生活动事件；DriverMonitoring负责DMS算法、疲劳/注视检测与告警；MultiModalInteraction负责融合语音、手势、触摸与DMS信息并下发统一交互命令。组件间以职责边界最小化交叉，交互通过明确定义的接口（流媒体、事件、命令、状态）进行。",
+      "data_flow_analysis": "主要数据流：1) 摄像头帧：摄像头→StreamingMirror（原始帧）→编码后通过AVB/TSN SENDER-RECEIVER接口分发到CenterDisplay与InstrumentCluster与HUDRenderer（实时视频流，binary frame/codec packet）；2) 交互事件：GestureRecognition/VoiceAssistant/Touch→MultiModalInteraction（事件/意图，JSON-like结构或简单枚举），融合后产生UI_Command通过CLIENT-SERVER或SENDER-RECEIVER分发至CenterDisplay/InstrumentCluster/HUDRenderer；3) DMS状态：DriverMonitoring→MultiModalInteraction与InstrumentCluster（结构化状态，周期性数据包）；4) AR数据：CenterDisplay/Navigation→HUDRenderer（位置、导航叠加数据，低延迟定时更新）；5) 控制与配置：CenterDisplay ↔ StreamingMirror/VoiceAssistant 为Client-Server请求（启动/停止流、配置参数）。每个接口的数据类型在interface_plan中列明，传输时序采用AVB/TSN保障同步性与带宽，控制消息采用TCP-like可靠RPC或可靠TSN队列。组件依赖链：StreamingMirror提供流，MultiModalInteraction依赖输入源（Voice/Gesture/DMS），显示端依赖MultiModalInteraction与流源与AR数据。",
+      "timing_requirements": "视频流：至少30-60fps，端到端延迟<50ms（捕获到显示）；关键UI命令到渲染：<100ms；DMS心跳/状态：周期50-200ms；HUD导航更新：周期20-100ms，优先级高；语音对话延迟容忍度<300ms交互响应。全部时间约束通过TSN流分类与调度、优先级分层实现。",
+      "scalability_considerations": "采用模块化SWC，接口抽象化（S/R与C/S分离），便于增加摄像头或新识别算法；AVB/TSN网络使带宽可扩展；组件间使用标准化数据原型方便扩展数据元素；在高负载下支持降级策略（降低帧率、合并事件）与动态资源分配。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_001",
+        "name": "InstrumentCluster",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "渲染全液晶仪表、显示车辆状态、告警与来自MMI的交互命令",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (video stream, MMICmd, DMS state)",
+          "output_ports": "2 (render status, telemetry)"
+        },
+        "behavioral_characteristics": "主循环基于定时刷新和事件触发：定时渲染Runnable（20-100ms）负责合成视频/图表/告警；事件驱动Runnable处理MMI命令与DMS告警；状态机管理显示模式与夜间/日间切换；输入→处理→输出流程：接收流与命令→布局合成与图形渲染→驱动显示与发出render-ready事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收视频流与MMI命令的提供/要求端口，输出渲染状态与telemetry端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Render_Timer_Event",
+                "trigger": "周期性20-100ms触发渲染"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "MMI_Command_Received",
+                "trigger": "收到MMI命令时触发"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Render",
+                "trigger": "组件初始化时触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收合成所需的视频帧或AR数据"
+                      }
+                    ],
+                    "notes": "依据定时触发读取输入数据进行渲染"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布渲染状态与telemetry"
+                      }
+                    ],
+                    "notes": "发布渲染完成标志和状态"
+                  }
+                ],
+                "notes": "包含周期渲染与输出点"
+              },
+              {
+                "name": "Command_Handler_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收MultiModalInteraction下发的UI命令"
+                      }
+                    ],
+                    "notes": "事件驱动处理MMI命令"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "可能同步请求CenterDisplay或配置服务"
+                      }
+                    ],
+                    "notes": "必要时调用配置服务"
+                  }
+                ],
+                "notes": "处理外部命令并触发状态变化"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "MultiModalInteraction",
+          "DriverMonitoring"
+        ]
+      },
+      {
+        "component_id": "comp_002",
+        "name": "CenterDisplay",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理15.6寸中控屏UI、多媒体、触控以及流媒体显示与配置",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (camera streams, UI commands, voice events, DMS state)",
+          "output_ports": "4 (render output, AR data to HUD, control to peripherals, telemetry)"
+        },
+        "behavioral_characteristics": "包含独立UI渲染循环与触控事件处理；Stream_Manager负责接收并解码AVB流；配置/控制通过Client-Server接口对StreamingMirror与VoiceAssistant下发指令；状态机管理UI模式切换；输入→处理→输出：流媒体解码→UI合成→触控回馈/命令上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "需要接收视频的提供端口，触控/命令的要求端口以及对外提供AR/telemetry端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "UI_Refresh",
+                "trigger": "周期性16-33ms刷新UI"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Stream_Frame_Received",
+                "trigger": "收到视频帧时触发"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Touch_Event",
+                "trigger": "触控输入发生时触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "UI_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收解码后的视频帧与应用数据"
+                      }
+                    ],
+                    "notes": "按优先级合成UI与视频"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向HUDRenderer或InstrumentCluster发送AR/状态数据"
+                      }
+                    ],
+                    "notes": "输出合成结果与AR数据"
+                  }
+                ],
+                "notes": "UI渲染与AR输出"
+              },
+              {
+                "name": "Stream_Manager_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收AVB TSN流的帧包"
+                      }
+                    ],
+                    "notes": "流接收与缓冲解码"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步控制StreamingMirror开始/停止流"
+                      }
+                    ],
+                    "notes": "控制流的启动与停止"
+                  }
+                ],
+                "notes": "处理流接收与控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "StreamingMirror",
+          "HUDRenderer",
+          "MultiModalInteraction"
+        ]
+      },
+      {
+        "component_id": "comp_003",
+        "name": "HUDRenderer",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "生成AR投影层，合成导航与驾驶信息并在HUD投影",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (AR data, vehicle pose, UI commands)",
+          "output_ports": "1 (HUD frame)"
+        },
+        "behavioral_characteristics": "以高优先级定时Runnable驱动渲染（20-100ms）；接收来自CenterDisplay/InstrumentCluster的导航与叠加数据，并根据驾驶模式调整渲染；低延迟路径优先保证导航信息实时性；输入→融合→输出为主流程。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收AR数据与pose的端口，输出HUD帧端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "HUD_Render_Timer",
+                "trigger": "高频定时触发渲染"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "AR_Data_Received",
+                "trigger": "接收到新导航叠加数据"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "HUD_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航叠加和pose数据"
+                      }
+                    ],
+                    "notes": "合成HUD可视层"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出HUD帧或状态信息"
+                      }
+                    ],
+                    "notes": "发送到HUD硬件驱动"
+                  }
+                ],
+                "notes": "保证低延迟展示"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "InstrumentCluster"
+        ]
+      },
+      {
+        "component_id": "comp_004",
+        "name": "StreamingMirror",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采集3路摄像头、预处理、编码并通过AVB/TSN分发流",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (camera sensors)",
+          "output_ports": "3 (AVB streams to CenterDisplay/InstrumentCluster/HUD)"
+        },
+        "behavioral_characteristics": "包含采集、前处理（去噪/裁剪）、编码与网络发包链路；高优先级实时pipeline：Capture→Encode→Transmit，帧丢失优先采用最新值策略；支持按需启动/停止流与分辨率切换；数据处理流程严格按时间戳与流缓冲策略执行。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "摄像头输入端口和AVB发送端口，支持多路并行传输"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Capture_Timer",
+                "trigger": "采集频率驱动，如30/60fps"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "Encode_Complete",
+                "trigger": "编码完成后触发发送"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Sensor_Error",
+                "trigger": "传感器或链路错误"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Capture_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从摄像头端口读取原始帧"
+                      }
+                    ],
+                    "notes": "帧捕获与时间戳标注"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入编码输入缓冲"
+                      }
+                    ],
+                    "notes": "传递到编码模块"
+                  }
+                ],
+                "notes": "负责实时捕获"
+              },
+              {
+                "name": "Encode_Transmit_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取待编码帧"
+                      }
+                    ],
+                    "notes": "编码并发送到AVB/TSN网卡"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "通过AVB接口发送编码包"
+                      }
+                    ],
+                    "notes": "发包并确保时间戳/优先级"
+                  }
+                ],
+                "notes": "编码与网络传输"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ]
+      },
+      {
+        "component_id": "comp_005",
+        "name": "VoiceAssistant",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "语音唤醒、ASR、NLU与多轮对话管理，提供对外对话服务",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (audio stream, control)",
+          "output_ports": "2 (intent/events, TTS)"
+        },
+        "behavioral_characteristics": "由事件驱动与后台任务组合：ASR实时处理音频流并产生文本事件；Dialog_Manager维持会话状态与上下文；支持异步ServerCall到云或域服务；输入→NLU→对话决策→输出（意图/TTS），对话状态保存在本地管理器。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收音频流的端口与对外提供对话服务的要求端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Wakeup_Event",
+                "trigger": "唤醒词或触发按键"
+              },
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "Cloud_Resp",
+                "trigger": "异步云服务返回结果"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "NLU_Background",
+                "trigger": "会话维护与超时管理"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ASR_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收音频帧缓冲"
+                      }
+                    ],
+                    "notes": "音频到文本转换"
+                  }
+                ],
+                "notes": "实时ASR线程"
+              },
+              {
+                "name": "Dialog_Manager_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "向云服务或本地NLU发起异步请求"
+                      }
+                    ],
+                    "notes": "会话管理与外部服务交互"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出意图/事件到MultiModalInteraction"
+                      }
+                    ],
+                    "notes": "发布对话结果"
+                  }
+                ],
+                "notes": "管理会话状态并分发意图"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "CenterDisplay"
+        ]
+      },
+      {
+        "component_id": "comp_006",
+        "name": "GestureRecognition",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实时识别驾驶员手势/空中手势并产生活动事件",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (camera frames)",
+          "output_ports": "1 (gesture events)"
+        },
+        "behavioral_characteristics": "以帧驱动处理管线：帧接收→检测→分类→事件化，支持置信度过滤与抖动抑制；当置信度高时即时发出事件到MultiModalInteraction；周期或事件触发均可。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收摄像头帧端口与输出事件端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Frame_Incoming",
+                "trigger": "接收新帧触发识别"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Gesture_Event_Sent",
+                "trigger": "事件发送完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Gesture_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取来自摄像头的帧"
+                      }
+                    ],
+                    "notes": "检测与分类手势"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送手势事件到MultiModalInteraction"
+                      }
+                    ],
+                    "notes": "输出结构化手势事件"
+                  }
+                ],
+                "notes": "对外提供可靠事件流"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "StreamingMirror"
+        ]
+      },
+      {
+        "component_id": "comp_007",
+        "name": "DriverMonitoring",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "监测驾驶员状态（注视、疲劳、分心），并发出告警与状态更新",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (camera/IR frames)",
+          "output_ports": "2 (DMS state, alerts)"
+        },
+        "behavioral_characteristics": "周期性运行DMS算法（50-200ms），维护司机状态机（警告、介入等级），当检测到风险时发出高优先级告警并将状态推送到MultiModalInteraction与InstrumentCluster。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收传感器数据端口，输出状态与告警端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "DMS_Heartbeat",
+                "trigger": "周期性50-200ms触发检测"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "DMS_Error",
+                "trigger": "模型失败或数据异常"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DMS_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取摄像头/传感器帧"
+                      }
+                    ],
+                    "notes": "执行DMS推理与状态更新"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "推送DMS状态与告警"
+                      }
+                    ],
+                    "notes": "发布给MMI与InstrumentCluster"
+                  }
+                ],
+                "notes": "周期性检测并报告"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MultiModalInteraction",
+          "InstrumentCluster"
+        ]
+      },
+      {
+        "component_id": "comp_008",
+        "name": "MultiModalInteraction",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合语音/手势/触控/DMS输入，生成统一的UI命令和策略决策",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (voice events, gesture events, touch, DMS state)",
+          "output_ports": "3 (UI commands, feedback, control requests)"
+        },
+        "behavioral_characteristics": "事件驱动与融合Runnable：接收多源事件并基于优先级与置信度进行融合，包含冲突解决与会话上下文维护；对关键命令进行确认流程并通过Client-Server接口调用目标组件；融合结果通过低延迟通道下发，支持策略升级与学习模块的后台更新。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "多个事件输入端口与命令输出端口；支持高优先级控制与可靠RPC"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "MMI_Event_In",
+                "trigger": "收到来自Voice/Gesture/Touch/DMS的事件"
+              },
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Policy_Update",
+                "trigger": "策略或配置更新触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收多路事件输入（voice/gesture/touch/DMS）"
+                      }
+                    ],
+                    "notes": "融合输入并产生意图"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布统一的UI command到CenterDisplay/InstrumentCluster"
+                      }
+                    ],
+                    "notes": "下发融合结果"
+                  }
+                ],
+                "notes": "融合与优先级裁决"
+              },
+              {
+                "name": "Decision_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "在必要时异步调用VoiceAssistant或CenterDisplay的服务"
+                      }
+                    ],
+                    "notes": "执行需要确认或外部服务交互的决策"
+                  },
+                  {
+                    "key": "MINIMUM-START-INTERVAL",
+                    "wrapper": "MINIMUM-START-INTERVAL",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "最小触发间隔以防止命令风暴"
+                      }
+                    ],
+                    "notes": "防抖与节流控制"
+                  }
+                ],
+                "notes": "策略决策与外部调用"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VoiceAssistant",
+          "GestureRecognition",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "DriverMonitoring"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if_001",
+        "name": "IF_AVB_Video_Stream",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "实时S/R流，基于AVB/TSN，使用流优先级与时间同步；传输采用最新值语义并支持小队列缓冲；时延要求端到端<50ms，丢帧优先保留最新帧，错误恢复通过重同步和FEC/重传策略",
+        "data_category": "Streaming",
+        "connected_components": [
+          "StreamingMirror",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ],
+        "performance_requirements": "30-60fps, latency<50ms, bandwidth per stream configurable, TSN scheduled",
+        "data_elements": [
+          "Camera1_Frame",
+          "Camera2_Frame",
+          "Camera3_Frame",
+          "Encoded_Packet"
+        ],
+        "direct_paths": "StreamingMirror -> AVB Switch -> {CenterDisplay,InstrumentCluster,HUDRenderer} via TSN streams; DMA offload when possible"
+      },
+      {
+        "interface_id": "if_002",
+        "name": "IF_UI_Commands",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "主为Client-Server（异步优先，必要时同步确认），消息可靠传输，低延迟<100ms；缓冲采用队列（FIFO）和最新值策略结合；错误处理：请求重试、失败回退与用户提示",
+        "data_category": "Control",
+        "connected_components": [
+          "MultiModalInteraction",
+          "CenterDisplay",
+          "InstrumentCluster",
+          "HUDRenderer"
+        ],
+        "performance_requirements": "请求响应<100ms, 丢失重试策略, at-least-once semantics for critical commands",
+        "data_elements": [
+          "UI_Command",
+          "Command_Ack",
+          "Command_Status"
+        ],
+        "direct_paths": "MultiModalInteraction -> CenterDisplay/InstrumentCluster/HUDRenderer via reliable RPC over TSN/TCP-like channel"
+      },
+      {
+        "interface_id": "if_003",
+        "name": "IF_Voice_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "异步Client-Server，支持长轮次会话及事件流；超时与重试策略，部分请求可走异步回调；缓冲策略为事件队列",
+        "data_category": "Service",
+        "connected_components": [
+          "VoiceAssistant",
+          "MultiModalInteraction",
+          "CenterDisplay"
+        ],
+        "performance_requirements": "ASR latency<300ms内响应，云交互超时可配置，可靠交互与回调机制",
+        "data_elements": [
+          "StartDialog",
+          "EndDialog",
+          "Intent_Event",
+          "TTS_Payload"
+        ],
+        "direct_paths": "MultiModalInteraction -> VoiceAssistant (start dialog); VoiceAssistant -> MultiModalInteraction callbacks"
+      },
+      {
+        "interface_id": "if_004",
+        "name": "IF_Gesture_Events",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件型S/R，低延迟事件推送，采用最新值或小队列保证吞吐；错误处理本地重试与丢弃策略",
+        "data_category": "Event",
+        "connected_components": [
+          "GestureRecognition",
+          "MultiModalInteraction"
+        ],
+        "performance_requirements": "事件延迟<100ms，丢弃低置信事件",
+        "data_elements": [
+          "Gesture_Event_Type",
+          "Gesture_Confidence",
+          "Timestamp"
+        ],
+        "direct_paths": "GestureRecognition -> MultiModalInteraction event channel"
+      },
+      {
+        "interface_id": "if_005",
+        "name": "IF_DMS_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期S/R（周期50-200ms）并支持事件上报（告警），采用最新值语义，可靠度中等；错误处理为重复发送与上报故障状态",
+        "data_category": "Status",
+        "connected_components": [
+          "DriverMonitoring",
+          "MultiModalInteraction",
+          "InstrumentCluster"
+        ],
+        "performance_requirements": "周期性心跳50-200ms, 高优先级告警即时推送",
+        "data_elements": [
+          "DMS_State",
+          "Alert_Level",
+          "Timestamp"
+        ],
+        "direct_paths": "DriverMonitoring -> MultiModalInteraction & InstrumentCluster via TSN prioritized path"
+      },
+      {
+        "interface_id": "if_006",
+        "name": "IF_AR_Data",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "低延迟定期更新S/R，严格按时间戳同步，使用最新值语义与小缓冲区；错误处理为重传或降级显示",
+        "data_category": "AR",
+        "connected_components": [
+          "CenterDisplay",
+          "HUDRenderer",
+          "InstrumentCluster"
+        ],
+        "performance_requirements": "更新周期20-100ms, latency<50ms for overlay updates",
+        "data_elements": [
+          "Nav_Overlay",
+          "Vehicle_Pose",
+          "Timestamp"
+        ],
+        "direct_paths": "CenterDisplay/Navigation -> HUDRenderer via prioritized TSN path"
+      },
+      {
+        "interface_id": "if_007",
+        "name": "IF_Stream_Control",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server控制通道，同步确认或异步回调，可靠传输；缓冲为命令队列",
+        "data_category": "Control",
+        "connected_components": [
+          "CenterDisplay",
+          "StreamingMirror"
+        ],
+        "performance_requirements": "控制响应<200ms, 启停/参数调整需可靠确认",
+        "data_elements": [
+          "Start_Stream",
+          "Stop_Stream",
+          "Configure_Stream"
+        ],
+        "direct_paths": "CenterDisplay -> StreamingMirror control RPC"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "StreamingMirror提供AVB/TSN视频流到CenterDisplay、InstrumentCluster和HUDRenderer；GestureRecognition与DriverMonitoring将事件/状态发送至MultiModalInteraction；VoiceAssistant与MultiModalInteraction通过Client-Server接口交互；MultiModalInteraction将融合命令发送至CenterDisplay、InstrumentCluster和HUDRenderer；CenterDisplay可通过Stream_Control接口控制StreamingMirror。",
+      "data_flow_paths": "摄像头帧：StreamingMirror -> IF_AVB_Video_Stream -> {CenterDisplay,InstrumentCluster,HUDRenderer}; 交互：{VoiceAssistant,GestureRecognition,Touch} -> IF_UI_Commands -> MultiModalInteraction -> IF_UI_Commands -> {CenterDisplay,InstrumentCluster,HUDRenderer}; DMS状态：DriverMonitoring -> IF_DMS_Status -> MultiModalInteraction & InstrumentCluster; AR数据：CenterDisplay -> IF_AR_Data -> HUDRenderer。",
+      "control_flow_paths": "Control和配置命令由CenterDisplay或MultiModalInteraction发起，经过IF_Stream_Control或IF_UI_Commands调用目标组件的Server接口；VoiceAssistant异步调用外部服务并通过回调驱动会话变化；关键控制路径使用Client-Server同步确认，非关键路径使用异步回调。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "选择模块化SWC以隔离功能域；流媒体使用AVB/TSN保证时间敏感性；交互融合由独立MMI组件完成以降低显示端复杂度；使用S/R接口承载高频数据，C/S接口承载控制与会话；预选元素遵循AUTOSAR变量引用（AUTOSAR-VARIABLE-IREF）与异步/同步ServerCall分支，确保Round2可直接映射为ARXML结构。",
+      "tradeoff_analysis": "将渲染与交互分离提高可维护性，但增加了接口数量与延迟管理复杂度；选择AVB/TSN增加网络配置复杂性但满足严格时序；将MMI集中在单组件简化策略但可能成为瓶颈，需通过优先级与节流缓解。",
+      "alternative_considerations": "可考虑把部分融合移到CenterDisplay以减轻MMI，但会增加CenterDisplay复杂性；采用更轻量级UDP流代替TSN可简化网络但无法满足时序保证；将VoiceAssistant拆分为独立ASR模块与Dialog模块以便于云/本地部署。",
+      "risk_assessment": "主要风险：网络拥塞导致视频/AR延迟（缓解：TSN调度、FEC、降级策略）；MMI成为性能瓶颈（缓解：优先级、节流、分布式部署）；语音/视觉识别误判导致错误命令（缓解：置信度阈值、多模态验证）；组件间接口定义不一致（缓解：Round1明确数据原型并在Round2严格生成ARXML）。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7668,
+    "output_tokens": 9082,
+    "total_tokens": 16750,
+    "component_count": 8,
+    "interface_count": 7,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

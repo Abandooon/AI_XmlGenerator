@@ -1,0 +1,369 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "RadarProcessor 提供毫米波雷达数据输入、初步滤波和数据封装；CameraProcessor 提供前视摄像头图像输入、特征提取与畸变矫正；FusionAlgorithm 负责多传感器数据融合与态势推断；PathPlanner 根据融合结果生成纵向与横向路径/指令；ActuationInterface 将指令转换为底盘域可执行的控制命令并下发；HMIManager 将系统状态与警告信息在仪表盘显示给用户。各组件通过 RTE Port 进行数据交换，形成从传感器到执行端的高层流水线，并通过接口实现解耦与可替换性。",
+  "data_flow_analysis": "RadarProcessor 与 CameraProcessor 产出传感数据；FusionAlgorithm 同步接收 RadarData、CameraData，输出 FusionResult；PathPlanner 接收 FusionResult，输出 PathCommand；ActuationInterface 接收 PathCommand，输出 ActuatorCommand；HMIManager 通过 HMI_Status_Interface 订阅 SystemStatus。数据以时间戳对齐，主要数据类型包括 RadarData、CameraImageData、FusionResult、PathCommand、ActuatorCommand、SystemStatus。数据流采用单向数据流 + 触发事件的组合模式，确保封装性与确定性。",
+  "timing_requirements": "端到端时延对关键路径要求低于 40 ms，雷达与相机数据的采样周期 < 20 ms；融合与路径规划的处理延迟应低于 15 ms；对 HMI 的状态刷新周期设定为 100 ms 级别。",
+  "scalability_considerations": "模块化的接口与元素设计，支持新增传感器（如超声/光学）或新算法插件的替换；Round2 可通过增加新组件与接口来扩展功能，保持现有接口兼容性；RTE 端口的数量预计在 8-16 之间，系统可以水平扩展方式增加算力节点。",
+  "complexity_assessment": "Complex"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "Radar_Processor --out--> Fusion_Algorithm; Camera_Processor --out--> Fusion_Algorithm; Fusion_Algorithm --out--> Path_Planner; Path_Planner --out--> Actuation_Interface; Path_Planner --out--> HMI_Manager",
+  "data_flow_paths": "RadarData, CameraImageData -> Fusion_Algorithm -> FusionResult -> Path_Planner -> PathCommand -> Actuation_Interface -> ActuatorCommand; SystemStatus -> HMI_Manager",
+  "control_flow_paths": "通过 RTE 端口进行数据流控制，Runnable 调度与事件触发在各自组件内部完成，跨组件控制仅通过接口调用实现"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "Sensor_Data_Interface_RadarCamera",
+    "name": "Sensor_Data_Interface_RadarCamera",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "异步周期性数据传输，雷达与摄像头数据以时间戳对齐后发送给 Fusion_Algorithm",
+    "data_category": "SensorData",
+    "connected_components": [
+      "Radar_Processor",
+      "Fusion_Algorithm",
+      "Camera_Processor"
+    ],
+    "performance_requirements": "端到端延迟 < 20 ms，抖动 < 5 ms",
+    "data_elements": [
+      "RadarData",
+      "CameraImageData",
+      "Timestamp"
+    ],
+    "direct_paths": "Radar_Processor -> Fusion_Algorithm, Camera_Processor -> Fusion_Algorithm"
+  },
+  {
+    "interface_id": "Actuation_Command_Interface",
+    "name": "Actuation_Command_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "同步请求-响应，带有限时超时",
+    "data_category": "ActuationCommand",
+    "connected_components": [
+      "Path_Planner",
+      "Actuation_Interface"
+    ],
+    "performance_requirements": "端到端延迟 < 40 ms",
+    "data_elements": [
+      "ActuationCommand",
+      "CommandID",
+      "Timestamp"
+    ],
+    "direct_paths": "Path_Planner -> Actuation_Interface"
+  },
+  {
+    "interface_id": "HMI_Status_Interface",
+    "name": "HMI_Status_Interface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "轮询/请求-响应，超时 100 ms",
+    "data_category": "SystemStatus",
+    "connected_components": [
+      "Path_Planner",
+      "HMI_Manager"
+    ],
+    "performance_requirements": "状态刷新频率 10 Hz",
+    "data_elements": [
+      "SystemStatus",
+      "StatusDetails"
+    ],
+    "direct_paths": "Path_Planner -> HMI_Manager"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "Sensor_Data_Interface_RadarCamera"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "pattern": "0|1|true|false",
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "DATA-ELEMENTS"
+        ]
+      },
+      "minItems": 1
+    },
+    "CLIENT-SERVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "Actuation_Command_Interface",
+              "HMI_Status_Interface"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "pattern": "0|1|true|false",
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "OPERATIONS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CLIENT-SERVER-OPERATION": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                      "x-xml-tag": "SHORT-NAME"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "SHORT-NAME"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "CLIENT-SERVER-OPERATION"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "OPERATIONS"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE",
+    "CLIENT-SERVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。SHORT-NAME字段的连接符用'_'。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)，例如：<TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>，其中实例路径是 SHORT-NAME 的拼接。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。

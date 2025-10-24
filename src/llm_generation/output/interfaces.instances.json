@@ -1,0 +1,56 @@
+{
+  "Sensor_Data_Interface_RadarCamera": {
+    "SHORT-NAME": "Sensor_Data_Interface_RadarCamera",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RadarData",
+          "TYPE-TREF": {
+            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+            "#text": "/Sensor_Data_Interface_RadarCamera/RadarData"
+          }
+        },
+        {
+          "SHORT-NAME": "CameraImageData",
+          "TYPE-TREF": {
+            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
+            "#text": "/Sensor_Data_Interface_RadarCamera/CameraImageData"
+          }
+        },
+        {
+          "SHORT-NAME": "Timestamp",
+          "TYPE-TREF": {
+            "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
+            "#text": "/Sensor_Data_Interface_RadarCamera/Timestamp"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "Actuation_Command_Interface": {
+    "SHORT-NAME": "Actuation_Command_Interface",
+    "IS-SERVICE": "true",
+    "OPERATIONS": {
+      "CLIENT-SERVER-OPERATION": [
+        {
+          "SHORT-NAME": "SubmitActuationCommand"
+        }
+      ]
+    },
+    "_type": "CLIENT-SERVER-INTERFACE"
+  },
+  "HMI_Status_Interface": {
+    "SHORT-NAME": "HMI_Status_Interface",
+    "IS-SERVICE": "true",
+    "OPERATIONS": {
+      "CLIENT-SERVER-OPERATION": [
+        {
+          "SHORT-NAME": "RequestSystemStatus"
+        }
+      ]
+    },
+    "_type": "CLIENT-SERVER-INTERFACE"
+  }
+}

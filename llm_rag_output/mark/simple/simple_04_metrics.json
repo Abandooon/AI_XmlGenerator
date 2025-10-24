@@ -1,0 +1,620 @@
+{
+  "case_id": "simple_4",
+  "system_name": "DoorControlSystem",
+  "complexity": "simple",
+  "requirement": {
+    "system_name": "DoorControlSystem",
+    "description": "控制4个车门的锁止和车窗升降",
+    "components_count": 4,
+    "component_types": [
+      "DoorLockController",
+      "WindowController",
+      "CANGateway",
+      "DiagnosticManager"
+    ],
+    "key_requirements": [
+      "DoorLockController管理4个门锁电机",
+      "WindowController管理4个车窗电机",
+      "通过CAN接收中控指令",
+      "支持UDS诊断协议"
+    ]
+  },
+  "start_time": "2025-10-23T19:38:30.647813",
+  "phase1": {
+    "duration": 190.0781764984131,
+    "api_calls": 1,
+    "tokens": 18420,
+    "component_count": 4,
+    "interface_count": 5,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "DoorLock_Controller: 管理4个车门锁的指令解析、状态机与驱动控制并发布锁状态。\nWindow_Controller: 管理4个车窗的升/降/停止指令解析、限位与防夹逻辑并发布窗口状态。\nCAN_Gateway: 从CAN接收中控与诊断相关报文，解析为上层命令，向控制器发布S/R命令并回收状态；作为诊断客户端将UDS请求转发给Diagnostic_Manager，并将响应回传至CAN。\nDiagnostic_Manager: 提供UDS服务处理（ReadDID/ClearDTC/RoutineControl等），访问控制器状态数据，生成诊断响应。",
+        "data_flow_analysis": "S/R数据：\n- IF_Lock_Command(lock_cmd): CAN_Gateway(P-Port) -> DoorLock_Controller(R-Port)，异步最新值；事件触发或定期刷新。\n- IF_Lock_Status(lock_status): DoorLock_Controller(P-Port) -> CAN_Gateway/Diagnostic_Manager(R-Port)，异步最新值，周期10ms更新。\n- IF_Window_Command(window_cmd): CAN_Gateway(P-Port) -> Window_Controller(R-Port)，异步最新值；事件触发或定期刷新。\n- IF_Window_Status(window_status): Window_Controller(P-Port) -> CAN_Gateway/Diagnostic_Manager(R-Port)，异步最新值，周期10ms更新。\nC/S调用：\n- IF_Diagnostic_CS(operations: Read_DID, Clear_DTC, Routine_Control): CAN_Gateway(R-Port客户端) -> Diagnostic_Manager(P-Port服务端)，同步调用，超时50ms。\n依赖与调用链：CAN_Gateway 依赖 DoorLock_Controller/Window_Controller 的状态接口与 Diagnostic_Manager 的C/S服务；Diagnostic_Manager 依赖两控制器的状态接口以生成诊断响应；控制器仅依赖来自网关的命令接口。",
+        "timing_requirements": "控制周期：DoorLock_Controller与Window_Controller主循环10ms；状态发布周期10ms。\n网关周期：CAN_Gateway解码与命令分发周期10ms，诊断请求到响应整体延迟目标<50ms（C/S超时50ms）。\n事件触发：命令变更时可提前于周期发送；诊断操作在请求到达后即刻处理。\n抖动：<20%周期；端到端（命令至执行）<30ms；状态上报至CAN发送<30ms。",
+        "scalability_considerations": "可扩展至N门设计：命令与状态接口保留数组/枚举扩展空间；新增门或车窗时复用同一接口并扩容数据元素。\n可扩展诊断：通过增加C/S操作集合支持更多UDS服务；性能通过分离诊断与控制周期保障。\n可扩展总线：CAN_Gateway可替换为通用网关以支持CAN-FD/以太网，保持上层接口不变。\n可扩展安全与故障：状态接口可扩展故障码与降级标志；控制器可增加模式端口以支持安全模式切换。",
+        "complexity_assessment": "Medium"
+      },
+      "component_plan": [
+        {
+          "component_id": "cmp_001",
+          "name": "DoorLock_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "接收锁止/解锁命令，管理4个门锁状态机与故障监测，发布锁状态。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R=1 (IF_Lock_Command);",
+            "output_ports": "P=1 (IF_Lock_Status);"
+          },
+          "behavioral_characteristics": "主要逻辑：每门锁状态机(Idle->Actuating->Hold->Error)，命令消抖与互斥、超时保护。\n触发与周期：10ms周期执行，命令变化时立即处理；上电初始化建立安全状态。\n状态管理：维持每门锁目标/实际状态、错误标志、上次命令时间戳；故障进入Error并保持安全策略。\n数据流程：R锁命令->解析与限幅->状态机驱动->P发布锁状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: R_Lock_Command(IF_Lock_Command: lock_cmd)。P-Ports: P_Lock_Status(IF_Lock_Status: lock_status)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "DLC_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "DLC_10ms_Event",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "DLC_LockCmd_Received",
+                  "trigger": "R_Lock_Command"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "DLC_Main",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Lock_Command读取lock_cmd"
+                        }
+                      ],
+                      "notes": "获取最新锁指令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P_Lock_Status写入lock_status"
+                        }
+                      ],
+                      "notes": "发布锁状态"
+                    }
+                  ],
+                  "notes": "周期执行与事件响应，处理指令与更新状态"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Lock_Command",
+            "IF_Lock_Status",
+            "lock_cmd",
+            "lock_status"
+          ]
+        },
+        {
+          "component_id": "cmp_002",
+          "name": "Window_Controller",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "接收车窗升降命令，管理4个车窗电机的限位、防夹与状态上报。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R=1 (IF_Window_Command);",
+            "output_ports": "P=1 (IF_Window_Status);"
+          },
+          "behavioral_characteristics": "主要逻辑：每窗状态机(Idle->Up/Down->Hold->AntiPinch->Error)，限位检测，速度/电流阈值防夹。\n触发与周期：10ms周期；命令变化立即处理。\n状态管理：目标位置、实际位置、运动方向、故障标志。\n数据流程：R窗口命令->限幅/防夹->执行器控制->P发布窗口状态。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Ports: R_Window_Command(IF_Window_Command: window_cmd)。P-Ports: P_Window_Status(IF_Window_Status: window_status)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "WDC_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "WDC_10ms_Event",
+                  "trigger": "Every_10ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "WDC_WindowCmd_Received",
+                  "trigger": "R_Window_Command"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "WDC_Main",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Window_Command读取window_cmd"
+                        }
+                      ],
+                      "notes": "获取窗口控制命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P_Window_Status写入window_status"
+                        }
+                      ],
+                      "notes": "发布窗口状态"
+                    }
+                  ],
+                  "notes": "周期执行与事件响应，处理窗口指令与防夹逻辑"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Window_Command",
+            "IF_Window_Status",
+            "window_cmd",
+            "window_status"
+          ]
+        },
+        {
+          "component_id": "cmp_003",
+          "name": "CAN_Gateway",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "接收CAN报文并解析为上层命令，发布锁/窗命令；作为诊断客户端转发UDS请求并回传响应。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R=3 (IF_Lock_Status, IF_Window_Status, IF_Diagnostic_CS client R-Port);",
+            "output_ports": "P=2 (IF_Lock_Command, IF_Window_Command);"
+          },
+          "behavioral_characteristics": "主要逻辑：CAN信号映射与去抖、命令合成与优先级仲裁、诊断请求转发与应答打包。\n触发与周期：10ms周期轮询更新；诊断请求到达即刻调用同步C/S，超时回退。\n状态管理：缓存最近命令/状态、诊断事务状态与超时计时。\n数据流程：CAN->解码->S/R发布命令；从控制器接收状态->编码->CAN；UDS请求->C/S调用Diagnostic_Manager->响应回CAN。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "P-Ports: P_Lock_Command(IF_Lock_Command: lock_cmd), P_Window_Command(IF_Window_Command: window_cmd)。R-Ports: R_Lock_Status(IF_Lock_Status: lock_status), R_Window_Status(IF_Window_Status: window_status), R_Diagnostic_CS(IF_Diagnostic_CS: client)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "GW_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "GW_10ms_Event",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "GW_Main",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P_Lock_Command写入lock_cmd"
+                        }
+                      ],
+                      "notes": "发布锁命令"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "向P_Window_Command写入window_cmd"
+                        }
+                      ],
+                      "notes": "发布窗口命令"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Lock_Status读取lock_status"
+                        }
+                      ],
+                      "notes": "接收锁状态用于上报CAN"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Window_Status读取window_status"
+                        }
+                      ],
+                      "notes": "接收窗口状态用于上报CAN"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用Diagnostic_Manager的Read_DID/Clear_DTC/Routine_Control"
+                        }
+                      ],
+                      "notes": "诊断客户端同步调用"
+                    }
+                  ],
+                  "notes": "周期处理CAN编解码与诊断转发"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Lock_Command",
+            "IF_Window_Command",
+            "IF_Lock_Status",
+            "IF_Window_Status",
+            "IF_Diagnostic_CS",
+            "lock_cmd",
+            "window_cmd",
+            "lock_status",
+            "window_status",
+            "Read_DID",
+            "Clear_DTC",
+            "Routine_Control"
+          ]
+        },
+        {
+          "component_id": "cmp_004",
+          "name": "Diagnostic_Manager",
+          "type": "SERVICE-SW-COMPONENT-TYPE",
+          "purpose": "提供UDS服务处理，访问控制器状态并返回诊断响应与DTC管理。",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "R=2 (IF_Lock_Status, IF_Window_Status);",
+            "output_ports": "P=1 (IF_Diagnostic_CS server P-Port);"
+          },
+          "behavioral_characteristics": "主要逻辑：处理ReadDID/ClearDTC/RoutineControl等服务，聚合锁/窗状态并执行DTC清除或例程控制。\n触发与周期：按OPERATION-INVOKED事件触发，内部操作需在50ms内完成；初始化加载DTC快照。\n状态管理：会话/安全级别、请求上下文、最近状态快照与DTC存储接口抽象。\n数据流程：C/S接收请求->读取状态S/R->执行服务->返回结果。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "P-Ports: P_Diagnostic_CS(IF_Diagnostic_CS: server)。R-Ports: R_Lock_Status(IF_Lock_Status: lock_status), R_Window_Status(IF_Window_Status: window_status)。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Diag_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_Read_DID_Invoked",
+                  "trigger": "Read_DID"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_Clear_DTC_Invoked",
+                  "trigger": "Clear_DTC"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Diag_Routine_Control_Invoked",
+                  "trigger": "Routine_Control"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Diag_Read_DID",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Lock_Status读取lock_status"
+                        }
+                      ],
+                      "notes": "读取锁状态以组装DID"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Window_Status读取window_status"
+                        }
+                      ],
+                      "notes": "读取窗口状态以组装DID"
+                    }
+                  ],
+                  "notes": "处理ReadDID请求并返回编码后的数据"
+                },
+                {
+                  "name": "Diag_Clear_DTC",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Lock_Status读取lock_status用于清除前校验"
+                        }
+                      ],
+                      "notes": "执行DTC清除前的状态一致性检查"
+                    }
+                  ],
+                  "notes": "处理ClearDTC并返回执行结果"
+                },
+                {
+                  "name": "Diag_Routine_Control",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "从R_Window_Status读取window_status用于例程前置检查"
+                        }
+                      ],
+                      "notes": "执行例程控制并返回结果"
+                    }
+                  ],
+                  "notes": "处理RoutineControl请求"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_Diagnostic_CS",
+            "IF_Lock_Status",
+            "IF_Window_Status",
+            "Read_DID",
+            "Clear_DTC",
+            "Routine_Control",
+            "lock_status",
+            "window_status"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "if_001",
+          "name": "IF_Lock_Command",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值模型；由CAN_Gateway在10ms周期或命令变化时发送；接收侧读取最新值；错误策略：超时保持上次有效命令，输入校验异常丢弃。",
+          "data_category": "控制命令（门锁）",
+          "connected_components": [
+            "CAN_Gateway",
+            "DoorLock_Controller"
+          ],
+          "performance_requirements": "端到端传输<20ms；丢包可接受（最新值语义）；命令变化抖动<10ms。",
+          "data_elements": [
+            "lock_cmd"
+          ],
+          "direct_paths": "CAN_Gateway.P_Lock_Command(lock_cmd) -> DoorLock_Controller.R_Lock_Command(lock_cmd)"
+        },
+        {
+          "interface_id": "if_002",
+          "name": "IF_Lock_Status",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值模型；DoorLock_Controller以10ms周期发布；消费者可随取；错误策略：生产者检测到内部错误时置error_flag并维持安全状态。",
+          "data_category": "状态数据（门锁）",
+          "connected_components": [
+            "DoorLock_Controller",
+            "CAN_Gateway",
+            "Diagnostic_Manager"
+          ],
+          "performance_requirements": "发布周期10ms，消费者读取延迟<10ms；数据一致性通过时间戳或计数器保证。",
+          "data_elements": [
+            "lock_status"
+          ],
+          "direct_paths": "DoorLock_Controller.P_Lock_Status(lock_status) -> {CAN_Gateway.R_Lock_Status(lock_status), Diagnostic_Manager.R_Lock_Status(lock_status)}"
+        },
+        {
+          "interface_id": "if_003",
+          "name": "IF_Window_Command",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值模型；由CAN_Gateway在10ms周期或事件触发发布；错误策略：无效命令丢弃，越界限幅。",
+          "data_category": "控制命令（车窗）",
+          "connected_components": [
+            "CAN_Gateway",
+            "Window_Controller"
+          ],
+          "performance_requirements": "端到端传输<20ms；优先级低于安全相关命令。",
+          "data_elements": [
+            "window_cmd"
+          ],
+          "direct_paths": "CAN_Gateway.P_Window_Command(window_cmd) -> Window_Controller.R_Window_Command(window_cmd)"
+        },
+        {
+          "interface_id": "if_004",
+          "name": "IF_Window_Status",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步最新值模型；Window_Controller以10ms周期发布；错误策略：异常时置故障位并冻结运动。",
+          "data_category": "状态数据（车窗）",
+          "connected_components": [
+            "Window_Controller",
+            "CAN_Gateway",
+            "Diagnostic_Manager"
+          ],
+          "performance_requirements": "发布周期10ms；端到端延迟<20ms；数据丢失可接受（最新值）。",
+          "data_elements": [
+            "window_status"
+          ],
+          "direct_paths": "Window_Controller.P_Window_Status(window_status) -> {CAN_Gateway.R_Window_Status(window_status), Diagnostic_Manager.R_Window_Status(window_status)}"
+        },
+        {
+          "interface_id": "if_005",
+          "name": "IF_Diagnostic_CS",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步请求/响应；CAN_Gateway作为客户端调用，Diagnostic_Manager作为服务器处理并返回；超时50ms；错误策略：超时报错并上报负响应。",
+          "data_category": "UDS服务（C/S操作）",
+          "connected_components": [
+            "CAN_Gateway",
+            "Diagnostic_Manager"
+          ],
+          "performance_requirements": "单次服务执行<50ms；并发序列化处理；错误编码符合UDS NRC。",
+          "data_elements": [
+            "Read_DID",
+            "Clear_DTC",
+            "Routine_Control"
+          ],
+          "direct_paths": "CAN_Gateway.R_Diagnostic_CS -> Diagnostic_Manager.P_Diagnostic_CS (Read_DID/Clear_DTC/Routine_Control)"
+        }
+      ],
+      "component_generation_order": [
+        "DoorLock_Controller",
+        "Window_Controller",
+        "Diagnostic_Manager",
+        "CAN_Gateway"
+      ],
+      "connection_topology": {
+        "component_connections": "CAN_Gateway <-> DoorLock_Controller/Window_Controller 通过S/R接口交换命令与状态；CAN_Gateway <-> Diagnostic_Manager 通过C/S接口进行UDS服务；Diagnostic_Manager通过S/R读取控制器状态。",
+        "data_flow_paths": "CAN报文->CAN_Gateway解码->IF_Lock_Command/IF_Window_Command->控制器处理->IF_Lock_Status/IF_Window_Status->CAN_Gateway编码->CAN；诊断请求->CAN_Gateway->IF_Diagnostic_CS->Diagnostic_Manager->读取状态(S/R)->返回响应->CAN_Gateway->CAN。",
+        "control_flow_paths": "同步控制：CAN_Gateway作为客户端调用Diagnostic_Manager的C/S操作；异步控制：控制器按周期与事件更新状态，网关定期分发命令。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用S/R承载控制命令与状态，满足低延迟与解耦；诊断采用C/S以匹配UDS请求/响应语义；控制器与诊断解耦，由网关聚合总线并协调交互。",
+        "tradeoff_analysis": "S/R最新值简化缓冲与丢包处理但不保序；对于命令与状态可接受。诊断使用同步C/S确保事务一致性但需要超时管理；将CAN解析集中在网关减少耦合但增加其负载。",
+        "alternative_considerations": "可用队列化S/R以保留所有命令，但增加处理复杂度；可将诊断改为异步回调以提高并行度，但增加RTE复杂度；亦可将窗/锁合并为BodyController组件以减少接口数量。",
+        "risk_assessment": "风险：诊断阻塞影响周期任务；缓解：超时与优先级隔离。风险：命令抖动导致执行抖动；缓解：去抖与限幅。风险：扩展到更多车门时负载上升；缓解：按门实例化状态机并优化周期。"
+      },
+      "session_id": "9713cc3d-a72a-4b73-8560-e46a7b73fd0a",
+      "timestamp": "2025-10-23T19:41:40.696494"
+    }
+  },
+  "phase2": {
+    "duration": 197.91076350212097,
+    "tokens": 74265,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\DoorLock_Controller_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Window_Controller_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Diagnostic_Manager_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CAN_Gateway_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Lock_Command_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Lock_Status_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Window_Command_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Window_Status_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Diagnostic_CS_86bbf94b_1761219898.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_86bbf94b_1761219898.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T19:44:58.657915"
+}

@@ -1,0 +1,99 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Camera_Processor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_Camera_Output",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "DATA-INTERFACE",
+            "#text": "/Interfaces/Camera_Data_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Port_Camera_Input",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "DATA-INTERFACE",
+            "#text": "/Interfaces/Camera_Data_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Camera_Proc_Internal_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Camera_Data_Processing_Runnable",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Camera_Image_Input",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/R_Port_Camera_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Camera_Data_Interface/Camera_Image"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Camera_Image_Output",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/P_Port_Camera_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Camera_Data_Interface/Camera_Image"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "CameraImg"
+        }
+      ],
+      "EVENTS": {
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "Camera_Data_Sent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Camera_Processor/Camera_Data_Processing_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Camera_Processor/R_Port_Camera_Input"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Camera_Periodic_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Camera_Processor/Camera_Data_Processing_Runnable"
+            },
+            "PERIOD": 50
+          }
+        ]
+      }
+    }
+  }
+}

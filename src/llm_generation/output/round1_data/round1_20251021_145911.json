@@ -1,0 +1,1501 @@
+{
+  "session_id": "round1_20251021_145911",
+  "timestamp": "20251021_145911",
+  "user_requirements": "{",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        {\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"medium\", \"estimated_components\": 8, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "Sensor_Manager: 读取物理传感器并发布原始信号。Signal_Preprocessor: 对原始信号做滤波、标定与同步。State_Estimator: 基于预处理信号估计车辆/系统状态。Control_Logic: 基于估计状态与模式生成控制命令。Actuator_Manager: 接收命令并驱动执行器，封装硬件抽象。Communication_Manager: 处理总线发送/接收与外部诊断通道。Persistence_Manager: 管理非易失参数与校准数据。Diagnostics_Manager: 采集诊断信息并通过Communication_Manager上报。各组件职责界定为数据提供者/消费者或服务提供/调用，避免跨层直接访问硬件资源。",
+      "data_flow_analysis": "数据流以信号流为主：Sensor_Manager -> (raw signals) -> Signal_Preprocessor -> (preprocessed signals) -> State_Estimator -> (state vector) -> Control_Logic -> (control commands) -> Actuator_Manager。Diagnostics_Manager 收集来自各组件的诊断事件并交由 Communication_Manager 上报。Persistence_Manager 提供参数读写服务给 Control_Logic、Diagnostics_Manager 和 Signal_Preprocessor。接口类型：传感器与预处理使用 SENDER-RECEIVER (异步、最新值优先)；状态与控制可采用 SENDER-RECEIVER 或 CLIENT-SERVER（命令确认）混合；命令下发到执行器优先使用 CLIENT-SERVER 同步调用以确保确认；诊断与遥测使用 SENDER-RECEIVER 或 ASYNCHRONOUS 服务。数据类型示例：raw_imu (fixed-point/float array), wheel_speed (float), preprocessed_signals (结构体), state_vector (结构体), control_cmd (结构体), diag_packet (byte[]), nv_parameter (typed scalar). 传输时序：传感器周期 10ms，预处理与估计与控制周期 10-20ms，命令确认需在50ms内返回，诊断/遥测为后台周期或事件触发。",
+      "timing_requirements": "端到端最坏延迟：从传感器采样到执行器命令到达不超过 2*周期 + 20ms (典型 ≤ 40ms)。传感器采样周期 10ms；Signal_Preprocessor、State_Estimator、Control_Logic 以 10ms 为基准可选 20ms 次采样；Actuator 确认（同步）超时设定 50ms；诊断上报周期可为 1000ms 或事件驱动。关键路径（传感器->控制->致动）优先使用低延迟、确定性通信与同步调用。",
+      "scalability_considerations": "采用分层组件划分，新增传感器或控制策略仅需增加或替换对应组件，接口向后兼容。通信模式使用发布/订阅与客户端/服务器混合，便于横向扩展消费者数量。参数与诊断使用中央 Persistence_Manager 与 Communication_Manager，支持 NV 扩展与不同网络协议适配。组件粒度中等，便于在 ECU 增加或拆分到多 ECU 上部署。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "Sensor_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "采集物理传感器数据并发布原始信号",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "2 (SENSOR_RAW_PUB, SENSOR_STATUS_PUB)"
+        },
+        "behavioral_characteristics": "周期性采样（10ms），低延迟发布原始信号；错误检测后发布状态；支持批量采集与时间戳同步。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供端口 P-PORT-PROTOTYPE 用于发布 raw sensor 数据与状态信号"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "SensorSamplingEvent",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "SensorWriteComplete",
+                "trigger": "after hardware write"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Acquire_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始传感器信号到 Signal_Preprocessor"
+                      }
+                    ],
+                    "notes": "采集并发布原始信号"
+                  }
+                ],
+                "notes": "以 SensorSamplingEvent 触发，每周期执行采集与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Preprocessor"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "Signal_Preprocessor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "滤波、标定、时间对齐并发布预处理信号",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (SENSOR_RAW_SUB)",
+          "output_ports": "1 (PREPROCESSED_PUB)"
+        },
+        "behavioral_characteristics": "接收原始信号后进行去噪、标定和同步；支持重采样与异常检测；周期触发或基于输入事件触发（10ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT 用于订阅原始信号，P-PORT 用于发布预处理信号"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawSignalReceived",
+                "trigger": "on new raw signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PreprocessCycle",
+                "trigger": "periodic 10ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从 Sensor_Manager 输入端口读取原始信号"
+                      }
+                    ],
+                    "notes": "读取 raw sensor 输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 State_Estimator 和 Control_Logic 发布预处理信号"
+                      }
+                    ],
+                    "notes": "输出预处理信号"
+                  }
+                ],
+                "notes": "在接收或周期事件触发时执行滤波与标定"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "State_Estimator",
+          "Control_Logic"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "State_Estimator",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于预处理信号估计系统状态并发布状态向量",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (PREPROCESSED_SUB)",
+          "output_ports": "1 (STATE_PUB)"
+        },
+        "behavioral_characteristics": "接收预处理信号，执行卡尔曼滤波或估计算法，管理估计状态机与观测可用性，周期 10-20ms 执行，输出时包含时间戳与置信度。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅预处理信号，发布状态向量"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "EstimationCycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "InputDataError",
+                "trigger": "on missing or invalid input"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Estimation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收预处理信号作为估计输入"
+                      }
+                    ],
+                    "notes": "按周期读取预处理信号"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布估计后的状态向 Control_Logic"
+                      }
+                    ],
+                    "notes": "输出状态向量"
+                  }
+                ],
+                "notes": "执行估计算法并维护内部状态"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Control_Logic"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "Control_Logic",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于状态与模式生成控制命令并调用执行器服务",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (STATE_SUB)",
+          "output_ports": "1 (CONTROL_CMD_PUB)"
+        },
+        "behavioral_characteristics": "周期性（10-20ms）或事件驱动计算控制律；管理控制模式（例如手动/自动），在生成控制命令后通过同步服务调用 Actuator_Manager 确认命令已执行或失败；对关键命令支持超时与重试策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅状态，发布控制命令，并需要到 Actuator_Manager 的客户端端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "ControlCycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "ModeSwitch",
+                "trigger": "on mode change request"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收状态向量输入"
+                      }
+                    ],
+                    "notes": "读取估计状态"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用 Actuator_Manager 的执行接口，确保命令被确认"
+                      }
+                    ],
+                    "notes": "调用 Actuator_Manager 执行命令并等待确认"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布控制命令到 Actuator_Manager 或记录模块"
+                      }
+                    ],
+                    "notes": "输出控制命令"
+                  }
+                ],
+                "notes": "计算控制命令并进行确认交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Actuator_Manager",
+          "Persistence_Manager"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "Actuator_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "封装执行器硬件访问，执行控制命令并回传执行状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CONTROL_CMD_SUB)",
+          "output_ports": "1 (ACTUATOR_STATUS_PUB)"
+        },
+        "behavioral_characteristics": "接收控制命令并映射到硬件接口，执行时提供反馈与状态监测；对实时性要求高，命令确认在50ms内完成；包含错误处理与安全停机策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT 用于接收控制命令，P-PORT 用于发布执行状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ActuationRequest",
+                "trigger": "on control command arrival"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "ActuationComplete",
+                "trigger": "after hardware command executed"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Execute_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收控制命令并转换为驱动输出"
+                      }
+                    ],
+                    "notes": "接收命令并写入硬件"
+                  }
+                ],
+                "notes": "执行器驱动层，保证命令执行与反馈"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Communication_Manager"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "Communication_Manager",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "总线适配、消息打包/解包以及对外诊断通道管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (INTERNAL_MSG_SUB, DIAG_SUB)",
+          "output_ports": "2 (OUT_BUS_PUB, DIAG_PUB)"
+        },
+        "behavioral_characteristics": "处理发送队列与接收分发，支持异步发送与回调；提供诊断消息上报与远端配置通道；实现重试、拥塞保护与带宽控制策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "用于与内部组件交换消息并与底层通讯驱动适配"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "TxComplete",
+                "trigger": "on send completion"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "BusMessageReceived",
+                "trigger": "on bus receive"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Comms_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步发送到底层网络驱动或远端服务"
+                      }
+                    ],
+                    "notes": "管理发送队列与异步回调"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收外部总线消息并分发到内部组件"
+                      }
+                    ],
+                    "notes": "接收与分发消息"
+                  }
+                ],
+                "notes": "处理总线收发与消息分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Persistence_Manager"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "Persistence_Manager",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "管理非易失参数、校准与持久化数据访问",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (PARAM_SERVICE_PUB)"
+        },
+        "behavioral_characteristics": "提供参数读取/写入服务、批量提交与版本管理；支持同步和异步访问，保证 NV 写入顺序与故障恢复策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供参数服务端口与状态发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "NVInit",
+                "trigger": "on startup"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "NVWriteComplete",
+                "trigger": "on NV write completion"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "NV_Runnable",
+                "elements": [
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "提供参数读写接口给 Control_Logic 和 Diagnostics_Manager"
+                      }
+                    ],
+                    "notes": "参数存取点"
+                  }
+                ],
+                "notes": "管理 NV 读写请求与一致性"
+              }
+            ]
+          }
+        },
+        "direct_references": []
+      },
+      {
+        "component_id": "C008",
+        "name": "Diagnostics_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "采集系统诊断并上报，管理诊断事件与故障码",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (DIAG_INPUTS)",
+          "output_ports": "1 (DIAG_PUBLISH)"
+        },
+        "behavioral_characteristics": "收集各组件的故障与状态，生成诊断报文并通过 Communication_Manager 上报；支持事件驱动与周期性汇报，提供 DIAG 服务接口与存取 NV 的能力。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅各组件诊断事件并发布诊断包"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "DiagBackground",
+                "trigger": "periodic 1000ms"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "DiagEvent",
+                "trigger": "on component fault"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收其他组件诊断/状态信息"
+                      }
+                    ],
+                    "notes": "收集诊断数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 Communication_Manager 发布诊断报文"
+                      }
+                    ],
+                    "notes": "上报诊断数据"
+                  }
+                ],
+                "notes": "生成诊断报文并触发上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Communication_Manager",
+          "Persistence_Manager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF1",
+        "name": "SensorSignals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布/订阅，最新值优先，周期性 10ms; 无队列或长度为1的最新值缓冲",
+        "data_category": "sensor_signals",
+        "connected_components": [
+          "Sensor_Manager",
+          "Signal_Preprocessor"
+        ],
+        "performance_requirements": "端到端延迟<5ms，抖动可接受，丢包时使用最新值覆盖策略",
+        "data_elements": [
+          "raw_imu",
+          "raw_wheel_speed"
+        ],
+        "direct_paths": "Sensor_Manager -> Signal_Preprocessor (本地总线/CAN)"
+      },
+      {
+        "interface_id": "IF2",
+        "name": "PreprocessedSignals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布/订阅，周期 10ms 或事件驱动，使用最新值缓冲策略，延迟要求 <10ms",
+        "data_category": "preprocessed_signals",
+        "connected_components": [
+          "Signal_Preprocessor",
+          "State_Estimator",
+          "Control_Logic"
+        ],
+        "performance_requirements": "满足估计算法输入稳定性，丢包采用最近值保持策略",
+        "data_elements": [
+          "preprocessed_signals_struct"
+        ],
+        "direct_paths": "Signal_Preprocessor -> State_Estimator, Signal_Preprocessor -> Control_Logic"
+      },
+      {
+        "interface_id": "IF3",
+        "name": "StateVector_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布 10-20ms，最新值优先，提供时间戳与置信度字段",
+        "data_category": "state_vector",
+        "connected_components": [
+          "State_Estimator",
+          "Control_Logic"
+        ],
+        "performance_requirements": "控制路径时延敏感，延迟要求 <15ms，数据丢失采用上次有效值",
+        "data_elements": [
+          "state_vector"
+        ],
+        "direct_paths": "State_Estimator -> Control_Logic"
+      },
+      {
+        "interface_id": "IF4",
+        "name": "ControlCommand_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用（请求-确认），调用超时 50ms，确保命令确认或失败返回",
+        "data_category": "control_command",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Manager"
+        ],
+        "performance_requirements": "确认延迟 <50ms；需要重试与错误码返回机制",
+        "data_elements": [
+          "control_cmd_struct",
+          "ack_status"
+        ],
+        "direct_paths": "Control_Logic -> Actuator_Manager (同步调用)"
+      },
+      {
+        "interface_id": "IF5",
+        "name": "Diag_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步或事件驱动上报，后台周期 1000ms，队列用于短时突发缓冲",
+        "data_category": "diagnostic_packet",
+        "connected_components": [
+          "Diagnostics_Manager",
+          "Communication_Manager"
+        ],
+        "performance_requirements": "诊断上报非实时关键，但应在 1s 内完成周期上报，错误时保留本地缓存",
+        "data_elements": [
+          "diag_packet",
+          "fault_codes"
+        ],
+        "direct_paths": "Diagnostics_Manager -> Communication_Manager"
+      },
+      {
+        "interface_id": "IF6",
+        "name": "NV_Parameter_Interface",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "同步/异步混合，支持读写服务，写操作需持久化确认",
+        "data_category": "nv_parameter",
+        "connected_components": [
+          "Persistence_Manager",
+          "Control_Logic",
+          "Diagnostics_Manager",
+          "Signal_Preprocessor"
+        ],
+        "performance_requirements": "NV 写需确认，写延迟可接受到 200ms，读操作需低延迟",
+        "data_elements": [
+          "calibration_params",
+          "runtime_parameters"
+        ],
+        "direct_paths": "Consumers -> Persistence_Manager (服务调用)"
+      }
+    ],
+    "component_generation_order": [
+      "Sensor_Manager",
+      "Actuator_Manager",
+      "Communication_Manager",
+      "Persistence_Manager",
+      "Signal_Preprocessor",
+      "State_Estimator",
+      "Control_Logic",
+      "Diagnostics_Manager"
+    ],
+    "connection_topology": {
+      "component_connections": "层次化连接：Sensor_Manager -> Signal_Preprocessor -> State_Estimator -> Control_Logic -> Actuator_Manager。Diagnostics_Manager 与多数组件订阅诊断事件并通过 Communication_Manager 上报。Persistence_Manager 提供参数服务并被 Control_Logic、Diagnostics_Manager、Signal_Preprocessor 等调用。",
+      "data_flow_paths": "传感器数据沿链路向下流动（publish/subscribe），控制命令通过同步客户端/服务器下发到执行器；诊断与参数访问为横向通道，通过 Communication_Manager 与 Persistence_Manager 交互。",
+      "control_flow_paths": "控制决策为单向调用链：Control_Logic 发起同步 Server 调用到 Actuator_Manager；模式切换事件可能由上层（外部 HMI 或 Control_Logic）触发并广播到相关组件。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层架构（感知->预处理->估计->控制->执行），混合通信模式（S/R 用于高频数据，C/S 用于需确认命令）以兼顾低延迟与可靠性。将参数与通信抽象到独立组件（Persistence_Manager、Communication_Manager）以提升可复用性与集中管理。",
+      "tradeoff_analysis": "细粒度组件提高可维护性与可扩展性，但增大接口数量与集成成本；采用同步调用保证命令确认但增加延迟和阻塞风险，因此仅对关键命令使用同步，其他数据使用异步发布/订阅以降低耦合与延迟。",
+      "alternative_considerations": "可选方案包括将部分性能敏感的链路合并到单个组件以减少 IPC 延迟，或将 Communication_Manager 与 Actuator_Manager 合并以减少上下文切换；也可将 State_Estimator 与 Control_Logic 合并以降低估计-控制延迟，但会降低模块复用性。",
+      "risk_assessment": "关键风险为同步调用导致阻塞或超时、总线拥塞影响诊断/遥测、NV 写入失败导致配置丢失。缓解策略：设置合理超时和重试、限流与队列策略、在 Persistence_Manager 中实现写事务与备份机制。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "Sensor_Manager: 读取物理传感器并发布原始信号。Signal_Preprocessor: 对原始信号做滤波、标定与同步。State_Estimator: 基于预处理信号估计车辆/系统状态。Control_Logic: 基于估计状态与模式生成控制命令。Actuator_Manager: 接收命令并驱动执行器，封装硬件抽象。Communication_Manager: 处理总线发送/接收与外部诊断通道。Persistence_Manager: 管理非易失参数与校准数据。Diagnostics_Manager: 采集诊断信息并通过Communication_Manager上报。各组件职责界定为数据提供者/消费者或服务提供/调用，避免跨层直接访问硬件资源。",
+      "data_flow_analysis": "数据流以信号流为主：Sensor_Manager -> (raw signals) -> Signal_Preprocessor -> (preprocessed signals) -> State_Estimator -> (state vector) -> Control_Logic -> (control commands) -> Actuator_Manager。Diagnostics_Manager 收集来自各组件的诊断事件并交由 Communication_Manager 上报。Persistence_Manager 提供参数读写服务给 Control_Logic、Diagnostics_Manager 和 Signal_Preprocessor。接口类型：传感器与预处理使用 SENDER-RECEIVER (异步、最新值优先)；状态与控制可采用 SENDER-RECEIVER 或 CLIENT-SERVER（命令确认）混合；命令下发到执行器优先使用 CLIENT-SERVER 同步调用以确保确认；诊断与遥测使用 SENDER-RECEIVER 或 ASYNCHRONOUS 服务。数据类型示例：raw_imu (fixed-point/float array), wheel_speed (float), preprocessed_signals (结构体), state_vector (结构体), control_cmd (结构体), diag_packet (byte[]), nv_parameter (typed scalar). 传输时序：传感器周期 10ms，预处理与估计与控制周期 10-20ms，命令确认需在50ms内返回，诊断/遥测为后台周期或事件触发。",
+      "timing_requirements": "端到端最坏延迟：从传感器采样到执行器命令到达不超过 2*周期 + 20ms (典型 ≤ 40ms)。传感器采样周期 10ms；Signal_Preprocessor、State_Estimator、Control_Logic 以 10ms 为基准可选 20ms 次采样；Actuator 确认（同步）超时设定 50ms；诊断上报周期可为 1000ms 或事件驱动。关键路径（传感器->控制->致动）优先使用低延迟、确定性通信与同步调用。",
+      "scalability_considerations": "采用分层组件划分，新增传感器或控制策略仅需增加或替换对应组件，接口向后兼容。通信模式使用发布/订阅与客户端/服务器混合，便于横向扩展消费者数量。参数与诊断使用中央 Persistence_Manager 与 Communication_Manager，支持 NV 扩展与不同网络协议适配。组件粒度中等，便于在 ECU 增加或拆分到多 ECU 上部署。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "Sensor_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "采集物理传感器数据并发布原始信号",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "2 (SENSOR_RAW_PUB, SENSOR_STATUS_PUB)"
+        },
+        "behavioral_characteristics": "周期性采样（10ms），低延迟发布原始信号；错误检测后发布状态；支持批量采集与时间戳同步。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供端口 P-PORT-PROTOTYPE 用于发布 raw sensor 数据与状态信号"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "SensorSamplingEvent",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "SensorWriteComplete",
+                "trigger": "after hardware write"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Acquire_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始传感器信号到 Signal_Preprocessor"
+                      }
+                    ],
+                    "notes": "采集并发布原始信号"
+                  }
+                ],
+                "notes": "以 SensorSamplingEvent 触发，每周期执行采集与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Preprocessor"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "Signal_Preprocessor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "滤波、标定、时间对齐并发布预处理信号",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (SENSOR_RAW_SUB)",
+          "output_ports": "1 (PREPROCESSED_PUB)"
+        },
+        "behavioral_characteristics": "接收原始信号后进行去噪、标定和同步；支持重采样与异常检测；周期触发或基于输入事件触发（10ms）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT 用于订阅原始信号，P-PORT 用于发布预处理信号"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawSignalReceived",
+                "trigger": "on new raw signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PreprocessCycle",
+                "trigger": "periodic 10ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Processing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从 Sensor_Manager 输入端口读取原始信号"
+                      }
+                    ],
+                    "notes": "读取 raw sensor 输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 State_Estimator 和 Control_Logic 发布预处理信号"
+                      }
+                    ],
+                    "notes": "输出预处理信号"
+                  }
+                ],
+                "notes": "在接收或周期事件触发时执行滤波与标定"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "State_Estimator",
+          "Control_Logic"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "State_Estimator",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于预处理信号估计系统状态并发布状态向量",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (PREPROCESSED_SUB)",
+          "output_ports": "1 (STATE_PUB)"
+        },
+        "behavioral_characteristics": "接收预处理信号，执行卡尔曼滤波或估计算法，管理估计状态机与观测可用性，周期 10-20ms 执行，输出时包含时间戳与置信度。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅预处理信号，发布状态向量"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "EstimationCycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "InputDataError",
+                "trigger": "on missing or invalid input"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Estimation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收预处理信号作为估计输入"
+                      }
+                    ],
+                    "notes": "按周期读取预处理信号"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布估计后的状态向 Control_Logic"
+                      }
+                    ],
+                    "notes": "输出状态向量"
+                  }
+                ],
+                "notes": "执行估计算法并维护内部状态"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Control_Logic"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "Control_Logic",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于状态与模式生成控制命令并调用执行器服务",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (STATE_SUB)",
+          "output_ports": "1 (CONTROL_CMD_PUB)"
+        },
+        "behavioral_characteristics": "周期性（10-20ms）或事件驱动计算控制律；管理控制模式（例如手动/自动），在生成控制命令后通过同步服务调用 Actuator_Manager 确认命令已执行或失败；对关键命令支持超时与重试策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅状态，发布控制命令，并需要到 Actuator_Manager 的客户端端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "ControlCycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "ModeSwitch",
+                "trigger": "on mode change request"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Control_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收状态向量输入"
+                      }
+                    ],
+                    "notes": "读取估计状态"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用 Actuator_Manager 的执行接口，确保命令被确认"
+                      }
+                    ],
+                    "notes": "调用 Actuator_Manager 执行命令并等待确认"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布控制命令到 Actuator_Manager 或记录模块"
+                      }
+                    ],
+                    "notes": "输出控制命令"
+                  }
+                ],
+                "notes": "计算控制命令并进行确认交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Actuator_Manager",
+          "Persistence_Manager"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "Actuator_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "封装执行器硬件访问，执行控制命令并回传执行状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CONTROL_CMD_SUB)",
+          "output_ports": "1 (ACTUATOR_STATUS_PUB)"
+        },
+        "behavioral_characteristics": "接收控制命令并映射到硬件接口，执行时提供反馈与状态监测；对实时性要求高，命令确认在50ms内完成；包含错误处理与安全停机策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-PORT 用于接收控制命令，P-PORT 用于发布执行状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ActuationRequest",
+                "trigger": "on control command arrival"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "ActuationComplete",
+                "trigger": "after hardware command executed"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Execute_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收控制命令并转换为驱动输出"
+                      }
+                    ],
+                    "notes": "接收命令并写入硬件"
+                  }
+                ],
+                "notes": "执行器驱动层，保证命令执行与反馈"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Communication_Manager"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "Communication_Manager",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "总线适配、消息打包/解包以及对外诊断通道管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (INTERNAL_MSG_SUB, DIAG_SUB)",
+          "output_ports": "2 (OUT_BUS_PUB, DIAG_PUB)"
+        },
+        "behavioral_characteristics": "处理发送队列与接收分发，支持异步发送与回调；提供诊断消息上报与远端配置通道；实现重试、拥塞保护与带宽控制策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "用于与内部组件交换消息并与底层通讯驱动适配"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "TxComplete",
+                "trigger": "on send completion"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "BusMessageReceived",
+                "trigger": "on bus receive"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Comms_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步发送到底层网络驱动或远端服务"
+                      }
+                    ],
+                    "notes": "管理发送队列与异步回调"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收外部总线消息并分发到内部组件"
+                      }
+                    ],
+                    "notes": "接收与分发消息"
+                  }
+                ],
+                "notes": "处理总线收发与消息分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Persistence_Manager"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "Persistence_Manager",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "管理非易失参数、校准与持久化数据访问",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (PARAM_SERVICE_PUB)"
+        },
+        "behavioral_characteristics": "提供参数读取/写入服务、批量提交与版本管理；支持同步和异步访问，保证 NV 写入顺序与故障恢复策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供参数服务端口与状态发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "NVInit",
+                "trigger": "on startup"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "NVWriteComplete",
+                "trigger": "on NV write completion"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "NV_Runnable",
+                "elements": [
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "提供参数读写接口给 Control_Logic 和 Diagnostics_Manager"
+                      }
+                    ],
+                    "notes": "参数存取点"
+                  }
+                ],
+                "notes": "管理 NV 读写请求与一致性"
+              }
+            ]
+          }
+        },
+        "direct_references": []
+      },
+      {
+        "component_id": "C008",
+        "name": "Diagnostics_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "采集系统诊断并上报，管理诊断事件与故障码",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (DIAG_INPUTS)",
+          "output_ports": "1 (DIAG_PUBLISH)"
+        },
+        "behavioral_characteristics": "收集各组件的故障与状态，生成诊断报文并通过 Communication_Manager 上报；支持事件驱动与周期性汇报，提供 DIAG 服务接口与存取 NV 的能力。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅各组件诊断事件并发布诊断包"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "DiagBackground",
+                "trigger": "periodic 1000ms"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "DiagEvent",
+                "trigger": "on component fault"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收其他组件诊断/状态信息"
+                      }
+                    ],
+                    "notes": "收集诊断数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 Communication_Manager 发布诊断报文"
+                      }
+                    ],
+                    "notes": "上报诊断数据"
+                  }
+                ],
+                "notes": "生成诊断报文并触发上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Communication_Manager",
+          "Persistence_Manager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF1",
+        "name": "SensorSignals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布/订阅，最新值优先，周期性 10ms; 无队列或长度为1的最新值缓冲",
+        "data_category": "sensor_signals",
+        "connected_components": [
+          "Sensor_Manager",
+          "Signal_Preprocessor"
+        ],
+        "performance_requirements": "端到端延迟<5ms，抖动可接受，丢包时使用最新值覆盖策略",
+        "data_elements": [
+          "raw_imu",
+          "raw_wheel_speed"
+        ],
+        "direct_paths": "Sensor_Manager -> Signal_Preprocessor (本地总线/CAN)"
+      },
+      {
+        "interface_id": "IF2",
+        "name": "PreprocessedSignals_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布/订阅，周期 10ms 或事件驱动，使用最新值缓冲策略，延迟要求 <10ms",
+        "data_category": "preprocessed_signals",
+        "connected_components": [
+          "Signal_Preprocessor",
+          "State_Estimator",
+          "Control_Logic"
+        ],
+        "performance_requirements": "满足估计算法输入稳定性，丢包采用最近值保持策略",
+        "data_elements": [
+          "preprocessed_signals_struct"
+        ],
+        "direct_paths": "Signal_Preprocessor -> State_Estimator, Signal_Preprocessor -> Control_Logic"
+      },
+      {
+        "interface_id": "IF3",
+        "name": "StateVector_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布 10-20ms，最新值优先，提供时间戳与置信度字段",
+        "data_category": "state_vector",
+        "connected_components": [
+          "State_Estimator",
+          "Control_Logic"
+        ],
+        "performance_requirements": "控制路径时延敏感，延迟要求 <15ms，数据丢失采用上次有效值",
+        "data_elements": [
+          "state_vector"
+        ],
+        "direct_paths": "State_Estimator -> Control_Logic"
+      },
+      {
+        "interface_id": "IF4",
+        "name": "ControlCommand_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用（请求-确认），调用超时 50ms，确保命令确认或失败返回",
+        "data_category": "control_command",
+        "connected_components": [
+          "Control_Logic",
+          "Actuator_Manager"
+        ],
+        "performance_requirements": "确认延迟 <50ms；需要重试与错误码返回机制",
+        "data_elements": [
+          "control_cmd_struct",
+          "ack_status"
+        ],
+        "direct_paths": "Control_Logic -> Actuator_Manager (同步调用)"
+      },
+      {
+        "interface_id": "IF5",
+        "name": "Diag_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步或事件驱动上报，后台周期 1000ms，队列用于短时突发缓冲",
+        "data_category": "diagnostic_packet",
+        "connected_components": [
+          "Diagnostics_Manager",
+          "Communication_Manager"
+        ],
+        "performance_requirements": "诊断上报非实时关键，但应在 1s 内完成周期上报，错误时保留本地缓存",
+        "data_elements": [
+          "diag_packet",
+          "fault_codes"
+        ],
+        "direct_paths": "Diagnostics_Manager -> Communication_Manager"
+      },
+      {
+        "interface_id": "IF6",
+        "name": "NV_Parameter_Interface",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "同步/异步混合，支持读写服务，写操作需持久化确认",
+        "data_category": "nv_parameter",
+        "connected_components": [
+          "Persistence_Manager",
+          "Control_Logic",
+          "Diagnostics_Manager",
+          "Signal_Preprocessor"
+        ],
+        "performance_requirements": "NV 写需确认，写延迟可接受到 200ms，读操作需低延迟",
+        "data_elements": [
+          "calibration_params",
+          "runtime_parameters"
+        ],
+        "direct_paths": "Consumers -> Persistence_Manager (服务调用)"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "层次化连接：Sensor_Manager -> Signal_Preprocessor -> State_Estimator -> Control_Logic -> Actuator_Manager。Diagnostics_Manager 与多数组件订阅诊断事件并通过 Communication_Manager 上报。Persistence_Manager 提供参数服务并被 Control_Logic、Diagnostics_Manager、Signal_Preprocessor 等调用。",
+      "data_flow_paths": "传感器数据沿链路向下流动（publish/subscribe），控制命令通过同步客户端/服务器下发到执行器；诊断与参数访问为横向通道，通过 Communication_Manager 与 Persistence_Manager 交互。",
+      "control_flow_paths": "控制决策为单向调用链：Control_Logic 发起同步 Server 调用到 Actuator_Manager；模式切换事件可能由上层（外部 HMI 或 Control_Logic）触发并广播到相关组件。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层架构（感知->预处理->估计->控制->执行），混合通信模式（S/R 用于高频数据，C/S 用于需确认命令）以兼顾低延迟与可靠性。将参数与通信抽象到独立组件（Persistence_Manager、Communication_Manager）以提升可复用性与集中管理。",
+      "tradeoff_analysis": "细粒度组件提高可维护性与可扩展性，但增大接口数量与集成成本；采用同步调用保证命令确认但增加延迟和阻塞风险，因此仅对关键命令使用同步，其他数据使用异步发布/订阅以降低耦合与延迟。",
+      "alternative_considerations": "可选方案包括将部分性能敏感的链路合并到单个组件以减少 IPC 延迟，或将 Communication_Manager 与 Actuator_Manager 合并以减少上下文切换；也可将 State_Estimator 与 Control_Logic 合并以降低估计-控制延迟，但会降低模块复用性。",
+      "risk_assessment": "关键风险为同步调用导致阻塞或超时、总线拥塞影响诊断/遥测、NV 写入失败导致配置丢失。缓解策略：设置合理超时和重试、限流与队列策略、在 Persistence_Manager 中实现写事务与备份机制。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7490,
+    "output_tokens": 9192,
+    "total_tokens": 16682,
+    "component_count": 8,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

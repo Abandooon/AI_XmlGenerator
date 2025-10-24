@@ -1,0 +1,1328 @@
+{
+  "case_id": "middle_5",
+  "system_name": "BatteryManagementSystem",
+  "complexity": "middle",
+  "requirement": {
+    "system_name": "BatteryManagementSystem",
+    "description": "电动车电池包管理",
+    "components_count": 7,
+    "component_types": [
+      "CellMonitor",
+      "ThermalManager",
+      "SOCEstimator",
+      "Balancer",
+      "SafetyManager",
+      "ChargeController",
+      "CANComm"
+    ],
+    "key_requirements": [
+      "CellMonitor监控96个单体电池电压",
+      "ThermalManager控制液冷系统",
+      "SOCEstimator估算SOC和SOH",
+      "Balancer实现被动均衡",
+      "SafetyManager实现ASIL-D安全功能",
+      "ChargeController支持快充和慢充",
+      "通过CAN上报电池状态给VCU"
+    ]
+  },
+  "start_time": "2025-10-23T21:02:22.285554",
+  "phase1": {
+    "duration": 748.4616515636444,
+    "api_calls": 1,
+    "tokens": 24956,
+    "component_count": 7,
+    "interface_count": 11,
+    "blueprint": {
+      "system_analysis": {
+        "functional_decomposition": "CellMonitor: 采集并发布96路单体电压及相关温度数据; ThermalManager: 执行液冷控制逻辑, 提供冷却控制服务与热管理状态; SOCEstimator: 基于电压与温度估算SOC/SOH并发布; Balancer: 基于单体电压执行被动均衡, 提供均衡控制服务与状态; SafetyManager: ASIL-D安全监控与策略下发, 发布安全状态并调用控制服务; ChargeController: 管理快充/慢充模式与电流限值, 提供充电控制服务与状态; CANComm: 汇聚状态并通过CAN打包上报VCU。",
+        "data_flow_analysis": "数据生产者与消费者链路: CellMonitor(P)→IF_CellVoltages_SR,IF_CellTemperatures_SR; ThermalManager(P)→IF_Thermal_Status_SR, 提供IF_Cooling_Control_CSI服务; SOCEstimator(R)←IF_CellVoltages_SR,IF_CellTemperatures_SR, (P)→IF_SOC_SOH_SR; Balancer(R)←IF_CellVoltages_SR,IF_Safety_State_SR, (P)→IF_Balancing_Status_SR, 提供IF_Balance_Control_CSI服务; SafetyManager(R)←IF_CellVoltages_SR,IF_CellTemperatures_SR,IF_SOC_SOH_SR, (P)→IF_Safety_State_SR, 同时作为Client调用IF_Cooling_Control_CSI/IF_Balance_Control_CSI/IF_Charging_Control_CSI; ChargeController(R)←IF_SOC_SOH_SR,IF_Safety_State_SR,IF_CellTemperatures_SR, (P)→IF_Charge_Status_SR, 提供IF_Charging_Control_CSI服务; CANComm(R)←IF_SOC_SOH_SR,IF_Safety_State_SR,IF_Thermal_Status_SR,IF_Balancing_Status_SR,IF_Charge_Status_SR, (P)→IF_BMS_Status_To_VCU_SR。\n接口通信模式: SR接口采用最新值缓冲, 周期发布; CSI接口为同步调用, 具备超时与错误返回。\n依赖与调用链: SafetyManager/ChargeController作为控制策略中心分别调用Cooling/Balance/Charging三类服务; SOCEstimator依赖CellMonitor与ThermalManager数据; CANComm依赖所有状态类接口以打包输出。",
+        "timing_requirements": "CellMonitor周期10ms采样并发布; ThermalManager周期20ms调节执行; SOCEstimator周期50ms估算输出, 最大端到端延迟<100ms; Balancer周期100ms动作与状态发布; SafetyManager周期10ms监控与策略执行, 同步服务调用超时≤20ms; ChargeController周期20ms控制更新, 同步调用超时≤20ms; CANComm周期20ms打包发送, 总上报延迟≤100ms。关键故障检测与停充指令传播链路在50ms内完成。",
+        "scalability_considerations": "支持扩展至>96串联单体, 通过数组信号扩展与分组接口; 接口统一采用SR最新值缓冲, 降低队列压力; CSI采用可配置超时; 组件可并行部署与分区; CANComm可扩展多通道打包; 估算算法可更换实现而不影响接口契约。",
+        "complexity_assessment": "Complex"
+      },
+      "component_plan": [
+        {
+          "component_id": "BMS_SWC_001",
+          "name": "CellMonitor",
+          "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+          "purpose": "采集96路单体电压与温度, 发布到系统供估算与安全使用",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "0 R-Ports",
+            "output_ports": "2 P-Ports: IF_CellVoltages_SR, IF_CellTemperatures_SR"
+          },
+          "behavioral_characteristics": "主要逻辑: 多路采样与去噪滤波, 组包至数组信号; 触发: 10ms周期; 状态: 传感器初始化→采样运行; 数据: 读取传感通道→滤波→更新数组→通过P-Port发布。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "提供IF_CellVoltages_SR与IF_CellTemperatures_SR的P-Port, 周期发布单体电压与温度数组。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CellMonitor_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CellMonitor_10ms_Event",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CellMonitor_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "初始化发布有效数据占位以防消费者读取空值"
+                        }
+                      ],
+                      "notes": "初始化阶段发布初始数组值"
+                    }
+                  ],
+                  "notes": "模块初始化"
+                },
+                {
+                  "name": "CellMonitor_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送CellVoltages_Array与PackVoltage到IF_CellVoltages_SR"
+                        }
+                      ],
+                      "notes": "发布电压相关数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发送CellTemperatures_Array与PackTemperature到IF_CellTemperatures_SR"
+                        }
+                      ],
+                      "notes": "发布温度相关数据"
+                    }
+                  ],
+                  "notes": "10ms周期采样与发布"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CellVoltages_SR",
+            "IF_CellTemperatures_SR"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_002",
+          "name": "ThermalManager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "液冷控制与热管理状态发布, 提供冷却控制服务",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2 R-Ports: IF_CellTemperatures_SR, IF_Safety_State_SR",
+            "output_ports": "2 P-Ports: IF_Thermal_Status_SR, IF_Cooling_Control_CSI(服务)"
+          },
+          "behavioral_characteristics": "逻辑: 基于温度与安全状态计算泵/风扇目标; 触发: 20ms周期与服务调用; 状态: Init→控制运行; 数据: 读温度与安全→计算→更新状态→执行服务操作处理。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅IF_CellTemperatures_SR与IF_Safety_State_SR; P-Port提供IF_Thermal_Status_SR并作为IF_Cooling_Control_CSI的Server。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "ThermalManager_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "ThermalManager_20ms_Event",
+                  "trigger": "Every_20ms"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Cooling_SetPumpSpeed_Invoked",
+                  "trigger": "On_SetCoolantPumpSpeed"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Cooling_SetFanSpeed_Invoked",
+                  "trigger": "On_SetFanSpeed"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ThermalManager_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "初始化发布热管理状态默认值"
+                        }
+                      ],
+                      "notes": "发布初始状态"
+                    }
+                  ],
+                  "notes": "初始化热控器件状态"
+                },
+                {
+                  "name": "ThermalManager_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取温度数组/包温度"
+                        }
+                      ],
+                      "notes": "接收温度数据"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取安全状态用于限扭/降档"
+                        }
+                      ],
+                      "notes": "接收安全状态"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布泵速/风速与故障位到IF_Thermal_Status_SR"
+                        }
+                      ],
+                      "notes": "发布热管理状态"
+                    }
+                  ],
+                  "notes": "20ms周期控制与状态发布"
+                },
+                {
+                  "name": "ThermalManager_Handle_SetPump",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收泵速目标操作参数"
+                        }
+                      ],
+                      "notes": "处理SetCoolantPumpSpeed操作参数"
+                    }
+                  ],
+                  "notes": "服务操作处理-泵速"
+                },
+                {
+                  "name": "ThermalManager_Handle_SetFan",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收风速目标操作参数"
+                        }
+                      ],
+                      "notes": "处理SetFanSpeed操作参数"
+                    }
+                  ],
+                  "notes": "服务操作处理-风速"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CellTemperatures_SR",
+            "IF_Safety_State_SR",
+            "IF_Thermal_Status_SR",
+            "IF_Cooling_Control_CSI"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_003",
+          "name": "SOCEstimator",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "基于电压与温度估算SOC与SOH并发布",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2 R-Ports: IF_CellVoltages_SR, IF_CellTemperatures_SR",
+            "output_ports": "1 P-Port: IF_SOC_SOH_SR"
+          },
+          "behavioral_characteristics": "主要算法: 开路电压与等效模型融合估算SOC, 累积历史估算SOH; 触发: 50ms周期; 状态: Init→估算运行; 数据: 读电压/温度→估算→发布SOC/SOH。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅IF_CellVoltages_SR与IF_CellTemperatures_SR; P-Port发布IF_SOC_SOH_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "SOCEstimator_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "SOCEstimator_50ms_Event",
+                  "trigger": "Every_50ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "SOCEstimator_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始SOC/SOH占位"
+                        }
+                      ],
+                      "notes": "初始化输出默认值"
+                    }
+                  ],
+                  "notes": "初始化估算状态"
+                },
+                {
+                  "name": "SOCEstimator_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取电压数组与包电压"
+                        }
+                      ],
+                      "notes": "接收电压数据"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取温度数组与包温度"
+                        }
+                      ],
+                      "notes": "接收温度数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布PackSOC与PackSOH"
+                        }
+                      ],
+                      "notes": "发布估算结果"
+                    }
+                  ],
+                  "notes": "50ms周期估算与输出"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CellVoltages_SR",
+            "IF_CellTemperatures_SR",
+            "IF_SOC_SOH_SR"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_004",
+          "name": "Balancer",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "执行被动均衡, 提供均衡控制服务与状态",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "2 R-Ports: IF_CellVoltages_SR, IF_Safety_State_SR",
+            "output_ports": "2 P-Ports: IF_Balancing_Status_SR, IF_Balance_Control_CSI(服务)"
+          },
+          "behavioral_characteristics": "主要逻辑: 基于电压差选择并驱动耗能支路; 触发: 100ms周期与服务调用; 状态: Init→均衡运行/暂停; 数据: 读电压与安全→计算策略→发布状态; 响应服务启停均衡。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "P-PORT-PROTOTYPE",
+                "R-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅IF_CellVoltages_SR与IF_Safety_State_SR; P-Port发布IF_Balancing_Status_SR并作为IF_Balance_Control_CSI的Server。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "Balancer_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "Balancer_100ms_Event",
+                  "trigger": "Every_100ms"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Balance_Enable_Invoked",
+                  "trigger": "On_EnableBalancing"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Balance_Suspend_Invoked",
+                  "trigger": "On_SuspendBalancing"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "Balancer_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布均衡初始状态"
+                        }
+                      ],
+                      "notes": "初始状态发布"
+                    }
+                  ],
+                  "notes": "初始化均衡模块"
+                },
+                {
+                  "name": "Balancer_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读单体电压用于策略计算"
+                        }
+                      ],
+                      "notes": "接收电压数据"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读安全状态决定是否暂停均衡"
+                        }
+                      ],
+                      "notes": "接收安全状态"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布均衡状态与故障位"
+                        }
+                      ],
+                      "notes": "发布均衡状态"
+                    }
+                  ],
+                  "notes": "100ms周期均衡策略执行"
+                },
+                {
+                  "name": "Balancer_Handle_Enable",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收启用均衡操作参数(模式/阈值)"
+                        }
+                      ],
+                      "notes": "处理EnableBalancing操作参数"
+                    }
+                  ],
+                  "notes": "服务操作处理-启用"
+                },
+                {
+                  "name": "Balancer_Handle_Suspend",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收暂停均衡操作参数"
+                        }
+                      ],
+                      "notes": "处理SuspendBalancing操作参数"
+                    }
+                  ],
+                  "notes": "服务操作处理-暂停"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CellVoltages_SR",
+            "IF_Safety_State_SR",
+            "IF_Balancing_Status_SR",
+            "IF_Balance_Control_CSI"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_005",
+          "name": "SafetyManager",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "ASIL-D安全监控与策略下发, 发布安全状态, 调用控制服务",
+          "estimated_complexity": "Complex",
+          "port_estimates": {
+            "input_ports": "3 R-Ports: IF_CellVoltages_SR, IF_CellTemperatures_SR, IF_SOC_SOH_SR; 3 R-Ports(CSI Clients): IF_Cooling_Control_CSI, IF_Balance_Control_CSI, IF_Charging_Control_CSI",
+            "output_ports": "1 P-Port: IF_Safety_State_SR"
+          },
+          "behavioral_characteristics": "逻辑: 过压/欠压/过温/一致性检查与策略; 触发: 10ms周期与事件驱动; 状态: Init→监控运行→故障处置; 数据: 读测量与估算→判定→发布安全状态→同步调用降温/停充/停均衡。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅IF_CellVoltages_SR,IF_CellTemperatures_SR,IF_SOC_SOH_SR并作为IF_Cooling_Control_CSI/IF_Balance_Control_CSI/IF_Charging_Control_CSI的Client; P-Port发布IF_Safety_State_SR。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "SafetyManager_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "SafetyManager_10ms_Event",
+                  "trigger": "Every_10ms"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "SafetyManager_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始安全状态"
+                        }
+                      ],
+                      "notes": "初始化安全输出"
+                    }
+                  ],
+                  "notes": "初始化安全管理"
+                },
+                {
+                  "name": "SafetyManager_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取电压与温度数据用于故障判定"
+                        }
+                      ],
+                      "notes": "接收测量数据"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取SOC/SOH用于策略"
+                        }
+                      ],
+                      "notes": "接收估算数据"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用CoolingControl.SetCoolantPumpSpeed/SetFanSpeed以快速降温"
+                        }
+                      ],
+                      "notes": "调用冷却控制服务"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用BalanceControl.SuspendBalancing以确保安全"
+                        }
+                      ],
+                      "notes": "调用均衡控制服务"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "调用ChargingControl.StopCharging或限流"
+                        }
+                      ],
+                      "notes": "调用充电控制服务"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布SafetyState与FaultCode"
+                        }
+                      ],
+                      "notes": "发布安全状态"
+                    }
+                  ],
+                  "notes": "10ms周期安全监控与服务调用"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_CellVoltages_SR",
+            "IF_CellTemperatures_SR",
+            "IF_SOC_SOH_SR",
+            "IF_Safety_State_SR",
+            "IF_Cooling_Control_CSI",
+            "IF_Balance_Control_CSI",
+            "IF_Charging_Control_CSI"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_006",
+          "name": "ChargeController",
+          "type": "APPLICATION-SW-COMPONENT-TYPE",
+          "purpose": "管理快充/慢充模式与电流限值, 提供充电控制服务与状态",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "3 R-Ports: IF_SOC_SOH_SR, IF_Safety_State_SR, IF_CellTemperatures_SR; 1 R-Port(CSI Client): IF_Cooling_Control_CSI",
+            "output_ports": "2 P-Ports: IF_Charge_Status_SR, IF_Charging_Control_CSI(服务)"
+          },
+          "behavioral_characteristics": "逻辑: 根据SOC/SOH与温度与安全状态选择充电模式与限流; 触发: 20ms周期与服务调用; 状态: Init→充电控制运行; 数据: 读输入→计算模式与电流→发布状态; 作为Server响应外部安全请求。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅IF_SOC_SOH_SR,IF_Safety_State_SR,IF_CellTemperatures_SR并作为IF_Cooling_Control_CSI的Client; P-Port发布IF_Charge_Status_SR并作为IF_Charging_Control_CSI的Server。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "ChargeController_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "ChargeController_20ms_Event",
+                  "trigger": "Every_20ms"
+                },
+                {
+                  "type": "OPERATION-INVOKED-EVENT",
+                  "name": "Charging_RequestMode_Invoked",
+                  "trigger": "On_RequestChargeMode"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "ChargeController_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始充电状态"
+                        }
+                      ],
+                      "notes": "初始化输出"
+                    }
+                  ],
+                  "notes": "初始化充电控制"
+                },
+                {
+                  "name": "ChargeController_Cyclic",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取SOC/SOH用于模式与限流"
+                        }
+                      ],
+                      "notes": "接收SOC/SOH"
+                    },
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取安全状态, 决定停充或限流"
+                        }
+                      ],
+                      "notes": "接收安全状态"
+                    },
+                    {
+                      "key": "SERVER-CALL-POINTS",
+                      "wrapper": "SERVER-CALL-POINTS",
+                      "preselect": [
+                        {
+                          "of": "SERVER-CALL-POINTS",
+                          "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                          "include": [
+                            "OPERATION-IREF",
+                            "TIMEOUT"
+                          ],
+                          "notes": "在快充模式下请求提升冷却能力"
+                        }
+                      ],
+                      "notes": "调用冷却控制服务"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布充电模式与电流设定"
+                        }
+                      ],
+                      "notes": "发布充电状态"
+                    }
+                  ],
+                  "notes": "20ms周期计算与发布"
+                },
+                {
+                  "name": "ChargeController_Handle_RequestMode",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "接收请求充电模式操作参数"
+                        }
+                      ],
+                      "notes": "处理RequestChargeMode参数"
+                    }
+                  ],
+                  "notes": "服务操作处理-充电模式请求"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_SOC_SOH_SR",
+            "IF_Safety_State_SR",
+            "IF_CellTemperatures_SR",
+            "IF_Charge_Status_SR",
+            "IF_Charging_Control_CSI",
+            "IF_Cooling_Control_CSI"
+          ]
+        },
+        {
+          "component_id": "BMS_SWC_007",
+          "name": "CANComm",
+          "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+          "purpose": "聚合BMS状态并通过CAN上报VCU",
+          "estimated_complexity": "Medium",
+          "port_estimates": {
+            "input_ports": "5 R-Ports: IF_SOC_SOH_SR, IF_Safety_State_SR, IF_Thermal_Status_SR, IF_Balancing_Status_SR, IF_Charge_Status_SR",
+            "output_ports": "1 P-Port: IF_BMS_Status_To_VCU_SR"
+          },
+          "behavioral_characteristics": "逻辑: 从各组件订阅最新值, 按协议打包成CAN帧; 触发: 20ms周期与数据接收事件; 状态: Init→打包运行; 数据: 读取订阅→编码→通过P-Port发布供下层COM。",
+          "element_design": {
+            "ports": {
+              "needed": true,
+              "types": [
+                "R-PORT-PROTOTYPE",
+                "P-PORT-PROTOTYPE"
+              ],
+              "details": "R-Port订阅所有状态类SR接口; P-Port发布IF_BMS_Status_To_VCU_SR以承载打包后的帧。"
+            },
+            "internal_behaviors": {
+              "needed": true,
+              "events": [
+                {
+                  "type": "INIT-EVENT",
+                  "name": "CANComm_Init_Event",
+                  "trigger": "OnStartup"
+                },
+                {
+                  "type": "TIMING-EVENT",
+                  "name": "CANComm_20ms_Event",
+                  "trigger": "Every_20ms"
+                },
+                {
+                  "type": "DATA-RECEIVED-EVENT",
+                  "name": "CANComm_Data_Received_Event",
+                  "trigger": "On_SR_Inputs_Updated"
+                }
+              ],
+              "runnables": [
+                {
+                  "name": "CANComm_Init",
+                  "elements": [
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布初始CAN帧占位"
+                        }
+                      ],
+                      "notes": "初始化输出帧"
+                    }
+                  ],
+                  "notes": "初始化CAN通信"
+                },
+                {
+                  "name": "CANComm_CyclicPack",
+                  "elements": [
+                    {
+                      "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "读取SOC/SOH, 安全状态, 热状态, 均衡状态, 充电状态"
+                        }
+                      ],
+                      "notes": "接收各状态类数据"
+                    },
+                    {
+                      "key": "DATA-SEND-POINTS",
+                      "wrapper": "DATA-SEND-POINTS",
+                      "preselect": [
+                        {
+                          "of": "ACCESSED-VARIABLE",
+                          "variant": "AUTOSAR-VARIABLE-IREF",
+                          "include": [
+                            "PORT-PROTOTYPE-REF",
+                            "TARGET-DATA-PROTOTYPE-REF"
+                          ],
+                          "notes": "发布打包后的BMS状态帧"
+                        }
+                      ],
+                      "notes": "发布CAN帧"
+                    }
+                  ],
+                  "notes": "20ms周期打包与发送"
+                }
+              ]
+            }
+          },
+          "direct_references": [
+            "IF_SOC_SOH_SR",
+            "IF_Safety_State_SR",
+            "IF_Thermal_Status_SR",
+            "IF_Balancing_Status_SR",
+            "IF_Charge_Status_SR",
+            "IF_BMS_Status_To_VCU_SR"
+          ]
+        }
+      ],
+      "interface_plan": [
+        {
+          "interface_id": "IF_01",
+          "name": "IF_CellVoltages_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 发布频率10ms, 最新值缓冲, 读无阻塞, 错误使用默认值与质量标志。",
+          "data_category": "测量数据",
+          "connected_components": [
+            "CellMonitor",
+            "SOCEstimator",
+            "Balancer",
+            "SafetyManager"
+          ],
+          "performance_requirements": "发布到消费端端到端≤30ms, 抖动≤5ms。",
+          "data_elements": [
+            "CellVoltages_Array",
+            "PackVoltage"
+          ],
+          "direct_paths": "CellMonitor→IF_CellVoltages_SR→SOCEstimator/Balancer/SafetyManager"
+        },
+        {
+          "interface_id": "IF_02",
+          "name": "IF_CellTemperatures_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 发布频率10ms, 最新值缓冲, 超界值标志, 错误时保持上次值。",
+          "data_category": "测量数据",
+          "connected_components": [
+            "CellMonitor",
+            "SOCEstimator",
+            "ThermalManager",
+            "ChargeController",
+            "SafetyManager"
+          ],
+          "performance_requirements": "端到端≤30ms, 丢包率<10^-6。",
+          "data_elements": [
+            "CellTemperatures_Array",
+            "PackTemperature"
+          ],
+          "direct_paths": "CellMonitor→IF_CellTemperatures_SR→SOCEstimator/ThermalManager/ChargeController/SafetyManager"
+        },
+        {
+          "interface_id": "IF_03",
+          "name": "IF_SOC_SOH_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 发布频率50ms, 最新值缓冲, 提供质量位与时间戳。",
+          "data_category": "估算数据",
+          "connected_components": [
+            "SOCEstimator",
+            "SafetyManager",
+            "ChargeController",
+            "CANComm"
+          ],
+          "performance_requirements": "端到端≤80ms, 估算抖动≤10ms。",
+          "data_elements": [
+            "PackSOC",
+            "PackSOH"
+          ],
+          "direct_paths": "SOCEstimator→IF_SOC_SOH_SR→SafetyManager/ChargeController/CANComm"
+        },
+        {
+          "interface_id": "IF_04",
+          "name": "IF_Balancing_Status_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 100ms发布, 最新值缓冲, 错误状态置位。",
+          "data_category": "运行状态",
+          "connected_components": [
+            "Balancer",
+            "CANComm",
+            "SafetyManager"
+          ],
+          "performance_requirements": "端到端≤150ms。",
+          "data_elements": [
+            "BalancingActive",
+            "MaxDeltaVoltage",
+            "BalancingFault"
+          ],
+          "direct_paths": "Balancer→IF_Balancing_Status_SR→CANComm/SafetyManager"
+        },
+        {
+          "interface_id": "IF_05",
+          "name": "IF_Thermal_Status_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 20ms发布, 最新值缓冲, 提供故障位与限幅。",
+          "data_category": "运行状态",
+          "connected_components": [
+            "ThermalManager",
+            "CANComm",
+            "SafetyManager",
+            "ChargeController"
+          ],
+          "performance_requirements": "端到端≤60ms。",
+          "data_elements": [
+            "CoolantPumpSpeed",
+            "FanSpeed",
+            "ThermalFault"
+          ],
+          "direct_paths": "ThermalManager→IF_Thermal_Status_SR→CANComm/SafetyManager/ChargeController"
+        },
+        {
+          "interface_id": "IF_06",
+          "name": "IF_Safety_State_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 10ms发布, 最新值缓冲, 错误时强制Fail-Safe。",
+          "data_category": "安全状态",
+          "connected_components": [
+            "SafetyManager",
+            "ThermalManager",
+            "Balancer",
+            "ChargeController",
+            "CANComm"
+          ],
+          "performance_requirements": "端到端≤30ms, 故障传递≤50ms。",
+          "data_elements": [
+            "SafetyState",
+            "FaultCode"
+          ],
+          "direct_paths": "SafetyManager→IF_Safety_State_SR→ThermalManager/Balancer/ChargeController/CANComm"
+        },
+        {
+          "interface_id": "IF_07",
+          "name": "IF_Charge_Status_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 20ms发布, 最新值缓冲, 提供模式与设定值。",
+          "data_category": "运行状态",
+          "connected_components": [
+            "ChargeController",
+            "CANComm",
+            "SafetyManager"
+          ],
+          "performance_requirements": "端到端≤60ms。",
+          "data_elements": [
+            "ChargeMode",
+            "ChargeCurrentSetpoint",
+            "ChargeFault"
+          ],
+          "direct_paths": "ChargeController→IF_Charge_Status_SR→CANComm/SafetyManager"
+        },
+        {
+          "interface_id": "IF_08",
+          "name": "IF_BMS_Status_To_VCU_SR",
+          "type": "SENDER-RECEIVER-INTERFACE",
+          "communication_pattern": "异步SR, 20ms打包, 队列到COM后下发, 提供最新值快照与诊断帧。",
+          "data_category": "CAN消息",
+          "connected_components": [
+            "CANComm"
+          ],
+          "performance_requirements": "打包到COM≤10ms, 对外总延迟≤100ms。",
+          "data_elements": [
+            "BMS_Status_Frame",
+            "BMS_Diagnostics_Frame"
+          ],
+          "direct_paths": "CANComm→IF_BMS_Status_To_VCU_SR→下层CAN栈"
+        },
+        {
+          "interface_id": "IF_09",
+          "name": "IF_Cooling_Control_CSI",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步CSI, 客户端调用服务操作, 超时≤20ms, 错误返回码。",
+          "data_category": "控制服务",
+          "connected_components": [
+            "ThermalManager",
+            "SafetyManager",
+            "ChargeController"
+          ],
+          "performance_requirements": "服务响应≤20ms, 峰值并发2。",
+          "data_elements": [
+            "SetCoolantPumpSpeed",
+            "SetFanSpeed",
+            "SetCoolingMode"
+          ],
+          "direct_paths": "SafetyManager/ChargeController→IF_Cooling_Control_CSI→ThermalManager(Server)"
+        },
+        {
+          "interface_id": "IF_10",
+          "name": "IF_Balance_Control_CSI",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步CSI, 最新参数随调用传递, 超时≤20ms, 失败重试一次。",
+          "data_category": "控制服务",
+          "connected_components": [
+            "Balancer",
+            "SafetyManager",
+            "ChargeController"
+          ],
+          "performance_requirements": "服务响应≤20ms。",
+          "data_elements": [
+            "EnableBalancing",
+            "SuspendBalancing",
+            "SetBalanceTargets"
+          ],
+          "direct_paths": "SafetyManager/ChargeController→IF_Balance_Control_CSI→Balancer(Server)"
+        },
+        {
+          "interface_id": "IF_11",
+          "name": "IF_Charging_Control_CSI",
+          "type": "CLIENT-SERVER-INTERFACE",
+          "communication_pattern": "同步CSI, 请求模式/限流/停充, 超时≤20ms, 返回状态码。",
+          "data_category": "控制服务",
+          "connected_components": [
+            "ChargeController",
+            "SafetyManager"
+          ],
+          "performance_requirements": "服务响应≤20ms。",
+          "data_elements": [
+            "RequestChargeMode",
+            "SetChargeCurrentLimit",
+            "StopCharging"
+          ],
+          "direct_paths": "SafetyManager→IF_Charging_Control_CSI→ChargeController(Server)"
+        }
+      ],
+      "component_generation_order": [
+        "CellMonitor",
+        "ThermalManager",
+        "SOCEstimator",
+        "Balancer",
+        "ChargeController",
+        "SafetyManager",
+        "CANComm"
+      ],
+      "connection_topology": {
+        "component_connections": "CellMonitor作为测量源连接到SOCEstimator/Balancer/SafetyManager; ThermalManager作为冷却服务与状态源连接到SafetyManager/ChargeController/CANComm; SOCEstimator向SafetyManager/ChargeController/CANComm提供估算; Balancer向SafetyManager/CANComm提供状态, 并被SafetyManager/ChargeController调用; ChargeController向SafetyManager/CANComm提供充电状态, 并被SafetyManager调用; CANComm汇聚所有状态输出至对外接口。",
+        "data_flow_paths": "测量流: CellMonitor→IF_CellVoltages_SR/IF_CellTemperatures_SR→SOCEstimator/SafetyManager/Balancer/ThermalManager/ChargeController; 估算流: SOCEstimator→IF_SOC_SOH_SR→SafetyManager/ChargeController/CANComm; 状态流: ThermalManager/Balancer/ChargeController→各自SR接口→CANComm; 安全流: SafetyManager→IF_Safety_State_SR→ThermalManager/Balancer/ChargeController/CANComm。",
+        "control_flow_paths": "服务调用: SafetyManager→IF_Cooling_Control_CSI→ThermalManager; SafetyManager→IF_Balance_Control_CSI→Balancer; SafetyManager→IF_Charging_Control_CSI→ChargeController; ChargeController→IF_Cooling_Control_CSI→ThermalManager。"
+      },
+      "architecture_rationale": {
+        "design_decisions": "采用SR承载测量与状态以实现松耦合与最新值访问; 控制采用CSI实现强一致性与超时保护; 功能按采集/估算/安全/控制/通信分层以提升可维护性与可扩展性。",
+        "tradeoff_analysis": "SR简化缓冲与订阅但不保证历史队列; CSI提供强同步语义但可能阻塞, 通过严格超时与有限并发控制; 将CANComm独立为汇聚层降低各组件对通讯栈的耦合。",
+        "alternative_considerations": "可选采用事件队列提高历史数据分析; 冷却/充电控制亦可用SR目标值而非CSI命令, 但失去请求响应与错误返回能力。",
+        "risk_assessment": "关键风险: 超时导致策略迟滞、测量抖动影响估算、CAN带宽不足; 缓解: 设定超时与降级策略, 滤波与质量位, 帧打包与速率限制, 安全策略优先级保证。"
+      },
+      "session_id": "d3b3b037-939d-4ec3-8e91-4da271b7557b",
+      "timestamp": "2025-10-23T21:14:50.737266"
+    }
+  },
+  "phase2": {
+    "duration": 410.7915756702423,
+    "tokens": 202733,
+    "output_files": [
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CellMonitor_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\ThermalManager_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\SOCEstimator_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\Balancer_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\ChargeController_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\SafetyManager_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Components\\CANComm_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_CellVoltages_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_CellTemperatures_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_SOC_SOH_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Balancing_Status_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Thermal_Status_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Safety_State_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Charge_Status_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_BMS_Status_To_VCU_SR_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Cooling_Control_CSI_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Balance_Control_CSI_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\ARXML\\Interfaces\\IF_Charging_Control_CSI_502a1c6c_1761225701.arxml",
+      "C:\\Users\\54239\\PycharmProjects\\AI_XmlGenerator\\src\\llm_generation\\output\\performance_502a1c6c_1761225701.json"
+    ]
+  },
+  "final_status": "success",
+  "end_time": "2025-10-23T21:21:41.551747"
+}
