@@ -316,7 +316,23 @@ class DynamicQueryEngine:
         OPTIONAL MATCH (cls)-[:HAS_ATTRIBUTE]->(a:Attribute)
         OPTIONAL MATCH (a)-[:TYPE_OF]->(t)
         OPTIONAL MATCH (t:Enum)-[:HAS_LITERAL]->(ev:EnumLiteral)
-        WITH c, a, t, collect(DISTINCT ev.value) AS enum_vals, properties(a) AS amap, labels(t) AS tlabs, properties(t) AS tmap
+        
+        // ✅ 新增：当 t.isAttribute=true 时，查询对应的 Simple 类
+        OPTIONAL MATCH (simple:Enum)
+        WHERE t.isAttribute = true AND (
+            simple.name = t.name + 'Simple' OR 
+            simple.xml_tag = t.xml_tag + '--SIMPLE'
+        )
+        OPTIONAL MATCH (simple)-[:HAS_LITERAL]->(simpleEv:EnumLiteral)
+        
+        WITH c, a, t, 
+             collect(DISTINCT ev.value) AS enum_vals,
+             collect(DISTINCT simpleEv.value) AS simple_enum_vals,  // ✅ Simple 类的枚举
+             properties(a) AS amap, 
+             labels(t) AS tlabs, 
+             properties(t) AS tmap,
+             properties(simple) AS simplemap  // ✅ Simple 类的属性
+        
         RETURN
           c.name AS class_name,
           c.xml_tag AS class_tag,
@@ -335,7 +351,13 @@ class DynamicQueryEngine:
             t_base:          coalesce(tmap['baseType'], tmap['base']),
             t_pattern:       tmap['pattern'],
             t_is_enum:       CASE WHEN 'Enum' IN tlabs THEN true ELSE false END,
-            t_enum_values:   enum_vals
+            t_enum_values:   enum_vals,
+            
+            // ✅ 新增字段：Simple 类的约束
+            simple_base:         coalesce(simplemap['base'], simplemap['baseType']),
+            simple_pattern:      simplemap['pattern'],
+            simple_enum_values:  simple_enum_vals,
+            simple_is_primitive: simplemap['isPrimitiveType']
           }) AS attrs
         LIMIT 1
         """
@@ -424,6 +446,7 @@ class DynamicQueryEngine:
             parent_container_tag: str,
             design_index: dict[str, set[str]],
             seen: set[str],
+            force_children_array: bool = False  # 新增参数
     ) -> tuple[str, dict, dict]:
         """
         从 KG 递归构建 class_ident 的 JSON Schema 片段（内联版）：
@@ -432,6 +455,51 @@ class DynamicQueryEngine:
           - XOR_WITH_MANDATORY：只做约束（强制必选 + 三选一），不主动放行新键
           - 引用终止（*-TREF/IREF）→ {@DEST, #text}；原子/枚举直接落标量；其余继续递归（内联）
         """
+
+        # 在函数开始处添加：判断是否需要约束 maxItems
+        def should_constrain_max_items(parent_tag: str, is_terminal: bool) -> bool:
+            """
+            判断是否需要约束数组最大元素数
+            - RUNNABLE-ENTITY 的子元素：需要
+            - 终止类型（枚举、isAttribute=true）：不需要
+            - 接口类型：不需要
+            """
+            parent_upper = (parent_tag or "").strip().upper()
+
+            # RUNNABLE-ENTITY 的直接子元素需要约束
+            if parent_upper == "RUNNABLE-ENTITY":
+                return True
+
+            # DATA-SEND-POINTS 等容器的子元素也需要约束
+            if parent_upper in {
+                "DATA-SEND-POINTS",
+                "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                "DATA-RECEIVE-POINT-BY-VALUES",
+                "SERVER-CALL-POINTS",
+                "READ-LOCAL-VARIABLES",
+                "WRITTEN-LOCAL-VARIABLES",
+                "MODE-ACCESS-POINTS",
+                "PARAMETER-ACCESSS"
+            }:
+                return True
+
+            if is_terminal:  # 终止类型不约束
+                return False
+
+            # 接口类型不约束
+            if parent_upper in {
+                "CLIENT-SERVER-INTERFACE",
+                "SENDER-RECEIVER-INTERFACE",
+                "NV-DATA-INTERFACE",
+                "MODE-SWITCH-INTERFACE",
+                "PARAMETER-INTERFACE",
+                "TRIGGER-INTERFACE"
+            }:
+                return False
+
+            return False
+
+
         info = self._query_class_attributes(session, class_ident)
         class_name = info.get("class_name") or class_ident
         if class_name in seen:
@@ -546,8 +614,12 @@ class DynamicQueryEngine:
             # 第一部分(优先级)：三级优先级系统
             0 if _U(get_final_sort_key(a)) == "SHORT-NAME" else
             1 if _U(get_final_sort_key(a)) == "START-ON-EVENT-REF" else
-            2 if _U(get_final_sort_key(a)) == "MINIMUM-START-INTERVAL" else
-            3,
+            2 if _U(get_final_sort_key(a)) == "IS-SERVICE" else
+            3 if _U(get_final_sort_key(a)) == "MINIMUM-START-INTERVAL" else
+            4 if _U(get_final_sort_key(a)) == "OPERATION-IREF" else
+            5 if _U(get_final_sort_key(a)) == "TIMEOUT" else
+            6 if _U(get_final_sort_key(a)) == "CONTEXT-PORT-REF" else
+            7,
             # 第二部分(字母顺序)：仍然使用最终的键名进行排序
             _U(get_final_sort_key(a))
         ))
@@ -576,23 +648,49 @@ class DynamicQueryEngine:
 
             tname = a.get("type_name") or a.get("type")
 
+            max_occ_raw = a.get("maxOccurs")
+            default_is_array = _is_array_occurs(max_occ_raw)
+            # ========== 应用父层强制标记 ==========
+            if force_children_array:
+                # 父层是联合容器壳，当前元素强制为array
+                is_array = True
+                if CONFIG.debug_mode:
+                    print(f"[DEBUG] {key} 因父层联合容器壳，强制为array")
+            else:
+                # 正常白名单覆盖逻辑
+                is_array = _override_container_shape(_U(key), default_is_array)
+
             # ============================================================
             # ✅ 新增：优先检查直接映射表（在所有其他判断之前）
             # ============================================================
             if tname:
                 tname_upper = _U(tname)
                 if tname_upper in self.DIRECT_TYPE_MAPPINGS:
-                    # 命中硬编码映射，直接使用
                     scalar = self.DIRECT_TYPE_MAPPINGS[tname_upper].copy()
+
+                    # ✅ 新增：叠加Simple类的约束
+                    simple_pattern = a.get("simple_pattern")
+                    simple_enum_vals = a.get("simple_enum_values") or []
+
+                    if simple_enum_vals:
+                        # Simple类的enum覆盖默认值
+                        scalar["enum"] = simple_enum_vals
+
+                    if simple_pattern:
+                        clean_pattern = self._clean_xsd_pattern(simple_pattern)
+                        if clean_pattern:
+                            scalar["pattern"] = clean_pattern
 
                     val = {"type": "array", "items": scalar} if is_array else scalar
                     if is_array and min_occ > 0:
                         val.setdefault("minItems", min_occ)
-                        try:
-                            if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
-                                val["maxItems"] = int(max_occ_raw)
-                        except Exception:
-                            pass
+                        # 新增：
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
 
                     props[key] = val
                     if min_occ >= 1:
@@ -648,6 +746,7 @@ class DynamicQueryEngine:
                             val["maxItems"] = int(max_occ_raw)
                     except Exception:
                         pass
+
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
@@ -665,18 +764,87 @@ class DynamicQueryEngine:
                 t_base = a.get("t_base")
                 t_pattern = a.get("t_pattern")
 
-                # 1) 终止：原子/枚举
-                if t_is_attr or t_is_enum or t_base:
-                    scalar = _scalar_from_base(t_base)
-                    if t_is_enum:
+                # ✅ 新增：获取 Simple 类的约束
+                simple_base = a.get("simple_base")
+                simple_pattern = a.get("simple_pattern")
+                simple_enum_vals = a.get("simple_enum_values") or []
+
+                # 1) 强制终止：isAttribute=true的类型
+                if t_is_attr:
+                    # 兜底：如果Simple类和原类都没提供base，默认为string
+                    base_to_use = simple_base or t_base or "string"
+                    scalar = _scalar_from_base(base_to_use)
+
+                    # 应用Simple类的枚举约束
+                    if simple_enum_vals:
+                        scalar = {**scalar, "enum": simple_enum_vals}
+                    elif t_is_enum:
                         enum_vals = a.get("t_enum_values") or []
                         if enum_vals:
                             scalar = {**scalar, "enum": enum_vals}
-                    if t_pattern:
-                        scalar = {**scalar, "pattern": t_pattern}
+
+                    # 应用Simple类的pattern约束
+                    pattern_to_use = simple_pattern or t_pattern
+                    if pattern_to_use:
+                        clean_pattern = self._clean_xsd_pattern(pattern_to_use)
+                        if clean_pattern:
+                            scalar = {**scalar, "pattern": clean_pattern}
+
                     val = {"type": "array", "items": scalar} if is_array else scalar
                     if is_array and min_occ > 0:
                         val.setdefault("minItems", min_occ)
+                        # 新增：
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
+
+                    props[key] = val
+                    if min_occ >= 1:
+                        required.append(key)
+                    if tag:
+                        props[key]["x-xml-tag"] = tag
+                    if wrap and wrap not in COLLAPSED_WRAPPERS:
+                        props[key]["x-xml-wrapper-tag"] = wrap
+
+                    continue  # 终止，不再递归
+
+                # 2) 其他终止条件：枚举或有base
+                elif t_is_enum or t_base:
+                    # ✅ 优先使用 Simple 类的 base（更精确）
+                    base_to_use = simple_base or t_base
+                    scalar = _scalar_from_base(base_to_use)
+
+                    # ✅ 枚举约束：优先 Simple 类的 enumerations
+                    if simple_enum_vals:
+                        scalar = {**scalar, "enum": simple_enum_vals}
+                    elif t_is_enum:
+                        enum_vals = a.get("t_enum_values") or []
+                        if enum_vals:
+                            scalar = {**scalar, "enum": enum_vals}
+
+                    # ✅ Pattern 约束：优先 Simple 类的 pattern
+                    pattern_to_use = simple_pattern or t_pattern
+                    if pattern_to_use:
+                        # 清理 XSD 命名空间前缀
+                        clean_pattern = self._clean_xsd_pattern(pattern_to_use)
+                        if clean_pattern:
+                            scalar = {**scalar, "pattern": clean_pattern}
+
+                    val = {"type": "array", "items": scalar} if is_array else scalar
+
+                    if is_array and min_occ > 0:
+                        val.setdefault("minItems", min_occ)
+                        # 新增：这是关键位置！runnable entity 的子元素都走这里
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
+
                     props[key] = val
                     if min_occ >= 1:
                         required.append(key)
@@ -687,22 +855,42 @@ class DynamicQueryEngine:
 
                     continue
 
-                # 2) 递归（若下层在 design_index 有专属白名单，则切 parent；否则沿用父容器）
+
+                # ========== 新增：模式2判断 ==========
+                # 2) 递归前预判断：是否为"联合容器壳"
+                is_union_container = False
+                if default_is_array and not wrap:  # 满足基本条件：maxOccurs=-1 且无wrapper
+                    is_union_container = self._is_union_container_shell(session, tname)
+                # 如果是联合容器壳，覆盖容器形态判断
+                if is_union_container:
+                    is_array = False  # 当前节点强制为object
+                    if CONFIG.debug_mode:
+                        print(f"[DEBUG] {key} 作为联合容器壳，强制为object，子元素将为array")
+                # ====================================
+                # 3) 递归（传递force_children_array标记）
                 next_key = _U(a.get("xml_wrapper_tag") or a.get("xml_tag"))
                 child_parent = next_key if design_index.get(next_key) else _U(parent_container_tag)
-
                 sub_name, sub_schema, sub_defs = self._build_class_schema_recursive(
                     session=session,
                     class_ident=tname,
                     parent_container_tag=child_parent,
                     design_index=design_index,
-                    seen=set(seen)
+                    seen=set(seen),
+                    force_children_array=is_union_container  # 传递标记
                 )
                 definitions.update(sub_defs)
 
                 val = {"type": "array", "items": sub_schema} if is_array else sub_schema
+
                 if is_array and min_occ > 0:
                     val.setdefault("minItems", min_occ)
+                    # 新增：
+                    if should_constrain_max_items(parent_container_tag, is_terminal=False):
+                        try:
+                            if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                val["maxItems"] = int(max_occ_raw)
+                        except Exception:
+                            pass
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
@@ -724,6 +912,17 @@ class DynamicQueryEngine:
             if is_array and min_occ > 0:
                 val = {"type": "array", "items": val}
                 val.setdefault("minItems", min_occ)
+                # 新增：
+                if should_constrain_max_items(parent_container_tag, is_terminal=False):
+                    try:
+                        if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                            val["maxItems"] = int(max_occ_raw)
+                    except Exception:
+                        pass
+
+            if _U(key) == "SHORT-NAME":
+                val = self._apply_short_name_constraint(val)
+
             props[key] = val
             if min_occ >= 1:
                 required.append(key)
@@ -932,12 +1131,12 @@ class DynamicQueryEngine:
             definitions.update(defs_events)
 
         # 3) 组件根骨架（模板化，不从 KG 根类递归）
+        root_short_name_schema = self._apply_short_name_constraint({
+            "type": "string",
+            "examples": [name]
+        })
         root_props: Dict[str, Any] = {
-            "SHORT-NAME": {
-                "type": "string",
-                # 给 LLM 友好的示例，但不强约束（避免把 name 锁死为 const）
-                "examples": [name],
-            }
+            "SHORT-NAME": root_short_name_schema
         }
         root_required: List[str] = ["SHORT-NAME"]
 
@@ -949,8 +1148,11 @@ class DynamicQueryEngine:
         # === 扁平化：SWC-INTERNAL-BEHAVIOR 直接挂 RUNNABLE-ENTITY 数组（不再套 RUNNABLES 壳） ===
         # 扁平 INTERNAL-BEHAVIORS 与 RUNNABLES：只保留 SWC-INTERNAL-BEHAVIOR 与其下的 RUNNABLE-ENTITY
         if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):
+            sib_short_name_schema = self._apply_short_name_constraint({
+                "type": "string"
+            })
             sib_props = {
-                "SHORT-NAME": {"type": "string"},
+                "SHORT-NAME": sib_short_name_schema,
                 # 折叠 RUNNABLES：把 RUNNABLES 容器里的 RUNNABLE-ENTITY 直接暴露出来
                 **(
                     {"RUNNABLE-ENTITY": (runnables_obj.get("properties") or {}).get("RUNNABLE-ENTITY")}
@@ -996,6 +1198,51 @@ class DynamicQueryEngine:
         return schema
 
     # ======================== 三个内层构建器 ========================
+    def _is_union_container_shell(self, session, class_ident: str) -> bool:
+        """
+        识别"联合容器壳"(模式2)：外层Class仅作为多个内层元素的容器
+
+        判断依据：
+        1. 该类有多个非XML属性的子元素 (len > 1)
+        2. 每个子元素的maxOccurs=0 (在choice/sequence中可选)
+        3. 调用方会额外判断父层maxOccurs=-1
+
+        Returns:
+            True: 该类是联合容器壳，应生成为object，子元素强制为array
+            False: 正常处理
+        """
+        try:
+            info = self._query_class_attributes(session, class_ident)
+            attrs = info.get("attributes", [])
+
+            # 过滤出实际子元素(排除XML属性、SHORT-NAME等元数据)
+            child_elements = [
+                a for a in attrs
+                if not (a.get("isXmlAttr") or a.get("is_xml_attribute"))  # 非XML属性
+                   and (a.get("xml_tag") or a.get("name"))  # 有标签名
+                   and (a.get("xml_tag") or "").upper() not in {"SHORT-NAME", "DESC", "CATEGORY"}  # 非元数据
+            ]
+
+            # 必须有多个子元素
+            if len(child_elements) <= 1:
+                return False
+
+            # 检查子元素是否都是maxOccurs=0 (可选)
+            all_optional = all(
+                int(a.get("maxOccurs", 0)) == 0
+                for a in child_elements
+            )
+
+            if CONFIG.debug_mode and all_optional:
+                print(f"[DEBUG] 识别到联合容器壳: {class_ident}, "
+                      f"子元素: {[a.get('xml_tag') for a in child_elements]}")
+
+            return all_optional
+
+        except Exception as e:
+            if CONFIG.debug_mode:
+                print(f"[DEBUG] 容器壳判断异常 {class_ident}: {e}")
+            return False
 
     def _build_ports_section(
             self, session, design_index: Dict[str, set]
@@ -1026,6 +1273,7 @@ class DynamicQueryEngine:
                 parent_container_tag="PORTS",
                 design_index=design_index,
                 seen=set(),
+                force_children_array=False
             )
             # 直接内联，不再引用 definitions
             definitions.update(defs)
@@ -1077,6 +1325,7 @@ class DynamicQueryEngine:
             parent_container_tag="RUNNABLE-ENTITY",
             design_index=design_index,
             seen=set(),
+            force_children_array=False
         )
 
         # 直接内联，不再引用 definitions
@@ -1131,6 +1380,7 @@ class DynamicQueryEngine:
                 parent_container_tag="EVENTS",
                 design_index=design_index,
                 seen=set(),
+                force_children_array=False
             )
             # 仅合并子递归带回的 definitions（通常很小/为空）；不再把本类型挂到 definitions
             definitions.update(defs)
@@ -1150,6 +1400,21 @@ class DynamicQueryEngine:
             "required": sorted(list(props.keys()))
         }
         return events_obj, definitions
+
+    def _apply_short_name_constraint(self, schema_node: dict) -> dict:
+        """为SHORT-NAME的Schema节点统一添加pattern和description约束。"""
+        pattern = r"^[a-zA-Z][a-zA-Z0-9_]*$"
+        description = "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+
+        # 检查节点是否为数组，约束应施加在 `items` 上
+        if schema_node.get("type") == "array" and isinstance(schema_node.get("items"), dict):
+            schema_node["items"]["pattern"] = pattern
+            schema_node["items"]["description"] = description
+        else:
+            schema_node["pattern"] = pattern
+            schema_node["description"] = description
+
+        return schema_node
 
     # ------------------------ 顶层构建 API ------------------------
 
@@ -1308,6 +1573,32 @@ class DynamicQueryEngine:
             "required": required,
             "definitions": definitions or {}
         }
+
+    @staticmethod
+    def _clean_xsd_pattern(pattern_str: str) -> Optional[str]:
+        """
+        清理 XSD pattern 字符串，提取纯正则表达式
+
+        输入示例：
+        '<xsd:pattern xmlns:xsd="..." value="[0-1]"/>'
+
+        输出：
+        '[0-1]'
+        """
+        import re
+        if not pattern_str:
+            return None
+
+        # 尝试提取 value 属性
+        match = re.search(r'value="([^"]+)"', pattern_str)
+        if match:
+            return match.group(1)
+
+        # 如果没有 XML 标签，假设已经是纯正则
+        if not pattern_str.strip().startswith('<'):
+            return pattern_str.strip()
+
+        return None
 
     def _canon_iface_type(self, t: str) -> str:
         """将多种写法统一成 AUTOSAR 标签写法"""

@@ -63,10 +63,16 @@ class PromptTemplateManager:
            - 连接拓扑: 指明哪些组件通过此接口连接
 
         6. element_design预选（关键）:
-           你的预选决策将直接指导Round2的Schema生成：
-           - 每个选择都会影响最终生成的XML结构
-           - preselect中的include列表决定了哪些子元素会被包含
-           - 联合类型的variant选择决定了数据访问的具体实现方式
+            你的预选决策将直接指导Round2的Schema生成：
+            - 每个选择都会影响最终生成的XML结构
+            - preselect中的include列表决定了哪些子元素会被包含
+            - 联合类型的variant选择决定了数据访问的具体实现方式
+            
+            **重要提醒**：AUTOSAR组件必须遵守封装原则
+            - 组件的事件只能触发本组件的Runnable，不能跨组件触发
+            - 组件访问数据必须通过本组件的端口，不能直接引用其他组件的端口
+            - 跨组件通信通过RTE的端口连接机制实现，而非直接引用
+            - 因此在设计Runnable的数据访问时，应规划使用本组件的R-Port/P-Port进行通信
 
         架构设计质量标准:
         ------------------------------------------
@@ -166,28 +172,6 @@ class PromptTemplateManager:
             architecture_schema: Dict[str, Any] = None  # ← 新增：Round1 JSON Schema
     ) -> str:
         """获取Round 1架构设计提示词（带 config 枚举与 JSON Schema）"""
-
-    #     # 术语库详细说明（可选）
-    #     component_types_text = ""
-    #     if component_types:
-    #         for comp_type in component_types:
-    #             component_types_text += f"""
-    # - **{comp_type.get('name', '')}**
-    #   描述: {comp_type.get('description', '')}
-    #   场景: {', '.join(comp_type.get('scenarios', []) or [])}
-    #   复杂度: {comp_type.get('complexity', 'Medium')}
-    # """
-    #
-    #     interface_types_text = ""
-    #     if interface_types:
-    #         for intf_type in interface_types:
-    #             interface_types_text += f"""
-    # - **{intf_type.get('name', '')}**
-    #   描述: {intf_type.get('description', '')}
-    #   通信模式: {intf_type.get('communication_mode', '')}
-    #   场景: {', '.join(intf_type.get('scenarios', []) or [])}
-    # """
-
         # config.allowed_types 的枚举展示（主信息源）
         def _fmt_allowed(title, items):
             if not items:
@@ -244,6 +228,7 @@ class PromptTemplateManager:
         iface_schema_json = json.dumps(interface_schema or {}, ensure_ascii=False, indent=2)
         standard_types_json = json.dumps(standard_types or {}, ensure_ascii=False, indent=2)
 
+
         prompt = f"""
             你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
 
@@ -270,9 +255,9 @@ class PromptTemplateManager:
 
             生成规则:
             顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
-            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。SHORT-NAME字段的连接符用'_'。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)，例如：<TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>，其中实例路径是 SHORT-NAME 的拼接。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
         """.strip()
 
@@ -323,11 +308,76 @@ class PromptTemplateManager:
                     lines.append(f"  - {path}")
             known_paths_text = "\n".join(lines)
 
+            # ****** 新增：AUTOSAR组件封装原则说明 ******
+        autosar_encapsulation_rules = f"""
+
+            ## AUTOSAR 组件封装原则（严格遵守）
+
+            **关键规则：组件内部行为只能引用本组件自己的运行时元素**
+
+            1. **事件启动约束**：
+               - 所有 EVENT 的 START-ON-EVENT-REF 必须且只能引用【本组件 {comp_name}】的 RUNNABLE-ENTITY
+
+               **路径构造规则**：
+               - 格式：/Components/{comp_name}/{{Runnable名称}}
+               - 示例（正确）：
+                 * /Components/{comp_name}/Init_Runnable
+                 * /Components/{comp_name}/Control_Process_Runnable
+                 * /Components/{comp_name}/Periodic_Task_100ms
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomeRunnable  （引用了其他组件）
+                 * ❌ /Components/{comp_name}/Internal/SubRunnable  （路径层级错误）
+
+            2. **端口访问约束**：
+               - DATA-SEND-POINTS / DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-READ-ACCESSS 中的 PORT-PROTOTYPE-REF 必须指向【本组件 {comp_name}】的端口
+
+               **路径构造规则**：
+               - 格式：/Components/{comp_name}/{{端口名称}}
+               - 示例（正确）：
+                 * /Components/{comp_name}/P_Port_Status
+                 * /Components/{comp_name}/R_Port_TempSensor
+                 * /Components/{comp_name}/PR_Port_ServiceInterface
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomePort  （引用了其他组件的端口）
+                 * ❌ /Components/{comp_name}/Ports/P_Port_Status  （多了Ports容器层级）
+
+            3. **服务调用约束**：
+               - SERVER-CALL-POINTS 中的 CONTEXT-R-PORT-REF / CONTEXT-P-PORT-REF 必须是【本组件 {comp_name}】的端口
+               - 路径格式同上（端口访问）
+
+            4. **数据元素引用**（可跨组件）：
+               - TARGET-DATA-PROTOTYPE-REF 可以引用任何接口中的数据元素
+               - 这些路径在Schema的enum中已经为您列出，请直接选择使用
+
+               **路径格式**：
+               - 格式：/Interfaces/{{接口名}}/{{数据元素名}}
+               - 示例：
+                 * /Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp
+                 * /Interfaces/CAN_Setting_Interface/Requested_Level_Left
+
+            **特别注意**：
+            - 对于本组件的端口和Runnable引用，Schema中**没有提供enum列表**（因为生成时尚未创建）
+            - 您需要根据Round1设计中的端口和Runnable名称，**手动构造正确的路径**
+            - 路径必须严格遵循格式：/Components/{comp_name}/{{元素名}}，不要添加额外的层级
+
+            **为什么有这些限制？**
+            组件间的通信和触发必须通过端口连接间接实现，而不是直接引用。这是AUTOSAR确保组件可复用性和独立性的核心机制。
+            跨组件的数据流由RTE根据端口连接（AssemblyConnector）在系统组合层面建立，而不是在组件定义层面硬编码。
+
+            **如何正确实现跨组件通信？**
+            - 组件A要触发组件B的行为：A通过自己的P-Port发送数据 → RTE传递 → B的DataReceivedEvent触发B的Runnable
+            - 组件A要访问组件B的数据：A通过自己的R-Port读取 → RTE从B的P-Port获取数据
+            - 组件A要调用组件B的服务：A通过自己的R-Port调用 → RTE路由到B的P-Port实现的服务
+            """
+
         prompt = f"""
-            你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方“组件 JSON Schema”）。不得输出接口对象。
-            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配“组件 JSON Schema”。
+            你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方"组件 JSON Schema"）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配"组件 JSON Schema"。
 
             组件：{comp_name}（类型：{comp_type}）
+        
+            {autosar_encapsulation_rules}
+            
             ## Round1 系统分析（只读）
             ```json
             {sys_analysis_json}
@@ -363,7 +413,36 @@ class PromptTemplateManager:
             顶层只包含 {comp_type}（组件类型名）。
             在该对象内部的 SHORT-NAME 写入组件实例名：{comp_name}。
             键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
-            所有 *REF 字段为对象，包含 @DEST(引向的实例的类型) 与 #text(引向的实例的路径，即SHORT-NAME的拼接)，例如：<PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/COM_SWC/ASW_COM/RPort_HCU01_Shift</PORT-PROTOTYPE-REF>。
+            
+            **引用路径填写规则**（重要）：
+            所有 *REF 字段为对象，包含 @DEST 与 #text 两个字段：
+            - @DEST：引用目标的类型（从Schema的enum中选择）
+            - #text：引用目标的路径（AUTOSAR绝对路径）
+            
+            **路径填写策略**：
+            1. 如果Schema的#text字段有enum列表 → 从enum中选择一个路径
+            2. 如果Schema的#text字段没有enum（通常是本组件引用）→ 手动构造路径
+               - 格式：/Components/{comp_name}/{{元素名}}
+               - 元素名从Round1设计的element_design中获取
+            
+            示例（正确）：
+            ```json
+            {{
+              "START-ON-EVENT-REF": {{
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/Components/{comp_name}/Control_Process_Runnable"
+              }},
+              "PORT-PROTOTYPE-REF": {{
+                "@DEST": "R-PORT-PROTOTYPE",
+                "#text": "/Components/{comp_name}/R_Port_TempSR"
+              }},
+              "TARGET-DATA-PROTOTYPE-REF": {{
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp"
+              }}
+            }}
+            ```
+            
             注意数值填写不要加ms单位，true、false用小写。
             仅使用 Schema 中出现的字段；不要新增未定义字段。
         """.strip()

@@ -97,8 +97,8 @@ class LLMRAGGenerator:
 
         # 读取需求文件
         requirement_files = {
-            # "simple": require_dir / "simple.json",
-            # "middle": require_dir / "middle.json",
+            "simple": require_dir / "simple.json",
+            "middle": require_dir / "middle.json",
             "complex": require_dir / "complex.json"
         }
 

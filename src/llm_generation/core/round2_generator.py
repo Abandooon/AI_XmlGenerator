@@ -160,7 +160,11 @@ class Round2Generator:
             self._save_component_schema_to_file(comp_name, comp_schema)  # 保存原生Schema
 
             # 4.2 (新) 将已知的路径注入当前组件的Schema，生成增强版Schema
-            enhanced_schema = self._inject_paths_into_schema(comp_schema, known_instance_paths)
+            enhanced_schema = self._inject_paths_into_schema(
+                comp_schema,
+                known_instance_paths,
+                current_component_name=comp_name  # 传递当前组件名
+            )
             if CONFIG.debug_mode and known_instance_paths:
                 # 可以选择性保存增强后的Schema用于调试
                 self._save_component_schema_to_file(f"{comp_name}_enhanced", enhanced_schema)
@@ -211,30 +215,35 @@ class Round2Generator:
             # if isinstance(resp, dict):
             #     merged_json.update(resp)
 
-            # 4.5 合并当前组件结果（顶层只会有一个键 = comp_name）
+            # 4.5 合并当前组件结果（用实例名作为键）
             if isinstance(resp, dict):
-                # --- 恢复折叠的容器标签（就地处理，不改变 LLM 输出的其它字段） ---
-                try:
-                    if len(resp) == 1:
-                        comp_type = next(iter(resp.keys()))
-                        root = resp.get(comp_type) or {}
+                # --- 提取组件类型和数据 ---
+                if len(resp) == 1:
+                    comp_type_key = next(iter(resp.keys()))
+                    root = resp.get(comp_type_key) or {}
+
+                    # --- 恢复折叠的容器标签（保持原有逻辑）---
+                    try:
                         if isinstance(root, dict) and "SWC-INTERNAL-BEHAVIOR" in root:
                             sib = root.get("SWC-INTERNAL-BEHAVIOR") or {}
                             if isinstance(sib, dict):
-                                # A) 先恢复 RUNNABLES：若有 RUNNABLE-ENTITY 且没有 RUNNABLES，就包一层
+                                # A) 先恢复 RUNNABLES
                                 if "RUNNABLE-ENTITY" in sib and "RUNNABLES" not in sib:
                                     sib["RUNNABLES"] = {"RUNNABLE-ENTITY": sib.pop("RUNNABLE-ENTITY")}
-                                # B) 再恢复 INTERNAL-BEHAVIORS：若不存在则包一层
+                                # B) 再恢复 INTERNAL-BEHAVIORS
                                 if "INTERNAL-BEHAVIORS" not in root:
                                     root["INTERNAL-BEHAVIORS"] = {"SWC-INTERNAL-BEHAVIOR": sib}
-                                    # 移除扁平时暴露出来的 SWC-INTERNAL-BEHAVIOR
                                     root.pop("SWC-INTERNAL-BEHAVIOR", None)
-                            resp[comp_type] = root
-                except Exception:
-                    # 出错时忽略恢复，继续走原逻辑
-                    pass
+                    except Exception:
+                        pass
 
-                merged_json.update(resp)
+                    # ✅ 核心改动：用实例名作为键
+                    merged_json[comp_name] = root
+                    # 保存类型信息（供后续转换使用）
+                    merged_json[comp_name]["_type"] = comp_type_key
+                else:
+                    # 兼容异常情况：直接合并
+                    merged_json.update(resp)
 
         # 5) 转为 ARXML（新逻辑：逐条输出，不合并）
         component_xml_map, interface_xml_map = self._convert_each_to_arxml(merged_json)
@@ -263,13 +272,13 @@ class Round2Generator:
         schema = self._enforce_includes_required(comp, schema)
         return schema
 
-    # ****** 泛化后的辅助方法: 提取所有带SHORT-NAME的实例路径 ******
     def _extract_instance_paths(self, component_json: Dict[str, Any], component_name: str) -> Dict[str, List[str]]:
         """
         【修正版】从单个组件的生成结果中，递归提取所有带SHORT-NAME的实例路径。
         规则：只要一个JSON对象有SHORT-NAME，就认为它是一个可引用的实例。
         """
         paths = {}
+
         def recurse_children(parent_node: Dict[str, Any], parent_path: str):
             """
             【新逻辑】递归函数，只处理 parent_node 的子节点。
@@ -277,13 +286,21 @@ class Round2Generator:
             for key, value in parent_node.items():
                 if key == "SHORT-NAME":
                     continue
+
                 if isinstance(value, dict):
                     short_name = value.get("SHORT-NAME")
                     if short_name:
+                        # 有名字的实例：记录路径并继续递归
                         child_path = f"{parent_path}/{short_name}"
                         child_type = key
                         paths.setdefault(child_type, []).append(child_path)
                         recurse_children(value, child_path)
+                    else:
+                        # ✅ 修复：容器对象（如 DATA-ELEMENTS）
+                        # 没有 SHORT-NAME，但需要继续递归其内容
+                        # 路径不变，继续用父路径
+                        recurse_children(value, parent_path)
+
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
@@ -293,6 +310,10 @@ class Round2Generator:
                                 child_type = key
                                 paths.setdefault(child_type, []).append(child_path)
                                 recurse_children(item, child_path)
+                            else:
+                                # ✅ 添加容器处理
+                                recurse_children(item, parent_path)
+
         # 顶层组件处理
         if component_json and len(component_json) == 1:
             comp_type_key = next(iter(component_json))
@@ -302,113 +323,279 @@ class Round2Generator:
             paths.setdefault(comp_type_key, []).append(base_path)
             # 2. 然后调用递归函数处理其【子节点】
             recurse_children(root_data, base_path)
+
         return paths
     # ****** 修正后的辅助方法 2: 按@DEST精准注入路径到Schema ******
-    def _inject_paths_into_schema(self, schema: Dict[str, Any], known_paths: Dict[str, List[str]]) -> Dict[str, Any]:
+    def _inject_paths_into_schema(
+            self,
+            schema: Dict[str, Any],
+            known_paths: Dict[str, List[str]],
+            current_component_name: str = None  # 新增参数
+    ) -> Dict[str, Any]:
         """
-        【核心逻辑】遍历Schema，找到*-REF字段，并根据其@DEST属性的约束，
-        从known_paths中筛选出类型匹配的路径，注入为#text字段的enum。
+        【增强版】遍历Schema，根据引用的上下文约束，智能注入路径到#text字段的enum。
+
+        关键改进：
+        1. 识别引用所在的上下文（事件、端口访问、数据元素等）
+        2. 根据AUTOSAR封装原则，只注入符合作用域规则的路径
+        3. 支持组件内引用和全局类型引用的区分
         """
         if not known_paths:
             return schema
+
         schema_copy = deepcopy(schema)
-        def recurse(node):
+
+        # 定义作用域过滤规则
+        def get_scope_filter_rule(path_trace: List[str]) -> str:
+            """
+            根据schema路径追踪，判断当前引用的作用域类型。
+            返回值：'component_local' | 'interface_element' | 'global_type'
+            """
+            path_upper = [p.upper() for p in path_trace]
+
+            # 规则1：事件中的START-ON-EVENT-REF只能引用本组件的Runnable
+            if any(event_type in path_upper for event_type in [
+                'TIMING-EVENT', 'DATA-RECEIVED-EVENT', 'INIT-EVENT',
+                'DATA-SEND-COMPLETED-EVENT', 'OPERATION-INVOKED-EVENT',
+                'DATA-RECEIVE-ERROR-EVENT', 'EXTERNAL-TRIGGER-OCCURRED-EVENT'
+            ]) and 'START-ON-EVENT-REF' in path_upper:
+                return 'component_local'
+
+            # 规则2：Runnable内部的数据访问点中的PORT-PROTOTYPE-REF必须是本组件端口
+            if any(access_point in path_upper for access_point in [
+                'DATA-SEND-POINTS', 'DATA-RECEIVE-POINT-BY-ARGUMENTS',
+                'DATA-RECEIVE-POINT-BY-VALUES', 'DATA-READ-ACCESSS', 'DATA-WRITE-ACCESSS'
+            ]):
+                # 如果路径中包含AUTOSAR-VARIABLE-IREF和PORT-PROTOTYPE-REF
+                if 'AUTOSAR-VARIABLE-IREF' in path_upper and 'PORT-PROTOTYPE-REF' in path_upper:
+                    return 'component_local'
+                # TARGET-DATA-PROTOTYPE-REF可以引用任何接口的数据元素
+                if 'TARGET-DATA-PROTOTYPE-REF' in path_upper:
+                    return 'interface_element'
+
+            # 规则3：SERVER-CALL-POINTS中的CONTEXT-PORT-REF必须是本组件端口
+            if 'SERVER-CALL-POINTS' in path_upper:
+                if any(ctx in path_upper for ctx in ['CONTEXT-R-PORT-REF', 'CONTEXT-P-PORT-REF']):
+                    return 'component_local'
+                # OPERATION-IREF中的TARGET-REQUIRED-OPERATION-REF可以引用接口操作
+                if 'TARGET-REQUIRED-OPERATION-REF' in path_upper or 'TARGET-PROVIDED-OPERATION-REF' in path_upper:
+                    return 'interface_element'
+
+            # 规则4：端口的接口引用（PROVIDED-INTERFACE-TREF/REQUIRED-INTERFACE-TREF）是全局类型
+            if 'PORTS' in path_upper and any(tref in path_upper for tref in [
+                'PROVIDED-INTERFACE-TREF', 'REQUIRED-INTERFACE-TREF',
+                'PROVIDED-REQUIRED-INTERFACE-TREF'
+            ]):
+                return 'global_type'
+
+            # 规则5：接口数据元素的TYPE-TREF是全局类型
+            if 'TYPE-TREF' in path_upper:
+                return 'global_type'
+
+            # 默认：允许引用接口中的元素
+            return 'interface_element'
+
+        def filter_paths_by_scope(
+                paths: List[str],
+                scope: str,
+                dest_types: List[str],
+                component_name: str = None
+        ) -> tuple[List[str], bool]:  # 返回路径列表和是否使用enum标志
+            """
+            返回值：(filtered_paths, use_enum)
+            - use_enum=True: 正常注入enum
+            - use_enum=False: 不注入enum，让LLM自由填写（但通过prompt约束格式）
+            """
+
+            if scope == 'component_local':
+                # 对于组件内引用，不使用enum约束
+                # 因为这些路径在生成时还不存在
+                return [], False  # 返回空列表，标记不使用enum
+
+            elif scope == 'interface_element':
+                filtered = [p for p in paths if p.startswith("/Interfaces/")]
+                return filtered, True
+
+            elif scope == 'global_type':
+                return paths, True
+
+            return paths, True
+
+
+
+        def recurse(node: Any, path_trace: List[str] = None):
+            """
+            递归遍历schema，在引用节点处注入过滤后的路径。
+
+            Args:
+                node: 当前schema节点
+                path_trace: 从根到当前节点的路径追踪（用于判断上下文）
+            """
+            if path_trace is None:
+                path_trace = []
+
             if not isinstance(node, dict):
                 return
+
             # 定位到引用对象的Schema定义 (特征: 包含@DEST和#text)
             props = node.get("properties", {})
             if node.get("type") == "object" and "@DEST" in props and "#text" in props:
                 # 1. 读取@DEST允许的类型列表
                 dest_prop_schema = props["@DEST"]
-                # @DEST允许的类型通常在其enum字段中定义
                 allowed_dest_types = dest_prop_schema.get("enum", [])
-                # 如果没有enum定义，我们无法进行安全注入，直接返回
+
                 if not allowed_dest_types:
                     return
-                # 2. 根据@DEST允许的类型，从全局路径池(known_paths)中筛选
-                valid_paths_for_this_ref = []
+
+                # 2. 判断当前引用的作用域
+                scope = get_scope_filter_rule(path_trace)
+
+                # 3. 收集所有匹配@DEST类型的候选路径
+                candidate_paths = []
                 for dest_type in allowed_dest_types:
-                    # 如果我们已经提取到了这种类型的实例路径
                     if dest_type in known_paths:
-                        # 就将这些路径加入到此引用的有效路径列表中
-                        valid_paths_for_this_ref.extend(known_paths[dest_type])
-                # 3. 如果找到了匹配的路径，则注入到#text字段的enum中
-                if valid_paths_for_this_ref:
-                    text_prop_schema = props["#text"]
-                    # 使用set去重并排序，然后注入enum约束
-                    text_prop_schema["enum"] = sorted(list(set(valid_paths_for_this_ref)))
-                    # 还可以加上一个示例，帮助LLM理解
-                    text_prop_schema["examples"] = [valid_paths_for_this_ref[0]]
+                        candidate_paths.extend(known_paths[dest_type])
+
+                # 4. 根据作用域规则过滤路径
+                filtered_paths, use_enum = filter_paths_by_scope(  # ✅ 正确解包元组
+                    candidate_paths,
+                    scope,
+                    allowed_dest_types,
+                    current_component_name
+                )
+
+                # 5. 根据use_enum标志决定注入策略
+                text_prop_schema = props["#text"]
+
+                if use_enum:
+                    # 常规情况：注入enum约束
+                    if filtered_paths:
+                        text_prop_schema["enum"] = sorted(list(set(filtered_paths)))
+                        text_prop_schema["examples"] = [filtered_paths[0]]
+
+                        # 添加作用域说明（帮助调试）
+                        if CONFIG.debug_mode:
+                            text_prop_schema["x-scope"] = scope
+                            text_prop_schema[
+                                "x-filter-info"] = f"从{len(candidate_paths)}个候选路径过滤到{len(filtered_paths)}个"
+                    else:
+                        # 过滤后没有可用路径，记录警告
+                        if CONFIG.debug_mode:
+                            print(
+                                f"[WARNING] 引用位置 {'/'.join(path_trace[-3:])} 的作用域'{scope}'下没有可用路径")
+                            print(
+                                f"[WARNING] @DEST类型: {allowed_dest_types}, 候选路径数: {len(candidate_paths)}")
+                else:
+                    # component_local情况：不注入enum，添加格式约束
+                    if current_component_name:
+                        text_prop_schema["pattern"] = f"^/Components/{current_component_name}/.*$"
+                        text_prop_schema["description"] = (
+                            f"必须引用本组件({current_component_name})的实例。"
+                            f"路径格式：/Components/{current_component_name}/{{元素名称}}"
+                        )
+
+                        if CONFIG.debug_mode:
+                            text_prop_schema["x-scope"] = scope
+                            text_prop_schema["x-constraint-type"] = "pattern (component_local)"
+                            print(
+                                f"[DEBUG] component_local引用: 添加pattern约束 ^/Components/{current_component_name}/.*$")
+                    else:
+                        if CONFIG.debug_mode:
+                            print(f"[WARNING] component_local作用域但缺少组件名，无法添加pattern约束")
+
             # 递归遍历Schema的所有子节点
             for key, value in node.items():
                 if isinstance(value, dict):
-                    recurse(value)
-                elif isinstance(value, list):
-                    for item in value:
-                        recurse(item)
-        recurse(schema_copy)
-        return schema_copy
-
-    # ****** 新增辅助方法: 构建包含深层实例的详细接口索引 ******
-    def _build_detailed_interface_index(self, normalized_ifaces: Dict[str, Any]) -> List[Dict[str, str]]:
-        """
-        【修正版】遍历规范化后的接口实例，递归提取所有带SHORT-NAME的子元素，
-        构建一个详细的、可供引用的实例索引。
-        """
-        if not normalized_ifaces:
-            return []
-        detailed_index = []
-        def recurse_children(parent_node: Dict[str, Any], parent_path: str):
-            """
-            【新逻辑】递归函数，只处理 parent_node 的子节点。
-            """
-            # 遍历父节点的所有子元素（由key和value代表）
-            for key, value in parent_node.items():
-                # 跳过非结构化的元数据
-                if key in ["SHORT-NAME", "_type"]:
-                    continue
-                # 处理作为字典的单个子元素
-                if isinstance(value, dict):
-                    short_name = value.get("SHORT-NAME")
-                    if short_name:
-                        # 子元素的路径 = 父路径 / 子元素的名字
-                        child_path = f"{parent_path}/{short_name}"
-                        # 子元素的类型 = 它在父节点中的key
-                        child_type = key
-                        detailed_index.append({
-                            "name": short_name,
-                            "type": child_type,
-                            "path": child_path
-                        })
-                        # 继续向下递归，处理这个子元素的子节点
-                        recurse_children(value, child_path)
-                # 处理作为列表的多个子元素
+                    # 将当前key加入路径追踪
+                    recurse(value, path_trace + [key])
                 elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, dict):
-                            short_name = item.get("SHORT-NAME")
-                            if short_name:
-                                child_path = f"{parent_path}/{short_name}"
-                                # 列表中所有元素的类型都由列表的key决定
-                                child_type = key
-                                detailed_index.append({
-                                    "name": short_name,
-                                    "type": child_type,
-                                    "path": child_path
-                                })
-                                recurse_children(item, child_path)
-        # 从每个顶层接口开始遍历
+                            recurse(item, path_trace + [key])
+
+        recurse(schema_copy, [])
+        return schema_copy
+
+    # ****** 新增辅助方法: 构建包含深层实例的详细接口索引 ******
+    # ****** CORRECTED FUNCTION: Replace the original in round2_generator.py ******
+    def _build_detailed_interface_index(self, normalized_ifaces: Dict[str, Any]) -> List[Dict[str, str]]:
+        """
+        【CORRECTED VERSION】Traverses the normalized interface instances to recursively
+        extract all elements with a SHORT-NAME, building a detailed index of all
+        referable instance paths, including deeply nested elements like data-prototypes
+        and operations.
+
+        This version correctly handles intermediate container objects (like DATA-ELEMENTS
+        and OPERATIONS) that do not have a SHORT-NAME themselves, ensuring that the
+        recursion continues until all nested elements are found.
+        """
+        if not normalized_ifaces:
+            return []
+
+        detailed_index = []
+
+        def extract_paths_recursive(node: Any, parent_path: str, node_type_tag: str):
+            """
+            A robust recursive helper function to find all paths.
+
+            Args:
+                node: The current JSON node (can be a dict or a list).
+                parent_path: The AUTOSAR path of the parent element.
+                node_type_tag: The XML tag representing the type of the current node
+                               (e.g., 'CLIENT-SERVER-OPERATION').
+            """
+            # Case 1: The node is a dictionary (JSON object)
+            if isinstance(node, dict):
+                short_name = node.get("SHORT-NAME")
+                # Check if it's an instantiable element with a name
+                if short_name:
+                    # Construct the full path for this element
+                    current_path = f"{parent_path}/{short_name}"
+                    # Add it to our index
+                    detailed_index.append({
+                        "name": short_name,
+                        "type": node_type_tag,
+                        "path": current_path
+                    })
+                    # Continue searching for children within this element
+                    parent_path_for_children = current_path
+                else:
+                    # It's a container without a name (e.g., DATA-ELEMENTS),
+                    # so it doesn't get its own path segment.
+                    parent_path_for_children = parent_path
+
+                # **CRITICAL FIX**: Always recurse into children, regardless of
+                # whether the current node had a SHORT-NAME or not.
+                for key, value in node.items():
+                    # Skip metadata fields to avoid infinite loops or incorrect typing
+                    if key.startswith(("@", "#")) or key in ["SHORT-NAME", "_type"]:
+                        continue
+                    # The child's type is its key in the parent object
+                    extract_paths_recursive(value, parent_path_for_children, key)
+
+            # Case 2: The node is a list
+            elif isinstance(node, list):
+                # Process each item in the list. All items share the same type tag.
+                for item in node:
+                    extract_paths_recursive(item, parent_path, node_type_tag)
+
+        # --- Main loop to start the process for each top-level interface ---
         for name, data in normalized_ifaces.items():
             interface_type = data.get("_type")
             interface_path = f"/Interfaces/{name}"
-            # 1. 先正确添加顶层接口自身
+
+            # 1. Add the top-level interface itself to the index
             detailed_index.append({
                 "name": name,
                 "type": interface_type,
                 "path": interface_path
             })
-            # 2. 然后调用递归函数来处理它的【子节点】
-            recurse_children(data, interface_path)
+
+            # 2. Start the deep recursive search for all its children
+            # 创建一个副本，移除顶层SHORT-NAME，避免路径重复
+            data_copy = {k: v for k, v in data.items() if k != "SHORT-NAME"}
+            extract_paths_recursive(data_copy, interface_path, interface_type)
+
         return detailed_index
 
     def _enforce_includes_required(self, comp_plan: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
@@ -871,14 +1058,22 @@ class Round2Generator:
         component_xml_map: Dict[str, str] = {}
         interface_xml_map: Dict[str, str] = {}
 
-        # 组件：跳过内部键（如 _interfaces）
+        # ✅ 改进：区分实例名键和类型名键
         for k, v in (merged_json or {}).items():
             if not isinstance(v, dict) or k.startswith("_"):
                 continue
-            name = _short_name(v, k)
-            component_xml_map[name] = self._convert_single_component_to_arxml(name, v)
 
-        # 接口：来自 _interfaces
+            # 判断：k是实例名 or 类型名？
+            # 如果v有_type字段，说明k是实例名
+            if "_type" in v:
+                # k = "VehicleMotionController"（实例名）
+                component_xml_map[k] = self._convert_single_component_to_arxml(k, v)
+            else:
+                # 兼容旧格式：k可能是类型名，从v提取SHORT-NAME
+                name = _short_name(v, k)
+                component_xml_map[name] = self._convert_single_component_to_arxml(name, v)
+
+        # 接口：来自 _interfaces（逻辑不变）
         for k, v in (merged_json or {}).get("_interfaces", {}).items():
             if not isinstance(v, dict):
                 continue

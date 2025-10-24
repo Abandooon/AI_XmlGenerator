@@ -15,6 +15,7 @@
 import os
 import sys
 import json
+import time
 import traceback
 from pathlib import Path
 from typing import Dict, Any, Optional, List
@@ -26,7 +27,7 @@ if str(project_root) not in sys.path:
 
 try:
     from src.llm_generation.config import CONFIG, load_config
-    from src.llm_generation.core.conversation_manager import conversation_manager
+    from src.llm_generation.core.conversation_manager import conversation_manager, ConversationState
     from src.llm_generation.utils.exceptions import (
         LLMGenerationException, ConversationError,
         ArchitectureDesignError, ValidationError
@@ -308,7 +309,7 @@ class LLMRAGGenerator:
     def _handle_user_feedback_loop(self):
         """处理用户反馈循环"""
 
-        max_feedback_rounds = 5  # 最多5轮反馈
+        max_feedback_rounds = 5
         feedback_count = 0
 
         while feedback_count < max_feedback_rounds:
@@ -316,6 +317,7 @@ class LLMRAGGenerator:
                 feedback = input("\n💭 您的反馈: ").strip()
 
                 if not feedback:
+                    print("⚠️ 请输入反馈内容")
                     continue
 
                 feedback_count += 1
@@ -335,17 +337,39 @@ class LLMRAGGenerator:
                 else:
                     # 需要继续反馈
                     if feedback_count >= max_feedback_rounds:
-                        print(f"\n⚠️ 已达到最大反馈轮次({max_feedback_rounds})，将使用当前设计进入Round 2")
-                        self._execute_round2()
-                        break
+                        print(f"\n⚠️ 已达到最大反馈轮次({max_feedback_rounds})")
+                        # 询问是否强制继续
+                        force_proceed = input("是否使用当前设计继续? (y/n): ").strip().lower()
+                        if force_proceed in ['y', 'yes', '是']:
+                            # 强制确认设计
+                            self._force_confirm_design()
+                            self._execute_round2()
+                            break
+                        else:
+                            print("已取消生成流程")
+                            break
                     else:
-                        print(f"\n🔄 请继续提供反馈 ({feedback_count}/{max_feedback_rounds})")
+                        print(f"\n📝 请继续提供反馈 ({feedback_count}/{max_feedback_rounds})")
 
+            except KeyboardInterrupt:
+                print("\n\n⚠️ 用户中断反馈流程")
+                break
             except Exception as e:
                 print(f"❌ 处理反馈失败: {e}")
                 if CONFIG.debug_mode:
                     traceback.print_exc()
                 break
+
+        def _force_confirm_design(self):
+            """强制确认设计（用于达到最大反馈轮次时）"""
+            try:
+                session_info = self.conversation_manager._get_session_info(self.current_session_id)
+                if session_info:
+                    session_info["state"] = ConversationState.ROUND1_COMPLETED
+                    session_info["final_confirmation_time"] = time.time()
+                    print("✅ 设计已强制确认")
+            except Exception as e:
+                print(f"❌ 强制确认失败: {e}")
 
     def _execute_round2(self):
         """执行Round 2详细生成"""

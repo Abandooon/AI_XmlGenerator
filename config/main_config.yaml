@@ -223,6 +223,7 @@ logging:
 file_paths:
   # XML实例文件
   xml_instances:
+    - generated_arxml/complex
 #    - "experimental_data/llm/min_promote_No Guard"
 #    - "experimental_data/llm/mid_promote_No Guard"
 #    - "experimental_data/llm/full_promote_No Guard"
@@ -230,7 +231,7 @@ file_paths:
 #    - "experimental_data/llm/min_promote_rag/output"
 #    - "experimental_data/llm/mid_promote_rag/output"
 #    - "experimental_data/llm/full_promote_rag/output"
-    - xml_instance
+#    - xml_instance
 
 
 
@@ -265,7 +266,7 @@ validators:
     # 🔧 新增：语义验证细粒度控制
     validation_scope:
       # 验证层面控制
-      structural_validation: true      # SHACL结构性验证 (基数、必需属性等)
+      structural_validation: false      # SHACL结构性验证 (基数、必需属性等)
       semantic_validation: true        # SHACL语义性验证 (值限制、依赖等)
 
       # 语义约束类型细分控制 - 与SMT对齐
