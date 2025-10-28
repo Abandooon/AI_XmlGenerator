@@ -1,0 +1,10 @@
+strategy,mode,latency_ms,input_tokens,output_tokens,output_path,request_id
+vllm,MIN,21878,154,812,/home/ubuntu/results/vllm/min_seed42.arxml,chatcmpl-0aaf6a3558a04939913b8a32b5ec0323
+vllm,STD,29411,188,1279,/home/ubuntu/results/vllm/std_seed42.arxml,chatcmpl-cb683a97f23e407da870c9755a194736
+vllm,FULL,46317,227,2013,/home/ubuntu/results/vllm/full_seed42.arxml,chatcmpl-0211c5840e5a48149c5038b53411ee64
+vllm+rag,MIN_RAG,17513,992,743,/home/ubuntu/results/vllm/min_rag_seed42.arxml,chatcmpl-b3751f0a60004a7caed6338732ec30ad
+vllm+rag,STD_RAG,33195,2534,1397,/home/ubuntu/results/vllm/std_rag_seed42.arxml,chatcmpl-dfd5bfa11b8142d3baa2ad3618181c22
+vllm+rag,FULL_RAG,85640,4493,3610,/home/ubuntu/results/vllm/full_rag_seed42.arxml,chatcmpl-df2210bf9c86492f8aaf34333c1d1c9f
+vllm+rag+jsonschema,MIN_SCHEMA,3833,848,119,/home/ubuntu/results/vllm/min_schema_seed42.json,chatcmpl-fa8382f8d5b845bfaefd68304551c0b4
+vllm+rag+jsonschema,STD_SCHEMA,13382,2605,523,/home/ubuntu/results/vllm/std_schema_seed42.json,chatcmpl-3e4183483b24409e8287b36bac51f7e0
+vllm+rag+jsonschema,FULL_SCHEMA,31563,2915,1291,/home/ubuntu/results/vllm/full_schema_seed42.json,chatcmpl-e4e95d6460ab4d4f90b31a12868279e0

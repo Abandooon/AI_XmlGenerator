@@ -1,0 +1,30 @@
+好，我现在需要根据用户提供的任务要求，生成一个符合AUTOSAR 4.2规范的ARXML文件。首先，我要仔细阅读用户的要求，确保理解每一个细节。
+
+用户的主要任务是创建一个Application-SW组件，名称是ASW_COM_MIN。这个组件只有一个P-PORT，名称是MCU01_EmergShutDown。这个端口需要提供信号MCU01_EmergShutDown，并且可以引用三个给定的接口中的一个：/COM_Interface/SR_Interface_MCU01_EmergShutDown、/COM_Interface/SR_Interface_MCU02_MaxTor、/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp。此外，这个组件不需要任何Runnable或RequiredPort。
+
+接下来，我需要按照用户提供的示例JSON结构和RAG信息来构建ARXML文件。示例JSON结构展示了APPLICATION-SW-COMPONENT-TYPE的结构，其中包含SHORT-NAME和PORTS，PORTS下有一个P-PORT-PROTOTYPE，里面包含SHORT-NAME和PROVIDED-INTERFACE-TREF。RAG信息进一步说明了这些标签的层级和语义，比如PORTS下的P-PORT-PROTOTYPE，以及PROVIDED-INTERFACE-TREF下的DEST属性。
+
+用户还特别指出，键名以“@”开头的条目应成为XML属性，键名为“#text”的条目应成为元素的文本内容，数组应映射为重复的同名XML子元素。此外，输出必须是完整合法的ARXML文本，不要解释，不要使用markdown代码块。
+
+首先，我需要构建APPLICATION-SW-COMPONENT-TYPE元素，其SHORT-NAME为ASW_COM_MIN。然后，在PORTS下添加一个P-PORT-PROTOTYPE，SHORT-NAME为PPort_MCU01_EmergShutDown。PROVIDED-INTERFACE-TREF下需要包含DEST属性和文本内容，DEST的值是SENDER-RECEIVER-INTERFACE，文本是选择的接口路径，比如示例中选择的是/COM_Interface/SR_Interface_MCU01_EmergShutDown。
+
+接下来，我需要确保所有元素的层级和语义符合RAG信息中的描述，比如PORTS / P-PORT-PROTOTYPE / PROVIDED-INTERFACE-TREF / SHORT-NAME。同时，保持AUTOSAR 4.2的命名规范，例如使用<APPLICATION-SW-COMPONENT-TYPE>、<SHORT-NAME>等标签。
+
+最后，生成的ARXML文件必须完整且合法，确保所有必要的元素和属性都正确无误。我需要检查生成的ARXML是否符合AUTOSAR 4.2规范，特别是标签和属性的使用是否正确，以及结构是否符合要求。
+
+现在，我将按照上述步骤，生成符合要求的ARXML文件。
+</think>
+
+```xml
+<APPLICATION-SW-COMPONENT-TYPE>
+  <SHORT-NAME>ASW_COM_MIN</SHORT-NAME>
+  <PORTS>
+    <P-PORT-PROTOTYPE>
+      <SHORT-NAME>PPort_MCU01_EmergShutDown</SHORT-NAME>
+      <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+        /COM_Interface/SR_Interface_MCU01_EmergShutDown
+      </PROVIDED-INTERFACE-TREF>
+    </P-PORT-PROTOTYPE>
+  </PORTS>
+</APPLICATION-SW-COMPONENT-TYPE>
+```
