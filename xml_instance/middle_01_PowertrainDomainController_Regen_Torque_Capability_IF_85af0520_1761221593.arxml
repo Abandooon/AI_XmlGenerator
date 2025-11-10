@@ -5,20 +5,12 @@
       <SHORT-NAME>Interfaces</SHORT-NAME>
       <ELEMENTS>
         <SENDER-RECEIVER-INTERFACE>
-          <SHORT-NAME>CellVoltage_Interface</SHORT-NAME>
+          <SHORT-NAME>Regen_Torque_Capability_IF</SHORT-NAME>
           <IS-SERVICE>false</IS-SERVICE>
           <DATA-ELEMENTS>
             <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>cellVoltages</SHORT-NAME>
-              <TYPE-TREF DEST="APPLICATION-ARRAY-DATA-TYPE">/CellVoltage_Interface/cellVoltages</TYPE-TREF>
-            </VARIABLE-DATA-PROTOTYPE>
-            <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>packVoltage</SHORT-NAME>
+              <SHORT-NAME>regen_torque_capability_nm</SHORT-NAME>
               <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/float32</TYPE-TREF>
-            </VARIABLE-DATA-PROTOTYPE>
-            <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>cellVoltageSummary</SHORT-NAME>
-              <TYPE-TREF DEST="APPLICATION-RECORD-DATA-TYPE">/CellVoltage_Interface/cellVoltageSummary</TYPE-TREF>
             </VARIABLE-DATA-PROTOTYPE>
           </DATA-ELEMENTS>
         </SENDER-RECEIVER-INTERFACE>

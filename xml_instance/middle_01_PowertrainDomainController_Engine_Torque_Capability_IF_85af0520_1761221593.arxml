@@ -5,19 +5,11 @@
       <SHORT-NAME>Interfaces</SHORT-NAME>
       <ELEMENTS>
         <SENDER-RECEIVER-INTERFACE>
-          <SHORT-NAME>SOC_Interface</SHORT-NAME>
+          <SHORT-NAME>Engine_Torque_Capability_IF</SHORT-NAME>
           <IS-SERVICE>false</IS-SERVICE>
           <DATA-ELEMENTS>
             <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>SOC</SHORT-NAME>
-              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/float32</TYPE-TREF>
-            </VARIABLE-DATA-PROTOTYPE>
-            <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>SOH</SHORT-NAME>
-              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/float32</TYPE-TREF>
-            </VARIABLE-DATA-PROTOTYPE>
-            <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>confidence</SHORT-NAME>
+              <SHORT-NAME>engine_torque_capability_nm</SHORT-NAME>
               <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/float32</TYPE-TREF>
             </VARIABLE-DATA-PROTOTYPE>
           </DATA-ELEMENTS>

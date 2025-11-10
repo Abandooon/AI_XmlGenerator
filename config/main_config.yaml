@@ -223,7 +223,7 @@ logging:
 file_paths:
   # XML实例文件
   xml_instances:
-    - generated_arxml/complex
+#    - generated_arxml/middle
 #    - "experimental_data/llm/min_promote_No Guard"
 #    - "experimental_data/llm/mid_promote_No Guard"
 #    - "experimental_data/llm/full_promote_No Guard"
@@ -231,16 +231,16 @@ file_paths:
 #    - "experimental_data/llm/min_promote_rag/output"
 #    - "experimental_data/llm/mid_promote_rag/output"
 #    - "experimental_data/llm/full_promote_rag/output"
-#    - xml_instance
+    - xml_instance
 
 
 
 
 
   # 验证相关文件
-  xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
-  shacl_shapes: "src/constraint_graph/artifacts/shapes/autosar_shapes.ttl"
-  smt_template: "src/constraint_graph/artifacts/smt/constraints.smt2"
+  xsd_schema: "src/validation/data/AUTOSAR_4-2-2.xsd"
+  shacl_shapes: "src/validation/data/autosar_shapes.ttl"
+  smt_template: "src/validation/data/constraints.smt2"
 
   enriched_constraints: "src/constraint_graph/artifacts/enriched_constraints.json"
   raw_attributes: "src/constraint_graph/artifacts/raw/raw_attributes.jsonl"  # 确保路径正确
@@ -253,12 +253,12 @@ file_paths:
 validators:
   # XSD 验证配置
   structure:
-    enabled: true
+    enabled: false
     strict_mode: true #严格按照xsd定义
 
   # SHACL 🔧 增强的语义验证配置
   semantic:
-    enabled: false
+    enabled: true
     inference: true
     timeout: 180
     max_violations_display: 10
@@ -266,7 +266,7 @@ validators:
     # 🔧 新增：语义验证细粒度控制
     validation_scope:
       # 验证层面控制
-      structural_validation: false      # SHACL结构性验证 (基数、必需属性等)
+      structural_validation: true      # SHACL结构性验证 (基数、必需属性等)
       semantic_validation: true        # SHACL语义性验证 (值限制、依赖等)
 
       # 语义约束类型细分控制 - 与SMT对齐

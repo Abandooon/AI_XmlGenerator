@@ -5,16 +5,12 @@
       <SHORT-NAME>Interfaces</SHORT-NAME>
       <ELEMENTS>
         <SENDER-RECEIVER-INTERFACE>
-          <SHORT-NAME>Safety_Interface</SHORT-NAME>
+          <SHORT-NAME>Gear_Command_IF</SHORT-NAME>
           <IS-SERVICE>false</IS-SERVICE>
           <DATA-ELEMENTS>
             <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>safetyLimits</SHORT-NAME>
-              <TYPE-TREF DEST="APPLICATION-RECORD-DATA-TYPE">/Safety_Interface/safetyLimits</TYPE-TREF>
-            </VARIABLE-DATA-PROTOTYPE>
-            <VARIABLE-DATA-PROTOTYPE>
-              <SHORT-NAME>safetyEvent</SHORT-NAME>
-              <TYPE-TREF DEST="APPLICATION-RECORD-DATA-TYPE">/Safety_Interface/safetyEvent</TYPE-TREF>
+              <SHORT-NAME>gear_cmd</SHORT-NAME>
+              <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/uint8</TYPE-TREF>
             </VARIABLE-DATA-PROTOTYPE>
           </DATA-ELEMENTS>
         </SENDER-RECEIVER-INTERFACE>

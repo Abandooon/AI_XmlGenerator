@@ -5,14 +5,17 @@
       <SHORT-NAME>Interfaces</SHORT-NAME>
       <ELEMENTS>
         <CLIENT-SERVER-INTERFACE>
-          <SHORT-NAME>Charge_Interface</SHORT-NAME>
-          <IS-SERVICE>false</IS-SERVICE>
+          <SHORT-NAME>UDS_Service_IF</SHORT-NAME>
+          <IS-SERVICE>true</IS-SERVICE>
           <OPERATIONS>
             <CLIENT-SERVER-OPERATION>
-              <SHORT-NAME>ChargeRequest</SHORT-NAME>
+              <SHORT-NAME>read_did</SHORT-NAME>
             </CLIENT-SERVER-OPERATION>
             <CLIENT-SERVER-OPERATION>
-              <SHORT-NAME>ChargeResponse</SHORT-NAME>
+              <SHORT-NAME>write_did</SHORT-NAME>
+            </CLIENT-SERVER-OPERATION>
+            <CLIENT-SERVER-OPERATION>
+              <SHORT-NAME>routine_control</SHORT-NAME>
             </CLIENT-SERVER-OPERATION>
           </OPERATIONS>
         </CLIENT-SERVER-INTERFACE>
