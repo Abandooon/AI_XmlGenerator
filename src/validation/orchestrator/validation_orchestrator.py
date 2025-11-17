@@ -49,10 +49,20 @@ class ValidationOrchestrator:
             # 初始化约束验证器
             if self.config.get("validators", {}).get("constraint", {}).get("enabled", True):
                 from ..constraints.smt_validator import SMTValidator
+
+                # 获取SMT模板和映射文件路径
+                smt_template = self.config.get("smt_template_file")
+                smt_mapping = self.config.get("smt_mapping_file")  # ← 新增
+
                 self.constraint_validator = SMTValidator(
-                    self.config.get("smt_template_file")
+                    smt_template,
+                    mapping_file=smt_mapping  # ← 关键修改：传递mapping文件
                 )
                 print("✅ Constraint validator initialized")
+
+                # 可选：显示mapping加载状态
+                if smt_mapping:
+                    print(f"   📄 SMT Mapping: {smt_mapping}")
         except Exception as e:
             print(f"⚠️  Constraint validator initialization failed: {e}")
 
@@ -262,6 +272,24 @@ class ValidationOrchestrator:
                         total_constraints = result["constraint_count"]
                         report_lines.append(f"  Constraints: {satisfied}/{total_constraints} satisfied")
 
+                        diagnosis = result.get("diagnosis", {})
+                        if diagnosis and isinstance(diagnosis, dict):
+                            diag_text = diagnosis.get("diagnosis", "")
+                            if diag_text:
+                                report_lines.append(f"\n  📋 诊断报告:")
+                                for line in diag_text.split('\n'):
+                                    report_lines.append(f"    {line}")
+
+                            conflicts = diagnosis.get("conflicting_facts", [])
+                            if conflicts:
+                                report_lines.append(f"\n  ⚠️  冲突详情 ({len(conflicts)} 个):")
+                                for conflict in conflicts[:3]:
+                                    idx = conflict.get("index", -1)
+                                    fact = conflict.get("fact", "")[:120]
+                                    report_lines.append(f"    #{idx + 1}: {fact}...")
+                                if len(conflicts) > 3:
+                                    report_lines.append(f"    ... 还有 {len(conflicts) - 3} 个冲突")
+
                         # 显示未满足的约束
                         unsat_constraints = result.get("unsat_constraints", [])
                         if unsat_constraints:
@@ -272,6 +300,8 @@ class ValidationOrchestrator:
 
                             if len(unsat_constraints) > 3:
                                 report_lines.append(f"    ... and {len(unsat_constraints) - 3} more")
+
+
 
                     if "error" in result and result["error"]:
                         report_lines.append(f"  Error: {result['error']}")

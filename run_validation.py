@@ -84,61 +84,6 @@ def check_dependencies():
     return True
 
 
-def create_default_validation_config():
-    """创建默认的验证配置文件"""
-    config_content = """validation:
-  name: "AUTOSAR XML Validation System"
-  version: "1.0.0"
-
-file_paths:
-  xml_instances:
-    - "xml_instance/ASW_COM.arxml"
-
-  xsd_schema: "src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd"
-  shacl_shapes: "src/constraint_graph/artifacts/shapes/autosar_shapes.ttl"
-  smt_template: "src/constraint_graph/artifacts/smt/constraints.smt2"
-
-  output_dir: "logs"
-  report_dir: "reports"
-
-validators:
-  structure:
-    enabled: true
-    timeout: 30
-
-  semantic:
-    enabled: true
-    timeout: 60
-
-  constraint:
-    enabled: true
-    timeout: 120
-
-validation_modes:
-  quick: ["structure"]
-  standard: ["structure", "semantic"] 
-  full: ["structure", "semantic", "constraint"]
-
-default_mode: "full"
-
-reporting:
-  format: "text"
-  detailed_errors: true
-  save_reports: true
-  console_output: true
-"""
-
-    # 创建config目录
-    Path("config").mkdir(exist_ok=True)
-
-    # 写入配置文件
-    config_file = Path("config/mainnn_config.yaml")
-    with open(config_file, 'w', encoding='utf-8') as f:
-        f.write(config_content)
-
-    print(f"✅ 创建默认配置: {config_file}")
-
-
 def check_config_files():
     """检查配置文件 - 修复版，正确支持main_config.yaml"""
     print("\n📝 检查配置文件...")
@@ -197,101 +142,10 @@ def create_missing_validation_files():
 
     # 创建基础的SHACL shapes文件
     shapes_file = Path("src/constraint_graph/artifacts/shapes/autosar_shapes.ttl")
-    if not shapes_file.exists():
-        shapes_content = """@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix autosar: <http://autosar.org/schema/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
-# 基础的AUTOSAR组件形状定义
-autosar:ApplicationSwComponentTypeShape
-    a sh:NodeShape ;
-    sh:targetClass autosar:APPLICATION-SW-COMPONENT-TYPE ;
-    sh:property [
-        sh:path autosar:SHORT-NAME ;
-        sh:datatype xsd:string ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:message "APPLICATION-SW-COMPONENT-TYPE must have exactly one SHORT-NAME" ;
-    ] .
-
-# 端口原型形状定义
-autosar:PortPrototypeShape
-    a sh:NodeShape ;
-    sh:targetClass autosar:P-PORT-PROTOTYPE, autosar:R-PORT-PROTOTYPE ;
-    sh:property [
-        sh:path autosar:SHORT-NAME ;
-        sh:datatype xsd:string ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:message "Port prototype must have exactly one SHORT-NAME" ;
-    ] .
-"""
-        with open(shapes_file, 'w', encoding='utf-8') as f:
-            f.write(shapes_content)
-        print(f"✅ 创建SHACL shapes: {shapes_file}")
-
     # 创建基础的SMT模板文件
     smt_file = Path("src/constraint_graph/artifacts/smt/constraints.smt2")
-    if not smt_file.exists():
-        smt_content = """; Basic AUTOSAR SMT constraint template
-
-(set-logic QF_LRA)
-
-; Basic timing constraints
-(declare-const period Real)
-(declare-const deadline Real)
-
-; Constraints
-(assert (> period 0.0))
-(assert (> deadline 0.0))
-(assert (<= deadline period))
-
-(check-sat)
-"""
-        with open(smt_file, 'w', encoding='utf-8') as f:
-            f.write(smt_content)
-        print(f"✅ 创建SMT模板: {smt_file}")
-
     # 创建基础的XSD文件（如果不存在）
     xsd_file = Path("src/constraint_graph/artifacts/schema/AUTOSAR_4-2-2.xsd")
-    if not xsd_file.exists():
-        xsd_content = """<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://autosar.org/schema/r4.0"
-           xmlns:autosar="http://autosar.org/schema/r4.0"
-           elementFormDefault="qualified">
-
-    <!-- Basic AUTOSAR component definition -->
-    <xs:element name="APPLICATION-SW-COMPONENT-TYPE">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="SHORT-NAME" type="xs:string"/>
-                <xs:element name="PORTS" minOccurs="0">
-                    <xs:complexType>
-                        <xs:choice maxOccurs="unbounded">
-                            <xs:element name="P-PORT-PROTOTYPE" type="autosar:PortPrototypeType"/>
-                            <xs:element name="R-PORT-PROTOTYPE" type="autosar:PortPrototypeType"/>
-                        </xs:choice>
-                    </xs:complexType>
-                </xs:element>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-
-    <!-- Port prototype type definition -->
-    <xs:complexType name="PortPrototypeType">
-        <xs:sequence>
-            <xs:element name="SHORT-NAME" type="xs:string"/>
-        </xs:sequence>
-    </xs:complexType>
-
-</xs:schema>
-"""
-        with open(xsd_file, 'w', encoding='utf-8') as f:
-            f.write(xsd_content)
-        print(f"✅ 创建XSD schema: {xsd_file}")
-
 
 def check_validation_files():
     """检查验证相关文件"""
@@ -323,8 +177,6 @@ def check_validation_files():
 
     if available_xmls == 0:
         print("❌ 没有可用的XML实例文件")
-        # 创建示例XML文件
-        create_sample_xml()
 
     # 检查验证器文件
     validator_files = [
@@ -347,41 +199,6 @@ def check_validation_files():
 
     print("✅ 验证文件检查完成")
     return True
-
-
-def create_sample_xml():
-    """创建示例XML文件"""
-    xml_dir = Path("xml_instance")
-    xml_dir.mkdir(exist_ok=True)
-
-    xml_file = xml_dir / "ASW_COM.arxml"
-    if not xml_file.exists():
-        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
-<AUTOSAR xmlns="http://autosar.org/schema/r4.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <AR-PACKAGES>
-        <AR-PACKAGE>
-            <SHORT-NAME>ComponentTypes</SHORT-NAME>
-            <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE>
-                    <SHORT-NAME>ExampleComponent</SHORT-NAME>
-                    <PORTS>
-                        <P-PORT-PROTOTYPE>
-                            <SHORT-NAME>ProvidePort</SHORT-NAME>
-                        </P-PORT-PROTOTYPE>
-                        <R-PORT-PROTOTYPE>
-                            <SHORT-NAME>RequirePort</SHORT-NAME>
-                        </R-PORT-PROTOTYPE>
-                    </PORTS>
-                </APPLICATION-SW-COMPONENT-TYPE>
-            </ELEMENTS>
-        </AR-PACKAGE>
-    </AR-PACKAGES>
-</AUTOSAR>
-"""
-        with open(xml_file, 'w', encoding='utf-8') as f:
-            f.write(xml_content)
-        print(f"✅ 创建示例XML: {xml_file}")
 
 
 def run_validation_system():

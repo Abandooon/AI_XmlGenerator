@@ -241,6 +241,7 @@ file_paths:
   xsd_schema: "src/validation/data/AUTOSAR_4-2-2.xsd"
   shacl_shapes: "src/validation/data/autosar_shapes.ttl"
   smt_template: "src/validation/data/constraints.smt2"
+  smt_mapping: "src/validation/data/mapping_smt.json"
 
   enriched_constraints: "src/constraint_graph/artifacts/enriched_constraints.json"
   raw_attributes: "src/constraint_graph/artifacts/raw/raw_attributes.jsonl"  # 确保路径正确
@@ -317,18 +318,18 @@ validators:
     max_constraints_display: 5
 
     validation_scope:
-      structural_constraints: false     # SMT结构约束
+      structural_constraints: true     # SMT结构约束
       semantic_constraints: true       # SMT语义约束
 
       # 与SHACL语义类型保持一致
       semantic_types:
-        existence: false
-        value_restriction: false
-        cardinality: false
+        existence: true
+        value_restriction: true
+        cardinality: true
         dependency: true
         mutual_exclusion: true
         format: true
-        range: false
+        range: true
         behavioral: true
         other: true
 

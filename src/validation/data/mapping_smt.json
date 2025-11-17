@@ -1,0 +1,314 @@
+[
+  {
+    "constraint_id": "TPS_SWCT_01323",
+    "severity": "Info",
+    "target": {
+      "target_sort": "RUNNABLE-ENTITY",
+      "target_xml": {
+        "xml_tag": "RUNNABLE-ENTITY"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "dataReadAccess",
+        "xml_tag": "VARIABLE-ACCESS",
+        "xpath": "DATA-READ-ACCESSS/VARIABLE-ACCESS",
+        "smt_sort": "VARIABLE-ACCESS",
+        "smt_predicates": {
+          "has_dataReadAccess": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT",
+              "PROPERTY"
+            ]
+          }
+        }
+      },
+      {
+        "role": "dataWriteAccess",
+        "xml_tag": "VARIABLE-ACCESS",
+        "xpath": "DATA-WRITE-ACCESSS/VARIABLE-ACCESS",
+        "smt_sort": "VARIABLE-ACCESS",
+        "smt_predicates": {
+          "has_dataWriteAccess": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT",
+              "PROPERTY"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "RunnableEntity may specify read/write access VariableAccess elements; no additional logical restriction beyond structural presence."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004",
+    "severity": "Info",
+    "target": {
+      "target_sort": "CLIENT-SERVER-INTERFACE",
+      "target_xml": {
+        "xml_tag": "CLIENT-SERVER-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_CLIENT-SERVER-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_CLIENT-SERVER-INTERFACE is false, serviceKindOf_CLIENT-SERVER-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004_NV-DATA",
+    "severity": "Info",
+    "target": {
+      "target_sort": "NV-DATA-INTERFACE",
+      "target_xml": {
+        "xml_tag": "NV-DATA-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_NV-DATA-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_NV-DATA-INTERFACE is false, serviceKindOf_NV-DATA-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004_PARAMETER",
+    "severity": "Info",
+    "target": {
+      "target_sort": "PARAMETER-INTERFACE",
+      "target_xml": {
+        "xml_tag": "PARAMETER-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_PARAMETER-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_PARAMETER-INTERFACE is false, serviceKindOf_PARAMETER-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004_SENDER-RECEIVER",
+    "severity": "Info",
+    "target": {
+      "target_sort": "SENDER-RECEIVER-INTERFACE",
+      "target_xml": {
+        "xml_tag": "SENDER-RECEIVER-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_SENDER-RECEIVER-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_SENDER-RECEIVER-INTERFACE is false, serviceKindOf_SENDER-RECEIVER-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004_MODE-SWITCH",
+    "severity": "Info",
+    "target": {
+      "target_sort": "MODE-SWITCH-INTERFACE",
+      "target_xml": {
+        "xml_tag": "MODE-SWITCH-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_MODE-SWITCH-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_MODE-SWITCH-INTERFACE is false, serviceKindOf_MODE-SWITCH-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "TPS_SWCT_01004_TRIGGER",
+    "severity": "Info",
+    "target": {
+      "target_sort": "TRIGGER-INTERFACE",
+      "target_xml": {
+        "xml_tag": "TRIGGER-INTERFACE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "serviceKind",
+        "xml_tag": "SERVICE-KIND",
+        "smt_sort": "SERVICE-KIND",
+        "smt_predicates": {
+          "serviceKindDefined_TRIGGER-INTERFACE": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "If serviceKindDefined_TRIGGER-INTERFACE is false, serviceKindOf_TRIGGER-INTERFACE defaults to anyStandardized."
+    }
+  },
+  {
+    "constraint_id": "Constr_ApplicationCompositeDataType_SemanticMeaning",
+    "severity": "Info",
+    "target": {
+      "target_sort": "APPLICATION-COMPOSITE-DATA-TYPE",
+      "target_xml": {
+        "xml_tag": "APPLICATION-COMPOSITE-DATA-TYPE"
+      },
+      "target_binding": "path"
+    },
+    "properties": [],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "An ApplicationCompositeDataType as a whole has no particular semantic meaning; semantics are specified on contained ApplicationPrimitiveDataTypes."
+    }
+  },
+  {
+    "constraint_id": "Constr_ApplicationDataType_Precedence",
+    "severity": "Violation",
+    "target": {
+      "target_sort": "SW-DATA-DEF-PROPS-CONTENT",
+      "target_xml": {
+        "xml_tag": "SW-DATA-DEF-PROPS-CONTENT"
+      },
+      "target_binding": "path"
+    },
+    "properties": [
+      {
+        "role": "baseType",
+        "xml_tag": "BASE-TYPE-REF",
+        "smt_sort": "SW-BASE-TYPE",
+        "smt_predicates": {
+          "has_baseTypeRef": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      },
+      {
+        "role": "compuMethod",
+        "xml_tag": "COMPU-METHOD-REF",
+        "smt_sort": "COMPU-METHOD",
+        "smt_predicates": {
+          "has_compuMethodRef": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      },
+      {
+        "role": "unit",
+        "xml_tag": "UNIT-REF",
+        "smt_sort": "UNIT",
+        "smt_predicates": {
+          "has_unitRef": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      },
+      {
+        "role": "valueAxisDataType",
+        "xml_tag": "VALUE-AXIS-DATA-TYPE-REF",
+        "smt_sort": "APPLICATION-PRIMITIVE-DATA-TYPE",
+        "smt_predicates": {
+          "has_valueAxisDataTypeRef": {
+            "type": "predicate",
+            "args": [
+              "SUBJECT"
+            ]
+          }
+        }
+      }
+    ],
+    "logical_pattern": {
+      "type": "documentation",
+      "description": "Precedence constraint: if has_valueAxisDataTypeRef(SUBJECT) then not has_compuMethodRef(SUBJECT) and not has_unitRef(SUBJECT) and not has_baseTypeRef(SUBJECT)."
+    }
+  }
+]

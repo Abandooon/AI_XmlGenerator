@@ -16,7 +16,6 @@ class ConfigDrivenOrchestrator:
         self.validators = {}
         self._init_validators()
 
-    # config_driven_orchestrator.py 中的修改函数
 
     def _print_stage_details(self, stage: str, result: Dict):
         """打印验证阶段的详细信息 - 增强SHACL详细违规显示"""
@@ -1057,86 +1056,102 @@ class ConfigDrivenOrchestrator:
                 import traceback
                 traceback.print_exc()
 
+        # ⬇️ =================== SMT 验证器修复 =================== ⬇️
         # 🔧 增强的约束验证器初始化 - 支持细粒度控制
         if constraint_config.get("enabled", True):
             try:
                 from ..constraints.smt_validator import SMTValidator
                 smt_path = file_paths.get("smt_template")
+
+                # ⬇️ 关键修复：从配置中读取 smt_mapping 路径
+                mapping_path = file_paths.get("smt_mapping")
+
+                # ⬇️ 关键修复：初始化路径变量
+                smt_full_path = None
+                mapping_full_path = None
+
                 if smt_path:
                     smt_full_path = project_root / smt_path if not Path(smt_path).is_absolute() else Path(smt_path)
-                    if smt_full_path.exists():
-                        print(f"📄 加载SMT Template: {smt_full_path}")
 
-                        # 🔧 显示约束验证配置信息
-                        validation_scope = constraint_config.get('validation_scope', {})
-                        print(f"🔧 SMT约束验证配置:")
+                # ⬇️ 关键修复：解析映射的完整路径
+                if mapping_path:
+                    mapping_full_path = project_root / mapping_path if not Path(mapping_path).is_absolute() else Path(
+                        mapping_path)
 
-                        # 检查验证范围
-                        struct_enabled = validation_scope.get('structural_constraints', True)
-                        semantic_enabled = validation_scope.get('semantic_constraints', True)
-                        print(f"   结构约束: {'启用' if struct_enabled else '禁用'}")
-                        print(f"   语义约束: {'启用' if semantic_enabled else '禁用'}")
+                if smt_full_path and smt_full_path.exists():
+                    print(f"📄 加载SMT Template: {smt_full_path}")
 
-                        # 显示语义约束类型配置
-                        semantic_types = validation_scope.get('semantic_types', {})
-                        if semantic_types:
-                            enabled_types = [k for k, v in semantic_types.items() if v]
-                            disabled_types = [k for k, v in semantic_types.items() if not v]
-                            if enabled_types:
-                                print(f"   启用类型: {', '.join(enabled_types)}")
-                            if disabled_types:
-                                print(f"   禁用类型: {', '.join(disabled_types)}")
-
-                        # 显示验证策略
-                        strategy = constraint_config.get('validation_strategy', {})
-                        validation_mode = strategy.get('mode', 'hybrid')
-                        print(f"   验证模式: {validation_mode}")
-
-                        if strategy.get('fail_fast', True):
-                            print(f"   失败策略: 快速失败")
-                        if strategy.get('continue_on_semantic_fail', True):
-                            print(f"   语义失败: 继续验证")
-
-                        # 安全地初始化SMT验证器
-                        if raw_attributes_file and Path(raw_attributes_file).exists():
-                            print(f"📄 启用SMT约束映射功能: {raw_attributes_file}")
-                            try:
-                                self.validators['constraint'] = SMTValidator(
-                                    str(smt_full_path),
-                                    raw_attributes_file,
-                                    enriched_constraints_file,
-                                    constraint_config  # 🔧 传递约束配置
-                                )
-                                print("✅ SMT约束验证器初始化成功 (增强模式)")
-                            except Exception as init_error:
-                                print(f"⚠️  增强模式初始化失败: {init_error}")
-                                print("🔄 回退到标准模式...")
-                                try:
-                                    self.validators['constraint'] = SMTValidator(
-                                        str(smt_full_path),
-                                        None, None,
-                                        constraint_config  # 🔧 仍然传递约束配置
-                                    )
-                                    print("✅ SMT约束验证器初始化成功 (标准模式)")
-                                except Exception as fallback_error:
-                                    print(f"❌ 标准模式也失败: {fallback_error}")
-                                    raise
-                        else:
-                            print("📝 使用标准模式")
-                            self.validators['constraint'] = SMTValidator(
-                                str(smt_full_path),
-                                None, None,
-                                constraint_config  # 🔧 传递约束配置
-                            )
-                            print("✅ SMT约束验证器初始化成功 (标准模式)")
+                    # ⬇️ 关键修复：检查映射路径并准备传递
+                    mapping_to_pass = None
+                    if mapping_full_path and mapping_full_path.exists():
+                        print(f"📄 启用SMT约束映射: {mapping_full_path}")
+                        mapping_to_pass = str(mapping_full_path)
+                    elif mapping_full_path:
+                        # 路径在配置中但文件不存在
+                        print(f"⚠️  SMT 映射文件未找到: {mapping_full_path}")
+                        print(f"     请检查 'main_config.yaml' 中的 'smt_mapping' 路径。")
                     else:
-                        print(f"⚠️  SMT文件未找到: {smt_full_path}")
+                        # 路径未在配置中
+                        print(f"⚠️  配置中未指定 SMT 映射 (smt_mapping)")
+                        print(f"     将不加载 SMT 映射，这*将*导致 '0 data points' 错误。")
+
+                    # 🔧 显示约束验证配置信息
+                    validation_scope = constraint_config.get('validation_scope', {})
+                    print(f"🔧 SMT约束验证配置:")
+
+                    # 检查验证范围
+                    struct_enabled = validation_scope.get('structural_constraints', True)
+                    semantic_enabled = validation_scope.get('semantic_constraints', True)
+                    print(f"   结构约束: {'启用' if struct_enabled else '禁用'}")
+                    print(f"   语义约束: {'启用' if semantic_enabled else '禁用'}")
+
+                    # 显示语义约束类型配置
+                    semantic_types = validation_scope.get('semantic_types', {})
+                    if semantic_types:
+                        enabled_types = [k for k, v in semantic_types.items() if v]
+                        disabled_types = [k for k, v in semantic_types.items() if not v]
+                        if enabled_types:
+                            print(f"   启用类型: {', '.join(enabled_types)}")
+                        if disabled_types:
+                            print(f"   禁用类型: {', '.join(disabled_types)}")
+
+                    # 显示验证策略
+                    strategy = constraint_config.get('validation_strategy', {})
+                    validation_mode = strategy.get('mode', 'hybrid')
+                    print(f"   验证模式: {validation_mode}")
+
+                    if strategy.get('fail_fast', True):
+                        print(f"   失败策略: 快速失败")
+                    if strategy.get('continue_on_semantic_fail', True):
+                        print(f"   语义失败: 继续验证")
+
+                    # 安全地初始化SMT验证器
+                    # (我们不再区分“增强模式”和“标准模式”的初始化，
+                    # 而是统一将解析后的 mapping_to_pass 传递下去)
+
+                    print("📝 使用标准模式 (已配置映射)")
+                    try:
+                        self.validators['constraint'] = SMTValidator(
+                            str(smt_full_path),
+                            # ⬇️ 关键修复：将解析后的路径传递给构造函数
+                            mapping_file=mapping_to_pass
+                            # constraint_config  # 🔧 传递约束配置
+                        )
+                        print("✅ SMT约束验证器初始化成功")
+                    except Exception as fallback_error:
+                        print(f"❌ SMT约束验证器初始化失败: {fallback_error}")
+                        raise
+
                 else:
-                    print("⚠️  配置中未指定SMT Template路径")
+                    if smt_path:
+                        print(f"⚠️  SMT文件未找到: {smt_full_path}")
+                    else:
+                        print("⚠️  配置中未指定SMT Template路径")
             except Exception as e:
                 print(f"⚠️  SMT验证器初始化失败: {e}")
                 import traceback
                 traceback.print_exc()
+
 
     def execute_validation(self, xml_content: str, validation_stages: list = None) -> Dict:
         """执行指定阶段的验证"""

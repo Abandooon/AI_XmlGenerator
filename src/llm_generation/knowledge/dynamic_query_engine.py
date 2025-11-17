@@ -1153,6 +1153,17 @@ class DynamicQueryEngine:
             })
             sib_props = {
                 "SHORT-NAME": sib_short_name_schema,
+                # ✅ 新增：必选的Boolean字段 - AUTOSAR规范要求（minOccurs=1, maxOccurs=1）
+                "SUPPORTS-MULTIPLE-INSTANTIATION": {
+                    "type": "string",
+                    "enum": ["true", "false"],
+                    "description": "Indicates whether the component supports multiple instantiation. Required by AUTOSAR standard (TPS_SWCT_01361)."
+                },
+                "HANDLE-TERMINATION-AND-RESTART": {
+                    "type": "string",
+                    "enum": ["true", "false"],
+                    "description": "Indicates whether the component handles termination and restart. Required by AUTOSAR standard."
+                },
                 # 折叠 RUNNABLES：把 RUNNABLES 容器里的 RUNNABLE-ENTITY 直接暴露出来
                 **(
                     {"RUNNABLE-ENTITY": (runnables_obj.get("properties") or {}).get("RUNNABLE-ENTITY")}

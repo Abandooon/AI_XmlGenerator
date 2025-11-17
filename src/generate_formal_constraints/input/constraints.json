@@ -1,0 +1,266 @@
+[
+  {
+    "constraint_with_xml": {
+      "expression": "The SwcInternalBehavior may specify that a RunnableEntity needs read-access (respectively write-access) to the VariableDataPrototypes in the role dataElement of an RPortPrototype (respectively PPortPrototype, or PRPortPrototype).",
+      "id": "TPS_SWCT_01323",
+      "title": "Read and write access to a dataElement",
+      "applies_to_class": null,
+      "is_active": true,
+      "id_type": "TPS_SWCT",
+      "target_properties": [
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": "VARIABLE-ACCESS",
+          "owner_class": "RunnableEntity",
+          "owner_xml_tag": "RUNNABLE-ENTITY",
+          "owner_is_abstract": false,
+          "maxOccurs": -1,
+          "xml_tag": "VARIABLE-ACCESS",
+          "path_variants": [
+            "RUNNABLE-ENTITY/DATA-READ-ACCESSS/VARIABLE-ACCESS"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "dataReadAccess",
+          "type_name": "VariableAccess",
+          "xml_wrapper_tag": "DATA-READ-ACCESSS"
+        },
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": "VARIABLE-ACCESS",
+          "owner_class": "RunnableEntity",
+          "owner_xml_tag": "RUNNABLE-ENTITY",
+          "owner_is_abstract": false,
+          "maxOccurs": -1,
+          "xml_tag": "VARIABLE-ACCESS",
+          "path_variants": [
+            "RUNNABLE-ENTITY/DATA-WRITE-ACCESSS/VARIABLE-ACCESS"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "dataWriteAccess",
+          "type_name": "VariableAccess",
+          "xml_wrapper_tag": "DATA-WRITE-ACCESSS"
+        }
+      ],
+      "constraint_type": "relationship",
+      "target_class": {
+        "name": "PPortPrototype",
+        "xml_tag": "P-PORT-PROTOTYPE"
+      }
+    }
+  },
+  {
+    "constraint_with_xml": {
+      "expression": "if the attribute serviceKind is not deﬁned in the context of a speciﬁc PortInterface the default value anyStandardized shall be assumed.",
+      "id": "TPS_SWCT_01004",
+      "title": "Default value if serviceKind is not deﬁned",
+      "applies_to_class": null,
+      "is_active": true,
+      "id_type": "TPS_SWCT",
+      "target_properties": [
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": "SERVICE-PROVIDER-ENUM",
+          "owner_class": "PortInterface",
+          "owner_xml_tag": "PORT-INTERFACE",
+          "owner_is_abstract": true,
+          "maxOccurs": 1,
+          "xml_tag": "SERVICE-KIND",
+          "path_variants": [
+            "CLIENT-SERVER-INTERFACE/SERVICE-KIND",
+            "NV-DATA-INTERFACE/SERVICE-KIND",
+            "PARAMETER-INTERFACE/SERVICE-KIND",
+            "SENDER-RECEIVER-INTERFACE/SERVICE-KIND",
+            "MODE-SWITCH-INTERFACE/SERVICE-KIND",
+            "TRIGGER-INTERFACE/SERVICE-KIND"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "serviceKind",
+          "type_name": "ServiceProviderEnum",
+          "xml_wrapper_tag": null
+        }
+      ],
+      "constraint_type": "value_restriction",
+      "target_class": null
+    }
+  },
+  {
+    "constraint_with_xml": {
+      "expression": "An ApplicationCompositeDataType cannot be given a particular semantic meaning as a whole but it is obviously possible to specify the semantics of all or a part of the contained elements, i.e. the ApplicationPrimitiveDataTypes.",
+      "id": "Constr_ApplicationCompositeDataType_SemanticMeaning",
+      "title": "Semantic Meaning of ApplicationCompositeDataType",
+      "applies_to_class": null,
+      "is_active": true,
+      "id_type": "additional_binding",
+      "target_properties": [
+
+      ],
+      "constraint_type": "value_restriction",
+      "target_class": {
+        "name": "ApplicationCompositeDataType",
+        "xml_tag": "APPLICATION-COMPOSITE-DATA-TYPE"
+      }
+    }
+  },
+  {
+    "constraint_with_xml": {
+      "expression": "If an ApplicationDataType is referenced (via valueAxisDataType) this supersedes CompuMethod, Unit, and BaseType if these are defined in parallel.",
+      "id": "Constr_ApplicationDataType_Precedence",
+      "title": "Precedence of ApplicationDataType for Functional Values Type",
+      "applies_to_class": null,
+      "is_active": true,
+      "id_type": "additional_binding",
+      "target_properties": [
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": null,
+          "owner_class": "SwDataDefPropsContent",
+          "owner_xml_tag": "SW-DATA-DEF-PROPS-CONTENT",
+          "owner_is_abstract": false,
+          "maxOccurs": 1,
+          "xml_tag": "BASE-TYPE-REF",
+          "path_variants": [
+            "SW-DATA-DEF-PROPS-CONTENT/BASE-TYPE-REF"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+            "SW-BASE-TYPE"
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "baseType",
+          "type_name": "BaseTypeRef",
+          "xml_wrapper_tag": null
+        },
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": null,
+          "owner_class": "SwDataDefPropsContent",
+          "owner_xml_tag": "SW-DATA-DEF-PROPS-CONTENT",
+          "owner_is_abstract": false,
+          "maxOccurs": 1,
+          "xml_tag": "COMPU-METHOD-REF",
+          "path_variants": [
+            "SW-DATA-DEF-PROPS-CONTENT/COMPU-METHOD-REF"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+            "COMPU-METHOD"
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "compuMethod",
+          "type_name": "CompuMethodRef",
+          "xml_wrapper_tag": null
+        },
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": null,
+          "owner_class": "SwDataDefPropsContent",
+          "owner_xml_tag": "SW-DATA-DEF-PROPS-CONTENT",
+          "owner_is_abstract": false,
+          "maxOccurs": 1,
+          "xml_tag": "UNIT-REF",
+          "path_variants": [
+            "SW-DATA-DEF-PROPS-CONTENT/UNIT-REF"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+            "UNIT"
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "unit",
+          "type_name": "UnitRef",
+          "xml_wrapper_tag": null
+        },
+        {
+          "isXmlAttr": false,
+          "type_xml_tag": null,
+          "owner_class": "SwDataDefPropsContent",
+          "owner_xml_tag": "SW-DATA-DEF-PROPS-CONTENT",
+          "owner_is_abstract": false,
+          "maxOccurs": 1,
+          "xml_tag": "VALUE-AXIS-DATA-TYPE-REF",
+          "path_variants": [
+            "SW-DATA-DEF-PROPS-CONTENT/VALUE-AXIS-DATA-TYPE-REF"
+          ],
+          "type_labels": [
+            "Entity",
+            "Class"
+          ],
+          "type_baseType": null,
+          "minOccurs": 0,
+          "ref_dest_literals": [
+            "APPLICATION-PRIMITIVE-DATA-TYPE"
+          ],
+          "type_pattern": null,
+          "enum_values": [
+
+          ],
+          "name": "valueAxisDataType",
+          "type_name": "ValueAxisDataTypeRef",
+          "xml_wrapper_tag": null
+        }
+      ],
+      "constraint_type": "behavioral",
+      "target_class": null
+    }
+  }
+  ]

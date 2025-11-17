@@ -1,0 +1,126 @@
+# SHACL shapes for given constraints
+
+#################################################################
+# TPS_SWCT_01323 - Read and write access to a dataElement
+#################################################################
+
+autosar:TPS_SWCT_01323
+    a sh:NodeShape ;
+    sh:targetClass autosar:RUNNABLE-ENTITY ;
+
+    # Read access VARIABLE-ACCESS elements
+    sh:property [
+        sh:path ( autosar:RUNNABLE-ENTITY autosar:VARIABLE-ACCESS ) ;
+        sh:class autosar:VARIABLE-ACCESS ;
+        sh:severity sh:Info
+    ] ;
+
+    # Write access VARIABLE-ACCESS elements
+    sh:property [
+        sh:path ( autosar:RUNNABLE-ENTITY autosar:VARIABLE-ACCESS ) ;
+        sh:class autosar:VARIABLE-ACCESS ;
+        sh:severity sh:Info
+    ] ;
+.
+
+#################################################################
+# TPS_SWCT_01004 - Default value if serviceKind is not defined
+#################################################################
+
+# PortInterface is abstract; concrete XML tags are given in path_variants.
+# We create one shape per concrete interface kind.
+
+autosar:TPS_SWCT_01004_CLIENT-SERVER-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:CLIENT-SERVER-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+autosar:TPS_SWCT_01004_NV-DATA-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:NV-DATA-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+autosar:TPS_SWCT_01004_PARAMETER-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:PARAMETER-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+autosar:TPS_SWCT_01004_SENDER-RECEIVER-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:SENDER-RECEIVER-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+autosar:TPS_SWCT_01004_MODE-SWITCH-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:MODE-SWITCH-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+autosar:TPS_SWCT_01004_TRIGGER-INTERFACE
+    a sh:NodeShape ;
+    sh:targetClass autosar:TRIGGER-INTERFACE ;
+    sh:property [
+        sh:path autosar:SERVICE-KIND ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info
+    ] ;
+.
+
+#################################################################
+# Constr_ApplicationCompositeDataType_SemanticMeaning
+# (purely semantic / documentation, no structural constraint)
+#################################################################
+
+# No SHACL generated – handled by SMT/documentation only.
+
+
+#################################################################
+# Constr_ApplicationDataType_Precedence
+#################################################################
+
+autosar:Constr_ApplicationDataType_Precedence
+    a sh:NodeShape ;
+    sh:targetClass autosar:SW-DATA-DEF-PROPS-CONTENT ;
+
+    # Structural typing of the involved references (if present)
+    sh:property [
+        sh:path autosar:BASE-TYPE-REF ;
+        sh:severity sh:Violation
+    ] ;
+    sh:property [
+        sh:path autosar:COMPU-METHOD-REF ;
+        sh:severity sh:Violation
+    ] ;
+    sh:property [
+        sh:path autosar:UNIT-REF ;
+        sh:severity sh:Violation
+    ] ;
+    sh:property [
+        sh:path autosar:VALUE-AXIS-DATA-TYPE-REF ;
+        sh:severity sh:Violation
+    ] ;
+.

@@ -679,7 +679,7 @@ class SHACLValidator:
 
                         if xml_wrapper_tag:
                             self.wrapper_mappings[xml_wrapper_tag] = xml_tag
-                            print(f"🔗 发现Wrapper映射: {xml_wrapper_tag} -> {xml_tag}")
+                            # print(f"🔗 发现Wrapper映射: {xml_wrapper_tag} -> {xml_tag}")
 
                         attr_uri = f"ATTR_{attr_id}"
                         context_key = f"{class_id}:{xml_tag}"
@@ -837,7 +837,7 @@ class SHACLValidator:
                 subject = rdflib.URIRef(subject_uri)
 
                 if is_wrapper_element(clean_tag):
-                    print(f"🔗 处理Wrapper元素: {clean_tag}")
+                    # print(f"🔗 处理Wrapper元素: {clean_tag}")
 
                     expected_item_tag = get_expected_item_tag(clean_tag)
 
@@ -852,7 +852,7 @@ class SHACLValidator:
                             predicate = AUTOSAR[expected_item_tag]
                             graph.add((parent_subject, predicate, child_subject))
 
-                            print(f"   🔗 透明连接: {parent_subject} --{expected_item_tag}--> {child_subject}")
+                            # print(f"   🔗 透明连接: {parent_subject} --{expected_item_tag}--> {child_subject}")
 
                             xml_to_triples_enhanced_fixed(child, child_uri, parent_class_id, depth)
                         else:
@@ -865,7 +865,7 @@ class SHACLValidator:
                     return
 
                 if should_treat_as_text_content(element):
-                    print(f"📝 处理文本内容元素: {clean_tag} = '{element.text.strip()}'")
+                    # print(f"📝 处理文本内容元素: {clean_tag} = '{element.text.strip()}'")
 
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))
@@ -875,7 +875,7 @@ class SHACLValidator:
                     obj = rdflib.Literal(element.text.strip())
                     graph.add((subject, predicate, obj))
 
-                    print(f"   📝 文本映射: {clean_tag}.{expected_attr} = '{element.text.strip()}'")
+                    # print(f"   📝 文本映射: {clean_tag}.{expected_attr} = '{element.text.strip()}'")
                     return
 
                 element_type_uri = AUTOSAR[clean_tag]

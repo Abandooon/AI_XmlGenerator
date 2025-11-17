@@ -100,6 +100,8 @@ class OntologyGraphBuilder:
         for cls in classes.values():
             iri = cls["iri"]
             self._class_idx[cls["name"]] = iri
+            abs_raw = cls.get("abstract", False)
+            is_abs = (abs_raw is True) or (str(abs_raw).strip().lower() in {"true", "1", "yes"})
             self._add_node(iri, "Class", {
                 "name": cls["name"],
                 "xml_tag": cls.get("xml_tag", ""),
@@ -107,7 +109,18 @@ class OntologyGraphBuilder:
                 "isComplexType": source == "ctype",
                 "isInnerClassType": source == "inner",
                 "isAttribute": cls.get("isAttribute", False),
+                # 新增：抽象标记（保留两个键，便于查询兼容）
+                "isAbstract": is_abs,
+                "abstract": is_abs,
             })
+            # self._add_node(iri, "Class", {
+            #     "name": cls["name"],
+            #     "xml_tag": cls.get("xml_tag", ""),
+            #     "description": cls.get("description", ""),
+            #     "isComplexType": source == "ctype",
+            #     "isInnerClassType": source == "inner",
+            #     "isAttribute": cls.get("isAttribute", False),
+            # })
 
             # Package tree
             self._attach_package(cls.get("Package", []), iri)
