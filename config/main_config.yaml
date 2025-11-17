@@ -259,7 +259,7 @@ validators:
 
   # SHACL 🔧 增强的语义验证配置
   semantic:
-    enabled: true
+    enabled: false
     inference: true
     timeout: 180
     max_violations_display: 10
@@ -312,7 +312,7 @@ validators:
 
   # SMT 约束验证配置 - 与SHACL配置对齐
   constraint:
-    enabled: false
+    enabled: true
     timeout: 120
     solver: "z3"
     max_constraints_display: 5

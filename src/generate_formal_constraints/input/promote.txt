@@ -93,19 +93,11 @@
 
 # SHACL 细则
 
-* 标准前缀声明（已放在文件开头，这里仅作为背景信息，不要输出）：
-```turtle
-  @prefix sh: <http://www.w3.org/ns/shacl#> .
-  @prefix autosar: <http://autosar.org/> .
-  @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-  @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-```
-* **命名空间统一规则**：所有 `autosar:` 前缀**必须**解析为 `<http://autosar.org/>`，包括 SPARQL 查询中的 PREFIX 声明
-* `sh:targetClass` 使用具体 XML 标签（抽象类需展开，否则留空）
-* 包装透明化按 **P2**
-* 简单计数用 `qualifiedValueShape`；复杂情况可用 `sh:sparql`（允许模型自由选择）
-* **SPARQL 查询中的 PREFIX**：必须使用 `PREFIX autosar: <http://autosar.org/>`
+* 不输出 `@prefix` 声明（验证器自动添加）。
+* `sh:targetClass` 使用具体 XML 标签（抽象类需展开，否则留空）。
+* 包装透明化按 **P2**。
+* 简单计数用 `qualifiedValueShape`；复杂情况可用 `sh:sparql`。
+* SPARQL 查询中使用 `PREFIX autosar: <http://autosar.org/>`。
 
 ---
 # SMT 细则（模板驱动架构）
@@ -170,6 +162,25 @@ SMT 映射表（mapping_smt.json）负责：
 * `"PROPERTY"` - 代表当前属性实例
 * 不要使用 Sort 名称作为 args
 
+---
+# 跨文件约束识别
+
+**自动标记 `"cross_file": true`** 当：
+* 属性 `xml_tag` 以 `-REF` 或 `-TREF` 结尾
+* expression 含 "resolves to" / "refers to" / "references"
+* `ref_dest_literals` 或 `ref_dest_classes` 非空
+
+**引用属性增加字段**：
+```json
+{
+  "role": "typeRef",
+  "xml_tag": "TYPE-TREF",
+  "is_cross_file_ref": true,
+  "dest_attr": "DEST"
+}
+```
+
+**注意**：跨文件引用的完整性验证由验证器自动执行，SMT模板无需额外公理。
 ---
 
 # 输出示例（模板驱动）

@@ -174,10 +174,11 @@ def main():
         payload = json.dumps(batch, ensure_ascii=False, indent=2)
         prompt = (
             f"{promote.rstrip()}\n\n"
-            f"# 下面是结构化约束（最多 5 条一组）：\n"
             f"{payload}\n\n"
-            f"请严格按“输出格式（严格）”：先给一个 ```turtle ...``` 代码块（SHACL），再给一个 ```smt2 ...``` 代码块（SMT），"
-            f"并在最后给出一个 ```json ...``` 代码块，内容为本批次的 SMT 映射表（mapping JSON）。"
+            f"请输出：\n"
+            f"1. ```turtle``` 块（SHACL）\n"
+            f"2. ```smt2``` 块（SMT模板）\n"
+            f"3. ```json``` 块（mapping数组）"
         )
 
         print(f"[INFO] 处理分组 {total_batches}（大小={len(batch)}）...")

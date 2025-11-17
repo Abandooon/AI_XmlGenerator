@@ -14,6 +14,7 @@ class ConfigDrivenOrchestrator:
         """初始化验证编排器"""
         self.config = config
         self.validators = {}
+        self.smt_validator = None
         self._init_validators()
 
 
@@ -1137,6 +1138,8 @@ class ConfigDrivenOrchestrator:
                             mapping_file=mapping_to_pass
                             # constraint_config  # 🔧 传递约束配置
                         )
+                        # ⬇️ 新增：同步赋值给 smt_validator 以支持跨文件验证
+                        self.smt_validator = self.validators['constraint']
                         print("✅ SMT约束验证器初始化成功")
                     except Exception as fallback_error:
                         print(f"❌ SMT约束验证器初始化失败: {fallback_error}")

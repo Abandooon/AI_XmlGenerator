@@ -79,6 +79,7 @@ class SMTValidator:
         # load artifacts
         self._load_smt_template()
         self._load_mapping()
+        self.cross_file_resolver = None  # 跨文件解析器
         self.z3_cli_available = self._z3_cli_available()
 
     # -------------------------
@@ -747,6 +748,267 @@ class SMTValidator:
 
         return "\n".join(lines)
 
-# -------------------------
-# End of smt_validator.py
-# -------------------------
+    def set_cross_file_resolver(self, resolver) -> None:
+        """设置跨文件解析器"""
+        self.cross_file_resolver = resolver
+
+    def validate_cross_file_constraints(self, arxml_files: List[str]) -> Dict[str, Any]:
+        """
+        执行跨文件约束验证
+
+        Args:
+            arxml_files: 所有ARXML文件路径
+
+        Returns:
+            验证结果
+        """
+        # 修复：使用正确的属性名
+        if not self.z3_cli_available:
+            try:
+                import z3
+                z3_available = True
+            except ImportError:
+                z3_available = False
+        else:
+            z3_available = True
+
+        if not z3_available:
+            return {
+                'success': False,
+                'error': 'Z3 solver not available',
+                'violations': []
+            }
+
+        if not self.cross_file_resolver:
+            from src.validation.cross_file_resolver import CrossFileResolver
+            self.cross_file_resolver = CrossFileResolver()
+            self.cross_file_resolver.build_global_index(arxml_files)
+
+        violations = []
+
+        # 1. 基础引用完整性检查
+        ref_violations = self.cross_file_resolver.validate_all_refs()
+        violations.extend(ref_violations)
+
+        # 2. DEST类型匹配检查
+        type_mismatches = self.cross_file_resolver.check_dest_type_match()
+        violations.extend(type_mismatches)
+
+        # 3. 执行SMT约束验证
+        smt_violations = self._validate_smt_constraints()
+        violations.extend(smt_violations)
+
+        return {
+            'success': len(violations) == 0,
+            'violations': violations,
+            'stats': {
+                'total_elements': len(self.cross_file_resolver.global_index),
+                'total_refs': sum(len(refs) for refs in self.cross_file_resolver.ref_registry.values()),
+                'unresolved_refs': len(ref_violations),
+                'type_mismatches': len(type_mismatches),
+                'smt_violations': len(smt_violations)
+            }
+        }
+
+    def _validate_smt_constraints(self) -> List[Dict]:
+        """执行SMT模板中定义的跨文件约束"""
+        violations = []
+
+        if not self.cross_file_resolver:
+            return violations
+
+        # 过滤出跨文件约束
+        cross_file_mappings = [m for m in self.mapping if m.get('cross_file', False)]
+
+        if not cross_file_mappings:
+            print("[INFO] 未找到跨文件约束映射")
+            return violations
+
+        print(f"[INFO] 检查 {len(cross_file_mappings)} 个跨文件约束...")
+
+        for mapping in cross_file_mappings:
+            constraint_id = mapping.get('constraint_id', 'unknown')
+            severity = mapping.get('severity', 'Violation')
+
+            try:
+                result = self._check_single_cross_file_constraint(mapping)
+                if not result['satisfied']:
+                    for detail in result.get('details', []):
+                        violations.append({
+                            'type': 'SMT_CROSS_FILE_VIOLATION',
+                            'constraint_id': constraint_id,
+                            'severity': severity,
+                            'detail': detail,
+                            'message': f"跨文件约束 {constraint_id} 不满足: {detail.get('reason', 'unknown')}"
+                        })
+            except Exception as e:
+                print(f"[WARN] 约束 {constraint_id} 验证失败: {e}")
+                violations.append({
+                    'type': 'SMT_CONSTRAINT_ERROR',
+                    'constraint_id': constraint_id,
+                    'severity': 'Warning',
+                    'error': str(e),
+                    'message': f"约束 {constraint_id} 验证出错"
+                })
+
+        return violations
+
+    def _check_single_cross_file_constraint(self, mapping: Dict) -> Dict:
+        """检查单个跨文件约束"""
+        result = {'satisfied': True, 'details': []}
+
+        target = mapping.get('target', {})
+        target_sort = target.get('target_sort', '')
+        target_xml_tag = target.get('target_xml', {}).get('xml_tag', '')
+
+        # 获取所有目标类型的元素
+        target_elements = self.cross_file_resolver.get_elements_by_type(target_xml_tag)
+
+        if not target_elements:
+            # 没有找到目标元素，约束自动满足
+            return result
+
+        properties = mapping.get('properties', [])
+        ref_properties = [p for p in properties if p.get('is_cross_file_ref', False)]
+
+        # 检查引用属性的约束
+        for prop in ref_properties:
+            xml_tag = prop.get('xml_tag', '')
+            dest_attr = prop.get('dest_attr', 'DEST')
+            resolution_strategy = prop.get('resolution_strategy', 'short-name-path')
+
+            # 获取所有该类型的引用
+            if xml_tag in self.cross_file_resolver.ref_registry:
+                refs = self.cross_file_resolver.ref_registry[xml_tag]
+
+                for ref in refs:
+                    ref_path = ref.get('text', '')
+                    if ref_path:
+                        # 检查引用是否解析成功
+                        resolved = self.cross_file_resolver.resolve_reference(ref_path)
+                        if not resolved:
+                            result['satisfied'] = False
+                            result['details'].append({
+                                'property': prop.get('role', xml_tag),
+                                'ref_path': ref_path,
+                                'source_file': ref.get('source_file', ''),
+                                'reason': f'引用 {ref_path} 无法解析'
+                            })
+                        else:
+                            # 检查类型匹配
+                            expected_dest = ref.get('dest', '')
+                            actual_type = resolved.get('tag', '')
+                            if expected_dest and actual_type != expected_dest:
+                                result['satisfied'] = False
+                                result['details'].append({
+                                    'property': prop.get('role', xml_tag),
+                                    'ref_path': ref_path,
+                                    'expected_type': expected_dest,
+                                    'actual_type': actual_type,
+                                    'reason': f'类型不匹配: 期望 {expected_dest}, 实际 {actual_type}'
+                                })
+
+        # 检查互斥/依赖约束
+        logical_pattern = mapping.get('logical_pattern', {})
+        if logical_pattern.get('type') == 'mutual_exclusion':
+            # 互斥约束检查
+            exclusion_result = self._check_mutual_exclusion(mapping, target_elements)
+            if not exclusion_result['satisfied']:
+                result['satisfied'] = False
+                result['details'].extend(exclusion_result['details'])
+
+        return result
+
+    def _check_mutual_exclusion(self, mapping: Dict, target_elements: List[Dict]) -> Dict:
+        """检查互斥约束"""
+        result = {'satisfied': True, 'details': []}
+
+        properties = mapping.get('properties', [])
+        if len(properties) < 2:
+            return result
+
+        # 简化实现：检查是否存在同时具有互斥属性的元素
+        prop_names = [p.get('xml_tag', '') for p in properties]
+
+        for elem in target_elements:
+            elem_path = elem.get('path', '')
+            children = elem.get('children_tags', [])
+
+            # 统计该元素具有哪些互斥属性
+            present_props = [pn for pn in prop_names if pn in children]
+
+            if len(present_props) > 1:
+                result['satisfied'] = False
+                result['details'].append({
+                    'element_path': elem_path,
+                    'conflicting_properties': present_props,
+                    'reason': f'互斥属性同时存在: {", ".join(present_props)}'
+                })
+
+        return result
+
+    def generate_smt_instance_from_global(self, output_path: str) -> None:
+        """
+        根据全局索引生成SMT实例文件
+
+        Args:
+            output_path: 输出文件路径
+        """
+        if not self.cross_file_resolver:
+            raise ValueError("需要先设置跨文件解析器并构建索引")
+
+        lines = []
+
+        # 1. 读取模板
+        if self.smt_template_text:
+            lines.append(f"; SMT Instance generated from global index")
+            lines.append(f"; Template: {self.smt_template_file}")
+            lines.append(self.smt_template_text.rstrip())
+            lines.append("\n; --- GLOBAL INSTANCE DATA ---\n")
+        else:
+            lines.append("; Generated SMT instance (no template)")
+
+        # 2. 为每个元素生成常量声明
+        lines.append("; Element declarations")
+        for path, info in self.cross_file_resolver.global_index.items():
+            safe_name = self._path_to_smt_name(path)
+            element_type = info['tag']
+
+            # 检查类型是否在模板中声明
+            if element_type in self.template_sorts:
+                lines.append(f"(declare-const {safe_name} {element_type})")
+            else:
+                lines.append(f"; Skipping {safe_name}: sort {element_type} not in template")
+
+        # 3. 生成引用关系断言
+        lines.append("\n; Reference assertions")
+        for ref_type, refs in self.cross_file_resolver.ref_registry.items():
+            for ref in refs:
+                ref_path = ref.get('text', '')
+                if ref_path:
+                    target = self.cross_file_resolver.resolve_reference(ref_path)
+                    if target:
+                        lines.append(f"; REF {ref_type}: {ref_path} -> {target['tag']}")
+                        # 可以添加具体的引用断言
+                    else:
+                        lines.append(f"; UNRESOLVED REF {ref_type}: {ref_path}")
+
+        # 4. 添加检查命令
+        lines.append("\n(check-sat)")
+        lines.append("(get-model)")
+
+        # 写入文件
+        from pathlib import Path as PathLib
+        PathLib(output_path).write_text('\n'.join(lines), encoding='utf-8')
+        print(f"[OK] SMT实例已生成: {output_path}")
+
+    def _path_to_smt_name(self, path: str) -> str:
+        """将SHORT-NAME-PATH转换为合法的SMT标识符"""
+        # 移除开头的斜杠，替换特殊字符
+        name = path.lstrip('/')
+        name = name.replace('/', '_').replace('-', '_').replace('.', '_')
+        # 确保以字母开头
+        if name and not name[0].isalpha():
+            name = 'elem_' + name
+        return _sanitize_ident(name)
+
