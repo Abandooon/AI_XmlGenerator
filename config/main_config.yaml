@@ -317,6 +317,8 @@ validators:
     solver: "z3"
     max_constraints_display: 5
 
+    cross_file_validation: true  # true=启用跨文件验证, false=仅单文件验证
+
     validation_scope:
       structural_constraints: true     # SMT结构约束
       semantic_constraints: true       # SMT语义约束
@@ -341,6 +343,7 @@ validators:
       severity_filter:
         structural: ["violation"]
         semantic: ["violation", "warning"]
+
 
 # 🔧 新增：验证模式定义 - 支持细粒度控制
 validation_modes:

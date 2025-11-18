@@ -272,6 +272,9 @@ class SMTValidator:
           - shacl: optional shacl guidance (not used here; SHACL generation handled separately)
         """
         for entry in self.mapping:
+            # ✅ 显式过滤跨文件约束
+            if entry.get('cross_file', False):
+                continue  # 跳过跨文件约束
             cid = entry.get("constraint_id", "constraint")
             tgt = entry.get("target", {}) or {}
             tgt_sort = tgt.get("target_sort")
@@ -282,16 +285,21 @@ class SMTValidator:
             # find matching xml nodes
             nodes = []
             if tgt_xpath:
-                # try simple relative xpath patterns; allow both with and without namespace
-                try:
-                    nodes = root.findall(".//" + tgt_xpath)
-                except Exception:
-                    # fallback: try tag search
-                    nodes = [n for n in root.iter() if _xml_tag_local(n.tag) == tgt_xpath]
+                # 🔥 修改：优先使用标签名匹配（处理命名空间）
+                tag = tgt_xpath
+                nodes = [n for n in root.iter() if _xml_tag_local(n.tag) == tag]
+
+                # 如果还找不到，尝试完整xpath
+                if not nodes:
+                    try:
+                        nodes = root.findall(".//" + tgt_xpath)
+                    except Exception:
+                        pass
             else:
                 # if no xpath, attempt to use tag name from target_xml
                 tag = tgt_xml.get("xml_tag") if tgt_xml else None
                 if tag:
+                    # 🔥 确保使用去除命名空间的标签进行匹配
                     nodes = [n for n in root.iter() if _xml_tag_local(n.tag) == tag]
 
             # default to entire document if no target specified (rare)
@@ -326,20 +334,33 @@ class SMTValidator:
                     search_path = p_xpath if p_xpath else p_xml_tag
 
                     if search_path:
-                        # 尝试相对路径查找（相对于当前 node）
-                        try:
-                            # 如果 xpath 包含 '/'，说明是多层路径
-                            if '/' in search_path:
-                                found = node.findall(".//" + search_path)
-                            else:
-                                # 单层：直接子元素或任意后代
-                                found = node.findall(".//" + search_path)
-                                # 如果找不到，尝试直接子元素
-                                if not found:
-                                    found = [c for c in node if _xml_tag_local(c.tag) == search_path]
-                        except Exception:
-                            # fallback: 遍历所有后代，匹配标签名
-                            found = [c for c in node.iter() if _xml_tag_local(c.tag) == (p_xml_tag or search_path)]
+                        # 🔧 新增：命名空间感知的路径查找
+                        if '/' in search_path:
+                            # 多层路径：逐层匹配（去除命名空间）
+                            path_parts = search_path.split('/')
+                            current_nodes = [node]
+
+                            for part in path_parts:
+                                next_nodes = []
+                                for n in current_nodes:
+                                    # 使用去命名空间的标签匹配
+                                    matches = [c for c in n if _xml_tag_local(c.tag) == part]
+                                    next_nodes.extend(matches)
+                                current_nodes = next_nodes
+
+                            found = current_nodes
+
+                            # 如果找不到，记录日志
+                            if not found:
+                                print(f"[DEBUG] 未找到路径 '{search_path}' 在节点 {_xml_tag_local(node.tag)}")
+
+                        else:
+                            # 单层路径：先找直接子元素，再找后代
+                            found = [c for c in node if _xml_tag_local(c.tag) == search_path]
+
+                            if not found:
+                                # 查找所有后代（兼容性保留）
+                                found = [c for c in node.iter() if _xml_tag_local(c.tag) == search_path]
 
                     if not found:
                         # property not present (optional)

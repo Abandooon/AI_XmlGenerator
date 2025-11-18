@@ -346,6 +346,8 @@ class AutosarValidator:
             if self.config.get('reporting', {}).get('console_output', True):
                 print(report)
 
+
+
             return {
                 'file': xml_file,
                 'success': results.get('overall_valid', False),
@@ -389,7 +391,11 @@ class AutosarValidator:
         print(f"\n📊 单文件验证结果: {passed}/{total} 文件通过")
 
         # 第二阶段：跨文件验证（新增）
-        if len(self.available_xml_files) > 1:
+        # 🔥 检查配置中的跨文件验证开关
+        constraint_config = self.config.get('validators', {}).get('constraint', {})
+        cross_file_enabled = constraint_config.get('cross_file_validation', False)
+
+        if len(self.available_xml_files) > 1 and cross_file_enabled:
             print("\n📁 第二阶段: 跨文件约束验证")
             cross_file_result = self.validate_cross_file()
             results.append(cross_file_result)
@@ -398,8 +404,9 @@ class AutosarValidator:
                 print("✅ 跨文件约束验证通过")
             else:
                 print(f"❌ 跨文件约束验证失败: {len(cross_file_result.get('violations', []))} 个违规")
-        else:
-            print("\n⚠️  仅有单个文件，跳过跨文件验证")
+        elif not cross_file_enabled:
+            print("\n📁 第二阶段: 跨文件约束验证 (已禁用)")
+
 
         # 最终统计
         all_passed = all(r.get('success', False) for r in results)

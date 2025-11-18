@@ -169,7 +169,7 @@ def main():
     print("[INFO] LLM 客户端已就绪。")
 
     total_batches = 0
-    for batch in chunked(constraints, 5):
+    for batch in chunked(constraints, 7):
         total_batches += 1
         payload = json.dumps(batch, ensure_ascii=False, indent=2)
         prompt = (

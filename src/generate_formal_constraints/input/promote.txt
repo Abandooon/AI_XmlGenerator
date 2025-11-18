@@ -6,34 +6,47 @@
 
 # 字段优先级与裁决（出现冲突按此顺序判定）
 
-1. **expression**（核心语义，最高优先）
-2. **title**（次要语义，用于补全/消歧）
-3. **target_class.xml_tag、target_properties[].xml_tag**（仅作**目标类/属性标签辅助**与**路径拼接**）
-4. 其他辅助字段（owner_class、owner_xml_tag、maxOccurs、path、ref_*、type_* …）
+1. **title + expression**（核心语义，最高优先）
+2. **target_class.xml_tag、target_properties[].xml_tag**（仅作**目标类/属性标签辅助**与**路径拼接**）
+3. 其他辅助字段（owner_class、owner_xml_tag、maxOccurs、path、ref_*、type_* …）
 
-> 冲突时：**以 expression 为准**；title 仅补充；`target_class/target_properties` 只提供**标签与路径信息**，不得改写语义。
+> 冲突时：**以 title和expression 为准**；`target_class/target_properties` 只提供**标签与路径信息**，不得改写语义。
 
 ---
 
 # 目标类绑定（避免把 owner 当成 target）
-
-* **T1**：`sh:targetClass` 源自**语义主体**（由 expression/title 判定的“约束作用对象”）。若无法判定，再回退到 `target_class.xml_tag`。
-* **T2**：`owner_class / owner_xml_tag` 仅用于**路径拼接**，**不得**作为 `sh:targetClass` 候选。
+* **T1**：`sh:targetClass、target_properties` 源自**语义主体**（由 expression/title 判定的“约束作用对象”）。
+* **T2**：`applies_to_class / owner_class / owner_xml_tag` 仅用于**路径拼接、属性所属类、属性本身类型的理解**，**不得**作为 `sh:targetClass` 候选。
 * **T3（抽象类）**：若目标类为**抽象类**且不会出现在实例 XML：
-
   * 能解析具体子标签 ⇒ **展开为具体 XML 标签集合**；
   * 无法解析 ⇒ **该条 SHACL 留空**（块内不写注释），语义改由 **SMT** 承担。
 
 ---
 
-# 路径装配算法（含包装透明化）
+# 路径装配算法（基于 path_variants 显式路径）
 
-* **P1**：若提供 `target_properties[].path`，优先使用；否则构造：`path = ( [wrapper?] → owner_xml_tag → 属性 xml_tag )`。
-* **P2（包装透明化）**：若 `xml_wrapper_tag` 仅为集合/容器（如 `SERVICE-DEPENDENCYS`、`DATA-ELEMENTS`），在 **SHACL** `sh:path` 中**省略**该 wrapper。
-* **P3**：`owner_xml_tag` 只作路径中间段，不得成为 target。
-* **P4**：路径写法：一层 `sh:path autosar:CHILD`；多层路径 `sh:path ( autosar:A autosar:B )`；复杂条件用 `sh:sparql`。
+* **P1**：**优先使用 `path_variants[]`** 作为完整路径源（应根据实际约束类型选择对应路径）。
+* **P2（显式路径提取）**：
+  1. 从 `path_variants[]` 获取完整路径信息
+  2. 理解字段含义：
+     - `owner_xml_tag`：属性定义所在的类（可能是抽象类或基本类型，不出现在实际xml中，仅供参考）
+     - `xml_wrapper_tag`：包装容器标签（如 DATA-READ-ACCESSS）
+     - `xml_tag`：实际属性标签（如 VARIABLE-ACCESS）
+  3. **核心原则**：基于 expression 理解语义，使用字段信息构造准确路径
 
----
+* **P3（SHACL 路径转换）**：
+  - **单层路径**（无包装）：`sh:path autosar:ELEMENT`
+  - **多层路径**（有包装）：`sh:path ( autosar:WRAPPER autosar:ELEMENT )`
+  - 示例：`DATA-SEND-POINTS/VARIABLE-ACCESS` → `sh:path ( autosar:DATA-SEND-POINTS autosar:VARIABLE-ACCESS )`
+
+* **P4（SMT xpath 转换）**：
+  - **单层路径**：仅 `"xml_tag": "ELEMENT"`（不写 xpath）
+  - **多层路径**：`"xml_tag": "ELEMENT", "xpath": "WRAPPER/ELEMENT"`
+  - 示例：`DATA-SEND-POINTS/VARIABLE-ACCESS` → `"xpath": "DATA-SEND-POINTS/VARIABLE-ACCESS"`
+
+* **P5（路径缺失时的回退）**：
+  - 若 `path_variants` 为空或无法解析，则构造：`xml_wrapper_tag/xml_tag`
+  - 优先使用结构化信息（`xml_wrapper_tag`）而非推测
 
 # DEST / 类型决策
 
@@ -95,7 +108,7 @@
 
 * 不输出 `@prefix` 声明（验证器自动添加）。
 * `sh:targetClass` 使用具体 XML 标签（抽象类需展开，否则留空）。
-* 包装透明化按 **P2**。
+*  **路径使用 P2-P3 规则**：从 path_variants 提取，。
 * 简单计数用 `qualifiedValueShape`；复杂情况可用 `sh:sparql`。
 * SPARQL 查询中使用 `PREFIX autosar: <http://autosar.org/>`。
 
@@ -120,12 +133,12 @@ SMT 映射表（mapping_smt.json）负责：
 
 ---
 
-# MAPPING-SCHEMA（简化版，模板驱动）
+# MAPPING-SCHEMA
 ```json
 {
   "constraint_id": "string",
+  "cross_file": "true | false (标记当前约束是否是跨文件约束，如果是见后面“# 跨文件约束识别”)",
   "severity": "Violation | Warning | Info",
-
   "target": {
     "target_sort": "string (对应 SMT 模板中的 Sort 名)",
     "target_xml": {
@@ -163,9 +176,8 @@ SMT 映射表（mapping_smt.json）负责：
 * 不要使用 Sort 名称作为 args
 
 ---
-# 跨文件约束识别
-
-**自动标记 `"cross_file": true`** 当：
+# 跨文件约束识别（参考以下规则判断）
+**标记 `"cross_file": true`** 当：
 * 属性 `xml_tag` 以 `-REF` 或 `-TREF` 结尾
 * expression 含 "resolves to" / "refers to" / "references"
 * `ref_dest_literals` 或 `ref_dest_classes` 非空
@@ -176,9 +188,11 @@ SMT 映射表（mapping_smt.json）负责：
   "role": "typeRef",
   "xml_tag": "TYPE-TREF",
   "is_cross_file_ref": true,
-  "dest_attr": "DEST"
+  "dest_attr": "DEST",
+  "resolution_strategy": "short-name-path"
 }
 ```
+* 约束只涉及元素自身的子元素/属性，标记 `"cross_file": false`（单文件约束）
 
 **注意**：跨文件引用的完整性验证由验证器自动执行，SMT模板无需额外公理。
 ---
@@ -213,6 +227,7 @@ SMT 映射表（mapping_smt.json）负责：
 ```json
 {
   "constraint_id": "Constr_ApplicationDataType_Precedence",
+  "cross_file": true,
   "severity": "Violation",
   "target": {
     "target_sort": "SW-DATA-DEF-PROPS-CONTENT",
@@ -223,6 +238,8 @@ SMT 映射表（mapping_smt.json）负责：
     {
       "role": "valueAxisDataType",
       "xml_tag": "VALUE-AXIS-DATA-TYPE-REF",
+      "is_cross_file_ref": true,
+      "dest_attr": "DEST",
       "smt_sort": "APPLICATION-PRIMITIVE-DATA-TYPE",
       "smt_predicates": {
         "has_valueAxisDataTypeRef": { "type": "predicate", "args": ["SUBJECT"] }
@@ -231,6 +248,8 @@ SMT 映射表（mapping_smt.json）负责：
     {
       "role": "compuMethod",
       "xml_tag": "COMPU-METHOD-REF",
+      "is_cross_file_ref": true,
+      "dest_attr": "DEST",
       "smt_sort": "COMPU-METHOD",
       "smt_predicates": {
         "has_compuMethodRef": { "type": "predicate", "args": ["SUBJECT"] }
@@ -243,6 +262,12 @@ SMT 映射表（mapping_smt.json）负责：
   }
 }
 ```
+
+**单文件约束对比说明**：若约束不涉及跨文件引用（如"组件必须有SHORT-NAME"），则：
+- 设置 `"cross_file": false`
+- `xml_tag` 为普通子元素（如 `"SHORT-NAME"`，不以-REF/-TREF结尾）
+- properties 中**不含** `is_cross_file_ref` 字段
+- SMT模板和Mapping结构相同，仅标签和谓词名不同
 
 ---
 
