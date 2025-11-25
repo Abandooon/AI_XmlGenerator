@@ -1,3 +1,6 @@
+(set-logic ALL)
+
+
 ;#################################################################
 ; SMT Template for given constraints
 ;#################################################################
@@ -294,8 +297,6 @@
              (not (= r1 r2)))
         (not (= (symbol r1) (symbol r2)))))
 
-
-; 末尾不写 (check-sat)
 
 
 ; =========================
@@ -18774,7 +18775,7 @@
 (declare-sort APPLICATION-ARRAY-ELEMENT 0)
 (declare-sort SW-CONNECTOR 0)
 (declare-sort PORT-PROTOTYPE 0)
-(declare-sort PORT-INTERFACE-MAPPING 0)
+(declare-sort PORT-INTERFACE-MAPPING)
 
 ; ---------- Basic value sorts ----------
 (declare-sort CategoryString 0)

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-SHACL形状图诊断脚本 - 独立版本
-专门诊断 "more than one 'sh:path'" 错误
-直接在PyCharm中右键运行
+SHACL形状图诊断脚本 - 独立版本 (增强诊断版)
+
+功能：
+1. 检查文件中是否有 b'...' 这类字节串残留污染 TTL。
+2. 常规方式尝试一次性加载 RDF 图，给出错误行上下文。
+3. 如果加载失败，启用“递增式按约束块加载”，
+   按 autosar:XXX 约束块一个一个往图里加，定位第一个出问题的块。
+4. 简单检查连续 sh:path 的结构问题。
 """
 
 import rdflib
@@ -13,10 +18,9 @@ import sys
 
 
 def diagnose_shacl_shapes(ttl_file_path: str):
-    """诊断SHACL形状图中的重复sh:path问题"""
-
+    """诊断SHACL形状图中的常见问题"""
     print("=" * 80)
-    print("🔍 SHACL形状图诊断工具")
+    print("🔍 SHACL形状图诊断工具 (增强版)")
     print("=" * 80)
     print()
 
@@ -30,268 +34,327 @@ def diagnose_shacl_shapes(ttl_file_path: str):
     print(f"📍 完整路径: {ttl_path.absolute()}")
     print()
 
-    # 方法1: 尝试加载RDF图并检查
-    print("方法1: RDF图分析")
+    # 先把文件全部读入内存，后面多处复用
+    try:
+        with open(ttl_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except UnicodeDecodeError:
+        print("❌ 文件编码错误: 无法用UTF-8读取，文件可能包含二进制数据或使用了错误的编码。")
+        return
+    except Exception as e:
+        print(f"❌ 读取文件失败: {e}")
+        return
+
+    # 步骤0: 检查字节串污染
+    print("步骤0: 检查文件损坏/污染")
     print("-" * 80)
-    check_rdf_graph(ttl_path)
+    check_byte_artifacts(lines)
 
     print("\n" + "=" * 80)
 
-    # 方法2: 直接分析TTL文件文本
-    print("方法2: TTL文本分析")
+    # 步骤1: 一次性加载 RDF 图
+    print("步骤1: RDF图加载测试")
     print("-" * 80)
-    check_ttl_text(ttl_path)
+    loaded_ok = check_rdf_graph(ttl_path, lines)
+
+    # 只有在加载失败时，才启用递增式诊断
+    if not loaded_ok:
+        print("\n" + "=" * 80)
+        print("步骤1.5: 递增式按约束块加载诊断")
+        print("-" * 80)
+        incremental_load_by_blocks(ttl_path, lines)
+
+    print("\n" + "=" * 80)
+
+    # 步骤2: 简单文本结构检查
+    print("步骤2: sh:path 结构分析")
+    print("-" * 80)
+    check_ttl_structure(lines)
 
 
-def check_rdf_graph(ttl_path: Path):
-    """方法1: 通过加载RDF图来检查"""
+# ---------------------------------------------------------------------------
+# 步骤0：检查字节串残留
+# ---------------------------------------------------------------------------
+
+def check_byte_artifacts(lines):
+    """检查文件中是否残留了Python字节串表示 (如 b'...')"""
+    print("🔍 正在扫描 Python 字节串残留 (b'...') ...")
+
+    pattern = re.compile(r"(b'[^']*')|(b\"[^\"]*\")")
+
+    found_count = 0
+    for i, line in enumerate(lines):
+        matches = pattern.findall(line)
+        if matches:
+            found_count += 1
+            if found_count <= 5:  # 只显示前5个
+                print(f"❌ [第 {i + 1} 行] 发现疑似字节串残留:")
+                print(f"   原文: {line.strip()}")
+                for match in matches:
+                    m = match[0] if match[0] else match[1]
+                    print(f"   可疑片段: {m}")
+
+    if found_count > 0:
+        print(f"\n📊 总结: 共发现 {found_count} 行包含疑似字节串残留 (b'...')。")
+        print("💡 建议: 这通常是因为在生成文件时，使用了 str(bytes_data) 而不是 bytes_data.decode('utf-8')。")
+        print("   这些字符破坏了Turtle语法，导致rdflib解析失败。")
+    else:
+        print("✅ 未发现明显的字节串残留。")
+
+
+# ---------------------------------------------------------------------------
+# 步骤1：常规 RDF 图加载
+# ---------------------------------------------------------------------------
+
+def check_rdf_graph(ttl_path: Path, lines):
+    """方法1: 通过加载RDF图来检查，返回是否加载成功"""
     try:
-        print("🔧 尝试加载SHACL形状图...")
+        print("🔧 尝试使用 rdflib 一次性加载 TTL 文件...")
 
         g = rdflib.Graph()
         g.parse(str(ttl_path), format='turtle')
 
         print(f"✅ RDF图加载成功: {len(g)} 个三元组")
-
-        SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
-
-        # 查找所有PropertyShape
-        property_shapes = list(g.subjects(rdflib.RDF.type, SH.PropertyShape))
-        print(f"📊 找到 {len(property_shapes)} 个PropertyShape")
-
-        # 检查每个PropertyShape的sh:path数量
-        problem_count = 0
-        for shape in property_shapes:
-            paths = list(g.objects(shape, SH.path))
-
-            if len(paths) > 1:
-                problem_count += 1
-                print(f"\n❌ 发现问题 #{problem_count}:")
-                print(f"   📍 Shape URI: {shape}")
-                print(f"   🔢 sh:path数量: {len(paths)} (应该只有1个)")
-                print(f"   📋 路径列表:")
-                for i, path in enumerate(paths, 1):
-                    print(f"      {i}. {path}")
-
-                # 查找所属的NodeShape
-                print(f"   🔍 查找上下文...")
-                for node_shape in g.subjects(SH.property, shape):
-                    print(f"   🏷️  所属NodeShape: {node_shape}")
-
-                    # 获取targetClass
-                    target_classes = list(g.objects(node_shape, SH.targetClass))
-                    if target_classes:
-                        print(f"   🎯 targetClass: {target_classes[0]}")
-
-                    # 获取message
-                    messages = list(g.objects(node_shape, SH.message))
-                    if messages:
-                        msg = str(messages[0])
-                        if len(msg) > 100:
-                            msg = msg[:100] + "..."
-                        print(f"   💬 message: {msg}")
-
-                # 在文件中查找位置
-                find_in_file(ttl_path, str(shape))
-
-        if problem_count == 0:
-            print("\n✅ 未在RDF图中发现重复sh:path")
-            print("💡 但pyshacl可能在验证阶段检测到问题...")
-        else:
-            print(f"\n📊 总结: 发现 {problem_count} 个PropertyShape有重复的sh:path")
+        # 如果加载成功，继续检查 path 重复问题
+        check_shacl_paths_in_graph(g, ttl_path)
+        return True
 
     except Exception as e:
-        print(f"❌ RDF图加载失败: {e}")
-        print("💡 错误可能在TTL文件的语法中，继续用方法2分析...")
+        print(f"\n❌ RDF图加载失败!")
+        error_msg = str(e)
+        print(f"   错误信息: {error_msg}")
+
+        # 尝试提取行号
+        line_match = re.search(r'line (\d+)', error_msg)
+        if line_match:
+            line_num = int(line_match.group(1))
+            print(f"\n🔍 定位到错误行: 第 {line_num} 行")
+            print_file_context(ttl_path, line_num)
+        else:
+            print("   (无法从错误信息中提取具体行号)")
+
+        return False
 
 
-def check_ttl_text(ttl_path: Path):
-    """方法2: 直接分析TTL文本"""
+def print_file_context(file_path: Path, target_line: int, context=3):
+    """打印文件指定行周围的内容"""
     try:
-        with open(ttl_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        print(f"📄 文件总行数: {len(lines)}")
-        print()
+        start = max(0, target_line - 1 - context)
+        end = min(len(lines), target_line + context)
 
-        # 策略1: 查找连续的sh:path行
-        print("🔍 策略1: 查找连续的sh:path...")
-        check_consecutive_paths(lines)
-
-        print("\n" + "-" * 80)
-
-        # 策略2: 分析PropertyShape块
-        print("🔍 策略2: 分析PropertyShape块...")
-        check_property_shape_blocks(lines)
-
-        print("\n" + "-" * 80)
-
-        # 策略3: 正则表达式搜索
-        print("🔍 策略3: 正则表达式搜索...")
-        check_with_regex(lines)
+        print(f"📄 文件内容上下文 (第 {start + 1} - {end} 行):")
+        print("-" * 40)
+        for i in range(start, end):
+            current_line_num = i + 1
+            marker = "👉" if current_line_num == target_line else "  "
+            content = lines[i].rstrip()
+            print(f"{marker} {current_line_num:5d} | {content}")
+        print("-" * 40)
+        print("💡 提示: 仔细观察上面标记为 👉 的行及其上一行结尾。")
 
     except Exception as e:
-        print(f"❌ 文本分析失败: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"无法读取文件上下文: {e}")
 
 
-def check_consecutive_paths(lines):
-    """检查连续出现的sh:path"""
+def check_shacl_paths_in_graph(g, ttl_path):
+    """在已加载的图上检查 sh:path 重复"""
+    SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
+    property_shapes = list(g.subjects(rdflib.RDF.type, SH.PropertyShape))
+    print(f"📊 找到 {len(property_shapes)} 个PropertyShape")
+
+    problem_count = 0
+    for shape in property_shapes:
+        paths = list(g.objects(shape, SH.path))
+        if len(paths) > 1:
+            problem_count += 1
+            print(f"\n❌ 发现逻辑问题 #{problem_count}:")
+            print(f"   📍 Shape URI: {shape}")
+            print(f"   🔢 sh:path数量: {len(paths)}")
+            find_in_file(ttl_path, str(shape))
+
+    if problem_count == 0:
+        print("\n✅ 未在RDF图中发现重复sh:path")
+    else:
+        print(f"\n📊 总结: 发现 {problem_count} 个PropertyShape有重复的sh:path")
+
+
+# ---------------------------------------------------------------------------
+# 步骤1.5：递增式按“约束块”加载
+# ---------------------------------------------------------------------------
+
+def incremental_load_by_blocks(ttl_path: Path, lines):
+    """
+    按“约束块”（以 autosar:XXX 开头的块）递增加载，
+    找出第一个导致 rdflib.parse 失败的块。
+    """
+
+    # 先拆分成 header + 若干块
+    header_lines, blocks = split_into_blocks(lines)
+
+    print(f"📄 header 行数: {len(header_lines)}")
+    print(f"📦 检测到约束/形状块数量: {len(blocks)}")
+    if not blocks:
+        print("⚠️ 未检测到以 'autosar:' 开头的约束块，无法做块级诊断。")
+        return
+
+    header_text = "".join(header_lines)
+
+    # 先只解析 header，确保前缀等没问题
+    try:
+        g = rdflib.Graph()
+        g.parse(data=header_text, format='turtle')
+        print("✅ header 部分解析成功。")
+    except Exception as e:
+        print("❌ 仅 header 部分解析就失败，说明出问题的内容在文件最前面。")
+        print(f"   错误: {e}")
+        return
+
+    # 逐块追加
+    accumulated_text = header_text
+    for idx, (start_line, block_lines) in enumerate(blocks, start=1):
+        block_text = "".join(block_lines)
+        test_text = accumulated_text + block_text
+
+        try:
+            g = rdflib.Graph()
+            g.parse(data=test_text, format='turtle')
+            print(f"✅ 块 #{idx} (起始行 {start_line}) 解析成功，累计三元组: {len(g)}")
+            accumulated_text = test_text  # 更新累计内容
+        except Exception as e:
+            print(f"\n❌ 在追加第 {idx} 个约束块时解析失败！")
+            print(f"   起始行号: {start_line}")
+            first_line = block_lines[0].lstrip()
+            shape_head = first_line.strip() or "<空行>"
+            print(f"   该块开头内容: {shape_head}")
+            print(f"   rdflib 错误信息: {e}")
+
+            # 打印该块的若干行，便于人工查看
+            print("\n📄 疑似有问题的约束块内容（前 40 行）:")
+            print("-" * 60)
+            for offset, line in enumerate(block_lines[:40]):
+                lineno = start_line + offset
+                print(f"{lineno:5d} | {line.rstrip()}")
+            print("-" * 60)
+            print("💡 建议: 重点检查这个块内部的 sh:sparql / 字符串引号 / 末尾的 ';' 或 '.'。")
+
+            # 再尝试用 rdflib 报错信息中给的行号打印上下文
+            error_msg = str(e)
+            line_match = re.search(r'line (\d+)', error_msg)
+            if line_match:
+                err_line = int(line_match.group(1))
+                print("\n🔍 rdflib 报错行的上下文（基于整文件行号）:")
+                print_file_context(ttl_path, err_line)
+
+            break
+    else:
+        print("\n✅ 所有块递增解析都成功 —— 说明问题可能是别的原因（例如编码、隐藏字符等）。")
+
+
+def split_into_blocks(lines):
+    """
+    将 TTL 文本拆分为：
+    - header_lines: 第一段（通常是 @prefix、全局注释等）
+    - blocks: 之后每个以 'autosar:' 开头的约束/形状块
+
+    这里采用简单启发式：检测到以 'autosar:' 开头且不是注释/@prefix 的行，
+    视为一个新块的起始。
+    """
+    header_lines = []
+    blocks = []
+
+    in_blocks = False
+    current_block = []
+    current_start_line = 0
+
+    for idx, line in enumerate(lines):
+        stripped = line.lstrip()
+
+        # 判断是否是新的块起始：行以 autosar: 开头，且不是注释、不是@prefix
+        is_block_start = (
+            stripped.startswith("autosar:")
+            and not stripped.startswith("@prefix")
+            and not stripped.startswith("#")
+        )
+
+        if not in_blocks:
+            if is_block_start:
+                in_blocks = True
+                current_block = [line]
+                current_start_line = idx + 1  # 1-based
+            else:
+                header_lines.append(line)
+        else:
+            if is_block_start:
+                # 结束上一块，开始新块
+                blocks.append((current_start_line, current_block))
+                current_block = [line]
+                current_start_line = idx + 1
+            else:
+                current_block.append(line)
+
+    # 收尾
+    if in_blocks and current_block:
+        blocks.append((current_start_line, current_block))
+
+    return header_lines, blocks
+
+
+# ---------------------------------------------------------------------------
+# 步骤2：简单文本结构检查
+# ---------------------------------------------------------------------------
+
+def check_ttl_structure(lines):
+    """检查连续的 sh:path 等简单结构问题"""
+    print("🔍 检查连续出现的sh:path...")
     consecutive_found = []
-
     for i in range(len(lines) - 1):
         line1 = lines[i].strip()
         line2 = lines[i + 1].strip()
-
         if 'sh:path' in line1 and 'sh:path' in line2:
-            # 检查是否在同一个PropertyShape块中
-            # 简单判断: 如果第一行以分号结尾，可能有问题
             if line1.endswith(';') or line1.endswith(','):
-                consecutive_found.append({
-                    'line1_num': i + 1,
-                    'line2_num': i + 2,
-                    'line1': line1,
-                    'line2': line2
-                })
+                consecutive_found.append((i + 1, i + 2, line1, line2))
 
     if consecutive_found:
-        print(f"⚠️  找到 {len(consecutive_found)} 处连续的sh:path:")
-
-        for j, item in enumerate(consecutive_found, 1):
-            print(f"\n   {j}. 第 {item['line1_num']}-{item['line2_num']} 行:")
-            print(f"      {item['line1_num']:4d}: {item['line1']}")
-            print(f"      {item['line2_num']:4d}: {item['line2']}")
+        print(f"⚠️  找到 {len(consecutive_found)} 处连续的sh:path (可能是合并错误):")
+        for item in consecutive_found[:5]:
+            print(f"   行 {item[0]}-{item[1]}: {item[2]} <--> {item[3]}")
     else:
         print("   ✅ 未发现连续的sh:path")
 
 
-def check_property_shape_blocks(lines):
-    """分析PropertyShape块"""
-    problems = []
-
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-
-        # 查找PropertyShape块的开始
-        if 'sh:property' in line and '[' in line:
-            block_start = i
-            block_lines = []
-            bracket_count = line.count('[') - line.count(']')
-
-            # 收集整个块
-            while i < len(lines) and bracket_count > 0:
-                block_lines.append(lines[i])
-                i += 1
-                if i < len(lines):
-                    bracket_count += lines[i].count('[')
-                    bracket_count -= lines[i].count(']')
-
-            # 分析这个块
-            block_text = ''.join(block_lines)
-
-            # 简单分割: 用逗号分隔的独立PropertyShape
-            sub_shapes = re.split(r'\]\s*,\s*\[', block_text)
-
-            for sub_shape in sub_shapes:
-                path_count = sub_shape.count('sh:path')
-                if path_count > 1:
-                    problems.append({
-                        'start_line': block_start + 1,
-                        'path_count': path_count,
-                        'preview': sub_shape[:200]
-                    })
-        else:
-            i += 1
-
-    if problems:
-        print(f"❌ 找到 {len(problems)} 个有问题的PropertyShape块:")
-
-        for j, prob in enumerate(problems, 1):
-            print(f"\n   {j}. 大约在第 {prob['start_line']} 行:")
-            print(f"      sh:path数量: {prob['path_count']}")
-            print(f"      内容预览:")
-            for line in prob['preview'].split('\n')[:5]:
-                if 'sh:path' in line:
-                    print(f"         >>> {line.strip()}")
-                else:
-                    print(f"             {line.strip()}")
-    else:
-        print("   ✅ 未发现明显的问题块")
-
-
-def check_with_regex(lines):
-    """使用正则表达式搜索"""
-    content = ''.join(lines)
-
-    # 模式: 在方括号内有多个sh:path
-    pattern = r'\[[^\[\]]*?sh:path[^\[\];]*;[^\[\]]*?sh:path[^\[\]]*?\]'
-
-    matches = list(re.finditer(pattern, content, re.DOTALL))
-
-    if matches:
-        print(f"❌ 正则表达式找到 {len(matches)} 个可疑块:")
-
-        for i, match in enumerate(matches[:5], 1):  # 只显示前5个
-            line_num = content[:match.start()].count('\n') + 1
-            matched_text = match.group(0)
-
-            print(f"\n   {i}. 大约在第 {line_num} 行:")
-
-            # 提取sh:path行
-            path_lines = [line for line in matched_text.split('\n') if 'sh:path' in line]
-            print(f"      发现 {len(path_lines)} 个sh:path:")
-            for path_line in path_lines[:3]:
-                print(f"         >>> {path_line.strip()}")
-
-            if len(path_lines) > 3:
-                print(f"         ... 还有 {len(path_lines) - 3} 个")
-
-        if len(matches) > 5:
-            print(f"\n   ... 还有 {len(matches) - 5} 个匹配")
-    else:
-        print("   ✅ 正则表达式未找到明显问题")
-
-
 def find_in_file(ttl_path: Path, search_text: str):
-    """在文件中查找特定文本的位置"""
+    """在文件中查找特定文本的位置 (保留原功能)"""
     try:
-        # 提取URI的本地名称
         local_name = search_text.split('#')[-1].split('/')[-1]
-
         with open(ttl_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-
         for i, line in enumerate(lines, 1):
             if local_name in line:
-                print(f"   📂 TTL文件中的位置:")
-                print(f"      第 {i} 行: {line.strip()}")
-
-                # 显示上下文
-                start = max(0, i - 2)
-                end = min(len(lines), i + 2)
-                print(f"      上下文 (第 {start + 1}-{end} 行):")
-                for j in range(start, end):
-                    marker = "   >>> " if j == i - 1 else "       "
-                    print(f"{marker}{j + 1:4d}: {lines[j].rstrip()}")
+                print(f"   📂 位于第 {i} 行: {line.strip()}")
                 break
+    except Exception:
+        pass
 
-    except Exception as e:
-        print(f"   ⚠️  无法定位: {e}")
 
+# ---------------------------------------------------------------------------
+# main
+# ---------------------------------------------------------------------------
 
 def main():
     """主函数"""
-    # 获取脚本所在目录
     script_dir = Path(__file__).parent
 
-    # 查找TTL文件
+    # 自动寻找文件
     ttl_candidates = [
         script_dir / "autosar_shapes.ttl",
         Path("autosar_shapes.ttl"),
         Path("src/validation/data/autosar_shapes.ttl"),
         Path("../src/validation/data/autosar_shapes.ttl"),
+        # 你本地项目里的绝对路径（可根据需要修改）
+        Path(r"C:\Users\54239\PycharmProjects\AI_XmlGenerator\src\validation\data\autosar_shapes.ttl"),
     ]
 
     ttl_file = None
@@ -300,18 +363,13 @@ def main():
             ttl_file = candidate
             break
 
+    if not ttl_file and len(sys.argv) > 1:
+        ttl_file = Path(sys.argv[1])
+
     if not ttl_file:
         print("❌ 未找到autosar_shapes.ttl文件")
-        print("\n请将此脚本放在以下任一位置:")
-        for path in ttl_candidates:
-            print(f"  • {path}")
-        print("\n或者手动指定文件路径:")
-        print(f"  python {Path(__file__).name} <ttl_file_path>")
+        print(f"搜索路径: {[str(p) for p in ttl_candidates]}")
         sys.exit(1)
-
-    # 如果命令行提供了参数，使用参数
-    if len(sys.argv) > 1:
-        ttl_file = Path(sys.argv[1])
 
     diagnose_shacl_shapes(str(ttl_file))
 

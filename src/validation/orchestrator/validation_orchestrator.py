@@ -285,8 +285,9 @@ class ValidationOrchestrator:
                                 report_lines.append(f"\n  ⚠️  冲突详情 ({len(conflicts)} 个):")
                                 for conflict in conflicts[:3]:
                                     idx = conflict.get("index", -1)
+                                    cid = conflict.get("constraint_id", "UNKNOWN_CONSTRAINT")
                                     fact = conflict.get("fact", "")[:120]
-                                    report_lines.append(f"    #{idx + 1}: {fact}...")
+                                    report_lines.append(f"    #{idx + 1} [{cid}]: {fact}...")
                                 if len(conflicts) > 3:
                                     report_lines.append(f"    ... 还有 {len(conflicts) - 3} 个冲突")
 

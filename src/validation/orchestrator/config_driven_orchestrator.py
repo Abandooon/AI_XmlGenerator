@@ -978,6 +978,15 @@ class ConfigDrivenOrchestrator:
             try:
                 from ..semantic.shacl_validator import SHACLValidator
                 shacl_path = file_paths.get("shacl_shapes")
+                # 🔥 [新增] 获取 XSD Index 路径
+                xsd_index_path = file_paths.get("xsd_index")
+                xsd_index_full_path = None
+                if xsd_index_path:
+                    resolved_path = project_root / xsd_index_path if not Path(xsd_index_path).is_absolute() else Path(
+                        xsd_index_path)
+                    if resolved_path.exists():
+                        xsd_index_full_path = str(resolved_path)
+                        print(f"📄 启用 RDFS 本体推理: {resolved_path.name}")
                 if shacl_path:
                     shacl_full_path = project_root / shacl_path if not Path(shacl_path).is_absolute() else Path(
                         shacl_path)
@@ -1016,38 +1025,24 @@ class ConfigDrivenOrchestrator:
                             for category, levels in severity_filter.items():
                                 print(f"     {category}: {', '.join(levels)}")
 
-                        # 安全地初始化SHACL验证器
-                        if raw_attributes_file and Path(raw_attributes_file).exists():
-                            print(f"📄 启用SHACL映射功能: {raw_attributes_file}")
-                            try:
-                                self.validators['semantic'] = SHACLValidator(
-                                    str(shacl_full_path),
-                                    raw_attributes_file,
-                                    enriched_constraints_file,
-                                    semantic_config  # 🔧 传递语义配置
-                                )
-                                print("✅ SHACL语义验证器初始化成功 (增强模式)")
-                            except Exception as init_error:
-                                print(f"⚠️  增强模式初始化失败: {init_error}")
-                                print("🔄 回退到标准模式...")
-                                try:
-                                    self.validators['semantic'] = SHACLValidator(
-                                        str(shacl_full_path),
-                                        None, None,
-                                        semantic_config  # 🔧 仍然传递语义配置
-                                    )
-                                    print("✅ SHACL语义验证器初始化成功 (标准模式)")
-                                except Exception as fallback_error:
-                                    print(f"❌ 标准模式也失败: {fallback_error}")
-                                    raise
-                        else:
-                            print("📝 使用标准模式")
+                        # 安全地初始化SHACL验证
+                        # 🔧 修改说明：强制禁用增强映射，始终使用标准模式，以匹配 promote.txt 生成规则
+                        # if raw_attributes_file and Path(raw_attributes_file).exists(): ... (此逻辑已禁用)
+
+                        print("📝 使用标准模式 (强制禁用增强映射)")
+                        try:
                             self.validators['semantic'] = SHACLValidator(
-                                str(shacl_full_path),
-                                None, None,
-                                semantic_config  # 🔧 传递语义配置
+                                shapes_file=str(shacl_full_path),
+                                raw_attributes_file=None,  # 禁用
+                                enriched_constraints_file=None,  # 禁用
+                                semantic_config=semantic_config,
+                                xsd_index_file=xsd_index_full_path  # <--- 关键：传入本体文件路径
                             )
                             print("✅ SHACL语义验证器初始化成功 (标准模式)")
+                        except Exception as e:
+                            print(f"❌ SHACL验证器初始化失败: {e}")
+                            import traceback
+                            traceback.print_exc()
                     else:
                         print(f"⚠️  SHACL文件未找到: {shacl_full_path}")
                 else:
@@ -1063,6 +1058,13 @@ class ConfigDrivenOrchestrator:
             try:
                 from ..constraints.smt_validator import SMTValidator
                 smt_path = file_paths.get("smt_template")
+                xsd_index_path = file_paths.get("xsd_index")
+                xsd_index_full_path = None
+                if xsd_index_path:
+                    resolved_path = project_root / xsd_index_path if not Path(xsd_index_path).is_absolute() else Path(
+                        xsd_index_path)
+                    if resolved_path.exists():
+                        xsd_index_full_path = str(resolved_path)
 
                 # ⬇️ 关键修复：从配置中读取 smt_mapping 路径
                 mapping_path = file_paths.get("smt_mapping")
@@ -1135,8 +1137,9 @@ class ConfigDrivenOrchestrator:
                         self.validators['constraint'] = SMTValidator(
                             str(smt_full_path),
                             # ⬇️ 关键修复：将解析后的路径传递给构造函数
-                            mapping_file=mapping_to_pass
+                            mapping_file=mapping_to_pass,
                             # constraint_config  # 🔧 传递约束配置
+                            xsd_index_file = xsd_index_full_path
                         )
                         # ⬇️ 新增：同步赋值给 smt_validator 以支持跨文件验证
                         self.smt_validator = self.validators['constraint']

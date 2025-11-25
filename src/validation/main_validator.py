@@ -164,6 +164,18 @@ class AutosarValidator:
         else:
             print("⚠️  配置中未指定SHACL Shapes路径")
 
+        # 🔥 [新增] XSD Index文件检查
+        xsd_index_path = file_paths.get('xsd_index', '')
+        if xsd_index_path:
+            xsd_index_full_path = project_root / xsd_index_path if not Path(xsd_index_path).is_absolute() else Path(
+                xsd_index_path)
+            if xsd_index_full_path.exists():
+                print(f"✅ XSD Index Ontology: {xsd_index_full_path}")
+            else:
+                print(f"❌ XSD Index文件未找到: {xsd_index_full_path} (RDFS推理将不可用)")
+        else:
+            print("⚠️  配置中未指定XSD Index路径")
+
         # SMT文件检查
         smt_path = file_paths.get('smt_template', '')
         if smt_path:

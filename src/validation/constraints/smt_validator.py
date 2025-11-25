@@ -51,13 +51,18 @@ def _first_text(elem: Optional[ET.Element], child_tag: str) -> Optional[str]:
 # SMT Validator class
 # -------------------------
 class SMTValidator:
-    def __init__(self, smt_template_file: str, mapping_file: Optional[str] = None, **kwargs):
+    def __init__(self, smt_template_file: str, mapping_file: Optional[str] = None, xsd_index_file: Optional[str] = None,**kwargs):
         """
         smt_template_file: path to constraints.smt2 template (kept as-is)
         mapping_file: path to JSON mapping (default 'src/validation/data/mapping_smt.json')
         """
         self.smt_template_file = smt_template_file
         self.mapping_file = mapping_file
+
+        # 🔥 [新增] 继承关系表 { "ParentTag": {"ChildTag1", "ChildTag2"} }
+        self.inheritance_map = {}
+        if xsd_index_file:
+            self._load_inheritance_map(xsd_index_file)
 
         self.smt_template_text: str = ""
         self.template_sorts: Set[str] = set()
@@ -68,6 +73,9 @@ class SMTValidator:
         self.smt_decls: List[str] = []
         self.smt_facts: List[str] = []
         self.declared_consts: Set[str] = set()
+
+        # ✅ 新增：每个 SMT 断言对应的元信息（约束ID、属性角色、XML 元素等）
+        self.fact_metadata: List[Dict[str, Any]] = []
 
         # mapping loaded from JSON
         self.mapping: List[Dict[str, Any]] = []
@@ -98,6 +106,36 @@ class SMTValidator:
             self.template_functions = {}
             self.template_constructors = {}
             print(f"[WARN] Could not load SMT template '{self.smt_template_file}': {e}")
+
+    def _load_inheritance_map(self, index_file: str):
+        """从 XsdIndex.arxml 加载继承关系"""
+        try:
+            tree = ET.parse(index_file)
+            root = tree.getroot()
+            count = 0
+
+            # 清空旧的映射
+            self.inheritance_map = {}
+
+            for group in root.findall("group"):
+                parent = group.get("name")
+                complex_types = group.get("complexTypes", "")
+
+                if not parent or not complex_types:
+                    continue
+
+                # 🔥 [优化] 直接解析所有类型，不做排除
+                # 如果 XsdIndex 写的是 //A//B，那么 valid_tags 就是 {A, B}
+                # 如果 XsdIndex 写的是 //Parent，那么 valid_tags 就是 {Parent}
+                valid_tags = set(t for t in complex_types.split('//') if t)
+
+                if valid_tags:
+                    self.inheritance_map[parent] = valid_tags
+                    count += 1
+
+            print(f"[INFO] SMT Validator loaded {count} inheritance groups from XsdIndex")
+        except Exception as e:
+            print(f"[WARN] Failed to load XsdIndex: {e}")
 
     def _parse_template(self, txt: str):
         # parse declare-sort
@@ -279,22 +317,38 @@ class SMTValidator:
             tgt = entry.get("target", {}) or {}
             tgt_sort = tgt.get("target_sort")
             tgt_xml = tgt.get("target_xml") or {}
-            tgt_xpath = tgt_xml.get("xpath") or tgt_xml.get("xml_tag")
+            base_tag = tgt_xml.get("xml_tag")
+            tgt_xpath = tgt_xml.get("xpath")
             tgt_binding = tgt.get("target_binding", "short-name")
 
-            # find matching xml nodes
+            # 🔥 [核心修改开始] 构建搜索标签列表
+            tags_to_search = set()
+
+            # 1. 优先检查继承表 (XsdIndex)
+            if base_tag and base_tag in self.inheritance_map:
+                # 如果是抽象类 (如 ATOMIC-...), inheritance_map[base_tag] 仅包含子类
+                # 如果是具体类 (如 APPLICATION-...), inheritance_map[base_tag] 包含它自己
+                # 所以我们可以盲目地信任这个列表
+                tags_to_search.update(self.inheritance_map[base_tag])
+                # print(f"[DEBUG] Mapping {base_tag} -> {tags_to_search}")
+            elif base_tag:
+                # 如果不在继承表中，说明它是一个没有子类的普通具体标签，搜它自己
+                tags_to_search.add(base_tag)
+
+            # 开始搜索
             nodes = []
+
+            # 策略 A: 如果有 XPath，优先 XPath (通常 XPath 是特定路径)
             if tgt_xpath:
-                # 🔥 修改：优先使用标签名匹配（处理命名空间）
                 tag = tgt_xpath
+                # 注意：如果 xpath 包含具体标签名，不需要扩展；如果是通配符才需要考虑
+                # 这里简化处理，假设 xpath 是精确的
                 nodes = [n for n in root.iter() if _xml_tag_local(n.tag) == tag]
 
-                # 如果还找不到，尝试完整xpath
-                if not nodes:
-                    try:
-                        nodes = root.findall(".//" + tgt_xpath)
-                    except Exception:
-                        pass
+            # 策略 B: 使用智能构建的 tags_to_search
+            elif tags_to_search:
+                # 高效搜索：只遍历一次 XML
+                nodes = [n for n in root.iter() if _xml_tag_local(n.tag) in tags_to_search]
             else:
                 # if no xpath, attempt to use tag name from target_xml
                 tag = tgt_xml.get("xml_tag") if tgt_xml else None
@@ -308,14 +362,14 @@ class SMTValidator:
 
             # For each matched target element, generate subject and properties
             for node in nodes:
-                # determine SMT subject name
+                # SMT 声明依然使用 tgt_sort (抽象类型)
+                # 例如: (declare-const MySwc ATOMIC-SW-COMPONENT-TYPE)
                 prefix = tgt_sort or _xml_tag_local(node.tag)
                 subj_name = self._stable_name_for_elem(node, binding=tgt_binding, prefix=prefix)
-                # declare subject
+
                 if tgt_sort:
                     self._declare_const(subj_name, tgt_sort)
                 else:
-                    # no target sort known: use Int as fallback to avoid unknown constant errors
                     self._declare_const(subj_name, "Int")
 
                 # process properties
@@ -334,11 +388,17 @@ class SMTValidator:
                     search_path = p_xpath if p_xpath else p_xml_tag
 
                     if search_path:
-                        # 🔧 新增：命名空间感知的路径查找
+                        # 命名空间感知的路径查找
                         if '/' in search_path:
                             # 多层路径：逐层匹配（去除命名空间）
                             path_parts = search_path.split('/')
                             current_nodes = [node]
+
+                            # 兼容写法：如果第一段等于当前节点标签，认为是重复写了自身标签，自动跳过
+                            first = path_parts[0]
+                            cur_tag = _xml_tag_local(node.tag)
+                            if first == cur_tag:
+                                path_parts = path_parts[1:]
 
                             for part in path_parts:
                                 next_nodes = []
@@ -349,22 +409,28 @@ class SMTValidator:
                                 current_nodes = next_nodes
 
                             found = current_nodes
-
-                            # 如果找不到，记录日志
-                            if not found:
-                                print(f"[DEBUG] 未找到路径 '{search_path}' 在节点 {_xml_tag_local(node.tag)}")
-
                         else:
                             # 单层路径：先找直接子元素，再找后代
                             found = [c for c in node if _xml_tag_local(c.tag) == search_path]
-
                             if not found:
                                 # 查找所有后代（兼容性保留）
                                 found = [c for c in node.iter() if _xml_tag_local(c.tag) == search_path]
 
                     if not found:
-                        # property not present (optional)
+                        # property 不存在：可选地只在需要时打印未命中日志
+                        # print(f"[DEBUG] [{cid}] 属性 '{role}' 在节点 {_xml_tag_local(node.tag)} 上未找到路径 '{search_path}'")
                         continue
+
+                    # 到这里说明找到了，打印“正确映射的节点”
+                    debug_names = []
+                    for fe in found[:3]:  # 只展示前 3 个，防止日志太长
+                        debug_names.append(self._stable_name_for_elem(fe, binding=p_binding, prefix=role))
+
+                    # print(
+                    #     f"[DEBUG] [{cid}] 属性 '{role}'：在节点 "
+                    #     f"{_xml_tag_local(node.tag)} 上通过路径 '{search_path}' "
+                    #     f"命中 {len(found)} 个元素，示例: {', '.join(debug_names)}"
+                    # )
 
                     # for each found, create an smt name and declare
                     for idx, fe in enumerate(found):
@@ -385,29 +451,173 @@ class SMTValidator:
                         # optional: generate simple predicate assertions if mapping asks
                         smt_preds = p.get("smt_predicates") or {}
                         for pred_name, pred_info in smt_preds.items():
-                            # pred_info may be dict with type 'predicate' and args specify how to fill
+                            # ✅ 公共的元信息构造，方便下面两种分支都用
+                            base_meta = {
+                                "constraint_id": cid,
+                                "target_sort": tgt_sort,
+                                "subject": subj_name,
+                                "subject_xml_tag": _xml_tag_local(node.tag),
+                                "property_role": role,
+                                "property_sort": p_sort,
+                                "property_xml_tag": _xml_tag_local(fe.tag),
+                                "property_index": idx,
+                                "pred_name": pred_name,
+                            }
+
                             if isinstance(pred_info, dict):
                                 args = pred_info.get("args", [])
-                                # resolve args, allow tokens: PROPERTY -> current prop_smt, SUBJECT -> subj_name
                                 resolved_args = []
                                 for a in args:
-                                    if a == "PROPERTY" or a.upper().startswith("VARIATIONPOINT") or a.upper().startswith(role.upper()):
+                                    if a == "PROPERTY" or a.upper().startswith(
+                                            "VARIATIONPOINT") or a.upper().startswith(role.upper()):
                                         resolved_args.append(prop_smt)
-                                    elif a == "SUBJECT" or a.upper() == tgt_sort.upper():
+                                    elif a == "SUBJECT" or (tgt_sort and a.upper() == tgt_sort.upper()):
                                         resolved_args.append(subj_name)
                                     else:
-                                        # literal or other
                                         resolved_args.append(a)
-                                self.smt_facts.append(f"(assert ({pred_name} {' '.join(resolved_args)}))")
+
+                                fact_str = f"(assert ({pred_name} {' '.join(resolved_args)}))"
+                                self.smt_facts.append(fact_str)
+                                # ✅ 元数据：和 fact_str 同步追加
+                                self.fact_metadata.append(base_meta)
+
                             else:
                                 # if simple string, assume unary predicate on property
-                                self.smt_facts.append(f"(assert ({pred_info} {prop_smt}))")
+                                fact_str = f"(assert ({pred_info} {prop_smt}))"
+                                self.smt_facts.append(fact_str)
+                                # ✅ simple string 同样写入元数据（pred_name = pred_info）
+                                meta = dict(base_meta)
+                                meta["pred_name"] = str(pred_info)
+                                self.fact_metadata.append(meta)
 
                 # logical pattern: 在模板驱动架构下，跳过逻辑模式生成
                 lp = entry.get("logical_pattern") or {}
                 if lp:
                     # 传递给简化版的方法（只做日志记录，不生成断言）
                     self._emit_logical_pattern(lp, subj_name, prop_instances, entry.get("constraint_id"))
+
+    def _generate_global_smt_facts(self) -> int:
+        """
+        根据 Mapping 和 全局索引，生成 SMT 数据事实 (Data Facts)。
+
+        注意：
+        1. 这里生成的 `(assert ...)` 仅用于录入数据（例如 "A 拥有 B"）。
+        2. 这里的 `declare-const` 会将 XML 中的具体子类映射为 SMT 中的抽象父类。
+        3. 绝不生成逻辑规则（逻辑规则由 SMT 模板提供）。
+        """
+        resolver = self.cross_file_resolver
+        global_index = resolver.global_index
+
+        # 1. 筛选跨文件 Mapping
+        cross_mappings = [m for m in self.mapping if m.get('cross_file', False)]
+
+        count = 0
+
+        for entry in cross_mappings:
+            cid = entry.get("constraint_id")
+            tgt = entry.get("target", {})
+
+            # 目标 XML 标签 (可能是抽象类，如 ATOMIC-SW-COMPONENT-TYPE)
+            abstract_tag = tgt.get("target_xml", {}).get("xml_tag")
+
+            # SMT 中对应的类型 (必须与 SMT Template 中的 declare-sort 一致)
+            # 例如：(declare-sort ATOMIC-SW-COMPONENT-TYPE 0)
+            tgt_sort = tgt.get("target_sort", "Int")
+
+            # 🔥 [Fix] 抽象类处理：获取该抽象类对应的所有具体子类标签
+            # 例如：ATOMIC-SW... -> {APPLICATION-SW..., COMPLEX-DEVICE..., ...}
+            concrete_tags = self._get_concrete_tags(abstract_tag)
+
+            # 在全局索引中查找这些具体标签的所有实例
+            target_instances = [
+                (path, info) for path, info in global_index.items()
+                if info['tag'] in concrete_tags
+            ]
+
+            for path, info in target_instances:
+                # 1. 声明主体对象 (Declare Subject)
+                # 关键点：虽然 path 指向的是具体类，但在 SMT 里我们将其声明为抽象类类型 (tgt_sort)
+                # 这样它才能被 SMT 模板中的 (forall ((c ATOMIC-SW...)) ...) 捕获
+                subj_smt_name = self._path_to_smt_name(path)
+                self._declare_const(subj_smt_name, tgt_sort)
+
+                # 2. 录入属性/关系数据 (Populate Predicates)
+                for prop in entry.get("properties", []):
+                    role = prop.get("role")
+                    p_xml_tag = prop.get("xml_tag")  # 子元素标签，如 RUNNABLE-ENTITY
+                    p_xpath = prop.get("xpath")
+                    p_sort = prop.get("smt_sort", "Int")
+                    predicates = prop.get("smt_predicates", {})  # 定义了如何录入数据，如 (ownsRunnable SUB PROP)
+                    is_ref = prop.get("is_cross_file_ref", False)
+
+                    # 回溯源文件，提取该属性的具体值
+                    # - 如果是包含关系，val 是子元素的 ShortName
+                    # - 如果是引用关系，val 是目标元素的 DEST 路径
+                    extracted_values = self._extract_element_property_value(
+                        info['source_file'], path, p_xml_tag, p_xpath
+                    )
+
+                    for val in extracted_values:
+                        prop_smt_name = ""
+
+                        if is_ref:
+                            # 情况 A: 引用 (Ref)
+                            ref_path = val
+                            # 确保引用目标在全局索引中存在
+                            if ref_path in global_index:
+                                prop_smt_name = self._path_to_smt_name(ref_path)
+                                # 声明引用目标对象
+                                self._declare_const(prop_smt_name, p_sort)
+                            else:
+                                # 引用目标未解析，无法生成关系事实，跳过
+                                continue
+                        else:
+                            # 情况 B: 子元素 (Child)
+                            # 构造子元素的完整路径
+                            child_path = f"{path}/{val}"
+                            if child_path in global_index:
+                                prop_smt_name = self._path_to_smt_name(child_path)
+                                # 声明子元素对象
+                                self._declare_const(prop_smt_name, p_sort)
+                            else:
+                                # 情况 C: 普通数据值 (如 String 类型)
+                                if p_sort == "String":
+                                    # 简单的字符串转义
+                                    safe_val = val.replace('"', '\\"')
+                                    prop_smt_name = f'"{safe_val}"'
+                                else:
+                                    continue
+
+                        # 生成谓词事实 (Fact Assertion)
+                        # 这告诉 Z3：在当前数据中，这个关系是存在的
+                        # 例如: (assert (ownsRunnable Comp1 Runnable1))
+                        for pred_name, pred_info in predicates.items():
+                            if isinstance(pred_info, dict) and pred_info.get("type") == "predicate":
+                                args = []
+                                for arg in pred_info.get("args", []):
+                                    if arg == "SUBJECT":
+                                        args.append(subj_smt_name)
+                                    elif arg == "PROPERTY":
+                                        args.append(prop_smt_name)
+                                    else:
+                                        args.append(arg)
+
+                                # 生成 Assert 语句。
+                                # 注意：这是 "Data Assertion"，不是 "Constraint Assertion"
+                                fact = f"(assert ({pred_name} {' '.join(args)}))"
+                                self.smt_facts.append(fact)
+                                count += 1
+
+                                # 记录元数据用于后续诊断
+                                self.fact_metadata.append({
+                                    "constraint_id": cid,
+                                    "fact": fact,
+                                    "subject": path,
+                                    "property_role": role,
+                                    "value": val
+                                })
+
+        return count
 
     # -------------------------
     # Logical pattern emitter
@@ -488,6 +698,7 @@ class SMTValidator:
         self.smt_decls = []
         self.smt_facts = []
         self.declared_consts = set()
+        self.fact_metadata = []
 
         # SMT generation from mapping
         if not self.mapping:
@@ -575,6 +786,7 @@ class SMTValidator:
         if solver_result:
             cli_stdout = solver_result.get("stdout", "")
             py_status = solver_result.get("status", "")
+            print(f"[DEBUG] SMT solver_result: {solver_result}")
             if "unsat" in cli_stdout or "unsat" in py_status:
                 is_valid = False
             elif "sat" in cli_stdout or "sat" in py_status:
@@ -585,17 +797,26 @@ class SMTValidator:
                 solver_result["warning"] = "Z3 not available, validation skipped"
             else:
                 is_valid = False
+
         # ✅ 新增：打印诊断信息
         if incremental_result and not is_valid:
+            print(f"[DEBUG] SMT incremental_result: {incremental_result}")
             diagnosis_text = incremental_result.get("diagnosis", "")
             if diagnosis_text:
                 print("\n" + diagnosis_text)
-            # 打印具体冲突
             conflicts = incremental_result.get("conflicting_facts", [])
             if conflicts:
                 print(f"\n🔍 发现 {len(conflicts)} 个约束冲突:")
-                for conflict in conflicts[:5]:  # 最多显示5个
-                    print(f"  - 第 {conflict.get('index', '?') + 1} 个断言: {conflict.get('fact', '')[:100]}...")
+                for conflict in conflicts[:5]:  # 最多显示 5 个
+                    idx = conflict.get("index", -1)
+                    cid = conflict.get("constraint_id", "UNKNOWN_CONSTRAINT")
+                    role = conflict.get("property_role")
+                    prefix = f"  - 约束 {cid}"
+                    if role:
+                        prefix += f" / 属性 {role}"
+                    prefix += f" / 第 {idx + 1} 个断言: "
+                    print(prefix + conflict.get("fact", "")[:100] + "...")
+
         # 5) return structure
         return {
             "valid": is_valid,
@@ -709,12 +930,18 @@ class SMTValidator:
 
                     result = solver.check()
                     if result == z3.unsat:
-                        conflicting_facts.append({
+                        # ✅ 取出对应的元信息
+                        meta = self.fact_metadata[i] if i < len(self.fact_metadata) else {}
+                        conflict = {
                             "index": i,
                             "fact": fact_str.strip(),
                             "message": f"第 {i + 1} 个断言导致约束冲突",
                             "context": added_facts[-3:] if len(added_facts) >= 3 else added_facts[:]
-                        })
+                        }
+                        # ✅ 合并元信息（constraint_id 等）
+                        conflict.update(meta)
+                        conflicting_facts.append(conflict)
+
                         solver.pop()
                     else:
                         solver.pop()
@@ -722,12 +949,16 @@ class SMTValidator:
                             solver.add(fa)
                         added_facts.append(fact_str.strip()[:80])
 
+
                 except Exception as e:
-                    conflicting_facts.append({
+                    meta = self.fact_metadata[i] if i < len(self.fact_metadata) else {}
+                    conflict = {
                         "index": i,
                         "fact": fact_str.strip(),
                         "error": f"解析失败: {str(e)}"
-                    })
+                    }
+                    conflict.update(meta)
+                    conflicting_facts.append(conflict)
             if conflicting_facts:
                 return {
                     "method": "incremental",
@@ -759,11 +990,25 @@ class SMTValidator:
             fact = conflict.get("fact", "")
             error = conflict.get("error", "")
 
+            cid = conflict.get("constraint_id")
+            role = conflict.get("property_role")
+            subject = conflict.get("subject")
+            pred = conflict.get("pred_name")
+
             lines.append(f"\n  ❌ 冲突 #{i} (断言 #{idx + 1}):")
-            lines.append(f"     {fact}")
+            if cid:
+                lines.append(f"     约束 ID    : {cid}")
+            if subject:
+                lines.append(f"     目标元素    : {subject}")
+            if role:
+                lines.append(f"     属性角色    : {role}")
+            if pred:
+                lines.append(f"     谓词        : {pred}")
+
+            lines.append(f"     SMT 断言    : {fact}")
 
             if error:
-                lines.append(f"     错误: {error}")
+                lines.append(f"     错误        : {error}")
 
         lines.append(f"\n  📊 冲突统计: {len(conflicting_facts)} 个约束违反")
 
@@ -775,31 +1020,20 @@ class SMTValidator:
 
     def validate_cross_file_constraints(self, arxml_files: List[str]) -> Dict[str, Any]:
         """
-        执行跨文件约束验证
-
-        Args:
-            arxml_files: 所有ARXML文件路径
-
-        Returns:
-            验证结果
+        执行 SMT 跨文件约束验证。
+        流程:
+        1. 解析 ARXML 构建全局索引
+        2. 生成数据事实 (Data Facts) -> _generate_global_smt_facts
+        3. 结合 SMT 模板 (Logic Rules) -> 提交给 Z3 求解
         """
-        # 修复：使用正确的属性名
+        # 1. 环境检查
         if not self.z3_cli_available:
             try:
                 import z3
-                z3_available = True
             except ImportError:
-                z3_available = False
-        else:
-            z3_available = True
+                return {'success': False, 'error': 'Z3 solver not available', 'violations': []}
 
-        if not z3_available:
-            return {
-                'success': False,
-                'error': 'Z3 solver not available',
-                'violations': []
-            }
-
+        # 2. 索引构建
         if not self.cross_file_resolver:
             from src.validation.cross_file_resolver import CrossFileResolver
             self.cross_file_resolver = CrossFileResolver()
@@ -807,27 +1041,81 @@ class SMTValidator:
 
         violations = []
 
-        # 1. 基础引用完整性检查
-        ref_violations = self.cross_file_resolver.validate_all_refs()
-        violations.extend(ref_violations)
+        # 3. 基础检查 (引用/类型)
+        violations.extend(self.cross_file_resolver.validate_all_refs())
+        violations.extend(self.cross_file_resolver.check_dest_type_match())
 
-        # 2. DEST类型匹配检查
-        type_mismatches = self.cross_file_resolver.check_dest_type_match()
-        violations.extend(type_mismatches)
+        # 4. SMT 验证
+        print(f"\n🧮 [SMT Cross-File] 构建 SMT 上下文 (Template + Data)...")
 
-        # 3. 执行SMT约束验证
-        smt_violations = self._validate_smt_constraints()
-        violations.extend(smt_violations)
+        # 清理旧状态
+        self.smt_decls = []
+        self.smt_facts = []
+        self.declared_consts = set()
+        self.fact_metadata = []
+        self._file_tree_cache = {}
+
+        # 生成数据事实
+        facts_count = self._generate_global_smt_facts()
+        print(f"   生成 SMT 数据事实: {facts_count} 条")
+
+        if facts_count > 0:
+            # 组合完整脚本
+            smt_parts = []
+
+            # A. 逻辑规则 (来自 SMT 模板)
+            if self.smt_template_text:
+                smt_parts.append("; --- LOGIC RULES (FROM TEMPLATE) ---")
+                smt_parts.append(self.smt_template_text.rstrip())
+
+            # B. 对象声明 (程序生成)
+            smt_parts.append("\n; --- OBJECT DECLARATIONS ---")
+            smt_parts.append("\n".join(self.smt_decls))
+
+            # C. 数据事实 (程序生成)
+            smt_parts.append("\n; --- DATA FACTS ---")
+            smt_parts.append("\n".join(self.smt_facts))
+
+            smt_parts.append("\n(check-sat)")
+            full_smt = "\n".join(smt_parts)
+
+            # 执行 Z3
+            solver_result = None
+            if self.z3_cli_available:
+                solver_result = self._run_z3_cli(full_smt)
+            else:
+                solver_result = self._run_z3_python(full_smt)
+
+            # 检查结果
+            stdout = solver_result.get("stdout", "") or ""
+            status = solver_result.get("status", "") or ""
+
+            if "unsat" in stdout or "unsat" in status:
+                print(f"   ❌ SMT 求解结果: UNSAT (违反了模板中的逻辑规则)")
+
+                # 诊断冲突
+                diag_result = self._incremental_validate_with_diagnosis(
+                    self.smt_facts, self.smt_template_text
+                )
+
+                if diag_result.get("conflicting_facts"):
+                    for conflict in diag_result["conflicting_facts"]:
+                        violations.append({
+                            'type': 'SMT_LOGIC_VIOLATION',
+                            'constraint_id': conflict.get('constraint_id', 'Global'),
+                            'severity': 'Violation',
+                            'message': f"逻辑约束未满足: {conflict.get('message')}",
+                            'detail': conflict
+                        })
+            else:
+                print(f"   ✅ SMT 求解结果: SAT (数据符合模板规则)")
 
         return {
             'success': len(violations) == 0,
             'violations': violations,
             'stats': {
-                'total_elements': len(self.cross_file_resolver.global_index),
-                'total_refs': sum(len(refs) for refs in self.cross_file_resolver.ref_registry.values()),
-                'unresolved_refs': len(ref_violations),
-                'type_mismatches': len(type_mismatches),
-                'smt_violations': len(smt_violations)
+                'smt_facts': facts_count,
+                'total_violations': len(violations)
             }
         }
 
@@ -968,60 +1256,95 @@ class SMTValidator:
 
         return result
 
-    def generate_smt_instance_from_global(self, output_path: str) -> None:
+        # -------------------------------------------------------
+        # 🔥 [Helper Methods] 抽象类处理与事实提取
+        # -------------------------------------------------------
+    def _get_concrete_tags(self, abstract_tag: str) -> Set[str]:
         """
-        根据全局索引生成SMT实例文件
-
-        Args:
-            output_path: 输出文件路径
+        获取抽象标签对应的所有具体标签。
+        解决 SMT Template 使用抽象类 (ATOMIC-SW-...) 而 XML 使用具体类的问题。
         """
-        if not self.cross_file_resolver:
-            raise ValueError("需要先设置跨文件解析器并构建索引")
-
-        lines = []
-
-        # 1. 读取模板
-        if self.smt_template_text:
-            lines.append(f"; SMT Instance generated from global index")
-            lines.append(f"; Template: {self.smt_template_file}")
-            lines.append(self.smt_template_text.rstrip())
-            lines.append("\n; --- GLOBAL INSTANCE DATA ---\n")
-        else:
-            lines.append("; Generated SMT instance (no template)")
-
-        # 2. 为每个元素生成常量声明
-        lines.append("; Element declarations")
-        for path, info in self.cross_file_resolver.global_index.items():
-            safe_name = self._path_to_smt_name(path)
-            element_type = info['tag']
-
-            # 检查类型是否在模板中声明
-            if element_type in self.template_sorts:
-                lines.append(f"(declare-const {safe_name} {element_type})")
-            else:
-                lines.append(f"; Skipping {safe_name}: sort {element_type} not in template")
-
-        # 3. 生成引用关系断言
-        lines.append("\n; Reference assertions")
-        for ref_type, refs in self.cross_file_resolver.ref_registry.items():
-            for ref in refs:
-                ref_path = ref.get('text', '')
-                if ref_path:
-                    target = self.cross_file_resolver.resolve_reference(ref_path)
-                    if target:
-                        lines.append(f"; REF {ref_type}: {ref_path} -> {target['tag']}")
-                        # 可以添加具体的引用断言
-                    else:
-                        lines.append(f"; UNRESOLVED REF {ref_type}: {ref_path}")
-
-        # 4. 添加检查命令
-        lines.append("\n(check-sat)")
-        lines.append("(get-model)")
-
-        # 写入文件
-        from pathlib import Path as PathLib
-        PathLib(output_path).write_text('\n'.join(lines), encoding='utf-8')
-        print(f"[OK] SMT实例已生成: {output_path}")
+        if not abstract_tag:
+            return set()
+        # 如果在 XsdIndex 加载的继承表中，返回所有子类
+        if abstract_tag in self.inheritance_map:
+            # print(f"[DEBUG] Mapping Abstract {abstract_tag} -> Concrete {self.inheritance_map[abstract_tag]}")
+            return self.inheritance_map[abstract_tag]
+        # 否则假设它是具体类，返回自身
+        return {abstract_tag}
+    def _extract_element_property_value(self, source_file: str, element_path: str,
+                                        prop_xml_tag: str, prop_xpath: str = None) -> List[str]:
+        """
+        [跨文件] 回溯源文件，提取指定元素的具体属性值或引用目标路径。
+        这是为了生成 SMT 事实（如：r1 的 symbol 是 "func_a"）。
+        """
+        try:
+            # 简单的文件级缓存，避免频繁 parse 同一个文件
+            if not hasattr(self, '_file_tree_cache'):
+                self._file_tree_cache = {}
+            if source_file not in self._file_tree_cache:
+                try:
+                    self._file_tree_cache[source_file] = ET.parse(source_file)
+                except Exception as e:
+                    print(f"[WARN] 无法解析文件 {source_file}: {e}")
+                    return []
+            tree = self._file_tree_cache[source_file]
+            root = tree.getroot()
+            # 根据 SHORT-NAME 路径找到 XML 节点
+            # 注意：这里需要一个能根据 path 查找节点的辅助函数 _find_node_by_path
+            target_node = self._find_node_by_path(root, element_path)
+            if target_node is None:
+                return []
+            results = []
+            # 确定搜索路径：优先 XPath，否则用 Tag
+            search_path = prop_xpath if prop_xpath else prop_xml_tag
+            # 在目标节点下查找属性/子元素
+            if search_path:
+                # 简单的路径分割查找（忽略命名空间）
+                parts = search_path.split('/')
+                nodes = [target_node]
+                for part in parts:
+                    next_nodes = []
+                    for n in nodes:
+                        # 匹配去除 namespace 后的 tag
+                        next_nodes.extend([c for c in n if _xml_tag_local(c.tag) == part])
+                    nodes = next_nodes
+                # 提取文本值
+                for n in nodes:
+                    if n.text and n.text.strip():
+                        results.append(n.text.strip())
+            return results
+        except Exception as e:
+            print(f"[WARN] 提取属性值失败 {source_file} :: {element_path}: {e}")
+            return []
+    def _find_node_by_path(self, root: ET.Element, path: str) -> Optional[ET.Element]:
+        """
+        根据 SHORT-NAME 路径在 ET.Element 树中查找对应节点。
+        用于从 CrossFileResolver 的索引回溯到具体 XML 节点。
+        """
+        # 移除开头的 /
+        clean_path = path.strip('/')
+        parts = [p for p in clean_path.split('/') if p]
+        def recursive_find(node, remaining_parts):
+            if not remaining_parts:
+                return node
+            target_name = remaining_parts[0]
+            # 1. 在直接子节点中查找 SHORT-NAME 匹配
+            for child in node:
+                sn = _first_text(child, "SHORT-NAME")
+                if sn == target_name:
+                    res = recursive_find(child, remaining_parts[1:])
+                    if res is not None:
+                        return res
+            # 2. 如果没找到，尝试穿透非命名容器（如 ELEMENTS, COMPONENTS 等 wrapper）
+            for child in node:
+                if _first_text(child, "SHORT-NAME") is None:
+                    # 路径部分不减少，继续在 wrapper 内部找当前 target_name
+                    res = recursive_find(child, remaining_parts)
+                    if res is not None:
+                        return res
+            return None
+        return recursive_find(root, parts)
 
     def _path_to_smt_name(self, path: str) -> str:
         """将SHORT-NAME-PATH转换为合法的SMT标识符"""

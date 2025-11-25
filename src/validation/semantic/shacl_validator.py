@@ -13,7 +13,8 @@ class SHACLValidator:
     def __init__(self, shapes_file: str,
                  raw_attributes_file: Optional[str] = None,
                  enriched_constraints_file: Optional[str] = None,
-                 semantic_config: Optional[Dict] = None):
+                 semantic_config: Optional[Dict] = None,
+                 xsd_index_file: Optional[str] = None):
         """
         初始化SHACL验证器
 
@@ -44,6 +45,13 @@ class SHACLValidator:
         print(f"   结构验证: {'启用' if self.validation_scope.get('structural_validation', True) else '禁用'}")
         print(f"   语义验证: {'启用' if self.validation_scope.get('semantic_validation', True) else '禁用'}")
 
+        # [新增] 加载 AUTOSAR 本体图 (用于 RDFS 推理)
+        self.ontology_graph = None
+        if xsd_index_file:
+            self.ontology_graph = self._load_ontology_from_xml(xsd_index_file)
+        else:
+            print("ℹ️ 未提供 XSD 索引文件，将无法自动推断抽象父类关系。")
+
         # 显示启用的约束类型
         if self.semantic_types_enabled:
             enabled_types = [k for k, v in self.semantic_types_enabled.items() if v]
@@ -67,7 +75,7 @@ class SHACLValidator:
         self.text_content_mappings = {}
 
         if self.mapping_enabled:
-            print("🔧 启用增强映射功能（包含Wrapper处理）")
+            print("🔧 启用增强映射功能")
             self._build_mapping_tables(raw_attributes_file)
 
             if enriched_constraints_file:
@@ -175,6 +183,55 @@ class SHACLValidator:
 
         return result
 
+    def _load_ontology_from_xml(self, xml_file_path: str) -> Optional[rdflib.Graph]:
+        """[新增] 从 XsdIndex.arxml 加载继承关系并转换为 RDFS 本体"""
+        try:
+            print(f"📚 正在构建本体图，来源: {xml_file_path}")
+            g = rdflib.Graph()
+
+            # 定义命名空间
+            AUTOSAR = rdflib.Namespace("http://autosar.org/")
+            RDFS = rdflib.namespace.RDFS
+            g.bind("autosar", AUTOSAR)
+            g.bind("rdfs", RDFS)
+
+            # 解析 XML
+            tree = ET.parse(xml_file_path)
+            root = tree.getroot()  # <index>
+
+            relation_count = 0
+
+            # 遍历所有 <group>
+            for group in root.findall("group"):
+                parent_name = group.get("name")
+                complex_types_str = group.get("complexTypes", "")
+
+                if not parent_name or not complex_types_str:
+                    continue
+
+                # 处理 complexTypes="//A//B" 格式
+                # split('//') 会产生空字符串，需要过滤
+                sub_types = [t for t in complex_types_str.split('//') if t]
+
+                for sub_type in sub_types:
+                    # 核心逻辑：如果子类名称 != 父类名称，建立继承关系
+                    # 例如: name="APPLICATION-DATA-TYPE" complexTypes="//APPLICATION-ARRAY-DATA-TYPE..."
+                    if sub_type != parent_name:
+                        child_uri = AUTOSAR[sub_type]
+                        parent_uri = AUTOSAR[parent_name]
+
+                        # 添加三元组: Child rdfs:subClassOf Parent
+                        g.add((child_uri, RDFS.subClassOf, parent_uri))
+                        relation_count += 1
+                        # print(f"   🔗 继承关系: {sub_type} -> {parent_name}")
+
+            print(f"✅ 本体构建完成: 包含 {len(g)} 个三元组, {relation_count} 条继承关系")
+            return g
+
+        except Exception as e:
+            print(f"❌ 加载 XSD 本体失败: {e}")
+            return None
+
     def _xml_to_rdf_with_config(self, xml_content: str) -> rdflib.Graph:
         """🔧 根据配置转换XML到RDF"""
         if self.mapping_enabled:
@@ -186,13 +243,20 @@ class SHACLValidator:
         """🔧 执行SHACL验证核心逻辑"""
         try:
             print(f"✅ RDF图生成成功，包含 {len(rdf_graph)} 个三元组")
+            # 决定是否使用推理
+            inference_option = 'none'
+            if self.ontology_graph and len(self.ontology_graph) > 0:
+                print("🧠 启用 RDFS 推理 (基于 XSD Index)")
+                inference_option = 'rdfs'
+
             print("📝 执行SHACL约束验证...")
 
             # 执行pyshacl验证
             validation_result = validate(
                 data_graph=rdf_graph,
                 shacl_graph=self.shapes_graph,
-                inference='rdfs',
+                ont_graph=self.ontology_graph,  # <--- 传入生成的本体
+                inference=inference_option,  # <--- 开启推理
                 abort_on_first=False,
                 debug=False
             )
@@ -559,20 +623,24 @@ class SHACLValidator:
                 print(f"⚠️  SHACL shapes文件不存在: {shapes_file}")
                 return shapes_graph
 
-            try:
-                shapes_graph.parse(shapes_file, format="turtle")
-            except Exception as parse_error:
-                print(f"❌ TTL解析错误: {parse_error}")
-                try:
-                    with open(shapes_file, 'r', encoding='utf-8') as f:
-                        content = f.read()
+            # --- 修改开始：直接解析，不要 try-except 自动修复 ---
+            print(f"正在解析文件: {shapes_file}")
+            shapes_graph.parse(source=shapes_file, format="turtle", encoding="utf-8")
 
-                    content = self._fix_ttl_content(content)
-                    shapes_graph.parse(data=content, format="turtle")
-                    print("✅ TTL文件经修复后成功解析")
-                except Exception as retry_error:
-                    print(f"❌ TTL修复后仍无法解析: {retry_error}")
-                    return rdflib.Graph()
+            # try:
+            #     shapes_graph.parse(shapes_file, format="turtle")
+            # except Exception as parse_error:
+            #     print(f"❌ TTL解析错误: {parse_error}")
+            #     try:
+            #         with open(shapes_file, 'r', encoding='utf-8') as f:
+            #             content = f.read()
+            #
+            #         content = self._fix_ttl_content(content)
+            #         shapes_graph.parse(data=content, format="turtle")
+            #         print("✅ TTL文件经修复后成功解析")
+            #     except Exception as retry_error:
+            #         print(f"❌ TTL修复后仍无法解析: {retry_error}")
+            #         return rdflib.Graph()
 
             SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
             node_shapes = len(list(shapes_graph.subjects(rdflib.RDF.type, SH.NodeShape)))
@@ -837,7 +905,9 @@ class SHACLValidator:
                 subject = rdflib.URIRef(subject_uri)
 
                 if is_wrapper_element(clean_tag):
-                    # print(f"🔗 处理Wrapper元素: {clean_tag}")
+                    # 为 wrapper 创建节点
+                    element_type_uri = AUTOSAR[clean_tag]
+                    graph.add((subject, rdflib.RDF.type, element_type_uri))
 
                     expected_item_tag = get_expected_item_tag(clean_tag)
 
@@ -845,14 +915,17 @@ class SHACLValidator:
                         clean_child_tag = clean_element_name(child.tag)
 
                         if clean_child_tag == expected_item_tag:
-                            child_uri = f"{subject_uri.rsplit('/', 1)[0]}/{expected_item_tag}_{i}"
+                            # ✅ 正常路径：wrapper -> child
+                            child_uri = f"{subject_uri}/{expected_item_tag}_{i}"
                             child_subject = rdflib.URIRef(child_uri)
 
-                            parent_subject = rdflib.URIRef(subject_uri.rsplit('/', 1)[0])
                             predicate = AUTOSAR[expected_item_tag]
-                            graph.add((parent_subject, predicate, child_subject))
+                            graph.add((subject, predicate, child_subject))
 
-                            # print(f"   🔗 透明连接: {parent_subject} --{expected_item_tag}--> {child_subject}")
+                            # ❌ 删除透明化逻辑
+                            # parent_subject = rdflib.URIRef(subject_uri.rsplit('/', 1)[0])
+                            # predicate = AUTOSAR[expected_item_tag]
+                            # graph.add((parent_subject, predicate, child_subject))
 
                             xml_to_triples_enhanced_fixed(child, child_uri, parent_class_id, depth)
                         else:
@@ -963,7 +1036,6 @@ class SHACLValidator:
                 subject = rdflib.URIRef(subject_uri)
 
                 if is_likely_wrapper(element):
-                    print(f"🔗 检测到可能的Wrapper: {clean_tag}")
 
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))
@@ -976,11 +1048,11 @@ class SHACLValidator:
                         predicate = AUTOSAR[clean_child_tag]
                         graph.add((subject, predicate, child_subject))
 
-                        if '/' in subject_uri:
-                            parent_uri = subject_uri.rsplit('/', 1)[0]
-                            parent_subject = rdflib.URIRef(parent_uri)
-                            direct_predicate = AUTOSAR[clean_child_tag]
-                            graph.add((parent_subject, direct_predicate, child_subject))
+                        # if '/' in subject_uri:
+                        #     parent_uri = subject_uri.rsplit('/', 1)[0]
+                        #     parent_subject = rdflib.URIRef(parent_uri)
+                        #     direct_predicate = AUTOSAR[clean_child_tag]
+                        #     graph.add((parent_subject, direct_predicate, child_subject))
 
                         xml_to_triples_fixed(child, child_uri, depth + 1)
 
