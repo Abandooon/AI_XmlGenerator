@@ -5,6 +5,13 @@
 ; SMT Template for given constraints
 ;#################################################################
 
+; placeholder sorts for XSD / generic nodes
+
+(declare-sort xsd 0)
+
+
+
+
 ;---------------------------------------------------------------
 ; 4.3.1_Constr_SwConnector_PIMReference
 ; SwConnector Reference to PortInterfaceMapping

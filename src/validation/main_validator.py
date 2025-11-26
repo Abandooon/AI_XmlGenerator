@@ -761,18 +761,16 @@ class AutosarValidator:
         """检查全局SHORT-NAME-PATH唯一性"""
         duplicates = []
 
-        # 构建路径到文件的映射
-        path_to_files = {}
-
-        for path, info in resolver.global_index.items():
-            source_file = info.get('source_file', '')
-            if path not in path_to_files:
-                path_to_files[path] = []
-            path_to_files[path].append(source_file)
-
-        # 检查是否有重复（由于global_index是字典，同名会覆盖）
-        # 这里需要在索引构建时记录重复，或者重新扫描
-        # 简化实现：返回空列表（实际项目中可能需要增强CrossFileResolver）
+        # ✅ [修复] 使用CrossFileResolver中记录的重复路径
+        if hasattr(resolver, 'get_duplicate_paths'):
+            duplicate_paths = resolver.get_duplicate_paths()
+            for path, files in duplicate_paths.items():
+                duplicates.append({
+                    'type': 'DUPLICATE_SHORT_NAME_PATH',
+                    'path': path,
+                    'files': files,
+                    'message': f"SHORT-NAME-PATH '{path}' 在多个文件中重复定义"
+                })
 
         return duplicates
 

@@ -62,14 +62,28 @@ class CrossFileResolver:
                     el.attrib[new_key] = val
 
     def _build_path_index(self, elem: ET.Element, path_stack: List[str], source_file: str) -> None:
-        """递归构建SHORT-NAME-PATH索引"""
+        """递归构建SHORT-NAME-PATH索引，支持重复检测"""
         short_name_elem = elem.find('SHORT-NAME')
 
         if short_name_elem is not None and short_name_elem.text:
             current_path = path_stack + [short_name_elem.text]
             full_path = '/' + '/'.join(current_path)
 
-            # 存储元素信息
+            # ✅ [新增] 检测重复路径
+            if full_path in self.global_index:
+                existing_file = self.global_index[full_path].get('source_file', '')
+                if existing_file != source_file:
+                    # 记录重复
+                    if not hasattr(self, 'duplicate_paths'):
+                        self.duplicate_paths = {}
+                    if full_path not in self.duplicate_paths:
+                        self.duplicate_paths[full_path] = [existing_file]
+                    self.duplicate_paths[full_path].append(source_file)
+                    print(f"[WARN] 重复的SHORT-NAME-PATH: {full_path}")
+                    print(f"       文件1: {existing_file}")
+                    print(f"       文件2: {source_file}")
+
+            # 存储元素信息（后来的会覆盖之前的）
             self.global_index[full_path] = {
                 'tag': elem.tag,
                 'short_name': short_name_elem.text,
@@ -88,6 +102,10 @@ class CrossFileResolver:
             # 非命名元素，继续递归但不更新路径
             for child in elem:
                 self._build_path_index(child, path_stack, source_file)
+
+    def get_duplicate_paths(self) -> Dict[str, List[str]]:
+        """获取所有重复的SHORT-NAME-PATH及其来源文件"""
+        return getattr(self, 'duplicate_paths', {})
 
     def _collect_refs(self, root: ET.Element, source_file: str) -> None:
         """收集所有REF元素"""

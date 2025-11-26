@@ -51,7 +51,10 @@ def _first_text(elem: Optional[ET.Element], child_tag: str) -> Optional[str]:
 # SMT Validator class
 # -------------------------
 class SMTValidator:
-    def __init__(self, smt_template_file: str, mapping_file: Optional[str] = None, xsd_index_file: Optional[str] = None,**kwargs):
+    # 在 smt_validator.py 第53-94行的 __init__ 方法中添加
+
+    def __init__(self, smt_template_file: str, mapping_file: Optional[str] = None, xsd_index_file: Optional[str] = None,
+                 **kwargs):
         """
         smt_template_file: path to constraints.smt2 template (kept as-is)
         mapping_file: path to JSON mapping (default 'src/validation/data/mapping_smt.json')
@@ -69,10 +72,29 @@ class SMTValidator:
         self.template_functions: Dict[str, List[Tuple[str, List[str], str]]] = {}
         self.template_constructors: Dict[str, List[Tuple[str, List[str]]]] = {}
 
+        # ✅ [新增] 谓词基础名到变体的映射，用于处理重命名后的谓词匹配
+        # 格式: { "baseName": [(actual_name, arg_types, ret_type, suffix_number), ...] }
+        # suffix_number: 0 表示原名, 2 表示 __2, 3 表示 __3, ...
+        self.predicate_base_to_variants: Dict[str, List[Tuple[str, List[str], str, int]]] = {}
+
+        # ✅ [新增] 精确谓词名到签名的映射，用于快速查找
+        # 格式: { "actualName": (arg_types, ret_type) }
+        self.predicate_signatures: Dict[str, Tuple[List[str], str]] = {}
+
+        # ✅ [新增] 跳过的谓词记录
+        self.skipped_predicates: List[Dict[str, Any]] = []
+
+        # ✅ [新增] 谓词匹配缓存，避免重复匹配
+        # 格式: { (mapping_pred_name, arity): matched_template_pred_name or None }
+        self.predicate_match_cache: Dict[Tuple[str, int], Optional[str]] = {}
+
         # runtime generated
         self.smt_decls: List[str] = []
         self.smt_facts: List[str] = []
         self.declared_consts: Set[str] = set()
+
+        # 🔧 新增：记录运行时自动声明过的 sort，避免重复 declare-sort
+        self.auto_declared_sorts: Set[str] = set()
 
         # ✅ 新增：每个 SMT 断言对应的元信息（约束ID、属性角色、XML 元素等）
         self.fact_metadata: List[Dict[str, Any]] = []
@@ -89,7 +111,6 @@ class SMTValidator:
         self._load_mapping()
         self.cross_file_resolver = None  # 跨文件解析器
         self.z3_cli_available = self._z3_cli_available()
-
     # -------------------------
     # Loading and parsing SMT template
     # -------------------------
@@ -138,23 +159,53 @@ class SMTValidator:
             print(f"[WARN] Failed to load XsdIndex: {e}")
 
     def _parse_template(self, txt: str):
+        """
+        解析SMT模板，提取sorts、functions、constructors
+        并构建谓词基础名到变体的映射（处理check_smt.py的重命名）
+        """
+        # 重置相关数据结构
+        self.template_sorts = set()
+        self.template_functions = {}
+        self.template_constructors = {}
+        self.predicate_base_to_variants = {}
+        self.predicate_signatures = {}
+        self.predicate_match_cache = {}  # 清空缓存
+
         # parse declare-sort
         for m in re.finditer(r'\(declare-sort\s+([A-Za-z0-9_\-]+)\s+\d+\)', txt):
             self.template_sorts.add(m.group(1))
+
         # parse declare-fun (name (args) RET)
+        # 同时构建基础名到变体的映射
         for m in re.finditer(r'\(declare-fun\s+([A-Za-z0-9_\-]+)\s*\(([^\)]*)\)\s*([A-Za-z0-9_\-]+)\)', txt):
             fname = m.group(1)
             args_txt = m.group(2).strip()
             ret = m.group(3)
             arg_types = []
             if args_txt:
-                # simple split; keeps tokens
                 arg_types = [tok for tok in re.split(r'\s+', args_txt) if tok]
+
+            # 存储到 template_functions（按返回类型分组）
             key = ret
             self.template_functions.setdefault(key, []).append((fname, arg_types, ret))
+
+            # ✅ 存储精确签名
+            self.predicate_signatures[fname] = (arg_types, ret)
+
+            # ✅ 解析基础名和后缀数字
+            base_name, suffix_num = self._parse_predicate_name_suffix(fname)
+
+            # ✅ 构建基础名到变体的映射
+            variant_info = (fname, arg_types, ret, suffix_num)
+            self.predicate_base_to_variants.setdefault(base_name, []).append(variant_info)
+
+        # ✅ 对每个基础名的变体按后缀数字排序（0, 2, 3, 4, ...）
+        for base_name in self.predicate_base_to_variants:
+            self.predicate_base_to_variants[base_name].sort(key=lambda x: x[3])
+
         # naive parse of declare-datatypes for constructors
-        # matches simple cases: (declare-datatypes () ((T (C1 (f1 t1) ...) (C2 ...))))
-        for m in re.finditer(r'\(declare-datatypes\s*\([^)]*\)\s*\(\s*\(\s*([A-Za-z0-9_\-]+)\s+([^\)]+)\)\s*\)\)', txt, re.S):
+        for m in re.finditer(r'\(declare-datatypes\s*\([^)]*\)\s*\(\s*\(\s*([A-Za-z0-9_\-]+)\s+([^\)]+)\)\s*\)\)', txt,
+                             re.S):
             dtype = m.group(1)
             body = m.group(2)
             ctors = []
@@ -163,12 +214,134 @@ class SMTValidator:
                 args = cm.group(2)
                 arg_types = []
                 if args:
-                    # find field types inside ( (name type) ...)
                     pairs = re.findall(r'\(\s*[A-Za-z0-9_\-]+\s+([A-Za-z0-9_\-]+)\s*\)', args)
                     arg_types = pairs
                 ctors.append((ctor, arg_types))
             if ctors:
                 self.template_constructors.setdefault(dtype, []).extend(ctors)
+
+    def _parse_predicate_name_suffix(self, pred_name: str) -> Tuple[str, int]:
+        """
+        解析谓词名中的后缀数字（check_smt.py的重命名格式）
+
+        支持的格式：
+        - "hasPeriod" → ("hasPeriod", 0)      # 原名，后缀为0
+        - "hasPeriod__2" → ("hasPeriod", 2)   # 双下划线+数字
+        - "hasPeriod_2" → ("hasPeriod", 2)    # 单下划线+数字（兼容）
+        - "hasPeriod2" → ("hasPeriod", 2)     # 直接数字后缀（兼容）
+
+        Returns:
+            (base_name, suffix_number)
+        """
+        # 模式1: name__N (check_smt.py的标准格式)
+        match = re.match(r'^(.+)__(\d+)$', pred_name)
+        if match:
+            return (match.group(1), int(match.group(2)))
+
+        # 模式2: name_N (单下划线，兼容)
+        match = re.match(r'^(.+)_(\d+)$', pred_name)
+        if match:
+            base = match.group(1)
+            num = int(match.group(2))
+            # 排除像 "has_period_ref" 这种本身就有下划线的名字
+            # 只有当数字是1位或2位时才认为是后缀
+            if num >= 2 and num <= 99:
+                return (base, num)
+
+        # 模式3: nameN (直接数字后缀，如hasPeriod2)
+        match = re.match(r'^(.+[A-Za-z_\-])(\d{1,2})$', pred_name)
+        if match:
+            base = match.group(1)
+            num = int(match.group(2))
+            if num >= 2 and num <= 99:
+                return (base, num)
+
+        # 无后缀，返回原名和0
+        return (pred_name, 0)
+
+    def _match_predicate_in_template(self, mapping_pred_name: str, expected_arity: int = -1) -> Optional[str]:
+        """
+        在模板中查找与mapping谓词名匹配的实际谓词名
+
+        匹配策略（按优先级）：
+        1. 精确匹配：mapping中的名字直接存在于模板中
+        2. 基础名匹配：mapping名去掉后缀后匹配模板中的基础名
+        3. 按数字顺序优先匹配：__2, __3, ... 顺序
+        4. 参数数量匹配：如果指定了expected_arity，优先匹配参数数量相同的
+
+        Args:
+            mapping_pred_name: mapping中的谓词名
+            expected_arity: 期望的参数数量，-1表示不限制
+
+        Returns:
+            模板中匹配的实际谓词名，或None（未找到）
+        """
+        # 清洗输入的谓词名
+        clean_pred_name = self._normalize_predicate_name(mapping_pred_name)
+
+        # 检查缓存
+        cache_key = (clean_pred_name, expected_arity)
+        if cache_key in self.predicate_match_cache:
+            return self.predicate_match_cache[cache_key]
+
+        matched = None
+
+        # 策略1: 精确匹配
+        if clean_pred_name in self.predicate_signatures:
+            if expected_arity == -1:
+                matched = clean_pred_name
+            else:
+                sig = self.predicate_signatures[clean_pred_name]
+                if len(sig[0]) == expected_arity:
+                    matched = clean_pred_name
+
+        # 策略2: 基础名匹配
+        if matched is None:
+            base_name, _ = self._parse_predicate_name_suffix(clean_pred_name)
+
+            if base_name in self.predicate_base_to_variants:
+                variants = self.predicate_base_to_variants[base_name]
+
+                # 按后缀数字顺序遍历（已排序：0, 2, 3, 4, ...）
+                for actual_name, arg_types, ret_type, suffix_num in variants:
+                    if expected_arity == -1:
+                        # 不限制参数数量，返回第一个匹配的
+                        matched = actual_name
+                        break
+                    elif len(arg_types) == expected_arity:
+                        # 参数数量匹配
+                        matched = actual_name
+                        break
+
+                # 如果按参数数量没匹配到，放宽条件返回第一个
+                if matched is None and variants:
+                    matched = variants[0][0]  # 返回后缀数字最小的
+
+        # 策略3: 大小写不敏感匹配（作为最后手段）
+        if matched is None:
+            lower_pred = clean_pred_name.lower()
+            for actual_name, sig in self.predicate_signatures.items():
+                if actual_name.lower() == lower_pred:
+                    if expected_arity == -1 or len(sig[0]) == expected_arity:
+                        matched = actual_name
+                        break
+
+        # 缓存结果
+        self.predicate_match_cache[cache_key] = matched
+        return matched
+
+    def _normalize_predicate_name(self, pred_name: str) -> str:
+        """
+        清洗谓词名：
+        - 去除首尾空白
+        - 去除非法字符（只保留 [A-Za-z0-9_-]）
+        """
+        if pred_name is None:
+            return ""
+        s = str(pred_name).strip()
+        # 去除非法字符
+        s = re.sub(r'[^A-Za-z0-9_\-]', '', s)
+        return s
 
     # -------------------------
     # Load mapping JSON
@@ -285,19 +458,49 @@ class SMTValidator:
                 return i
         return 0
 
-    # -------------------------
-    # Mapping-driven generation
-    # -------------------------
     def _declare_const(self, name: str, sort: str):
-        if name in self.declared_consts:
-            return
-        self.declared_consts.add(name)
-        self.smt_decls.append(f"(declare-const {name} {sort})")
+        """
+        声明一个常量，支持同一常量的多种Sort声明（取最通用的）
+        """
+        norm_sort = self._normalize_sort(sort)
+        builtin_sorts = {"Int", "Bool", "Real", "String"}
 
-    def _ensure_accessor_decl(self, accessor: str, arg_sort: str, ret_sort: str):
-        # If template already has a function with this name, skip; otherwise create declare-fun text (we do not add to template)
-        # We don't emit declare-fun into self.smt_template_text; instead we rely on declaring consts and using asserts as needed.
-        return
+        # 自动声明未知Sort
+        if (
+                norm_sort not in builtin_sorts
+                and norm_sort not in self.template_sorts
+                and norm_sort not in self.auto_declared_sorts
+        ):
+            self.smt_decls.append(f"(declare-sort {norm_sort} 0)")
+            self.auto_declared_sorts.add(norm_sort)
+
+        # ✅ [新增] 检查是否已经用不同的Sort声明过
+        if name in self.declared_consts:
+            # 检查之前声明的Sort是否相同
+            if hasattr(self, '_const_sort_map'):
+                prev_sort = self._const_sort_map.get(name)
+                if prev_sort and prev_sort != norm_sort:
+                    # ✅ 检查是否是子类型关系
+                    if self._is_subtype_of(prev_sort, norm_sort):
+                        # 之前的是子类型，当前的是父类型，使用父类型（更通用）
+                        # 需要重新声明（但SMT不支持，所以只记录警告）
+                        print(f"[DEBUG] 常量 {name} 类型升级: {prev_sort} → {norm_sort}")
+                    elif self._is_subtype_of(norm_sort, prev_sort):
+                        # 当前的是子类型，之前的是父类型，保持父类型
+                        pass
+                    else:
+                        # 不兼容的类型
+                        print(f"[WARN] 常量 {name} 类型冲突: 已声明为 {prev_sort}, 又被声明为 {norm_sort}")
+            return
+
+        self.declared_consts.add(name)
+
+        # ✅ [新增] 记录常量的Sort
+        if not hasattr(self, '_const_sort_map'):
+            self._const_sort_map = {}
+        self._const_sort_map[name] = norm_sort
+
+        self.smt_decls.append(f"(declare-const {name} {norm_sort})")
 
     def _generate_from_mapping_for_root(self, root: ET.Element):
         """
@@ -448,46 +651,122 @@ class SMTValidator:
                         # record
                         prop_instances.setdefault(role, []).append(prop_smt)
 
+                        # 修改 _generate_from_mapping_for_root 方法中的谓词断言生成部分
+                        # 替换 smt_validator.py 第644-724行
+
                         # optional: generate simple predicate assertions if mapping asks
                         smt_preds = p.get("smt_predicates") or {}
                         for pred_name, pred_info in smt_preds.items():
-                            # ✅ 公共的元信息构造，方便下面两种分支都用
-                            base_meta = {
-                                "constraint_id": cid,
-                                "target_sort": tgt_sort,
-                                "subject": subj_name,
-                                "subject_xml_tag": _xml_tag_local(node.tag),
-                                "property_role": role,
-                                "property_sort": p_sort,
-                                "property_xml_tag": _xml_tag_local(fe.tag),
-                                "property_index": idx,
-                                "pred_name": pred_name,
-                            }
-
+                            # ✅ [新增] 计算期望的参数数量
                             if isinstance(pred_info, dict):
                                 args = pred_info.get("args", [])
+                                expected_arity = len(args)
+                            else:
+                                expected_arity = 1
+
+                            # ✅ 在模板中匹配谓词名
+                            matched_pred_name = self._match_predicate_in_template(pred_name, expected_arity)
+
+                            if matched_pred_name is None:
+                                skip_info = {
+                                    "constraint_id": cid,
+                                    "mapping_predicate": pred_name,
+                                    "expected_arity": expected_arity,
+                                    "property_role": role,
+                                    "reason": f"谓词 '{pred_name}' 在SMT模板中未找到匹配"
+                                }
+                                self.skipped_predicates.append(skip_info)
+                                print(f"[WARN] 跳过谓词 '{pred_name}' (约束: {cid}, 属性: {role}): 模板中未找到匹配")
+                                continue
+
+                            if matched_pred_name != pred_name:
+                                print(f"[INFO] 谓词映射: '{pred_name}' → '{matched_pred_name}' (约束: {cid})")
+
+                            # ✅ [新增] 获取谓词签名，用于确定正确的参数类型
+                            pred_signature = self.predicate_signatures.get(matched_pred_name)
+
+                            if isinstance(pred_info, dict):
+                                args_template = pred_info.get("args", [])
                                 resolved_args = []
-                                for a in args:
-                                    if a == "PROPERTY" or a.upper().startswith(
-                                            "VARIATIONPOINT") or a.upper().startswith(role.upper()):
+                                resolved_arg_sorts = []  # ✅ 记录参数的Sort
+
+                                for arg_idx, a in enumerate(args_template):
+                                    if a == "PROPERTY":
                                         resolved_args.append(prop_smt)
-                                    elif a == "SUBJECT" or (tgt_sort and a.upper() == tgt_sort.upper()):
+                                        resolved_arg_sorts.append(self._normalize_sort(p_sort))
+                                    elif a == "SUBJECT":
+                                        # ✅ [关键修复] 检查谓词期望的参数类型
+                                        expected_sort = None
+                                        if pred_signature and arg_idx < len(pred_signature[0]):
+                                            expected_sort = pred_signature[0][arg_idx]
+
+                                        actual_sort = self._normalize_sort(tgt_sort)
+
+                                        # 如果类型不匹配，尝试使用谓词期望的类型重新声明
+                                        if expected_sort and expected_sort != actual_sort:
+                                            # 检查是否需要使用不同的Sort来声明SUBJECT
+                                            if not self._is_subtype_of(actual_sort, expected_sort):
+                                                print(f"[WARN] 类型不匹配: 谓词 {matched_pred_name} 参数{arg_idx + 1} "
+                                                      f"期望 {expected_sort}, mapping提供 {actual_sort}")
+                                                # ✅ 使用谓词期望的类型重新声明SUBJECT
+                                                self._declare_const(subj_name, expected_sort)
+                                                resolved_arg_sorts.append(expected_sort)
+                                            else:
+                                                resolved_arg_sorts.append(actual_sort)
+                                        else:
+                                            resolved_arg_sorts.append(actual_sort)
+
                                         resolved_args.append(subj_name)
                                     else:
                                         resolved_args.append(a)
+                                        resolved_arg_sorts.append("Unknown")
 
-                                fact_str = f"(assert ({pred_name} {' '.join(resolved_args)}))"
+                                # ✅ [新增] 验证参数类型
+                                is_valid, error_msg = self._validate_predicate_args(matched_pred_name,
+                                                                                    resolved_arg_sorts)
+                                if not is_valid:
+                                    print(f"[WARN] 谓词参数类型不匹配 ({cid}): {matched_pred_name} - {error_msg}")
+                                    # 仍然尝试生成，让Z3报告具体错误
+
+                                base_meta = {
+                                    "constraint_id": cid,
+                                    "target_sort": tgt_sort,
+                                    "subject": subj_name,
+                                    "subject_xml_tag": _xml_tag_local(node.tag),
+                                    "property_role": role,
+                                    "property_sort": p_sort,
+                                    "property_xml_tag": _xml_tag_local(fe.tag),
+                                    "property_index": idx,
+                                    "pred_name": matched_pred_name,
+                                    "original_pred_name": pred_name,
+                                }
+
+                                fact_str = f"(assert ({matched_pred_name} {' '.join(resolved_args)}))"
                                 self.smt_facts.append(fact_str)
-                                # ✅ 元数据：和 fact_str 同步追加
                                 self.fact_metadata.append(base_meta)
 
                             else:
-                                # if simple string, assume unary predicate on property
-                                fact_str = f"(assert ({pred_info} {prop_smt}))"
+                                # simple string形式
+                                pred_str = str(pred_info).strip()
+                                matched_simple = self._match_predicate_in_template(pred_str, 1)
+                                if matched_simple is None:
+                                    self.skipped_predicates.append({
+                                        "constraint_id": cid,
+                                        "mapping_predicate": pred_str,
+                                        "expected_arity": 1,
+                                        "property_role": role,
+                                        "reason": f"谓词 '{pred_str}' 在SMT模板中未找到匹配"
+                                    })
+                                    print(f"[WARN] 跳过谓词 '{pred_str}' (约束: {cid}): 模板中未找到匹配")
+                                    continue
+
+                                fact_str = f"(assert ({matched_simple} {prop_smt}))"
                                 self.smt_facts.append(fact_str)
-                                # ✅ simple string 同样写入元数据（pred_name = pred_info）
-                                meta = dict(base_meta)
-                                meta["pred_name"] = str(pred_info)
+                                meta = dict(base_meta) if 'base_meta' in dir() else {
+                                    "constraint_id": cid,
+                                    "property_role": role,
+                                }
+                                meta["pred_name"] = matched_simple
                                 self.fact_metadata.append(meta)
 
                 # logical pattern: 在模板驱动架构下，跳过逻辑模式生成
@@ -554,7 +833,8 @@ class SMTValidator:
                     # - 如果是包含关系，val 是子元素的 ShortName
                     # - 如果是引用关系，val 是目标元素的 DEST 路径
                     extracted_values = self._extract_element_property_value(
-                        info['source_file'], path, p_xml_tag, p_xpath
+                        info['source_file'], path, p_xml_tag, p_xpath,
+                        is_ref=is_ref  # ✅ 传递 is_ref 参数
                     )
 
                     for val in extracted_values:
@@ -589,11 +869,38 @@ class SMTValidator:
                                     continue
 
                         # 生成谓词事实 (Fact Assertion)
-                        # 这告诉 Z3：在当前数据中，这个关系是存在的
-                        # 例如: (assert (ownsRunnable Comp1 Runnable1))
                         for pred_name, pred_info in predicates.items():
-                            if isinstance(pred_info, dict) and pred_info.get("type") == "predicate":
-                                args = []
+                            # ✅ [新增] 计算期望的参数数量
+                            if isinstance(pred_info, dict):
+                                arg_list = pred_info.get("args", [])
+                                expected_arity = len(arg_list)
+                            else:
+                                expected_arity = 1
+
+                            # ✅ [新增] 在模板中匹配谓词名
+                            matched_pred_name = self._match_predicate_in_template(pred_name, expected_arity)
+
+                            if matched_pred_name is None:
+                                # ✅ 匹配失败，记录并跳过
+                                self.skipped_predicates.append({
+                                    "constraint_id": cid,
+                                    "mapping_predicate": pred_name,
+                                    "expected_arity": expected_arity,
+                                    "property_role": role,
+                                    "source": "cross_file",
+                                    "reason": f"谓词 '{pred_name}' 在SMT模板中未找到匹配"
+                                })
+                                print(
+                                    f"[WARN] [跨文件] 跳过谓词 '{pred_name}' (约束: {cid}): 模板中未找到匹配")
+                                continue
+
+                            # ✅ 如果匹配到的名字与原名不同，打印提示
+                            if matched_pred_name != pred_name:
+                                print(
+                                    f"[INFO] [跨文件] 谓词映射: '{pred_name}' → '{matched_pred_name}' (约束: {cid})")
+
+                            args = []
+                            if isinstance(pred_info, dict):
                                 for arg in pred_info.get("args", []):
                                     if arg == "SUBJECT":
                                         args.append(subj_smt_name)
@@ -601,23 +908,71 @@ class SMTValidator:
                                         args.append(prop_smt_name)
                                     else:
                                         args.append(arg)
+                            else:
+                                args = [prop_smt_name]
+                                # ✅ 对简单字符串形式也使用匹配后的名字
+                                matched_pred_name = self._match_predicate_in_template(str(pred_info), 1)
+                                if matched_pred_name is None:
+                                    self.skipped_predicates.append({
+                                        "constraint_id": cid,
+                                        "mapping_predicate": str(pred_info),
+                                        "expected_arity": 1,
+                                        "property_role": role,
+                                        "source": "cross_file",
+                                        "reason": f"谓词 '{pred_info}' 在SMT模板中未找到匹配"
+                                    })
+                                    continue
 
-                                # 生成 Assert 语句。
-                                # 注意：这是 "Data Assertion"，不是 "Constraint Assertion"
-                                fact = f"(assert ({pred_name} {' '.join(args)}))"
-                                self.smt_facts.append(fact)
-                                count += 1
+                            # ✅ 使用匹配后的谓词名
+                            fact = f"(assert ({matched_pred_name} {' '.join(args)}))"
+                            self.smt_facts.append(fact)
+                            count += 1
 
-                                # 记录元数据用于后续诊断
-                                self.fact_metadata.append({
-                                    "constraint_id": cid,
-                                    "fact": fact,
-                                    "subject": path,
-                                    "property_role": role,
-                                    "value": val
-                                })
+                            self.fact_metadata.append({
+                                "constraint_id": cid,
+                                "fact": fact,
+                                "subject": path,
+                                "property_role": role,
+                                "value": val,
+                                "pred_name": matched_pred_name,
+                                "original_pred_name": pred_name
+                            })
 
         return count
+
+    def _get_children_tags(self, source_file: str, element_path: str) -> List[str]:
+        """
+        回溯源文件，获取指定元素的所有直接子元素标签列表。
+        用于互斥约束检查 (_check_mutual_exclusion)。
+        """
+        try:
+            if not hasattr(self, '_file_tree_cache'):
+                self._file_tree_cache = {}
+            if source_file not in self._file_tree_cache:
+                try:
+                    self._file_tree_cache[source_file] = ET.parse(source_file)
+                except Exception as e:
+                    print(f"[WARN] 无法解析文件 {source_file}: {e}")
+                    return []
+
+            tree = self._file_tree_cache[source_file]
+            root = tree.getroot()
+            target_node = self._find_node_by_path(root, element_path)
+
+            if target_node is None:
+                return []
+
+            # 收集所有直接子元素的标签名（去除命名空间）
+            children_tags = []
+            for child in target_node:
+                tag = _xml_tag_local(child.tag)
+                if tag:
+                    children_tags.append(tag)
+
+            return children_tags
+        except Exception as e:
+            print(f"[WARN] 获取子元素标签失败 {source_file} :: {element_path}: {e}")
+            return []
 
     # -------------------------
     # Logical pattern emitter
@@ -644,37 +999,163 @@ class SMTValidator:
             # 不再生成断言，避免重复
             return
 
-    def _resolve_pattern_expr(self, expr: Any, subj_name: str, prop_instances: Dict[str, List[str]]) -> Optional[str]:
+    def _normalize_sort(self, sort: Optional[str]) -> str:
         """
-        Resolve pattern expressions which may be:
-          - dict { "fn": "predName", "args": ["SUBJECT","role"] }
-          - string template like "predicate(SUBJECT, ROLE)"
-        Returns SMT expression string (no surrounding assert).
+        清洗从 mapping 里拿到的 sort 字符串：
+          - 去掉首尾空白
+          - 处理 xsd: 前缀（xsd:string → String, xsd:integer → Int）
+          - 如果包含空格，只取第一个 token
+          - 去掉非法字符
+          - 尝试在模板中匹配相似的Sort名
         """
-        if expr is None:
-            return None
-        if isinstance(expr, str):
-            # simple template replace
-            t = expr.replace("{{SUBJECT}}", subj_name)
-            for role, names in prop_instances.items():
-                if names:
-                    t = t.replace("{{" + role.upper() + "}}", names[0])
-            return t
-        if isinstance(expr, dict):
-            fn = expr.get("fn")
-            args = expr.get("args", [])
-            resolved_args = []
-            for a in args:
-                if a == "SUBJECT":
-                    resolved_args.append(subj_name)
-                elif a in prop_instances and prop_instances[a]:
-                    resolved_args.append(prop_instances[a][0])
-                else:
-                    # literal or unknown; pass as-is
-                    resolved_args.append(str(a))
-            return f"({fn} {' '.join(resolved_args)})"
+        if sort is None:
+            sort = ""
+        s = str(sort).strip()
+        if not s:
+            return "Int"
+
+        # ✅ [新增] 处理 xsd: 前缀的常见类型映射
+        xsd_mapping = {
+            "xsd:string": "String",
+            "xsd_string": "String",
+            "xsd:integer": "Int",
+            "xsd_integer": "Int",
+            "xsd:int": "Int",
+            "xsd_int": "Int",
+            "xsd:boolean": "Bool",
+            "xsd_boolean": "Bool",
+            "xsd:bool": "Bool",
+            "xsd_bool": "Bool",
+            "xsd:decimal": "Real",
+            "xsd_decimal": "Real",
+            "xsd:float": "Real",
+            "xsd_float": "Real",
+            "xsd:double": "Real",
+            "xsd_double": "Real",
+            "string": "String",
+            "integer": "Int",
+            "boolean": "Bool",
+            "float": "Real",
+            "double": "Real",
+        }
+
+        s_lower = s.lower()
+        if s_lower in xsd_mapping:
+            return xsd_mapping[s_lower]
+
+        # 如果有人错误地写了 "PORTS P-PORT-PROTOTYPE" 这种，只取第一个 token
+        tokens = s.split()
+        s = tokens[0]
+
+        # 去掉非法字符（包括冒号）
+        s = re.sub(r'[^A-Za-z0-9_\-]', '_', s)
+        s = s.strip("_")
+        if not s:
+            return "Int"
+
+        # sort 名必须是合法 SMT 标识符，首字符不能是数字
+        if not re.match(r'^[A-Za-z_]', s):
+            s = "_" + s
+
+        # ✅ 如果清洗后的Sort不在模板中，尝试相似匹配
+        builtin_sorts = {"Int", "Bool", "Real", "String"}
+        if s not in self.template_sorts and s not in builtin_sorts:
+            matched_sort = self._match_sort_in_template(s)
+            if matched_sort:
+                return matched_sort
+            # ✅ [新增] 如果仍然找不到，打印警告
+            # Sort会被自动声明，但可能导致谓词参数类型不匹配
+            print(f"[WARN] Sort '{s}' 不在模板中，将自动声明（可能导致类型不匹配）")
+
+        return s
+
+    def _match_sort_in_template(self, sort_name: str) -> Optional[str]:
+        """
+        在模板中查找相似的Sort名
+
+        匹配策略：
+        1. 精确匹配
+        2. 大小写不敏感匹配
+        3. 去除连字符/下划线后匹配
+        """
+        # 精确匹配
+        if sort_name in self.template_sorts:
+            return sort_name
+
+        # 大小写不敏感匹配
+        lower_sort = sort_name.lower().replace('-', '').replace('_', '')
+        for ts in self.template_sorts:
+            if ts.lower().replace('-', '').replace('_', '') == lower_sort:
+                return ts
+
         return None
 
+    def _validate_predicate_args(self, pred_name: str, arg_sorts: List[str]) -> Tuple[bool, Optional[str]]:
+        """
+        验证谓词参数类型是否与模板声明匹配
+
+        Args:
+            pred_name: 谓词名
+            arg_sorts: 参数的Sort列表
+
+        Returns:
+            (is_valid, error_message)
+        """
+        if pred_name not in self.predicate_signatures:
+            return True, None  # 谓词不在模板中，跳过验证
+
+        declared_arg_types, ret_type = self.predicate_signatures[pred_name]
+
+        if len(arg_sorts) != len(declared_arg_types):
+            return False, f"参数数量不匹配: 期望 {len(declared_arg_types)}, 实际 {len(arg_sorts)}"
+
+        # 检查每个参数类型
+        mismatches = []
+        for i, (actual, expected) in enumerate(zip(arg_sorts, declared_arg_types)):
+            if actual != expected:
+                # 检查是否是子类型关系（如 P-PORT-PROTOTYPE 是 PORTS 的子类型）
+                if not self._is_subtype_of(actual, expected):
+                    mismatches.append(f"参数{i + 1}: 期望 {expected}, 实际 {actual}")
+
+        if mismatches:
+            return False, "; ".join(mismatches)
+
+        return True, None
+
+    def _is_subtype_of(self, child_sort: str, parent_sort: str) -> bool:
+        """
+        检查child_sort是否是parent_sort的子类型
+        基于inheritance_map进行判断
+        """
+        if child_sort == parent_sort:
+            return True
+
+        # 检查inheritance_map
+        if parent_sort in self.inheritance_map:
+            return child_sort in self.inheritance_map[parent_sort]
+
+        return False
+
+    def _find_correct_sort_for_predicate_arg(self, pred_name: str, arg_index: int) -> Optional[str]:
+        """
+        根据谓词签名，找到指定参数位置期望的Sort
+
+        Args:
+            pred_name: 谓词名
+            arg_index: 参数索引（0-based）
+
+        Returns:
+            期望的Sort名，或None
+        """
+        if pred_name not in self.predicate_signatures:
+            return None
+
+        declared_arg_types, _ = self.predicate_signatures[pred_name]
+
+        if arg_index < len(declared_arg_types):
+            return declared_arg_types[arg_index]
+
+        return None
 
     # -------------------------
     # Top-level validate_constraints API
@@ -699,6 +1180,10 @@ class SMTValidator:
         self.smt_facts = []
         self.declared_consts = set()
         self.fact_metadata = []
+        self.skipped_predicates = []  # ✅ [新增] 重置跳过记录
+        self.predicate_match_cache = {}  # ✅ [新增] 重置匹配缓存
+        self.auto_declared_sorts = set()  # ✅ 重置自动声明的Sort
+        self._const_sort_map = {}  # ✅ [新增] 重置常量Sort映射
 
         # SMT generation from mapping
         if not self.mapping:
@@ -825,7 +1310,12 @@ class SMTValidator:
             "smt": full_smt,
             "mapping_json": mapping_json_text,
             "solver": solver_result,
-            "diagnosis": incremental_result
+            "diagnosis": incremental_result,
+            "skipped_predicates": self.skipped_predicates,  # ✅ [新增]
+            "predicate_match_stats": {  # ✅ [新增] 匹配统计
+                "total_matched": len(self.predicate_match_cache),
+                "skipped_count": len(self.skipped_predicates)
+            }
         }
 
     # -------------------------
@@ -900,7 +1390,7 @@ class SMTValidator:
                     "failed_at": "context"
                 }
             # ✅ 修复：正确使用 push/pop
-            solver.push()  # 保存初始状态
+            # solver.push()  # 保存初始状态
             # 逐个添加 facts，找到导致 unsat 的断言
             conflicting_facts = []
             added_facts = []  # 记录已添加的事实
@@ -1014,110 +1504,102 @@ class SMTValidator:
 
         return "\n".join(lines)
 
-    def set_cross_file_resolver(self, resolver) -> None:
+    def set_cross_file_resolver(self, resolver):
         """设置跨文件解析器"""
         self.cross_file_resolver = resolver
 
     def validate_cross_file_constraints(self, arxml_files: List[str]) -> Dict[str, Any]:
         """
-        执行 SMT 跨文件约束验证。
-        流程:
-        1. 解析 ARXML 构建全局索引
-        2. 生成数据事实 (Data Facts) -> _generate_global_smt_facts
-        3. 结合 SMT 模板 (Logic Rules) -> 提交给 Z3 求解
+        执行跨文件SMT约束验证
+
+        Args:
+            arxml_files: ARXML文件路径列表
+
+        Returns:
+            验证结果字典
         """
-        # 1. 环境检查
-        if not self.z3_cli_available:
-            try:
-                import z3
-            except ImportError:
-                return {'success': False, 'error': 'Z3 solver not available', 'violations': []}
+        result = {
+            "valid": True,
+            "violations": [],
+            "stats": {},
+            "skipped_predicates": []
+        }
 
-        # 2. 索引构建
         if not self.cross_file_resolver:
-            from src.validation.cross_file_resolver import CrossFileResolver
-            self.cross_file_resolver = CrossFileResolver()
-            self.cross_file_resolver.build_global_index(arxml_files)
+            result["error"] = "CrossFileResolver未设置"
+            result["valid"] = False
+            return result
 
-        violations = []
-
-        # 3. 基础检查 (引用/类型)
-        violations.extend(self.cross_file_resolver.validate_all_refs())
-        violations.extend(self.cross_file_resolver.check_dest_type_match())
-
-        # 4. SMT 验证
-        print(f"\n🧮 [SMT Cross-File] 构建 SMT 上下文 (Template + Data)...")
-
-        # 清理旧状态
+        # 重置状态
         self.smt_decls = []
         self.smt_facts = []
         self.declared_consts = set()
         self.fact_metadata = []
-        self._file_tree_cache = {}
+        self.skipped_predicates = []
+        self.predicate_match_cache = {}
 
-        # 生成数据事实
-        facts_count = self._generate_global_smt_facts()
-        print(f"   生成 SMT 数据事实: {facts_count} 条")
+        # 生成跨文件SMT事实
+        fact_count = self._generate_global_smt_facts()
 
-        if facts_count > 0:
-            # 组合完整脚本
-            smt_parts = []
+        result["stats"]["fact_count"] = fact_count
+        result["stats"]["skipped_count"] = len(self.skipped_predicates)
+        result["skipped_predicates"] = self.skipped_predicates
 
-            # A. 逻辑规则 (来自 SMT 模板)
-            if self.smt_template_text:
-                smt_parts.append("; --- LOGIC RULES (FROM TEMPLATE) ---")
-                smt_parts.append(self.smt_template_text.rstrip())
+        if fact_count == 0:
+            print("[INFO] 跨文件验证: 未生成任何SMT事实")
+            result["stats"]["reason"] = "No cross-file SMT facts generated"
+            return result
 
-            # B. 对象声明 (程序生成)
-            smt_parts.append("\n; --- OBJECT DECLARATIONS ---")
-            smt_parts.append("\n".join(self.smt_decls))
+        # 组合SMT脚本
+        decls_text = "\n".join(self.smt_decls)
+        facts_text = "\n".join(self.smt_facts)
 
-            # C. 数据事实 (程序生成)
-            smt_parts.append("\n; --- DATA FACTS ---")
-            smt_parts.append("\n".join(self.smt_facts))
+        smt_parts = []
+        if self.smt_template_text:
+            smt_parts.append(self.smt_template_text.rstrip())
+        smt_parts.append("\n; --- CROSS-FILE DECLS ---")
+        if decls_text:
+            smt_parts.append(decls_text)
+        smt_parts.append("\n; --- CROSS-FILE FACTS ---")
+        if facts_text:
+            smt_parts.append(facts_text)
+        smt_parts.append("\n(check-sat)\n")
 
-            smt_parts.append("\n(check-sat)")
-            full_smt = "\n".join(smt_parts)
+        full_smt = "\n\n".join(smt_parts)
 
-            # 执行 Z3
-            solver_result = None
-            if self.z3_cli_available:
-                solver_result = self._run_z3_cli(full_smt)
-            else:
+        # 执行Z3验证
+        solver_result = None
+        if self.z3_cli_available:
+            solver_result = self._run_z3_cli(full_smt)
+        else:
+            try:
+                import z3
                 solver_result = self._run_z3_python(full_smt)
+            except ImportError:
+                solver_result = {"status": "SKIPPED", "reason": "Z3 not available"}
 
-            # 检查结果
-            stdout = solver_result.get("stdout", "") or ""
-            status = solver_result.get("status", "") or ""
+        # 解析结果
+        if solver_result:
+            cli_stdout = solver_result.get("stdout", "")
+            py_status = solver_result.get("status", "")
 
-            if "unsat" in stdout or "unsat" in status:
-                print(f"   ❌ SMT 求解结果: UNSAT (违反了模板中的逻辑规则)")
+            if "unsat" in cli_stdout or "unsat" in py_status:
+                result["valid"] = False
+                result["violations"].append({
+                    "type": "SMT_CONSTRAINT_VIOLATION",
+                    "message": "跨文件SMT约束验证失败（UNSAT）"
+                })
+            elif "error" in solver_result:
+                result["valid"] = False
+                result["violations"].append({
+                    "type": "SMT_SOLVER_ERROR",
+                    "message": solver_result.get("error", "Unknown error")
+                })
 
-                # 诊断冲突
-                diag_result = self._incremental_validate_with_diagnosis(
-                    self.smt_facts, self.smt_template_text
-                )
+        result["solver"] = solver_result
+        result["smt"] = full_smt
 
-                if diag_result.get("conflicting_facts"):
-                    for conflict in diag_result["conflicting_facts"]:
-                        violations.append({
-                            'type': 'SMT_LOGIC_VIOLATION',
-                            'constraint_id': conflict.get('constraint_id', 'Global'),
-                            'severity': 'Violation',
-                            'message': f"逻辑约束未满足: {conflict.get('message')}",
-                            'detail': conflict
-                        })
-            else:
-                print(f"   ✅ SMT 求解结果: SAT (数据符合模板规则)")
-
-        return {
-            'success': len(violations) == 0,
-            'violations': violations,
-            'stats': {
-                'smt_facts': facts_count,
-                'total_violations': len(violations)
-            }
-        }
+        return result
 
     def _validate_smt_constraints(self) -> List[Dict]:
         """执行SMT模板中定义的跨文件约束"""
@@ -1163,18 +1645,23 @@ class SMTValidator:
         return violations
 
     def _check_single_cross_file_constraint(self, mapping: Dict) -> Dict:
-        """检查单个跨文件约束"""
         result = {'satisfied': True, 'details': []}
 
         target = mapping.get('target', {})
         target_sort = target.get('target_sort', '')
         target_xml_tag = target.get('target_xml', {}).get('xml_tag', '')
 
+        # 🔧 修复：使用抽象类到具体类的映射
+        concrete_tags = self._get_concrete_tags(target_xml_tag)
+
         # 获取所有目标类型的元素
-        target_elements = self.cross_file_resolver.get_elements_by_type(target_xml_tag)
+        target_elements = []
+        for tag in concrete_tags:
+            elements = self.cross_file_resolver.get_elements_by_type(tag)
+            if elements:
+                target_elements.extend(elements)
 
         if not target_elements:
-            # 没有找到目标元素，约束自动满足
             return result
 
         properties = mapping.get('properties', [])
@@ -1241,7 +1728,12 @@ class SMTValidator:
 
         for elem in target_elements:
             elem_path = elem.get('path', '')
-            children = elem.get('children_tags', [])
+            source_file = elem.get('source_file', '')
+
+            # 🔧 如果没有 children_tags，回溯源文件获取
+            children = elem.get('children_tags', None)
+            if children is None:
+                children = self._get_children_tags(source_file, elem_path)
 
             # 统计该元素具有哪些互斥属性
             present_props = [pn for pn in prop_names if pn in children]
@@ -1256,9 +1748,6 @@ class SMTValidator:
 
         return result
 
-        # -------------------------------------------------------
-        # 🔥 [Helper Methods] 抽象类处理与事实提取
-        # -------------------------------------------------------
     def _get_concrete_tags(self, abstract_tag: str) -> Set[str]:
         """
         获取抽象标签对应的所有具体标签。
@@ -1272,14 +1761,17 @@ class SMTValidator:
             return self.inheritance_map[abstract_tag]
         # 否则假设它是具体类，返回自身
         return {abstract_tag}
+
     def _extract_element_property_value(self, source_file: str, element_path: str,
-                                        prop_xml_tag: str, prop_xpath: str = None) -> List[str]:
+                                        prop_xml_tag: str, prop_xpath: str = None,
+                                        is_ref: bool = False) -> List[str]:
         """
         [跨文件] 回溯源文件，提取指定元素的具体属性值或引用目标路径。
-        这是为了生成 SMT 事实（如：r1 的 symbol 是 "func_a"）。
+
+        Args:
+            is_ref: True 时提取文本内容（引用路径），False 时优先提取 SHORT-NAME
         """
         try:
-            # 简单的文件级缓存，避免频繁 parse 同一个文件
             if not hasattr(self, '_file_tree_cache'):
                 self._file_tree_cache = {}
             if source_file not in self._file_tree_cache:
@@ -1288,35 +1780,43 @@ class SMTValidator:
                 except Exception as e:
                     print(f"[WARN] 无法解析文件 {source_file}: {e}")
                     return []
+
             tree = self._file_tree_cache[source_file]
             root = tree.getroot()
-            # 根据 SHORT-NAME 路径找到 XML 节点
-            # 注意：这里需要一个能根据 path 查找节点的辅助函数 _find_node_by_path
             target_node = self._find_node_by_path(root, element_path)
             if target_node is None:
                 return []
+
             results = []
-            # 确定搜索路径：优先 XPath，否则用 Tag
             search_path = prop_xpath if prop_xpath else prop_xml_tag
-            # 在目标节点下查找属性/子元素
+
             if search_path:
-                # 简单的路径分割查找（忽略命名空间）
                 parts = search_path.split('/')
                 nodes = [target_node]
                 for part in parts:
                     next_nodes = []
                     for n in nodes:
-                        # 匹配去除 namespace 后的 tag
                         next_nodes.extend([c for c in n if _xml_tag_local(c.tag) == part])
                     nodes = next_nodes
-                # 提取文本值
+
                 for n in nodes:
-                    if n.text and n.text.strip():
-                        results.append(n.text.strip())
+                    if is_ref:
+                        # 引用类型：提取文本内容（路径）
+                        if n.text and n.text.strip():
+                            results.append(n.text.strip())
+                    else:
+                        # 子元素类型：优先提取 SHORT-NAME
+                        sn = _first_text(n, "SHORT-NAME")
+                        if sn:
+                            results.append(sn)
+                        elif n.text and n.text.strip():
+                            results.append(n.text.strip())
+
             return results
         except Exception as e:
             print(f"[WARN] 提取属性值失败 {source_file} :: {element_path}: {e}")
             return []
+
     def _find_node_by_path(self, root: ET.Element, path: str) -> Optional[ET.Element]:
         """
         根据 SHORT-NAME 路径在 ET.Element 树中查找对应节点。
@@ -1355,4 +1855,93 @@ class SMTValidator:
         if name and not name[0].isalpha():
             name = 'elem_' + name
         return _sanitize_ident(name)
+
+    # 在类的末尾添加诊断方法
+
+    def get_template_predicate_summary(self) -> Dict[str, Any]:
+        """
+        获取模板中谓词的摘要信息，用于诊断
+        """
+        summary = {
+            "total_sorts": len(self.template_sorts),
+            "sorts": list(self.template_sorts),
+            "total_predicates": len(self.predicate_signatures),
+            "predicates": {},
+            "base_name_groups": {}
+        }
+
+        # 按基础名分组
+        for base_name, variants in self.predicate_base_to_variants.items():
+            summary["base_name_groups"][base_name] = [
+                {
+                    "actual_name": v[0],
+                    "arity": len(v[1]),
+                    "arg_types": v[1],
+                    "return_type": v[2],
+                    "suffix_number": v[3]
+                }
+                for v in variants
+            ]
+
+        # 所有谓词签名
+        for pred_name, (arg_types, ret_type) in self.predicate_signatures.items():
+            summary["predicates"][pred_name] = {
+                "arity": len(arg_types),
+                "arg_types": arg_types,
+                "return_type": ret_type
+            }
+
+        return summary
+
+    def validate_mapping_predicates(self) -> Dict[str, Any]:
+        """
+        验证mapping中的所有谓词是否能在模板中找到匹配
+        在实际验证前调用，用于诊断配置问题
+        """
+        report = {
+            "all_matched": True,
+            "matched": [],
+            "unmatched": [],
+            "warnings": []
+        }
+
+        for entry in self.mapping:
+            cid = entry.get("constraint_id", "unknown")
+
+            for prop in entry.get("properties", []):
+                role = prop.get("role", "unknown")
+                smt_preds = prop.get("smt_predicates", {})
+
+                for pred_name, pred_info in smt_preds.items():
+                    if isinstance(pred_info, dict):
+                        expected_arity = len(pred_info.get("args", []))
+                    else:
+                        expected_arity = 1
+
+                    matched = self._match_predicate_in_template(pred_name, expected_arity)
+
+                    if matched:
+                        match_info = {
+                            "constraint_id": cid,
+                            "property_role": role,
+                            "mapping_predicate": pred_name,
+                            "matched_predicate": matched,
+                            "is_renamed": matched != pred_name
+                        }
+                        report["matched"].append(match_info)
+
+                        if matched != pred_name:
+                            report["warnings"].append(
+                                f"谓词重命名: '{pred_name}' → '{matched}' (约束: {cid})"
+                            )
+                    else:
+                        report["all_matched"] = False
+                        report["unmatched"].append({
+                            "constraint_id": cid,
+                            "property_role": role,
+                            "mapping_predicate": pred_name,
+                            "expected_arity": expected_arity
+                        })
+
+        return report
 
