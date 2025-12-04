@@ -12160,24 +12160,27 @@
 
 ; ========= TPS_SWCT_02014 =========
 ; AtomicSwComponentType supports Response On Event (ROE) via diagnostic services
+(declare-fun uses_Dcm_Roe (ROLE-BASED-PORT-ASSIGNMENT) Bool)
 (assert
   (forall ((r ROLE-BASED-PORT-ASSIGNMENT))
-    (=> (exists ((v String)) (= v (roleValue r)))
-        (= (roleValue r) "Dcm_Roe"))))
+    (= (uses_Dcm_Roe r)
+       (= (roleValue r) "Dcm_Roe"))))
 
 ; ========= TPS_SWCT_02015 =========
 ; AtomicSwComponentType verifies the access to security level via diagnostic services
+(declare-fun uses_SecurityAccess (ROLE-BASED-PORT-ASSIGNMENT) Bool)
 (assert
   (forall ((r ROLE-BASED-PORT-ASSIGNMENT))
-    (=> (exists ((v String)) (= v (roleValue r)))
-        (= (roleValue r) "SecurityAccess"))))
+    (= (uses_SecurityAccess r)
+       (= (roleValue r) "SecurityAccess"))))
 
 ; ========= TPS_SWCT_02016 =========
 ; AtomicSwComponentType requires information on the status of the protocol communication
+(declare-fun uses_CallbackDCMRequestServices (ROLE-BASED-PORT-ASSIGNMENT) Bool)
 (assert
   (forall ((r ROLE-BASED-PORT-ASSIGNMENT))
-    (=> (exists ((v String)) (= v (roleValue r)))
-        (= (roleValue r) "CallbackDCMRequestServices"))))
+    (= (uses_CallbackDCMRequestServices r)
+       (= (roleValue r) "CallbackDCMRequestServices"))))
 
 ; ========= TPS_SWCT_02018 =========
 ; Setup for AtomicSwComponentType which contains a Supervised Entity

@@ -47,22 +47,43 @@ class ValidationOrchestrator:
 
         try:
             # 初始化约束验证器
-            if self.config.get("validators", {}).get("constraint", {}).get("enabled", True):
-                from ..constraints.smt_validator import SMTValidator
+            constraint_cfg = self.config.get("validators", {}).get("constraint", {})
+
+            if constraint_cfg.get("enabled", True):
+                from src.validation.constraints.smt_validator import SMTValidator
 
                 # 获取SMT模板和映射文件路径
                 smt_template = self.config.get("smt_template_file")
-                smt_mapping = self.config.get("smt_mapping_file")  # ← 新增
+                smt_mapping = self.config.get("smt_mapping_file")
+
+                # 读取可选配置：日志等级 & 运行时布线诊断 & 启动时映射布线概览
+                smt_verbosity = constraint_cfg.get("verbosity", 1)  # 0=安静,1=正常,2=debug,3=trace
+                enable_runtime_wiring_diag = constraint_cfg.get("enable_runtime_wiring_diag", False)
+                enable_mapping_wiring_overview = constraint_cfg.get("enable_mapping_wiring_overview", False)
+
+                # 如果有 XSD Index，也一并传给 SMTValidator（它里面会自己用）
+                xsd_index_file = self.config.get("xsd_index_file")
 
                 self.constraint_validator = SMTValidator(
                     smt_template,
-                    mapping_file=smt_mapping  # ← 关键修改：传递mapping文件
+                    mapping_file=smt_mapping,
+                    xsd_index_file=xsd_index_file,
+                    verbosity=smt_verbosity,
+                    enable_runtime_wiring_diag=enable_runtime_wiring_diag,
                 )
                 print("✅ Constraint validator initialized")
 
-                # 可选：显示mapping加载状态
                 if smt_mapping:
                     print(f"   📄 SMT Mapping: {smt_mapping}")
+
+                # 🔍【关键】在启动时做一次“静态布线总览”
+                if enable_mapping_wiring_overview:
+                    # analyze_constraint_wiring 内部会打印 “========== 约束接线总览 ==========” 等汇总
+                    try:
+                        self.constraint_validator.analyze_constraint_wiring()
+                    except Exception as e:
+                        print(f"⚠️ analyze_constraint_wiring 执行失败: {e}")
+
         except Exception as e:
             print(f"⚠️  Constraint validator initialization failed: {e}")
 

@@ -4,7 +4,8 @@
 
 ---
 
-# 字段优先级与裁决（出现冲突按此顺序判定）
+# 字段优先级与裁决（出现冲突按此顺序判定，若根据 expression/title 无法找到明确可观测的 XML 信号（具体字段/路径），
+则 只输出 logical_pattern，不输出 SMT 映射和公式。）
 
 1. **title + expression**（核心语义，最高优先）
 2. **target_class.xml_tag、target_properties[].xml_tag**（仅作**目标类/属性标签辅助**与**路径拼接**）
@@ -80,10 +81,14 @@
 # 双向语义（iff）与语义谓词引入
 
 * **I1（iff）**：遇 “iff / if and only if / 当且仅当” ⇒ 生成双向：
-
   * `(=> P Q)` 且 `(=> Q P)`，或 `(= P Q)`
   * 若缺可观测右项，先引入谓词（`prefixPolicyEnabled`、`uses*Policy`）
-* **I2（语义谓词引入）**：当表达缺可观测信号，可自动添加 `*_Enabled`、`uses*Policy` 等谓词。
+
+* I2语义谓词引入（禁止生成“仅出现在 SMT 公式中，而没有任何 XML 映射规则”的谓词。）：
+   - 仅在同时满足以下条件时，才允许引入新的语义谓词（如 isControlPort, isDelegationPort）：
+   - 能给出明确的 XML 判定规则：例如某个 xml_tag、属性取值、路径结构。
+   - 在 mapping_smt.json 的 properties[] 中，同时为该谓词生成 smt_predicates 映射。
+   - 若无法找到这样的判定规则，则 不引入新谓词，只在 logical_pattern 中记录语义，不生成 SMT 约束。
 
 ---
 
@@ -92,7 +97,11 @@
 * **SHACL**：路径稳定 → 用于存在性 / DEST 类型 / 简单计数。
 * **SMT**：负责条件逻辑 / iff / 唯一 / 约束一致性。
 * **允许重叠**：两者并行验证不冲突，同一约束分成“结构 + 逻辑”两层（两侧各自承担不同部分时才“双轨”）。
-* **信息不足/不应自动验证（运行时行为、示例性描述等）** → 两段都留空。
+* **信息不足/不应自动验证（运行时行为、示例说明、没有明确可观测字段）**：
+    - 不生成 SHACL；
+    - 也不生成 SMT assert 或 smt_predicates 映射；
+    - 仅在 logical_pattern 里用自然语言记录语义，"type": "documentation"。
+    - 这类约束在当前自动验证中视为“文档约束，不参与求解”。
 
 ---
 
@@ -127,12 +136,30 @@ SMT 映射表（mapping_smt.json）负责：
 * 指定哪些子元素对应哪些谓词
 * **不包含逻辑公理**（公理已在模板中）
 
+F1（函数使用约束）：
+    - 优先使用关系谓词来建模引用与类型，而不是返回复杂类型的函数。
+    - 若确实需要函数（如 portType : PORT-PROTOTYPE -> PORT-INTERFACE），
+    - 则必须：
+        -- 在 mapping 中为该函数生成形如 (= (portType SUBJECT) PROPERTY) 的事实；
+        -- 或者在 SMT 模板中将函数等价重写为关系谓词（如 portTypeRel(SUBJECT, PROPERTY)），并只在 mapping 中使用关系谓词。
+    - 禁止出现“只在约束中使用、却没有任何事实约束其图像”的函数。
+
 **重要：**
 * SMT 模板末尾**不要写 `(check-sat)`**，验证器会自动添加
 * `logical_pattern` 字段**可选**，仅用于文档说明，验证器不会根据它生成逻辑公理
 * 对于可能重名的声明和函数名，应该加上语义后缀来进行命名，防止多批次下生成重名声明
 * 对于assert语句注意括号闭合，防止少/多括号
 * SMT-LIB 里没有 let*，只有 let，而且 let 是并行绑定。
+
+# 端到端可验证性（非常重要）
+    在生成 SMT 公式与 mapping 前，必须进行以下检查：
+    1.列出本约束 SMT 公式中出现的所有谓词/函数名（不含 and/or/=>/=/not 等内建）。
+    2.对每一个符号，回答：
+        - 是否出现在本约束的 smt_predicates 映射中？
+        - 如果否：
+            - 是否已经在其他约束中有 XML 映射？（如果上下文中提供）
+            - 如果完全未映射，则本条约束不得输出 SMT 公式，转为 logical_pattern 文档。
+    3.只有当 所有出现的非逻辑符号至少有一个 XML 映射来源 时，才输出 SMT assert。
 
 ---
 
@@ -265,6 +292,22 @@ SMT 映射表（mapping_smt.json）负责：
   }
 }
 ```
+S1（smt_sort 约束）：
+    - 除非结构化约束明确说明属性的目标类（例如 ref_dest_literals / ref_dest_classes），否则不要为属性随意发明新的 smt_sort。
+    - 对以下情况：
+        - SHORT-NAME / SYMBOL / 数值区间 等简单文本字段：
+            - 要么复用 SUBJECT 的 sort，仅用于存在性谓词；
+            - 要么使用模板中已有的通用 Sort（如 STRING / NUMERIC），前提是上下文有给。
+    - 禁止创建仅在 mapping 中出现、模板中没有对应声明的新 Sort 名称。
+
+M1（谓词签名对齐）：
+    - target.target_sort 必须对应 SMT 模板中相关谓词的第一个参数 Sort；
+    - properties[*].smt_sort 必须对应相应谓词的第二个参数 Sort（若存在 PROPERTY）；
+    - 若无法确定 sort 对齐关系，不要输出 smt_predicates，只输出 logical_pattern。
+    - 禁止出现：
+        - target_sort 与谓词第一个参数类型不一致；
+        - property smt_sort 与谓词第二个参数类型不一致；
+        - 通过这种方式生成的谓词在模板中找不到任何兼容签名。
 
 **单文件约束对比说明**：若约束不涉及跨文件引用（如"组件必须有SHORT-NAME"），则：
 - 设置 `"cross_file": false`

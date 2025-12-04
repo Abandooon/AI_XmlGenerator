@@ -10565,43 +10565,7 @@ WHERE {
 # SHACL for constr_1141 - Applicability of the scope attribute
 #################################################################
 
-autosar:constr_1141_ApplicabilityOfScopeAttributeShape
-    a sh:NodeShape ;
-    sh:targetClass autosar:VARIABLE-ACCESS ;
-    sh:severity sh:Violation ;
-    sh:message "The attribute scope of VariableAccess shall only be applied for VariableAccess aggregated in dataReadAccess, dataWriteAccess, dataSendPoint, dataReceivePointByValue, or dataReceivePointByArgument."@en ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "SCOPE is only allowed on VariableAccess used in dataReadAccess, dataWriteAccess, dataSendPoint, dataReceivePointByValue, or dataReceivePointByArgument."@en ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?this
-WHERE {
-  ?this autosar:SCOPE ?scope .
-  FILTER NOT EXISTS {
-    ?runnable autosar:DATA-READ-ACCESSS ?c1 .
-    ?c1 autosar:VARIABLE-ACCESS ?this .
-  }
-  FILTER NOT EXISTS {
-    ?runnable autosar:DATA-WRITE-ACCESSS ?c2 .
-    ?c2 autosar:VARIABLE-ACCESS ?this .
-  }
-  FILTER NOT EXISTS {
-    ?runnable autosar:DATA-SEND-POINTS ?c3 .
-    ?c3 autosar:VARIABLE-ACCESS ?this .
-  }
-  FILTER NOT EXISTS {
-    ?runnable autosar:DATA-RECEIVE-POINT-BY-VALUES ?c4 .
-    ?c4 autosar:VARIABLE-ACCESS ?this .
-  }
-  FILTER NOT EXISTS {
-    ?runnable autosar:DATA-RECEIVE-POINT-BY-ARGUMENTS ?c5 .
-    ?c5 autosar:VARIABLE-ACCESS ?this .
-  }
-}
-""" ;
-    ] .
 
 #################################################################
 # SHACL for constr_1142 - category of CompuMethod shall not be extended
@@ -12692,30 +12656,6 @@ autosar:constr_1274 a sh:NodeShape ;
 # constr_1277 - SwDataDefProps.swImplPolicy not queued for VariableAccess in dataReceivePointByValue
 #################################################################
 
-autosar:constr_1277 a sh:NodeShape ;
-  sh:severity sh:Violation ;
-  sh:targetClass autosar:VARIABLE-DATA-PROTOTYPE ;
-  sh:message "SwDataDefProps.swImplPolicy of a VariableDataPrototype referenced by a VariableAccess aggregated in the role dataReceivePointByValue shall not be set to queued." ;
-  sh:sparql [
-    a sh:SPARQLConstraint ;
-    sh:message "SwDataDefProps.swImplPolicy is 'queued' for a VariableDataPrototype that is accessed via dataReceivePointByValue." ;
-    sh:select """
-      PREFIX autosar: <http://autosar.org/>
-      SELECT ?this
-      WHERE {
-        ?this a autosar:VARIABLE-DATA-PROTOTYPE .
-
-        ?this autosar:SW-DATA-DEF-PROPS ?swdp .
-        ?swdp autosar:SW-IMPL-POLICY "queued" .
-
-        ?runnable a autosar:RUNNABLE-ENTITY .
-        ?runnable autosar:DATA-RECEIVE-POINT-BY-VALUES ?drpv .
-        ?drpv autosar:VARIABLE-ACCESS ?va .
-        ?va autosar:ACCESSED-VARIABLE ?varRef .
-        ?varRef autosar:REFERS-TO ?this .
-      }
-    """ ;
-  ] .
 
 
 # SHACL for constr_1278 - PhysConstrs references a Unit
@@ -13120,235 +13060,21 @@ autosar:Constr_1299_ModeDeclarationGroup_NonExplicitOrder_Existence a sh:NodeSha
 
 
 # ===== SHACL for constr_1300 =====
-autosar:constr_1300_PrimitiveProviderNotMappedToCompositeRequester
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:DATA-PROTOTYPE-MAPPING ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "Primitive DataPrototype on the provider side shall not be mapped to element of a composite data type on the requester side (constr_1300)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?mapping
-WHERE {
-  ?mapping a autosar:DATA-PROTOTYPE-MAPPING .
-
-  # provider/client side AutosarDataPrototype
-  ?mapping autosar:PROVIDER-DATA-PROTOTYPE-REF ?provRef .
-  ?provRef autosar:ref ?provProto .
-
-  # type of provider prototype
-  ?provProto autosar:TYPE-TREF ?provTypeRef .
-  ?provTypeRef autosar:dest ?provType .
-
-  # provider type is primitive VALUE (ApplicationPrimitiveDataType or ImplDataType VALUE/TYPE_REFERENCE->VALUE)
-  ?provType autosar:CATEGORY ?provCat .
-  FILTER(
-    (?provType a autosar:APPLICATION-PRIMITIVE-DATA-TYPE && ?provCat = "VALUE")
-    ||
-    (?provType a autosar:IMPLEMENTATION-DATA-TYPE &&
-      (?provCat = "VALUE" || ?provCat = "TYPE_REFERENCE") &&
-      EXISTS {
-        ?provType autosar:RESOLVED-CATEGORY "VALUE"
-      }
-    )
-  )
-
-  # requester/server side mapping to composite element
-  ?mapping autosar:SUB-ELEMENT-MAPPINGS ?subMapCont .
-  ?subMapCont autosar:SUB-ELEMENT-MAPPING ?subMap .
-  ?subMap autosar:REQUESTER-ELEMENT-REF ?reqElemRef .
-  ?reqElemRef autosar:dest ?reqElem .
-
-  FILTER(
-    ?reqElem a autosar:IMPLEMENTATION-DATA-TYPE-ELEMENT
-    ||
-    ?reqElem a autosar:APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE
-  )
-}
-""" ;
-    ] .
 
 # ===== SHACL for constr_1301 =====
-autosar:constr_1301_RoleBasedAssignments
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:SWC-SERVICE-DEPENDENCY ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "If a RoleBasedDataTypeAssignment.role = 'temporaryRamBlock' exists then no RoleBasedDataAssignment.role = 'defaultValue' may exist in the same SwcServiceDependency (constr_1301)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
-
-SELECT ?dep
-WHERE {
-  ?dep a autosar:SWC-SERVICE-DEPENDENCY .
-
-  # exists RoleBasedDataTypeAssignment with role = temporaryRamBlock
-  ?dep autosar:ROLE-BASED-DATA-TYPE-ASSIGNMENTS ?rbdtaCont .
-  ?rbdtaCont autosar:ROLE-BASED-DATA-TYPE-ASSIGNMENT ?rbdta .
-  ?rbdta autosar:ROLE ?roleType .
-  FILTER(?roleType = "temporaryRamBlock")
-
-  # and exists RoleBasedDataAssignment with role = defaultValue
-  ?dep autosar:ROLE-BASED-DATA-ASSIGNMENTS ?rbdaCont .
-  ?rbdaCont autosar:ROLE-BASED-DATA-ASSIGNMENT ?rbda .
-  ?rbda autosar:ROLE ?roleAssign .
-  FILTER(?roleAssign = "defaultValue")
-}
-""" ;
-    ] .
 
 # ===== SHACL for constr_1303 =====
-autosar:constr_1303_TextTableMappingCompuCategory
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:DATA-PROTOTYPE-MAPPING ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "Applicability of TextTableMapping depending on the value of CompuMethod.category (constr_1303)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?mapping
-WHERE {
-  ?mapping a autosar:DATA-PROTOTYPE-MAPPING .
-
-  # must aggregate a TextTableMapping
-  ?mapping autosar:TEXT-TABLE-MAPPING ?ttm .
-
-  # firstDataPrototype and secondDataPrototype compu methods and categories
-  ?mapping autosar:FIRST-DATA-PROTOTYPE-REF ?firstRef .
-  ?firstRef autosar:ref ?firstProto .
-  ?firstProto autosar:COMPU-METHOD-REF ?firstCmRef .
-  ?firstCmRef autosar:ref ?firstCm .
-  ?firstCm autosar:CATEGORY ?cat1 .
-
-  ?mapping autosar:SECOND-DATA-PROTOTYPE-REF ?secondRef .
-  ?secondRef autosar:ref ?secondProto .
-  ?secondProto autosar:COMPU-METHOD-REF ?secondCmRef .
-  ?secondCmRef autosar:ref ?secondCm .
-  ?secondCm autosar:CATEGORY ?cat2 .
-
-  FILTER NOT (
-    (?cat1 = "TEXTTABLE" && ?cat2 = "TEXTTABLE") ||
-    (?cat1 = "SCALE_LINEAR_AND_TEXTTABLE" && ?cat2 = "TEXTTABLE") ||
-    (?cat1 = "TEXTTABLE" && ?cat2 = "SCALE_LINEAR_AND_TEXTTABLE") ||
-    (?cat1 = "BITFIELD_TEXTTABLE" && ?cat2 = "TEXTTABLE") ||
-    (?cat1 = "TEXTTABLE" && ?cat2 = "BITFIELD_TEXTTABLE") ||
-    (?cat1 = "BITFIELD_TEXTTABLE" && ?cat2 = "BITFIELD_TEXTTABLE")
-  )
-}
-""" ;
-    ] .
 
 # ===== SHACL for constr_1304 =====
-autosar:constr_1304_BitfieldTextTableMaskFirst
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:TEXT-TABLE-MAPPING ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "BITFIELD-TEXT-TABLE-MASK-FIRST shall be defined only if the firstDataPrototype refers to a CompuMethod with category = BITFIELD_TEXTTABLE (constr_1304)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?ttm
-WHERE {
-  ?ttm a autosar:TEXT-TABLE-MAPPING .
-
-  OPTIONAL { ?ttm autosar:BITFIELD-TEXT-TABLE-MASK-FIRST ?maskFirst . }
-
-  # find owning DataPrototypeMapping
-  ?mapping autosar:TEXT-TABLE-MAPPING ?ttm .
-  ?mapping autosar:FIRST-DATA-PROTOTYPE-REF ?firstRef .
-  ?firstRef autosar:ref ?firstProto .
-  ?firstProto autosar:COMPU-METHOD-REF ?cmRef .
-  ?cmRef autosar:ref ?cm .
-  OPTIONAL { ?cm autosar:CATEGORY ?cat . }
-
-  FILTER(
-    bound(?maskFirst) && (!bound(?cat) || ?cat != "BITFIELD_TEXTTABLE")
-  )
-}
-""" ;
-    ] .
 
 # ===== SHACL for constr_1305 =====
-autosar:constr_1305_BitfieldTextTableMaskSecond
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:TEXT-TABLE-MAPPING ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "BITFIELD-TEXT-TABLE-MASK-SECOND shall be defined only if the secondDataPrototype refers to a CompuMethod with category = BITFIELD_TEXTTABLE (constr_1305)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?ttm
-WHERE {
-  ?ttm a autosar:TEXT-TABLE-MAPPING .
-
-  OPTIONAL { ?ttm autosar:BITFIELD-TEXT-TABLE-MASK-SECOND ?maskSecond . }
-
-  # find owning DataPrototypeMapping
-  ?mapping autosar:TEXT-TABLE-MAPPING ?ttm .
-  ?mapping autosar:SECOND-DATA-PROTOTYPE-REF ?secondRef .
-  ?secondRef autosar:ref ?secondProto .
-  ?secondProto autosar:COMPU-METHOD-REF ?cmRef .
-  ?cmRef autosar:ref ?cm .
-  OPTIONAL { ?cm autosar:CATEGORY ?cat . }
-
-  FILTER(
-    bound(?maskSecond) && (!bound(?cat) || ?cat != "BITFIELD_TEXTTABLE")
-  )
-}
-""" ;
-    ] .
 
 # ===== SHACL for constr_1306 =====
-autosar:constr_1306_TextTableMappingLimitationBitfield
-    a sh:NodeShape ;
-    sh:severity sh:Violation ;
-    sh:targetClass autosar:TEXT-TABLE-MAPPING ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "For TextTableMapping where both CompuMethods have category BITFIELD_TEXTTABLE and a valuePair exists, IDENTICAL-MAPPING shall be false (constr_1306)." ;
-        sh:select """
-PREFIX autosar: <http://autosar.org/>
 
-SELECT ?ttm
-WHERE {
-  ?ttm a autosar:TEXT-TABLE-MAPPING .
-
-  # owning DataPrototypeMapping
-  ?mapping autosar:TEXT-TABLE-MAPPING ?ttm .
-
-  # first compu method
-  ?mapping autosar:FIRST-DATA-PROTOTYPE-REF ?firstRef .
-  ?firstRef autosar:ref ?firstProto .
-  ?firstProto autosar:COMPU-METHOD-REF ?firstCmRef .
-  ?firstCmRef autosar:ref ?firstCm .
-  ?firstCm autosar:CATEGORY "BITFIELD_TEXTTABLE" .
-
-  # second compu method
-  ?mapping autosar:SECOND-DATA-PROTOTYPE-REF ?secondRef .
-  ?secondRef autosar:ref ?secondProto .
-  ?secondProto autosar:COMPU-METHOD-REF ?secondCmRef .
-  ?secondCmRef autosar:ref ?secondCm .
-  ?secondCm autosar:CATEGORY "BITFIELD_TEXTTABLE" .
-
-  # valuePair exists
-  ?ttm autosar:VALUE-PAIRS ?vpCont .
-  ?vpCont autosar:TEXT-TABLE-VALUE-PAIR ?vp .
-
-  # identicalMapping must be false
-  ?ttm autosar:IDENTICAL-MAPPING ?identical .
-  FILTER(?identical != false)
-}
-""" ;
-    ] .
 
 
 #################################################################
@@ -14238,22 +13964,7 @@ autosar:constr_1385_ApplicationValueSpecificationShape
 # SHACL for constr_1386
 #################################################################
 
-autosar:constr_1386_PortAPIOptionShape
-    a sh:NodeShape ;
-    sh:targetClass autosar:PORT-API-OPTION ;
-    sh:severity sh:Violation ;
-    sh:sparql [
-        sh:message "A PortAPIOption with at least one PortDefinedArgumentValue (portArgValue) shall reference an AbstractProvidedPortPrototype typed by a ClientServerInterface in the role port." ;
-        sh:select """
-            PREFIX autosar: <http://autosar.org/>
-            SELECT $this
-            WHERE {
-              $this autosar:PORT-ARG-VALUES/autosar:PORT-DEFINED-ARGUMENT-VALUE ?pdav .
-              $this autosar:PORT-REF ?portRef .
-              # Structural check: PORT-REF must resolve to an ABSTRACT-PROVIDED-PORT-PROTOTYPE is handled by cross-file resolution/SMT.
-            }
-        """ ;
-    ] .
+
 
 #################################################################
 # SHACL for constr_1388
@@ -14550,86 +14261,7 @@ autosar:Constr_1403_NvDataInterface
 
 
 # ===== SHACL for constr_1404 =====
-autosar:constr_1404
-  a sh:NodeShape ;
-  sh:targetClass autosar:ATOMIC-SW-COMPONENT-TYPE ;
-  sh:severity sh:Violation ;
-  sh:message "All NvDataInterface.nvData of PortPrototypes in the context of a specific SwcServiceDependency shall be mapped to the same NvBlockDescriptor.ramBlock (via NvBlockDataMappings)." ;
-  sh:sparql [
-    a sh:SPARQLConstraint ;
-    sh:message "All NvDataInterface.nvData of PortPrototypes referenced by RoleBasedPortAssignment with role NvDataPort within one SwcServiceDependency shall be mapped to NvBlockDescriptor.nvData whose NvBlockDataMappings cover the same NvBlockDescriptor.ramBlock." ;
-    sh:select """
-      PREFIX autosar: <http://autosar.org/>
 
-      SELECT ?swc ?dep
-      WHERE {
-        ?swc a autosar:ATOMIC-SW-COMPONENT-TYPE .
-
-        # SwcServiceDependency in context of this AtomicSwComponentType
-        ?swc autosar:SWC-SERVICE-DEPENDENCIES ?dep .
-
-        # RoleBasedPortAssignments with role = NvDataPort
-        ?dep autosar:ROLE-BASED-PORT-ASSIGNMENTS ?rbpa .
-        ?rbpa autosar:ROLE ?roleId .
-        FILTER (STR(?roleId) = "NvDataPort")
-
-        # PortPrototypes referenced by the RoleBasedPortAssignment
-        ?rbpa autosar:PORT-PROTOTYPE-REF ?pp .
-
-        # PortPrototype typed by NvDataInterface
-        ?pp autosar:TYPE-TREF ?pi .
-        ?pi a autosar:NV-DATA-INTERFACE .
-
-        # NvDataInterface.nvData
-        ?pi autosar:NV-DATAS ?nvDatasCont .
-        ?nvDatasCont autosar:VARIABLE-DATA-PROTOTYPE ?nvDataVar .
-
-        # NvBlockSwComponentType side: its NvDataInterface.nvData mapped to NvBlockDescriptor
-        ?nvBlockSwc a autosar:NV-BLOCK-SW-COMPONENT-TYPE .
-        ?nvBlockSwc autosar:PORTS ?nvBlockPort .
-        ?nvBlockPort autosar:TYPE-TREF ?nvBlockPi .
-        ?nvBlockPi a autosar:NV-DATA-INTERFACE .
-        ?nvBlockPi autosar:NV-DATAS ?nvBlockNvDatasCont .
-        ?nvBlockNvDatasCont autosar:VARIABLE-DATA-PROTOTYPE ?nvBlockNvDataVar .
-
-        # NvBlockDataMappings from NvDataInterface.nvData to NvBlockDescriptor
-        ?mapping autosar:NV-BLOCK-DATA-MAPPINGS ?nvBlockDataMapping .
-        ?nvBlockDataMapping autosar:NV-DATA ?nvBlockNvDataVar .
-        ?nvBlockDataMapping autosar:NV-BLOCK-DESCRIPTOR ?nvBlockDesc .
-        ?nvBlockDesc autosar:RAM-BLOCK ?ramBlock .
-
-        # Collect all ramBlocks for the nvData in this dependency
-        {
-          SELECT ?swc ?dep (COUNT(DISTINCT ?ramBlock) AS ?ramBlockCount)
-          WHERE {
-            ?swc autosar:SWC-SERVICE-DEPENDENCIES ?dep .
-            ?dep autosar:ROLE-BASED-PORT-ASSIGNMENTS ?rbpa .
-            ?rbpa autosar:ROLE ?roleId .
-            FILTER (STR(?roleId) = "NvDataPort")
-            ?rbpa autosar:PORT-PROTOTYPE-REF ?pp .
-            ?pp autosar:TYPE-TREF ?pi .
-            ?pi a autosar:NV-DATA-INTERFACE .
-            ?pi autosar:NV-DATAS ?nvDatasCont .
-            ?nvDatasCont autosar:VARIABLE-DATA-PROTOTYPE ?nvDataVar .
-
-            ?nvBlockSwc a autosar:NV-BLOCK-SW-COMPONENT-TYPE .
-            ?nvBlockSwc autosar:PORTS ?nvBlockPort .
-            ?nvBlockPort autosar:TYPE-TREF ?nvBlockPi .
-            ?nvBlockPi a autosar:NV-DATA-INTERFACE .
-            ?nvBlockPi autosar:NV-DATAS ?nvBlockNvDatasCont .
-            ?nvBlockNvDatasCont autosar:VARIABLE-DATA-PROTOTYPE ?nvBlockNvDataVar .
-
-            ?mapping autosar:NV-BLOCK-DATA-MAPPINGS ?nvBlockDataMapping .
-            ?nvBlockDataMapping autosar:NV-DATA ?nvBlockNvDataVar .
-            ?nvBlockDataMapping autosar:NV-BLOCK-DESCRIPTOR ?nvBlockDesc .
-            ?nvBlockDesc autosar:RAM-BLOCK ?ramBlock .
-          }
-          GROUP BY ?swc ?dep
-          HAVING (?ramBlockCount > 1)
-        }
-      }
-    """ ;
-  ] .
 
 # ===== SHACL for constr_2002 (dataReadAccess) =====
 autosar:constr_2002
@@ -14733,45 +14365,6 @@ autosar:constr_2004
   ] .
 
 # ===== SHACL for constr_2005 (dataReceivePointByValue / ByArgument) =====
-autosar:constr_2005
-  a sh:NodeShape ;
-  sh:targetClass autosar:RUNNABLE-ENTITY ;
-  sh:severity sh:Violation ;
-  sh:message "VariableAccess in role dataReceivePointByValue or dataReceivePointByArgument shall refer to an RPortPrototype or PRPortPrototype typed by SenderReceiverInterface or NvDataInterface." ;
-  sh:sparql [
-    a sh:SPARQLConstraint ;
-    sh:message "Each VARIABLE-ACCESS under DATA-RECEIVE-POINT-BY-VALUES or DATA-RECEIVE-POINT-BY-ARGUMENTS shall access a variable via a port that is an RPortPrototype or PRPortPrototype typed by SenderReceiverInterface or NvDataInterface." ;
-    sh:select """
-      PREFIX autosar: <http://autosar.org/>
-
-      SELECT ?this ?va
-      WHERE {
-        ?this a autosar:RUNNABLE-ENTITY .
-
-        {
-          ?this autosar:DATA-RECEIVE-POINT-BY-VALUES ?recvValCont .
-          ?recvValCont autosar:VARIABLE-ACCESS ?va .
-        }
-        UNION
-        {
-          ?this autosar:DATA-RECEIVE-POINT-BY-ARGUMENTS ?recvArgCont .
-          ?recvArgCont autosar:VARIABLE-ACCESS ?va .
-        }
-
-        ?va autosar:ACCESSED-VARIABLE ?avar .
-        ?avar autosar:AUTOSAR-VARIABLE-IREF ?viref .
-        ?viref autosar:PORT-PROTOTYPE-REF ?port .
-
-        FILTER NOT EXISTS {
-          ?port a ?portType .
-          FILTER (?portType IN (autosar:R-PORT-PROTOTYPE, autosar:PR-PORT-PROTOTYPE))
-          ?port autosar:TYPE-TREF ?pi .
-          ?pi a ?piType .
-          FILTER (?piType IN (autosar:SENDER-RECEIVER-INTERFACE, autosar:NV-DATA-INTERFACE))
-        }
-      }
-    """ ;
-  ] .
 
 # ===== SHACL for constr_2006 (AsynchronousServerCallPoint cardinality) =====
 autosar:constr_2006

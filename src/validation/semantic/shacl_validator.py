@@ -324,10 +324,17 @@ class SHACLValidator:
         filtered = []
         for violation in violations:
             # 检查约束组件是否为结构性
-            constraint_component = violation.get('constraint_component', '').lower()
-            message = violation.get('message', '').lower()
+            constraint_component = violation.get('constraint_component', '')
+            message = violation.get('message', '')
 
-            is_structural = any(indicator in constraint_component or indicator in message
+            # 安全处理
+            constraint_component_str = str(constraint_component) if constraint_component is not None else ''
+            message_str = str(message) if message is not None else ''
+
+            constraint_component_lower = constraint_component_str.lower()
+            message_lower = message_str.lower()
+
+            is_structural = any(indicator in constraint_component_lower or indicator in message_lower
                                 for indicator in structural_indicators)
 
             if is_structural:
@@ -339,7 +346,6 @@ class SHACLValidator:
 
     def _filter_semantic_violations(self, violations: List[Dict]) -> List[Dict]:
         """🔧 过滤语义性违规并按类型分类"""
-        # 语义性约束通常涉及：值限制、格式、依赖关系等
         semantic_type_indicators = {
             'value_restriction': ['pattern', 'enum', 'in', 'hasvalue', 'value'],
             'format': ['pattern', 'regex', 'format', 'PatternConstraintComponent'],
@@ -352,14 +358,25 @@ class SHACLValidator:
 
         filtered = []
         for violation in violations:
-            constraint_component = violation.get('constraint_component', '').lower()
-            message = violation.get('message', '').lower()
-            result_path = violation.get('result_path', '').lower()
+            # 安全获取字段值
+            constraint_component = violation.get('constraint_component', '')
+            message = violation.get('message', '')
+            result_path = violation.get('result_path', '')
+
+            constraint_component_str = str(constraint_component) if constraint_component is not None else ''
+            message_str = str(message) if message is not None else ''
+            result_path_str = str(result_path) if result_path is not None else ''
+
+            constraint_component_lower = constraint_component_str.lower()
+            message_lower = message_str.lower()
+            result_path_lower = result_path_str.lower()
 
             # 确定语义约束类型
             semantic_type = 'other'
             for type_name, indicators in semantic_type_indicators.items():
-                if any(indicator in constraint_component or indicator in message or indicator in result_path
+                if any(indicator in constraint_component_lower or
+                       indicator in message_lower or
+                       indicator in result_path_lower
                        for indicator in indicators):
                     semantic_type = type_name
                     break
@@ -429,10 +446,17 @@ class SHACLValidator:
             'MaxCountConstraintComponent', 'DatatypeConstraintComponent'
         ]
 
-        constraint_component = violation.get('constraint_component', '').lower()
-        message = violation.get('message', '').lower()
+        constraint_component = violation.get('constraint_component', '')
+        message = violation.get('message', '')
 
-        return any(indicator in constraint_component or indicator in message
+        # 安全处理
+        constraint_component_str = str(constraint_component) if constraint_component is not None else ''
+        message_str = str(message) if message is not None else ''
+
+        constraint_component_lower = constraint_component_str.lower()
+        message_lower = message_str.lower()
+
+        return any(indicator in constraint_component_lower or indicator in message_lower
                    for indicator in structural_indicators)
 
     def _determine_semantic_type(self, violation: Dict) -> str:
@@ -448,12 +472,25 @@ class SHACLValidator:
             'behavioral': ['order', 'sequence', 'state', 'temporal']
         }
 
-        constraint_component = violation.get('constraint_component', '').lower()
-        message = violation.get('message', '').lower()
-        result_path = violation.get('result_path', '').lower()
+        # 安全地获取并处理可能为 None 的字段
+        constraint_component = violation.get('constraint_component', '')
+        message = violation.get('message', '')
+        result_path = violation.get('result_path', '')
+
+        # 确保所有字段都是字符串
+        constraint_component_str = str(constraint_component) if constraint_component is not None else ''
+        message_str = str(message) if message is not None else ''
+        result_path_str = str(result_path) if result_path is not None else ''
+
+        # 转换为小写
+        constraint_component_lower = constraint_component_str.lower()
+        message_lower = message_str.lower()
+        result_path_lower = result_path_str.lower()
 
         for type_name, indicators in semantic_type_indicators.items():
-            if any(indicator in constraint_component or indicator in message or indicator in result_path
+            if any(indicator in constraint_component_lower or
+                   indicator in message_lower or
+                   indicator in result_path_lower
                    for indicator in indicators):
                 return type_name
 
@@ -1059,7 +1096,7 @@ class SHACLValidator:
                     return
 
                 if should_treat_as_text_content(element):
-                    print(f"📝 处理文本内容: {clean_tag} = '{element.text.strip()}'")
+                    # print(f"📝 处理文本内容: {clean_tag} = '{element.text.strip()}'")
 
                     element_type_uri = AUTOSAR[clean_tag]
                     graph.add((subject, rdflib.RDF.type, element_type_uri))

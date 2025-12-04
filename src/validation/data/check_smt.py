@@ -7,12 +7,14 @@ from pathlib import Path
 import re
 from collections import defaultdict
 
+
 def find_first_existing(candidates):
     """在候选路径列表中找到第一个存在的文件"""
     for c in candidates:
         if c.exists():
             return c
     return None
+
 
 def sanitize_template_text(txt: str) -> str:
     """
@@ -25,9 +27,9 @@ def sanitize_template_text(txt: str) -> str:
     lines = txt.splitlines()
     new_lines = []
 
-    seen_sorts = set()      # key: sort 名
-    seen_funs = set()       # key: (name, arg_sorts_str, ret_sort)
-    seen_consts = set()     # key: (name, sort)
+    seen_sorts = set()  # key: sort 名
+    seen_funs = set()  # key: (name, arg_sorts_str, ret_sort)
+    seen_consts = set()  # key: (name, sort)
 
     # 解析完整签名（只看代码部分，不看注释）
     sort_re = re.compile(r'\(declare-sort\s+([^\s\)]+)\s*(\d*)\s*\)')
@@ -73,6 +75,7 @@ def sanitize_template_text(txt: str) -> str:
         new_lines.append(line)
 
     return "\n".join(new_lines)
+
 
 def disambiguate_overloaded_functions(template_text: str) -> str:
     """
@@ -173,12 +176,14 @@ def disambiguate_overloaded_functions(template_text: str) -> str:
 
     return "\n".join(lines)
 
+
 from pathlib import Path
 import re
 
+
 def _check_template_syntax_and_duplicates(
-    template_text: str,
-    smt_template_path: Path,
+        template_text: str,
+        smt_template_path: Path,
 ) -> str:
     """
     对 SMT 模板本身做一些快速检查，并在清洗后直接写回原文件：
@@ -237,7 +242,7 @@ def _check_template_syntax_and_duplicates(
 
     from collections import defaultdict
 
-    sort_counts = defaultdict(list)   # name -> [line1, line2, ...]
+    sort_counts = defaultdict(list)  # name -> [line1, line2, ...]
     fun_counts = defaultdict(list)
     const_counts = defaultdict(list)
 
@@ -297,14 +302,450 @@ def _check_template_syntax_and_duplicates(
     if not conflict_found:
         print("   ✅ 未检测到显式的符号角色冲突。")
 
+        # ✅ [新增] 6) 可满足性检查 - 这是关键！
+        print("\n   🧮 检查模板逻辑可满足性...")
+        try:
+            import z3
+
+            # 解析清洗后的模板
+            assertions = z3.parse_smt2_string(cleaned)
+            print(f"   ℹ️ 模板包含 {len(assertions)} 个断言/公理")
+
+            # ✅ [新增] 分析公理复杂度
+            _analyze_assertion_complexity(assertions, cleaned)
+
+            # 创建求解器并添加所有断言
+            solver = z3.Solver()
+            solver.set("timeout", 60000)  # 1分钟初次检查
+
+            for a in assertions:
+                solver.add(a)
+
+            # 检查可满足性
+            print("\n   ⏳ 正在进行可满足性检查（最多1分钟）...")
+            result = solver.check()
+
+            if result == z3.sat:
+                print("   ✅ 模板逻辑可满足性检查通过 (SAT)")
+            elif result == z3.unsat:
+                print("   ❌ 模板逻辑不可满足 (UNSAT) - 公理内部存在矛盾！")
+                print("   ⚠️ 这将导致验证时立即失败，无论输入什么数据")
+
+                # 尝试定位问题公理
+                print("\n   🔍 尝试定位矛盾的公理...")
+                _find_conflicting_axioms(assertions, cleaned)
+            else:
+                print(f"   ⚠️ 求解器返回 UNKNOWN")
+                print("\n   🔍 开始深度诊断...")
+                _diagnose_unknown_result(assertions, cleaned)
+
+        except ImportError:
+            print("   ℹ️ 未安装 z3，跳过可满足性检查")
+        except Exception as e:
+            print(f"   ⚠️ 可满足性检查失败: {e}")
+            import traceback
+            traceback.print_exc()
+
+        # 返回清洗后的模板文本
+        return cleaned
+
     # 返回（可能已清洗 + 重命名的）模板文本，方便调用方更新 validator 内部缓存
+
     return cleaned
 
 
+def _analyze_assertion_complexity(assertions, template_text: str):
+    """分析公理的复杂度，帮助理解为什么求解器可能返回UNKNOWN"""
+    import z3
+
+    print("\n   📊 公理复杂度分析:")
+    print("   " + "-" * 60)
+
+    stats = {
+        'total': len(assertions),
+        'with_forall': 0,
+        'with_exists': 0,
+        'with_nested_quantifiers': 0,
+        'with_string_ops': 0,
+        'with_implications': 0,
+        'simple': 0,
+    }
+
+    complex_assertions = []  # 记录复杂公理的索引
+
+    for i, a in enumerate(assertions):
+        a_str = str(a)
+
+        has_forall = 'ForAll' in a_str or 'forall' in a_str.lower()
+        has_exists = 'Exists' in a_str or 'exists' in a_str.lower()
+
+        if has_forall:
+            stats['with_forall'] += 1
+        if has_exists:
+            stats['with_exists'] += 1
+        if has_forall and has_exists:
+            stats['with_nested_quantifiers'] += 1
+            complex_assertions.append(i)
+
+        # 检查字符串操作
+        if any(op in a_str for op in ['String', 'str.', 'Str', '\"']):
+            stats['with_string_ops'] += 1
+
+        # 检查蕴含
+        if 'Implies' in a_str or '=>' in a_str:
+            stats['with_implications'] += 1
+
+        # 简单公理（无量词）
+        if not has_forall and not has_exists:
+            stats['simple'] += 1
+
+    print(f"   总断言数:           {stats['total']}")
+    print(f"   含 ForAll:          {stats['with_forall']} ({100 * stats['with_forall'] // max(1, stats['total'])}%)")
+    print(f"   含 Exists:          {stats['with_exists']} ({100 * stats['with_exists'] // max(1, stats['total'])}%)")
+    print(f"   嵌套量词 (复杂):    {stats['with_nested_quantifiers']}")
+    print(f"   含字符串操作:       {stats['with_string_ops']}")
+    print(f"   含蕴含 (=>):        {stats['with_implications']}")
+    print(f"   简单断言 (无量词):  {stats['simple']}")
+    print("   " + "-" * 60)
+
+    # 警告
+    if stats['with_nested_quantifiers'] > 0:
+        print(f"   ⚠️ 发现 {stats['with_nested_quantifiers']} 个嵌套量词公理，这是导致 UNKNOWN 的主要原因")
+
+    if stats['with_string_ops'] > 50:
+        print(f"   ⚠️ 大量字符串操作 ({stats['with_string_ops']})，可能导致求解困难")
+
+    if stats['with_forall'] > 100:
+        print(f"   ⚠️ 大量全称量词 ({stats['with_forall']})，求解复杂度指数级增长")
+
+    return stats, complex_assertions
+
+
+def _diagnose_unknown_result(assertions, template_text: str):
+    """当求解器返回UNKNOWN时，进行深度诊断"""
+    import z3
+
+    print("\n   " + "=" * 70)
+    print("   🔬 深度诊断: 分析为什么求解器返回 UNKNOWN")
+    print("   " + "=" * 70)
+
+    # 1. 分批检查
+    print("\n   📦 阶段1: 分批检查（找出问题区域）")
+    print("   " + "-" * 60)
+
+    batch_size = 100
+    problem_batch_start = -1
+    last_sat_batch = -1
+
+    for batch_start in range(0, len(assertions), batch_size):
+        batch_end = min(batch_start + batch_size, len(assertions))
+
+        solver = z3.Solver()
+        solver.set("timeout", 15000)  # 每批15秒
+
+        # 添加从头到当前批次的所有断言
+        for a in assertions[:batch_end]:
+            solver.add(a)
+
+        result = solver.check()
+        status_icon = "✅" if result == z3.sat else ("❌" if result == z3.unsat else "❓")
+        print(f"   {status_icon} 断言 1-{batch_end}: {result}")
+
+        if result == z3.sat:
+            last_sat_batch = batch_end
+        elif result == z3.unsat:
+            print(f"   ❌ 发现矛盾！问题在断言 {last_sat_batch + 1}-{batch_end} 中")
+            problem_batch_start = last_sat_batch
+            break
+        elif result == z3.unknown:
+            print(f"   ❓ 从断言 {last_sat_batch + 1}-{batch_end} 开始变成 unknown")
+            problem_batch_start = last_sat_batch
+            break
+
+    # 2. 如果找到问题区域，进一步缩小范围
+    if problem_batch_start >= 0:
+        print(
+            f"\n   🔍 阶段2: 在断言 {problem_batch_start + 1}-{min(problem_batch_start + batch_size + 50, len(assertions))} 中精确定位")
+        print("   " + "-" * 60)
+
+        # 获取assert位置信息
+        assert_positions = _scan_assert_positions(template_text)
+
+        solver = z3.Solver()
+        solver.set("timeout", 5000)
+
+        # 添加问题区域之前的断言
+        for a in assertions[:problem_batch_start]:
+            solver.add(a)
+
+        found_problems = []
+
+        # 逐个添加问题区域的断言
+        for i in range(problem_batch_start, min(problem_batch_start + batch_size + 50, len(assertions))):
+            solver.push()
+            solver.add(assertions[i])
+
+            result = solver.check()
+
+            if result != z3.sat:
+                found_problems.append((i, result))
+
+                if len(found_problems) <= 5:  # 只显示前5个
+                    print(f"\n   {'❌' if result == z3.unsat else '❓'} 第 {i + 1} 个断言导致 {result}")
+
+                    # 显示行号和上下文
+                    if i < len(assert_positions):
+                        pos = assert_positions[i]
+                        print(f"      📍 文件位置: 第 {pos['start_line']} 行")
+                        _print_context_around_line(template_text, pos['start_line'], 2, 3)
+
+                    print(f"      Z3 表示: {str(assertions[i])[:150]}...")
+
+                solver.pop()
+                # 不添加这个有问题的断言，继续检查其他的
+            else:
+                solver.pop()
+                solver.add(assertions[i])
+
+        if len(found_problems) > 5:
+            print(f"\n   ... 还有 {len(found_problems) - 5} 个问题断言未显示")
+
+        if found_problems:
+            print(f"\n   📋 问题断言汇总 (共 {len(found_problems)} 个):")
+            for i, (idx, res) in enumerate(found_problems[:10]):
+                if idx < len(assert_positions):
+                    line = assert_positions[idx]['start_line']
+                    print(f"      - 第 {idx + 1} 个断言 (第 {line} 行): {res}")
+                else:
+                    print(f"      - 第 {idx + 1} 个断言: {res}")
+
+    # 3. 尝试不同的求解策略
+    print(f"\n   🎯 阶段3: 尝试不同的求解策略")
+    print("   " + "-" * 60)
+
+    strategies = [
+        ("默认策略", {}),
+        ("MBQI (量词实例化)", {"smt.mbqi": True, "smt.auto_config": False}),
+        ("无MBQI", {"smt.mbqi": False}),
+        ("激进量词", {"smt.qi.eager_threshold": 10}),
+        ("简化模式", {"smt.auto_config": False, "smt.mbqi": False}),
+    ]
+
+    for name, settings in strategies:
+        solver = z3.Solver()
+        solver.set("timeout", 20000)  # 20秒
+        for k, v in settings.items():
+            try:
+                solver.set(k, v)
+            except:
+                pass
+
+        for a in assertions:
+            solver.add(a)
+
+        result = solver.check()
+        status_icon = "✅" if result == z3.sat else ("❌" if result == z3.unsat else "❓")
+        print(f"   {status_icon} {name}: {result}")
+
+        if result == z3.sat:
+            print(f"   🎉 策略 '{name}' 成功！建议在代码中使用此策略")
+            break
+        elif result == z3.unsat:
+            print(f"   ❌ 策略 '{name}' 发现矛盾！模板确实有问题")
+            break
+
+    # 4. 给出建议
+    print(f"\n   💡 诊断建议:")
+    print("   " + "-" * 60)
+    print("   1. 检查上述定位到的问题公理")
+    print("   2. 简化复杂的量词公式，特别是嵌套的 ForAll + Exists")
+    print("   3. 考虑将某些复杂约束注释掉进行测试")
+    print("   4. 字符串比较约束可能导致求解困难，考虑使用枚举类型替代")
+    print("   5. 如果所有策略都是 unknown，可能模板本身没问题，只是太复杂")
+    print("   " + "=" * 70)
+
+
+def _scan_assert_positions(template_text: str):
+    """
+    扫描模板文本，找出所有 (assert ...) 语句的位置信息
+
+    Returns:
+        List of {
+            'index': int,           # 第几个assert (0-based)
+            'start_line': int,      # 起始行号 (1-based)
+            'end_line': int,        # 结束行号 (1-based)
+            'content': str,         # assert 内容（可能跨多行）
+        }
+    """
+    lines = template_text.splitlines()
+    asserts = []
+
+    i = 0
+    assert_index = 0
+
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.lstrip()
+
+        # 跳过注释和空行
+        if stripped.startswith(';') or stripped == '':
+            i += 1
+            continue
+
+        # 检查是否是 assert 开始
+        if '(assert' in stripped or stripped.startswith('(assert'):
+            start_line = i + 1  # 1-based
+
+            # 收集完整的 assert（可能跨多行）
+            content_lines = [line]
+            paren_count = line.count('(') - line.count(')')
+
+            j = i + 1
+            while paren_count > 0 and j < len(lines):
+                next_line = lines[j]
+                content_lines.append(next_line)
+                paren_count += next_line.count('(') - next_line.count(')')
+                j += 1
+
+            end_line = j  # 1-based
+            content = '\n'.join(content_lines)
+
+            asserts.append({
+                'index': assert_index,
+                'start_line': start_line,
+                'end_line': end_line,
+                'content': content,
+            })
+
+            assert_index += 1
+            i = j
+        else:
+            i += 1
+
+    return asserts
+
+
+def _print_context_around_line(template_text: str, line_no: int, context_before: int = 3, context_after: int = 5):
+    """打印指定行号周围的上下文"""
+    lines = template_text.splitlines()
+
+    start = max(0, line_no - 1 - context_before)
+    end = min(len(lines), line_no + context_after)
+
+    print(f"\n      📄 上下文 (第 {start + 1} - {end} 行):")
+    print("      " + "-" * 70)
+
+    for i in range(start, end):
+        line_num = i + 1
+        prefix = "  →→ " if line_num == line_no else "     "
+        # 截断过长的行
+        line_content = lines[i][:120]
+        if len(lines[i]) > 120:
+            line_content += "..."
+        print(f"      {prefix}{line_num:5d}: {line_content}")
+
+    print("      " + "-" * 70)
+
+
+def _find_conflicting_axioms(assertions, template_text: str = None):
+    """
+    增量添加公理，找出导致UNSAT的那个
+    新增：显示行号和上下文
+    """
+    import z3
+
+    # 扫描所有 assert 的位置
+    assert_positions = []
+    if template_text:
+        assert_positions = _scan_assert_positions(template_text)
+        print(f"   ℹ️ 模板中共有 {len(assert_positions)} 个 assert 语句")
+
+        if len(assert_positions) != len(assertions):
+            print(f"   ⚠️ 注意: 扫描到的 assert 数量 ({len(assert_positions)}) "
+                  f"与 Z3 解析的断言数量 ({len(assertions)}) 不一致")
+            print(f"   ⚠️ 行号定位可能有偏差（某些声明也被计入断言）")
+
+    solver = z3.Solver()
+    solver.set("timeout", 5000)  # 每个公理5秒超时
+
+    conflicts = []
+
+    for i, a in enumerate(assertions):
+        solver.push()
+        solver.add(a)
+
+        result = solver.check()
+        if result == z3.unsat:
+            print(f"\n   {'=' * 70}")
+            print(f"   ❌ 第 {i + 1} 个公理导致矛盾:")
+
+            # 尝试找到对应的行号
+            if i < len(assert_positions):
+                pos = assert_positions[i]
+                start_line = pos['start_line']
+                end_line = pos['end_line']
+
+                if start_line == end_line:
+                    print(f"      📍 文件位置: 第 {start_line} 行")
+                else:
+                    print(f"      📍 文件位置: 第 {start_line} - {end_line} 行")
+
+                # 打印上下文
+                if template_text:
+                    _print_context_around_line(template_text, start_line)
+
+                conflicts.append({
+                    'assertion_index': i,
+                    'start_line': start_line,
+                    'end_line': end_line,
+                })
+            else:
+                print(f"      ⚠️ 无法定位行号（断言索引超出范围）")
+
+            print(f"      Z3 表示: {str(a)[:200]}...")
+            print(f"   {'=' * 70}")
+
+            # 不回滚，继续检查是否有更多冲突
+            solver.pop()
+        else:
+            solver.pop()
+            solver.add(a)  # 保留这个公理
+
+    # 打印汇总和修复建议
+    print(f"\n   {'#' * 70}")
+    print(f"   # 冲突汇总: 发现 {len(conflicts)} 个矛盾公理")
+    print(f"   {'#' * 70}")
+
+    if conflicts:
+        print("\n   📋 矛盾公理位置列表（方便复制）:")
+        for c in conflicts:
+            print(f"      - 第 {c['start_line']} 行 (断言 #{c['assertion_index'] + 1})")
+
+        print("\n   💡 修复建议:")
+        print("   " + "-" * 70)
+        print("   1. 打开 SMT 模板文件，定位到上述行号")
+        print("   2. 如果是枚举值约束（如 roleValue == 'X'），合并为 OR 形式:")
+        print("      ")
+        print("      ❌ 错误写法（每个值一个公理，互相矛盾）:")
+        print("         (assert (forall (r) (=> cond (= (f r) \"A\"))))")
+        print("         (assert (forall (r) (=> cond (= (f r) \"B\"))))")
+        print("      ")
+        print("      ✅ 正确写法（合并为 OR）:")
+        print("         (assert (forall (r) (=> cond (or (= (f r) \"A\")")
+        print("                                         (= (f r) \"B\")))))")
+        print("      ")
+        print("   3. 或者临时注释掉冲突的公理进行测试:")
+        print("      ; (assert ...冲突的公理...)")
+        print("   " + "-" * 70)
+    else:
+        print("\n   ✅ 未检测到具体的单个矛盾公理")
+        print("   💡 可能是多个公理组合导致矛盾，需要人工分析")
+
+
 def _print_error_context_from_smt_script(
-    smt_script: str,
-    error_msg: str,
-    context_lines: int = 3,
+        smt_script: str,
+        error_msg: str,
+        context_lines: int = 3,
 ) -> None:
     """
     从 Z3 的错误信息中提取 "line N"，
@@ -336,9 +777,9 @@ def _print_error_context_from_smt_script(
 
 
 def diagnose_smt(
-    smt_template_file: Path,
-    mapping_file: Optional[Path],
-    arxml_file: Optional[Path],
+        smt_template_file: Path,
+        mapping_file: Optional[Path],
+        arxml_file: Optional[Path],
 ):
     print("=" * 80)
     print("🔍 SMT 模板 & 映射诊断工具")
