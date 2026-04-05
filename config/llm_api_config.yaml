@@ -1,8 +1,8 @@
 # ===== LLM API 配置 =====
 llm:
-  model_name: "gpt-5.1"        # Gemini模型名称
-  llm_api_url: "https://api.openai-proxy.org/v1" # API代理地址
-  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
+  model_name: "gpt-5"        # Gemini模型名称
+  llm_api_url: "" # API代理地址
+  api_key: ""  # API密钥
   temperature: 0.2                                   # 生成温度参数
   max_output_tokens: 128000                     # 提升到100K - 利用Gemini长输出能力
   max_context_tokens: 400000                      # 提升到2M - Gemini支持2M上下文
@@ -29,9 +29,9 @@ memory:
 
 # ===== 知识图谱配置 =====
 knowledge_graph:
-  neo4j_uri: "neo4j://127.0.0.1:7687"              # Neo4j数据库连接URI
-  neo4j_password: "542394665"                       # Neo4j密码
-  neo4j_user: "neo4j"
+  neo4j_uri: ""              # Neo4j数据库连接URI
+  neo4j_password: ""                       # Neo4j密码
+  neo4j_user: ""
   max_safety_depth: 100                            # 提升安全深度，允许更深的Schema
 
 # ===== 约束引擎配置 =====
@@ -67,7 +67,7 @@ schema_generation:
     max_properties_per_object: 5000                 # 允许更多属性
     parallel_query: true                            # 启用并行查询
 
-# ===== 生成策略配置（核心优化） =====
+# ===== 生成策略配置 ======
 generation:
   single_batch_threshold: 25                        # 大幅提升到25个组件
   max_batch_size: 15                               # 增大单批最大容量
@@ -76,7 +76,7 @@ generation:
   enable_direct_reference: true                     # 新增：启用直接引用模式
   max_schema_injection_depth: 100                    # 新增：Schema注入深度
 
-# ===== 语义解析配置（简化） =====
+# ===== 语义解析配置= =====
 semantic_resolution:
   # 简化语义解析，因为不再主要依赖语义占位符
   enabled: false                                    # 默认关闭语义解析
@@ -466,7 +466,7 @@ round1_schema:
       required_fields: ["name", "type"]  # type必须是allowed_types之一
       optional_fields: ["is_service", "connected_components"]
 
-# 元模型注入配置（大幅增强）
+# 元模型注入配置
 metamodel_injection:
   round1_depth: 3                                  # Round1也注入更多信息
   round2_depth: 15                                 # 大幅增加Round2深度
@@ -476,7 +476,7 @@ metamodel_injection:
   include_all_children: true                       # 新增：包含所有子元素
   max_element_expansion: 1000                      # 新增：最大元素展开数
 
-# ===== 批处理优化配置（新增） =====
+# ===== 批处理优化配置 =====
 batch_optimization:
   enable_intelligent_grouping: true                # 智能分组
   prefer_single_batch: true                        # 优先单批生成
@@ -582,3 +582,5 @@ terminology:
 # ===== 系统配置 =====
 debug_mode: true
 output_dir: "src/llm_generation/output"
+
+

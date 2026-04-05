@@ -27,9 +27,9 @@ _DEFAULT_CFG: dict[str, Any] = {
     # 图后端
     "graph_backend": "neo4j",
     "neo4j": {
-        "uri": "neo4j://127.0.0.1:7687",
-        "user": "neo4j",
-        "password": "542394665"
+        "uri": "",
+        "user": "",
+        "password": ""
     },
     # 输入数据
     # "metadata_path": "data/unified_metadata.json",
