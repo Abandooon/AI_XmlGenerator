@@ -1,56 +1,53 @@
 {
-  "Sensor_Data_Interface_RadarCamera": {
-    "SHORT-NAME": "Sensor_Data_Interface_RadarCamera",
-    "IS-SERVICE": "false",
-    "DATA-ELEMENTS": {
+  "DOOR_STATUS_INTERFACE": {
+    "SHORT-NAME": "DOOR_STATUS_INTERFACE",
+    "IS-SERVICE": "true",
+    "OPERATIONS": {
+      "CLIENT-SERVER-OPERATION": [
+        {
+          "SHORT-NAME": "READ_DOOR_STATUS"
+        }
+      ]
+    },
+    "_type": "CLIENT-SERVER-INTERFACE"
+  },
+  "ENVIRONMENT_INTERFACE": {
+    "SHORT-NAME": "ENVIRONMENT_INTERFACE",
+    "IS-SERVICE": "true",
+    "NV-DATAS": {
       "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "RadarData",
+          "SHORT-NAME": "ENVIRONMENT_DATA",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/RadarData"
+            "@DEST": "APPLICATION-DATA-TYPE",
+            "#text": "ENVIRONMENT_DATA_TYPE"
+          }
+        }
+      ]
+    },
+    "_type": "NV-DATA-INTERFACE"
+  },
+  "User_Preferences_Interface": {
+    "SHORT-NAME": "User_Preferences_Interface",
+    "IS-SERVICE": "true",
+    "PARAMETERS": {
+      "PARAMETER-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "BRIGHTNESS_PRESET",
+          "TYPE-TREF": {
+            "@DEST": "APPLICATION-DATA-TYPE",
+            "#text": "BRIGHTNESS_PRESET_TYPE"
           }
         },
         {
-          "SHORT-NAME": "CameraImageData",
+          "SHORT-NAME": "PREFERRED_MODE",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/CameraImageData"
-          }
-        },
-        {
-          "SHORT-NAME": "Timestamp",
-          "TYPE-TREF": {
-            "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/Timestamp"
+            "@DEST": "APPLICATION-DATA-TYPE",
+            "#text": "PREFERRED_MODE_TYPE"
           }
         }
       ]
     },
-    "_type": "SENDER-RECEIVER-INTERFACE"
-  },
-  "Actuation_Command_Interface": {
-    "SHORT-NAME": "Actuation_Command_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
-        {
-          "SHORT-NAME": "SubmitActuationCommand"
-        }
-      ]
-    },
-    "_type": "CLIENT-SERVER-INTERFACE"
-  },
-  "HMI_Status_Interface": {
-    "SHORT-NAME": "HMI_Status_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
-        {
-          "SHORT-NAME": "RequestSystemStatus"
-        }
-      ]
-    },
-    "_type": "CLIENT-SERVER-INTERFACE"
+    "_type": "PARAMETER-INTERFACE"
   }
 }
