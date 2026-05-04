@@ -1,0 +1,831 @@
+你是 AUTOSAR XML 生成专家。仅生成一个组件的 JSON 实例（严格遵守下方"组件 JSON Schema"）。不得输出接口对象。
+            当前是 Round2 的软件组件实例生成任务，你应该根据下面的 Round1 设计上下文，生成当前软件组件的完整定义，并且生成内容和格式要严格匹配"组件 JSON Schema"。
+
+            组件：Interface_Proxy_Component（类型：SERVICE-PROXY-SW-COMPONENT-TYPE）
+
+
+
+            ## AUTOSAR 组件封装原则（严格遵守）
+
+            **关键规则：组件内部行为只能引用本组件自己的运行时元素**
+
+            1. **事件启动约束**：
+               - 所有 EVENT 的 START-ON-EVENT-REF 必须且只能引用【本组件 Interface_Proxy_Component】的 RUNNABLE-ENTITY
+
+               **路径构造规则**：
+               - 格式：/Components/Interface_Proxy_Component/{Runnable名称}
+               - 示例（正确）：
+                 * /Components/Interface_Proxy_Component/Init_Runnable
+                 * /Components/Interface_Proxy_Component/Control_Process_Runnable
+                 * /Components/Interface_Proxy_Component/Periodic_Task_100ms
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomeRunnable  （引用了其他组件）
+                 * ❌ /Components/Interface_Proxy_Component/Internal/SubRunnable  （路径层级错误）
+
+            2. **端口访问约束**：
+               - DATA-SEND-POINTS / DATA-RECEIVE-POINT-BY-ARGUMENTS / DATA-READ-ACCESSS 中的 PORT-PROTOTYPE-REF 必须指向【本组件 Interface_Proxy_Component】的端口
+
+               **路径构造规则**：
+               - 格式：/Components/Interface_Proxy_Component/{端口名称}
+               - 示例（正确）：
+                 * /Components/Interface_Proxy_Component/P_Port_Status
+                 * /Components/Interface_Proxy_Component/R_Port_TempSensor
+                 * /Components/Interface_Proxy_Component/PR_Port_ServiceInterface
+               - 示例（错误）：
+                 * ❌ /Components/OtherComponent/SomePort  （引用了其他组件的端口）
+                 * ❌ /Components/Interface_Proxy_Component/Ports/P_Port_Status  （多了Ports容器层级）
+
+            3. **服务调用约束**：
+               - SERVER-CALL-POINTS 中的 CONTEXT-R-PORT-REF / CONTEXT-P-PORT-REF 必须是【本组件 Interface_Proxy_Component】的端口
+               - 路径格式同上（端口访问）
+
+            4. **数据元素引用**（可跨组件）：
+               - TARGET-DATA-PROTOTYPE-REF 可以引用任何接口中的数据元素
+               - 这些路径在Schema的enum中已经为您列出，请直接选择使用
+
+               **路径格式**：
+               - 格式：/Interfaces/{接口名}/{数据元素名}
+               - 示例：
+                 * /Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp
+                 * /Interfaces/CAN_Setting_Interface/Requested_Level_Left
+
+            **特别注意**：
+            - 对于本组件的端口和Runnable引用，Schema中**没有提供enum列表**（因为生成时尚未创建）
+            - 您需要根据Round1设计中的端口和Runnable名称，**手动构造正确的路径**
+            - 路径必须严格遵循格式：/Components/Interface_Proxy_Component/{元素名}，不要添加额外的层级
+
+            **为什么有这些限制？**
+            组件间的通信和触发必须通过端口连接间接实现，而不是直接引用。这是AUTOSAR确保组件可复用性和独立性的核心机制。
+            跨组件的数据流由RTE根据端口连接（AssemblyConnector）在系统组合层面建立，而不是在组件定义层面硬编码。
+
+            **如何正确实现跨组件通信？**
+            - 组件A要触发组件B的行为：A通过自己的P-Port发送数据 → RTE传递 → B的DataReceivedEvent触发B的Runnable
+            - 组件A要访问组件B的数据：A通过自己的R-Port读取 → RTE从B的P-Port获取数据
+            - 组件A要调用组件B的服务：A通过自己的R-Port调用 → RTE路由到B的P-Port实现的服务
+
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "系统通过传感器采集门状态与环境信息，使用Ambient_Light_Controller进行数据汇聚和决策，并将控制信号下发给 Lighting_Driver；UI/配置通过 Interface_Proxy 与 User_Preferences_Component 实现自定义参数化；NV_Block 提供环境数据的持久化与回放能力，确保可追溯性与可配置性",
+  "data_flow_analysis": "Door_Sensor_Component 与 Occupancy_Sensor_Component 产生原始事件与状态，Environment_NV_Block_Component 提供环境数据，User_Preferences_Component 提供用户偏好。Ambient_Light_Controller 作为中心协调节点，汇聚各输入数据，计算亮度与模式后通过 Lighting_Driver_Component 实现灯光控制；Interface_Proxy_Component 与 UI_Manager_Component 提供参数交互与UI驱动，RTE 实现跨组件通信",
+  "timing_requirements": "Door_STATUS 更新周期约100ms，环境数据刷新1s，用户偏好更新1s，控制指令下发到驱动的端到端延迟应小于50ms",
+  "scalability_considerations": "通过增加新的传感器/驱动组件即可水平扩展，接口定义统一，RTE 端口复用，环境数据存储通过 NV_Block 以实现长期累积与回放",
+  "complexity_assessment": "Medium"
+}
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "DOOR_SENSOR_Component -> Ambient_Light_Controller via DoorStatusInterface; Occupancy_Sensor_Component -> Ambient_Light_Controller via DoorStatusInterface; Environment_NV_Block_Component -> Ambient_Light_Controller via EnvironmentInterface; User_Preferences_Component -> Ambient_Light_Controller via UserPrefInterface; Interface_Proxy_Component mediates UI_Manager_Component -> Ambient_Light_Controller",
+  "data_flow_paths": "DOOR_STATUS -> Ambient_Light_Controller -> LIGHTING_DRIVER_COMPONENT; ENVIRONMENT_DATA -> Ambient_Light_Controller -> LIGHTING_DRIVER_COMPONENT; USER_PREFERENCES -> Ambient_Light_Controller -> LIGHTING_DRIVER_COMPONENT",
+  "control_flow_paths": "RTE负责数据路由与时序控制，Ambient_Light_Controller输出控制信号至 Lighting_Driver_Component，通过 Interface_Proxy 转发 UI 变更"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "DOOR_STATUS_INTERFACE",
+    "name": "DoorStatusInterface",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "communication_pattern": "SENDER-RECEIVER with periodic updates",
+    "data_category": "DOOR_STATUS",
+    "connected_components": [
+      "Door_Sensor_Component",
+      "Ambient_Light_Controller"
+    ],
+    "performance_requirements": "≤100ms latency",
+    "data_elements": [
+      "DOOR_STATUS"
+    ],
+    "direct_paths": "RTE"
+  },
+  {
+    "interface_id": "ENVIRONMENT_INTERFACE",
+    "name": "EnvironmentInterface",
+    "type": "NV-DATA-INTERFACE",
+    "communication_pattern": "NV data exchange on environment events",
+    "data_category": "ENVIRONMENT",
+    "connected_components": [
+      "Environment_NV_Block_Component",
+      "Ambient_Light_Controller"
+    ],
+    "performance_requirements": "1s",
+    "data_elements": [
+      "ENVIRONMENT_DATA"
+    ],
+    "direct_paths": "RTE_NV"
+  },
+  {
+    "interface_id": "USER_PREF_INTERFACE",
+    "name": "UserPreferencesInterface",
+    "type": "PARAMETER-INTERFACE",
+    "communication_pattern": "Synchronous request/response",
+    "data_category": "USER_PREFERENCES",
+    "connected_components": [
+      "User_Preferences_Component",
+      "Ambient_Light_Controller"
+    ],
+    "performance_requirements": "1s",
+    "data_elements": [
+      "BRIGHTNESS_PRESET",
+      "PREFERRED_MODE"
+    ],
+    "direct_paths": "RTE"
+  }
+]
+            ```
+            接口实例索引（只读，用于端口的 *-INTERFACE-TREF 引用；不要新增接口对象）
+            ```json
+            [
+  {
+    "name": "DOOR_STATUS_INTERFACE",
+    "type": "CLIENT-SERVER-INTERFACE",
+    "path": "/Interfaces/DOOR_STATUS_INTERFACE"
+  },
+  {
+    "name": "READ_DOOR_STATUS",
+    "type": "CLIENT-SERVER-OPERATION",
+    "path": "/Interfaces/DOOR_STATUS_INTERFACE/READ_DOOR_STATUS"
+  },
+  {
+    "name": "ENVIRONMENT_INTERFACE",
+    "type": "NV-DATA-INTERFACE",
+    "path": "/Interfaces/ENVIRONMENT_INTERFACE"
+  },
+  {
+    "name": "ENVIRONMENT_DATA",
+    "type": "VARIABLE-DATA-PROTOTYPE",
+    "path": "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA"
+  },
+  {
+    "name": "User_Preferences_Interface",
+    "type": "PARAMETER-INTERFACE",
+    "path": "/Interfaces/User_Preferences_Interface"
+  },
+  {
+    "name": "BRIGHTNESS_PRESET",
+    "type": "PARAMETER-DATA-PROTOTYPE",
+    "path": "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+  },
+  {
+    "name": "PREFERRED_MODE",
+    "type": "PARAMETER-DATA-PROTOTYPE",
+    "path": "/Interfaces/User_Preferences_Interface/PREFERRED_MODE"
+  }
+]
+            ```
+
+            ## 已生成的实例路径参考 (用于 *-REF 字段)
+            以下是先前组件中已生成的、可供您引用的实例路径。请在填写引用字段时优先使用这些路径。
+            ```
+              # 类型: CLIENT-SERVER-INTERFACE
+  - /Interfaces/DOOR_STATUS_INTERFACE
+  # 类型: CLIENT-SERVER-OPERATION
+  - /Interfaces/DOOR_STATUS_INTERFACE/READ_DOOR_STATUS
+  # 类型: NV-DATA-INTERFACE
+  - /Interfaces/ENVIRONMENT_INTERFACE
+  # 类型: VARIABLE-DATA-PROTOTYPE
+  - /Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA
+  # 类型: PARAMETER-INTERFACE
+  - /Interfaces/User_Preferences_Interface
+  # 类型: PARAMETER-DATA-PROTOTYPE
+  - /Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET
+  - /Interfaces/User_Preferences_Interface/PREFERRED_MODE
+  # 类型: SENSOR-ACTUATOR-SW-COMPONENT-TYPE
+  - /Components/Door_Sensor_Component
+  - /Components/Occupancy_Sensor_Component
+  # 类型: P-PORT-PROTOTYPE
+  - /Components/Door_Sensor_Component/P_Port_Status
+  - /Components/Occupancy_Sensor_Component/P_Port_Occupancy_Status
+  - /Components/Environment_NV_Block_Component/P_Port_Environment_In
+  - /Components/Environment_NV_Block_Component/P_Port_Environment_Out
+  - /Components/User_Preferences_Component/P_Port_UserPref_Input
+  - /Components/User_Preferences_Component/P_Port_UserPref_Output
+  - /Components/Ambient_Light_Controller/P_Port_Status
+  - /Components/Ambient_Light_Controller/P_Port_Environment_Data
+  - /Components/Ambient_Light_Controller/P_Port_Control_Signal
+  - /Components/Lighting_Driver_Component/P_Port_Control_Signal
+  # 类型: SWC-INTERNAL-BEHAVIOR
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior
+  - /Components/Environment_NV_Block_Component/Environment_NV_Block_Behavior
+  - /Components/User_Preferences_Component/User_Preferences_Behavior
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior
+  - /Components/Lighting_Driver_Component/Lighting_Driver_Component_Behavior
+  # 类型: RUNNABLE-ENTITY
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior/DoorState_Runnable
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior/Occupancy_Runnable
+  - /Components/Environment_NV_Block_Component/Environment_NV_Block_Behavior/EnvData_Runnable
+  - /Components/User_Preferences_Component/User_Preferences_Behavior/UserPref_Runnable
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Ambient_Control_Runnable
+  - /Components/Lighting_Driver_Component/Lighting_Driver_Component_Behavior/Lighting_Driver_Runnable
+  # 类型: VARIABLE-ACCESS
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior/DoorState_Runnable/DoorStatus_Receive
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior/DoorState_Runnable/DoorStatus_Send
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior/Occupancy_Runnable/OCCUPANCY_INPUT
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior/Occupancy_Runnable/OCCUPANCY_OUTPUT
+  - /Components/Environment_NV_Block_Component/Environment_NV_Block_Behavior/EnvData_Runnable/ENV_Input
+  - /Components/Environment_NV_Block_Component/Environment_NV_Block_Behavior/EnvData_Runnable/ENV_Output
+  - /Components/User_Preferences_Component/User_Preferences_Behavior/UserPref_Runnable/Read_BR_Preset
+  - /Components/User_Preferences_Component/User_Preferences_Behavior/UserPref_Runnable/Send_Brightness_Preset
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Ambient_Control_Runnable/DoorStatus_Read
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Ambient_Control_Runnable/EnvData_Read
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Ambient_Control_Runnable/Control_Signal_Send
+  - /Components/Lighting_Driver_Component/Lighting_Driver_Component_Behavior/Lighting_Driver_Runnable/ControlInput
+  - /Components/Lighting_Driver_Component/Lighting_Driver_Component_Behavior/Lighting_Driver_Runnable/LightStatusOutput
+  # 类型: INIT-EVENT
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior/Init_E
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior/Init_E
+  - /Components/Environment_NV_Block_Component/Environment_NV_Block_Behavior/Init_E
+  - /Components/User_Preferences_Component/User_Preferences_Behavior/Init_E
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Init_E
+  - /Components/Lighting_Driver_Component/Lighting_Driver_Component_Behavior/Init_E
+  # 类型: TIMING-EVENT
+  - /Components/Door_Sensor_Component/Door_Sensor_Behavior/Sample_Tick
+  - /Components/Occupancy_Sensor_Component/Occupancy_Sensor_Behavior/Sample_Tick
+  - /Components/Ambient_Light_Controller/Ambient_Light_Controller_Behavior/Sample_Tick
+  # 类型: NV-BLOCK-SW-COMPONENT-TYPE
+  - /Components/Environment_NV_Block_Component
+  # 类型: PARAMETER-SW-COMPONENT-TYPE
+  - /Components/User_Preferences_Component
+  # 类型: APPLICATION-SW-COMPONENT-TYPE
+  - /Components/Ambient_Light_Controller
+  # 类型: ECU-ABSTRACTION-SW-COMPONENT-TYPE
+  - /Components/Lighting_Driver_Component
+  # 类型: R-PORT-PROTOTYPE
+  - /Components/Lighting_Driver_Component/R_Port_Light_Status
+            ```
+
+            Round1 组件设计Schema（完整的 component_plan 条目）
+            ```json
+            {
+  "component_id": "INTERFACE_PROXY_COMPONENT",
+  "name": "Interface_Proxy_Component",
+  "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+  "purpose": "RTE 代理，连接 UI/偏好与 Ambient_Light_Controller 等接口",
+  "estimated_complexity": "Simple",
+  "port_estimates": {
+    "input_ports": "1",
+    "output_ports": "1"
+  },
+  "behavioral_characteristics": "实现跨组件数据路由与协议适配",
+  "element_design": {
+    "ports": {
+      "needed": true,
+      "types": [
+        "P-PORT-PROTOTYPE"
+      ],
+      "details": "代理端口"
+    },
+    "internal_behaviors": {
+      "needed": true,
+      "events": [
+        {
+          "type": "INIT-EVENT",
+          "name": "Init_E",
+          "trigger": "Startup"
+        }
+      ],
+      "runnables": [
+        {
+          "name": "Proxy_Runnable",
+          "elements": [
+            {
+              "key": "DATA-RECEIVE-POINT-BY-VALUES",
+              "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "接收来自 UI 的偏好更新"
+                }
+              ],
+              "notes": "接收UI数据"
+            },
+            {
+              "key": "DATA-SEND-POINTS",
+              "wrapper": "DATA-SEND-POINTS",
+              "preselect": [
+                {
+                  "of": "ACCESSED-VARIABLE",
+                  "variant": "AUTOSAR-VARIABLE-IREF",
+                  "include": [
+                    "PORT-PROTOTYPE-REF",
+                    "TARGET-DATA-PROTOTYPE-REF"
+                  ],
+                  "notes": "向 Ambient_Light_Controller 发送偏好更新"
+                }
+              ],
+              "notes": "转发偏好更新"
+            }
+          ],
+          "notes": "接口代理"
+        }
+      ]
+    }
+  },
+  "direct_references": [
+    "UI_PREF_IREF"
+  ]
+}
+            ```
+            组件 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SERVICE-PROXY-SW-COMPONENT-TYPE": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SHORT-NAME": {
+          "type": "string",
+          "examples": [
+            "Interface_Proxy_Component"
+          ],
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+        },
+        "PORTS": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "P-PORT-PROTOTYPE": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "PROVIDED-INTERFACE-TREF": {
+                    "type": "object",
+                    "properties": {
+                      "@DEST": {
+                        "type": "string",
+                        "enum": [
+                          "CLIENT-SERVER-INTERFACE",
+                          "DATA-INTERFACE",
+                          "MODE-SWITCH-INTERFACE",
+                          "NV-DATA-INTERFACE",
+                          "PARAMETER-INTERFACE",
+                          "PORT-INTERFACE",
+                          "SENDER-RECEIVER-INTERFACE",
+                          "TRIGGER-INTERFACE"
+                        ]
+                      },
+                      "#text": {
+                        "type": "string",
+                        "enum": [
+                          "/Interfaces/DOOR_STATUS_INTERFACE",
+                          "/Interfaces/ENVIRONMENT_INTERFACE",
+                          "/Interfaces/User_Preferences_Interface"
+                        ],
+                        "examples": [
+                          "/Interfaces/DOOR_STATUS_INTERFACE"
+                        ],
+                        "x-scope": "global_type",
+                        "x-filter-info": "从3个候选路径过滤到3个"
+                      }
+                    },
+                    "required": [
+                      "#text",
+                      "@DEST"
+                    ],
+                    "x-xml-tag": "PROVIDED-INTERFACE-TREF",
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "SHORT-NAME",
+                  "PROVIDED-INTERFACE-TREF"
+                ]
+              },
+              "x-xml-tag": "P-PORT-PROTOTYPE"
+            }
+          },
+          "x-xml-tag": "PORTS",
+          "required": [
+            "P-PORT-PROTOTYPE"
+          ]
+        },
+        "SWC-INTERNAL-BEHAVIOR": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SHORT-NAME": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+              "description": "Identifier must start with a letter, and can only contain letters, numbers, and underscores (_). Hyphens (-) are not allowed."
+            },
+            "SUPPORTS-MULTIPLE-INSTANTIATION": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "Indicates whether the component supports multiple instantiation. Required by AUTOSAR standard (TPS_SWCT_01361)."
+            },
+            "HANDLE-TERMINATION-AND-RESTART": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "Indicates whether the component handles termination and restart. Required by AUTOSAR standard."
+            },
+            "RUNNABLE-ENTITY": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "SHORT-NAME": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SHORT-NAME"
+                  },
+                  "MINIMUM-START-INTERVAL": {
+                    "type": "number",
+                    "x-xml-tag": "MINIMUM-START-INTERVAL"
+                  },
+                  "CAN-BE-INVOKED-CONCURRENTLY": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "pattern": "0|1|true|false",
+                    "x-xml-tag": "CAN-BE-INVOKED-CONCURRENTLY"
+                  },
+                  "DATA-RECEIVE-POINT-BY-VALUES": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Interface_Proxy_Component/.*$",
+                                          "description": "必须引用本组件(Interface_Proxy_Component)的实例。路径格式：/Components/Interface_Proxy_Component/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA",
+                                            "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET",
+                                            "/Interfaces/User_Preferences_Interface/PREFERRED_MODE"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从3个候选路径过滤到3个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "DATA-SEND-POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "VARIABLE-ACCESS": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "SHORT-NAME": {
+                              "type": "string",
+                              "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                              "x-xml-tag": "SHORT-NAME"
+                            },
+                            "ACCESSED-VARIABLE": {
+                              "type": "object",
+                              "properties": {
+                                "AUTOSAR-VARIABLE-IREF": {
+                                  "type": "object",
+                                  "properties": {
+                                    "PORT-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "ABSTRACT-PROVIDED-PORT-PROTOTYPE",
+                                            "ABSTRACT-REQUIRED-PORT-PROTOTYPE",
+                                            "P-PORT-PROTOTYPE",
+                                            "PORT-PROTOTYPE",
+                                            "PR-PORT-PROTOTYPE",
+                                            "R-PORT-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "pattern": "^/Components/Interface_Proxy_Component/.*$",
+                                          "description": "必须引用本组件(Interface_Proxy_Component)的实例。路径格式：/Components/Interface_Proxy_Component/{元素名称}",
+                                          "x-scope": "component_local",
+                                          "x-constraint-type": "pattern (component_local)"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "PORT-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    },
+                                    "TARGET-DATA-PROTOTYPE-REF": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@DEST": {
+                                          "type": "string",
+                                          "enum": [
+                                            "APPLICATION-ARRAY-ELEMENT",
+                                            "APPLICATION-COMPOSITE-ELEMENT-DATA-PROTOTYPE",
+                                            "APPLICATION-RECORD-ELEMENT",
+                                            "ARGUMENT-DATA-PROTOTYPE",
+                                            "AUTOSAR-DATA-PROTOTYPE",
+                                            "DATA-PROTOTYPE",
+                                            "PARAMETER-DATA-PROTOTYPE",
+                                            "VARIABLE-DATA-PROTOTYPE"
+                                          ]
+                                        },
+                                        "#text": {
+                                          "type": "string",
+                                          "enum": [
+                                            "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA",
+                                            "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET",
+                                            "/Interfaces/User_Preferences_Interface/PREFERRED_MODE"
+                                          ],
+                                          "examples": [
+                                            "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                                          ],
+                                          "x-scope": "interface_element",
+                                          "x-filter-info": "从3个候选路径过滤到3个"
+                                        }
+                                      },
+                                      "required": [
+                                        "#text",
+                                        "@DEST"
+                                      ],
+                                      "x-xml-tag": "TARGET-DATA-PROTOTYPE-REF",
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "PORT-PROTOTYPE-REF",
+                                    "TARGET-DATA-PROTOTYPE-REF"
+                                  ],
+                                  "x-xml-tag": "AUTOSAR-VARIABLE-IREF"
+                                }
+                              },
+                              "additionalProperties": false,
+                              "x-xml-tag": "ACCESSED-VARIABLE",
+                              "required": [
+                                "AUTOSAR-VARIABLE-IREF"
+                              ]
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "SHORT-NAME",
+                            "ACCESSED-VARIABLE"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "VARIABLE-ACCESS"
+                    ]
+                  },
+                  "SYMBOL": {
+                    "type": "string",
+                    "pattern": "[a-zA-Z_][a-zA-Z0-9_]*",
+                    "x-xml-tag": "SYMBOL"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "CAN-BE-INVOKED-CONCURRENTLY",
+                  "DATA-RECEIVE-POINT-BY-VALUES",
+                  "DATA-SEND-POINTS",
+                  "MINIMUM-START-INTERVAL",
+                  "SHORT-NAME",
+                  "SYMBOL"
+                ]
+              }
+            },
+            "EVENTS": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "INIT-EVENT": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "SHORT-NAME": {
+                        "type": "string",
+                        "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                        "x-xml-tag": "SHORT-NAME"
+                      },
+                      "START-ON-EVENT-REF": {
+                        "type": "object",
+                        "properties": {
+                          "@DEST": {
+                            "type": "string",
+                            "enum": [
+                              "RUNNABLE-ENTITY"
+                            ]
+                          },
+                          "#text": {
+                            "type": "string",
+                            "pattern": "^/Components/Interface_Proxy_Component/.*$",
+                            "description": "必须引用本组件(Interface_Proxy_Component)的实例。路径格式：/Components/Interface_Proxy_Component/{元素名称}",
+                            "x-scope": "component_local",
+                            "x-constraint-type": "pattern (component_local)"
+                          }
+                        },
+                        "required": [
+                          "#text",
+                          "@DEST"
+                        ],
+                        "x-xml-tag": "START-ON-EVENT-REF",
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "SHORT-NAME",
+                      "START-ON-EVENT-REF"
+                    ]
+                  },
+                  "x-xml-tag": "INIT-EVENT"
+                }
+              },
+              "x-xml-tag": "EVENTS",
+              "required": [
+                "INIT-EVENT"
+              ]
+            }
+          },
+          "required": [
+            "EVENTS",
+            "HANDLE-TERMINATION-AND-RESTART",
+            "RUNNABLE-ENTITY",
+            "SHORT-NAME",
+            "SUPPORTS-MULTIPLE-INSTANTIATION"
+          ]
+        }
+      },
+      "required": [
+        "PORTS",
+        "SHORT-NAME",
+        "SWC-INTERNAL-BEHAVIOR"
+      ]
+    }
+  },
+  "required": [
+    "SERVICE-PROXY-SW-COMPONENT-TYPE"
+  ]
+}
+            ```
+            生成规则
+            顶层只包含 SERVICE-PROXY-SW-COMPONENT-TYPE（组件类型名）。
+            在该对象内部的 SHORT-NAME 写入组件实例名：Interface_Proxy_Component。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+
+            **引用路径填写规则**（重要）：
+            所有 *REF 字段为对象，包含 @DEST 与 #text 两个字段：
+            - @DEST：引用目标的类型（从Schema的enum中选择）
+            - #text：引用目标的路径（AUTOSAR绝对路径）
+
+            **路径填写策略**：
+            1. 如果Schema的#text字段有enum列表 → 从enum中选择一个路径
+            2. 如果Schema的#text字段没有enum（通常是本组件引用）→ 手动构造路径
+               - 格式：/Components/Interface_Proxy_Component/{元素名}
+               - 元素名从Round1设计的element_design中获取
+
+            示例（正确）：
+            ```json
+            {
+              "START-ON-EVENT-REF": {
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/Components/Interface_Proxy_Component/Control_Process_Runnable"
+              },
+              "PORT-PROTOTYPE-REF": {
+                "@DEST": "R-PORT-PROTOTYPE",
+                "#text": "/Components/Interface_Proxy_Component/R_Port_TempSR"
+              },
+              "TARGET-DATA-PROTOTYPE-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/Interfaces/TempSR_Interface/SeatLeft_Sensor1_Temp"
+              }
+            }
+            ```
+
+            注意数值填写不要加ms单位，true、false用小写。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## 引用路径规范
+所有 *-REF 必须使用完整的绝对路径，不允许语义化描述。
+- 组件路径示例：/Components/<ComponentShortName>
+- 端口路径示例：/Components/<ComponentShortName>/Ports/<PortName>
+- 接口路径示例：/Interfaces/<InterfaceShortName>

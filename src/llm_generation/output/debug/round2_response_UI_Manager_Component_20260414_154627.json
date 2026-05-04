@@ -1,0 +1,66 @@
+{
+  "SERVICE-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "UI_Manager_Component",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_UserPref_Input",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "PARAMETER-INTERFACE",
+            "#text": "/Interfaces/User_Preferences_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "UI_Manager_Behavior",
+      "SUPPORTS-MULTIPLE-INSTANTIATION": "false",
+      "HANDLE-TERMINATION-AND-RESTART": "true",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "UI_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-READ-ACCESSS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ENV_Read",
+                "ACCESSED-VARIABLE": {
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA"
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "UI_Pref_Send",
+                "ACCESSED-VARIABLE": {
+                  "LOCAL-VARIABLE-REF": {
+                    "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                    "#text": "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA"
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "UI_PREF_Send_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_E",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/UI_Manager_Component/UI_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

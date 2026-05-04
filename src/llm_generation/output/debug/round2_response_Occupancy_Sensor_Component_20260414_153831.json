@@ -1,0 +1,88 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Occupancy_Sensor_Component",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_Occupancy_Status",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "NV-DATA-INTERFACE",
+            "#text": "/Interfaces/ENVIRONMENT_INTERFACE"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Occupancy_Sensor_Behavior",
+      "SUPPORTS-MULTIPLE-INSTANTIATION": "false",
+      "HANDLE-TERMINATION-AND-RESTART": "true",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Occupancy_Runnable",
+          "MINIMUM-START-INTERVAL": 100,
+          "CAN-BE-INVOKED-CONCURRENTLY": "true",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "OCCUPANCY_INPUT",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Occupancy_Sensor_Component/P_Port_Occupancy_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "OCCUPANCY_OUTPUT",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Occupancy_Sensor_Component/R_Port_Occupancy_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/ENVIRONMENT_INTERFACE/ENVIRONMENT_DATA"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "OCCUPANCY_STATUS_IREF"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_E",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Occupancy_Sensor_Component/Occupancy_Runnable"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Sample_Tick",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Occupancy_Sensor_Component/Occupancy_Runnable"
+            },
+            "PERIOD": 1000
+          }
+        ]
+      }
+    }
+  }
+}

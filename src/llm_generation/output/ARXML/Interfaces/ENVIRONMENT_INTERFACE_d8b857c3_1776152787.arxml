@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Interfaces</SHORT-NAME>
+      <ELEMENTS>
+        <NV-DATA-INTERFACE>
+          <SHORT-NAME>ENVIRONMENT_INTERFACE</SHORT-NAME>
+          <IS-SERVICE>true</IS-SERVICE>
+          <NV-DATAS>
+            <VARIABLE-DATA-PROTOTYPE>
+              <SHORT-NAME>ENVIRONMENT_DATA</SHORT-NAME>
+              <TYPE-TREF DEST="APPLICATION-DATA-TYPE">ENVIRONMENT_DATA_TYPE</TYPE-TREF>
+            </VARIABLE-DATA-PROTOTYPE>
+          </NV-DATAS>
+        </NV-DATA-INTERFACE>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

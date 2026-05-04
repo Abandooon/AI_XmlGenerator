@@ -1,0 +1,87 @@
+{
+  "ECU-ABSTRACTION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Lighting_Driver_Component",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_Control_Signal",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "PARAMETER-INTERFACE",
+            "#text": "/Interfaces/User_Preferences_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Port_Light_Status",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "PARAMETER-INTERFACE",
+            "#text": "/Interfaces/User_Preferences_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Lighting_Driver_Component_Behavior",
+      "SUPPORTS-MULTIPLE-INSTANTIATION": "false",
+      "HANDLE-TERMINATION-AND-RESTART": "true",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Lighting_Driver_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "true",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "ControlInput",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Lighting_Driver_Component/P_Port_Control_Signal"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "LightStatusOutput",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Lighting_Driver_Component/R_Port_Light_Status"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "/Lighting_Driver_Component_Runnable_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_E",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Lighting_Driver_Component/Lighting_Driver_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

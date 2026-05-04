@@ -2,7 +2,8 @@
 llm:
   model_name: "gpt-5-nano"        # Gemini模型名称
   llm_api_url: "https://api.openai-proxy.org/v1" # API代理地址
-  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
+#  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
+  api_key: ""
   temperature: 0.2                                   # 生成温度参数
   max_output_tokens: 128000                     # 提升到100K - 利用Gemini长输出能力
   max_context_tokens: 400000                      # 提升到2M - Gemini支持2M上下文

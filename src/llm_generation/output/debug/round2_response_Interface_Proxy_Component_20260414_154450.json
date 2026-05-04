@@ -1,0 +1,115 @@
+{
+  "SERVICE-PROXY-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Interface_Proxy_Component",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_UserPref_Input",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "PARAMETER-INTERFACE",
+            "#text": "/Interfaces/User_Preferences_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "P_Port_UserPref_Output",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "PARAMETER-INTERFACE",
+            "#text": "/Interfaces/User_Preferences_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Interface_Proxy_Component_Behavior",
+      "SUPPORTS-MULTIPLE-INSTANTIATION": "false",
+      "HANDLE-TERMINATION-AND-RESTART": "true",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Proxy_Runnable",
+          "MINIMUM-START-INTERVAL": 10,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "UI_PREF_Read_Brightness",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Interface_Proxy_Component/P_Port_UserPref_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "UI_PREF_Read_Mode",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Interface_Proxy_Component/P_Port_UserPref_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/PREFERRED_MODE"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "BRIGHTNESS_PRESET_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Interface_Proxy_Component/P_Port_UserPref_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/BRIGHTNESS_PRESET"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "PREF_MODE_Send",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Interface_Proxy_Component/P_Port_UserPref_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/User_Preferences_Interface/PREFERRED_MODE"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "Proxy_Runnable_Sym"
+        }
+      ],
+      "EVENTS": {
+        "INIT-EVENT": [
+          {
+            "SHORT-NAME": "Init_E",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Interface_Proxy_Component/Proxy_Runnable"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

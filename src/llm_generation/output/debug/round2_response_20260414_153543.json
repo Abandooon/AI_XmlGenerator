@@ -1,0 +1,56 @@
+{
+  "CLIENT-SERVER-INTERFACE": [
+    {
+      "SHORT-NAME": "DOOR_STATUS_INTERFACE",
+      "IS-SERVICE": "true",
+      "OPERATIONS": {
+        "CLIENT-SERVER-OPERATION": [
+          {
+            "SHORT-NAME": "READ_DOOR_STATUS"
+          }
+        ]
+      }
+    }
+  ],
+  "NV-DATA-INTERFACE": [
+    {
+      "SHORT-NAME": "ENVIRONMENT_INTERFACE",
+      "IS-SERVICE": "true",
+      "NV-DATAS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "ENVIRONMENT_DATA",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "ENVIRONMENT_DATA_TYPE"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "PARAMETER-INTERFACE": [
+    {
+      "SHORT-NAME": "User_Preferences_Interface",
+      "IS-SERVICE": "true",
+      "PARAMETERS": {
+        "PARAMETER-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "BRIGHTNESS_PRESET",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "BRIGHTNESS_PRESET_TYPE"
+            }
+          },
+          {
+            "SHORT-NAME": "PREFERRED_MODE",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "PREFERRED_MODE_TYPE"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
