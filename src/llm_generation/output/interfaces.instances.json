@@ -1,56 +1,214 @@
 {
-  "Sensor_Data_Interface_RadarCamera": {
-    "SHORT-NAME": "Sensor_Data_Interface_RadarCamera",
+  "Radar_to_Fusion": {
+    "SHORT-NAME": "Radar_to_Fusion",
     "IS-SERVICE": "false",
     "DATA-ELEMENTS": {
       "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "RadarData",
+          "SHORT-NAME": "Radar_Object_List",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/RadarData"
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Radar_Object_List"
           }
         },
         {
-          "SHORT-NAME": "CameraImageData",
+          "SHORT-NAME": "Radar_Health_Status",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/CameraImageData"
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Radar_Health_Status"
           }
         },
         {
-          "SHORT-NAME": "Timestamp",
+          "SHORT-NAME": "AEB_Risk_Indicators",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/Timestamp"
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/AEB_Risk_Indicators"
           }
         }
       ]
     },
     "_type": "SENDER-RECEIVER-INTERFACE"
   },
-  "Actuation_Command_Interface": {
-    "SHORT-NAME": "Actuation_Command_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
+  "Camera_to_Fusion": {
+    "SHORT-NAME": "Camera_to_Fusion",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "SubmitActuationCommand"
+          "SHORT-NAME": "Lane_Model",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Lane_Model"
+          }
+        },
+        {
+          "SHORT-NAME": "Camera_Object_List",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Camera_Object_List"
+          }
+        },
+        {
+          "SHORT-NAME": "Camera_Health_Status",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Camera_Health_Status"
+          }
         }
       ]
     },
-    "_type": "CLIENT-SERVER-INTERFACE"
+    "_type": "SENDER-RECEIVER-INTERFACE"
   },
-  "HMI_Status_Interface": {
-    "SHORT-NAME": "HMI_Status_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
+  "Fusion_to_PathPlanner": {
+    "SHORT-NAME": "Fusion_to_PathPlanner",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "RequestSystemStatus"
+          "SHORT-NAME": "Fused_Object_List",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Fused_Object_List"
+          }
+        },
+        {
+          "SHORT-NAME": "Fused_Lane_Model",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Fused_Lane_Model"
+          }
+        },
+        {
+          "SHORT-NAME": "ADAS_Function_Status",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/ADAS_Function_Status"
+          }
+        },
+        {
+          "SHORT-NAME": "Collision_Threat_Assessment",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Collision_Threat_Assessment"
+          }
         }
       ]
     },
-    "_type": "CLIENT-SERVER-INTERFACE"
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "PathPlanner_to_Actuation": {
+    "SHORT-NAME": "PathPlanner_to_Actuation",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Longitudinal_Control_Command",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Longitudinal_Control_Command"
+          }
+        },
+        {
+          "SHORT-NAME": "Lateral_Control_Command",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Lateral_Control_Command"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "ActuationFeedback_to_Upper": {
+    "SHORT-NAME": "ActuationFeedback_to_Upper",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Actuation_Feedback",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Actuation_Feedback"
+          }
+        },
+        {
+          "SHORT-NAME": "Actuation_Status",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Actuation_Status"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "Fusion_to_HMI": {
+    "SHORT-NAME": "Fusion_to_HMI",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Environment_Summary",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Environment_Summary"
+          }
+        },
+        {
+          "SHORT-NAME": "ADAS_Function_Status",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/ADAS_Function_Status"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "PathPlanner_to_HMI": {
+    "SHORT-NAME": "PathPlanner_to_HMI",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Planning_Status",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Planning_Status"
+          }
+        },
+        {
+          "SHORT-NAME": "ACC_Set_Speed_Current",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/ACC_Set_Speed_Current"
+          }
+        },
+        {
+          "SHORT-NAME": "ACC_Time_Gap_Current",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/ACC_Time_Gap_Current"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
+  },
+  "DriverSettings_to_PathPlanner": {
+    "SHORT-NAME": "DriverSettings_to_PathPlanner",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Driver_Settings",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/Driver_Settings"
+          }
+        }
+      ]
+    },
+    "_type": "SENDER-RECEIVER-INTERFACE"
   }
 }

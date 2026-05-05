@@ -51760,12 +51760,12 @@ In other words binding can be represented by
          <xsd:appinfo source="tags">mmt.qualifiedName="RModeGroupInAtomicSWCInstanceRef"</xsd:appinfo>
          <xsd:appinfo source="stereotypes">atpObject,instanceRef</xsd:appinfo>
       </xsd:annotation>
-      <xsd:sequence>
+      <xsd:all>
          <xsd:group ref="AR:AR-OBJECT"/>
          <xsd:group ref="AR:ATP-INSTANCE-REF"/>
          <xsd:group ref="AR:MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"/>
          <xsd:group ref="AR:R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"/>
-      </xsd:sequence>
+      </xsd:all>
       <xsd:attributeGroup ref="AR:AR-OBJECT"/>
    </xsd:complexType>
    <!-- element group for class InstanceRefs::RModeInAtomicSwcInstanceRef -->
@@ -51774,7 +51774,7 @@ In other words binding can be represented by
          <xsd:appinfo source="tags">mmt.qualifiedName="RModeInAtomicSwcInstanceRef"</xsd:appinfo>
          <xsd:appinfo source="stereotypes">atpObject,instanceRef</xsd:appinfo>
       </xsd:annotation>
-      <xsd:sequence>
+      <xsd:all>
          <!-- Association <<atpDerived>>base skipped -->
          <xsd:element maxOccurs="1" minOccurs="0" name="CONTEXT-PORT-REF">
             <xsd:annotation>
@@ -51812,7 +51812,7 @@ In other words binding can be represented by
                </xsd:simpleContent>
             </xsd:complexType>
          </xsd:element>
-      </xsd:sequence>
+      </xsd:all>
    </xsd:group>
    <!-- complex type for class InstanceRefs::RModeInAtomicSwcInstanceRef -->
    <xsd:complexType abstract="false" mixed="false" name="R-MODE-IN-ATOMIC-SWC-INSTANCE-REF">
@@ -61160,7 +61160,7 @@ The upper multiplicity of this role has been increased to * due to resolving an 
                <xsd:appinfo source="tags">mmt.qualifiedName="SwcModeSwitchEvent.mode";pureMM.maxOccurs="2";pureMM.minOccurs="1"</xsd:appinfo>
             </xsd:annotation>
             <xsd:complexType>
-               <xsd:choice maxOccurs="2" minOccurs="0">
+               <xsd:choice maxOccurs="unbounded" minOccurs="0">
                   <xsd:element name="MODE-IREF" type="AR:R-MODE-IN-ATOMIC-SWC-INSTANCE-REF"/>
                </xsd:choice>
             </xsd:complexType>

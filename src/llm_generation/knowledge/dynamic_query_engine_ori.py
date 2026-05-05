@@ -37,42 +37,35 @@ except ImportError:
     print("[WARN] neo4j driver未安装")
 
 # 三选一（exactly one）类：类名 → 需要互斥选择的键集合
-# 来源：XSD <xsd:group name="AUTOSAR-VARIABLE-REF"> 三个 minOccurs=0 的子元素在 AUTOSAR 语义里是变体
 CHOICE_ONE_OF = {
-    "AUTOSARVARIABLEREF": {
-        "AUTOSAR-VARIABLE-IREF",
-        "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
-        "LOCAL-VARIABLE-REF",
-    },
-    # 参数访问引用（出现于 PARAMETER-ACCESS 等场景）
-    "AUTOSARPARAMETERREF": {
-        "AUTOSAR-PARAMETER-IREF",
-        "LOCAL-PARAMETER-REF",
-    },
+    # "AUTOSARVARIABLEREF": {
+    #     "AUTOSAR-VARIABLE-IREF",
+    #     "LOCAL-VARIABLE-REF",
+    #     "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+    # },
 }
 
 # InstanceRef 的“必选 + 三选一”规则（支持同义键：tag / wrapper）
 # mandatory: 这些键必须出现（即便 KG 的 minOccurs 标成 0 也强制）
 # xor_groups: 三选一，每个元素是同义键集合（取其中存在于 props 的那个）
 XOR_WITH_MANDATORY = {
-    # AUTOSAR-VARIABLE-IREF 的目标类型
-    "VARIABLEINATOMICSWCTYPEINSTANCEREF": {
-        "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
-        "xor_groups": [
-            {"PORT-PROTOTYPE-REF"},
-            {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
-            {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},  # tag / wrapper 兼容
-        ],
-    },
-    # AUTOSAR-VARIABLE-IN-IMPL-DATATYPE 的目标类型
-    "ARVARIABLEINIMPLEMENTATIONDATAINSTANCEREF": {
-        "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
-        "xor_groups": [
-            {"PORT-PROTOTYPE-REF"},
-            {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
-            {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},
-        ],
-    },
+    # "VARIABLEINATOMICSWCTYPEINSTANCEREF": {
+    #     "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
+    #     "xor_groups": [
+    #         {"PORT-PROTOTYPE-REF"},
+    #         {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
+    #         {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},  # tag / wrapper 兼容
+    #     ],
+    # },
+    # "ARVARIABLEINIMPLEMENTATIONDATAINSTANCEREF": {
+    #     "mandatory": {"TARGET-DATA-PROTOTYPE-REF"},
+    #     "xor_groups": [
+    #         {"PORT-PROTOTYPE-REF"},
+    #         {"ROOT-VARIABLE-DATA-PROTOTYPE-REF"},
+    #         {"CONTEXT-DATA-PROTOTYPE-REFS", "CONTEXT-DATA-PROTOTYPE-REF"},
+    #     ],
+    # },
+
 }
 
 # ==================== Optional 放行（精简后） ====================
@@ -312,63 +305,34 @@ class DynamicQueryEngine:
         返回：{ class_name, class_tag, attributes: [ {...}, ... ] }
         每个 attribute 字段包含：
           - a.*: name/xml_tag/xml_wrapper_tag/minOccurs/maxOccurs/isXmlAttr/isPrimitiveType/type(声明)
-          - t.*: name/xml_tag/iri/labels/isAttribute/baseType/pattern 以及枚举字面量 t_enum_values
-          - target_dest_*: 直接通过 (a)-[:TYPE_OF]->(t)-[:HAS_ATTRIBUTE]->(:Attribute{xml_tag:'DEST'})-[:TYPE_OF]->(:Enum)-[:HAS_LITERAL] 拿到的 DEST 枚举
-            → 这是修复 KG 中 inline 类同名歧义的关键路径，不再做按名字的二次查询
-          - target_is_dest_only: t 是否为 DEST-only 类（仅一个 DEST XML 属性、无任何元素子）
+          - t.*: name/labels/isAttribute/baseType/pattern 以及枚举字面量 t_enum_values
         """
         q = """
         MATCH (c:Class)
-        WHERE c.name = $id OR c.xml_tag = $id
-        WITH c LIMIT 1
-        OPTIONAL MATCH (c)-[:SUBCLASS_OF*0..]->(p:Class)
+        WHERE (c.name) = $id OR (c.xml_tag) = $id OR (c.xml_wrapper_tag) = $id
+        OPTIONAL MATCH path=(c)-[:SUBCLASS_OF*0..]->(p:Class)
         WITH c, collect(DISTINCT p) AS allc
         UNWIND allc AS cls
         OPTIONAL MATCH (cls)-[:HAS_ATTRIBUTE]->(a:Attribute)
         OPTIONAL MATCH (a)-[:TYPE_OF]->(t)
         OPTIONAL MATCH (t:Enum)-[:HAS_LITERAL]->(ev:EnumLiteral)
-
-        // 兼容 KG: 当 t.isAttribute=true 时查找配套 Simple 类拿其约束（保留原逻辑）
+        
+        // ✅ 新增：当 t.isAttribute=true 时，查询对应的 Simple 类
         OPTIONAL MATCH (simple:Enum)
         WHERE t.isAttribute = true AND (
-            simple.name = t.name + 'Simple' OR
+            simple.name = t.name + 'Simple' OR 
             simple.xml_tag = t.xml_tag + '--SIMPLE'
         )
         OPTIONAL MATCH (simple)-[:HAS_LITERAL]->(simpleEv:EnumLiteral)
-
-        WITH c, a, t,
+        
+        WITH c, a, t, 
              collect(DISTINCT ev.value) AS enum_vals,
-             collect(DISTINCT simpleEv.value) AS simple_enum_vals,
-             properties(a) AS amap,
-             labels(t) AS tlabs,
+             collect(DISTINCT simpleEv.value) AS simple_enum_vals,  // ✅ Simple 类的枚举
+             properties(a) AS amap, 
+             labels(t) AS tlabs, 
              properties(t) AS tmap,
-             properties(simple) AS simplemap
-
-        // ✅ 直接通过 (t)-[:HAS_ATTRIBUTE]->(DEST 属性)-[:TYPE_OF]->(枚举类) 走边拿 DEST 枚举
-        //   每个 (a, t) 都拿到自己 t 上挂的 DEST，避免 inline 同名歧义
-        //   - 用 CALL (t) { ... } 显式作用域（Neo4j 5.6+ 推荐写法，避免 deprecation 警告）
-        //   - 仅访问 KG 中实际存在的属性名 isXmlAttr / baseType
-        CALL (t) {
-            OPTIONAL MATCH (t)-[:HAS_ATTRIBUTE]->(destAttr:Attribute)
-            WHERE coalesce(destAttr.xml_tag, destAttr.name) = 'DEST'
-              AND coalesce(destAttr.isXmlAttr, false) = true
-            OPTIONAL MATCH (destAttr)-[:TYPE_OF]->(destType)
-            OPTIONAL MATCH (destType)-[:HAS_LITERAL]->(destLit:EnumLiteral)
-            RETURN
-                collect(DISTINCT destLit.value) AS dest_enum_vals,
-                head(collect(DISTINCT destType.pattern)) AS dest_pattern,
-                head(collect(DISTINCT destType.baseType)) AS dest_base,
-                count(DISTINCT destAttr) AS dest_attr_count
-        }
-
-        // 统计 t 的非-XML-属性子元素数量，用于精确判断 DEST-only 类
-        CALL (t) {
-            OPTIONAL MATCH (t)-[:HAS_ATTRIBUTE]->(elemAttr:Attribute)
-            WHERE coalesce(elemAttr.isXmlAttr, false) = false
-              AND (elemAttr.xml_tag IS NOT NULL OR elemAttr.name IS NOT NULL)
-            RETURN count(DISTINCT elemAttr) AS element_child_count
-        }
-
+             properties(simple) AS simplemap  // ✅ Simple 类的属性
+        
         RETURN
           c.name AS class_name,
           c.xml_tag AS class_tag,
@@ -382,27 +346,20 @@ class DynamicQueryEngine:
             a_is_primitive:  coalesce(amap['isPrimitiveType'], false),
             a_declared_type: amap['type'],
             type_name:       tmap['name'],
-            type_xml_tag:    tmap['xml_tag'],
-            type_iri:        tmap['id'],
             type_labels:     tlabs,
             t_is_attribute:  tmap['isAttribute'],
             t_base:          coalesce(tmap['baseType'], tmap['base']),
             t_pattern:       tmap['pattern'],
             t_is_enum:       CASE WHEN 'Enum' IN tlabs THEN true ELSE false END,
             t_enum_values:   enum_vals,
-
-            // ✅ 直接挂在每个 attribute 上、按边走出来的 DEST 元数据
-            target_dest_enum:    dest_enum_vals,
-            target_dest_pattern: dest_pattern,
-            target_dest_base:    dest_base,
-            target_is_dest_only: (dest_attr_count = 1) AND (element_child_count = 0),
-
-            // Simple 类约束（保留原行为；map 索引访问不会触发未知属性警告）
+            
+            // ✅ 新增字段：Simple 类的约束
             simple_base:         coalesce(simplemap['base'], simplemap['baseType']),
             simple_pattern:      simplemap['pattern'],
             simple_enum_values:  simple_enum_vals,
             simple_is_primitive: simplemap['isPrimitiveType']
           }) AS attrs
+        LIMIT 1
         """
         rec = session.run(q, id=class_ident).single()
         if not rec:
@@ -416,90 +373,6 @@ class DynamicQueryEngine:
             # 规范化：t_enum_values 统一为 list
             evs = a.get("t_enum_values")
             if isinstance(evs, str): a["t_enum_values"] = [evs]
-            de = a.get("target_dest_enum")
-            if isinstance(de, str): a["target_dest_enum"] = [de]
-            attrs.append(a)
-        return {"class_name": data.get("class_name"), "class_tag": data.get("class_tag"), "attributes": attrs}
-
-    def _query_class_attributes_by_iri(self, session, iri: str) -> dict:
-        """
-        与 _query_class_attributes 等价，但通过 Class.id（IRI）精确匹配，避免 inline 同名歧义。
-        当 _query_class_attributes 已带回 type_iri 时优先使用本方法。
-        """
-        q = """
-        MATCH (c:Class) WHERE c.id = $iri
-        WITH c LIMIT 1
-        OPTIONAL MATCH (c)-[:SUBCLASS_OF*0..]->(p:Class)
-        WITH c, collect(DISTINCT p) AS allc
-        UNWIND allc AS cls
-        OPTIONAL MATCH (cls)-[:HAS_ATTRIBUTE]->(a:Attribute)
-        OPTIONAL MATCH (a)-[:TYPE_OF]->(t)
-        OPTIONAL MATCH (t:Enum)-[:HAS_LITERAL]->(ev:EnumLiteral)
-        WITH c, a, t,
-             collect(DISTINCT ev.value) AS enum_vals,
-             properties(a) AS amap,
-             labels(t) AS tlabs,
-             properties(t) AS tmap
-
-        CALL (t) {
-            OPTIONAL MATCH (t)-[:HAS_ATTRIBUTE]->(destAttr:Attribute)
-            WHERE coalesce(destAttr.xml_tag, destAttr.name) = 'DEST'
-              AND coalesce(destAttr.isXmlAttr, false) = true
-            OPTIONAL MATCH (destAttr)-[:TYPE_OF]->(destType)
-            OPTIONAL MATCH (destType)-[:HAS_LITERAL]->(destLit:EnumLiteral)
-            RETURN
-                collect(DISTINCT destLit.value) AS dest_enum_vals,
-                head(collect(DISTINCT destType.pattern)) AS dest_pattern,
-                head(collect(DISTINCT destType.baseType)) AS dest_base,
-                count(DISTINCT destAttr) AS dest_attr_count
-        }
-        CALL (t) {
-            OPTIONAL MATCH (t)-[:HAS_ATTRIBUTE]->(elemAttr:Attribute)
-            WHERE coalesce(elemAttr.isXmlAttr, false) = false
-              AND (elemAttr.xml_tag IS NOT NULL OR elemAttr.name IS NOT NULL)
-            RETURN count(DISTINCT elemAttr) AS element_child_count
-        }
-
-        RETURN
-          c.name AS class_name,
-          c.xml_tag AS class_tag,
-          collect(DISTINCT {
-            name:            coalesce(amap['name'], a.name),
-            xml_tag:         coalesce(amap['xml_tag'], a.xml_tag),
-            xml_wrapper_tag: coalesce(amap['xml_wrapper_tag'], a.xml_wrapper_tag),
-            minOccurs:       coalesce(amap['minOccurs'], a.minOccurs),
-            maxOccurs:       coalesce(amap['maxOccurs'], a.maxOccurs),
-            isXmlAttr:       coalesce(amap['isXmlAttr'], amap['is_xml_attribute']),
-            a_is_primitive:  coalesce(amap['isPrimitiveType'], false),
-            a_declared_type: amap['type'],
-            type_name:       tmap['name'],
-            type_xml_tag:    tmap['xml_tag'],
-            type_iri:        tmap['id'],
-            type_labels:     tlabs,
-            t_is_attribute:  tmap['isAttribute'],
-            t_base:          coalesce(tmap['baseType'], tmap['base']),
-            t_pattern:       tmap['pattern'],
-            t_is_enum:       CASE WHEN 'Enum' IN tlabs THEN true ELSE false END,
-            t_enum_values:   enum_vals,
-            target_dest_enum:    dest_enum_vals,
-            target_dest_pattern: dest_pattern,
-            target_dest_base:    dest_base,
-            target_is_dest_only: (dest_attr_count = 1) AND (element_child_count = 0)
-          }) AS attrs
-        """
-        rec = session.run(q, iri=iri).single()
-        if not rec:
-            raise KGQueryError(f"KG 中找不到 IRI 对应的 Class: {iri}")
-        data = rec.data()
-        attrs = []
-        for a in data.get("attrs") or []:
-            if not any(a.get(k) for k in
-                       ("name", "xml_tag", "xml_wrapper_tag", "type_name", "a_is_primitive", "a_declared_type")):
-                continue
-            evs = a.get("t_enum_values")
-            if isinstance(evs, str): a["t_enum_values"] = [evs]
-            de = a.get("target_dest_enum")
-            if isinstance(de, str): a["target_dest_enum"] = [de]
             attrs.append(a)
         return {"class_name": data.get("class_name"), "class_tag": data.get("class_tag"), "attributes": attrs}
 
@@ -521,264 +394,38 @@ class DynamicQueryEngine:
         return None  # 交给递归
 
     # --- 2) 新增：统一的“是否当作引用终止”的判断 ---
-    def _is_ref_terminal(
-        self,
-        session,
-        type_name: str | None,
-        a_xml_tag: str | None,
-        type_iri: str | None = None,
-        target_is_dest_only: Optional[bool] = None,
-    ) -> bool:
+    def _is_ref_terminal(self, session, type_name: str | None, a_xml_tag: str | None) -> bool:
         """
         True: 终止为 {@DEST,#text}; False: 继续递归。
-        优先级：
-          1. 如果调用方已经从 KG 边走出 target_is_dest_only 的判断，直接采用（最可靠）
-          2. 否则若有 type_iri，按 IRI 精确查 (避免 inline 同名歧义)
-          3. 再否则按 type_name 退而求其次（可能受 inline 同名歧义影响）
-          4. 最后 fallback：仅当 xml_tag 以 "-TREF" 结尾才视为终止
+        规则：
+          - 优先：如有 type_name，则看该类是否为 DEST-only
+          - 兜底：若没有 type_name，仅当 xml_tag 以 "-TREF" 结尾才视为终止
         """
-        # 1) 直接采用从原查询带回的精确判断
-        if target_is_dest_only is True:
-            return True
-        if target_is_dest_only is False and (type_iri or type_name):
-            # KG 已说明不是 DEST-only，但仍要兜底 -TREF 命名规则
-            tag = (a_xml_tag or "").strip().upper()
-            return tag.endswith("-TREF")
-
-        # 2) 按 IRI 精确查
-        if type_iri:
-            try:
-                return self._is_dest_only_class_by_iri(session, type_iri)
-            except Exception:
-                pass
-
-        # 3) 按名字查（容易在 inline 同名时拿错节点）
         tn = (type_name or "").strip()
         if tn:
             try:
                 return self._is_dest_only_class(session, tn)
             except Exception:
+                # 查询失败走兜底
                 pass
 
-        # 4) 兜底：按命名约定
         tag = (a_xml_tag or "").strip().upper()
         return tag.endswith("-TREF")
-
-    def _is_dest_only_class_by_iri(self, session, iri: str) -> bool:
-        """按 IRI 精确判断目标类是否为 DEST-only。"""
-        q = """
-        MATCH (c:Class) WHERE c.id = $iri
-        WITH c LIMIT 1
-        CALL (c) {
-            OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(da:Attribute)
-            WHERE coalesce(da.xml_tag, da.name) = 'DEST'
-              AND coalesce(da.isXmlAttr, false) = true
-            RETURN count(DISTINCT da) AS dest_count
-        }
-        CALL (c) {
-            OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(ea:Attribute)
-            WHERE coalesce(ea.isXmlAttr, false) = false
-              AND (ea.xml_tag IS NOT NULL OR ea.name IS NOT NULL)
-            RETURN count(DISTINCT ea) AS elem_count
-        }
-        RETURN dest_count = 1 AND elem_count = 0 AS is_dest_only
-        """
-        rec = session.run(q, iri=iri).single()
-        return bool(rec and rec["is_dest_only"])
-
-    def _apply_occurrence_to_array(
-        self,
-        val: Dict[str, Any],
-        min_occ: int,
-        max_occ_raw,
-    ) -> Dict[str, Any]:
-        """
-        将 KG 的 minOccurs / maxOccurs 统一映射成 JSON Schema 的 minItems / maxItems。
-
-        约定：
-          - val 必须是 type=array 的节点（已生成 items）
-          - minOccurs >= 1 → minItems = minOccurs（不覆盖已有更严格的值）
-          - maxOccurs > 1（有限正整数）→ maxItems = maxOccurs
-          - maxOccurs = -1 / "unbounded" / "inf" → 不设 maxItems（无界）
-          - maxOccurs = 0 / 1 → 通常不会落在 array 分支（由 _is_array_occurs 决定），不处理
-        """
-        if not isinstance(val, dict) or val.get("type") != "array":
-            return val
-
-        # minItems
-        try:
-            mo = int(min_occ) if min_occ is not None else 0
-        except (ValueError, TypeError):
-            mo = 0
-        if mo > 0:
-            val.setdefault("minItems", mo)
-
-        # maxItems
-        if max_occ_raw is None:
-            return val
-        s = str(max_occ_raw).strip().lower()
-        if s in {"unbounded", "inf", "infinite"}:
-            return val
-        try:
-            mx = int(max_occ_raw)
-            if mx > 0:  # 排除 0/-1
-                val["maxItems"] = mx
-        except (ValueError, TypeError):
-            pass
-        return val
-
-    def _apply_terminal_string_constraints(
-        self,
-        scalar: Dict[str, Any],
-        enum_vals: Optional[List[Any]],
-        pattern_str: Optional[str],
-    ) -> Dict[str, Any]:
-        """
-        将 KG 的枚举字面量 / pattern 统一应用到标量 schema 节点上。
-          - enum：直接覆盖
-          - pattern：清理 XSD 命名空间后写入
-        """
-        if enum_vals:
-            cleaned = [e for e in enum_vals if e is not None and e != ""]
-            if cleaned:
-                scalar = {**scalar, "enum": cleaned}
-        if pattern_str:
-            clean_pat = self._clean_xsd_pattern(pattern_str)
-            if clean_pat:
-                scalar = {**scalar, "pattern": clean_pat}
-        return scalar
-
-    @staticmethod
-    def _scalar_from_base_type(base: Optional[str], boolean_as_string: bool = True) -> Dict[str, Any]:
-        """
-        把 XSD/KG 的 baseType 字符串映射为 JSON Schema 标量节点。
-          - BOOLEAN 默认按 AUTOSAR XML 序列化形式输出 string + enum=["true","false"]
-            （AUTOSAR 把布尔写在 XML 里就是字面量字符串）；boolean_as_string=False 才返回 type=boolean
-          - INT / INTEGER / 各种 INTn → integer
-          - FLOAT / DOUBLE / DECIMAL / NUMBER → number
-          - 其余落到 string
-        """
-        b = (base or "").strip().upper()
-        if b == "BOOLEAN":
-            if boolean_as_string:
-                return {"type": "string", "enum": ["true", "false"]}
-            return {"type": "boolean"}
-        if b in {"INT", "INTEGER", "INT8", "INT16", "INT32", "INT64",
-                 "UINT", "UINT8", "UINT16", "UINT32", "UINT64",
-                 "SINT", "SINT8", "SINT16", "SINT32", "SINT64",
-                 "LONG", "SHORT"}:
-            return {"type": "integer"}
-        if b in {"FLOAT", "DOUBLE", "DECIMAL", "NUMBER"}:
-            return {"type": "number"}
-        return {"type": "string"}
-
-    def _resolve_scalar_attribute_schema(
-        self,
-        session,
-        parent_class_ident: str,
-        attr_xml_tag: str,
-        description: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
-        """
-        在 KG 中精确查 parent_class_ident 类下 xml_tag=attr_xml_tag 的属性，按其
-        类型链（含 Simple 旁路）解析为 JSON Schema 标量节点；找不到返回 None。
-
-        用于 generate_component_schema_fixed 这类“手写骨架”里的标量字段，避免硬编码枚举。
-        分支顺序与 _build_class_schema_recursive 内的终止逻辑对齐：
-          1) 直接映射表 (DIRECT_TYPE_MAPPINGS)
-          2) t.isAttribute=true → 走 Simple 类的 base/enum/pattern
-          3) t 是 Enum 或有 base → 取 base，叠加 enum / pattern
-          4) 兜底：依据 xml_tag 名做朴素猜测
-        """
-        if not parent_class_ident or not attr_xml_tag:
-            return None
-
-        target_tag = attr_xml_tag.strip().upper()
-        try:
-            info = self._query_class_attributes(session, parent_class_ident)
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] _resolve_scalar_attribute_schema: 查询父类 {parent_class_ident} 失败: {e}")
-            return None
-
-        attr = None
-        for a in info.get("attributes", []) or []:
-            for nm in (a.get("xml_tag"), a.get("xml_wrapper_tag"), a.get("name")):
-                if nm and nm.strip().upper() == target_tag:
-                    attr = a
-                    break
-            if attr is not None:
-                break
-
-        if attr is None:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] _resolve_scalar_attribute_schema: KG 中未找到 {parent_class_ident}.{attr_xml_tag}")
-            return None
-
-        tname = attr.get("type_name") or attr.get("a_declared_type")
-        scalar: Optional[Dict[str, Any]] = None
-
-        # 1) 直接映射表（与递归路径完全一致）
-        if tname:
-            tup = tname.strip().upper()
-            if tup in self.DIRECT_TYPE_MAPPINGS:
-                scalar = dict(self.DIRECT_TYPE_MAPPINGS[tup])
-                # 同样允许 Simple 类覆盖 enum/pattern
-                simple_enum_vals = attr.get("simple_enum_values") or []
-                simple_pattern = attr.get("simple_pattern")
-                if simple_enum_vals:
-                    scalar["enum"] = simple_enum_vals
-                if simple_pattern:
-                    cp = self._clean_xsd_pattern(simple_pattern)
-                    if cp:
-                        scalar["pattern"] = cp
-
-        # 2/3) Simple 旁路 / 普通枚举 / 有 base
-        if scalar is None:
-            t_is_attr = bool(attr.get("t_is_attribute"))
-            t_is_enum = bool(attr.get("t_is_enum")) or bool(attr.get("t_enum_values"))
-            t_base = attr.get("t_base")
-            t_pattern = attr.get("t_pattern")
-            simple_base = attr.get("simple_base")
-            simple_pattern = attr.get("simple_pattern")
-            simple_enum_vals = attr.get("simple_enum_values") or []
-            t_enum_vals = attr.get("t_enum_values") or []
-
-            if t_is_attr or t_is_enum or t_base or simple_base:
-                base = simple_base or t_base or ("string" if (t_is_attr or t_is_enum) else None)
-                scalar = self._scalar_from_base_type(base, boolean_as_string=True)
-                # 优先 Simple 类的枚举/pattern
-                enum_vals = simple_enum_vals or t_enum_vals
-                scalar = self._apply_terminal_string_constraints(
-                    scalar, enum_vals, simple_pattern or t_pattern
-                )
-
-        # 4) 兜底：按 xml_tag/类型名猜原子类型
-        if scalar is None:
-            scalar = self._guess_primitive_from_name(target_tag) \
-                     or self._guess_primitive_from_name((tname or "").upper()) \
-                     or {"type": "string"}
-
-        if description and "description" not in scalar:
-            scalar["description"] = description
-
-        return scalar
 
     # --- 1) 新增：判断“是否 DEST-only 类”的工具函数 ---
     def _is_dest_only_class(self, session, class_ident: str) -> bool:
         """
         True: 该类只有一个 XML 属性且为 DEST，且无任何子元素（element）。
         这种类应终止为 {@DEST,#text}，不要继续递归。
-
-        ⚠️ 注意：此方法按 name/xml_tag 匹配，对 inline 同名类会有歧义；
-        新代码请优先使用 _is_dest_only_class_by_iri。
         """
         info = self._query_class_attributes(session, class_ident) or {}
         attrs = info.get("attributes") or []
 
         def _is_xml_attr(a: dict) -> bool:
+            # 兼容 isXmlAttr / is_xml_attribute 两种键
             return bool(a.get("isXmlAttr")) or bool(a.get("is_xml_attribute"))
 
+        # 有任何子元素就不是 DEST-only
         has_element = any((not _is_xml_attr(a)) and (a.get("xml_tag") or a.get("name")) for a in attrs)
         if has_element:
             return False
@@ -1035,8 +682,15 @@ class DynamicQueryEngine:
                             scalar["pattern"] = clean_pattern
 
                     val = {"type": "array", "items": scalar} if is_array else scalar
-                    if is_array:
-                        self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                    if is_array and min_occ > 0:
+                        val.setdefault("minItems", min_occ)
+                        # 新增：
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
 
                     props[key] = val
                     if min_occ >= 1:
@@ -1052,58 +706,46 @@ class DynamicQueryEngine:
                     continue  # ⚠️ 跳过后续所有判断
 
             # 引用终止（TREF/IREF 或 DEST-only 类）
-            # ✅ 关键修复：DEST 枚举直接从原查询的 target_dest_enum 字段读取
-            #   该字段是通过 (a)-[:TYPE_OF]->(t)-[:HAS_ATTRIBUTE]->(:DEST)-[:TYPE_OF]->(:Enum)-[:HAS_LITERAL]
-            #   走边拿出来的，不会因为 inline 类同名而错配；同时把 target_is_dest_only 传给判定函数
-            type_iri = a.get("type_iri")
-            target_is_dest_only = a.get("target_is_dest_only")
-            if self._is_ref_terminal(
-                session, tname, tag,
-                type_iri=type_iri,
-                target_is_dest_only=target_is_dest_only,
-            ):
-                # 直接从 attribute 上挂的字段拿 DEST 枚举（一次性、无歧义）
-                target_dest_enum = a.get("target_dest_enum") or []
-                target_dest_pattern = a.get("target_dest_pattern")
-
+            if self._is_ref_terminal(session, tname, tag):
                 dest_enum = None
-                if isinstance(target_dest_enum, list) and len(target_dest_enum) > 0:
-                    dest_enum = sorted([e for e in target_dest_enum if e])
-                else:
-                    # 极端兜底：当 KG 中 t 没挂 DEST 子边时，按 IRI / 名字再查一次
-                    try:
-                        if type_iri:
-                            ref_class_info = self._query_class_attributes_by_iri(session, type_iri)
-                        else:
-                            ref_class_info = self._query_class_attributes(session, tname or tag)
+                try:
+                    # 引用类型的标识符（通常是其类名，如 ContextRPortRef）
+                    ref_class_identifier = tname or tag
+                    if ref_class_identifier:
+                        # 查询这个引用类自身的属性，找到 DEST 属性并提取其枚举类型
+                        ref_class_info = self._query_class_attributes(session, ref_class_identifier)
+
                         for ref_attr in ref_class_info.get("attributes", []):
+                            # 检查属性的 xml_tag 或 name 是否为 "DEST"
                             attr_tag = (ref_attr.get("xml_tag") or ref_attr.get("name") or "").strip().upper()
                             is_xml_attr = bool(ref_attr.get("isXmlAttr")) or bool(ref_attr.get("is_xml_attribute"))
-                            if is_xml_attr and attr_tag == "DEST":
-                                enum_values = ref_attr.get("t_enum_values") or []
-                                if enum_values:
-                                    dest_enum = sorted([e for e in enum_values if e])
-                                break
-                    except Exception as e:
-                        if CONFIG.debug_mode:
-                            print(f"[DEBUG] DEST 兜底查询失败 ({tname or tag}): {e}")
 
-                if dest_enum is None and CONFIG.debug_mode:
-                    print(f"[DEBUG] 未能为引用 {tname or tag} 的 DEST 属性解析出枚举值。")
+                            # 必须是名为 DEST 的 XML 属性
+                            if is_xml_attr and attr_tag == "DEST":
+                                # _query_class_attributes 查询已通过 TYPE_OF 关系预先获取了枚举值
+                                # 如果 ref_attr 的类型是 Enum，t_enum_values 就会有值
+                                enum_values = ref_attr.get("t_enum_values")
+                                if enum_values and isinstance(enum_values, list) and len(enum_values) > 0:
+                                    # 成功提取枚举值列表，用于 Schema 约束
+                                    dest_enum = sorted([e for e in enum_values if e])
+                                break  # 找到DEST属性，停止遍历
+
+                    if dest_enum is None and CONFIG.debug_mode:
+                        print(f"[DEBUG] 未能为引用 {ref_class_identifier} 的 DEST 属性解析出枚举值。")
+
+                except Exception as e:
+                    if CONFIG.debug_mode:
+                        print(f"[DEBUG] 解析 DEST 属性的枚举值时发生错误 (引用: {tname or tag}): {e}")
+                    pass  # 保持 dest_enum 为 None
 
                 val = _emit_ref_object_schema(is_array, dest_enum)
-                # ✅ 若 KG 给了 DEST 类型的 pattern，叠加到 @DEST 上（更严格）
-                if target_dest_pattern:
-                    clean_pat = self._clean_xsd_pattern(target_dest_pattern)
-                    if clean_pat:
-                        if is_array:
-                            val["items"]["properties"]["@DEST"]["pattern"] = clean_pat
-                        else:
-                            val["properties"]["@DEST"]["pattern"] = clean_pat
-
-                # ✅ 统一应用 minOccurs / maxOccurs → minItems / maxItems
-                if is_array:
-                    self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                if is_array and min_occ > 0:
+                    val.setdefault("minItems", min_occ)
+                    try:
+                        if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                            val["maxItems"] = int(max_occ_raw)
+                    except Exception:
+                        pass
 
                 props[key] = val
                 if min_occ >= 1:
@@ -1149,8 +791,15 @@ class DynamicQueryEngine:
                             scalar = {**scalar, "pattern": clean_pattern}
 
                     val = {"type": "array", "items": scalar} if is_array else scalar
-                    if is_array:
-                        self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                    if is_array and min_occ > 0:
+                        val.setdefault("minItems", min_occ)
+                        # 新增：
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
 
                     props[key] = val
                     if min_occ >= 1:
@@ -1186,8 +835,15 @@ class DynamicQueryEngine:
 
                     val = {"type": "array", "items": scalar} if is_array else scalar
 
-                    if is_array:
-                        self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                    if is_array and min_occ > 0:
+                        val.setdefault("minItems", min_occ)
+                        # 新增：这是关键位置！runnable entity 的子元素都走这里
+                        if should_constrain_max_items(parent_container_tag, is_terminal=True):
+                            try:
+                                if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                    val["maxItems"] = int(max_occ_raw)
+                            except Exception:
+                                pass
 
                     props[key] = val
                     if min_occ >= 1:
@@ -1226,8 +882,15 @@ class DynamicQueryEngine:
 
                 val = {"type": "array", "items": sub_schema} if is_array else sub_schema
 
-                if is_array:
-                    self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                if is_array and min_occ > 0:
+                    val.setdefault("minItems", min_occ)
+                    # 新增：
+                    if should_constrain_max_items(parent_container_tag, is_terminal=False):
+                        try:
+                            if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                                val["maxItems"] = int(max_occ_raw)
+                        except Exception:
+                            pass
                 props[key] = val
                 if min_occ >= 1:
                     required.append(key)
@@ -1246,9 +909,16 @@ class DynamicQueryEngine:
             else:
                 prim = self._guess_primitive_from_name(_U(base_type) or _U(tag) or _U(key))
                 val = prim or {"type": "string"}
-            if is_array:
+            if is_array and min_occ > 0:
                 val = {"type": "array", "items": val}
-                self._apply_occurrence_to_array(val, min_occ, max_occ_raw)
+                val.setdefault("minItems", min_occ)
+                # 新增：
+                if should_constrain_max_items(parent_container_tag, is_terminal=False):
+                    try:
+                        if max_occ_raw and str(max_occ_raw).lower() != "unbounded":
+                            val["maxItems"] = int(max_occ_raw)
+                    except Exception:
+                        pass
 
             if _U(key) == "SHORT-NAME":
                 val = self._apply_short_name_constraint(val)
@@ -1481,37 +1151,19 @@ class DynamicQueryEngine:
             sib_short_name_schema = self._apply_short_name_constraint({
                 "type": "string"
             })
-
-            # ✅ 修复：从 KG 解析两个必选标量的真实类型，而不是硬编码 ["true","false"]
-            #   - SUPPORTS-MULTIPLE-INSTANTIATION 在 XSD 里是 xsd:boolean，KG 解出会是 string + ["true","false"]
-            #   - HANDLE-TERMINATION-AND-RESTART  在 XSD 里是 HANDLE-TERMINATION-AND-RESTART-ENUM
-            #     正确值是 ["CAN-BE-TERMINATED", "CAN-BE-TERMINATED-AND-RESTARTED", "NO-SUPPORT"]
-            with self.driver.session() as _ssn:
-                supports_multi = self._resolve_scalar_attribute_schema(
-                    _ssn, "SwcInternalBehavior", "SUPPORTS-MULTIPLE-INSTANTIATION",
-                    description="Indicates whether the component supports multiple instantiation. "
-                                "Required by AUTOSAR standard (TPS_SWCT_01361).",
-                ) or {
-                    # KG 兜底（找不到时也给一个安全默认）
-                    "type": "string",
-                    "enum": ["true", "false"],
-                    "description": "Indicates whether the component supports multiple instantiation. "
-                                   "Required by AUTOSAR standard (TPS_SWCT_01361).",
-                }
-                handle_term = self._resolve_scalar_attribute_schema(
-                    _ssn, "SwcInternalBehavior", "HANDLE-TERMINATION-AND-RESTART",
-                    description="Controls the behavior with respect to stopping and restarting the component.",
-                ) or {
-                    # KG 兜底（用 XSD 中正确的三个枚举值，至少不会跑出 boolean 那种错）
-                    "type": "string",
-                    "enum": ["CAN-BE-TERMINATED", "CAN-BE-TERMINATED-AND-RESTARTED", "NO-SUPPORT"],
-                    "description": "Controls the behavior with respect to stopping and restarting the component.",
-                }
-
             sib_props = {
                 "SHORT-NAME": sib_short_name_schema,
-                "SUPPORTS-MULTIPLE-INSTANTIATION": supports_multi,
-                "HANDLE-TERMINATION-AND-RESTART": handle_term,
+                # ✅ 新增：必选的Boolean字段 - AUTOSAR规范要求（minOccurs=1, maxOccurs=1）
+                "SUPPORTS-MULTIPLE-INSTANTIATION": {
+                    "type": "string",
+                    "enum": ["true", "false"],
+                    "description": "Indicates whether the component supports multiple instantiation. Required by AUTOSAR standard (TPS_SWCT_01361)."
+                },
+                "HANDLE-TERMINATION-AND-RESTART": {
+                    "type": "string",
+                    "enum": ["true", "false"],
+                    "description": "Indicates whether the component handles termination and restart. Required by AUTOSAR standard."
+                },
                 # 折叠 RUNNABLES：把 RUNNABLES 容器里的 RUNNABLE-ENTITY 直接暴露出来
                 **(
                     {"RUNNABLE-ENTITY": (runnables_obj.get("properties") or {}).get("RUNNABLE-ENTITY")}
