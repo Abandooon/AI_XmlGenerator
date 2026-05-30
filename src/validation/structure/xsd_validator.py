@@ -1,20 +1,17 @@
 # src/validation/structure/xsd_validator.py
-from typing import Dict, Optional
-from io import StringIO
+from typing import Dict, Optional, List
 import os
 import warnings
 import tempfile
 from pathlib import Path
 
-# 抑制XMLSchema的递归深度警告
 warnings.filterwarnings("ignore", category=UserWarning, module="xmlschema")
 
 
 class XSDValidator:
-    """基于 XML Schema 的结构验证器 - 调试增强版"""
+    """基于 XML Schema 的结构验证器（支持错误分级）"""
 
     def __init__(self, xsd_file: Optional[str] = None):
-        """初始化XSD验证器"""
         self.xsd_file = xsd_file
         self.schema = None
 
@@ -25,19 +22,16 @@ class XSDValidator:
         self._load_schema()
 
     def _create_simplified_autosar_xsd(self) -> str:
-        """创建一个简化的AUTOSAR XSD Schema"""
-        # ... 保持原有的简化XSD创建逻辑 ...
-        pass
+        return None
 
     def _load_schema(self):
-        """加载XSD Schema"""
         try:
             import xmlschema
             import sys
 
             original_recursion_limit = sys.getrecursionlimit()
             try:
-                sys.setrecursionlimit(1000)  # 降低递归限制
+                sys.setrecursionlimit(1000)
 
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
@@ -60,45 +54,71 @@ class XSDValidator:
             self.schema = None
 
     def validate_structure(self, xml_content: str) -> Dict:
-        """校验 XML 是否符合 XSD - 增强调试版本"""
-
         print(f"🔍 开始XSD验证，Schema: {Path(self.xsd_file).name if self.xsd_file else 'None'}")
 
         if not self.schema:
-            print("⚠️  XSD Schema未加载，使用基础XML验证")
             return self._basic_xml_validation(xml_content)
 
         try:
-            # 创建临时文件进行验证
             with tempfile.NamedTemporaryFile(mode='w', suffix='.xml', delete=False, encoding='utf-8') as temp_file:
                 temp_file.write(xml_content)
                 temp_xml_path = temp_file.name
 
             try:
-                print("📝 执行XSD Schema验证...")
+                print("📝 执行XSD Schema验证（分级报告）...")
+
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
-                    self.schema.validate(temp_xml_path)
+                    errors = list(self.schema.iter_errors(temp_xml_path))
 
-                print("✅ XSD验证通过")
-                return {
-                    "valid": True,
-                    "message": "XML structure validation passed",
-                    "schema_file": self.xsd_file,
-                    "validation_type": "XSD"
+                report = {
+                    "ERROR": [],
+                    "WARN": [],
+                    "INFO": []
                 }
 
+                for err in errors:
+                    msg = str(err)
+                    msg_lower = msg.lower()
 
-            except Exception as xsd_error:
-                error_msg = str(xsd_error)
-                print(f"❌ XSD验证失败: {error_msg[:200]}...")
+                    # ===== WARN（你想忽略的）=====
+                    if (
+                        # 顺序
+                        "sequence" in msg_lower or
+                        "unexpected child" in msg_lower or
+
+                        # 数量
+                        "occurs" in msg_lower or
+                        "minoccurs" in msg_lower or
+                        "maxoccurs" in msg_lower or
+                        "too many elements" in msg_lower or
+                        "too few elements" in msg_lower or
+                        "missing required element" in msg_lower or
+
+                        # 枚举
+                        "enumeration" in msg_lower or
+                        "not an element of" in msg_lower or
+                        "value must be one of" in msg_lower or
+
+                        # 正则
+                        "pattern" in msg_lower or
+                        "doesn't match any pattern" in msg_lower
+                    ):
+                        report["WARN"].append(msg)
+
+                    else:
+                        report["ERROR"].append(msg)
+
+                # ===== 控制台输出 =====
+                self._print_report(report)
+
                 return {
-                    "valid": False,
-                    "error_info": error_msg,
+                    "valid": len(report["ERROR"]) == 0,
+                    "report": report,
                     "schema_file": self.xsd_file,
-                    "validation_type": "XSD",
-                    "failed_reason": "Schema validation failed"
+                    "validation_type": "XSD(graded)"
                 }
+
             finally:
                 try:
                     os.unlink(temp_xml_path)
@@ -109,49 +129,60 @@ class XSDValidator:
             error_msg = str(e)
             print(f"❌ XSD验证过程出错: {error_msg}")
 
-            if "recursion" in error_msg.lower():
-                print("⚠️  递归问题，降级到基础验证")
-                return self._basic_xml_validation(xml_content)
-
             return {
                 "valid": False,
-                "error_info": error_msg,
-                "schema_file": self.xsd_file,
+                "report": {"ERROR": [error_msg], "WARN": [], "INFO": []},
                 "validation_type": "XSD"
             }
 
+    def _print_report(self, report: Dict[str, List[str]]):
+        """分级输出"""
+
+        print("\n📊 验证结果报告")
+
+        # ERROR
+        if report["ERROR"]:
+            print(f"\n❌ ERROR ({len(report['ERROR'])})")
+            for i, e in enumerate(report["ERROR"][:10], 1):
+                print(f"[E{i}]")
+                print(e)
+                print("-" * 80)
+
+        # WARN
+        if report["WARN"]:
+            print(f"\n⚠️ WARN ({len(report['WARN'])})")
+            for i, e in enumerate(report["WARN"][:10], 1):
+                print(f"[W{i}]")
+                print(e)
+                print("-" * 80)
+
+        # INFO（预留）
+        if report["INFO"]:
+            print(f"\nℹ️ INFO ({len(report['INFO'])})")
+            for i, e in enumerate(report["INFO"][:10], 1):
+                print(f"[I{i}]")
+                print(e)
+                print("-" * 80)
+
+        if not report["ERROR"]:
+            print("\n✅ 结构验证通过（无ERROR）")
+
     def _basic_xml_validation(self, xml_content: str) -> Dict:
-        """基本的XML格式验证"""
         try:
             import xml.etree.ElementTree as ET
 
-            print("📝 执行基础XML格式验证...")
             root = ET.fromstring(xml_content)
-
-            print(f"✅ XML格式正确，根元素: {root.tag}")
-
-            # 基本检查
-            element_count = len(list(root.iter()))
 
             return {
                 "valid": True,
-                "message": f"Basic XML validation passed ({element_count} elements)",
+                "report": {"ERROR": [], "WARN": [], "INFO": []},
                 "validation_type": "Basic XML",
-                "element_count": element_count,
                 "root_element": root.tag
             }
 
         except ET.ParseError as e:
-            print(f"❌ XML格式错误: {e}")
             return {
                 "valid": False,
-                "error_info": f"XML parsing error: {str(e)}",
-                "validation_type": "Basic XML"
-            }
-        except Exception as e:
-            print(f"❌ 基础验证错误: {e}")
-            return {
-                "valid": False,
-                "error_info": f"Validation error: {str(e)}",
+                "report": {"ERROR": [str(e)], "WARN": [], "INFO": []},
                 "validation_type": "Basic XML"
             }
