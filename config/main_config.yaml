@@ -223,9 +223,9 @@ logging:
 file_paths:
   # XML实例文件
   xml_instances:
-    - generated_arxml/complex
-    - generated_arxml/middle
-    - generated_arxml/simple
+#    - generated_arxml/complex
+#    - generated_arxml/middle
+#    - generated_arxml/simple
 #    - "experimental_data/llm/min_promote_No Guard"
 #    - "experimental_data/llm/mid_promote_No Guard"
 #    - "experimental_data/llm/full_promote_No Guard"
@@ -258,7 +258,7 @@ file_paths:
 validators:
   # XSD 验证配置
   structure:
-    enabled: false
+    enabled: true
     strict_mode: true #严格按照xsd定义
 
   # SHACL 🔧 增强的语义验证配置
