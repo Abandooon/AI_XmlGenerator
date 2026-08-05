@@ -14,11 +14,10 @@
 
 import os
 import sys
-import json
 import time
 import traceback
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).resolve().parent

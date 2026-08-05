@@ -1,21 +1,21 @@
 # generator_schema.py — Test Harness to go beyond schema and capture Round2 prompts
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Dict, Any, List, Tuple
-from types import SimpleNamespace
 import json
 import re
 import time
 from datetime import datetime
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Dict, Any, List, Tuple
 
+# 读取全局配置（拿到 output_dir / debug_mode 等）
+from src.llm_generation.config import CONFIG
+# 新增：Round2 生成器（用于实际组装 prompt 并产出实例与 ARXML）
+from src.llm_generation.core.round2_generator import round2_generator
 # === 项目内导入（与现有工程保持一致） ===
 # 已有：动态查询引擎（用于生成接口/组件 schema）
 from src.llm_generation.knowledge.dynamic_query_engine import query_engine
-# 新增：Round2 生成器（用于实际组装 prompt 并产出实例与 ARXML）
-from src.llm_generation.core.round2_generator import round2_generator
-# 读取全局配置（拿到 output_dir / debug_mode 等）
-from src.llm_generation.config import CONFIG
 
 
 # =========================

@@ -4,20 +4,17 @@
 import asyncio
 import json
 import time
-import uuid
-import re
-from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
-import xml.etree.ElementTree as ET
+from typing import Dict, List, Optional, Any
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ConfigDict
-import uvicorn
 import aiohttp
 import nest_asyncio
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, ConfigDict
 
 # 🔥 修复1: 导入修复后的策略类
-from generic_gad_enhanced_fsm_strategy import FixedGenericGADEnhancedFSMStrategy, EFGCache
+from generic_gad_enhanced_fsm_strategy import FixedGenericGADEnhancedFSMStrategy
 
 nest_asyncio.apply()
 

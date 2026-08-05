@@ -21,12 +21,12 @@ import json
 import pathlib
 import textwrap
 from collections import defaultdict, deque
-from typing import Dict, List, MutableMapping, Set, Tuple
-from utils import normalize
-from cfg import BUILD_CFG
+from typing import Dict, List, Set, Tuple
 
 from lark import Lark
 
+from cfg import BUILD_CFG
+from utils import normalize
 
 MAX_DEPTH              = BUILD_CFG.get("limits", {}).get("max_depth", 10)
 CHAIN_COMPRESS_THRESHOLD = BUILD_CFG.get("limits", {}).get("compress_threshold", 1)

@@ -1,0 +1,40 @@
+{"id":"TPS_SWCT_01570","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"swRecordLayout on an application primitive type does not remove the requirement for a DataTypeMap."}
+{"id":"TPS_SWCT_01247","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"TPS_SWCT_01078","profile":"INFO_DEF","rule_family":"cardinality"}
+{"id":"TPS_SWCT_01076","profile":"INFO_RUNTIME"}
+{"id":"constr_1152","profile":"MUST_CORE_CONSIST","scope":"property","note":"ApplicationArrayElement.category must equal its referenced AutosarDataType.category."}
+{"id":"TPS_SWCT_01601","profile":"MUST_MANUAL","rule_family":"runtime_behavior"}
+{"id":"TPS_SWCT_01602","profile":"MUST_MANUAL","rule_family":"runtime_behavior"}
+{"id":"TPS_SWCT_01604","profile":"MUST_PARTIAL","rule_family":"conditional_existence","note":"When Size Indicator behavior is intended, both dynamicArraySizeProfile and arraySizeHandling must be set; intent is not inferred from absence alone."}
+{"id":"TPS_SWCT_01605","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01606","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01607","profile":"INFO_DEF","rule_family":"value_domain","note":"Lists standardized profiles but TPS_SWCT_01608 permits custom prefixed profiles."}
+{"id":"TPS_SWCT_01608","profile":"MUST_MAJOR_STATIC","rule_family":"format_pattern","scope":"property","observability":"partial","note":"Custom profile needs a company-specific prefix; exact registry/pattern is project input."}
+{"id":"TPS_SWCT_01623","profile":"INFO_DEF"}
+{"id":"constr_1314","profile":"MUST_CORE_CONSIST","note":"Atomize all VSA_LINEAR element semantics, maximum-size, handling, and leaf-type conditions."}
+{"id":"constr_1315","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_SQUARE nested array chain and terminal element conditions."}
+{"id":"constr_1316","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_RECTANGULAR nested array chain and per-dimension maximum sizes."}
+{"id":"constr_1317","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_FULLY_FLEXIBLE nested array chain and handling semantics."}
+{"id":"TPS_SWCT_01256","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Each dimension has one ApplicationArrayDataType and maps in reference order to implementation elements."}
+{"id":"TPS_SWCT_01249","profile":"MUST_CORE_CARD","rule_family":"uniqueness","scope":"object","note":"ApplicationRecordDataType is non-empty and child short names are unique."}
+{"id":"TPS_SWCT_01250","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01251","profile":"INFO_DEF"}
+{"id":"constr_1009","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Category-to-property/multiplicity matrix must be recovered from Table 5.18."}
+{"id":"constr_1158","profile":"MUST_CORE_TYPE","scope":"property","note":"ImplementationDataType compuMethod may reference only BITFIELD_TEXTTABLE or TEXTTABLE categories."}
+{"id":"constr_1383","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","note":"TYPE_REFERENCE may own compuMethod/dataConstr only when its resolved leaf is VALUE."}
+{"id":"TPS_SWCT_01252","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01253","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"typeEmitter/nativeDeclaration combinations constrain RTE generated output and diagnostics."}
+{"id":"TPS_SWCT_01248","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"constr_1106","profile":"MUST_CORE_EXIST","scope":"object","note":"STRUCTURE implementation type/element owns at least one child element."}
+{"id":"constr_1107","profile":"MUST_CORE_EXIST","scope":"object","note":"UNION implementation type/element owns at least one child element."}
+{"id":"TPS_SWCT_01254","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01006","profile":"MUST_CORE_EXIST","scope":"property","note":"Array size belongs on the sub-element."}
+{"id":"TPS_SWCT_01007","profile":"INFO_RUNTIME","rule_family":"value_range"}
+{"id":"constr_1105","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"ARRAY element arraySize must be greater than zero."}
+{"id":"TPS_SWCT_01478","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01255","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01622","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"TPS_SWCT_01610","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01650","profile":"MUST_CORE_CARD","scope":"object","note":"VSA implementation type has exactly a Size Indicator element and a Payload element with their respective roles."}
+{"id":"TPS_SWCT_01612","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01613","profile":"INFO_DEF"}

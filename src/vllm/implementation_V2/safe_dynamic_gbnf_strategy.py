@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # 增强版安全动态GBNF策略 - 支持批量处理和参数配置
 
-import re
-import json
-import asyncio
-import random
 import time
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Any, Tuple
+
 import aiohttp
 import psutil
 

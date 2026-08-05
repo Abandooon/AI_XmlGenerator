@@ -3,9 +3,9 @@
 AUTOSAR XML验证系统 - 一键运行脚本 (修复版)
 支持main_config.yaml配置文件
 """
-import os
 import sys
 from pathlib import Path
+
 import yaml
 
 

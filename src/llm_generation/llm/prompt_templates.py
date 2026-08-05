@@ -3,9 +3,9 @@
 充分利用Gemini长上下文能力，减少分批，提供完整信息
 """
 import json
-from textwrap import dedent
-from typing import Dict, Any, List, Optional
 from string import Template
+from typing import Dict, Any, List, Optional
+
 
 class PromptTemplateManager:
     """提示词模板管理器 - 优化版"""
@@ -268,7 +268,6 @@ class PromptTemplateManager:
             self,
             comp_plan: Dict[str, Any],
             interface_plans: List[Dict[str, Any]],
-            constraints: Dict[str, Any],
             component_schema: Dict[str, Any],
             interface_index: List[Dict[str, Any]],
             r1_component_design: Dict[str, Any],

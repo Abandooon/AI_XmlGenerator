@@ -2,8 +2,8 @@
 
 从元模型定义中提取核心概念，为Round 1提供纯粹的元模型信息
 """
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+from typing import Dict, List, Any, Optional
 
 
 @dataclass

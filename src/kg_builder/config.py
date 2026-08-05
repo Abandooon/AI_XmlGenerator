@@ -11,14 +11,19 @@
 from __future__ import annotations
 
 import os
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
 
 # ----------------------------------------------------------------------
 # 默认配置：所有运行所需关键路径都给出占位值，开箱即跑
@@ -29,7 +34,7 @@ _DEFAULT_CFG: dict[str, Any] = {
     "neo4j": {
         "uri": "neo4j://127.0.0.1:7687",
         "user": "neo4j",
-        "password": "542394665"
+        "password": "",
     },
     # 输入数据
     # "metadata_path": "data/unified_metadata.json",
@@ -59,7 +64,7 @@ def load_config(cfg_path: str | Path | None) -> KgConfig:
         内置默认 < YAML 文件 < 环境变量
     并根据 output_dir 自动拼接 export 路径
     """
-    cfg: dict[str, Any] = _DEFAULT_CFG.copy()
+    cfg: dict[str, Any] = deepcopy(_DEFAULT_CFG)
 
     # ---------- YAML ----------
     if cfg_path and Path(cfg_path).exists():
@@ -68,9 +73,21 @@ def load_config(cfg_path: str | Path | None) -> KgConfig:
         cfg |= yaml.safe_load(path.read_text(encoding="utf-8"))
 
     # ---------- 环境变量 ----------
-    neo_pwd = os.getenv("NEO4J_PWD")
-    if neo_pwd:
-        cfg.setdefault("neo4j", {})["password"] = neo_pwd
+    neo4j_cfg = cfg.setdefault("neo4j", {})
+    env_uri = os.getenv("NEO4J_URI")
+    env_user = os.getenv("NEO4J_USER")
+    env_password = os.getenv("NEO4J_PASSWORD") or os.getenv("NEO4J_PWD")
+    if env_uri:
+        neo4j_cfg["uri"] = env_uri
+    if env_user:
+        neo4j_cfg["user"] = env_user
+    if env_password:
+        neo4j_cfg["password"] = env_password
+
+    if cfg.get("graph_backend") == "neo4j" and not neo4j_cfg.get("password"):
+        raise ValueError(
+            "Neo4j password is not configured. Set NEO4J_PASSWORD in the project .env file."
+        )
 
     # ---------- 导出路径拼接 ----------
     odir = Path(cfg["output_dir"])
@@ -80,5 +97,8 @@ def load_config(cfg_path: str | Path | None) -> KgConfig:
         "gbnf": str(odir / "autosar.gbnf"),
     }
 
-    logger.debug("最终配置合并结果: %s", cfg)
+    safe_cfg = deepcopy(cfg)
+    if safe_cfg.get("neo4j", {}).get("password"):
+        safe_cfg["neo4j"]["password"] = "<redacted>"
+    logger.debug("Loaded configuration: %s", safe_cfg)
     return KgConfig(cfg)

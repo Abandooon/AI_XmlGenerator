@@ -2,10 +2,11 @@
 import time
 from typing import Dict
 
-from .constraint_sender import ConstraintSender
-from .cloud_client import CloudServiceClient
 from src.client.constraint_models import CloudGenerationResponse, extract_legacy_constraints_applied
 from src.client.data_models import ClientResponse
+
+from .cloud_client import CloudServiceClient
+from .constraint_sender import ConstraintSender
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)

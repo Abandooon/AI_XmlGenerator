@@ -10,8 +10,9 @@ from __future__ import annotations
 import json
 import pathlib
 import re
-import unicodedata
 from typing import Dict, List, Any
+
+import unicodedata
 
 
 class ShaclExporter:

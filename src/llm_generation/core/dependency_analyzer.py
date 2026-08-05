@@ -2,9 +2,11 @@
 
 优化为支持大规模单批生成，仅在必要时提供分批建议
 """
-from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass
+from typing import Dict, List, Any, Set
+
 from ..config import CONFIG
+
 
 @dataclass
 class ComponentDependency:

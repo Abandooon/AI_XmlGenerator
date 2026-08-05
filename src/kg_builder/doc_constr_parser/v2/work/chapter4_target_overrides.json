@@ -1,0 +1,24 @@
+{
+  "constr_1033": [
+    {"role":"subject","class_name":"SwConnector","property_name":null,"evidence":"communication scenario is formed by SwConnector endpoint topology"},
+    {"role":"context","class_name":"SenderReceiverInterface","property_name":null,"evidence":"sender/receiver communication"}
+  ],
+  "constr_1039": [
+    {"role":"subject","class_name":"VariableAndParameterInterfaceMapping","property_name":null,"evidence":"mapping between interface elements"},
+    {"role":"property","class_name":"DataPrototype","property_name":"swDataDefProps","evidence":"swImplPolicy of each mapped element"}
+  ],
+  "constr_1209": [
+    {"role":"subject","class_name":"ModeDeclarationMapping","property_name":null,"evidence":"maps ModeDeclarations of mode user and manager"},
+    {"role":"related_object","class_name":"ModeDeclaration","property_name":null,"evidence":"many user declarations must not map to one manager declaration"}
+  ],
+  "constr_1001": [
+    {"role":"property","class_name":"EndToEndDescription","property_name":"dataId","evidence":"value of dataId"},
+    {"role":"context","class_name":"System","property_name":null,"evidence":"unique within scope of System"}
+  ],
+  "constr_1111": [
+    {"role":"property","class_name":"EndToEndDescription","property_name":"dataId","evidence":"PROFILE_01 dataId cardinality and range"}
+  ],
+  "constr_1120": [
+    {"role":"property","class_name":"EndToEndDescription","property_name":"dataId","evidence":"PROFILE_02 ordered dataId values"}
+  ]
+}

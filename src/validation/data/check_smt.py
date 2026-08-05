@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from typing import Optional
-from src.validation.constraints.smt_validator import SMTValidator
-from pathlib import Path
-import re
 from collections import defaultdict
+from typing import Optional
+
+from src.validation.constraints.smt_validator import SMTValidator
 
 
 def find_first_existing(candidates):
@@ -356,7 +355,6 @@ def _check_template_syntax_and_duplicates(
 
 def _analyze_assertion_complexity(assertions, template_text: str):
     """分析公理的复杂度，帮助理解为什么求解器可能返回UNKNOWN"""
-    import z3
 
     print("\n   📊 公理复杂度分析:")
     print("   " + "-" * 60)

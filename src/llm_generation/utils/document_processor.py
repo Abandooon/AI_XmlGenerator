@@ -2,11 +2,10 @@
 
 由于使用gemini代理API，代理节点不支持状态对话，实际不支持文件上传，这里提供模拟实现
 """
-import os
-import mimetypes
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
-from dataclasses import dataclass
+
 from ..config import CONFIG
 from ..utils.exceptions import LLMAPIError
 

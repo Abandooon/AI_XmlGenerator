@@ -24,9 +24,11 @@ Dynamic Query Engine — Clean Single-Path Implementation (patched)
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Tuple, Set
+
+import json
 from dataclasses import dataclass
-from neo4j import GraphDatabase
+from typing import Any, Dict, List, Optional, Tuple, Set
+
 from ..config import CONFIG
 
 try:
@@ -307,6 +309,98 @@ class DynamicQueryEngine:
 
     # ------------------------ KG 结构查询（唯一口径） ------------------------
 
+    @staticmethod
+    def _decode_xsd_content_model(raw: object) -> dict | None:
+        """Decode the optional canonical JSON content model stored on Class."""
+        if isinstance(raw, dict):
+            return raw
+        if not isinstance(raw, str) or not raw.strip():
+            return None
+        try:
+            value = json.loads(raw)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return None
+        return value if isinstance(value, dict) else None
+
+    @staticmethod
+    def _decode_xsd_context_models(raw: object) -> list[dict]:
+        """Decode all parent-specific models retained for a legacy Class."""
+        if isinstance(raw, list):
+            return [item for item in raw if isinstance(item, dict)]
+        if not isinstance(raw, str) or not raw.strip():
+            return []
+        try:
+            value = json.loads(raw)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return []
+        return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
+
+    @staticmethod
+    def _select_xsd_context_model(
+            effective: dict | None,
+            contexts: list[dict],
+            *,
+            parent_class_ident: str = "",
+            parent_container_tag: str = "",
+    ) -> dict | None:
+        if effective:
+            return effective
+
+        def norm(value: object) -> str:
+            return "".join(ch for ch in str(value or "").upper() if ch.isalnum())
+
+        hints = {norm(parent_class_ident), norm(parent_container_tag)} - {""}
+        if not hints:
+            return None
+        ranked: list[tuple[int, dict]] = []
+        for item in contexts:
+            score = 0
+            for raw_segment in item.get("container_path") or []:
+                segment = str(raw_segment)
+                if segment.startswith("element:"):
+                    segment = segment.split(":", 1)[1].split("@", 1)[0]
+                elif "}" in segment:
+                    segment = segment.rsplit("}", 1)[-1]
+                elif ":" in segment:
+                    segment = segment.rsplit(":", 1)[-1]
+                normalized = norm(segment)
+                if normalized in hints:
+                    score += 100
+            if score:
+                ranked.append((score, item))
+        if not ranked:
+            return None
+        best_score = max(score for score, _ in ranked)
+        best = [item for score, item in ranked if score == best_score]
+        if len(best) != 1:
+            hashes = {item.get("effective_model_sha256") for item in best}
+            if len(hashes) != 1:
+                return None
+        model = best[0].get("effective_model")
+        return model if isinstance(model, dict) else None
+
+    @staticmethod
+    def _xsd_content_order(model: dict | None) -> dict[str, int]:
+        """Return the first XSD occurrence rank for element/wrapper tags."""
+        order: dict[str, int] = {}
+
+        def walk(node: object) -> None:
+            if not isinstance(node, dict):
+                return
+            if node.get("kind") == "element":
+                name = node.get("element_name") or node.get("name")
+                if name:
+                    order.setdefault(str(name).strip().upper(), len(order))
+                return
+            base_model = node.get("base_model")
+            if isinstance(base_model, dict):
+                walk(base_model)
+            for child in node.get("children") or []:
+                walk(child)
+
+        walk(model)
+        return order
+
     def _query_class_attributes(self, session, class_ident: str) -> dict:
         """
         返回：{ class_name, class_tag, attributes: [ {...}, ... ] }
@@ -372,6 +466,8 @@ class DynamicQueryEngine:
         RETURN
           c.name AS class_name,
           c.xml_tag AS class_tag,
+          c.xsd_effective_model_json AS xsd_effective_model_json,
+          c.xsd_content_models_json AS xsd_content_models_json,
           collect(DISTINCT {
             name:            coalesce(amap['name'], a.name),
             xml_tag:         coalesce(amap['xml_tag'], a.xml_tag),
@@ -419,7 +515,13 @@ class DynamicQueryEngine:
             de = a.get("target_dest_enum")
             if isinstance(de, str): a["target_dest_enum"] = [de]
             attrs.append(a)
-        return {"class_name": data.get("class_name"), "class_tag": data.get("class_tag"), "attributes": attrs}
+        return {
+            "class_name": data.get("class_name"),
+            "class_tag": data.get("class_tag"),
+            "attributes": attrs,
+            "xsd_content_model": self._decode_xsd_content_model(data.get("xsd_effective_model_json")),
+            "xsd_context_models": self._decode_xsd_context_models(data.get("xsd_content_models_json")),
+        }
 
     def _query_class_attributes_by_iri(self, session, iri: str) -> dict:
         """
@@ -463,6 +565,8 @@ class DynamicQueryEngine:
         RETURN
           c.name AS class_name,
           c.xml_tag AS class_tag,
+          c.xsd_effective_model_json AS xsd_effective_model_json,
+          c.xsd_content_models_json AS xsd_content_models_json,
           collect(DISTINCT {
             name:            coalesce(amap['name'], a.name),
             xml_tag:         coalesce(amap['xml_tag'], a.xml_tag),
@@ -501,7 +605,13 @@ class DynamicQueryEngine:
             de = a.get("target_dest_enum")
             if isinstance(de, str): a["target_dest_enum"] = [de]
             attrs.append(a)
-        return {"class_name": data.get("class_name"), "class_tag": data.get("class_tag"), "attributes": attrs}
+        return {
+            "class_name": data.get("class_name"),
+            "class_tag": data.get("class_tag"),
+            "attributes": attrs,
+            "xsd_content_model": self._decode_xsd_content_model(data.get("xsd_effective_model_json")),
+            "xsd_context_models": self._decode_xsd_context_models(data.get("xsd_content_models_json")),
+        }
 
     # ------------------------ 终止与基元映射 ------------------------
 
@@ -799,6 +909,7 @@ class DynamicQueryEngine:
             parent_container_tag: str,
             design_index: dict[str, set[str]],
             seen: set[str],
+            parent_class_ident: str = "",
             force_children_array: bool = False  # 新增参数
     ) -> tuple[str, dict, dict]:
         """
@@ -854,6 +965,13 @@ class DynamicQueryEngine:
 
 
         info = self._query_class_attributes(session, class_ident)
+        content_models = info.get("xsd_context_models") or []
+        content_model = self._select_xsd_context_model(
+            info.get("xsd_content_model"),
+            content_models,
+            parent_class_ident=parent_class_ident,
+            parent_container_tag=parent_container_tag,
+        )
         class_name = info.get("class_name") or class_ident
         if class_name in seen:
             return class_name, {"type": "object", "properties": {}, "additionalProperties": False}, {}
@@ -963,7 +1081,9 @@ class DynamicQueryEngine:
             # 最后使用 name
             return str(attr_dict.get("name") or "")
 
+        content_order = self._xsd_content_order(content_model)
         attrs.sort(key=lambda a: (
+            content_order.get(_U(get_final_sort_key(a)), len(content_order) + 1000),
             # 第一部分(优先级)：三级优先级系统
             0 if _U(get_final_sort_key(a)) == "SHORT-NAME" else
             1 if _U(get_final_sort_key(a)) == "START-ON-EVENT-REF" else
@@ -1220,6 +1340,7 @@ class DynamicQueryEngine:
                     parent_container_tag=child_parent,
                     design_index=design_index,
                     seen=set(seen),
+                    parent_class_ident=class_name,
                     force_children_array=is_union_container  # 传递标记
                 )
                 definitions.update(sub_defs)
@@ -1263,6 +1384,10 @@ class DynamicQueryEngine:
 
         # ---- 组装当前类的 schema ----
         schema: dict = {"type": "object", "properties": props, "additionalProperties": False}
+        if content_model:
+            schema["x-atlas-content-model"] = content_model
+        elif content_models:
+            schema["x-atlas-content-models"] = content_models
         if required:
             schema["required"] = required
 
@@ -1557,6 +1682,38 @@ class DynamicQueryEngine:
         return schema
 
     # ======================== 三个内层构建器 ========================
+    def component_xml_projection_map(self, comp_plan: Dict[str, Any]) -> Dict[str, Any]:
+        """Return the deterministic inverse of the provider-facing flattening."""
+        comp_type = (
+            comp_plan.get("type") or "ECU-ABSTRACTION-SW-COMPONENT-TYPE"
+        ).strip()
+        design_index = self._build_design_index(comp_plan.get("element_design") or {})
+        rules: List[Dict[str, List[str]]] = []
+        if "INTERNAL-BEHAVIORS" in design_index.get("__TOP__", set()):
+            rules.extend([
+                {
+                    "source": ["SWC-INTERNAL-BEHAVIOR"],
+                    "target": ["INTERNAL-BEHAVIORS", "SWC-INTERNAL-BEHAVIOR"],
+                },
+                {
+                    "source": [
+                        "INTERNAL-BEHAVIORS",
+                        "SWC-INTERNAL-BEHAVIOR",
+                        "RUNNABLE-ENTITY",
+                    ],
+                    "target": [
+                        "INTERNAL-BEHAVIORS",
+                        "SWC-INTERNAL-BEHAVIOR",
+                        "RUNNABLES",
+                        "RUNNABLE-ENTITY",
+                    ],
+                },
+            ])
+        return {
+            "schema_version": "1.0",
+            "component_type": comp_type,
+            "rules": rules,
+        }
     def _is_union_container_shell(self, session, class_ident: str) -> bool:
         """
         识别"联合容器壳"(模式2)：外层Class仅作为多个内层元素的容器

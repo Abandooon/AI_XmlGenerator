@@ -7,15 +7,17 @@
 ✨ 新增：批量处理需求文件 + 指标记录功能
 """
 
+import json
 import os
 import sys
-import json
-import traceback
 import time
-from pathlib import Path
-from typing import Dict, Any, Optional, List
+import traceback
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, List
+
 from src.llm_generation.core.conversation_manager import ConversationState
+
 # 添加项目根目录到Python路径
 project_root = Path(__file__).resolve().parent
 if str(project_root) not in sys.path:
@@ -257,7 +259,12 @@ class LLMRAGGenerator:
             print(f"\n🔧 Phase 2: 详细生成...")
             phase2_start = time.time()
 
-            result2 = self.conversation_manager.process_round2(self.current_session_id)
+            result2 = self.conversation_manager.process_round2(
+                self.current_session_id,
+                custom_requirements={
+                    key: requirement.get(key) for key in self._DECLARED_CONTEXT_KEYS
+                },
+            )
 
             phase2_end = time.time()
 
@@ -297,6 +304,13 @@ class LLMRAGGenerator:
             self._save_metrics(metrics, complexity, index)
 
         return metrics
+
+    # These names deliberately match validation_context.json. Missing values
+    # remain None/empty and therefore cannot activate intent-gated rules.
+    _DECLARED_CONTEXT_KEYS = (
+        "declared_use_cases", "declared_constraint_ids",
+        "declared_targets", "declared_parameters",
+    )
 
     # ✨ 新增：从需求构建提示
     def _build_prompt_from_requirement(self, requirement: Dict[str, Any]) -> str:

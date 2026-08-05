@@ -2,14 +2,15 @@
 --------------------------------------------
 核心修复：将实际XML数据转换为SMT事实，实现非抽象的约束验证
 """
+import json
+import os
+import re
 import subprocess
 import tempfile
-import json
-import re
-from typing import Dict, List, Any, Optional, Set
 import xml.etree.ElementTree as ET
-import os
 from pathlib import Path
+from typing import Dict, List, Any, Optional
+
 import z3
 
 

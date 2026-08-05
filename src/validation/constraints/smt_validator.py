@@ -11,14 +11,15 @@
 # Minimal-intrusion design: mapping_file defaults to "src/validation/data/mapping_smt.json".
 # If mapping not found, validator will attempt best-effort template-driven mapping and warn.
 
+import json
 import os
 import re
-import json
-import tempfile
 import subprocess
+import tempfile
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple
-import xml.etree.ElementTree as ET
+
 
 # -------------------------
 # Utility helpers

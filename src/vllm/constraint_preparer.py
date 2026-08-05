@@ -1,11 +1,12 @@
 # src/client/constraint_preparer.py
 import json
-from typing import Dict, List, Any
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
+from typing import Dict, List, Any
 
 from src.client.constraint_models import ConstraintInfo
+
 from ..utils.logger import get_logger
-from importlib.machinery import SourceFileLoader
 
 logger = get_logger(__name__)
 

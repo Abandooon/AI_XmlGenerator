@@ -26,10 +26,15 @@ queries.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import urllib
 from collections import defaultdict
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
+
+from dotenv import load_dotenv
+
+load_dotenv(pathlib.Path(__file__).resolve().parents[2] / ".env")
 
 # Neo4j driver is an optional dependency; import lazily so local‑json mode works
 try:
@@ -80,8 +85,17 @@ class KGLoader:
             )
 
             # ❷ 取优先级：CLI 显式参数 > URI 内嵌 > None
-            auth_user = user or uri_user
-            auth_pwd = password or uri_pwd
+            auth_user = user or uri_user or os.getenv("NEO4J_USER") or "neo4j"
+            auth_pwd = (
+                password
+                or uri_pwd
+                or os.getenv("NEO4J_PASSWORD")
+                or os.getenv("NEO4J_PWD")
+            )
+            if not auth_pwd:
+                raise ValueError(
+                    "Neo4j password is not configured. Set NEO4J_PASSWORD in .env."
+                )
 
             self._driver = GraphDatabase.driver(clean_uri,
                                                 auth=(auth_user, auth_pwd))

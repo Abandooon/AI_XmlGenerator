@@ -1,5 +1,3 @@
-import os
-
 from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava, to_pascal_case
 
 

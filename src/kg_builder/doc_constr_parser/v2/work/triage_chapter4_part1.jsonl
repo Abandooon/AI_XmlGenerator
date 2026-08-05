@@ -1,0 +1,20 @@
+{"id":"TPS_SWCT_01516","profile":"INFO_DEF"}
+{"id":"constr_1045","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"cross_object","note":"Allowed SwBaseType encodings are conditional on non-service interface use; atomize with constr_1046."}
+{"id":"constr_1046","profile":"MUST_MAJOR_STATIC","rule_family":"conditional_existence","scope":"cross_object","note":"Applicability condition for constr_1045; compile as one combined rule."}
+{"id":"constr_1295","profile":"MUST_CORE_TYPE","note":"Requires resolving TYPE_REFERENCE indirections, data mappings, port roles, and component kinds."}
+{"id":"TPS_SWCT_01114","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01115","profile":"INFO_DEF","rule_family":"runtime_behavior","scope":"runtime","observability":"partial"}
+{"id":"TPS_SWCT_01116","profile":"INFO_RUNTIME"}
+{"id":"constr_1200","profile":"MUST_CORE_FORBID","scope":"cross_object","note":"Forbid queued SwImplPolicy for data elements used through a PR port."}
+{"id":"TPS_SWCT_01176","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01117","profile":"OPTIONAL","rule_family":"cardinality","scope":"cross_object"}
+{"id":"constr_1033","profile":"MUST_CORE_FORBID","rule_family":"cardinality","scope":"cross_object","note":"Reject connector topologies with both sender and receiver multiplicity greater than one."}
+{"id":"constr_1202","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Supported AssemblySwConnector matrix is defined in Table 4.4 and must be captured before promotion."}
+{"id":"constr_1203","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Supported DelegationSwConnector matrix is defined in Table 4.5 and must be captured before promotion."}
+{"id":"constr_1037","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Client operation-call reachability must have at most one server."}
+{"id":"TPS_SWCT_01118","profile":"MUST_CORE_CONSIST","rule_family":"forbidden_existence","note":"A ClientServerOperation is composition-owned and must not be reused by another ClientServerInterface."}
+{"id":"TPS_SWCT_01106","profile":"INFO_DEF","rule_family":"cardinality"}
+{"id":"TPS_SWCT_01119","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"property","note":"Direction domain is normally XSD-enforced; retain a readable diagnostic."}
+{"id":"TPS_SWCT_01517","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","scope":"property"}
+{"id":"TPS_SWCT_01120","profile":"MUST_MANUAL","rule_family":"runtime_behavior"}
+{"id":"TPS_SWCT_01121","profile":"MUST_MANUAL","rule_family":"runtime_behavior"}

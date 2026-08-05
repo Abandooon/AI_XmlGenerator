@@ -1,6 +1,7 @@
 # src/client/constraint_models.py - 🔥 修复版本，与云端服务保持一致
-from pydantic import BaseModel, ConfigDict
 from typing import List, Optional, Dict, Any
+
+from pydantic import BaseModel, ConfigDict
 
 
 class ConstraintInfo(BaseModel):
@@ -112,8 +113,6 @@ class ConstraintPreparer:
 
     def __init__(self, artifacts_dir: str):
         from pathlib import Path
-        import json
-        from importlib.machinery import SourceFileLoader
 
         self.artifacts_dir = Path(artifacts_dir)
 

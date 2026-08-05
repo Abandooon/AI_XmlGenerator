@@ -1,0 +1,30 @@
+{"id":"TPS_SWCT_01464","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01465","profile":"INFO_RUNTIME"}
+{"id":"constr_1209","profile":"MUST_CORE_FORBID","rule_family":"cardinality","note":"Reject many mode-user declarations mapped to one mode-manager declaration."}
+{"id":"constr_1210","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"Once any manager mode is mapped, mappings must cover every mode of that manager group."}
+{"id":"TPS_SWCT_01545","profile":"INFO_RUNTIME","note":"Unmapped user modes are explicitly valid and never entered or exited."}
+{"id":"TPS_SWCT_01161","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01023","profile":"OPTIONAL","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01551","profile":"INFO_DEF","rule_family":"cardinality","note":"Non-queued mapping need not cover all sender-side elements."}
+{"id":"constr_1279","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"Queued receiver-side composite elements must all be mapped."}
+{"id":"constr_1280","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"Unmapped receiver-side composite content requires an enclosing data-element init value."}
+{"id":"TPS_SWCT_01024","profile":"OPTIONAL","rule_family":"type_compatibility","scope":"cross_object"}
+{"id":"TPS_SWCT_01195","profile":"OPTIONAL","rule_family":"cardinality","scope":"cross_object","note":"Composite-to-primitive mapping is represented with firstElement multiplicity one and secondElement zero."}
+{"id":"constr_1190","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Composite-to-primitive use permits exactly one SubElementMapping."}
+{"id":"constr_1300","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"Forbid primitive provider/client prototypes mapping to composite requester/server elements."}
+{"id":"constr_1184","profile":"MUST_CORE_REF","scope":"cross_object","note":"rootDataPrototype owner must equal base DataInterface and prototype kind must match interface kind."}
+{"id":"constr_1185","profile":"MUST_CORE_CONSIST","note":"Application composite context and target elements must be enclosed by the type of rootDataPrototype."}
+{"id":"constr_1186","profile":"MUST_CORE_CONSIST","note":"Implementation-data context and target elements must be enclosed by the type of rootDataPrototype."}
+{"id":"TPS_SWCT_01560","profile":"MUST_CORE_TYPE","rule_family":"value_domain","note":"Data conversion supports only the listed CompuMethod categories."}
+{"id":"TPS_SWCT_01561","profile":"MUST_MAJOR_STATIC","rule_family":"cross_object_consistency","note":"Composite conversions must be configured at every leaf element."}
+{"id":"TPS_SWCT_01549","profile":"MUST_CORE_CONSIST","note":"Atomize linear-scaling category/default, unit/physical-dimension, and rational-coefficient invariants."}
+{"id":"TPS_SWCT_01550","profile":"MUST_CORE_CONSIST","note":"Atomize reciprocal-linear category, unit, physical-dimension, and rational-coefficient invariants."}
+{"id":"TPS_SWCT_01168","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01162","profile":"OPTIONAL","rule_family":"conditional_existence","note":"Source wording is truncated after 'refer'; deep review must recover the missing applicability object before promotion."}
+{"id":"TPS_SWCT_01163","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01164","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01165","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"Bidirectional TextTableMapping requires uniqueness in both first-value and second-value lists."}
+{"id":"TPS_SWCT_01166","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"constr_1303","profile":"MUST_CORE_TYPE","rule_family":"value_domain","note":"Validate the explicit pairwise CompuMethod-category matrix."}
+{"id":"TPS_SWCT_01583","profile":"INFO_DEF","rule_family":"cardinality","note":"BITFIELD_TEXTTABLE mapping need not cover every possible mask/value combination globally."}
+{"id":"constr_1313","profile":"MUST_CORE_CARD","scope":"cross_object","note":"For each sender bit mask, value-pair mappings must cover every possible mask value exactly once in the applicable direction."}

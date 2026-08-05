@@ -2,11 +2,11 @@
 
 从ARXML文件中提取AUTOSAR标准类型信息，供LLM使用
 """
-import os
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Any, Optional
-from dataclasses import dataclass
-import xml.etree.ElementTree as ET
+
 from ..config import CONFIG
 from ..utils.exceptions import ConfigurationError
 

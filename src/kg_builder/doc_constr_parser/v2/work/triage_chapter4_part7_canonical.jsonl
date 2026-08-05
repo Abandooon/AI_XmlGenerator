@@ -1,0 +1,30 @@
+{"id":"TPS_SWCT_01228","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01594","profile":"INFO_RUNTIME","note":"TransformationComSpecProps may exist locally but has effect only for actual inter-ECU use of its transformer."}
+{"id":"TPS_SWCT_01597","profile":"MUST_PARTIAL","rule_family":"conditional_existence","note":"Port-specific inter-ECU transformation configuration requires deployment evidence."}
+{"id":"TPS_SWCT_01598","profile":"MUST_PARTIAL","rule_family":"reference_integrity","note":"Correct custom-transformer assignment needs the transformer-chain context."}
+{"id":"constr_1400","profile":"MUST_CORE_REF","rule_family":"type_compatibility","scope":"cross_object","note":"DataTransformation references are legal only in the three listed roles."}
+{"id":"constr_1401","profile":"MUST_CORE_FORBID","scope":"cross_file","note":"Forbid simultaneous application-side and signal-mapping transformation of the same variable."}
+{"id":"TPS_SWCT_01599","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","note":"Custom transformers use UserDefinedTransformationComSpecProps."}
+{"id":"TPS_SWCT_01600","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","note":"End-to-end transformers use EndToEndTransformationComSpecProps."}
+{"id":"TPS_SWCT_01063","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01064","profile":"MUST_MANUAL","rule_family":"generation_procedure","scope":"document","note":"VFB-level declaration is a design/process obligation and absence is not inferable as invalid without intent."}
+{"id":"TPS_SWCT_01065","profile":"OPTIONAL","rule_family":"cardinality","scope":"cross_object"}
+{"id":"TPS_SWCT_01066","profile":"OPTIONAL","rule_family":"reference_integrity"}
+{"id":"constr_1147","profile":"INFO_DEF","rule_family":"value_domain","scope":"property","note":"These values are reserved, not stated as the only legal category values."}
+{"id":"TPS_SWCT_01089","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01090","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01091","profile":"MUST_PARTIAL","rule_family":"conditional_existence","importance":"core","is_core":true,"note":"Variable-prototype protection is static; the additional ISignalIPdu requirement depends on inter-ECU AUTOSAR COM allocation."}
+{"id":"constr_1000","profile":"MUST_CORE_TYPE","note":"End-to-end protection targets sender/receiver communication only."}
+{"id":"constr_1001","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","scope":"cross_file","note":"dataId is globally unique within the System."}
+{"id":"TPS_SWCT_01508","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01092","profile":"INFO_DEF","rule_family":"generation_procedure","scope":"document"}
+{"id":"TPS_SWCT_01093","profile":"INFO_DEF","rule_family":"generation_procedure","scope":"document"}
+{"id":"constr_1110","profile":"INFO_DEF","rule_family":"value_domain","scope":"property","note":"Lists standardized category values; TPS_SWCT_01094 explicitly permits additional values."}
+{"id":"TPS_SWCT_01094","profile":"INFO_DEF","rule_family":"value_domain","scope":"property"}
+{"id":"TPS_SWCT_01095","profile":"INFO_RUNTIME","note":"Attributes present with category NONE are ignored rather than invalid."}
+{"id":"constr_1113","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"PROFILE_01 requires dataLength and dataId."}
+{"id":"constr_1170","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize maxDeltaCounterInit precedence and fallback existence under PROFILE_01."}
+{"id":"constr_1111","profile":"MUST_CORE_CARD","rule_family":"value_range","scope":"property","note":"PROFILE_01 dataId has exactly one value in 0..65535."}
+{"id":"constr_1112","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 dataIdMode range is 0..3."}
+{"id":"constr_1114","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 crcOffset is 0..65535 and divisible by four."}
+{"id":"constr_1115","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 counterOffset is 0..65535 and divisible by four."}

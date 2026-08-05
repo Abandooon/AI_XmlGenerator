@@ -1,7 +1,6 @@
-import os
-from pathlib import Path
-import xml.etree.ElementTree as ET
 import re
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 def process_arxml_files(input_dir="."):

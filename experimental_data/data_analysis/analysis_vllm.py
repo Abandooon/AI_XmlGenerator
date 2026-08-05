@@ -1,7 +1,7 @@
 # analysis_vllm_two_strategies.py
 import json
 from datetime import datetime
-import numpy as np
+
 import pandas as pd
 
 

@@ -22,7 +22,7 @@ Ontology Graph Builder – refactored (v1.1)
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from utils.logger import get_logger
 
@@ -102,7 +102,7 @@ class OntologyGraphBuilder:
             self._class_idx[cls["name"]] = iri
             abs_raw = cls.get("abstract", False)
             is_abs = (abs_raw is True) or (str(abs_raw).strip().lower() in {"true", "1", "yes"})
-            self._add_node(iri, "Class", {
+            class_props = {
                 "name": cls["name"],
                 "xml_tag": cls.get("xml_tag", ""),
                 "description": cls.get("description", ""),
@@ -112,7 +112,18 @@ class OntologyGraphBuilder:
                 # 新增：抽象标记（保留两个键，便于查询兼容）
                 "isAbstract": is_abs,
                 "abstract": is_abs,
-            })
+            }
+            # Optional XSD models are canonical JSON strings because Neo4j
+            # properties cannot contain nested maps/lists of maps.
+            for xsd_field in (
+                "xsd_group_model_json", "xsd_complex_type_model_json",
+                "xsd_effective_model_json", "xsd_content_models_json",
+                "xsd_owner_ids_json", "xsd_source_sha256",
+                "xsd_model_sha256", "xsd_model_version",
+            ):
+                if cls.get(xsd_field) not in (None, ""):
+                    class_props[xsd_field] = cls[xsd_field]
+            self._add_node(iri, "Class", class_props)
             # self._add_node(iri, "Class", {
             #     "name": cls["name"],
             #     "xml_tag": cls.get("xml_tag", ""),

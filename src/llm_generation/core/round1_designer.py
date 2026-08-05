@@ -4,21 +4,16 @@
 移除了冗余的函数调用，保留核心架构设计功能
 """
 import json
-import uuid
+from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
-import google.generativeai as genai
+
 from ..config import CONFIG
 from ..llm.openai_client import OpenAIClient as GeminiClient
 # from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
-from ..knowledge.terminology_builder import terminology_builder
-from ..knowledge.dynamic_query_engine import query_engine
-from ..knowledge.constraint_engine import constraint_engine
-from ..utils.serializers import ArchitectureDesign
 from ..utils.exceptions import ArchitectureDesignError
-from ..utils.document_processor import document_processor
-from datetime import datetime
-from pathlib import Path
+from ..utils.serializers import ArchitectureDesign
 
 # 条件导入文档处理器
 document_processor = None

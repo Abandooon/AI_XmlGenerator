@@ -1,0 +1,30 @@
+{"id":"constr_1304","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","scope":"cross_object","note":"bitfieldTextTableMaskFirst is allowed only for BITFIELD_TEXTTABLE on the first side."}
+{"id":"constr_1305","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","scope":"cross_object","note":"bitfieldTextTableMaskSecond is allowed only for BITFIELD_TEXTTABLE on the second side."}
+{"id":"constr_1306","profile":"MUST_CORE_CONSIST","scope":"property","note":"When both sides are BITFIELD_TEXTTABLE and valuePair exists, identicalMapping must be false."}
+{"id":"constr_1307","profile":"MUST_CORE_CONSIST","rule_family":"value_range","note":"Every directional value must satisfy the applicable bit mask."}
+{"id":"TPS_SWCT_01203","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01204","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01205","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01206","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01207","profile":"INFO_DEF","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01208","profile":"INFO_DEF"}
+{"id":"constr_4004","profile":"MUST_CORE_TYPE","note":"SenderReceiverAnnotation is legal only on a port resolved to SenderReceiverInterface."}
+{"id":"TPS_SWCT_01209","profile":"OPTIONAL"}
+{"id":"constr_4005","profile":"MUST_CORE_TYPE","note":"ClientServerAnnotation is legal only on a port resolved to ClientServerInterface."}
+{"id":"TPS_SWCT_01524","profile":"OPTIONAL","rule_family":"type_compatibility","note":"IoHwAbstractionServerAnnotation is permitted for interface kinds other than NvDataInterface."}
+{"id":"TPS_SWCT_01211","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01212","profile":"INFO_DEF"}
+{"id":"constr_4006","profile":"MUST_CORE_TYPE","note":"ParameterPortAnnotation requires a P port owned by ParameterSwComponentType."}
+{"id":"TPS_SWCT_01213","profile":"OPTIONAL"}
+{"id":"constr_4007","profile":"MUST_CORE_TYPE","note":"ModePortAnnotation requires a port typed by ModeSwitchInterface."}
+{"id":"TPS_SWCT_01214","profile":"OPTIONAL"}
+{"id":"constr_4008","profile":"MUST_CORE_TYPE","note":"TriggerPortAnnotation requires a port typed by TriggerInterface."}
+{"id":"TPS_SWCT_01215","profile":"OPTIONAL"}
+{"id":"constr_4009","profile":"MUST_CORE_TYPE","note":"NvDataPortAnnotation requires a port typed by NvDataInterface."}
+{"id":"TPS_SWCT_01216","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01217","profile":"MUST_MAJOR_STATIC","rule_family":"cross_object_consistency","note":"Check signalFan single/nfold annotation against effective inner connector multiplicity."}
+{"id":"constr_4010","profile":"MUST_CORE_TYPE","note":"DelegatedPortAnnotation is legal only on a composition-owned surface port."}
+{"id":"TPS_SWCT_01218","profile":"INFO_DEF"}
+{"id":"constr_1290","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"A P port may have at most one ComSpec per referenced data element or operation."}
+{"id":"constr_1291","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"An R port may have at most one ComSpec per referenced data element or operation."}
+{"id":"TPS_SWCT_01454","profile":"OPTIONAL","rule_family":"definition"}

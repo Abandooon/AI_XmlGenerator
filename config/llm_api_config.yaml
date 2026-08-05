@@ -2,7 +2,7 @@
 llm:
   model_name: "gpt-5.4-nano-2026-03-17"        # Gemini模型名称
   llm_api_url: "https://api.openai-proxy.org/v1" # API代理地址
-  api_key: "sk-FDcLPqAYJeas9C5h5vdKVfFVFh2v4cO99k06zaviDGLLV8UJ"  # API密钥
+  api_key: ""
   temperature: 0.2                                   # 生成温度参数
   max_output_tokens: 128000                     # 提升到100K - 利用Gemini长输出能力
   max_context_tokens: 400000                      # 提升到2M - Gemini支持2M上下文
@@ -30,18 +30,29 @@ memory:
 # ===== 知识图谱配置 =====
 knowledge_graph:
   neo4j_uri: "neo4j://127.0.0.1:7687"              # Neo4j数据库连接URI
-  neo4j_password: "542394665"                       # Neo4j密码
+  neo4j_password: ""
   neo4j_user: "neo4j"
+  neo4j_database: "neo4j"
   max_safety_depth: 100                            # 提升安全深度，允许更深的Schema
 
-# ===== 约束引擎配置 =====
+# ===== ConstraintV2 检索配置 =====
 constraint_engine:
-  enabled: false                    # 是否启用约束引擎（关闭可节省token）
-  max_constraints_per_type: 3       # 每个类型最多返回的约束数量
-  constraint_types:                 # 要包含的约束类型
-    - MODEL_OCL                     # 模型约束
-    - DATA_TYPE                     # 数据类型约束
-  exclude_standard_constraints: false  # 是否排除通用约束
+  enabled: true
+  backend: "hybrid"                # Neo4j 优先；不一致或不可用时显式回退本地
+  max_constraints_interface: 20
+  max_constraints_component: 24
+  per_family_limit: 5
+
+# ===== 生成后验证 =====
+validation:
+  enabled: true
+  plan_path: "src/generate_formal_constraints/v2/validation_plan.json"
+  xsd_enabled: true
+  xsd_path: "src/validation/data/AUTOSAR_4-2-2.xsd"
+  reference_scope: "partial"       # 生成包不包含平台/外部引用，不能宣称 complete
+  auto_repair_enabled: true       # 对可修复错误执行受控的“修复-重验”闭环
+  auto_repair_max_rounds: 2       # 仅接受验证评分严格改善的候选结果
+  auto_repair_temperature: 0.0
 
 # ===== standard_types配置 =====
 standard_types:

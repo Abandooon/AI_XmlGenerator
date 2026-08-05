@@ -1,4 +1,3 @@
-import pandas as pd
 from config import CLASS_LEVEL_ATTR, ENUM_LEVEL_ATTR, UNIFIED_METADATA_FILENAME
 from context_injector import get_class_info, get_enum_literals
 

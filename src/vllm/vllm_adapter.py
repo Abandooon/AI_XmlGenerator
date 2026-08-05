@@ -1,10 +1,8 @@
 # src/client/vllm_adapter.py
-import asyncio
-import aiohttp
-import json
 import time
-from typing import Dict, Any, Optional
-from pathlib import Path
+from typing import Dict, Any
+
+import aiohttp
 
 
 class VLLMAdapter:

@@ -2,9 +2,8 @@
 """
 测试 Round1 Designer 实际调用 Gemini API 的输出
 """
-import os
-import sys
 import json
+import sys
 from pathlib import Path
 
 # 添加项目根目录到路径

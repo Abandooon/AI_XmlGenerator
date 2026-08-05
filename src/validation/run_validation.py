@@ -6,10 +6,12 @@
 - 尝试运行一个 precedence 的 SMT 小示例（有 z3 则执行，无 z3 则提示跳过）
 - 控制台输出逐条结果与汇总
 """
+import re
+import sys
 from pathlib import Path
+
 from rdflib import Graph, Namespace, Literal
 from rdflib.namespace import RDF
-import re, sys
 
 EX = Namespace("http://example.org/autosar#")
 

@@ -5,22 +5,24 @@
 """
 import json
 import time
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import uuid as uuid_module
 from typing import Dict, List, Any, Optional, Tuple
-from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
-from copy import deepcopy
+from xml.etree.ElementTree import Element, SubElement, tostring
+
+from src.validation.v2.repair_loop import BundleRepairLoop
+from src.validation.v2.service import GeneratedArxmlValidationService
+from .xsd_serializer import DeterministicXsdSerializer, apply_projection_map
 from ..config import CONFIG
+from ..knowledge.dynamic_query_engine import query_engine
+from ..knowledge.v2.generation_adapter import GenerationConstraintAdapterV2
 from ..llm.openai_client import OpenAIClient as GeminiClient
 # from ..llm.gemini_client import GeminiClient
 from ..llm.prompt_templates import template_manager
-from ..knowledge.dynamic_query_engine import query_engine
-from ..knowledge.constraint_engine import constraint_engine
-from ..standard_types.standard_types import standard_type_manager # 新增：导入标准类型管理器
-from ..utils.serializers import ArchitectureDesign, generate_uuid
-from ..utils.exceptions import ValidationError
+from ..standard_types.standard_types import standard_type_manager  # 新增：导入标准类型管理器
+from ..utils.serializers import ArchitectureDesign
 
 
 class Round2Generator:
@@ -30,8 +32,36 @@ class Round2Generator:
         """初始化Round 2生成器"""
         self.gemini_client = GeminiClient()
         self.query_engine = query_engine
-        self.constraint_engine = constraint_engine
         self.standard_type_manager = standard_type_manager  # 新增：标准类型管理器
+        self.constraint_adapter_v2 = GenerationConstraintAdapterV2.try_default(CONFIG)
+        if CONFIG.constraint_engine.enabled and self.constraint_adapter_v2 is None:
+            raise RuntimeError(
+                "ConstraintV2 is enabled, but retrieval cards/manifest could not be loaded"
+            )
+        self.validation_service = GeneratedArxmlValidationService.from_config(CONFIG)
+        self._constraint_retrieval_trace: Dict[str, Any] = {}
+
+        self._component_projection_maps: Dict[str, Dict[str, Any]] = {}
+        project_root = Path(__file__).resolve().parents[3]
+        validation_config = getattr(CONFIG, "validation", None)
+        xsd_value = str(getattr(validation_config, "xsd_path", "") or "")
+        manifest_value = str(
+            getattr(validation_config, "xsd_serialization_manifest_path", "") or ""
+        )
+        xsd_path = Path(xsd_value) if xsd_value else Path(
+            "src/validation/data/AUTOSAR_4-2-2.xsd"
+        )
+        manifest_path = Path(manifest_value) if manifest_value else Path(
+            "src/llm_generation/knowledge/v2/xsd_serialization_manifest.json"
+        )
+        if not xsd_path.is_absolute():
+            xsd_path = project_root / xsd_path
+        if not manifest_path.is_absolute():
+            manifest_path = project_root / manifest_path
+        self.xml_serializer = DeterministicXsdSerializer.from_files(
+            manifest_path,
+            xsd_path=xsd_path,
+        )
 
         if CONFIG.debug_mode:
             print("[DEBUG] Round2生成器初始化（修复版：无函数调用）")
@@ -52,6 +82,8 @@ class Round2Generator:
         """
 
         start_time = time.time()
+        self._component_projection_maps.clear()
+        self._constraint_retrieval_trace = {}
         component_plans_map = {comp['name']: comp for comp in (architecture_design.component_plan or [])}
         interface_plans = architecture_design.interface_plan or []
 
@@ -65,8 +97,24 @@ class Round2Generator:
         # 2) 先生成接口实例（独立于组件，严格按接口 Schema）
         merged_json: Dict[str, Any] = {}
         token_stats = {"input": 0, "output": 0, "total": 0}
+        # Always define the downstream interface index. Architectures without
+        # interfaces, and interface-generation failures, must still generate
+        # their components and reach validation.
+        iface_index_for_prompt: List[Dict[str, Any]] = []
 
         if interface_plans:
+            interface_constraint_context_v2 = ""
+            if self.constraint_adapter_v2 is not None:
+                interface_cards_v2 = self.constraint_adapter_v2.retrieve_for_interfaces(
+                    interface_plans=interface_plans,
+                    interface_schema=interface_schema,
+                    max_constraints=CONFIG.constraint_engine.max_constraints_interface,
+                    per_family_limit=CONFIG.constraint_engine.per_family_limit,
+                )
+                interface_constraint_context_v2 = self.constraint_adapter_v2.render_prompt(interface_cards_v2)
+                self._constraint_retrieval_trace["interfaces"] = (
+                    self.constraint_adapter_v2.retrieval_trace()
+                )
             try:
                 interfaces_prompt = template_manager.get_round2_prompt_interfaces(
                     interface_plans=interface_plans,
@@ -75,6 +123,7 @@ class Round2Generator:
                     memory_context=memory_context or "",
                     standard_types=standard_types
                 )
+                interfaces_prompt += interface_constraint_context_v2
                 # 保存接口 Prompt 以便调试
                 self._save_prompt_to_file(interfaces_prompt)
 
@@ -136,8 +185,6 @@ class Round2Generator:
         if CONFIG.debug_mode:
             print(f"[DEBUG] 组件生成顺序: {[comp['name'] for comp in ordered_component_plans]}")
 
-        # 3) 查询全局约束集合（随后按组件过滤）
-        constraints_all = self._query_comprehensive_constraints(ordered_component_plans, interface_plans)
         standard_types = self._prepare_standard_types()
 
         # 4.b) 初始化用于累积实例路径的字典
@@ -157,6 +204,9 @@ class Round2Generator:
             comp_name = comp.get("name", "Component")
             # 4.1 单组件 Schema
             comp_schema = self._build_single_component_schema(comp)
+            self._component_projection_maps[comp_name] = (
+                self.query_engine.component_xml_projection_map(comp)
+            )
             self._save_component_schema_to_file(comp_name, comp_schema)  # 保存原生Schema
 
             # 4.2 (新) 将已知的路径注入当前组件的Schema，生成增强版Schema
@@ -169,15 +219,25 @@ class Round2Generator:
                 # 可以选择性保存增强后的Schema用于调试
                 self._save_component_schema_to_file(f"{comp_name}_enhanced", enhanced_schema)
 
-            # 4.2 过滤与该组件相关的约束
-            constraints = self._filter_constraints_for_component(comp, constraints_all)
+            constraint_context_v2 = ""
+            if self.constraint_adapter_v2 is not None:
+                component_cards_v2 = self.constraint_adapter_v2.retrieve_for_component(
+                    component_plan=comp,
+                    component_schema=enhanced_schema,
+                    interface_plans=interface_plans,
+                    max_constraints=CONFIG.constraint_engine.max_constraints_component,
+                    per_family_limit=CONFIG.constraint_engine.per_family_limit,
+                )
+                constraint_context_v2 = self.constraint_adapter_v2.render_prompt(component_cards_v2)
+                self._constraint_retrieval_trace[comp_name] = (
+                    self.constraint_adapter_v2.retrieval_trace()
+                )
             r1_component_design = comp
 
             # 4.3 单组件 Prompt（接口仅作为上下文参考；组件输出仍严格按组件 Schema）
             prompt = template_manager.get_round2_prompt_single(
                 comp_plan=comp,
                 interface_plans=interface_plans,
-                constraints=constraints,
                 component_schema=enhanced_schema,
                 interface_index=iface_index_for_prompt,
                 r1_component_design=r1_component_design,
@@ -186,6 +246,7 @@ class Round2Generator:
                 # ****** 新增参数: 传递已知路径 ******
                 known_paths=known_instance_paths
             )
+            prompt += constraint_context_v2
             # 类型库与引用规范
             prompt += self._add_direct_reference_guidance(architecture_design)
 
@@ -223,20 +284,14 @@ class Round2Generator:
                     root = resp.get(comp_type_key) or {}
 
                     # --- 恢复折叠的容器标签（保持原有逻辑）---
-                    try:
-                        if isinstance(root, dict) and "SWC-INTERNAL-BEHAVIOR" in root:
-                            sib = root.get("SWC-INTERNAL-BEHAVIOR") or {}
-                            if isinstance(sib, dict):
-                                # A) 先恢复 RUNNABLES
-                                if "RUNNABLE-ENTITY" in sib and "RUNNABLES" not in sib:
-                                    sib["RUNNABLES"] = {"RUNNABLE-ENTITY": sib.pop("RUNNABLE-ENTITY")}
-                                # B) 再恢复 INTERNAL-BEHAVIORS
-                                if "INTERNAL-BEHAVIORS" not in root:
-                                    root["INTERNAL-BEHAVIORS"] = {"SWC-INTERNAL-BEHAVIOR": sib}
-                                    root.pop("SWC-INTERNAL-BEHAVIOR", None)
-                    except Exception:
-                        pass
-
+                    if not isinstance(root, dict):
+                        raise ValueError(
+                            f"component {comp_name!r} did not produce an object payload"
+                        )
+                    root = apply_projection_map(
+                        root,
+                        self._component_projection_maps.get(comp_name),
+                    )
                     # ✅ 核心改动：用实例名作为键
                     merged_json[comp_name] = root
                     # 保存类型信息（供后续转换使用）
@@ -245,21 +300,156 @@ class Round2Generator:
                     # 兼容异常情况：直接合并
                     merged_json.update(resp)
 
-        # 5) 转为 ARXML（新逻辑：逐条输出，不合并）
+        # 5) 转为 ARXML（逐文件输出）并立即执行同一版本的验证计划。
         component_xml_map, interface_xml_map = self._convert_each_to_arxml(merged_json)
+        arxml_bundle = {
+            "components": component_xml_map,
+            "interfaces": interface_xml_map,
+        }
+        validation_context = None
+        validation = None
+        repair_audit = {
+            "schema_version": "1.0", "enabled": False,
+            "attempted_rounds": 0, "accepted_rounds": 0,
+            "stop_reason": "disabled",
+            "token_usage": {"input": 0, "output": 0, "total": 0},
+            "history": [],
+        }
+        if self.validation_service is not None:
+            declarations = self._validation_declarations(custom_requirements)
+            validation_context = self.validation_service.build_validation_context(
+                self._constraint_retrieval_trace,
+                declared_use_cases=declarations["declared_use_cases"],
+                declared_constraint_ids=declarations["declared_constraint_ids"],
+                declared_targets=declarations["declared_targets"],
+                declared_parameters=declarations["declared_parameters"],
+            )
+            validation = self.validation_service.validate_bundle(
+                arxml_bundle, validation_context=validation_context
+            )
+            if CONFIG.validation.auto_repair_enabled:
+                repair_loop = BundleRepairLoop(
+                    self.validation_service,
+                    self._repair_bundle_candidate,
+                    max_rounds=CONFIG.validation.auto_repair_max_rounds,
+                )
+                arxml_bundle, validation, repair_audit = repair_loop.run(
+                    arxml_bundle, validation, validation_context=validation_context
+                )
+                repair_tokens = repair_audit.get("token_usage") or {}
+                token_stats["input"] += int(repair_tokens.get("input") or 0)
+                token_stats["output"] += int(repair_tokens.get("output") or 0)
+                token_stats["total"] += int(repair_tokens.get("total") or 0)
 
-        # 6) 统计
+        # 6) 统计和可追溯运行信息
         generation_time = time.time() - start_time
         stats = {
             "input_tokens": token_stats["input"],
             "output_tokens": token_stats["output"],
             "total_tokens": token_stats["total"],
-            "generation_time": generation_time
+            "generation_time": generation_time,
+            "constraint_retrieval": self._constraint_retrieval_trace,
+            "validation_context": validation_context,
+            "auto_repair": repair_audit,
+            "validation": validation,
+            "validation_decision": validation.get("decision") if validation else "DISABLED",
+            "validation_summary": validation.get("summary", {}) if validation else {},
         }
-        return {
-            "components": component_xml_map,  # Dict[str, str]  ->  {组件名: 组件XML文本}
-            "interfaces": interface_xml_map  # Dict[str, str]  ->  {接口名: 接口XML文本}
-        }, stats
+        return arxml_bundle, stats
+
+    @staticmethod
+    def _validation_declarations(custom_requirements: Dict[str, Any] | None) -> Dict[str, Any]:
+        """Read explicit intent without silently coercing malformed values.
+
+        The ``validation_*`` names are retained only as compatibility aliases
+        for callers predating the public ``declared_*`` validation-context
+        contract.
+        """
+        source = custom_requirements or {}
+        aliases = {
+            "declared_use_cases": "validation_use_cases",
+            "declared_constraint_ids": "validation_constraint_ids",
+            "declared_targets": "validation_targets",
+            "declared_parameters": "validation_parameters",
+        }
+        values: Dict[str, Any] = {}
+        for public_name, legacy_name in aliases.items():
+            value = source.get(public_name)
+            if value is None:
+                value = source.get(legacy_name)
+            if value is None:
+                value = [] if public_name in {"declared_use_cases", "declared_constraint_ids"} else {}
+            values[public_name] = value
+
+        if not isinstance(values["declared_use_cases"], list):
+            raise ValueError("declared_use_cases must be an array")
+        if not isinstance(values["declared_constraint_ids"], list):
+            raise ValueError("declared_constraint_ids must be an array")
+        if not isinstance(values["declared_targets"], dict):
+            raise ValueError("declared_targets must be an object")
+        if not isinstance(values["declared_parameters"], dict):
+            raise ValueError("declared_parameters must be an object")
+        return values
+
+    def _repair_bundle_candidate(
+        self,
+        bundle: Dict[str, Any],
+        report: Dict[str, Any],
+        repair_prompt: str,
+        round_number: int,
+    ) -> Tuple[Dict[str, Dict[str, str]], Dict[str, int]]:
+        documents = [
+            {"kind": kind, "name": name, "xml": xml_text}
+            for kind in ("components", "interfaces")
+            for name, xml_text in sorted((bundle.get(kind) or {}).items())
+        ]
+        schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["documents"],
+            "properties": {
+                "documents": {
+                    "type": "array",
+                    "minItems": len(documents),
+                    "maxItems": len(documents),
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["kind", "name", "xml"],
+                        "properties": {
+                            "kind": {"type": "string", "enum": ["components", "interfaces"]},
+                            "name": {"type": "string"},
+                            "xml": {"type": "string", "minLength": 1},
+                        },
+                    },
+                }
+            },
+        }
+        prompt = (
+            f"Controlled AUTOSAR repair round {round_number}.\n"
+            "Return every input document exactly once with the same kind and name. "
+            "Edit only what is needed to address the findings; never delete unrelated content. "
+            "Preserve namespaces, SHORT-NAME identity, cross-file references, and XSD element order.\n\n"
+            f"VALIDATION ACTIONS:\n{repair_prompt}\n\n"
+            "HASH-PINNED VALIDATION CONTEXT:\n"
+            f"{json.dumps(report.get('validation_context'), ensure_ascii=False, indent=2)}\n\n"
+            "CURRENT ARXML DOCUMENTS:\n"
+            f"{json.dumps(documents, ensure_ascii=False, indent=2)}"
+        )
+        response, in_tokens, out_tokens, total_tokens = self.gemini_client.generate_with_schema(
+            prompt=prompt,
+            schema=schema,
+            temperature=CONFIG.validation.auto_repair_temperature,
+            max_retries=2,
+        )
+        candidate: Dict[str, Dict[str, str]] = {"components": {}, "interfaces": {}}
+        for item in (response or {}).get("documents") or []:
+            kind = str(item.get("kind") or "")
+            name = str(item.get("name") or "")
+            if kind not in candidate or not name or name in candidate[kind]:
+                raise ValueError(f"invalid or duplicate repaired document identity: {kind}/{name}")
+            candidate[kind][name] = str(item.get("xml") or "")
+        return candidate, {"input": in_tokens, "output": out_tokens, "total": total_tokens}
 
     def _build_single_component_schema(self, comp: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -652,31 +842,6 @@ class Round2Generator:
         _walk(schema, None)
         return schema
 
-    def _filter_constraints_for_component(self, comp_plan: Dict[str, Any], constraints: List[str]) -> List[str]:
-        """按组件特征（端口/内部行为/事件）过滤约束，减少 LLM 负担。"""
-        ed = comp_plan.get("element_design", {}) or {}
-        need_ports = bool(ed.get("ports", {}).get("needed"))
-        need_ib = bool(ed.get("internal_behaviors", {}).get("needed"))
-        event_types = set()
-        for e in ed.get("internal_behaviors", {}).get("events", []) or []:
-            if isinstance(e, dict) and e.get("type"):
-                event_types.add(e["type"])
-
-        filtered = []
-        for c in constraints or []:
-            cs = c or ""
-            # 朴素启发：只保留与需要的部分相关的约束
-            if ("端口" in cs or "PORT" in cs) and not need_ports:
-                continue
-            if ("RUNNABLE" in cs or "事件" in cs or "EVENT" in cs or "INTERNAL-BEHAVIOR" in cs) and not need_ib:
-                continue
-            # 如果指向特定事件类型，但该组件未声明此事件，则跳过
-            if any(et in cs for et in ["TIMING-EVENT", "DATA-RECEIVED-EVENT", "OPERATION-INVOKED-EVENT"]):
-                if not any(et in cs for et in event_types):
-                    continue
-            filtered.append(c)
-        # 去重
-        return sorted(set(filtered))
 
     def _prepare_standard_types(self) -> Dict[str, Any]:
         """准备标准类型引用信息 - 动态加载版本"""
@@ -786,122 +951,28 @@ class Round2Generator:
             "- 接口路径示例：/Interfaces/<InterfaceShortName>\n"
         )
 
-    def _query_comprehensive_constraints(
-            self,
-            component_plans: List[Dict[str, Any]],
-            interface_plans: List[Dict[str, Any]]
-    ) -> List[str]:
-        """查询完整的约束规则 - 支持配置控制"""
-
-        constraints = []
-
-        # 检查约束引擎是否启用
-        if hasattr(CONFIG, 'constraint_engine') and not CONFIG.constraint_engine.enabled:
-            # 约束引擎被禁用，只返回最基础的约束
-            if CONFIG.debug_mode:
-                print("[DEBUG] 约束引擎已禁用，使用最小约束集")
-
-            return [
-                "所有UUID必须全局唯一",
-                "SHORT-NAME必须符合NCName规范",
-                "引用路径必须正确且一致"
-            ]
-
-        # 获取约束配置
-        constraint_config = getattr(CONFIG, 'constraint_engine', None)
-        max_constraints = constraint_config.max_constraints_per_type if constraint_config else 3
-        exclude_standard = constraint_config.exclude_standard_constraints if constraint_config else False
-
-        # 约束引擎启用时的逻辑
-        try:
-            # 组件类型约束
-            component_types = set(comp.get("type", "") for comp in component_plans)
-            for comp_type in component_types:
-                if comp_type:
-                    type_constraints = self.query_engine.query_constraints_for_elements([comp_type])
-                    # 限制约束数量
-                    constraints.extend(type_constraints[:max_constraints])
-
-            # 接口类型约束
-            interface_types = set(intf.get("type", "") for intf in interface_plans)
-            for intf_type in interface_types:
-                if intf_type:
-                    intf_constraints = self.query_engine.query_constraints_for_elements([intf_type])
-                    # 限制约束数量
-                    constraints.extend(intf_constraints[:max_constraints])
-
-        except Exception as e:
-            if CONFIG.debug_mode:
-                print(f"[DEBUG] 约束查询失败，使用基础约束: {e}")
-
-        # 通用AUTOSAR约束（根据配置决定是否添加）
-        if not exclude_standard:
-            general_constraints = [
-                "所有UUID必须全局唯一",
-                "SHORT-NAME必须符合NCName规范",
-                "端口名称在组件内必须唯一",
-                "事件必须正确引用Runnable",
-                "接口引用必须使用完整路径",
-                "接口数据元素必须引用IMPLEMENTATION-DATA-TYPE，不能引用SW-BASE-TYPE",
-                "类型引用格式：/AUTOSAR_Platform/ImplementationDataTypes/类型名"
-            ]
-            constraints.extend(general_constraints)
-
-        # 去重
-        constraints = list(set(constraints))
-
-        if CONFIG.debug_mode:
-            print(f"[DEBUG] 查询到{len(constraints)}条约束规则")
-
-        return constraints
 
     def _add_component_to_xml(self, parent: Element, comp_name: str, comp_data: Dict[str, Any]):
-        """添加组件到XML"""
-
+        """Add a component through the hash-pinned XSD serialization plan."""
         comp_type = comp_data.get("_type", "APPLICATION-SW-COMPONENT-TYPE")
         comp_element = SubElement(parent, comp_type)
-
-        self._dict_to_xml(comp_element, comp_data, skip_keys=["_type"])
+        self.xml_serializer.append_payload(
+            comp_element,
+            comp_data,
+            root_element=comp_type,
+            skip_keys=("_type",),
+        )
 
     def _add_interface_to_xml(self, parent: Element, intf_name: str, intf_data: Dict[str, Any]):
-        """添加接口到XML"""
-
+        """Add an interface through the hash-pinned XSD serialization plan."""
         intf_type = intf_data.get("_type", "SENDER-RECEIVER-INTERFACE")
         intf_element = SubElement(parent, intf_type)
-
-        self._dict_to_xml(intf_element, intf_data, skip_keys=["_type"])
-
-    def _dict_to_xml(self, parent: Element, data: Dict[str, Any], skip_keys: List[str] = None):
-        """递归转换字典到XML"""
-
-        skip_keys = skip_keys or []
-
-        for key, value in data.items():
-            if key in skip_keys or key.startswith("_"):
-                continue
-
-            if key.startswith("@"):
-                # 属性
-                parent.set(key[1:], str(value))
-            elif key == "#text":
-                # 文本内容
-                parent.text = str(value)
-            elif isinstance(value, dict):
-                # 嵌套元素
-                child = SubElement(parent, key)
-                self._dict_to_xml(child, value)
-            elif isinstance(value, list):
-                # 列表元素
-                for item in value:
-                    if isinstance(item, dict):
-                        child = SubElement(parent, key)
-                        self._dict_to_xml(child, item)
-                    else:
-                        SubElement(parent, key).text = str(item)
-            else:
-                # 简单元素
-                SubElement(parent, key).text = str(value)
-
+        self.xml_serializer.append_payload(
+            intf_element,
+            intf_data,
+            root_element=intf_type,
+            skip_keys=("_type",),
+        )
     def _save_prompt_to_file(self, prompt: str):
         """保存Prompt到文件"""
         try:

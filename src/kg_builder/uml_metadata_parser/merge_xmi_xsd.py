@@ -1,7 +1,7 @@
 import json
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def load_json_file(file_path):

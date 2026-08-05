@@ -2,10 +2,9 @@
 
 提供数据验证和完整性检查功能
 """
-import json
 import re
-from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
+from typing import Dict, List, Any, Union
 
 
 def validate_uuid(uuid_str: str) -> bool:

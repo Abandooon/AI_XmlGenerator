@@ -1,7 +1,9 @@
 import re
+
 from config import (
     CLASS_ANNOTATION_PATTERN, ENUM_ANNOTATION_PATTERN, SECTION_ANNOTATION_PATTERN
 )
+
 
 # get_enum_literals 函数保持不变 (如原文档提供)
 def get_enum_literals(metadata, enum_name):

@@ -1,0 +1,40 @@
+{"id":"TPS_SWCT_01653","profile":"MUST_CORE_FORBID","rule_family":"format_pattern","scope":"property","note":"UTF-16 encoded string values must not start with BOM."}
+{"id":"TPS_SWCT_01564","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"TPS_SWCT_01565","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"TPS_SWCT_01179","profile":"INFO_DEF","rule_family":"required_existence"}
+{"id":"TPS_SWCT_01486","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"constr_1241","profile":"MUST_CORE_FORBID","scope":"object","note":"Compound primitive categories other than STRING cannot define invalidValue."}
+{"id":"TPS_SWCT_01477","profile":"INFO_DEF"}
+{"id":"constr_1229","profile":"MUST_CORE_TYPE","note":"Implement recursive Integral Primitive Type predicate for implementation types, including uint8 array exceptions."}
+{"id":"constr_1230","profile":"MUST_CORE_TYPE","note":"Application Integral Primitive Type requires listed category, available DataTypeMap, and constr_1229 implementation target."}
+{"id":"TPS_SWCT_01264","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01265","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01445","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"DataPrototype property applicability reuses Table 5.8, which must be captured."}
+{"id":"constr_1289","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Application-typed prototype attribute/category matrix is in Table 5.31."}
+{"id":"constr_1288","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Implementation-typed prototype attribute/category matrix is in Table 5.32."}
+{"id":"TPS_SWCT_01266","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01267","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"TPS_SWCT_01268","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01269","profile":"INFO_RUNTIME","note":"Port-interface prototype init values are ignored; ComSpec is authoritative."}
+{"id":"TPS_SWCT_01446","profile":"INFO_DEF","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01270","profile":"INFO_DEF","rule_family":"reference_integrity"}
+{"id":"constr_2536","profile":"MUST_CORE_REF","scope":"cross_object","note":"autosarVariable target is VariableDataPrototype or a composite element nested within one."}
+{"id":"TPS_SWCT_01271","profile":"INFO_DEF","rule_family":"reference_integrity"}
+{"id":"constr_1173","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","note":"AutosarParameterRef may target VariableDataPrototype only in SwAxisGrouped context."}
+{"id":"constr_2535","profile":"MUST_CORE_REF","scope":"cross_object","note":"Except constr_1173, autosarParameter target is ParameterDataPrototype or a nested composite element."}
+{"id":"constr_1161","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"Ref.index is legal only in the listed reference roles."}
+{"id":"TPS_SWCT_01374","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"Composite autosarParameter requires rootParameterDataPrototype; primitive requires only targetDataPrototype."}
+{"id":"TPS_SWCT_01375","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"Composite autosarVariable requires rootVariableDataPrototype; primitive requires only targetDataPrototype."}
+{"id":"constr_1015","profile":"MUST_PARTIAL","rule_family":"ordering","note":"SwDataDefProps priority/use restrictions must be recovered from Table 5.39."}
+{"id":"constr_1244","profile":"MUST_CORE_FORBID","scope":"property","note":"Atomic-component data prototypes cannot set additionalNativeTypeQualifier to enum."}
+{"id":"TPS_SWCT_01272","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01273","profile":"MUST_CORE_CONSIST","rule_family":"ordering","scope":"cross_object","note":"Compute effective SwDataDefProps with the seven-level precedence order."}
+{"id":"TPS_SWCT_01274","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01275","profile":"INFO_DEF","rule_family":"value_domain"}
+{"id":"constr_2035","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"SenderReceiverInterface variable swImplPolicy is standard, queued, or measurementPoint."}
+{"id":"constr_2036","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"NvDataInterface variable swImplPolicy is standard."}
+{"id":"constr_2037","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"ramBlock variable swImplPolicy is standard."}
+{"id":"constr_2038","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"implicitInterRunnableVariable swImplPolicy is standard."}
+{"id":"constr_2039","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"explicitInterRunnableVariable swImplPolicy is standard."}
+{"id":"constr_2040","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"arTypedPerInstanceMemory swImplPolicy is standard or measurementPoint."}
+{"id":"constr_2041","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"staticMemory swImplPolicy is standard, measurementPoint, or message."}

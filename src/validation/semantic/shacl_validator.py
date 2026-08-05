@@ -1,10 +1,11 @@
 # src/validation/semantic/shacl_validator.py (增强版 - 支持细粒度控制)
+import json
+import xml.etree.ElementTree as ET
+from pathlib import Path
 from typing import Dict, List, Optional
+
 import rdflib
 from pyshacl import validate
-import xml.etree.ElementTree as ET
-import json
-from pathlib import Path
 
 
 class SHACLValidator:

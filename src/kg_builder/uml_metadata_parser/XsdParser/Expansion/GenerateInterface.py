@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from jinja2 import Environment, FileSystemLoader
 from lxml import etree
 
 from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case

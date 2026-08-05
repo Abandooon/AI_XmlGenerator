@@ -4,13 +4,13 @@
 Hook pyshacl 内部 VALUES 检测逻辑，精确定位问题约束
 """
 
+import re
 import sys
 from pathlib import Path
-import rdflib
-from rdflib import Namespace, RDF, URIRef, Literal
-import re
 
 import pyshacl
+import rdflib
+from rdflib import Namespace
 
 print(f"✅ pyshacl 版本: {pyshacl.__version__}")
 

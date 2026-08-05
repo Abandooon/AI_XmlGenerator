@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
 # Run with: Python (not pytest)
 
-import os
 import sys
-import json
 import unittest
 from pathlib import Path
 from typing import Dict, Any, List
-from unittest.mock import Mock, patch, MagicMock
 
 # 添加项目根目录到路径
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.llm_generation.core.round1_designer import Round1Designer, round1_designer
-from src.llm_generation.utils.serializers import ArchitectureDesign
-from src.llm_generation.utils.exceptions import ArchitectureDesignError
+from src.llm_generation.core.round1_designer import Round1Designer
 
 
 class checkRound1ArchitectureDesigner(unittest.TestCase):

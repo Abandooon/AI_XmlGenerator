@@ -4,12 +4,10 @@ AUTOSAR ARXML 完整性检查脚本
 检查生成文件的完整性：文件存在性、大小、结构完整性
 """
 
-import os
 import json
-from pathlib import Path
-from typing import Dict, List, Tuple
-from collections import defaultdict
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Dict, Tuple
 
 
 class CompletenessChecker:

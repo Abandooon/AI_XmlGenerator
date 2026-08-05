@@ -1,0 +1,19 @@
+{
+  "TPS_SWCT_01447": [{"plugin": "port_forbids_postbuild_variation", "selector": ["P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE", "PR-PORT-PROTOTYPE"], "requires": ["well_formed_xml"]}],
+  "TPS_SWCT_01111": [{"plugin": "port_interface_reference_required", "selector": ["P-PORT-PROTOTYPE", "R-PORT-PROTOTYPE", "PR-PORT-PROTOTYPE"], "requires": ["well_formed_xml"]}],
+  "constr_1092": [{"plugin": "parameter_component_restrictions", "selector": ["PARAMETER-SW-COMPONENT-TYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "TPS_SWCT_01035": [{"plugin": "component_prototype_type_reference", "selector": ["SW-COMPONENT-PROTOTYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1035": [{"plugin": "composition_type_acyclic", "selector": ["COMPOSITION-SW-COMPONENT-TYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1032": [{"plugin": "delegation_port_kind_compatible", "selector": ["DELEGATION-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1086": [{"plugin": "connector_endpoint_pair_unique", "selector": ["ASSEMBLY-SW-CONNECTOR", "DELEGATION-SW-CONNECTOR", "PASS-THROUGH-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "TPS_SWCT_01638": [{"plugin": "connector_endpoint_pair_unique", "selector": ["ASSEMBLY-SW-CONNECTOR", "PASS-THROUGH-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"], "parameters": {"pr_ports_are_undirected": true}}],
+  "constr_1087": [{"plugin": "assembly_endpoints_same_composition", "selector": ["ASSEMBLY-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1088": [{"plugin": "delegation_endpoints_same_composition", "selector": ["DELEGATION-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "TPS_SWCT_01515": [{"plugin": "inner_pr_port_uses_p_iref", "selector": ["DELEGATION-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1233": [{"plugin": "refined_event_is_timing_event", "selector": ["INSTANTIATION-TIMING-EVENT-PROPS"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1036": [{"plugin": "connected_port_interface_kinds", "selector": ["ASSEMBLY-SW-CONNECTOR", "DELEGATION-SW-CONNECTOR", "PASS-THROUGH-SW-CONNECTOR"], "requires": ["well_formed_xml", "complete_reference_scope", "metamodel"]}],
+  "constr_1137": [{"plugin": "parameter_interface_p_port_owner", "selector": ["P-PORT-PROTOTYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1174": [{"plugin": "composition_port_forbids_service_interface", "selector": ["COMPOSITION-SW-COMPONENT-TYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "constr_1100": [{"plugin": "unconnected_rport_init_values", "selector": ["R-PORT-PROTOTYPE"], "requires": ["well_formed_xml", "complete_reference_scope"]}],
+  "TPS_SWCT_01005": [{"plugin":"vendor_service_dependency_no_standard_needs","selector":["SWC-SERVICE-DEPENDENCY"],"requires":["well_formed_xml","validation_context","generation_intent"],"activation":{"requires_validation_context":true,"requires_declared_constraint":true,"requires_declared_targets":true},"rule_family":"forbidden_existence","reason":"Vendor-specific intent cannot be inferred from AUTOSAR XML; standardized ServiceNeeds are forbidden only on exact manifest-bound dependencies."}]
+}

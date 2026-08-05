@@ -1,0 +1,30 @@
+{"id":"constr_1292","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"A PR port may have at most one R-side and one P-side ComSpec per referenced element or operation."}
+{"id":"constr_1043","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"The legal interface/ComSpec matrix must be recovered from Table 4.59."}
+{"id":"TPS_SWCT_01455","profile":"INFO_RUNTIME","note":"Receiver initValue on a PR port is explicitly ignored; generation should avoid redundant data but validation must not reject it."}
+{"id":"TPS_SWCT_01219","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","note":"Overview dependency for constr_1129 through constr_1132; do not emit duplicate diagnostics."}
+{"id":"constr_1103","profile":"MUST_CORE_FORBID","note":"enableUpdate=true conflicts with a dataReadAccess to the same referenced data element."}
+{"id":"constr_1201","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"NonqueuedReceiverComSpec under an R port requires initValue."}
+{"id":"constr_1129","profile":"MUST_CORE_TYPE","scope":"property","note":"NonqueuedReceiverComSpec target data element must not be queued."}
+{"id":"constr_1130","profile":"MUST_CORE_TYPE","scope":"property","note":"QueuedReceiverComSpec target data element must be queued."}
+{"id":"constr_1188","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"replaceWith exists iff either out-of-range or invalid handling selects externalReplacement."}
+{"id":"constr_1131","profile":"MUST_CORE_TYPE","scope":"property","note":"NonqueuedSenderComSpec target data element must not be queued."}
+{"id":"constr_1132","profile":"MUST_CORE_TYPE","scope":"property","note":"QueuedSenderComSpec target data element must be queued."}
+{"id":"TPS_SWCT_01220","profile":"INFO_RUNTIME","note":"ComSpec initValue is authoritative for transmission; VariableDataPrototype initValue is ignored."}
+{"id":"TPS_SWCT_01221","profile":"OPTIONAL","rule_family":"conditional_existence"}
+{"id":"TPS_SWCT_01222","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"constr_1044","profile":"MUST_CORE_TYPE","note":"DataFilter requires an integer base type after type resolution."}
+{"id":"TPS_SWCT_01593","profile":"INFO_DEF"}
+{"id":"constr_1323","profile":"MUST_CORE_CONSIST","scope":"property","note":"usesEndToEndProtection must be false when EndToEndTransformationDescription is aggregated."}
+{"id":"TPS_SWCT_01223","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01224","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01452","profile":"MUST_CORE_TYPE","note":"networkRepresentation is primitive-only; composite types require leaf-level compositeNetworkRepresentation."}
+{"id":"constr_1196","profile":"MUST_CORE_FORBID","rule_family":"mutual_exclusion","scope":"object","note":"networkRepresentation and compositeNetworkRepresentation are mutually exclusive."}
+{"id":"constr_1197","profile":"MUST_CORE_CARD","scope":"cross_object","note":"If composite representation is used, every leaf needs exactly one entry."}
+{"id":"TPS_SWCT_01225","profile":"OPTIONAL","rule_family":"cross_object_consistency","note":"Multiple operations may share a runnable; queue equality is enforced by constr_1128."}
+{"id":"constr_1128","profile":"MUST_CORE_CONSIST","note":"All server ComSpecs for operations implemented by one runnable must use identical queueLength."}
+{"id":"TPS_SWCT_01595","profile":"MUST_PARTIAL","rule_family":"conditional_existence","note":"Inter-ECU antecedent requires deployment context; transformation properties are statically visible."}
+{"id":"TPS_SWCT_01596","profile":"MUST_PARTIAL","rule_family":"conditional_existence","note":"Inter-ECU antecedent requires deployment context; transformation properties are statically visible."}
+{"id":"TPS_SWCT_01514","profile":"INFO_RUNTIME","note":"enhancedModeApi on a PR-port receiver ComSpec is ignored."}
+{"id":"TPS_SWCT_01226","profile":"INFO_RUNTIME","note":"Only ComSpec initValue is effective; ParameterDataPrototype initValue is ignored for the connection."}
+{"id":"TPS_SWCT_01141","profile":"OPTIONAL","rule_family":"conditional_existence"}
+{"id":"TPS_SWCT_01227","profile":"OPTIONAL","rule_family":"conditional_existence"}

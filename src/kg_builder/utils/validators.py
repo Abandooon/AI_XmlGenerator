@@ -11,7 +11,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import jsonschema
 from jsonschema import Draft7Validator
 
 from .exceptions import SchemaValidationError

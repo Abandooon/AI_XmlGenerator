@@ -12,19 +12,24 @@ You *can* still pass CLI args to override these defaults, e.g.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import pathlib
 import sys
-from typing import Optional, Any, Dict
-import json
-from argparse import BooleanOptionalAction
 import tomllib
+from argparse import BooleanOptionalAction
+from typing import Optional, Any, Dict
+
+from dotenv import load_dotenv
 
 import cfg
 from dfa_compiler import compile_raw
 
+load_dotenv(pathlib.Path(__file__).resolve().parents[2] / ".env")
+
 # ── Hard‑coded defaults ───────────────────────────────────────────────────────
 
-DEFAULT_KG = "bolt://neo4j:autosar4.2.2@127.0.0.1:7687"
+DEFAULT_KG = os.getenv("NEO4J_URI", "neo4j://127.0.0.1:7687")
 DEFAULT_OUT_DIR = "artifacts"
 
 # ── Utility helpers ───────────────────────────────────────────────────────────
@@ -247,7 +252,6 @@ def _cmd_build(args: argparse.Namespace) -> None:
     # 3) exports
     from grammar_exporter import GrammarExporter
     from shacl_exporter import ShaclExporter
-    from dfa_compiler import compile_gbnf
     from smt_exporter import SmtExporter
 
     gbnf_file = grammar_dir / "autosar.gbnf"
@@ -504,7 +508,6 @@ def main(argv: Optional[list[str]] = None) -> None:
         cfg.BUILD_CFG.clear()
         cfg.BUILD_CFG.update(cfg._load_build_cfg(ns.config))
     # 延迟导入，避免循环
-    from dfa_compiler import compile_raw
     ns.func(ns)
 
 

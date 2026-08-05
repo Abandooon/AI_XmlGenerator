@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # prompt_mapper.py - 增强版，完整覆盖所有格式并支持批量处理
 
-import re
+from typing import Dict, List, Any
+
 import yaml
-from typing import Dict, List, Optional, Tuple, Any
 
 
 class AutosarPromptMapper:

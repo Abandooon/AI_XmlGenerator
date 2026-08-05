@@ -1,0 +1,40 @@
+{"id":"constr_2042","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"ParameterInterface parameter swImplPolicy is standard, const, or fixed."}
+{"id":"constr_2043","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"property","note":"Title says staticMemory but expression says romBlock; source terminology must be resolved before promotion."}
+{"id":"constr_2044","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"sharedParameter swImplPolicy is standard."}
+{"id":"constr_2045","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"property","note":"Title says perInstanceParameter but expression repeats sharedParameter; recover authoritative role before promotion."}
+{"id":"constr_2046","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"property","note":"Title says constantMemory but expression repeats sharedParameter; recover authoritative role before promotion."}
+{"id":"constr_2047","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"ArgumentDataPrototype swImplPolicy is standard."}
+{"id":"constr_2048","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"SwServiceArg swImplPolicy is standard or const."}
+{"id":"TPS_SWCT_02000","profile":"MUST_MAJOR_STATIC","rule_family":"generation_procedure","scope":"property","note":"Compute effective default standard when no precedence location defines swImplPolicy; absence is not an error."}
+{"id":"TPS_SWCT_01432","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"none"}
+{"id":"TPS_SWCT_01434","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"none"}
+{"id":"TPS_SWCT_01436","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"none"}
+{"id":"TPS_SWCT_01646","profile":"MUST_MAJOR_STATIC","rule_family":"cross_object_consistency","note":"When invalidValue is intentionally passed without RTE/Com invalidation, handleInvalid is dontInvalidate; antecedent needs design intent."}
+{"id":"constr_1390","profile":"MUST_CORE_CONSIST","rule_family":"value_range","note":"For handleInvalid other than dontInvalidate, invalidValue must lie outside the applicable CompuMethod interval."}
+{"id":"TPS_SWCT_01437","profile":"OPTIONAL"}
+{"id":"constr_2545","profile":"MUST_CORE_TYPE","rule_family":"value_range","note":"invalidValue must fit the ImplementationDataType range."}
+{"id":"constr_1016","profile":"MUST_CORE_TYPE","note":"Implementation invalidValue is compatible numeric/text specification or constant reference to a compatible value."}
+{"id":"constr_1384","profile":"MUST_CORE_FORBID","note":"Calibration compound categories CURVE/MAP/CUBOID/CUBE/axes/VAL_BLK cannot define prototype invalidValue."}
+{"id":"constr_1242","profile":"MUST_CORE_TYPE","note":"STRING application invalidValue is compatible ApplicationValueSpecification or a compatible constant reference."}
+{"id":"TPS_SWCT_01487","profile":"MUST_MANUAL","rule_family":"cross_object_consistency","note":"The source explicitly says there is no formal support to prove application/implementation invalidValue correspondence."}
+{"id":"constr_1225","profile":"MUST_CORE_TYPE","note":"TEXTTABLE/BITFIELD_TEXTTABLE implementation data requires TextValueSpecification matching vt, shortLabel, or symbol."}
+{"id":"TPS_SWCT_01467","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","note":"String-encoded implementation initValue remains numerical according to encoding."}
+{"id":"constr_1302","profile":"MUST_CORE_TYPE","note":"Implement recursive eligibility predicate for invalidation of primitive, composite, and union receive data."}
+{"id":"constr_1140","profile":"MUST_CORE_FORBID","note":"handleInvalid=replace cannot combine with effective receiver initValue equal to invalidValue."}
+{"id":"constr_1219","profile":"MUST_CORE_TYPE","scope":"property","note":"Invalidation is unsupported for queued data elements."}
+{"id":"constr_1282","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"RuleBasedValueSpecification and ReferenceValueSpecification cannot define application invalidValue."}
+{"id":"TPS_SWCT_01440","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01130","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01559","profile":"MUST_MAJOR_STATIC","rule_family":"generation_procedure","scope":"property","note":"Effective default swCalibrationAccess is notAccessible; absence is not an error."}
+{"id":"constr_1017","profile":"MUST_PARTIAL","rule_family":"value_domain","note":"Supported swImplPolicy/swCalibrationAccess matrix must be recovered from Table 5.49."}
+{"id":"constr_1018","profile":"MUST_CORE_FORBID","note":"measurementPoint data cannot be targeted by runnable dataReadAccess."}
+{"id":"TPS_SWCT_01107","profile":"INFO_DEF"}
+{"id":"constr_1019","profile":"MUST_CORE_TYPE","note":"Input variable SwDataDefProps must be compatible with SwAxisIndividual type, CompuMethod, and Unit."}
+{"id":"constr_1382","profile":"MUST_CORE_FORBID","rule_family":"mutual_exclusion","scope":"object","note":"SwVariableRefProxy.autosarVariable and mcDataInstanceVar are mutually exclusive."}
+{"id":"constr_1020","profile":"MUST_CORE_TYPE","note":"swCalprmRef parameter type must be compatible with sharedAxisType."}
+{"id":"TPS_SWCT_01496","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compile the general SwDataDefProps/value-axis/axis-set/input-variable precedence graph."}
+{"id":"TPS_SWCT_01497","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute effective value-axis Unit with the four-level precedence order."}
+{"id":"constr_2550","profile":"MUST_CORE_CONSIST","note":"All value-axis Units must be semantically identical despite precedence."}
+{"id":"TPS_SWCT_01498","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute effective value-axis DataConstr with the stated precedence."}
+{"id":"constr_2548","profile":"MUST_CORE_CONSIST","rule_family":"value_range","note":"Overriding DataConstr may narrow but never relax valueAxisDataType DataConstr."}
+{"id":"TPS_SWCT_01499","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute effective value-axis CompuMethod with valueAxisDataType taking precedence."}

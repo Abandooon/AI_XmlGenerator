@@ -1,0 +1,30 @@
+{"id":"constr_1116","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 dataLength is 0..240 and divisible by eight."}
+{"id":"constr_1117","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 maxDeltaCounterInit range is 0..14."}
+{"id":"constr_1211","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 maxNoNewOrRepeatedData range is 0..14."}
+{"id":"constr_1212","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_01 syncCounterInit range is 0..14."}
+{"id":"constr_1215","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize PROFILE_01 receiver-ComSpec precedence and fallback existence for maxNoNewOrRepeatedData."}
+{"id":"constr_1216","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize PROFILE_01 receiver-ComSpec precedence and fallback existence for syncCounterInit."}
+{"id":"constr_1261","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","scope":"property","note":"dataIdNibbleOffset is legal only for PROFILE_01 with dataIdMode 3."}
+{"id":"TPS_SWCT_01529","profile":"MUST_MAJOR_STATIC","rule_family":"generation_procedure","scope":"property","note":"Compute effective default 12 bits; absence is not itself an error."}
+{"id":"constr_1118","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"PROFILE_02 permits only and requires dataLength and dataId."}
+{"id":"constr_1171","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize PROFILE_02 receiver-ComSpec maxDeltaCounterInit precedence and fallback existence."}
+{"id":"constr_1119","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_02 dataLength is 0..65535 and divisible by eight."}
+{"id":"constr_1120","profile":"MUST_CORE_CARD","rule_family":"value_range","scope":"property","note":"PROFILE_02 dataId has exactly 16 ordered values, each 0..255."}
+{"id":"constr_1121","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_02 maxDeltaCounterInit range is 0..15."}
+{"id":"constr_1213","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_02 maxNoNewOrRepeatedData range is 0..15."}
+{"id":"constr_1214","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"PROFILE_02 syncCounterInit range is 0..15."}
+{"id":"constr_1217","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize PROFILE_02 receiver-ComSpec precedence and fallback existence for maxNoNewOrRepeatedData."}
+{"id":"constr_1218","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Atomize PROFILE_02 receiver-ComSpec precedence and fallback existence for syncCounterInit."}
+{"id":"constr_1183","profile":"MUST_CORE_CONSIST","note":"All protected variable prototypes in one EndToEndProtection share an identical sender."}
+{"id":"TPS_SWCT_01169","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01170","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01171","profile":"MUST_PARTIAL","rule_family":"type_compatibility","importance":"core","is_core":true,"note":"A positively identified VFC control port must reference an interface with isService=true."}
+{"id":"TPS_SWCT_01172","profile":"INFO_DEF","rule_family":"mutual_exclusion"}
+{"id":"TPS_SWCT_01173","profile":"MUST_CORE_FORBID","note":"A VFC control port must not be a member of its serviced PARTIAL_NETWORKING PortGroup; service-dependency assignment establishes the relation."}
+{"id":"TPS_SWCT_01175","profile":"INFO_DEF","rule_family":"mutual_exclusion"}
+{"id":"TPS_SWCT_01174","profile":"MUST_CORE_FORBID","note":"A VFC status port must not belong to the corresponding partial-network PortGroup."}
+{"id":"TPS_SWCT_01509","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01481","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01482","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01480","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"TPS_SWCT_01479","profile":"MUST_CORE_TYPE","note":"ConsistencyNeeds may target only runnable entities using implicit communication."}

@@ -1,0 +1,31 @@
+{"id":"TPS_SWCT_01528","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01495","profile":"INFO_DEF","rule_family":"value_domain","note":"FILL_UNTIL_END and FILL_UNTIL_MAX_SIZE are reserved standardized semantics, not stated as the only rule values."}
+{"id":"TPS_SWCT_01485","profile":"INFO_RUNTIME","rule_family":"ordering"}
+{"id":"TPS_SWCT_01493","profile":"INFO_RUNTIME","note":"Arguments beyond array length are ignored rather than invalid."}
+{"id":"TPS_SWCT_01494","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01609","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01180","profile":"MUST_CORE_CONSIST","rule_family":"cardinality","note":"Variant compound primitive initValue supplies the maximum possible amount of values."}
+{"id":"constr_1160","profile":"MUST_CORE_CONSIST","rule_family":"cardinality","note":"Variant compound primitive initValue size must cover the SwSystemconst range."}
+{"id":"TPS_SWCT_01181","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"Bound-model tools truncate initValues to the lower part when actual size is smaller."}
+{"id":"constr_2050","profile":"MUST_CORE_CARD","scope":"object","note":"SwAxisCont has one swAxisIndex and one swArraySize per dimension."}
+{"id":"constr_2051","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"Listed application value categories require swArraySize in SwValueCont."}
+{"id":"constr_2052","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Bound swValuesPhys descendant count equals product of swArraySize values and target prototype element count."}
+{"id":"TPS_SWCT_02001","profile":"INFO_RUNTIME"}
+{"id":"constr_1243","profile":"MUST_CORE_CARD","rule_family":"mutual_exclusion","scope":"object","note":"NumericalOrText defines exactly one of vf or vt."}
+{"id":"TPS_SWCT_01301","profile":"SHOULD_MANUAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01518","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Lower-priority initial value definitions are ignored."}
+{"id":"TPS_SWCT_01182","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute effective initial value using prototype, ComSpec, then calibration-value precedence."}
+{"id":"TPS_SWCT_01183","profile":"MUST_CORE_TYPE","note":"Interpret initValue physically for ApplicationDataType and numerically for ImplementationDataType."}
+{"id":"TPS_SWCT_01184","profile":"MUST_MAJOR_STATIC","rule_family":"type_compatibility","note":"VALUE application primitive initValues are physical values processed through CompuMethod."}
+{"id":"TPS_SWCT_01185","profile":"MUST_CORE_TYPE","note":"Compound primitive numerical initValue representation must match mapped ImplementationDataType and optional constant mapping."}
+{"id":"constr_1221","profile":"MUST_CORE_TYPE","note":"Application primitive prototype initValue uses ApplicationValueSpecification and enumeration text must match a CompuScale label."}
+{"id":"constr_1385","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"Implementation-typed prototype initValue cannot use ApplicationValueSpecification."}
+{"id":"constr_1222","profile":"MUST_CORE_TYPE","scope":"property","note":"STRING target requires ApplicationValueSpecification category STRING."}
+{"id":"constr_1223","profile":"MUST_CORE_TYPE","note":"ApplicationRecordDataType initValue uses RecordValueSpecification."}
+{"id":"constr_1224","profile":"MUST_CORE_TYPE","note":"ApplicationArrayDataType initValue uses ArrayValueSpecification or ApplicationRuleBasedValueSpecification."}
+{"id":"TPS_SWCT_01186","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"constr_1029","profile":"MUST_CORE_CONSIST","note":"Each constant mapping pairs one application-domain and one implementation-domain ConstantSpecification."}
+{"id":"TPS_SWCT_01187","profile":"OPTIONAL","rule_family":"reference_integrity"}
+{"id":"constr_1030","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"ParameterSwComponentType directly associates the applicable ConstantSpecificationMappingSet."}
+{"id":"constr_1031","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"NvBlockSwComponentType associates ConstantSpecificationMappingSet through its NvBlockDescriptor."}
+{"id":"TPS_SWCT_01188","profile":"OPTIONAL","rule_family":"cross_object_consistency"}

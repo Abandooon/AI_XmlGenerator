@@ -6,11 +6,16 @@ OpenAI-compatible GPT client via CloseAI proxy.
 - 兼容 token 统计字段差异
 """
 
-import json, time, re
-from typing import Dict, Any, Tuple, Optional, List, Union, Callable
+import json
+import re
+import time
+from typing import Dict, Any, Tuple, Optional, List, Union
+
 from openai import OpenAI
+
 from ..config import CONFIG
 from ..utils.exceptions import LLMAPIError
+
 
 class OpenAIClient:
     def __init__(self):

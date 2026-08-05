@@ -2,11 +2,10 @@
 
 处理Round 1结果的用户确认、反馈和修改
 """
-import json
 from typing import Dict, List, Any, Optional, Tuple
+
 from ..config import CONFIG
 from ..utils.serializers import ArchitectureDesign
-from ..utils.exceptions import ConversationError
 
 
 class UserInteraction:

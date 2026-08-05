@@ -10,8 +10,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Tuple
 
 from utils.exceptions import MissingTargetError
 from utils.logger import get_logger

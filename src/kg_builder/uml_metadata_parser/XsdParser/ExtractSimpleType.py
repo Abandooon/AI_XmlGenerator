@@ -1,4 +1,4 @@
-from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 def extractSimpleType(root):
     simpleTypes = []  # 初始化一个列表，用于存储简单类型的信息
 

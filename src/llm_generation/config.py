@@ -5,15 +5,18 @@
 """
 import os
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Dict, Any, List
+
 import yaml
-from dataclasses import dataclass, field
+from dotenv import load_dotenv
 
 # 基础路径配置 - 修正路径逻辑
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent.parent  # 项目根目录
 CONFIG_DIR = ROOT_DIR / "config"   # 配置文件目录
+load_dotenv(ROOT_DIR / ".env")
 
 # 在 config.py 中添加/修改以下数据类定义
 
@@ -26,11 +29,12 @@ class ComponentTypesConfig:
 
 @dataclass
 class ConstraintEngineConfig:
-    """约束引擎配置"""
-    enabled: bool
-    max_constraints_per_type: int
-    constraint_types: List[str]
-    exclude_standard_constraints: bool
+    """统一 ConstraintV2 检索配置。"""
+    enabled: bool = True
+    backend: str = "hybrid"
+    max_constraints_interface: int = 20
+    max_constraints_component: int = 24
+    per_family_limit: int = 5
 
 
 @dataclass
@@ -208,7 +212,24 @@ class KnowledgeGraphConfig:
     neo4j_uri: str
     neo4j_user: str
     neo4j_password: str
+    neo4j_database: str
     max_safety_depth: int
+
+
+@dataclass
+class ValidationConfig:
+    """生成后 ARXML 验证配置。"""
+    enabled: bool = True
+    plan_path: str = "src/generate_formal_constraints/v2/validation_plan.json"
+    xsd_enabled: bool = True
+    xsd_path: str = "src/validation/data/AUTOSAR_4-2-2.xsd"
+    xsd_serialization_manifest_path: str = (
+        "src/llm_generation/knowledge/v2/xsd_serialization_manifest.json"
+    )
+    reference_scope: str = "partial"
+    auto_repair_enabled: bool = False
+    auto_repair_max_rounds: int = 2
+    auto_repair_temperature: float = 0.0
 
 
 @dataclass
@@ -301,6 +322,7 @@ class SystemConfig:
     round1_schema: Round1SchemaConfig  # 新增
     metamodel_injection: MetamodelInjectionConfig  # 新增
     constraint_engine: ConstraintEngineConfig
+    validation: ValidationConfig
     debug_mode: bool
     output_dir: Path
 
@@ -550,8 +572,14 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
 
         # Neo4j配置处理
         kg_config = yaml_config.get("knowledge_graph", {})
-        neo4j_password = kg_config.get("neo4j_password", "")
-        neo4j_user = kg_config.get("neo4j_user", "neo4j")
+        neo4j_uri = os.getenv("NEO4J_URI") or kg_config.get("neo4j_uri", "")
+        neo4j_password = (
+            os.getenv("NEO4J_PASSWORD")
+            or os.getenv("NEO4J_PWD")
+            or kg_config.get("neo4j_password", "")
+        )
+        neo4j_user = os.getenv("NEO4J_USER") or kg_config.get("neo4j_user", "neo4j")
+        neo4j_database = os.getenv("NEO4J_DATABASE") or kg_config.get("neo4j_database", "neo4j")
 
         # 兼容性处理：如果配置中还是max_schema_depth，转换为max_safety_depth
         max_safety_depth = kg_config.get("max_safety_depth",
@@ -589,6 +617,7 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
 
         # 约束引擎配置（新增）
         constraint_config = yaml_config.get("constraint_engine", {})
+        validation_config = yaml_config.get("validation", {})
 
         # 加载分阶段温度
         stage_temps = yaml_config["llm"].get("stage_temperatures", {})
@@ -617,16 +646,32 @@ def load_config(config_path: Optional[Path] = None) -> SystemConfig:
                 cache_size=memory_config.get("cache_size", 100)
             ),
             constraint_engine=ConstraintEngineConfig(
-            enabled=constraint_config.get("enabled"),
-            max_constraints_per_type=constraint_config.get("max_constraints_per_type"),
-            constraint_types=constraint_config.get("constraint_types", ["MODEL_OCL", "DATA_TYPE"]),
-            exclude_standard_constraints=constraint_config.get("exclude_standard_constraints")
+                enabled=constraint_config.get("enabled", True),
+                backend=constraint_config.get("backend", "hybrid"),
+                max_constraints_interface=constraint_config.get("max_constraints_interface", 20),
+                max_constraints_component=constraint_config.get("max_constraints_component", 24),
+                per_family_limit=constraint_config.get("per_family_limit", 5),
             ),
             knowledge_graph=KnowledgeGraphConfig(
-                neo4j_uri=kg_config["neo4j_uri"],
+                neo4j_uri=neo4j_uri,
                 neo4j_user=neo4j_user,
                 neo4j_password=neo4j_password,
+                neo4j_database=neo4j_database,
                 max_safety_depth=max_safety_depth  # 使用新字段
+            ),
+            validation=ValidationConfig(
+                enabled=validation_config.get("enabled", True),
+                plan_path=validation_config.get("plan_path", "src/generate_formal_constraints/v2/validation_plan.json"),
+                xsd_enabled=validation_config.get("xsd_enabled", True),
+                xsd_path=validation_config.get("xsd_path", "src/validation/data/AUTOSAR_4-2-2.xsd"),
+                xsd_serialization_manifest_path=validation_config.get(
+                    "xsd_serialization_manifest_path",
+                    "src/llm_generation/knowledge/v2/xsd_serialization_manifest.json",
+                ),
+                reference_scope=validation_config.get("reference_scope", "partial"),
+                auto_repair_enabled=validation_config.get("auto_repair_enabled", False),
+                auto_repair_max_rounds=int(validation_config.get("auto_repair_max_rounds", 2)),
+                auto_repair_temperature=float(validation_config.get("auto_repair_temperature", 0.0)),
             ),
             generation=GenerationConfig(
                 single_batch_threshold=generation_config.get("single_batch_threshold", 5),
@@ -747,9 +792,9 @@ def get_config_info() -> Dict[str, Any]:
 # 全局配置实例
 try:
     CONFIG = load_config()
-    print(f"✅ 配置加载成功: {CONFIG_DIR / 'llm_api_config.yaml'}")
+    print(f"[OK] 配置加载成功: {CONFIG_DIR / 'llm_api_config.yaml'}")
 except Exception as e:
-    print(f"❌ 配置加载失败: {e}")
-    print(f"📁 配置文件位置: {CONFIG_DIR / 'llm_api_config.yaml'}")
-    print(f"📋 配置信息: {get_config_info()}")
+    print(f"[ERROR] 配置加载失败: {e}")
+    print(f"配置文件位置: {CONFIG_DIR / 'llm_api_config.yaml'}")
+    print(f"配置信息: {get_config_info()}")
     sys.exit(1)

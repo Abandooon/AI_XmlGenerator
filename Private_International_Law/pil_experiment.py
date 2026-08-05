@@ -2,11 +2,15 @@
 """
 Private International Law (Brussels I bis) — 三方法对比实验（增强诊断版）
 """
-import re, json, argparse, time, random
-from typing import Dict, Any, List, Tuple
-from pathlib import Path
-from collections import Counter, defaultdict
+import argparse
+import json
 import math
+import random
+import re
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Dict, Any, List, Tuple
 
 from src.llm_generation.llm.openai_client import OpenAIClient
 

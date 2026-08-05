@@ -4,11 +4,11 @@ AUTOSAR ARXML 跨文件引用完整性检查脚本
 检查所有REF引用的目标是否存在
 """
 
-import os
 import json
-from pathlib import Path
-from typing import Dict, List, Set, Tuple
 from collections import defaultdict
+from pathlib import Path
+from typing import Dict, List, Tuple
+
 from lxml import etree
 
 

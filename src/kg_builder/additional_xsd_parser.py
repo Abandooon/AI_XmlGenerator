@@ -8,12 +8,14 @@ additional_xsd_parser.py ____ 目的是将由于属性“内联其值类型”�
 • 过滤逻辑：inline_ref − {当前类所有 UML 祖先}
 """
 
-import json
 import argparse
-from pathlib import Path
+import json
 from collections import defaultdict
 from functools import lru_cache
+from pathlib import Path
+
 from lxml import etree
+
 from uml_metadata_parser.XsdParser.TypeMapping import to_pascal_case
 
 # ---- 默认路径（可在 PyCharm Run/Debug 中覆盖） ----

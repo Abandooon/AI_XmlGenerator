@@ -1,0 +1,1563 @@
+你是 AUTOSAR 接口建模专家。**仅生成接口对象集合**，并且必须严格遵守下方“接口 JSON Schema”。不要生成任何组件。
+
+            ## Round1 系统分析（只读）
+            ```json
+            {
+  "functional_decomposition": "TemperatureMonitoringP1：单一应用SWC对温度传感器输入进行接收与处理，并将处理结果发布为温度状态。组件边界：仅在该SWC内部完成温度处理（阈值判断/状态映射），输入通过R-PORT接收、输出通过P-PORT发布，禁止跨组件触发事件或直接访问他组件端口。",
+  "data_flow_analysis": "数据流：SensorTemperature（S/R输入）由外部Sender经R-PORT进入本SWC；ProcessTemperature在DATA-RECEIVED-EVENT触发或0.1s周期TIMING-EVENT触发时读取输入端口的温度信号，计算温度状态TemperatureStatus，并通过P-PORT将状态发送出去（Sender/Receiver输出）。时序：DATA-RECEIVED-EVENT以数据到达为准进行一次处理与发布；TIMING-EVENT提供周期性兜底处理（例如重复发布或在无新数据时基于上次输入维持状态，具体实现由Runnable在读端口后输出）。数据类型：输入/输出均以S/R信号承载，端口绑定到各自的S/R接口数据元素。",
+  "timing_requirements": "ProcessTemperature：1）DATA-RECEIVED-EVENT触发的处理需要在下一次RTE执行点内完成（满足OS/RTE调度的上下文要求）；2）TIMING-EVENT周期=0.1s，要求在每个周期RTE激活时完成读取、处理和发送。对延迟的工程假设：处理为轻量运算（阈值比较与状态映射），可在0.1s周期内稳定完成。",
+  "scalability_considerations": "通过将处理逻辑集中在单一Runnable（ProcessTemperature）并使用S/R端口封装输入输出，后续可扩展为增加更多阈值/状态维度或增加更多输入信号；保持接口与数据元素映射清晰，便于在Round2阶段生成对应类型、端口和RTE连接。",
+  "complexity_assessment": "Simple"
+} 
+            ```
+            Round1 连接拓扑（只读）
+            ```json
+            {
+  "component_connections": "单组件架构：TemperatureMonitoringP1通过输入S/R接口连接外部Sensor数据发送者（R-PORT）并通过输出S/R接口连接外部状态接收者（P-PORT）。",
+  "data_flow_paths": "SensorTemperatureInput(S/R) -> ProcessTemperature(读取SensorTemperature) -> TemperatureStatusOutput(S/R)（写出TemperatureStatus）",
+  "control_flow_paths": "ProcessTemperature由DATA-RECEIVED-EVENT（输入数据到达）与TIMING-EVENT（0.1s周期）共同触发"
+}
+            ```
+            Round1 接口计划（只读）
+            ```json
+            [
+  {
+    "interface_id": "TemperatureMonitoringP1_IF_SensorTemperatureIn",
+    "name": "SensorTemperatureInput",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "S/R数据从外部Sender传入本SWC；本SWC通过R-PORT接收。通信为数据驱动为主（DATA-RECEIVED-EVENT），允许与0.1s周期激活共同作用。缓冲策略：按RTE默认（典型实现为最新值/队列由配置决定）。错误处理：数据接收错误事件可在Round2按RTE配置扩展（本阶段不强制）。",
+    "data_category": "Input temperature signal (SensorTemperature)",
+    "connected_components": [
+      "TemperatureMonitoringP1",
+      "ExternalSensorSender(implicit)"
+    ],
+    "performance_requirements": "处理触发需支持0.1s周期；对单次数据处理时间要求可满足轻量运算。",
+    "data_elements": [
+      "SensorTemperature"
+    ],
+    "direct_paths": "ExternalSender -> TemperatureMonitoringP1.SensorTemperatureInput(R-PORT) -> ProcessTemperature"
+  },
+  {
+    "interface_id": "TemperatureMonitoringP1_IF_TemperatureStatusOut",
+    "name": "TemperatureStatusOutput",
+    "type": "SENDER-RECEIVER-INTERFACE",
+    "communication_pattern": "S/R数据由本SWC通过P-PORT提供给外部Receiver。以Runnable执行时发送为准；同一Runnable可能因DATA-RECEIVED或TIMING事件多次发送。缓冲策略：按RTE默认（通常最新值）。错误处理：发送完成错误可在Round2按RTE配置扩展（本阶段不强制）。",
+    "data_category": "Output temperature status (TemperatureStatus)",
+    "connected_components": [
+      "TemperatureMonitoringP1",
+      "ExternalStatusReceiver(implicit)"
+    ],
+    "performance_requirements": "0.1s周期触发时需及时完成状态发送。",
+    "data_elements": [
+      "TemperatureStatus"
+    ],
+    "direct_paths": "ProcessTemperature -> TemperatureMonitoringP1.TemperatureStatusOutput(P-PORT) -> ExternalReceiver"
+  }
+]
+            ```
+            标准类型库（供 TYPE-TREF 引用，例如：<TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/AUTOSAR_Platform/ImplementationDataTypes/sint16</TYPE-TREF>）
+            ```json
+            {
+  "implementation_types": [
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/boolean",
+      "name": "boolean",
+      "description": "Boolean",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/boolean"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8",
+      "name": "uint8",
+      "description": "unsigned integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16",
+      "name": "uint16",
+      "description": "unsigned integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32",
+      "name": "uint32",
+      "description": "unsigned integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint64",
+      "name": "uint64",
+      "description": "unsigned integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8",
+      "name": "sint8",
+      "description": "signed integer 8bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16",
+      "name": "sint16",
+      "description": "signed integer 16bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32",
+      "name": "sint32",
+      "description": "signed integer 32bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint64",
+      "name": "sint64",
+      "description": "signed integer 64bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float32",
+      "name": "float32",
+      "description": "Float",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float32"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/float64",
+      "name": "float64",
+      "description": "Double",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/float64"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint8_least",
+      "name": "uint8_least",
+      "description": "unsigned integer at least 8 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint16_least",
+      "name": "uint16_least",
+      "description": "unsigned integer at least 16 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/uint32_least",
+      "name": "uint32_least",
+      "description": "unsigned integer at least 32 bit",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint8_least",
+      "name": "sint8_least",
+      "description": "signed integer at least 7 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint8_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint16_least",
+      "name": "sint16_least",
+      "description": "signed integer at least 15 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint16_least"
+    },
+    {
+      "path": "/AUTOSAR_Platform/ImplementationDataTypes/sint32_least",
+      "name": "sint32_least",
+      "description": "signed integer at least 31 bit + 1 bit sign",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/sint32_least"
+    },
+    {
+      "path": "/AUTOSAR_Std/ImplementationDataTypes/Std_ReturnType",
+      "name": "Std_ReturnType",
+      "description": "Standard return type for APIs",
+      "base_type": "/AUTOSAR_Platform/BaseTypes/uint8"
+    }
+  ],
+  "base_types": [],
+  "compu_methods": [
+    {
+      "path": "/AUTOSAR_Std/CompuMethods/Identical",
+      "name": "Identical",
+      "category": "IDENTICAL"
+    }
+  ]
+}
+            ```
+            接口 JSON Schema（严格匹配）
+            ```json
+            {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SENDER-RECEIVER-INTERFACE": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "SHORT-NAME": {
+            "type": "string",
+            "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+            "x-xml-tag": "SHORT-NAME",
+            "examples": [
+              "SensorTemperatureInput",
+              "TemperatureStatusOutput"
+            ]
+          },
+          "IS-SERVICE": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "pattern": "0|1|true|false",
+            "x-xml-tag": "IS-SERVICE"
+          },
+          "DATA-ELEMENTS": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VARIABLE-DATA-PROTOTYPE": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SHORT-NAME": {
+                      "type": "string",
+                      "pattern": "[a-zA-Z][a-zA-Z0-9_]*",
+                      "x-xml-tag": "SHORT-NAME"
+                    },
+                    "TYPE-TREF": {
+                      "type": "object",
+                      "properties": {
+                        "@DEST": {
+                          "type": "string",
+                          "enum": [
+                            "APPLICATION-ARRAY-DATA-TYPE",
+                            "APPLICATION-COMPOSITE-DATA-TYPE",
+                            "APPLICATION-DATA-TYPE",
+                            "APPLICATION-PRIMITIVE-DATA-TYPE",
+                            "APPLICATION-RECORD-DATA-TYPE",
+                            "AUTOSAR-DATA-TYPE",
+                            "IMPLEMENTATION-DATA-TYPE"
+                          ]
+                        },
+                        "#text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "#text",
+                        "@DEST"
+                      ],
+                      "x-xml-tag": "TYPE-TREF",
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "x-atlas-content-model": {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}AR-OBJECT"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:040833652d6c14cf5394dd6a",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 19
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:24d8b99f97754039cbe9a0c7",
+                        "path": "sequence[0]/group[0]",
+                        "position": 0,
+                        "ref": "AR:AR-OBJECT",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}AR-OBJECT",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:AR-OBJECT",
+                        "source_line": 67463
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                                ],
+                                "element_name": "SHORT-NAME",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 1,
+                                "name": "SHORT-NAME",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:2c0f3d175658afc25edee7cf",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 52576,
+                                "type": "AR:IDENTIFIER",
+                                "type_qname": "{http://autosar.org/schema/r4.0}IDENTIFIER"
+                              },
+                              {
+                                "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:e96e59dd9e0102c85e9a3985",
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                                ],
+                                "element_name": "SHORT-NAME-FRAGMENTS",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "SHORT-NAME-FRAGMENTS",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:633002896aebb89e1712a7b8",
+                                "path": "sequence[0]/element[1]",
+                                "position": 1,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 52582,
+                                "type": null,
+                                "type_qname": null
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:8e9501607db9dca08254d64a",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 52575
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:2e79ce12338707e1488ecb51",
+                        "path": "sequence[0]/group[1]",
+                        "position": 1,
+                        "ref": "AR:REFERRABLE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}REFERRABLE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:REFERRABLE",
+                        "source_line": 67464
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE"
+                                ],
+                                "element_name": "LONG-NAME",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "LONG-NAME",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:1f6112dddc54a69ebd7f023a",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 45931,
+                                "type": "AR:MULTILANGUAGE-LONG-NAME",
+                                "type_qname": "{http://autosar.org/schema/r4.0}MULTILANGUAGE-LONG-NAME"
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:32bdb9f1c1a75dafac92f35d",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 45930
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:1efe3d8c4ec64d517b66d15b",
+                        "path": "sequence[0]/group[2]",
+                        "position": 2,
+                        "ref": "AR:MULTILANGUAGE-REFERRABLE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:MULTILANGUAGE-REFERRABLE",
+                        "source_line": 67465
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                                ],
+                                "element_name": "DESC",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "DESC",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:fb14a95153800868da85d949",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 36697,
+                                "type": "AR:MULTI-LANGUAGE-OVERVIEW-PARAGRAPH",
+                                "type_qname": "{http://autosar.org/schema/r4.0}MULTI-LANGUAGE-OVERVIEW-PARAGRAPH"
+                              },
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                                ],
+                                "element_name": "CATEGORY",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "CATEGORY",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:7217c404d642792b8c8d897b",
+                                "path": "sequence[0]/element[1]",
+                                "position": 1,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 36705,
+                                "type": "AR:CATEGORY-STRING",
+                                "type_qname": "{http://autosar.org/schema/r4.0}CATEGORY-STRING"
+                              },
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                                ],
+                                "element_name": "ADMIN-DATA",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "ADMIN-DATA",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:51dec1adf6c27fb07facfedf",
+                                "path": "sequence[0]/element[2]",
+                                "position": 2,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 36711,
+                                "type": "AR:ADMIN-DATA",
+                                "type_qname": "{http://autosar.org/schema/r4.0}ADMIN-DATA"
+                              },
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                                ],
+                                "element_name": "INTRODUCTION",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "INTRODUCTION",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:c0109522478aa6f607689085",
+                                "path": "sequence[0]/element[3]",
+                                "position": 3,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 36717,
+                                "type": "AR:DOCUMENTATION-BLOCK",
+                                "type_qname": "{http://autosar.org/schema/r4.0}DOCUMENTATION-BLOCK"
+                              },
+                              {
+                                "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:531896d04e98c4b3670e6e75",
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                                ],
+                                "element_name": "ANNOTATIONS",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "ANNOTATIONS",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:3bdbde54111ae1ac7ad4f22e",
+                                "path": "sequence[0]/element[4]",
+                                "position": 4,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 36723,
+                                "type": null,
+                                "type_qname": null
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:a7db1baca9088b7b935163f0",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 36696
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:0620e9e0b0cedc079ebba4e0",
+                        "path": "sequence[0]/group[3]",
+                        "position": 3,
+                        "ref": "AR:IDENTIFIABLE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}IDENTIFIABLE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:IDENTIFIABLE",
+                        "source_line": 67466
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}ATP-FEATURE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:2327e2ff0b36eea20c4c166c",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 3374
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:f631a4092231b8bb76a8f9fe",
+                        "path": "sequence[0]/group[4]",
+                        "position": 4,
+                        "ref": "AR:ATP-FEATURE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}ATP-FEATURE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-FEATURE",
+                        "source_line": 67467
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}ATP-PROTOTYPE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:ceaabacaea64ae229e0f9d89",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 3475
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:1bd40f3b0608a52865f1814c",
+                        "path": "sequence[0]/group[5]",
+                        "position": 5,
+                        "ref": "AR:ATP-PROTOTYPE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}ATP-PROTOTYPE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-PROTOTYPE",
+                        "source_line": 67468
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}DATA-PROTOTYPE"
+                                ],
+                                "element_name": "SW-DATA-DEF-PROPS",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "SW-DATA-DEF-PROPS",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:d3b628e31828279bd304b588",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 14892,
+                                "type": "AR:SW-DATA-DEF-PROPS",
+                                "type_qname": "{http://autosar.org/schema/r4.0}SW-DATA-DEF-PROPS"
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}DATA-PROTOTYPE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:cc2eb0e3534619d210fdc62d",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 14891
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:ba0ac38b3da2cf8f89495930",
+                        "path": "sequence[0]/group[6]",
+                        "position": 6,
+                        "ref": "AR:DATA-PROTOTYPE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}DATA-PROTOTYPE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:DATA-PROTOTYPE",
+                        "source_line": 67469
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:c45cd7ffa381d1d99cca1e94",
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}AUTOSAR-DATA-PROTOTYPE"
+                                ],
+                                "element_name": "TYPE-TREF",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "TYPE-TREF",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:9abe23cdffa1ce649b03c330",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 3603,
+                                "type": null,
+                                "type_qname": null
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}AUTOSAR-DATA-PROTOTYPE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:3da6a717db2411980f6e4609",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 3602
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:c9e9cb01ccb10d867eea73f2",
+                        "path": "sequence[0]/group[7]",
+                        "position": 7,
+                        "ref": "AR:AUTOSAR-DATA-PROTOTYPE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}AUTOSAR-DATA-PROTOTYPE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:AUTOSAR-DATA-PROTOTYPE",
+                        "source_line": 67470
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:d389f9c9a93ef089a7825f4a",
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                                ],
+                                "element_name": "INIT-VALUE",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "INIT-VALUE",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:092f782bf3173f04b0e982e9",
+                                "path": "sequence[0]/element[0]",
+                                "position": 0,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 67426,
+                                "type": null,
+                                "type_qname": null
+                              },
+                              {
+                                "container_path": [
+                                  "group:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                                ],
+                                "element_name": "VARIATION-POINT",
+                                "kind": "element",
+                                "max_occurs": 1,
+                                "min_occurs": 0,
+                                "name": "VARIATION-POINT",
+                                "nillable": false,
+                                "particle_id": "xsd-particle:a9f7541523aa6f069066051c",
+                                "path": "sequence[0]/element[1]",
+                                "position": 1,
+                                "ref": null,
+                                "ref_qname": null,
+                                "source_line": 67445,
+                                "type": "AR:VARIATION-POINT",
+                                "type_qname": "{http://autosar.org/schema/r4.0}VARIATION-POINT"
+                              }
+                            ],
+                            "container_path": [
+                              "group:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                            ],
+                            "kind": "sequence",
+                            "max_occurs": 1,
+                            "min_occurs": 1,
+                            "particle_id": "xsd-particle:0e0bbfa105e43fd3a26aca7d",
+                            "path": "sequence[0]",
+                            "position": 0,
+                            "source_line": 67425
+                          }
+                        ],
+                        "container_path": [
+                          "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                        ],
+                        "kind": "group-ref",
+                        "max_occurs": 1,
+                        "min_occurs": 1,
+                        "particle_id": "xsd-particle:09552c9ddb37248a51b538bc",
+                        "path": "sequence[0]/group[8]",
+                        "position": 8,
+                        "ref": "AR:VARIABLE-DATA-PROTOTYPE",
+                        "ref_qname": "{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE",
+                        "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:VARIABLE-DATA-PROTOTYPE",
+                        "source_line": 67471
+                      }
+                    ],
+                    "container_path": [
+                      "complexType:{http://autosar.org/schema/r4.0}VARIABLE-DATA-PROTOTYPE"
+                    ],
+                    "kind": "sequence",
+                    "max_occurs": 1,
+                    "min_occurs": 1,
+                    "particle_id": "xsd-particle:92cb25a9248657bb63a128f7",
+                    "path": "sequence[0]",
+                    "position": 0,
+                    "source_line": 67462
+                  },
+                  "required": [
+                    "SHORT-NAME",
+                    "TYPE-TREF"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "VARIABLE-DATA-PROTOTYPE"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "x-atlas-content-model": {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}AR-OBJECT"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:040833652d6c14cf5394dd6a",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 19
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:d220da9cbc2412cf59fb48ec",
+              "path": "sequence[0]/group[0]",
+              "position": 0,
+              "ref": "AR:AR-OBJECT",
+              "ref_qname": "{http://autosar.org/schema/r4.0}AR-OBJECT",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:AR-OBJECT",
+              "source_line": 56337
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                      ],
+                      "element_name": "SHORT-NAME",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 1,
+                      "name": "SHORT-NAME",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:2c0f3d175658afc25edee7cf",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 52576,
+                      "type": "AR:IDENTIFIER",
+                      "type_qname": "{http://autosar.org/schema/r4.0}IDENTIFIER"
+                    },
+                    {
+                      "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:e96e59dd9e0102c85e9a3985",
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                      ],
+                      "element_name": "SHORT-NAME-FRAGMENTS",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "SHORT-NAME-FRAGMENTS",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:633002896aebb89e1712a7b8",
+                      "path": "sequence[0]/element[1]",
+                      "position": 1,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 52582,
+                      "type": null,
+                      "type_qname": null
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}REFERRABLE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:8e9501607db9dca08254d64a",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 52575
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:8eb16e2cc05ce603283896d2",
+              "path": "sequence[0]/group[1]",
+              "position": 1,
+              "ref": "AR:REFERRABLE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}REFERRABLE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:REFERRABLE",
+              "source_line": 56338
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE"
+                      ],
+                      "element_name": "LONG-NAME",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "LONG-NAME",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:1f6112dddc54a69ebd7f023a",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 45931,
+                      "type": "AR:MULTILANGUAGE-LONG-NAME",
+                      "type_qname": "{http://autosar.org/schema/r4.0}MULTILANGUAGE-LONG-NAME"
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:32bdb9f1c1a75dafac92f35d",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 45930
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:38f12142cb2288c4c4e57170",
+              "path": "sequence[0]/group[2]",
+              "position": 2,
+              "ref": "AR:MULTILANGUAGE-REFERRABLE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}MULTILANGUAGE-REFERRABLE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:MULTILANGUAGE-REFERRABLE",
+              "source_line": 56339
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                      ],
+                      "element_name": "DESC",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "DESC",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:fb14a95153800868da85d949",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 36697,
+                      "type": "AR:MULTI-LANGUAGE-OVERVIEW-PARAGRAPH",
+                      "type_qname": "{http://autosar.org/schema/r4.0}MULTI-LANGUAGE-OVERVIEW-PARAGRAPH"
+                    },
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                      ],
+                      "element_name": "CATEGORY",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "CATEGORY",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:7217c404d642792b8c8d897b",
+                      "path": "sequence[0]/element[1]",
+                      "position": 1,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 36705,
+                      "type": "AR:CATEGORY-STRING",
+                      "type_qname": "{http://autosar.org/schema/r4.0}CATEGORY-STRING"
+                    },
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                      ],
+                      "element_name": "ADMIN-DATA",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "ADMIN-DATA",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:51dec1adf6c27fb07facfedf",
+                      "path": "sequence[0]/element[2]",
+                      "position": 2,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 36711,
+                      "type": "AR:ADMIN-DATA",
+                      "type_qname": "{http://autosar.org/schema/r4.0}ADMIN-DATA"
+                    },
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                      ],
+                      "element_name": "INTRODUCTION",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "INTRODUCTION",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:c0109522478aa6f607689085",
+                      "path": "sequence[0]/element[3]",
+                      "position": 3,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 36717,
+                      "type": "AR:DOCUMENTATION-BLOCK",
+                      "type_qname": "{http://autosar.org/schema/r4.0}DOCUMENTATION-BLOCK"
+                    },
+                    {
+                      "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:531896d04e98c4b3670e6e75",
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                      ],
+                      "element_name": "ANNOTATIONS",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "ANNOTATIONS",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:3bdbde54111ae1ac7ad4f22e",
+                      "path": "sequence[0]/element[4]",
+                      "position": 4,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 36723,
+                      "type": null,
+                      "type_qname": null
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}IDENTIFIABLE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:a7db1baca9088b7b935163f0",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 36696
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:6de1de44aac6c5eb0dca178c",
+              "path": "sequence[0]/group[3]",
+              "position": 3,
+              "ref": "AR:IDENTIFIABLE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}IDENTIFIABLE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:IDENTIFIABLE",
+              "source_line": 56340
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}COLLECTABLE-ELEMENT"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:89bf5f99533c0abeedf568c0",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 11246
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:14be197137dfd9ef39fc3c0a",
+              "path": "sequence[0]/group[4]",
+              "position": 4,
+              "ref": "AR:COLLECTABLE-ELEMENT",
+              "ref_qname": "{http://autosar.org/schema/r4.0}COLLECTABLE-ELEMENT",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:COLLECTABLE-ELEMENT",
+              "source_line": 56341
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}PACKAGEABLE-ELEMENT"
+                      ],
+                      "element_name": "VARIATION-POINT",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "VARIATION-POINT",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:c526aad2e30232afc886ec9d",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 48641,
+                      "type": "AR:VARIATION-POINT",
+                      "type_qname": "{http://autosar.org/schema/r4.0}VARIATION-POINT"
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}PACKAGEABLE-ELEMENT"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:ef3ee4336da88aaae9525f6d",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 48640
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:a7db8c6fd7699a82c739252a",
+              "path": "sequence[0]/group[5]",
+              "position": 5,
+              "ref": "AR:PACKAGEABLE-ELEMENT",
+              "ref_qname": "{http://autosar.org/schema/r4.0}PACKAGEABLE-ELEMENT",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:PACKAGEABLE-ELEMENT",
+              "source_line": 56342
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}AR-ELEMENT"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:d776dcb66064737a3381021b",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 10
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:4a77ecd0adb85dab02c9be8d",
+              "path": "sequence[0]/group[6]",
+              "position": 6,
+              "ref": "AR:AR-ELEMENT",
+              "ref_qname": "{http://autosar.org/schema/r4.0}AR-ELEMENT",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:AR-ELEMENT",
+              "source_line": 56343
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:1767e79ca4fed6e7e8a2861a",
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}ATP-BLUEPRINT"
+                      ],
+                      "element_name": "BLUEPRINT-POLICYS",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "BLUEPRINT-POLICYS",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:2e86550db4a04e547b0091f8",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 3044,
+                      "type": null,
+                      "type_qname": null
+                    },
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}ATP-BLUEPRINT"
+                      ],
+                      "element_name": "SHORT-NAME-PATTERN",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "SHORT-NAME-PATTERN",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:d8aac645790023d467beb5c7",
+                      "path": "sequence[0]/element[1]",
+                      "position": 1,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 3057,
+                      "type": "AR:STRING",
+                      "type_qname": "{http://autosar.org/schema/r4.0}STRING"
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}ATP-BLUEPRINT"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:13d596c1cf5cbded1d690524",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 3043
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:a66b4368e85e51ddc18f0362",
+              "path": "sequence[0]/group[7]",
+              "position": 7,
+              "ref": "AR:ATP-BLUEPRINT",
+              "ref_qname": "{http://autosar.org/schema/r4.0}ATP-BLUEPRINT",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-BLUEPRINT",
+              "source_line": 56344
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}ATP-BLUEPRINTABLE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:29ac90590909e30e43f2bc0a",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 3158
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:aac17790de2c94c6d967f8a4",
+              "path": "sequence[0]/group[8]",
+              "position": 8,
+              "ref": "AR:ATP-BLUEPRINTABLE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}ATP-BLUEPRINTABLE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-BLUEPRINTABLE",
+              "source_line": 56345
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}ATP-CLASSIFIER"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:b85e424cc693bd49618ddc69",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 3236
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:80fc37788fd29d70cbd32860",
+              "path": "sequence[0]/group[9]",
+              "position": 9,
+              "ref": "AR:ATP-CLASSIFIER",
+              "ref_qname": "{http://autosar.org/schema/r4.0}ATP-CLASSIFIER",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-CLASSIFIER",
+              "source_line": 56346
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}ATP-TYPE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:629b8f676e62e8082eea0672",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 3517
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:e998db655dc108198d33b93c",
+              "path": "sequence[0]/group[10]",
+              "position": 10,
+              "ref": "AR:ATP-TYPE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}ATP-TYPE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:ATP-TYPE",
+              "source_line": 56347
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}PORT-INTERFACE"
+                      ],
+                      "element_name": "IS-SERVICE",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "IS-SERVICE",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:cd816f68fb3be04391d2b184",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 50503,
+                      "type": "AR:BOOLEAN",
+                      "type_qname": "{http://autosar.org/schema/r4.0}BOOLEAN"
+                    },
+                    {
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}PORT-INTERFACE"
+                      ],
+                      "element_name": "SERVICE-KIND",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "SERVICE-KIND",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:51f329401069a755f674cb0e",
+                      "path": "sequence[0]/element[1]",
+                      "position": 1,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 50520,
+                      "type": "AR:SERVICE-PROVIDER-ENUM",
+                      "type_qname": "{http://autosar.org/schema/r4.0}SERVICE-PROVIDER-ENUM"
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}PORT-INTERFACE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:d07a3a7eb7ecbf29a2d74676",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 50502
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:b6362dfe489517178402f263",
+              "path": "sequence[0]/group[11]",
+              "position": 11,
+              "ref": "AR:PORT-INTERFACE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}PORT-INTERFACE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:PORT-INTERFACE",
+              "source_line": 56348
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}DATA-INTERFACE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:5907a1109146e42088ed1af6",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 14789
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:668413f5b82b315baac73470",
+              "path": "sequence[0]/group[12]",
+              "position": 12,
+              "ref": "AR:DATA-INTERFACE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}DATA-INTERFACE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:DATA-INTERFACE",
+              "source_line": 56349
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:801bce9dc964f3c7d39bc062",
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+                      ],
+                      "element_name": "DATA-ELEMENTS",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "DATA-ELEMENTS",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:f182009103cc62771eb4e4a1",
+                      "path": "sequence[0]/element[0]",
+                      "position": 0,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 56305,
+                      "type": null,
+                      "type_qname": null
+                    },
+                    {
+                      "anonymous_owner_id": "xsd:http://autosar.org/schema/r4.0:anonymousComplexType:369727623db473addc3792f0",
+                      "container_path": [
+                        "group:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+                      ],
+                      "element_name": "INVALIDATION-POLICYS",
+                      "kind": "element",
+                      "max_occurs": 1,
+                      "min_occurs": 0,
+                      "name": "INVALIDATION-POLICYS",
+                      "nillable": false,
+                      "particle_id": "xsd-particle:9f651624cad8c024b089002e",
+                      "path": "sequence[0]/element[1]",
+                      "position": 1,
+                      "ref": null,
+                      "ref_qname": null,
+                      "source_line": 56316,
+                      "type": null,
+                      "type_qname": null
+                    }
+                  ],
+                  "container_path": [
+                    "group:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+                  ],
+                  "kind": "sequence",
+                  "max_occurs": 1,
+                  "min_occurs": 1,
+                  "particle_id": "xsd-particle:aa14f3f21262f21a6cb08fe3",
+                  "path": "sequence[0]",
+                  "position": 0,
+                  "source_line": 56304
+                }
+              ],
+              "container_path": [
+                "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+              ],
+              "kind": "group-ref",
+              "max_occurs": 1,
+              "min_occurs": 1,
+              "particle_id": "xsd-particle:e36adca20ca107d9740c6cd7",
+              "path": "sequence[0]/group[13]",
+              "position": 13,
+              "ref": "AR:SENDER-RECEIVER-INTERFACE",
+              "ref_qname": "{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE",
+              "resolved_owner_id": "xsd:http://autosar.org/schema/r4.0:group:SENDER-RECEIVER-INTERFACE",
+              "source_line": 56350
+            }
+          ],
+          "container_path": [
+            "complexType:{http://autosar.org/schema/r4.0}SENDER-RECEIVER-INTERFACE"
+          ],
+          "kind": "sequence",
+          "max_occurs": 1,
+          "min_occurs": 1,
+          "particle_id": "xsd-particle:5a76010942e0f552c0b8800b",
+          "path": "sequence[0]",
+          "position": 0,
+          "source_line": 56336
+        },
+        "required": [
+          "SHORT-NAME",
+          "IS-SERVICE",
+          "DATA-ELEMENTS"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "SENDER-RECEIVER-INTERFACE"
+  ],
+  "definitions": {}
+}
+            ```
+
+            生成规则:
+            顶层结构、键名、嵌套层级必须严格匹配上述接口 JSON Schema。
+            每个接口条目的 SHORT-NAME = Round1 interface_plan[].name。SHORT-NAME字段的连接符用'_'。
+            键名一律使用 AUTOSAR XML 标签（不要使用驼峰别名）。
+            所有 *REF 字段必须是对象，包含 @DEST(引向的实例类型) 与 #text(引向的实例路径)，例如：<TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor</TARGET-DATA-PROTOTYPE-REF>，其中实例路径是 SHORT-NAME 的拼接。
+            仅使用 Schema 中出现的字段；不要新增未定义字段。
+
+## Applicable AUTOSAR constraints (ranked V2 context)
+Apply these rules when their antecedent exists in the requested model. MUST/core rules take precedence. Do not create optional structures solely to make a rule applicable.
+- [constr_1174][MUST][CORE][forbidden_existence] A composition must not own a port whose referenced port interface has isService=true. Targets: CLIENT-SERVER-INTERFACE/IS-SERVICE, COMPOSITION-SW-COMPONENT-TYPE/PORTS, MODE-SWITCH-INTERFACE/IS-SERVICE.
+- [constr_1248][MUST][CORE][type_compatibility] Compatibility of PortPrototypes of different DataInterfaces in the context of a PassThroughSwConnector Targets: CLIENT-SERVER-INTERFACE-MAPPING, CLIENT-SERVER-INTERFACE/IS-SERVICE, MODE-INTERFACE-MAPPING.
+- [TPS_SWCT_01572][MUST][CORE][cross_object_consistency] Application Mode Manager interacts with both BswM and other ApplicationSwComponentTypes Targets: APPLICATION-SW-COMPONENT-TYPE, MODE-SWITCH-INTERFACE/IS-SERVICE, P-PORT-PROTOTYPE.
+- [constr_1219][MUST][CORE][type_compatibility] Invalidation depends on the value of swImplPolicy Targets: NUMERICAL-VALUE-SPECIFICATION/VALUE, SENDER-RECEIVER-INTERFACE/DATA-ELEMENTS/VARIABLE-DATA-PROTOTYPE, TEXT-VALUE-SPECIFICATION/VALUE.
+- [constr_1249][MUST][CORE][type_compatibility] Compatibility of ModeSwitchInterfaces in the context of a PassThroughSwConnector Targets: CLIENT-SERVER-INTERFACE/IS-SERVICE, MODE-DECLARATION-GROUP-PROTOTYPE, MODE-INTERFACE-MAPPING.
+- [constr_1250][MUST][CORE][type_compatibility] Compatibility of ClientServerInterfaces in the context of a PassThroughSwConnector Targets: CLIENT-SERVER-INTERFACE, CLIENT-SERVER-INTERFACE-MAPPING, CLIENT-SERVER-INTERFACE/IS-SERVICE.
+- [constr_1251][MUST][CORE][type_compatibility] Compatibility of PortPrototypes of TriggerInterfaces in the context of a PassThroughSwConnector Targets: CLIENT-SERVER-INTERFACE/IS-SERVICE, MODE-SWITCH-INTERFACE/IS-SERVICE, NV-DATA-INTERFACE/IS-SERVICE.
+- [TPS_SWCT_01556][SHOULD][MAJOR][cross_file_consistency] Rule for setting RoleBasedPortAssignment.role Targets: AR-PACKAGE/SHORT-NAME, CLIENT-SERVER-INTERFACE, MODE-SWITCH-INTERFACE.
+- [constr_1046][SHOULD][MAJOR][conditional_existence] Applicability of [constr_1045] Targets: CLIENT-SERVER-INTERFACE/IS-SERVICE, MODE-SWITCH-INTERFACE/IS-SERVICE, NV-DATA-INTERFACE/IS-SERVICE.
+- [TPS_SWCT_01035][MUST][CORE][reference_integrity] A composition contains software-component prototypes, and every such prototype is typed by a software-component type. Targets: APPLICATION-SW-COMPONENT-TYPE, COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE, COMPOSITION-SW-COMPONENT-TYPE.
+- [constr_1035][MUST][CORE][forbidden_existence] The graph of composition types and the component types instantiated within them must be acyclic. Targets: COMPOSITION-SW-COMPONENT-TYPE/COMPONENTS/SW-COMPONENT-PROTOTYPE, SW-COMPONENT-PROTOTYPE/TYPE-TREF.
+- [constr_1252][MUST][CORE][forbidden_existence] A pass-through connector must not participate in a connector path from its required outer port to its provided outer port unless the path contains an atomic component instance. Targets: APPLICATION-SW-COMPONENT-TYPE, COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE, ECU-ABSTRACTION-SW-COMPONENT-TYPE.
+- [TPS_SWCT_01659][MUST][CORE][reference_integrity] Mapping of VariableDataPrototype to a NvBlockDescriptor Targets: AUTOSAR-VARIABLE-REF/AUTOSAR-VARIABLE-IN-IMPL-DATATYPE, AUTOSAR-VARIABLE-REF/AUTOSAR-VARIABLE-IREF, NV-BLOCK-DESCRIPTOR/RAM-BLOCK.
+- [constr_1395][MUST][CORE][reference_integrity] NvBlockDataMapping shall be complete Targets: NV-BLOCK-DATA-MAPPING, NV-DATA-INTERFACE/NV-DATAS/VARIABLE-DATA-PROTOTYPE, P-PORT-PROTOTYPE.
+- [constr_1403][MUST][CORE][mutual_exclusion] NvBlockDataMappings to a given nvData shall be unambiguous Targets: NV-BLOCK-DATA-MAPPING, NV-DATA-INTERFACE/NV-DATAS/VARIABLE-DATA-PROTOTYPE, P-PORT-PROTOTYPE.
+- [constr_1404][MUST][CORE][cross_object_consistency] All NvDataInterface.nvData of PortPrototypes in the context of a speciﬁc SwcServiceDependency shall be mapped to the same NvBlockDescriptor Targets: APPLICATION-SW-COMPONENT-TYPE, COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE, ECU-ABSTRACTION-SW-COMPONENT-TYPE.
+- [constr_1033][MUST][CORE][cardinality] Communication scenarios for sender/receiver communication Targets: ASSEMBLY-SW-CONNECTOR, DELEGATION-SW-CONNECTOR, PASS-THROUGH-SW-CONNECTOR.
+- [TPS_SWCT_01111][MUST][CORE][required_existence] Every concrete port prototype must reference the port interface that defines the exchanged services or data. Targets: CLIENT-SERVER-INTERFACE, MODE-SWITCH-INTERFACE, NV-DATA-INTERFACE.
+- [TPS_SWCT_01544][MUST][CORE][format_pattern] prefix used for the actual name of the used PortInterface for the routing activation Targets: CLIENT-SERVER-INTERFACE, MODE-SWITCH-INTERFACE, NV-DATA-INTERFACE.
+- [TPS_SWCT_01627][MUST][CORE][format_pattern] Sufﬁx used for the resulting name of the PortInterface for the Security Access Targets: CLIENT-SERVER-INTERFACE, MODE-SWITCH-INTERFACE, NV-DATA-INTERFACE.

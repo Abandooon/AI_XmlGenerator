@@ -1,0 +1,40 @@
+{"id":"TPS_SWCT_01229","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01230","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01231","profile":"SHOULD_MANUAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01232","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01233","profile":"MUST_PARTIAL","rule_family":"generation_procedure","note":"RTE generation requires implementation data types, but the generation-stage antecedent is process context."}
+{"id":"TPS_SWCT_01234","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01235","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01236","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01237","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01072","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01073","profile":"OPTIONAL","rule_family":"type_compatibility"}
+{"id":"TPS_SWCT_01074","profile":"OPTIONAL","rule_family":"definition"}
+{"id":"TPS_SWCT_01189","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01190","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01191","profile":"MUST_CORE_TYPE","scope":"cross_object","note":"Every DataTypeMap pair must satisfy chapter 6.2.5 compatibility."}
+{"id":"TPS_SWCT_01192","profile":"MUST_MAJOR_STATIC","rule_family":"reference_integrity","scope":"cross_object","note":"Association roles are structural; composition mapping is explicitly only a non-binding hint for unconnected delegation ports."}
+{"id":"TPS_SWCT_01193","profile":"INFO_DEF","rule_family":"cardinality","note":"This malformed parent source was recovered without its nested constr_1004 block; it permits non-1:1 mapping globally."}
+{"id":"constr_1004","profile":"MUST_CORE_CONSIST","scope":"cross_file","note":"One application type may map differently per ECU, but never differently within one atomic component."}
+{"id":"constr_1005","profile":"MUST_CORE_TYPE","scope":"cross_file","note":"Implementation types used for connected compatible application types must themselves be compatible."}
+{"id":"TPS_SWCT_01238","profile":"INFO_DEF"}
+{"id":"constr_1143","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"AutosarDataType.category meaning cannot be user-extended."}
+{"id":"constr_1006","profile":"MUST_PARTIAL","rule_family":"value_domain","note":"Applicable category matrix must be captured from Table 5.7."}
+{"id":"TPS_SWCT_01239","profile":"MUST_MAJOR_STATIC","rule_family":"generation_procedure","scope":"property","note":"Use effective default VALUE; missing category is not an error."}
+{"id":"TPS_SWCT_01240","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01241","profile":"INFO_DEF"}
+{"id":"constr_1007","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Allowed SwDataDefProps attributes/multiplicity matrix must be captured from Table 5.8."}
+{"id":"constr_1008","profile":"MUST_CORE_TYPE","scope":"object","note":"STRUCTURE/ARRAY require ApplicationCompositeDataType; all other categories require ApplicationPrimitiveDataType."}
+{"id":"TPS_SWCT_01242","profile":"INFO_DEF"}
+{"id":"constr_2544","profile":"MUST_CORE_CONSIST","rule_family":"value_range","note":"Validate application limits through CompuMethod internal limits, mapped implementation constraints, and base-type range."}
+{"id":"constr_1281","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","note":"In-domain invalidValue uses ApplicationValueSpecification."}
+{"id":"constr_1283","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","note":"Out-of-domain invalidValue uses NumericalValueSpecification."}
+{"id":"TPS_SWCT_01243","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01562","profile":"MUST_CORE_TYPE","note":"Enumeration value specification representation depends on ImplementationDataType versus ApplicationPrimitiveDataType."}
+{"id":"TPS_SWCT_01244","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01245","profile":"INFO_DEF"}
+{"id":"constr_1093","profile":"MUST_CORE_EXIST","scope":"object","note":"STRING ApplicationPrimitiveDataType requires swTextProps with arraySizeSemantics and swMaxTextSize."}
+{"id":"TPS_SWCT_01488","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"String encoding requires a swTextProps baseType reference; only baseTypeEncoding supplies encoding semantics."}
+{"id":"TPS_SWCT_01127","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01246","profile":"OPTIONAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01128","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"STRING compound primitive type requires a SwRecordLayout reference."}

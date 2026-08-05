@@ -1,4 +1,3 @@
-import os
 from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateInterface import generate_interface
 from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 

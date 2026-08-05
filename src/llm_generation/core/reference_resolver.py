@@ -3,10 +3,11 @@
 使用配置化的语义模式，避免硬编码关键词
 """
 import re
-import json
-from typing import Dict, List, Any, Optional, Tuple, Set
+from typing import Dict, List, Any, Optional
+
 from ..config import CONFIG
 from ..utils.exceptions import ValidationError
+
 
 class ReferenceResolver:
     """引用解析器 - 配置化语义模式"""

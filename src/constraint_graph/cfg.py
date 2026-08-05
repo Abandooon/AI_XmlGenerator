@@ -1,6 +1,8 @@
 # cfg.py  ── 单一职责：提供全局 BUILD_CFG -------------------------------
-import pathlib, tomllib, argparse, sys
+import pathlib
+import tomllib
 from typing import Any
+
 
 def _load_build_cfg(path: str | None = None) -> dict[str, Any]:
     """按优先级查找并解析 build.toml。"""

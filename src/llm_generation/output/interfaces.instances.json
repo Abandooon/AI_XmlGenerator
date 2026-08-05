@@ -1,56 +1,34 @@
 {
-  "Sensor_Data_Interface_RadarCamera": {
-    "SHORT-NAME": "Sensor_Data_Interface_RadarCamera",
+  "SensorTemperatureInput": {
+    "SHORT-NAME": "SensorTemperatureInput",
     "IS-SERVICE": "false",
     "DATA-ELEMENTS": {
       "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "RadarData",
+          "SHORT-NAME": "SensorTemperature",
           "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/RadarData"
-          }
-        },
-        {
-          "SHORT-NAME": "CameraImageData",
-          "TYPE-TREF": {
-            "@DEST": "APPLICATION-RECORD-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/CameraImageData"
-          }
-        },
-        {
-          "SHORT-NAME": "Timestamp",
-          "TYPE-TREF": {
-            "@DEST": "APPLICATION-PRIMITIVE-DATA-TYPE",
-            "#text": "/Sensor_Data_Interface_RadarCamera/Timestamp"
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/sint16"
           }
         }
       ]
     },
     "_type": "SENDER-RECEIVER-INTERFACE"
   },
-  "Actuation_Command_Interface": {
-    "SHORT-NAME": "Actuation_Command_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
+  "TemperatureStatusOutput": {
+    "SHORT-NAME": "TemperatureStatusOutput",
+    "IS-SERVICE": "false",
+    "DATA-ELEMENTS": {
+      "VARIABLE-DATA-PROTOTYPE": [
         {
-          "SHORT-NAME": "SubmitActuationCommand"
+          "SHORT-NAME": "TemperatureStatus",
+          "TYPE-TREF": {
+            "@DEST": "IMPLEMENTATION-DATA-TYPE",
+            "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+          }
         }
       ]
     },
-    "_type": "CLIENT-SERVER-INTERFACE"
-  },
-  "HMI_Status_Interface": {
-    "SHORT-NAME": "HMI_Status_Interface",
-    "IS-SERVICE": "true",
-    "OPERATIONS": {
-      "CLIENT-SERVER-OPERATION": [
-        {
-          "SHORT-NAME": "RequestSystemStatus"
-        }
-      ]
-    },
-    "_type": "CLIENT-SERVER-INTERFACE"
+    "_type": "SENDER-RECEIVER-INTERFACE"
   }
 }

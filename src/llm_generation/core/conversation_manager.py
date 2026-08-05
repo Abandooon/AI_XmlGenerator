@@ -4,16 +4,17 @@
 """
 import json
 import time
-from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
-from ..config import CONFIG
-from ..utils.serializers import ArchitectureDesign, generate_uuid, save_json
-from ..utils.exceptions import ConversationError, ArchitectureDesignError, ValidationError
+from typing import Dict, List, Any, Optional
+
+from .dependency_analyzer import dependency_analyzer
 from .memory_manager import memory_manager
 from .round1_designer import round1_designer
 from .round2_generator import round2_generator
 from .user_interaction import user_interaction
-from .dependency_analyzer import dependency_analyzer
+from ..config import CONFIG
+from ..utils.exceptions import ConversationError, ArchitectureDesignError, ValidationError
+from ..utils.serializers import ArchitectureDesign
 
 
 class ConversationState(Enum):
@@ -269,7 +270,10 @@ class ConversationManager:
                 "arxml_data": arxml_data,
                 "generation_mode": generation_mode,
                 "component_count": component_count,
-                "optimization_metrics": stats.get("performance_metrics", {})
+                "optimization_metrics": stats.get("performance_metrics", {}),
+                "validation": stats.get("validation"),
+                "validation_context": stats.get("validation_context"),
+                "auto_repair": stats.get("auto_repair"),
             }
             session_info["stats"]["round2_tokens"] = stats["total_tokens"]
             session_info["stats"]["total_tokens"] += stats["total_tokens"]
@@ -286,6 +290,14 @@ class ConversationManager:
             )
 
             session_info["state"] = ConversationState.COMPLETED
+            validation = stats.get("validation") or {}
+            validation_decision = validation.get("decision", "DISABLED")
+            if validation_decision in {"FAIL", "ERROR"}:
+                result_status = "generated_with_validation_errors"
+            elif validation_decision == "INCOMPLETE":
+                result_status = "generated_with_incomplete_validation"
+            else:
+                result_status = "success"
             self.successful_sessions += 1
 
             # 性能报告
@@ -296,7 +308,7 @@ class ConversationManager:
 
             return {
                 "session_id": session_id,
-                "status": "success",
+                "status": result_status,
                 "state": session_info["state"].value,
                 "round": 2,
                 "arxml_data": arxml_data,
@@ -305,7 +317,9 @@ class ConversationManager:
                 "total_stats": session_info["stats"],
                 "generation_mode": generation_mode,
                 "performance_report": performance_report,
-                "message": f"ARXML文档已成功生成，共{len(output_files)}个文件，使用{generation_mode}模式。"
+                "validation": validation,
+                "message": f"ARXML文档已生成，共{len(output_files)}个输出文件，"
+                           f"验证结果为 {validation_decision}，使用{generation_mode}模式。"
             }
 
         except Exception as e:
@@ -466,6 +480,39 @@ class ConversationManager:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(arxml_content)
             output_files.append(str(output_path))
+
+        # 验证报告与 ARXML 使用同一会话和时间戳，不隐藏 FAIL/INCOMPLETE。
+        session_info = self._get_session_info(session_id)
+        validation = (
+            session_info.get("results", {}).get("round2", {}).get("validation")
+            if session_info else None
+        )
+        validation_dir = CONFIG.output_dir / "ARXML"
+        if validation:
+            validation_dir.mkdir(parents=True, exist_ok=True)
+            validation_path = validation_dir / f"validation_{session_id[:8]}_{timestamp}.json"
+            from ..utils.serializers import save_json
+            save_json(validation, validation_path)
+            output_files.append(str(validation_path))
+
+        # Persist the hash-pinned retrieval/validation manifest independently.
+        round2_result = session_info.get("results", {}).get("round2", {}) if session_info else {}
+        validation_context = round2_result.get("validation_context")
+        if validation_context:
+            validation_dir.mkdir(parents=True, exist_ok=True)
+            context_path = validation_dir / f"validation_context_{session_id[:8]}_{timestamp}.json"
+            from ..utils.serializers import save_json
+            save_json(validation_context, context_path)
+            output_files.append(str(context_path))
+
+        # Keep every repair attempt and acceptance decision for audit/replay.
+        repair_audit = round2_result.get("auto_repair")
+        if repair_audit and repair_audit.get("enabled"):
+            validation_dir.mkdir(parents=True, exist_ok=True)
+            repair_path = validation_dir / f"repair_audit_{session_id[:8]}_{timestamp}.json"
+            from ..utils.serializers import save_json
+            save_json(repair_audit, repair_path)
+            output_files.append(str(repair_path))
 
         # 统一写性能报告
         session_info = self._get_session_info(session_id)

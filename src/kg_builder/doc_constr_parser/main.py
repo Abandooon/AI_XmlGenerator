@@ -1,4 +1,5 @@
 import os
+
 import pandas as pd
 
 # 更新config导入，确保新的常量和Schema被使用
@@ -12,6 +13,13 @@ from config import (
     MD_FILENAME,
     RE_EXTRACT_CHUNKS
 )
+from context_injector import process_document_for_llm
+from linker_validator import validate_and_link_constraints
+from llm_extractor import (
+    get_text_chunks,
+    extract_constraints_from_block,
+    remove_duplicates
+)
 from utils import (
     load_markdown,
     load_json,
@@ -20,13 +28,6 @@ from utils import (
     save_jsonl,
     load_jsonl
 )
-from context_injector import process_document_for_llm
-from llm_extractor import (
-    get_text_chunks,
-    extract_constraints_from_block,
-    remove_duplicates
-)
-from linker_validator import validate_and_link_constraints
 
 
 def main():

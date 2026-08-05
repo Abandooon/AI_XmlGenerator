@@ -1,10 +1,10 @@
 import asyncio
 import json
-
-import yaml
-from pathlib import Path
 import sys
 import time
+from pathlib import Path
+
+import yaml
 
 sys.path.insert(0, './src')
 

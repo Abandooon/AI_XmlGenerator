@@ -1,0 +1,15 @@
+{
+  "TPS_SWCT_01581": [
+    {"role":"subject","class_name":"ModeSwitchInterface","property_name":null,"evidence":"The topology constraint applies to communication through a ModeSwitchInterface."},
+    {"role":"related_object","class_name":"SwConnector","property_name":null,"evidence":"Connector incidence determines whether the topology is 1:1, 1:n, or forbidden n:1."}
+  ],
+  "constr_2054": [
+    {"role":"property","class_name":"RapidPrototypingScenario","property_name":"rptSystem","evidence":"The referenced rptSystem must resolve to a System with category RPT_SYSTEM."},
+    {"role":"reference_target","class_name":"System","property_name":"category","evidence":"Validate the category of the resolved System target."}
+  ],
+  "constr_2055": [
+    {"role":"property","class_name":"RptContainer","property_name":"byPassPoint","evidence":"Table 13.4 restricts byPassPoint targets by category."},
+    {"role":"property","class_name":"RptContainer","property_name":"rptHook","evidence":"Table 13.4 restricts rptHook targets by category."},
+    {"role":"reference_target","class_name":"RptHook","property_name":null,"evidence":"The rptHook reference resolves to RptHook instances."}
+  ]
+}

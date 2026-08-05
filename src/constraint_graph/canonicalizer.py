@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
-import unicodedata
-from typing import Any, Dict, List
 import pathlib
+import re
+from typing import Any, Dict, List
+
+import unicodedata
 
 __all__ = ["Canonicalizer"]
 

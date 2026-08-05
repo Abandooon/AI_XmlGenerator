@@ -1,10 +1,8 @@
-import re
-
 from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceElement import process_choice_elements
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
 from src.kg_builder.uml_metadata_parser.XsdParser.ExtractExtensionBaseType import extractBaseType
 from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
-from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case, to_pascal_case
 
 
 def process_group_inner_complex_type(root, element, element_wrapper):

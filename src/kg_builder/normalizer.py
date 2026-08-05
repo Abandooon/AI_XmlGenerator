@@ -6,10 +6,13 @@ Metadata Normalizer
 """
 
 from __future__ import annotations
-import re, unicodedata
-from typing import Any
-from utils.logger import get_logger
+
 import os
+import re
+import unicodedata
+from typing import Any
+
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 _non_alnum = re.compile(r"[^0-9a-zA-Z]+")

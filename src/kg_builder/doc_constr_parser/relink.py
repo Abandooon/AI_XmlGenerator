@@ -1,4 +1,5 @@
 import os
+
 import pandas as pd
 
 from config import (
@@ -9,13 +10,13 @@ from config import (
     OUTPUT_LINKED_CONSTRAINTS_FILENAME,
     OUTPUT_REVIEW_QUEUE_FILENAME
 )
+from linker_validator import validate_and_link_constraints
 from utils import (
     load_json,
     load_jsonl,
     save_json,
     save_dataframe_to_csv
 )
-from linker_validator import validate_and_link_constraints
 
 
 def main():

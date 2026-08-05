@@ -1,0 +1,40 @@
+{"id":"constr_1255","profile":"MUST_CORE_CONSIST","note":"BOOLEAN/STRING Units must reference dimensionless PhysicalDimension with every exponent zero."}
+{"id":"TPS_SWCT_01068","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01061","profile":"MUST_CORE_TYPE","note":"Country-code Unit conversion requires identical PhysicalDimension; prefer EQUIV_UNITS group target."}
+{"id":"TPS_SWCT_01286","profile":"INFO_DEF"}
+{"id":"constr_2561","profile":"INFO_DEF","rule_family":"value_domain","scope":"property","note":"Levels 0/1 have standardized semantics; other values may exist with semantics outside AUTOSAR, so this is not a closed enum."}
+{"id":"TPS_SWCT_01287","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"Defines A2L generation interpretation of hard/soft limit levels."}
+{"id":"TPS_SWCT_01288","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"Tool interpretation of physical versus internal constraints and missing-side calculation."}
+{"id":"TPS_SWCT_01289","profile":"INFO_DEF","rule_family":"value_range"}
+{"id":"constr_1191","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"After variability binding every Limit must evaluate to a number."}
+{"id":"TPS_SWCT_01290","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01291","profile":"INFO_DEF","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01456","profile":"INFO_DEF","rule_family":"value_domain","note":"Lists predefined option values, not an explicitly closed domain."}
+{"id":"constr_1311","profile":"MUST_CORE_CARD","scope":"property","note":"An option list contains at most one safety rating."}
+{"id":"constr_1381","profile":"MUST_CORE_CARD","scope":"property","note":"An option list contains at most one of coreGlobal/coreLocal."}
+{"id":"TPS_SWCT_01294","profile":"MUST_CORE_CONSIST","scope":"cross_file","note":"Missing swAddrMethod permits default placement; conflicting component placement associations are errors."}
+{"id":"TPS_SWCT_01292","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01293","profile":"MUST_MANUAL","rule_family":"generation_procedure"}
+{"id":"constr_2034","profile":"MUST_CORE_FORBID","scope":"cross_object","note":"Runnable/schedulable entities cannot reference addrMethodShortNameAndAlignment policy."}
+{"id":"constr_1402","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"coreLocal option requires sectionInitializationPolicy INIT or CLEARED on the applicable address method."}
+{"id":"TPS_SWCT_01295","profile":"INFO_DEF"}
+{"id":"constr_1264","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"swRecordLayoutVIndex may be zero only for VALUE or VAL_BLK."}
+{"id":"TPS_SWCT_01489","profile":"INFO_DEF","rule_family":"value_domain","note":"Standardized values are in Table 5.104; source does not state user extension is forbidden."}
+{"id":"TPS_SWCT_01296","profile":"INFO_DEF"}
+{"id":"constr_1027","profile":"MUST_CORE_CONSIST","note":"Parameter data type structure must match its SwDataDefProps/record-layout details."}
+{"id":"TPS_SWCT_01297","profile":"OPTIONAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01298","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01299","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"Record-layout-to-implementation-type generation recursively creates one subelement per layout group."}
+{"id":"TPS_SWCT_01300","profile":"OPTIONAL","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01177","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01178","profile":"INFO_DEF"}
+{"id":"constr_1284","profile":"MUST_CORE_TYPE","note":"TextValueSpecification is legal only with the four listed text-table CompuMethod categories."}
+{"id":"constr_4035","profile":"MUST_CORE_TYPE","rule_family":"value_range","note":"ValueSpecification must fit the target AutosarDataType without information loss."}
+{"id":"constr_1271","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Record value element count equals ApplicationRecordDataType element count."}
+{"id":"constr_1272","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Record value element count equals STRUCTURE implementation subelement count."}
+{"id":"constr_1273","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Array value element count equals application maxNumberOfElements."}
+{"id":"constr_1274","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Array value element count equals implementation arraySize."}
+{"id":"TPS_SWCT_01484","profile":"OPTIONAL"}
+{"id":"constr_2057","profile":"MUST_CORE_CARD","scope":"object","note":"RuleBasedAxisCont has one swAxisIndex and one swArraySize per dimension."}
+{"id":"constr_2058","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"Listed compound/array categories require swArraySize in RuleBasedValueCont."}
+{"id":"TPS_SWCT_02053","profile":"INFO_RUNTIME"}

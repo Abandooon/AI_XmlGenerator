@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "structured_constraint.schema.json",
+  "title": "Validation-oriented AUTOSAR structured constraint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "source",
+    "semantics",
+    "targets",
+    "verification",
+    "quality"
+  ],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "source": {"$ref": "source_constraint.schema.json"},
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normativity",
+        "importance",
+        "is_core",
+        "usages",
+        "rule_family",
+        "scope",
+        "summary"
+      ],
+      "properties": {
+        "normativity": {"enum": ["mandatory", "recommended", "optional", "informational", "unknown"]},
+        "importance": {"enum": ["core", "major", "supporting", "unknown"]},
+        "is_core": {"type": "boolean"},
+        "usages": {
+          "type": "array",
+          "items": {"enum": ["generation_context", "automatic_validation", "repair_guidance", "human_review", "documentation"]},
+          "uniqueItems": true
+        },
+        "rule_family": {
+          "enum": [
+            "definition", "required_existence", "forbidden_existence", "cardinality",
+            "value_domain", "value_range", "format_pattern", "type_compatibility",
+            "conditional_existence", "mutual_exclusion", "reference_integrity",
+            "uniqueness", "ordering", "cross_object_consistency",
+            "cross_file_consistency", "runtime_behavior", "generation_procedure",
+            "example", "other", "unknown"
+          ]
+        },
+        "scope": {"enum": ["property", "object", "cross_object", "document", "cross_file", "runtime", "unknown"]},
+        "summary": {"type": "string"},
+        "rationale": {"type": "string"}
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "binding_status", "evidence"],
+        "properties": {
+          "role": {"enum": ["subject", "property", "context", "reference_target", "related_object"]},
+          "class_name": {"type": ["string", "null"]},
+          "class_xml_tag": {"type": ["string", "null"]},
+          "property_name": {"type": ["string", "null"]},
+          "property_xml_tag": {"type": ["string", "null"]},
+          "path": {"type": ["string", "null"]},
+          "binding_status": {"enum": ["resolved", "ambiguous", "unresolved", "not_applicable"]},
+          "evidence": {"type": "string"},
+          "candidates": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observability", "policy", "must_validate", "severity", "preferred_backend"],
+      "properties": {
+        "observability": {"enum": ["full", "partial", "none", "unknown"]},
+        "observability_reason": {"type": "string"},
+        "policy": {"enum": ["must", "should", "optional", "manual", "not_applicable", "undecided"]},
+        "must_validate": {"type": "boolean"},
+        "severity": {"enum": ["error", "warning", "info"]},
+        "preferred_backend": {"enum": ["xsd", "python", "shacl", "smt", "manual", "none", "undecided"]},
+        "fallback_backend": {"enum": ["xsd", "python", "shacl", "smt", "manual", "none", "undecided"]}
+      }
+    },
+    "rules": {"type": "array", "items": {"$ref": "validation_ir.schema.json"}},
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantic_status", "binding_status", "review_status", "issues"],
+      "properties": {
+        "semantic_status": {"enum": ["curated", "provisional", "unresolved"]},
+        "binding_status": {"enum": ["complete", "partial", "unresolved", "not_applicable"]},
+        "review_status": {"enum": ["approved", "needs_review", "blocked"]},
+        "issues": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    }
+  }
+}
+

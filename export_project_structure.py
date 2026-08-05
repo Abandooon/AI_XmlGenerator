@@ -2,9 +2,8 @@
 """
 自动导出PyCharm项目结构
 """
-import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def should_ignore(path: Path, ignore_patterns: list) -> bool:

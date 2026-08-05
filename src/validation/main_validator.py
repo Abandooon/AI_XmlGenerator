@@ -3,12 +3,12 @@
 AUTOSAR XML验证系统主入口
 支持从配置文件读取所有路径，避免硬编码
 """
-import os
 import sys
-from pathlib import Path
-import yaml
-from typing import Dict, List, Optional
 import time
+from pathlib import Path
+from typing import Dict, List
+
+import yaml
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent.parent

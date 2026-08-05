@@ -7,12 +7,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import neo4j
 
-from utils.logger import get_logger
 from utils.exceptions import ExportError
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

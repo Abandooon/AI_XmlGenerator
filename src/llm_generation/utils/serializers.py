@@ -4,10 +4,10 @@
 """
 import json
 import uuid
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass, asdict, fields
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 
 def generate_uuid() -> str:

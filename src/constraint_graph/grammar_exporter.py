@@ -10,7 +10,6 @@
 解决方案：建立格式映射系统，保持各组件内部一致性
 """
 
-import re
 from typing import Dict, Set
 
 class TagFormatManager:

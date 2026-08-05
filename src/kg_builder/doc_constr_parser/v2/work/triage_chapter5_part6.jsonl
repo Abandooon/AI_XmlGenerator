@@ -1,0 +1,40 @@
+{"id":"TPS_SWCT_01500","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute value-axis displayFormat using the four-level precedence order."}
+{"id":"TPS_SWCT_01501","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute value-axis calibration access with local properties taking precedence."}
+{"id":"TPS_SWCT_01502","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute input-axis Unit with the five-level precedence chain."}
+{"id":"constr_2549","profile":"MUST_CORE_CONSIST","note":"All input-axis Units must be compatible despite precedence."}
+{"id":"TPS_SWCT_01503","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute input-axis DataConstr with the stated precedence."}
+{"id":"TPS_SWCT_01504","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"Compute input-axis displayFormat with the six-level precedence chain."}
+{"id":"TPS_SWCT_01505","profile":"MUST_PARTIAL","rule_family":"ordering","note":"Complex-type calibration-access precedence must be recovered from Table 5.61."}
+{"id":"TPS_SWCT_01506","profile":"MUST_CORE_CONSIST","rule_family":"ordering","note":"SwDataDefProps calibration access precedes SwCalprmAxis calibration access."}
+{"id":"TPS_SWCT_01276","profile":"INFO_DEF"}
+{"id":"constr_1142","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"CompuMethod.category meaning cannot be user-extended."}
+{"id":"TPS_SWCT_01277","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01548","profile":"INFO_DEF","rule_family":"value_range"}
+{"id":"TPS_SWCT_01278","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01279","profile":"INFO_RUNTIME"}
+{"id":"constr_1021","profile":"MUST_CORE_EXIST","scope":"object","note":"Both conversion directions are determined explicitly or by valid automatic inversion."}
+{"id":"constr_1022","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"When both domains exist, both require explicit limits."}
+{"id":"TPS_SWCT_01280","profile":"MUST_MANUAL","rule_family":"runtime_behavior","note":"MCD tool must not apply conversion outside limits and should notify user."}
+{"id":"constr_1175","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence","note":"CompuMethod requires Unit except TEXTTABLE, BITFIELD_TEXTTABLE, or IDENTICAL."}
+{"id":"TPS_SWCT_01281","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01430","profile":"INFO_DEF"}
+{"id":"constr_1024","profile":"MUST_CORE_TYPE","scope":"object","note":"AUTOSAR CompuMethod uses only stepwise CompuScales representation."}
+{"id":"TPS_SWCT_01282","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01283","profile":"INFO_DEF"}
+{"id":"constr_1025","profile":"MUST_CORE_CONSIST","rule_family":"value_range","note":"Rational denominator must be nonzero over the applicable input domain; use exact arithmetic/SMT where needed."}
+{"id":"TPS_SWCT_01284","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01569","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01431","profile":"MUST_CORE_EXIST","rule_family":"generation_procedure","note":"Point-range CompuScale needs a usable symbol source by priority; fail if none applies."}
+{"id":"constr_1133","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"Identical derived CompuScale symbols must denote identical ranges."}
+{"id":"constr_1146","profile":"MUST_CORE_TYPE","rule_family":"conditional_existence","scope":"property","note":"CompuScale.symbol is legal only under the four listed CompuMethod categories."}
+{"id":"TPS_SWCT_01429","profile":"INFO_DEF"}
+{"id":"constr_1134","profile":"MUST_CORE_CONSIST","scope":"object","note":"TEXTTABLE forbids physConstr and requires internal-to-physical scales with upper/lower limits."}
+{"id":"constr_1135","profile":"MUST_CORE_FORBID","rule_family":"format_pattern","scope":"property","note":"BITFIELD_TEXTTABLE vt must not contain the separator '|'."}
+{"id":"constr_1375","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"CompuMethod category/attribute matrix must be recovered from Table 5.74."}
+{"id":"TPS_SWCT_01285","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01056","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01057","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01058","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01059","profile":"MUST_MAJOR_STATIC","rule_family":"required_existence","note":"Direct SI-derived Unit requires exponents for all seven fundamental dimensions."}
+{"id":"TPS_SWCT_01060","profile":"OPTIONAL","rule_family":"value_range"}
+{"id":"constr_1026","profile":"MUST_CORE_CONSIST","note":"Units outside CompuMethod are exceptional and must be compatible with the CompuMethod Unit."}

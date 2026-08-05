@@ -1,8 +1,10 @@
-from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-from src.kg_builder.uml_metadata_parser.XsdParser.GroupInnerComplexType import process_group_inner_complex_type
-from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
-from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case,to_pascal_case
 import xml.etree.ElementTree as ET
+
+from src.kg_builder.uml_metadata_parser.XsdParser.ExtractChoiceGroup import process_choiceRef
+from src.kg_builder.uml_metadata_parser.XsdParser.GroupInnerComplexType import process_group_inner_complex_type
+from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
+from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_camel_case, to_pascal_case
+
 
 def extractGroup(root, element_wrapper):
     groups = {}

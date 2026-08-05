@@ -1,0 +1,25 @@
+{"id":"TPS_SWCT_01397","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01398","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01403","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01399","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01400","profile":"MUST_CORE_TYPE","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01401","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01402","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01404","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01405","profile":"MUST_MANUAL","rule_family":"generation_procedure","note":"This is an ECU-configuration generation obligation whose antecedent is a required service, not a standalone validity predicate on an arbitrary ASW model."}
+{"id":"TPS_SWCT_01406","profile":"MUST_MANUAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01407","profile":"MUST_MANUAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01408","profile":"MUST_MANUAL","rule_family":"generation_procedure"}
+{"id":"TPS_SWCT_01409","profile":"OPTIONAL"}
+{"id":"constr_2019","profile":"MUST_CORE_TYPE","note":"Apply the explicitly documented Dcm, Dem, and mode-management exceptions."}
+{"id":"TPS_SWCT_01579","profile":"OPTIONAL","note":"Explicit Dcm exception to constr_2019; use as policy input for that validator."}
+{"id":"TPS_SWCT_01580","profile":"OPTIONAL","note":"Explicit Dem exception to constr_2019; use as policy input for that validator."}
+{"id":"TPS_SWCT_01411","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01412","profile":"MUST_PARTIAL","rule_family":"generation_procedure","note":"Phase placement and generator completeness need methodology context; final ECU-config structure can be checked only when that context is declared."}
+{"id":"TPS_SWCT_02500","profile":"MUST_CORE_TYPE"}
+{"id":"TPS_SWCT_01413","profile":"MUST_CORE_REF","scope":"cross_file"}
+{"id":"TPS_SWCT_01414","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01415","profile":"MUST_PARTIAL","rule_family":"conditional_existence"}
+{"id":"TPS_SWCT_01416","profile":"MUST_CORE_REF","scope":"cross_file"}
+{"id":"constr_2016","profile":"MUST_CORE_FORBID"}
+{"id":"constr_2017","profile":"MUST_CORE_TYPE"}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semantic_curation.schema.json",
+  "title": "Human-curated semantic overlay",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "source_sha256", "semantics", "targets", "verification", "curation"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {"type": "string"},
+        "expression": {"type": "string"},
+        "reason": {"type": "string"}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["normativity", "importance", "is_core", "usages", "rule_family", "scope", "summary", "rationale"],
+      "properties": {
+        "normativity": {"enum": ["mandatory", "recommended", "optional", "informational", "unknown"]},
+        "importance": {"enum": ["core", "major", "supporting", "unknown"]},
+        "is_core": {"type": "boolean"},
+        "usages": {
+          "type": "array",
+          "items": {"enum": ["generation_context", "automatic_validation", "repair_guidance", "human_review", "documentation"]},
+          "uniqueItems": true
+        },
+        "rule_family": {
+          "enum": [
+            "definition", "required_existence", "forbidden_existence", "cardinality", "value_domain",
+            "value_range", "format_pattern", "type_compatibility", "conditional_existence",
+            "mutual_exclusion", "reference_integrity", "uniqueness", "ordering",
+            "cross_object_consistency", "cross_file_consistency", "runtime_behavior",
+            "generation_procedure", "example", "other", "unknown"
+          ]
+        },
+        "scope": {"enum": ["property", "object", "cross_object", "document", "cross_file", "runtime", "unknown"]},
+        "summary": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "class_name", "property_name", "evidence"],
+        "properties": {
+          "role": {"enum": ["subject", "property", "context", "reference_target", "related_object"]},
+          "class_name": {"type": ["string", "null"]},
+          "property_name": {"type": ["string", "null"]},
+          "evidence": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observability", "observability_reason", "policy", "must_validate", "severity", "preferred_backend", "fallback_backend"],
+      "properties": {
+        "observability": {"enum": ["full", "partial", "none", "unknown"]},
+        "observability_reason": {"type": "string", "minLength": 1},
+        "policy": {"enum": ["must", "should", "optional", "manual", "not_applicable", "undecided"]},
+        "must_validate": {"type": "boolean"},
+        "severity": {"enum": ["error", "warning", "info"]},
+        "preferred_backend": {"enum": ["xsd", "python", "shacl", "smt", "manual", "none", "undecided"]},
+        "fallback_backend": {"enum": ["xsd", "python", "shacl", "smt", "manual", "none", "undecided"]}
+      }
+    },
+    "curation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "issues", "notes"],
+      "properties": {
+        "status": {"enum": ["curated", "provisional", "unresolved"]},
+        "issues": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}
+

@@ -1,10 +1,9 @@
 # src/validation/cross_file_resolver.py
 """跨文件引用解析器"""
 
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+from typing import Dict, List, Optional, Any
 
 
 class CrossFileResolver:

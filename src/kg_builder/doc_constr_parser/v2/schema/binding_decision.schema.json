@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "binding_decision.schema.json",
+  "title": "AUTOSAR metamodel/XML binding decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "source_sha256", "binding_status", "targets", "issues"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "binding_status": {"enum": ["complete", "partial", "unresolved", "not_applicable"]},
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target_index", "role", "class_name", "property_name", "evidence", "binding_status",
+          "class_is_abstract", "class_xml_tags", "path_variants", "candidates", "issues"
+        ],
+        "properties": {
+          "target_index": {"type": "integer", "minimum": 0},
+          "role": {"enum": ["subject", "property", "context", "reference_target", "related_object"]},
+          "class_name": {"type": ["string", "null"]},
+          "property_name": {"type": ["string", "null"]},
+          "evidence": {"type": "string"},
+          "binding_status": {"enum": ["resolved", "ambiguous", "unresolved", "not_applicable"]},
+          "declared_owner": {"type": ["string", "null"]},
+          "class_is_abstract": {"type": "boolean"},
+          "class_xml_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "property_xml_tag": {"type": ["string", "null"]},
+          "xml_wrapper_tag": {"type": ["string", "null"]},
+          "path_variants": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "type_name": {"type": ["string", "null"]},
+          "min_occurs": {"type": ["integer", "null"]},
+          "max_occurs": {"type": ["integer", "null"]},
+          "enum_values": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "candidates": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "issues": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        }
+      }
+    },
+    "issues": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}
+

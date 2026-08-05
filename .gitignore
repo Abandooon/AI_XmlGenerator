@@ -1,0 +1,27 @@
+.venv/
+.tools/
+.pytest_cache/
+*.iml
+.idea/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.log
+
+# ConstraintV2 deterministic build intermediates. Curated batch inputs and
+# canonical source/curation/binding ledgers remain version-controlled.
+src/kg_builder/doc_constr_parser/v2/work/semantic_triage_*.jsonl
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_pre_target_overrides.jsonl
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_sanitized_bindings.jsonl
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_override_*.jsonl
+
+# Superseded curation iterations retained outside version control.
+src/kg_builder/doc_constr_parser/v2/work/bindings_chapter2.jsonl
+src/kg_builder/doc_constr_parser/v2/work/bindings_triage_chapter4_part1.jsonl
+src/kg_builder/doc_constr_parser/v2/work/curation_overrides.json
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_apply_*.jsonl
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_o*.jsonl
+src/kg_builder/doc_constr_parser/v2/work/semantic_curation_with_target_overrides*.jsonl
+src/kg_builder/doc_constr_parser/v2/work/triage_chapter4_part7.jsonl

@@ -1,0 +1,27 @@
+{"id":"TPS_SWCT_01581","profile":"MUST_CORE_CARD","note":"Reject n:1 mode communication; permit only 1:1 and 1:n topologies."}
+{"id":"constr_1101","profile":"MUST_CORE_CARD"}
+{"id":"TPS_SWCT_01071","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01067","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01008","profile":"INFO_DEF"}
+{"id":"constr_1399","profile":"MUST_CORE_CONSIST","rule_family":"value_domain","scope":"object"}
+{"id":"constr_1298","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence"}
+{"id":"constr_1299","profile":"MUST_CORE_FORBID","rule_family":"conditional_existence"}
+{"id":"constr_1181","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness"}
+{"id":"TPS_SWCT_01009","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01010","profile":"MUST_CORE_CONSIST","rule_family":"value_domain","scope":"object"}
+{"id":"TPS_SWCT_01011","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"object","note":"Missing category has ALPHABETIC_ORDER semantics; this is a generation default, not an invalidity."}
+{"id":"TPS_SWCT_01450","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01451","profile":"INFO_DEF"}
+{"id":"constr_1193","profile":"MUST_CORE_CARD","rule_family":"reference_integrity"}
+{"id":"TPS_SWCT_01376","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01077","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01377","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01378","profile":"OPTIONAL"}
+{"id":"constr_4003","profile":"MUST_CORE_CARD","rule_family":"cross_object_consistency"}
+{"id":"constr_1195","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence"}
+{"id":"TPS_SWCT_01379","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01380","profile":"MUST_CORE_EXIST","rule_family":"conditional_existence"}
+{"id":"TPS_SWCT_01383","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01555","profile":"INFO_RUNTIME"}
+{"id":"constr_4012","profile":"MUST_CORE_CONSIST"}
+{"id":"TPS_SWCT_01381","profile":"MUST_PARTIAL","rule_family":"conditional_existence","note":"A ModeAccessPoint is required by external read-access intent; absence cannot be judged without that intent."}

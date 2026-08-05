@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 # block_level_fsm_strategy.py - FSM驱动的动态块级生成策略（AUTOSAR优化版）
 
-import asyncio
-import time
-import json
-import re
-import random
-import psutil
 import os
-from typing import Dict, List, Optional, Tuple, Any, Set
+import random
+import re
+import time
 from collections import defaultdict, deque
+from typing import Dict, List, Tuple, Any
+
 import aiohttp
-import xml.etree.ElementTree as ET
+import psutil
 
 
 class FSMPath:

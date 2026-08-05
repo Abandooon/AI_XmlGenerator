@@ -1,10 +1,9 @@
 import json
-import re
-import tiktoken
-import google.generativeai as genai
 import os  # Added for directory and file operations
 
-from openai import OpenAI
+import google.generativeai as genai
+import tiktoken
+
 from config import (
     LLM_API_BASE, LLM_API_KEY, LLM_MODEL_NAME,
     CONSTRAINT_SCHEMA, CLASS_ANNOTATION_PATTERN, ENUM_ANNOTATION_PATTERN,

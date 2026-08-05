@@ -5,7 +5,6 @@ UMM-ICM-PCG 实验指标计算脚本
 """
 
 import pandas as pd
-import numpy as np
 from tabulate import tabulate
 
 

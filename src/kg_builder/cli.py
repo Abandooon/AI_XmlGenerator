@@ -9,18 +9,17 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 from typing import Any
 
 from neo4j import GraphDatabase
 
 from config import load_config
-from loader import MetadataLoader, ConstraintLoader
-from normalizer import normalize_metadata
-from ontology_builder import OntologyGraphBuilder
 from constraint_parser import ConstraintGraphBuilder
 from edge_builder import EdgeAssembler
 from graph_exporter import Neo4jExporter, RdfExporter
+from loader import MetadataLoader, ConstraintLoader
+from normalizer import normalize_metadata
+from ontology_builder import OntologyGraphBuilder
 from utils.logger import get_logger
 
 logger = get_logger(__name__)

@@ -7,7 +7,6 @@ SMT 文件诊断工具
 import os
 import re
 from collections import defaultdict
-from typing import List, Tuple, Dict
 
 
 class SMTDiagnostics:

@@ -1,6 +1,5 @@
 from src.kg_builder.uml_metadata_parser.XsdParser.ExtractSimpleType import extractSimpleType
 from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
-from src.kg_builder.uml_metadata_parser.XsdParser.TypeMapping import mapXsdTypeToJava
 from src.kg_builder.uml_metadata_parser.XsdParser.Utils import to_pascal_case
 
 

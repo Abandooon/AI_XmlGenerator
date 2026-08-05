@@ -11,9 +11,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from utils.exceptions import SchemaValidationError
 from utils.logger import get_logger
 from utils.validators import JsonValidator
-from utils.exceptions import SchemaValidationError
 
 logger = get_logger(__name__)
 

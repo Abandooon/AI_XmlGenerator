@@ -1,7 +1,8 @@
 # src/models/data_models.py
 from typing import Dict, List, Optional, Any
+
 from pydantic import BaseModel
-import time
+
 
 class GenerationResponse(BaseModel):
     """生成响应模型"""

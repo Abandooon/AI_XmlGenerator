@@ -1,0 +1,30 @@
+{"id":"TPS_SWCT_01202","profile":"SHOULD_MANUAL","rule_family":"cross_object_consistency","note":"Maintaining the functional subset and label correspondence is explicitly assigned to the system designer."}
+{"id":"constr_1312","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"ParameterInterface may type P or R ports but never PR ports."}
+{"id":"TPS_SWCT_01158","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01159","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01543","profile":"MUST_CORE_CONSIST","note":"Mapping overrides ordinary compatibility only when its dependent mapping constraints hold; compile dependencies explicitly."}
+{"id":"TPS_SWCT_01099","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Exactly two distinct PortInterfaces participate in each mapping."}
+{"id":"constr_1151","profile":"MUST_CORE_CONSIST","note":"The connector endpoint interface pair must equal the interface pair covered by its selected mapping."}
+{"id":"TPS_SWCT_01100","profile":"MUST_CORE_CONSIST","rule_family":"cardinality","note":"Explicit mapping has precedence and is binding for mapped-element count."}
+{"id":"TPS_SWCT_01101","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01102","profile":"INFO_DEF"}
+{"id":"constr_1159","profile":"MUST_CORE_CONSIST","note":"All first-side prototypes share one DataInterface owner and all second-side prototypes one other owner."}
+{"id":"TPS_SWCT_01103","profile":"OPTIONAL","rule_family":"type_compatibility","scope":"cross_object"}
+{"id":"TPS_SWCT_01104","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"constr_1039","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"A queued element cannot map to an element with a different SwImplPolicy."}
+{"id":"constr_1040","profile":"MUST_CORE_TYPE","note":"Sender-receiver element mapping requires compatible data types, an available conversion, or an explicit transformation."}
+{"id":"TPS_SWCT_01105","profile":"INFO_DEF"}
+{"id":"constr_1041","profile":"MUST_CORE_TYPE","note":"Client-server argument mapping requires compatible types or an available data conversion."}
+{"id":"constr_1237","profile":"MUST_CORE_CONSIST","note":"Operation mapping sides must each belong to exactly one distinct ClientServerInterface."}
+{"id":"constr_1238","profile":"MUST_CORE_CONSIST","note":"ApplicationError mapping sides must each belong to exactly one distinct ClientServerInterface."}
+{"id":"constr_1240","profile":"MUST_CORE_EXIST","scope":"cross_object","note":"Every argument on both mapped operations needs a corresponding argument-mapping reference."}
+{"id":"constr_1268","profile":"MUST_CORE_CONSIST","scope":"property","note":"Mapped argument directions must be equal."}
+{"id":"constr_1269","profile":"MUST_CORE_CARD","scope":"cross_object","note":"Mapped operations must own the same number of arguments."}
+{"id":"constr_1270","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"Each argument may occur at most once on its mapping side."}
+{"id":"TPS_SWCT_01160","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01167","profile":"MUST_CORE_TYPE","note":"Mapped mode-group prototypes must reference ModeDeclarationGroups compatible under chapter 6.7."}
+{"id":"TPS_SWCT_01449","profile":"MUST_MAJOR_STATIC","rule_family":"cross_object_consistency","note":"Mapping establishes compatibility even when mode transitions differ; dependent mapping integrity still applies."}
+{"id":"constr_1246","profile":"MUST_CORE_CONSIST","note":"All first modes share one group owner and all second modes one other group owner."}
+{"id":"constr_1247","profile":"MUST_CORE_CONSIST","note":"Mapped mode owners must equal the types referenced by firstModeGroup and secondModeGroup."}
+{"id":"TPS_SWCT_01462","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01463","profile":"INFO_DEF"}

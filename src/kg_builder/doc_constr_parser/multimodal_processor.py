@@ -1,15 +1,17 @@
+import base64
+import json
 import os
 import re
-import json
-import base64
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
+
 import requests
-from pathlib import Path
+
 from config import (
     LLM_API_KEY, LLM_API_BASE, LLM_MODEL_NAME,
     MAX_OUTPUT_TOKENS,
-    INPUT_DIR, MD_FILENAME, OUTPUT_DIR,UNIFIED_METADATA_FILENAME
+    INPUT_DIR, MD_FILENAME, OUTPUT_DIR, UNIFIED_METADATA_FILENAME
 )
+
 
 # ────────────────────────────────────────────────────────────────
 # 辅助函数：从 unified_metadata.json 提取 SWC 相关类名

@@ -1,9 +1,9 @@
 # src/validation/structure/xsd_validator.py
-from typing import Dict, Optional, List
 import os
-import warnings
 import tempfile
+import warnings
 from pathlib import Path
+from typing import Dict, Optional, List
 
 warnings.filterwarnings("ignore", category=UserWarning, module="xmlschema")
 

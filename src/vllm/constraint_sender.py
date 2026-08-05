@@ -2,8 +2,9 @@
 import uuid
 from typing import Dict, List
 
-from src.client.constraint_preparer import ConstraintPreparer
 from src.client.constraint_models import ConstraintInfo, EnhancedGenerationRequest
+from src.client.constraint_preparer import ConstraintPreparer
+
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)

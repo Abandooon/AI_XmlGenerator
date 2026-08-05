@@ -5,12 +5,12 @@
 """
 
 import json
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
-from pathlib import Path
-from typing import Dict, Any, List, Union
 import os
+import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from pathlib import Path
+from typing import Dict, Any, Union
+from xml.dom import minidom
 
 
 class GenericJsonToArxmlConverter:

@@ -1,0 +1,40 @@
+{"id":"TPS_SWCT_01614","profile":"INFO_DEF","rule_family":"value_domain","note":"Standard profiles are not exhaustive because custom prefixed profiles are allowed."}
+{"id":"TPS_SWCT_01615","profile":"MUST_MAJOR_STATIC","rule_family":"format_pattern","scope":"property","observability":"partial","note":"Company prefix validation requires a project registry."}
+{"id":"constr_1318","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_LINEAR implementation element structure."}
+{"id":"constr_1319","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_SQUARE implementation aggregation chain."}
+{"id":"constr_1320","profile":"MUST_CORE_CONSIST","note":"Validate the complete VSA_RECTANGULAR implementation aggregation chain."}
+{"id":"constr_1321","profile":"MUST_CORE_CONSIST","note":"Validate alternating STRUCTURE/ARRAY chain and terminal semantics for VSA_FULLY_FLEXIBLE."}
+{"id":"constr_1396","profile":"MUST_CORE_FORBID","scope":"property","note":"Nonterminal VSA implementation elements cannot be TYPE_REFERENCE."}
+{"id":"constr_1322","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"Mapped application profile with absent implementation profile requires STRUCTURE implementation type."}
+{"id":"TPS_SWCT_01617","profile":"MUST_CORE_CARD","scope":"object","note":"Variable-size array implementation is STRUCTURE with exactly two role-specific subElements."}
+{"id":"TPS_SWCT_01618","profile":"MUST_CORE_TYPE","note":"For mapped LINEAR/SQUARE/FULLY_FLEXIBLE profiles, first subelement is sufficiently large integer Size Indicator."}
+{"id":"TPS_SWCT_01647","profile":"MUST_CORE_TYPE","note":"Implementation-only LINEAR/SQUARE/FULLY_FLEXIBLE profile requires a sufficient integer first subelement."}
+{"id":"TPS_SWCT_01619","profile":"MUST_CORE_CONSIST","note":"Mapped RECTANGULAR first subelement is ARRAY sized to dimension count."}
+{"id":"TPS_SWCT_01648","profile":"MUST_CORE_CONSIST","note":"Implementation-only RECTANGULAR first subelement is ARRAY sized to rectangular dimension count."}
+{"id":"TPS_SWCT_01620","profile":"MUST_CORE_TYPE","note":"Every rectangular Size Indicator element is an integer large enough for maxArraySize."}
+{"id":"TPS_SWCT_01621","profile":"MUST_CORE_CONSIST","note":"Mapped profile second subelement is ARRAY with all application dimensions and corresponding maxArraySize."}
+{"id":"TPS_SWCT_01649","profile":"MUST_CORE_TYPE","note":"Implementation-only profile requires second subelement category ARRAY."}
+{"id":"TPS_SWCT_01257","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01258","profile":"INFO_DEF"}
+{"id":"constr_1177","profile":"MUST_CORE_TYPE","rule_family":"value_domain","note":"targetCategory is TYPE_REFERENCE/FUNCTION_REFERENCE, with VALUE only for void base type."}
+{"id":"constr_1254","profile":"MUST_CORE_FORBID","note":"Forbid nested DATA_REFERENCE pointer-to-pointer construction."}
+{"id":"TPS_SWCT_01259","profile":"INFO_DEF"}
+{"id":"constr_1178","profile":"MUST_CORE_CARD","rule_family":"mutual_exclusion","scope":"object","note":"ImplementationDataType SwDataDefProps selects exactly one of baseType, swPointerTargetProps, or implementationDataType."}
+{"id":"TPS_SWCT_01194","profile":"OPTIONAL"}
+{"id":"TPS_SWCT_01441","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01442","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01443","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01260","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01261","profile":"INFO_DEF","rule_family":"generation_procedure"}
+{"id":"constr_1010","profile":"MUST_PARTIAL","rule_family":"cross_object_consistency","note":"Missing nativeDeclaration requires the implementation type shortName to match the external AUTOSAR Platform/Standard Type catalog."}
+{"id":"TPS_SWCT_01563","profile":"SHOULD_STATIC","rule_family":"format_pattern","scope":"property","note":"Portability recommendation for integral C symbols."}
+{"id":"TPS_SWCT_01263","profile":"INFO_DEF"}
+{"id":"constr_1011","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property","note":"SwBaseType.category is FIXED_LENGTH or VARIABLE_LENGTH."}
+{"id":"constr_1012","profile":"MUST_CORE_CONSIST","rule_family":"mutual_exclusion","scope":"object","note":"FIXED_LENGTH requires baseTypeSize and forbids maxBaseTypeSize."}
+{"id":"constr_1013","profile":"MUST_CORE_CONSIST","rule_family":"mutual_exclusion","scope":"object","note":"VARIABLE_LENGTH requires maxBaseTypeSize and forbids baseTypeSize."}
+{"id":"TPS_SWCT_01444","profile":"INFO_DEF"}
+{"id":"constr_1014","profile":"MUST_CORE_TYPE","rule_family":"value_domain","note":"Validate supported baseTypeEncoding values and BOOLEAN's associated two-scale TEXTTABLE semantics."}
+{"id":"TPS_SWCT_01262","profile":"OPTIONAL","rule_family":"generation_procedure"}
+{"id":"constr_1398","profile":"MUST_CORE_CONSIST","rule_family":"conditional_existence","note":"UTF-16 requires byteOrder in the two allowed byte-order values."}
+{"id":"TPS_SWCT_01651","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01652","profile":"INFO_DEF"}

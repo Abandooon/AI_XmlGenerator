@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
 import re
-
-from jinja2 import Environment, FileSystemLoader
 
 from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateRefObj import get_different_tag_elements, \
     get_complex_ref, get_subtypes

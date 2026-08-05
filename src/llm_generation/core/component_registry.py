@@ -2,11 +2,11 @@
 
 优化为支持直接引用，移除语义占位符处理
 """
-import json
-from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass, field
-from ..utils.serializers import generate_uuid
+from typing import Dict, List, Any, Optional
+
 from ..config import CONFIG
+from ..utils.serializers import generate_uuid
 
 
 @dataclass

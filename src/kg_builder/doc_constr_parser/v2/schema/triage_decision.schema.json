@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"triage_decision.schema.json",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["id","profile"],
+  "properties":{
+    "id":{"type":"string","pattern":"^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "profile":{"type":"string"},
+    "rule_family":{"type":"string"},
+    "scope":{"type":"string"},
+    "observability":{"enum":["full","partial","none","unknown"]},
+    "importance":{"enum":["core","major","supporting","unknown"]},
+    "is_core":{"type":"boolean"},
+    "must_validate":{"type":"boolean"},
+    "note":{"type":"string"}
+  }
+}

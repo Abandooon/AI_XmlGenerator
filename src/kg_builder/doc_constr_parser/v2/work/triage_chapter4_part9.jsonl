@@ -1,0 +1,11 @@
+{"id":"TPS_SWCT_01466","profile":"INFO_RUNTIME","note":"ConsistencyNeeds on non-implicit communication is ignored rather than invalid."}
+{"id":"TPS_SWCT_01470","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01471","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"constr_1231","profile":"MUST_CORE_REF","scope":"cross_object","note":"Composition-owned ConsistencyNeeds instance references must remain inside that composition context."}
+{"id":"constr_1232","profile":"MUST_CORE_REF","scope":"cross_object","note":"Atomic-component-owned ConsistencyNeeds instance references must remain inside that atomic component context."}
+{"id":"TPS_SWCT_01472","profile":"MUST_MANUAL","rule_family":"runtime_behavior","note":"Static configuration expresses the requirement; coherent production is a runtime/RTE behavior obligation."}
+{"id":"TPS_SWCT_01473","profile":"MUST_MANUAL","rule_family":"runtime_behavior","note":"Static configuration expresses the requirement; stable implicit values across runnable execution are runtime behavior."}
+{"id":"TPS_SWCT_01474","profile":"MUST_MANUAL","rule_family":"runtime_behavior","note":"Combined coherence and stability is a runtime/RTE behavior obligation."}
+{"id":"TPS_SWCT_01475","profile":"MUST_MANUAL","rule_family":"runtime_behavior","note":"Same-time propagation is a runtime/RTE behavior obligation."}
+{"id":"TPS_SWCT_01625","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"none"}
+{"id":"TPS_SWCT_01476","profile":"INFO_RUNTIME"}

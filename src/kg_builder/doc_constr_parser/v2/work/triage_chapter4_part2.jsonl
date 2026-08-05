@@ -1,0 +1,30 @@
+{"id":"TPS_SWCT_01122","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01123","profile":"MUST_MAJOR_STATIC","rule_family":"forbidden_existence","scope":"property"}
+{"id":"TPS_SWCT_01124","profile":"MUST_MAJOR_STATIC","rule_family":"ordering","scope":"object"}
+{"id":"TPS_SWCT_01125","profile":"INFO_RUNTIME"}
+{"id":"constr_1297","profile":"MUST_CORE_TYPE","note":"Resolve Application/Implementation data mappings and TYPE_REFERENCE chains before checking ARRAY category."}
+{"id":"constr_1286","profile":"MUST_CORE_FORBID","rule_family":"type_compatibility","note":"Primitive-C collapse requires type-chain resolution."}
+{"id":"constr_1204","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Supported assembly connection matrix must be recovered from Table 4.11."}
+{"id":"constr_1205","profile":"MUST_PARTIAL","rule_family":"type_compatibility","note":"Supported delegation connection matrix must be recovered from Table 4.12."}
+{"id":"TPS_SWCT_01491","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01490","profile":"INFO_DEF","rule_family":"type_compatibility"}
+{"id":"constr_1102","profile":"INFO_DEF","rule_family":"cross_object_consistency","note":"Defines when same-named ApplicationErrors conflict but does not itself prohibit the condition."}
+{"id":"constr_1108","profile":"MUST_CORE_TYPE","rule_family":"value_range","scope":"property","note":"Validate 1..63, with zero allowed only for possibleError representing E_OK."}
+{"id":"constr_1038","profile":"MUST_CORE_REF","scope":"cross_object"}
+{"id":"TPS_SWCT_01196","profile":"INFO_RUNTIME"}
+{"id":"TPS_SWCT_01197","profile":"INFO_DEF"}
+{"id":"TPS_SWCT_01198","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"partial"}
+{"id":"constr_1104","profile":"MUST_CORE_CARD","note":"Count connector sources per trigger sink after resolving interfaces and same-named triggers."}
+{"id":"TPS_SWCT_01199","profile":"OPTIONAL","rule_family":"runtime_behavior","scope":"runtime","observability":"partial"}
+{"id":"constr_1169","profile":"MUST_CORE_TYPE","rule_family":"value_domain","scope":"property"}
+{"id":"TPS_SWCT_01087","profile":"INFO_DEF"}
+{"id":"constr_4000","profile":"MUST_PARTIAL","rule_family":"forbidden_existence","importance":"core","is_core":true,"scope":"cross_file","note":"Requires ECU allocation/mapping evidence; existing connector topology alone is insufficient."}
+{"id":"constr_2049","profile":"MUST_CORE_CONSIST","note":"Same short name must not denote structurally different ModeDeclarationGroups across a component's mode ports."}
+{"id":"constr_1172","profile":"MUST_MAJOR_STATIC","rule_family":"value_domain","scope":"property"}
+{"id":"TPS_SWCT_01566","profile":"OPTIONAL","rule_family":"conditional_existence","scope":"cross_object"}
+{"id":"TPS_SWCT_01200","profile":"MUST_CORE_CARD","scope":"object","note":"ModeSwitchInterface contains at most one ModeDeclarationGroupPrototype."}
+{"id":"TPS_SWCT_01201","profile":"INFO_DEF","rule_family":"cross_object_consistency"}
+{"id":"TPS_SWCT_01086","profile":"INFO_DEF","rule_family":"runtime_behavior","scope":"runtime"}
+{"id":"constr_4002","profile":"MUST_CORE_CONSIST","rule_family":"uniqueness","note":"Within each DataTypeMappingSet one mode group has at most one implementation type mapping."}
+{"id":"constr_1166","profile":"MUST_CORE_EXIST","scope":"cross_file","note":"Requires ModeRequestTypeMap existence, eligible type resolution, mapping-set reference, and component ownership atoms."}
+{"id":"constr_1167","profile":"MUST_CORE_TYPE","note":"Resolve TYPE_REFERENCE chains and require VALUE category plus baseTypeEncoding NONE."}

@@ -24,9 +24,10 @@ Dynamic Query Engine — Clean Single-Path Implementation (patched)
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Tuple, Set
+
 from dataclasses import dataclass
-from neo4j import GraphDatabase
+from typing import Any, Dict, List, Optional, Tuple, Set
+
 from ..config import CONFIG
 
 try:

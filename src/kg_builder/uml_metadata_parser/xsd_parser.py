@@ -3,6 +3,7 @@
 import os
 
 from lxml import etree
+
 from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.GenerateWrapper import collect_wrapper_class_names, \
     generate_wrapper_classes
 from src.kg_builder.uml_metadata_parser.XsdParser.Expansion.InnerInnerExtractor import extract_internals_classes, \

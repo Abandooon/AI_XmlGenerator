@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 from lxml import etree
 
 # 定义命名空间

@@ -9,14 +9,14 @@
     3. 从 XML 模型生成 SMT 数据事实 (assert ...)。
     4. 将 (1) 和 (3) 合并并使用 Z3 求解。
 """
+import os
+import re
 import subprocess
 import tempfile
-import json
-import re
-from typing import Dict, List, Any, Optional, Set
 import xml.etree.ElementTree as ET
-import os
 from pathlib import Path
+from typing import Dict, Optional
+
 import z3  # 确保 z3-solver 已经安装 (pip install z3-solver)
 
 from src.llm_generation.config import CONFIG

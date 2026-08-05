@@ -1,0 +1,1937 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "Codex delegated domain review",
+  "decision_policy": "retain manual when the full normative claim is not provable from the submitted ARXML bundle",
+  "count": 51,
+  "reviews": [
+    {
+      "constraint_id": "TPS_SWCT_01000",
+      "title": "Usage of attribute symbol of the symbolProps",
+      "summary": "The RTE generator must use SymbolProps.symbol when present and otherwise use the atomic component short name.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SHORT-NAME",
+        "SYMBOL",
+        "SYMBOL-PROPS"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter3.md",
+        "section_path": [
+          "3 Overview: Software Components, Ports, and Interfaces",
+          "3.2 Software Component",
+          "3.2.5 Symbolic Name of a Software-Component"
+        ],
+        "start_line": 212,
+        "end_line": 213,
+        "raw_text": "[TPS_SWCT_01000] Usage of attribute symbol of the symbolProps (cid:100) In particular,\nthe RTE generator shall take over the value of the attribute symbol of the symbolProps owned by a given AtomicSwComponentType.If and only if symbolProps is not deﬁned the RTE generator shall take the shortName of the AtomicSwComponentType. For the generation of symbols for RunnableEntitys [TPS_SWCT_01001] shall be observed. (cid:99)()",
+        "sha256": "c1b045848f22af726502caf8576b6e6fff267c99f3873fb0327198e535e74f9f",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01001",
+      "title": "Preﬁx symbols generated for the RunnableEntity",
+      "summary": "When an atomic component defines SymbolProps.symbol, that value must prefix symbols generated for its runnable entities.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SYMBOL",
+        "SYMBOL-PROPS"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter3.md",
+        "section_path": [
+          "3 Overview: Software Components, Ports, and Interfaces",
+          "3.2 Software Component",
+          "3.2.5 Symbolic Name of a Software-Component"
+        ],
+        "start_line": 215,
+        "end_line": 218,
+        "raw_text": "[TPS_SWCT_01001] Preﬁx symbols generated for the RunnableEntity (cid:100) If and\nonly if the attribute symbol of a symbolProps owned by an AtomicSwComponent\nType exists, its value shall also be taken for preﬁxing the symbols generated for the\nRunnableEntitys owned by the AtomicSwComponentType. (cid:99)()",
+        "sha256": "2f8edd894c5dc4ad5b576bfa0146a4ab622a3dee4404dc36f1ec24bed8666d5a",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01002",
+      "title": "SwComponentTypes may only interact by means of their PortPrototypes",
+      "summary": "Software-component types may interact only through their port prototypes; hidden communication dependencies are forbidden.",
+      "importance": "core",
+      "decision": "retain_manual",
+      "required_capability": "external_design_evidence",
+      "reason": "The requirement depends on project intent, external configuration, or semantic correspondence not encoded in ARXML: Software-component types may interact only through their port prototypes; hidden communication dependencies are forbidden.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "P-PORT-PROTOTYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "PORTS",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter3.md",
+        "section_path": [
+          "3 Overview: Software Components, Ports, and Interfaces",
+          "3.2 Software Component",
+          "3.2.2 PortPrototype"
+        ],
+        "start_line": 105,
+        "end_line": 109,
+        "raw_text": "[TPS_SWCT_01002] SwComponentTypes may only interact by means of their\nPortPrototypes (cid:100) AtomicSwComponentTypes (and also the more general\nSwComponentTypes may only interact by means of their PortPrototypes). Hidden\ncommunication dependencies that are not expressed by means of PortPrototypes are strictly forbidden.\n(cid:99)(RS_SWCT_00020, RS_SWCT_00030, RS_SWCT_00150,RS_SWCT_00160, RS_SWCT_00200, RS_SWCT_00210, RS_SWCT_02010,RS_SWCT_02030)",
+        "sha256": "cefc4f0ac102a28543f7181c0eb5e385998c93b8ce40dd574c61b63d67937308",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01040",
+      "title": "SwConnector exists depending on a PostBuild condition",
+      "summary": "A connector disabled by a PostBuild condition makes API behavior on its attached port resemble an unconnected port.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "ASSEMBLY-SW-CONNECTOR",
+        "DELEGATION-SW-CONNECTOR",
+        "P-PORT-PROTOTYPE",
+        "PASS-THROUGH-SW-CONNECTOR",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "VARIATION-POINT"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.4 Variant Handling in the Software Component Template"
+        ],
+        "start_line": 204,
+        "end_line": 209,
+        "raw_text": "[TPS_SWCT_01040] SwConnector exists depending on a PostBuild condition (cid:100) \nA SwConnector which exists depending on a PostBuild condition has an impact \non the behavior of API function calls that apply on a PortPrototype to which the SwConnector is attached. \nIf the SwConnector does not exist the behavior of the RTE API functions need to take this into account. \nThis means that the RTE implementation of this PortPrototype resembles the behavior of an unconnected PortPrototype. \n(cid:99)(RS_SWCT_00220, RS_SWCT_03100, RS_SWCT_03143)",
+        "sha256": "759cecc4170eec739d624ee081b694723f560e3f3379bbb4cc6ce1cf3ecc5f93",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01045",
+      "title": "Actual values of ECU configuration parameters fulfill the requirements given by the ServiceNeeds",
+      "summary": "Actual values of ECU configuration parameters fulfill the requirements given by the ServiceNeeds",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "BSW-MGR-NEEDS",
+        "COM-MGR-USER-NEEDS",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "CRYPTO-SERVICE-NEEDS",
+        "DIAGNOSTIC-COMMUNICATION-MANAGER-NEEDS",
+        "DIAGNOSTIC-ENABLE-CONDITION-NEEDS",
+        "DIAGNOSTIC-EVENT-INFO-NEEDS",
+        "DIAGNOSTIC-EVENT-MANAGER-NEEDS",
+        "DIAGNOSTIC-EVENT-NEEDS",
+        "DIAGNOSTIC-IO-CONTROL-NEEDS",
+        "DIAGNOSTIC-OPERATION-CYCLE-NEEDS",
+        "DIAGNOSTIC-ROUTINE-NEEDS",
+        "DIAGNOSTIC-STORAGE-CONDITION-NEEDS",
+        "DIAGNOSTIC-VALUE-NEEDS",
+        "DIAGNOSTICS-COMMUNICATION-SECURITY-NEEDS",
+        "DLT-USER-NEEDS",
+        "DO-IP-ACTIVATION-LINE-NEEDS",
+        "DO-IP-GID-NEEDS",
+        "DO-IP-GID-SYNCHRONIZATION-NEEDS",
+        "DO-IP-POWER-MODE-STATUS-NEEDS",
+        "DO-IP-ROUTING-ACTIVATION-AUTHENTICATION-NEEDS",
+        "DO-IP-ROUTING-ACTIVATION-CONFIRMATION-NEEDS",
+        "DTC-STATUS-CHANGE-NOTIFICATION-NEEDS",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "ECU-STATE-MGR-USER-NEEDS",
+        "FUNCTION-INHIBITION-NEEDS",
+        "NV-BLOCK-NEEDS",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "OBD-CONTROL-SERVICE-NEEDS",
+        "OBD-INFO-SERVICE-NEEDS",
+        "OBD-MONITOR-SERVICE-NEEDS",
+        "OBD-PID-SERVICE-NEEDS",
+        "OBD-RATIO-SERVICE-NEEDS",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SUPERVISED-ENTITY-NEEDS",
+        "SYNC-TIME-BASE-MGR-USER-NEEDS",
+        "WARNING-INDICATOR-REQUESTED-BIT-NEEDS"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.11 Service Needs",
+          "7.11.1 Overview"
+        ],
+        "start_line": 1269,
+        "end_line": 1269,
+        "raw_text": "[TPS_SWCT_01045] Actual values of ECU configuration parameters fulfill the requirements given by the ServiceNeeds (cid:100) When integrating application software components on an ECU, the actual values of ECU configuration parameters shall be chosen so that they fulfill the requirements given by the ServiceNeeds of all the integrated AtomicSwComponentTypes. (cid:99)(RS_SWCT_02060)",
+        "sha256": "4f4cacbdecb5aa97c796d7a970a2a3d59204421225697adccb3e45c2b340a1a0",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01064",
+      "title": "PortGroups have to be defined on the VFB level",
+      "summary": "PortGroups have to be defined on the VFB level",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PORT-GROUP",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.6 Port Groups within Component Types"
+        ],
+        "start_line": 1458,
+        "end_line": 1458,
+        "raw_text": "[TPS_SWCT_01064] PortGroups have to be defined on the VFB level (cid:100) Though the declaration PortGroups is not relevant for the RTE, they have to be defined on the VFB level, because they represent design decisions taken on this level. Accordingly, PortGroups can be defined for CompositionSwComponentTypes as well as for AtomicSwComponentTypes. (cid:99)(RS_SWCT_03200, RS_SWCT_03201)",
+        "sha256": "2125884c4f3dd73cf9a47fe0a906d373886b12186bf65b36baee941d6dd9f11e",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01120",
+      "title": "Client needs to provide ArgumentDataPrototypes",
+      "summary": "Client needs to provide ArgumentDataPrototypes",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "ARGUMENT-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.2 Port Interface Details",
+          "4.2.3 Client Server Communication",
+          "4.2.3.1 Client Server Interface"
+        ],
+        "start_line": 186,
+        "end_line": 186,
+        "raw_text": "[TPS_SWCT_01120] Client needs to provide ArgumentDataPrototypes (cid:100) When the client invokes an operation, it needs to provide a value for each ArgumentDataPrototype that is of direction in or inout. (cid:99)()",
+        "sha256": "65588c08a537aa76db6eb0a61b524f74fa1c1668ef3d3e965dfd09352dbcf56a",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01121",
+      "title": "Pass correct data type",
+      "summary": "Pass correct data type",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "ARGUMENT-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.2 Port Interface Details",
+          "4.2.3 Client Server Communication",
+          "4.2.3.1 Client Server Interface"
+        ],
+        "start_line": 188,
+        "end_line": 188,
+        "raw_text": "[TPS_SWCT_01121] Pass correct data type (cid:100) The value passed to an ArgumentDataPrototype of direction in or inout needs to be of the corresponding Datatype. (cid:99)()",
+        "sha256": "25cd0d8986d97c0dca8829d137152df8db326fc49f51320686cc601641ae4611",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01147",
+      "title": "No romBlock is configured",
+      "summary": "No romBlock is configured",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "NV-BLOCK-DESCRIPTOR",
+        "ROM-BLOCK"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.5 Non Volatile Memory",
+          "11.5.4 NvBlockDescriptor",
+          "11.5.4.3 RAM Block and ROM Block"
+        ],
+        "start_line": 436,
+        "end_line": 436,
+        "raw_text": "[TPS_SWCT_01147] No romBlock is configured (cid:100) If there is no romBlock configured the connected software components are either required to offer this functionality by a proper implementation of block initialization notification or the NVRAM Block has to be configured, that no ROM Block is needed. (cid:99)()",
+        "sha256": "6bda5d19f4643f3b6e5879fc5ef43cf977285e86f2776659838faa9ef23e6d65",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01181",
+      "title": "Bound model specifies a primitive which is smaller than the maximum defined by the range of the involved SwSystemconst",
+      "summary": "Bound model specifies a primitive which is smaller than the maximum defined by the range of the involved SwSystemconst",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "SW-SYSTEMCONST"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.6 Speciﬁcation of Constant Values",
+          "5.6.4 Values for Compound Primitive Data Types"
+        ],
+        "start_line": 3495,
+        "end_line": 3495,
+        "raw_text": "[TPS_SWCT_01181] Bound model specifies a primitive which is smaller than the maximum defined by the range of the involved SwSystemconst (cid:100) The processing tools shall take the lower part of the initValues in case the bound model specifies a primitive which is smaller than the maximum defined by the range of the involved SwSystemconst. (cid:99)(RS_SWCT_03216, RS_SWCT_03148)",
+        "sha256": "11b42ef6d595e8ac5fdf9e6b30ee2b4d3e054827d6347b4620eef32d1d9dbbbf",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01202",
+      "title": "ApplicationDataType defines a subset of the values used in the ModeDeclarationGroup",
+      "summary": "ApplicationDataType defines a subset of the values used in the ModeDeclarationGroup",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "external_design_evidence",
+      "reason": "The requirement depends on project intent, external configuration, or semantic correspondence not encoded in ARXML: ApplicationDataType defines a subset of the values used in the ModeDeclarationGroup",
+      "selector_tags": [
+        "APPLICATION-ARRAY-DATA-TYPE",
+        "APPLICATION-PRIMITIVE-DATA-TYPE",
+        "APPLICATION-RECORD-DATA-TYPE",
+        "MODE-DECLARATION",
+        "MODE-DECLARATION-GROUP",
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.2 Port Interface Details",
+          "4.2.5 Communication of Modes"
+        ],
+        "start_line": 431,
+        "end_line": 431,
+        "raw_text": "[TPS_SWCT_01202] ApplicationDataType defines a subset of the values used in the ModeDeclarationGroup (cid:100) Please note that the corresponding ApplicationDataType is defining a subset of the values used in the ModeDeclarationGroup and the used labels may differ from the names used for the ModeDeclarations. It is in the responsibility of a system designer to maintain the data types and ModeDeclarationGroups according to the functional needs. For example, a ModeRequester may only request a subset of the available Modes (via SenderReceiverInterface or ClientServerInterface). The ModeManager may additionally decide to indicate failure. (cid:99)(RS_SWCT_03203)",
+        "sha256": "65eed6def9bd2ff1ae4d7baecd482e10a11cd16ab781d22af0b0b10c7eafb919",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01231",
+      "title": "Application level may impose strong requirements on the design of the corresponding implementation level",
+      "summary": "Application level may impose strong requirements on the design of the corresponding implementation level",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.1 Introduction"
+        ],
+        "start_line": 42,
+        "end_line": 46,
+        "raw_text": "[TPS_SWCT_01231] Application level may impose strong requirements on the design of the corresponding implementation level (cid:100) It should be pointed out, that with the specification of computation methods and record layouts, the application level imposes strong requirements on the design of the corresponding implementation level (for further information see 6.2.5). It might even be the case, that when anticipating different implementations, these elements might be chosen differently.\n\nThis is due to the nature of these elements which form a bridge from the physical world to the numerical representation (and vice versa). Nonetheless we consider the specification of these elements as belonging to the application level.\n\nOn the one hand, this information is required by MCD-tools and thus shall be part of a rather high-level design. On the other hand, this approach will allow to use a limited set of implementation data types. (cid:99)(RS_SWCT_03215, RS_SWCT_03216, RS_SWCT_03217)",
+        "sha256": "c903bf093bb5bd62749f77b40d99987c0266650d0ebf6ac97e350a5fbac171c0",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01253",
+      "title": "Rules apply for the usage of the attribute ImplementationDataType.typeEmitter",
+      "summary": "Rules apply for the usage of the attribute ImplementationDataType.typeEmitter",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "IMPLEMENTATION-DATA-TYPE",
+        "TYPE-EMITTER"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.2 Data Types",
+          "5.2.5 Implementation Data Type"
+        ],
+        "start_line": 934,
+        "end_line": 941,
+        "raw_text": "[TPS_SWCT_01253] Rules apply for the usage of the attribute ImplementationDataType.typeEmitter (cid:100) The following set of rules applies for the usage of the attribute ImplementationDataType.typeEmitter:\n\n• If the value of attribute typeEmitter is NOT defined and a nativeDeclaration is provided the RTE generator shall generate the corresponding data type definition7.\n• If the value of attribute typeEmitter is set to \"RTE\" and a nativeDeclaration is provided the RTE generator shall generate the corresponding data type definition.\n• If the value of the attribute typeEmitter is set to \"RTE\" and no nativeDeclaration is provided the RTE generator shall issue an error message.\n• If the value of attribute typeEmitter is set to anything else but \"RTE\" the RTE generator shall silently not generate the corresponding data type definition regardless of the existence of nativeDeclaration attribute.\n\n(cid:99)(RS_SWCT_03217)",
+        "sha256": "b9a0ca49230b6c6ce2c9b274548384ee5c960f8cb238b5c9b6c92fcb8625ecc2",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01280",
+      "title": "CompuMethod applied to values outside of its limits",
+      "summary": "CompuMethod applied to values outside of its limits",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "COMPU-METHOD"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.5 Elements used in Properties of Data Deﬁnitions",
+          "5.5.1 Computation Methods"
+        ],
+        "start_line": 2384,
+        "end_line": 2384,
+        "raw_text": "[TPS_SWCT_01280] CompuMethod applied to values outside of its limits (cid:100) If a CompuMethod is applied to values outside of its limits, it is up to the MCD-tool (Measurement, Calibration, Diagnostic tool) to indicate this to the user. In this case the CompuMethod shall not be applied at all. (cid:99)()",
+        "sha256": "94b2278a4872437337fd373aca0b8ab73697bf9974373897cfe30bd6f96c60eb",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01287",
+      "title": "Standard limits and extended limits in the ASAM-MCD2 (ASAP2) specification",
+      "summary": "Standard limits and extended limits in the ASAM-MCD2 (ASAP2) specification",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "DATA-CONSTR-RULE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.5 Elements used in Properties of Data Deﬁnitions",
+          "5.5.3 Data Constraints"
+        ],
+        "start_line": 2975,
+        "end_line": 2980,
+        "raw_text": "[TPS_SWCT_01287] Standard limits and extended limits in the ASAM-MCD2 (ASAP2) specification (cid:100) The ASAM-MCD2 (ASAP2) specification [25] defines standard limits and extended limits. If extended limits exist, the standard limits may be violated upon user confirmation. Note that in consequence, of this definition, the following approach applies for A2L generation:\n• If only one DataConstrRule with constrLevel set to 0 is specified, it represents the standard limits in A2L. No extended limits are generated.\n• If two DataConstrRule exist, then:\n  - the one with constrLevel set to 0 represents to the extended limits\n  - the one with constrLevel set to 1 represents to the standard limits\nNote that even if this is somehow counterintuitive (since the one with constrLevel set to 0 changes its role), it matches the best to the definitions in ASAM-MCD2. (cid:99)()",
+        "sha256": "4a6cc5fb4ff2ddac19f1eda4e765a3b4da74158e93966aab34f049ad60f746dd",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01288",
+      "title": "Interpretation of PhysConstrs and InternalConstrs by tools",
+      "summary": "Interpretation of PhysConstrs and InternalConstrs by tools",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "ACL-OBJECT-SET",
+        "ACL-OPERATION",
+        "ACL-PERMISSION",
+        "ACL-ROLE",
+        "ALIAS-NAME-SET",
+        "APPLICATION-ARRAY-DATA-TYPE",
+        "APPLICATION-PRIMITIVE-DATA-TYPE",
+        "APPLICATION-RECORD-DATA-TYPE",
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "BLUEPRINT-MAPPING-SET",
+        "BSW-IMPLEMENTATION",
+        "BSW-MODULE-DESCRIPTION",
+        "BSW-MODULE-ENTRY",
+        "BSW-MODULE-TIMING",
+        "BUILD-ACTION-MANIFEST",
+        "CALIBRATION-PARAMETER-VALUE-SET",
+        "CLIENT-ID-DEFINITION-SET",
+        "CLIENT-SERVER-INTERFACE",
+        "COLLECTION",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "COMPU-METHOD",
+        "CONSISTENCY-NEEDS-BLUEPRINT-SET",
+        "CONSTANT-SPECIFICATION",
+        "CONSTANT-SPECIFICATION-MAPPING-SET",
+        "DATA-CONSTR",
+        "DATA-TRANSFORMATION-SET",
+        "DATA-TYPE-MAPPING-SET",
+        "DIAGNOSTIC-ACCESS-PERMISSION",
+        "DIAGNOSTIC-AGING",
+        "DIAGNOSTIC-CLEAR-DIAGNOSTIC-INFORMATION",
+        "DIAGNOSTIC-CLEAR-DIAGNOSTIC-INFORMATION-CLASS",
+        "DIAGNOSTIC-COM-CONTROL",
+        "DIAGNOSTIC-COM-CONTROL-CLASS",
+        "DIAGNOSTIC-CONNECTION",
+        "DIAGNOSTIC-CONTRIBUTION-SET",
+        "DIAGNOSTIC-CONTROL-DTC-SETTING",
+        "DIAGNOSTIC-CONTROL-DTC-SETTING-CLASS",
+        "DIAGNOSTIC-CUSTOM-SERVICE-CLASS",
+        "DIAGNOSTIC-DATA-IDENTIFIER",
+        "DIAGNOSTIC-DATA-IDENTIFIER-SET",
+        "DIAGNOSTIC-DATA-TRANSFER",
+        "DIAGNOSTIC-DATA-TRANSFER-CLASS",
+        "DIAGNOSTIC-DEM-PROVIDED-DATA-MAPPING",
+        "DIAGNOSTIC-DYNAMIC-DATA-IDENTIFIER",
+        "DIAGNOSTIC-DYNAMICALLY-DEFINE-DATA-IDENTIFIER",
+        "DIAGNOSTIC-DYNAMICALLY-DEFINE-DATA-IDENTIFIER-CLASS",
+        "DIAGNOSTIC-ECU-RESET",
+        "DIAGNOSTIC-ECU-RESET-CLASS",
+        "DIAGNOSTIC-ENABLE-CONDITION",
+        "DIAGNOSTIC-ENABLE-CONDITION-GROUP",
+        "DIAGNOSTIC-ENABLE-CONDITION-PORT-MAPPING",
+        "DIAGNOSTIC-EVENT",
+        "DIAGNOSTIC-EVENT-PORT-MAPPING",
+        "DIAGNOSTIC-EVENT-TO-DEBOUNCE-ALGORITHM-MAPPING",
+        "DIAGNOSTIC-EVENT-TO-ENABLE-CONDITION-GROUP-MAPPING",
+        "DIAGNOSTIC-EVENT-TO-OPERATION-CYCLE-MAPPING",
+        "DIAGNOSTIC-EVENT-TO-STORAGE-CONDITION-GROUP-MAPPING",
+        "DIAGNOSTIC-EVENT-TO-TROUBLE-CODE-UDS-MAPPING",
+        "DIAGNOSTIC-EXTENDED-DATA-RECORD",
+        "DIAGNOSTIC-FREEZE-FRAME",
+        "DIAGNOSTIC-INDICATOR",
+        "DIAGNOSTIC-IO-CONTROL",
+        "DIAGNOSTIC-IO-CONTROL-CLASS",
+        "DIAGNOSTIC-MEMORY-DESTINATION-MIRROR",
+        "DIAGNOSTIC-MEMORY-DESTINATION-PRIMARY",
+        "DIAGNOSTIC-MEMORY-DESTINATION-USER-DEFINED",
+        "DIAGNOSTIC-MEMORY-IDENTIFIER",
+        "DIAGNOSTIC-OPERATION-CYCLE",
+        "DIAGNOSTIC-OPERATION-CYCLE-PORT-MAPPING",
+        "DIAGNOSTIC-READ-DATA-BY-IDENTIFIER",
+        "DIAGNOSTIC-READ-DATA-BY-IDENTIFIER-CLASS",
+        "DIAGNOSTIC-READ-DATA-BY-PERIODIC-ID",
+        "DIAGNOSTIC-READ-DATA-BY-PERIODIC-ID-CLASS",
+        "DIAGNOSTIC-READ-DTC-INFORMATION",
+        "DIAGNOSTIC-READ-DTC-INFORMATION-CLASS",
+        "DIAGNOSTIC-READ-MEMORY-BY-ADDRESS",
+        "DIAGNOSTIC-READ-MEMORY-BY-ADDRESS-CLASS",
+        "DIAGNOSTIC-REQUEST-DOWNLOAD",
+        "DIAGNOSTIC-REQUEST-DOWNLOAD-CLASS",
+        "DIAGNOSTIC-REQUEST-FILE-TRANSFER",
+        "DIAGNOSTIC-REQUEST-FILE-TRANSFER-CLASS",
+        "DIAGNOSTIC-REQUEST-UPLOAD",
+        "DIAGNOSTIC-REQUEST-UPLOAD-CLASS",
+        "DIAGNOSTIC-RESPONSE-ON-EVENT",
+        "DIAGNOSTIC-RESPONSE-ON-EVENT-CLASS",
+        "DIAGNOSTIC-ROUTINE",
+        "DIAGNOSTIC-ROUTINE-CONTROL",
+        "DIAGNOSTIC-ROUTINE-CONTROL-CLASS",
+        "DIAGNOSTIC-SECURITY-ACCESS",
+        "DIAGNOSTIC-SECURITY-ACCESS-CLASS",
+        "DIAGNOSTIC-SECURITY-LEVEL",
+        "DIAGNOSTIC-SERVICE-DATA-MAPPING",
+        "DIAGNOSTIC-SERVICE-SW-MAPPING",
+        "DIAGNOSTIC-SERVICE-TABLE",
+        "DIAGNOSTIC-SESSION",
+        "DIAGNOSTIC-SESSION-CONTROL",
+        "DIAGNOSTIC-SESSION-CONTROL-CLASS",
+        "DIAGNOSTIC-STORAGE-CONDITION",
+        "DIAGNOSTIC-STORAGE-CONDITION-GROUP",
+        "DIAGNOSTIC-STORAGE-CONDITION-PORT-MAPPING",
+        "DIAGNOSTIC-TRANSFER-EXIT",
+        "DIAGNOSTIC-TRANSFER-EXIT-CLASS",
+        "DIAGNOSTIC-TROUBLE-CODE-GROUP",
+        "DIAGNOSTIC-TROUBLE-CODE-J-1939",
+        "DIAGNOSTIC-TROUBLE-CODE-OBD",
+        "DIAGNOSTIC-TROUBLE-CODE-PROPS",
+        "DIAGNOSTIC-TROUBLE-CODE-UDS",
+        "DIAGNOSTIC-WRITE-DATA-BY-IDENTIFIER",
+        "DIAGNOSTIC-WRITE-DATA-BY-IDENTIFIER-CLASS",
+        "DIAGNOSTIC-WRITE-MEMORY-BY-ADDRESS",
+        "DIAGNOSTIC-WRITE-MEMORY-BY-ADDRESS-CLASS",
+        "DOCUMENTATION",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "ECU-TIMING",
+        "ECUC-DEFINITION-COLLECTION",
+        "ECUC-DESTINATION-URI-DEF-SET",
+        "ECUC-MODULE-CONFIGURATION-VALUES",
+        "ECUC-MODULE-DEF",
+        "ECUC-VALUE-COLLECTION",
+        "END-TO-END-PROTECTION-SET",
+        "EVALUATED-VARIANT-SET",
+        "FLAT-MAP",
+        "FM-FEATURE",
+        "FM-FEATURE-MAP",
+        "FM-FEATURE-MODEL",
+        "FM-FEATURE-SELECTION-SET",
+        "HW-CATEGORY",
+        "HW-ELEMENT",
+        "HW-TYPE",
+        "IMPLEMENTATION-DATA-TYPE",
+        "INTERNAL-CONSTRS",
+        "INTERPOLATION-ROUTINE-MAPPING-SET",
+        "KEYWORD-SET",
+        "LIFE-CYCLE-INFO-SET",
+        "LIFE-CYCLE-STATE-DEFINITION-GROUP",
+        "MC-FUNCTION",
+        "MODE-DECLARATION-GROUP",
+        "MODE-DECLARATION-MAPPING-SET",
+        "MODE-SWITCH-INTERFACE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "NV-DATA-INTERFACE",
+        "PARAMETER-INTERFACE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "PHYS-CONSTRS",
+        "PHYSICAL-DIMENSION",
+        "PHYSICAL-DIMENSION-MAPPING-SET",
+        "PORT-INTERFACE-MAPPING-SET",
+        "PORT-PROTOTYPE-BLUEPRINT",
+        "POST-BUILD-VARIANT-CRITERION",
+        "POST-BUILD-VARIANT-CRITERION-VALUE-SET",
+        "PREDEFINED-VARIANT",
+        "RAPID-PROTOTYPING-SCENARIO",
+        "SENDER-RECEIVER-INTERFACE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERIALIZATION-TECHNOLOGY",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SW-ADDR-METHOD",
+        "SW-AXIS-TYPE",
+        "SW-BASE-TYPE",
+        "SW-RECORD-LAYOUT",
+        "SW-SYSTEMCONST",
+        "SW-SYSTEMCONSTANT-VALUE-SET",
+        "SWC-BSW-MAPPING",
+        "SWC-IMPLEMENTATION",
+        "SWC-TIMING",
+        "SYSTEM",
+        "SYSTEM-SIGNAL",
+        "SYSTEM-SIGNAL-GROUP",
+        "SYSTEM-TIMING",
+        "TRIGGER-INTERFACE",
+        "UNIT",
+        "UNIT-GROUP",
+        "VFB-TIMING",
+        "VIEW-MAP-SET"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.5 Elements used in Properties of Data Deﬁnitions",
+          "5.5.3 Data Constraints"
+        ],
+        "start_line": 2992,
+        "end_line": 2992,
+        "raw_text": "[TPS_SWCT_01288] Interpretation of PhysConstrs and InternalConstrs by tools (cid:100) DataConstr is an ARElement which can be reused by several data type specifications. Especially an ImplementationDataType and an ApplicationDataType which are mapped to each other, can refer to the same constraints or they can define their own constraints. To avoid conflicts, in both cases PhysConstrs shall be interpreted by tools only with respect to application data types while InternalConstrs shall be interpreted only with respect to implementation data types. If either a physical or internal constraint is missing an existing CompuMethod can be used to calculate the missing information. (cid:99)()",
+        "sha256": "8fa92ec6e0a60eefb648f6ffbcdf079eea71a6bace18d3228e35429ede84adb6",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01293",
+      "title": "RTE Generator has to derive the Memory Allocation Keyword",
+      "summary": "RTE Generator has to derive the Memory Allocation Keyword",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "BSW-SCHEDULABLE-ENTITY",
+        "MEMORY-SECTION",
+        "RUNNABLE-ENTITY",
+        "SW-ADDR-METHOD"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.5 Elements used in Properties of Data Deﬁnitions",
+          "5.5.4 Addressing Methods"
+        ],
+        "start_line": 3086,
+        "end_line": 3086,
+        "raw_text": "[TPS_SWCT_01293] RTE Generator has to derive the Memory Allocation Keyword (cid:100) Please note that the RTE Generator has to derive the Memory Allocation Keyword used for RunnableEntitys and BswSchedulableEntitys from the shortName of the SwAddrMethod only because the alignment defined in MemorySection is not known at contract phase. (cid:99)()",
+        "sha256": "7012b06ff32a37a95cc91e15207b98a7eeccb450b2a565f69aa4d341a31b2e07",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01299",
+      "title": "Relation of swRecordLayoutGroup to subElement",
+      "summary": "Relation of swRecordLayoutGroup to subElement",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "IMPLEMENTATION-DATA-TYPE",
+        "IMPLEMENTATION-DATA-TYPE-ELEMENT"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.5 Elements used in Properties of Data Deﬁnitions",
+          "5.5.5 Record Layouts",
+          "5.5.5.2 RecordLayouts and DataTypes"
+        ],
+        "start_line": 3304,
+        "end_line": 3304,
+        "raw_text": "[TPS_SWCT_01299] Relation of swRecordLayoutGroup to subElement (cid:100) For each swRecordLayoutGroup an appropriate subElement shall be created. This sub element is then reﬁned according to the approach sketched in ﬁgure 5.52. The algorithm shall be recursively applied applied to the newly created ImplementationDataTypeElements. As the record layout groups are nested, this recursion yields the complete structure in the ImplementationDataType. (cid:99)()",
+        "sha256": "91395e18b99bd8837b7690e0f006b979afb5101a9d7bc447b3e177f6a7875655",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01301",
+      "title": "Importance of initial values",
+      "summary": "Importance of initial values",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "PARAMETER-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.7 Initial Values",
+          "5.7.1 Overview"
+        ],
+        "start_line": 3683,
+        "end_line": 3685,
+        "raw_text": "[TPS_SWCT_01301] Importance of initial values (cid:100) If the value of a VariableDataPrototype/ParameterDataPrototype has not properly been set by a piece of software it can still happen that another piece of software tries to access the value of the VariableDataPrototype/ParameterDataPrototype.\n\nFor various reasons it is therefore advised to be able to specify an initial value for a VariableDataPrototype/ParameterDataPrototype in case the value has not been assigned in a controlled manner. However, the definition of an initial value in many cases depends on a context in which the value is accessed. (cid:99)()",
+        "sha256": "7aca6cf9d2e7656f0621022f0acd19fcd96f0226a9fd143166cd7e6cc086158c",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01305",
+      "title": "RunnableEntity as one that cannot be invoked concurrently",
+      "summary": "RunnableEntity as one that cannot be invoked concurrently",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SWC-INTERNAL-BEHAVIOR"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.2 Runnable Entity",
+          "7.2.1 Concurrency and Reentrancy of a RunnableEntity that cannot be Invoked Concurrently"
+        ],
+        "start_line": 95,
+        "end_line": 95,
+        "raw_text": "[TPS_SWCT_01305] RunnableEntity as one that cannot be invoked concurrently (cid:100) In case the SwcInternalBehavior defines a RunnableEntity as one that cannot be invoked concurrently it is the responsibility of the RTE to make sure that the RunnableEntity is never started concurrently (for example, in two different AUTOSAR OS tasks). This implies that the implementation of the AtomicSwComponentType does not need to worry about concurrency issues. (cid:99)()",
+        "sha256": "f1dcaa79864613ec8000dd0aaad0fae011c303ac1f675575486e637140114b7b",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01312",
+      "title": "RunnableEntity has a mapping to BswModuleEntry",
+      "summary": "RunnableEntity has a mapping to BswModuleEntry",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "BSW-MODULE-ENTRY",
+        "RUNNABLE-ENTITY",
+        "RUNNABLE-ENTITY-ARGUMENT",
+        "SW-SERVICE-ARG"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.2 Runnable Entity",
+          "7.2.4 Additional Remarks and Clariﬁcations",
+          "7.2.4.5 Arguments of a Runnable Entity"
+        ],
+        "start_line": 215,
+        "end_line": 215,
+        "raw_text": "[TPS_SWCT_01312] RunnableEntity has a mapping to BswModuleEntry (cid:100) The existence of RunnableEntityArguments in the role argument owned by a RunnableEntity shall be ignored by an RTE generator if a mapping to a BswModuleEntry exists. In this case the name of arguments to the RunnableEntity shall be derived from the applicable SwServiceArgs owned by the mapped BswModuleEntry. (cid:99)()",
+        "sha256": "e6329d353ffdea90deffbb31edea56c0c50e3b71aef2fb742dc986aaf04db180",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01373",
+      "title": "RTE generator shall evaluate the SwSystemconstDependentFormula",
+      "summary": "RTE generator shall evaluate the SwSystemconstDependentFormula",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "BLUEPRINT-FORMULA",
+        "BOOLEAN-VALUE-VARIATION-POINT",
+        "CONDITION-BY-FORMULA",
+        "FLOAT-VALUE-VARIATION-POINT",
+        "FM-CONDITION-BY-FEATURES-AND-SW-SYSTEMCONSTS",
+        "INTEGER-VALUE-VARIATION-POINT",
+        "LIMIT",
+        "NUMERICAL-VALUE-VARIATION-POINT",
+        "POSITIVE-INTEGER-VALUE-VARIATION-POINT",
+        "UNLIMITED-INTEGER-VALUE-VARIATION-POINT"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.12 Variation Point Proxy"
+        ],
+        "start_line": 3706,
+        "end_line": 3706,
+        "raw_text": "[TPS_SWCT_01373] RTE generator shall evaluate the SwSystemconstDependentFormula (cid:100) It is in the scope of the RTE generator to evaluate the SwSystemconstDependentFormula which has a higher precedence than the standard C Preprocessor and to provide the resulting values to the software-component's implementation. (cid:99)(RS_SWCT_03100)",
+        "sha256": "841f8612632adabd02133c9d7be648b2cea894eeca83615d41c0f94ebc9540e1",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01384",
+      "title": "Execution of initialization code for software-components",
+      "summary": "Execution of initialization code for software-components",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter8-10.md",
+        "section_path": [
+          "9 Mode Management",
+          "9.3 Initialization / Finalization"
+        ],
+        "start_line": 203,
+        "end_line": 203,
+        "raw_text": "[TPS_SWCT_01384] Execution of initialization code for software-components (cid:100) Most AtomicSwComponentTypes will need to initialize by executing specific code; this code shall complete before any other code in the component is executed. Data will be initializing to specific values before the \"normal\" application software is running. (cid:99)(RS_SWCT_03110)",
+        "sha256": "d215fd1ebfc8536d2be3b0de3bd5ac74408e1972474ff1cff22311d9a9f2b41a",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01385",
+      "title": "Execution of finalization code for software-components",
+      "summary": "Execution of finalization code for software-components",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter8-10.md",
+        "section_path": [
+          "9 Mode Management",
+          "9.3 Initialization / Finalization"
+        ],
+        "start_line": 205,
+        "end_line": 205,
+        "raw_text": "[TPS_SWCT_01385] Execution of finalization code for software-components (cid:100) Most AtomicSwComponentTypes will need to finalize by calling specific code; this code shall complete before the functionality of the application software shut down (e.g. a motor drive in a start or end position). (cid:99)(RS_SWCT_03110)",
+        "sha256": "bf29e99156b9fcf79c6fd89e8439f6fd6b3c32a1b0c91234a7d086d35257014c",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01405",
+      "title": "Creation of the ServiceSwComponentTypes",
+      "summary": "Creation of the ServiceSwComponentTypes",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "P-PORT-PROTOTYPE",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.1 Overview: Generation of Service-related Model Elements"
+        ],
+        "start_line": 68,
+        "end_line": 68,
+        "raw_text": "[TPS_SWCT_01405] Creation of the ServiceSwComponentTypes (cid:100) In ECU Configuration, for each Service required on the ECU exactly one ServiceSwComponentType is created based on the needs from the AtomicSwComponentTypes: An adequate number of PortPrototypes are created on this ServiceSwComponentType for each needed port at the AtomicSwComponentType. Thereby the specified communication pattern A, B or C for a specific kind of ServicePort has to be considered. See also chapter 11.3 and table 11.1. (cid:99)()",
+        "sha256": "655eb03d643431ff96ad9ab8381eb394dbfb64c75900006b24e359dc5138a24d",
+        "in_hierarchical_block": true,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01406",
+      "title": "Creation of SwComponentPrototype typed by a ServiceSwComponentType",
+      "summary": "Creation of SwComponentPrototype typed by a ServiceSwComponentType",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "P-PORT-PROTOTYPE",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SW-COMPONENT-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.1 Overview: Generation of Service-related Model Elements"
+        ],
+        "start_line": 70,
+        "end_line": 70,
+        "raw_text": "[TPS_SWCT_01406] Creation of SwComponentPrototype typed by a ServiceSwComponentType (cid:100) Per Service exactly one SwComponentPrototype typed by a ServiceSwComponentType is created based on the ServiceSwComponentType. Additionally, the connectors are constructed that connect the pairs of PortPrototypes belonging to the SwComponentPrototypes requiring services and those belonging to the actual services. (cid:99)()",
+        "sha256": "497236db49bc04865cb3211384d8a025c4e94f836660a0d5b98f8d6ed2b5ff21",
+        "in_hierarchical_block": true,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01407",
+      "title": "Creation of InternalBehavior typed by a ServiceSwComponentType",
+      "summary": "Creation of InternalBehavior typed by a ServiceSwComponentType",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+        "BACKGROUND-EVENT",
+        "BSW-INTERNAL-BEHAVIOR",
+        "DATA-RECEIVE-ERROR-EVENT",
+        "DATA-RECEIVED-EVENT",
+        "DATA-SEND-COMPLETED-EVENT",
+        "DATA-WRITE-COMPLETED-EVENT",
+        "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+        "INIT-EVENT",
+        "INTERNAL-TRIGGER-OCCURRED-EVENT",
+        "MODE-SWITCHED-ACK-EVENT",
+        "OPERATION-INVOKED-EVENT",
+        "RUNNABLE-ENTITY",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SWC-INTERNAL-BEHAVIOR",
+        "SWC-MODE-MANAGER-ERROR-EVENT",
+        "SWC-MODE-SWITCH-EVENT",
+        "TIMING-EVENT",
+        "TRANSFORMER-HARD-ERROR-EVENT"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.1 Overview: Generation of Service-related Model Elements"
+        ],
+        "start_line": 72,
+        "end_line": 72,
+        "raw_text": "[TPS_SWCT_01407] Creation of InternalBehavior typed by a ServiceSwComponentType (cid:100) For each ServiceSwComponentType an SwcInternalBehavior is created or extended providing the information about PortDefinedArgumentValues, RunnableEntitys and RTEEvents necessary for RTE generation. (cid:99)()",
+        "sha256": "3060f124c4fcf470d11460e5b14b40ace11c09ad784451bc0a0c363f29baeb96",
+        "in_hierarchical_block": true,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01408",
+      "title": "Creation of SwcBswMapping",
+      "summary": "Creation of SwcBswMapping",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "SW-COMPONENT-PROTOTYPE",
+        "SWC-BSW-MAPPING",
+        "SWC-IMPLEMENTATION",
+        "SWC-INTERNAL-BEHAVIOR"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.1 Overview: Generation of Service-related Model Elements"
+        ],
+        "start_line": 76,
+        "end_line": 76,
+        "raw_text": "[TPS_SWCT_01408] Creation of SwcBswMapping (cid:100) For the RTE module configuration an implementation of the AUTOSAR Service described by a Basic Software Module Description needs to be selected. The SwcBswMapping to the corresponding SwComponentPrototype needs to be created accordingly. For each SwcInternalBehavior one SwcImplementation is being created. The information for SwcImplementation should be generated based on the available information of BswImplementation(This step does in general not require copying any attributes or elements aggregated in BswImplementation into the generated instance of SwcImplementation since the only mandatory information for the RTE configuration is the reference from SwcImplementation to the selected SwcInternalBehavior.). (cid:99)()",
+        "sha256": "88c06bfbc74e2a3ccf3d5f1e966db8aad79cca9185df81a27f71dfd480864ea0",
+        "in_hierarchical_block": true,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01421",
+      "title": "ParameterInterface is not restricted to parameters which can actually can be calibrated",
+      "summary": "ParameterInterface represents data that has no write access during normal operation and is not limited to calibratable parameters.",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "PARAMETER-INTERFACE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.2 Measurement and Calibration",
+          "2.2.3 Using Calibration Parameters",
+          "2.2.3.1 Sharing Calibration Parameters within Compositions"
+        ],
+        "start_line": 61,
+        "end_line": 61,
+        "raw_text": "[TPS_SWCT_01421] ParameterInterface is not restricted to parameters which can actually can be calibrated (cid:100) Note that a ParameterInterface is not restricted to parameters which can actually can be calibrated. It can be used whenever there shall be no write access to the data during normal operation of the software, i.e. only constant data are visible over the interface. (cid:99)()",
+        "sha256": "d82b3bb07865d56a06ed543f85180a6bff5729c6e2e375afd9f252d1083c0848",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01472",
+      "title": "Receiving SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence",
+      "summary": "Receiving SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "DATA-PROTOTYPE-GROUP",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.9 Formal Deﬁnition of implicit Communication Behavior",
+          "4.9.1 Consistency Needs on Receiver Side"
+        ],
+        "start_line": 1725,
+        "end_line": 1725,
+        "raw_text": "[TPS_SWCT_01472] Receiving SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence (cid:100) If a receiving SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence for one or several of its RunnableEntitys it is required that VariableDataPrototypes belonging to the same DataPrototypeGroup are produced coherently. This means the values of the VariableDataPrototypes shall be of the same age. (cid:99)(RS_SWCT_03065)",
+        "sha256": "fe7f022fedb071d9a982cc7e1da509818fe0ce7d6879ac98f45cc43c55a95b43",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01473",
+      "title": "Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability",
+      "summary": "Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "RUNNABLE-ENTITY-GROUP",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.9 Formal Deﬁnition of implicit Communication Behavior",
+          "4.9.1 Consistency Needs on Receiver Side"
+        ],
+        "start_line": 1727,
+        "end_line": 1727,
+        "raw_text": "[TPS_SWCT_01473] Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability (cid:100) If a receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability for one or several of its RunnableEntitys it is required that the values of implicitly communicated VariableDataPrototypes are kept stable over the execution of all RunnableEntitys belonging to the given RunnableEntityGroup. (cid:99)(RS_SWCT_03065)",
+        "sha256": "f67425579b92f7162a4f96d3a6185a07bad8cfed65975d2c38d50ceda52fded6",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01474",
+      "title": "Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability and also owns one or several DataPrototypeGroups in the role dpgRequiresCoherence",
+      "summary": "Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability and also owns one or several DataPrototypeGroups in the role dpgRequiresCoherence",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "DATA-PROTOTYPE-GROUP",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "RUNNABLE-ENTITY-GROUP",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.9 Formal Deﬁnition of implicit Communication Behavior",
+          "4.9.1 Consistency Needs on Receiver Side"
+        ],
+        "start_line": 1729,
+        "end_line": 1729,
+        "raw_text": "[TPS_SWCT_01474] Receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability and also owns one or several DataPrototypeGroups in the role dpgRequiresCoherence (cid:100) If a receiving SwComponentType owns a RunnableEntityGroup in the role regRequiresStability and also owns one or several DataPrototypeGroups in the role dpgRequiresCoherence it is required that values of VariableDataPrototypes belonging to the same DataPrototypeGroup are produced coherently. This means that the values of the VariableDataPrototypes shall be of the same age and are kept stable over the execution of all RunnableEntitys belonging to the given RunnableEntityGroup. (cid:99)()",
+        "sha256": "897304459cd3dd52b9d67cda391b7ffd711cabef71c39f7c9a14e12851c37781",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01475",
+      "title": "Sending SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence",
+      "summary": "Sending SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "DATA-PROTOTYPE-GROUP",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "RUNNABLE-ENTITY",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter4.md",
+        "section_path": [
+          "4 Details: Software Components, Ports, and Interfaces",
+          "4.9 Formal Deﬁnition of implicit Communication Behavior",
+          "4.9.2 Consistency Needs on Sender Side"
+        ],
+        "start_line": 1738,
+        "end_line": 1738,
+        "raw_text": "[TPS_SWCT_01475] Sending SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence (cid:100) If a sending SwComponentType owns a DataPrototypeGroup in the role dpgRequiresCoherence for one or several of its RunnableEntitys it is required that VariableDataPrototypes belonging to the same DataPrototypeGroup are propagated at the same point of time to RunnableEntitys which are not belonging to the group of producing RunnableEntitys (which may, but don’t have to be formally described as a RunnableEntity Group). (cid:99)(RS_SWCT_03065)",
+        "sha256": "d1ac61869171914a2c1aaf265af86a82a968762c8d971381f4fa004decd5834a",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01483",
+      "title": "Use static and constant memory to support Measurement and Calibration",
+      "summary": "Use static and constant memory to support Measurement and Calibration",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.8 Static Memory and Constant Memory"
+        ],
+        "start_line": 1200,
+        "end_line": 1200,
+        "raw_text": "[TPS_SWCT_01483] Use static and constant memory to support Measurement and Calibration (cid:100) The information about these characteristic values and variables is given with the purpose to support Measurement and Calibration (see chapter 2.2) and has to be taken into account for the generation of A2L files. A proprietary generator shall take care of these data for the purpose of generating A2L. (cid:99)()",
+        "sha256": "c0c1d632f6754e961f76029eee0f3003647afb6e12a4d8f964f62670304009b6",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01487",
+      "title": "Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType",
+      "summary": "Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "external_design_evidence",
+      "reason": "The requirement depends on project intent, external configuration, or semantic correspondence not encoded in ARXML: Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType",
+      "selector_tags": [
+        "APPLICATION-PRIMITIVE-DATA-TYPE",
+        "COMPU-METHOD",
+        "IMPLEMENTATION-DATA-TYPE",
+        "SW-BASE-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.4 Properties of Data Deﬁnitions",
+          "5.4.2 Invalid Value"
+        ],
+        "start_line": 1870,
+        "end_line": 1872,
+        "raw_text": "[TPS_SWCT_01487] Correspondence of invalidValue for ApplicationPrimitiveDataType and ImplementationDataType (cid:100) The invalidValue specified on the level of an ApplicationPrimitiveDataType shall correspond to the invalidValue specified on the level of a compatible ImplementationDataType. The terms \"corresponds\" boils down to: \n• category VALUE or BOOLEAN: application of CompuMethod \n• category STRING: mapping of the encoding on the ApplicationPrimitiveDataType side to the numerical values on the level of the ImplementationDataType (shall reference SwBaseType with baseTypeEncoding set to NONE). There is no formal support defined to check that the values of invalidValue really correspond to each other. (cid:99)()",
+        "sha256": "f00bf2789c9f1fba58b245a5e34b47569a2ae6abf32f64abd8e6d1797bf03095",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01510",
+      "title": "The role of pretended networking",
+      "summary": "Pretended Networking reduces ECU communication and power use and must be left when normal network communication is required.",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "MODE-DECLARATION"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.7 Pretended Networking"
+        ],
+        "start_line": 396,
+        "end_line": 397,
+        "raw_text": "[TPS_SWCT_01510] The role of pretended networking (cid:100) Pretended networking is a feature to reduce energy consumption of an ECU by switching the ECU in a mode called Pretended Networking. In this mode the communication on communication networks is reduced and the ECU can go into power saving modes.\nWhen communication via communication networks is required the mode Pretended Networking shall be left by request of a mode change to Normal Mode. (cid:99)()",
+        "sha256": "37aedbedf1751ac27ef4612f41a6925fafb271eb629005ebdc0cc4a18a48ae54",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01511",
+      "title": "Configuration option is encoded into ModeDeclaration",
+      "summary": "Pretended Networking configuration options are represented by dedicated ModeDeclarations inside a ModeDeclarationGroup.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "external_antecedent",
+      "reason": "ARXML can check a structural consequence only after an external design-intent antecedent is established.",
+      "selector_tags": [
+        "MODE-DECLARATION",
+        "MODE-DECLARATION-GROUP"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.7 Pretended Networking"
+        ],
+        "start_line": 399,
+        "end_line": 399,
+        "raw_text": "[TPS_SWCT_01511] Configuration option is encoded into ModeDeclaration (cid:100) The identification of different configuration options for Pretended Networking shall be encoded into the definition of dedicated ModeDeclarations inside a ModeDeclarationGroup. (cid:99)(RS_SWCT_03110)",
+        "sha256": "138fccaaaa0f7ffe9847ef27b08f58b4b8795582662cdb81d4e20dab7b2bb202",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01512",
+      "title": "Request change of Pretended Networking mode",
+      "summary": "A component that requests Pretended Networking mode changes provides a PPort typed by the designated SenderReceiverInterface.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "external_antecedent",
+      "reason": "ARXML can check a structural consequence only after an external design-intent antecedent is established.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "P-PORT-PROTOTYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "PROVIDED-INTERFACE-TREF",
+        "SENDER-RECEIVER-INTERFACE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.7 Pretended Networking"
+        ],
+        "start_line": 408,
+        "end_line": 410,
+        "raw_text": "[TPS_SWCT_01512] Request change of Pretended Networking mode (cid:100) A SwComponentType that needs to be able to request a change in the operating mode of Pretended Networking shall provide a PPortPrototype typed by a SenderReceiverInterface (see [TPS_SWCT_01086]) for requesting a change (towards the BswM [15]) of the Pretended Networking mode.\n\nIt is out of the scope of this document to define the particular properties of the applicable SenderReceiverInterface. The details of this specific SenderReceiverInterface can be found in the specification of the BswM [15]. (cid:99)(RS_SWCT_03110)",
+        "sha256": "31c1a5d320f4791193c8464ee75f1e4ff9d91fe02f2e2d250c98287d59446e2d",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01513",
+      "title": "React on the change of Pretended Networking mode",
+      "summary": "A component that reacts to Pretended Networking mode changes provides an RPort typed by the designated ModeSwitchInterface.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "external_antecedent",
+      "reason": "ARXML can check a structural consequence only after an external design-intent antecedent is established.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "MODE-SWITCH-INTERFACE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "R-PORT-PROTOTYPE",
+        "REQUIRED-INTERFACE-TREF",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": true,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.7 Pretended Networking"
+        ],
+        "start_line": 414,
+        "end_line": 416,
+        "raw_text": "[TPS_SWCT_01513] React on the change of Pretended Networking mode (cid:100) A SwComponentType that needs to be able to react on a change in the operating mode of Pretended Networking shall provide an RPortPrototype typed by a ModeSwitchInterface (see [TPS_SWCT_01087]) for reacting on a change (initiated by the BswM [15]) of the Pretended Networking mode.\n\nIt is out of the scope of this document to define the particular properties of the applicable ModeSwitchInterface. The details of this specific ModeSwitchInterface can be found in the specification of the BswM [15]. (cid:99)(RS_SWCT_03110)",
+        "sha256": "6ec7d535bf1c935cbb73b0cb85d107d2ec743284edb81154ec855c18ba94516d",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01522",
+      "title": "No initial value is specified for implicitInterRunnableVariable or explicitInterRunnableVariable",
+      "summary": "No initial value is specified for implicitInterRunnableVariable or explicitInterRunnableVariable",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "RUNNABLE-ENTITY"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.4 Communication among Runnable Entities",
+          "7.4.2 Description Possibility 2: Inter-Runnable Variable"
+        ],
+        "start_line": 568,
+        "end_line": 568,
+        "raw_text": "[TPS_SWCT_01522] No initial value is specified for implicitInterRunnableVariable or explicitInterRunnableVariable (cid:100) Please note that the behavior is undefined if no initial value is specified and a RunnableEntity reads an implicitInterRunnableVariable or explicitInterRunnableVariable before it is actually written to by another RunnableEntity. (cid:99)()",
+        "sha256": "99c02f8ad4c095995f6b222d2221ca15cd77b808ce31481a759b09092411a6c0",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01568",
+      "title": "Consideration of RPortComSpec or PPortComSpec depending on the ownership",
+      "summary": "RTE generation uses ComSpec attributes from atomic or parameter component ports and ignores ComSpec attributes on composition-owned ports.",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "CLIENT-COM-SPEC",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "MODE-SWITCH-RECEIVER-COM-SPEC",
+        "MODE-SWITCH-SENDER-COM-SPEC",
+        "NONQUEUED-RECEIVER-COM-SPEC",
+        "NONQUEUED-SENDER-COM-SPEC",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "NV-PROVIDE-COM-SPEC",
+        "NV-REQUIRE-COM-SPEC",
+        "PARAMETER-PROVIDE-COM-SPEC",
+        "PARAMETER-REQUIRE-COM-SPEC",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "PORTS",
+        "QUEUED-RECEIVER-COM-SPEC",
+        "QUEUED-SENDER-COM-SPEC",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVER-COM-SPEC",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter2.md",
+        "section_path": [
+          "2 Conceptual Aspects",
+          "2.5 Communication Speciﬁcation of Composition Component Types",
+          "2.5.1 Rationale"
+        ],
+        "start_line": 253,
+        "end_line": 253,
+        "raw_text": "[TPS_SWCT_01568] Consideration of RPortComSpec or PPortComSpec depending on the ownership (cid:100) The RTE Generator shall take the attributes of the RPortComSpec or PPortComSpec of the PortPrototypes owned by AtomicSwComponentTypes or ParameterSwComponentType and ignore the attributes of the RPortComSpec or PPortComSpec attached to PortPrototypes owed by CompositionSwComponentType. (cid:99)(RS_SWCT_03220)",
+        "sha256": "d0fa2d660f1900587576c31e698db77fb51e1b520abf8875a91041c0e6685906",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01589",
+      "title": "Implementation of emergency storing of nv data",
+      "summary": "Implementation of emergency storing of nv data",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "NV-BLOCK-NEEDS",
+        "STORE-EMERGENCY"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "11 Services",
+          "11.5 Non Volatile Memory",
+          "11.5.4 NvBlockDescriptor",
+          "11.5.4.1 Writing Strategies"
+        ],
+        "start_line": 388,
+        "end_line": 388,
+        "raw_text": "[TPS_SWCT_01589] Implementation of emergency storing of nv data (cid:100) The use case for storeEmergency can only be implemented by means of a Complex Driver. In particular, the Complex Driver is responsible for the detection of an ECU failure. If a relevant error occurs the Complex Driver should call the NvM write block operation for the emergency blocks directly. (cid:99)(RS_SWCT_03225)",
+        "sha256": "212e8e07f9cee9393bc7489b76178b25fc1ac9c7f0a7c307c241408dec13fba6",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01592",
+      "title": "Communication among RunnableEntitys of different instances of the same AtomicSwComponentType",
+      "summary": "Communication among RunnableEntitys of different instances of the same AtomicSwComponentType",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "P-PORT-PROTOTYPE",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "RUNNABLE-ENTITY",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.4 Communication among Runnable Entities"
+        ],
+        "start_line": 464,
+        "end_line": 464,
+        "raw_text": "[TPS_SWCT_01592] Communication among RunnableEntitys of different instances of the same AtomicSwComponentType (cid:100) The communication among RunnableEntitys of different instances of the same AtomicSwComponentType is only supported via PortPrototypes. (cid:99)(RS_SWCT_00120)",
+        "sha256": "22092cd96ba1688d1c903fcf2b764bca20d4f07372db55b898dc088c3a342633",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01601",
+      "title": "Size Indicator shall be updated by software-component",
+      "summary": "Size Indicator shall be updated by software-component",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "IMPLEMENTATION-DATA-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.2 Data Types",
+          "5.2.4 Application Data Type",
+          "5.2.4.2 Application Composite Data Types",
+          "5.2.4.2.1 ApplicationArrayDataType"
+        ],
+        "start_line": 715,
+        "end_line": 715,
+        "raw_text": "[TPS_SWCT_01601] Size Indicator shall be updated by software-component (cid:100) If a software-component changes the number of valid elements in a variable size array, it shall also update the Size Indicator in the ImplementationDataType. (cid:99)(RS_SWCT_03181)",
+        "sha256": "049719509a1ff821fc8ded4b5e56c8fdadeba8b3bfc4f8304a54e9b10242fecd",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01602",
+      "title": "Size Indicator shall be read by the software-component",
+      "summary": "Size Indicator shall be read by the software-component",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "IMPLEMENTATION-DATA-TYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter5.md",
+        "section_path": [
+          "5 Data Description",
+          "5.2 Data Types",
+          "5.2.4 Application Data Type",
+          "5.2.4.2 Application Composite Data Types",
+          "5.2.4.2.1 ApplicationArrayDataType"
+        ],
+        "start_line": 717,
+        "end_line": 717,
+        "raw_text": "[TPS_SWCT_01602] Size Indicator shall be read by the software-component (cid:100) If a software-component receives a variable size array, it shall use the Size Indicator in the ImplementationDataType to determine the number of valid elements in the array. (cid:99)(RS_SWCT_03181)",
+        "sha256": "7aeccecbc36c9345e93671b040d720bf43d89919775bb6cd1ae52fe05575c456",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_01635",
+      "title": "Naming conventions may support the effectiveness of SymbolProps",
+      "summary": "Project naming conventions should complement SymbolProps and shortNamePattern to reduce residual name-clash risk.",
+      "importance": "supporting",
+      "decision": "retain_manual",
+      "required_capability": "generated_artifact",
+      "reason": "The claim constrains generated RTE/A2L/ECU artifacts or a generation procedure; input ARXML alone cannot prove it.",
+      "selector_tags": [
+        "ACL-OBJECT-SET",
+        "ACL-OPERATION",
+        "ACL-PERMISSION",
+        "ACL-ROLE",
+        "ALIAS-NAME-SET",
+        "APPLICATION-ARRAY-DATA-TYPE",
+        "APPLICATION-PRIMITIVE-DATA-TYPE",
+        "APPLICATION-RECORD-DATA-TYPE",
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "AR-PACKAGE",
+        "BSW-MODULE-DESCRIPTION",
+        "BSW-MODULE-ENTRY",
+        "BUILD-ACTION",
+        "BUILD-ACTION-ENVIRONMENT",
+        "BUILD-ACTION-MANIFEST",
+        "CLIENT-SERVER-INTERFACE",
+        "CLIENT-SERVER-INTERFACE-MAPPING",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "COMPOSITION-SW-COMPONENT-TYPE",
+        "COMPU-METHOD",
+        "CONSISTENCY-NEEDS",
+        "DATA-CONSTR",
+        "DATA-TYPE-MAPPING-SET",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "ECUC-DEFINITION-COLLECTION",
+        "ECUC-DESTINATION-URI-DEF-SET",
+        "ECUC-MODULE-DEF",
+        "FLAT-MAP",
+        "IMPLEMENTATION-DATA-TYPE",
+        "KEYWORD-SET",
+        "LIFE-CYCLE-STATE",
+        "LIFE-CYCLE-STATE-DEFINITION-GROUP",
+        "MODE-DECLARATION-GROUP",
+        "MODE-INTERFACE-MAPPING",
+        "MODE-SWITCH-INTERFACE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "NV-DATA-INTERFACE",
+        "PARAMETER-INTERFACE",
+        "PARAMETER-SW-COMPONENT-TYPE",
+        "PORT-INTERFACE-MAPPING-SET",
+        "PORT-PROTOTYPE-BLUEPRINT",
+        "SENDER-RECEIVER-INTERFACE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SHORT-NAME-PATTERN",
+        "SW-ADDR-METHOD",
+        "SW-BASE-TYPE",
+        "SYMBOL",
+        "SYMBOL-PROPS",
+        "TRIGGER-INTERFACE",
+        "TRIGGER-INTERFACE-MAPPING",
+        "VARIABLE-AND-PARAMETER-INTERFACE-MAPPING",
+        "VFB-TIMING"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter3.md",
+        "section_path": [
+          "3 Overview: Software Components, Ports, and Interfaces",
+          "3.2 Software Component",
+          "3.2.5 Symbolic Name of a Software-Component"
+        ],
+        "start_line": 227,
+        "end_line": 229,
+        "raw_text": "[TPS_SWCT_01635] Naming conventions may support the effectiveness of SymbolProps (cid:100) Of course, there is a residual risk that even in the presence of SymbolProps name clashes may occur. Therefore, the deﬁnition of naming conventions may facilitate the avoidance of name clashes to the further degree.\nHowever, these naming conventions can (with the support of the meta-model, e.g. by\nutilizing SymbolProps or shortNamePattern) still only be deﬁned on the model level. (cid:99)(RS_SWCT_00230)",
+        "sha256": "5a1e47b82221ec258bfd64df622f393efcef387bff5a5f15bf3689af68748fc6",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_02046",
+      "title": "byPassPoint specifies the rapid prototyping capability",
+      "summary": "byPassPoint specifies the rapid prototyping capability",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "13 Rapid Prototyping Scenarios",
+          "13.1 Deﬁnition of Rapid Prototyping Scenario"
+        ],
+        "start_line": 690,
+        "end_line": 690,
+        "raw_text": "[TPS_SWCT_02046] byPassPoint specifies the rapid prototyping capability (cid:100) The byPassPoints are used to describe the preparation of the host ECU. At the byPassPoints the host ECU shall be capable to communicate with a RPT System in order to support the execution of the rapid prototyping algorithms with the original data calculated by the host system and to replace dedicated results of the host system by the results of the rapid prototyping algorithm. (cid:99)(RS_SWCT_03280)",
+        "sha256": "dd3c0469070df08c9c499462a46285837e9f4aa72e2bc225eba66f3b604a0865",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_02048",
+      "title": "Implicit SwComponentPrototype selection for Rapid Prototyping Scenario",
+      "summary": "Implicit SwComponentPrototype selection for Rapid Prototyping Scenario",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "RPT-CONTAINER",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE",
+        "SW-COMPONENT-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "13 Rapid Prototyping Scenarios",
+          "13.2 Usage of RptContainers on M1"
+        ],
+        "start_line": 736,
+        "end_line": 736,
+        "raw_text": "[TPS_SWCT_02048] Implicit SwComponentPrototype selection for Rapid Prototyping Scenario (cid:100) If a SwComponentPrototype is referenced in the role byPassPoint by a RptContainer without further \"Sub\" rptContainer all RTE Interfaces of the AtomicSwComponentType shall be able to support a connection to a rptHook. (cid:99)(RS_SWCT_03280)",
+        "sha256": "67b18fa4df3a1f13ea89522afebcb4082c94db7142b345f762e62938308d16e3",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_02049",
+      "title": "Implicit RunnableEntity selection for Rapid Prototyping Scenario",
+      "summary": "Implicit RunnableEntity selection for Rapid Prototyping Scenario",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "RPT-CONTAINER",
+        "RUNNABLE-ENTITY"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "13 Rapid Prototyping Scenarios",
+          "13.2 Usage of RptContainers on M1"
+        ],
+        "start_line": 738,
+        "end_line": 738,
+        "raw_text": "[TPS_SWCT_02049] Implicit RunnableEntity selection for Rapid Prototyping Scenario (cid:100) If a RunnableEntity is referenced in the role byPassPoint by a RptContainer without further \"Sub\" rptContainer all RTE Interfaces of the RunnableEntity shall be able to support a connection to a rptHook. (cid:99)(RS_SWCT_03280)",
+        "sha256": "e3b54ce6104086df585ab4c1c97751f436f82841ea008a3c5fe55ea6f7494c55",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_02050",
+      "title": "Explicit access point selection for Rapid Prototyping Scenario",
+      "summary": "Explicit access point selection for Rapid Prototyping Scenario",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "ASYNCHRONOUS-SERVER-CALL-POINT",
+        "ASYNCHRONOUS-SERVER-CALL-RESULT-POINT",
+        "EXTERNAL-TRIGGERING-POINT",
+        "INTERNAL-TRIGGERING-POINT",
+        "MODE-ACCESS-POINT",
+        "MODE-SWITCH-POINT",
+        "PARAMETER-ACCESS",
+        "SYNCHRONOUS-SERVER-CALL-POINT",
+        "VARIABLE-ACCESS"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "13 Rapid Prototyping Scenarios",
+          "13.2 Usage of RptContainers on M1"
+        ],
+        "start_line": 740,
+        "end_line": 740,
+        "raw_text": "[TPS_SWCT_02050] Explicit access point selection for Rapid Prototyping Scenario (cid:100) If a VariableAccess, ParameterAccess, ServerCallPoint, AsynchronousServerCallResultPoint, InternalTriggeringPoint, ModeSwitchPoint, ModeAccessPoint or ExternalTriggeringPoint is referenced in the role byPassPoint by a RptContainer only RTE Interfaces related to the specific access point are required be able to support a connection to a rptHook. (cid:99)(RS_SWCT_03280)",
+        "sha256": "211bce13ce55aadc472a26e8613230c0f41fbea8cda16ae1e327d59ea14c5382",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    },
+    {
+      "constraint_id": "TPS_SWCT_02051",
+      "title": "Explicit DataPrototype selection for Rapid Prototyping Scenario",
+      "summary": "Explicit DataPrototype selection for Rapid Prototyping Scenario",
+      "importance": "major",
+      "decision": "retain_manual",
+      "required_capability": "runtime_evidence",
+      "reason": "The claim constrains runtime behavior or implementation code; a static ARXML model cannot prove absence or execution behavior.",
+      "selector_tags": [
+        "APPLICATION-ARRAY-ELEMENT",
+        "APPLICATION-RECORD-ELEMENT",
+        "ARGUMENT-DATA-PROTOTYPE",
+        "P-PORT-PROTOTYPE",
+        "PARAMETER-DATA-PROTOTYPE",
+        "PR-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "RPT-CONTAINER",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "partial_arxml_guard": false,
+      "review_instruction": "Obtain and inspect the required external evidence; do not repair ARXML solely to silence this review item.",
+      "source": {
+        "document": "chapter11-13.md",
+        "section_path": [
+          "13 Rapid Prototyping Scenarios",
+          "13.2 Usage of RptContainers on M1"
+        ],
+        "start_line": 742,
+        "end_line": 742,
+        "raw_text": "[TPS_SWCT_02051] Explicit DataPrototype selection for Rapid Prototyping Scenario (cid:100) If a DataPrototype instances in a PortPrototypes is referenced in the role byPassPoint by a RptContainer only RTE Interfaces related to the specific DataPrototype are required be able to support a connection to a rptHook. (cid:99)(RS_SWCT_03280)",
+        "sha256": "69a8a12dda56ad15657c83e0f8ee1c1e8d2fb9b983660cdd292429f1b05a3e83",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      }
+    }
+  ]
+}

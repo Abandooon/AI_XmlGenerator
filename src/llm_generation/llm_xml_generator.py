@@ -19,8 +19,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
-import yaml
 import google.generativeai as genai
+import yaml
+
 from src.kg_builder.doc_constr_parser.config import (
     LLM_API_KEY,
     LLM_API_BASE,
