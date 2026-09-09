@@ -1,0 +1,30 @@
+{
+  "track": "vllm-autosar",
+  "version": "V6.3.4 + offline review adapter 2026-09-09",
+  "status": "PASS",
+  "sources": [
+    "four original V6.3.4 archives",
+    "572-entry postprocess runtime snapshot",
+    "offline placeholder configuration"
+  ],
+  "corrections": [
+    "explicit source relocation with retained-file checks",
+    "package-relative evaluator roots",
+    "separate qualified historical identity from executable runtime identity",
+    "complete xmlschema/elementpath dependency closure",
+    "analysis view binds newly generated formal result and postprocessing",
+    "Windows null-device compatibility in package data-access guard"
+  ],
+  "validation": "validation/REVIEW_RESULT.json",
+  "relocation_test": {
+    "different_package_directory": true,
+    "python_isolated_mode": true,
+    "network_disabled_during_materialization": true,
+    "author_data_path_access_blocked": true
+  },
+  "new_model_calls": 0,
+  "historical_source_gaps": 2,
+  "manuscript_modified": false,
+  "clean_environment_verified": true,
+  "analysis_bound_to_new_formal_result": true
+}

@@ -1,0 +1,1657 @@
+{
+  "session_id": "round1_20251020_220337",
+  "timestamp": "20251020_220337",
+  "user_requirements": "设计一个AUTOSAR智能座舱域控制器，包含语音识别输入组件、触摸屏交互组件、手势识别组件、驾驶员状态监测组件、多媒体内容管理组件、导航路径规划组件、空调舒适性控制组件、氛围灯效果控制组件、音频渲染输出组件、以及云端服务接口组件。系统需要实现多模态人机交互和个性化场景联动。",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        设计一个AUTOSAR智能座舱域控制器，包含语音识别输入组件、触摸屏交互组件、手势识别组件、驾驶员状态监测组件、多媒体内容管理组件、导航路径规划组件、空调舒适性控制组件、氛围灯效果控制组件、音频渲染输出组件、以及云端服务接口组件。系统需要实现多模态人机交互和个性化场景联动。\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "系统以多模态人机交互为核心，分解为输入采集、语义处理、场景联动决策、内容管理、导航与控制输出等模块，明确每个模块的职责边界与接口契约，确保从传感输入到执行输出的端到端可追溯性和可替换性",
+      "data_flow_analysis": "数据流从前端输入（语音、触控、手势、驾驶员状态）经HMI核心进行语义理解与场景推理，输出给内容管理、导航、空调与氛围灯模块，云端服务提供个性化配置与数据同步。数据类型包括SpeechData、TouchEvent、GestureEvent、DriverStatus、NavigationRequest、ContentMeta、ClimateCommand、LightCommand、AudioFrame等，传输采用SENDER-RECEIVER接口与CLIENT-SERVER接口组合，必要时以事件驱动实现异步处理",
+      "timing_requirements": "输入事件需要近实时响应，语音数据端到端延迟<100ms（局部降噪和特征提取阶段<50ms），触控事件<20ms，手势识别<50ms，云端交互在200–500ms内完成高层决策回传，周期性任务如内容同步与路径规划在1–10s内完成",
+      "scalability_considerations": "模块化组件化设计，支持动态替换与扩展，使用可配置的RUNNABLE集合与端口组合，接口类型统一，支持分布式部署与多ECU协同，优先采用事件驱动和队列缓冲以应对峰值负载",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "COMP_SPEECH_INPUT",
+        "name": "Speech_Input_Component",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "语音输入采集、降噪、特征提取并输出语音数据包",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "实现实时语音采集、降噪、特征提取与语音数据打包输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "包含语音输入端口、降噪结果输入端口、语音数据输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Speech_Input_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从输入端口读取语音数据"
+                      }
+                    ],
+                    "notes": "从输入读取语音数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向输出端口发送处理后的语音数据"
+                      }
+                    ],
+                    "notes": "输出处理后的语音数据"
+                  }
+                ],
+                "notes": "语音数据处理与输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component",
+          "CLOUD_SERVICE_INTERFACE_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_TOUCH_SCREEN_INTERFACE",
+        "name": "Touch_Screen_Interface_Component",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "触控输入采集并转发触控事件",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "捕获触控事件、格式化并转发到HMI核心",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "触控输入端口、事件输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Touch_Input_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取触控输入数据"
+                      }
+                    ],
+                    "notes": "获取触控输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送触控事件到HMI"
+                      }
+                    ],
+                    "notes": "输出触控事件"
+                  }
+                ],
+                "notes": "处理并传输出触控事件"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_GESTURE_RECOGNITION",
+        "name": "Gesture_Recognition_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "手势识别与语义编码，输出手势事件与控制指令",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "对输入的手势序列进行识别、分类，并生成高层手势事件",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "手势输入端口、手势输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Gesture_Recognition_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "CONTEXT-DATA-PROTOTYPE-REFS"
+                        ],
+                        "notes": "获取手势输入数据"
+                      }
+                    ],
+                    "notes": "读取手势输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "CONTEXT-DATA-PROTOTYPE-REFS"
+                        ],
+                        "notes": "输出手势识别结果"
+                      }
+                    ],
+                    "notes": "输出手势识别结果"
+                  }
+                ],
+                "notes": "手势识别处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_DRIVER_STATUS_MONITORING",
+        "name": "Driver_Status_Monitoring_Component",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "监测驾驶员状态并将关键状态数据提供给决策与显示模块",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "采集驾驶员状态、疲劳预警、注意力水平等，输出状态数据",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "状态输入端口、状态输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Driver_Status_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取传感数据"
+                      }
+                    ],
+                    "notes": "读取驾驶员状态数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "传送状态数据"
+                      }
+                    ],
+                    "notes": "输出驾驶员状态"
+                  }
+                ],
+                "notes": "状态监控与输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component",
+          "DECISION_Module_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_MULTIMEDIA_CONTENT_MANAGEMENT",
+        "name": "Multimedia_Content_Management_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "多媒体内容管理与分发，包括播放列表、内容分发和资源管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "3"
+        },
+        "behavioral_characteristics": "内容获取、编排、权限控制与播放控制",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "内容输入端口、输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Media_Content_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取内容元数据"
+                      }
+                    ],
+                    "notes": "接收内容元数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出内容控制信息"
+                      }
+                    ],
+                    "notes": "输出内容控制信息"
+                  }
+                ],
+                "notes": "多媒体内容编排与分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "NAVIGATION_Component",
+          "CONTENT_RENDER_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_NAVIGATION_PATH_PLANNING",
+        "name": "Navigation_Path_Planning_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "路径规划与导航决策，输出路线、交通与场景信息",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "基于目的地与实时交通信息计算最优路径，输出导航指令",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "导航请求端口、导航指令端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Navigation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航请求"
+                      }
+                    ],
+                    "notes": "接收导航请求数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出导航指令与路径"
+                      }
+                    ],
+                    "notes": "输出导航结果"
+                  }
+                ],
+                "notes": "路线计算与结果输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MAP_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_CLIMATE_CONTROL",
+        "name": "Climate_Control_Component",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "空调舒适性控制，基于环境与乘员偏好进行温度与风速控制",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "读取环境信息与用户偏好，计算温控指令并输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "环境输入端口、控制输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Climate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取环境与偏好数据"
+                      }
+                    ],
+                    "notes": "读取环境数据与偏好"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送空调控制指令"
+                      }
+                    ],
+                    "notes": "输出空调控制指令"
+                  }
+                ],
+                "notes": "温控策略执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_AMBIENT_LIGHTING",
+        "name": "Ambient_Lighting_Control_Component",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "氛围灯控制，响应场景联动策略与用户偏好",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "1",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "接收场景指令并输出灯光控制信号",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入灯控指令端口、输出灯控信号端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Lighting_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取场景灯控数据"
+                      }
+                    ],
+                    "notes": "获取场景指令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出灯光控制信号"
+                      }
+                    ],
+                    "notes": "输出氛围灯控制"
+                  }
+                ],
+                "notes": "执行场景化灯光控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_AUDIO_RENDERING_OUTPUT",
+        "name": "Audio_Rendering_Output_Component",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "音频渲染输出，接收音频数据并输出至扬声器/耳机",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "0"
+        },
+        "behavioral_characteristics": "接收音频数据并对播放器进行控制输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "音频输入端口、控制输出端口（若有）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Audio_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取音频数据"
+                      }
+                    ],
+                    "notes": "读取音频数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出音频渲染控制"
+                      }
+                    ],
+                    "notes": "输出音频渲染参数"
+                  }
+                ],
+                "notes": "音频渲染控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SPEECH_PROCESSING_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_CLOUD_SERVICE_INTERFACE",
+        "name": "Cloud_Service_Interface_Component",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "云端服务对接，提供个性化配置、模型服务与数据同步",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "处理云端请求、转发至本地服务，并返回结果",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "云端请求端口、云端响应端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Cloud_Service_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收云端请求"
+                      }
+                    ],
+                    "notes": "读取云端请求数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "返回云端响应"
+                      }
+                    ],
+                    "notes": "输出云端响应"
+                  }
+                ],
+                "notes": "云端服务交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Cloud_Service_Backend_Component"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_SPEECH_TO_HMI",
+        "name": "Speech_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "实时语音数据流，事件驱动更新",
+        "data_category": "SpeechData",
+        "connected_components": [
+          "Speech_Input_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<100ms端到端延迟",
+        "data_elements": [
+          "SpeechWaveform",
+          "SpeechTranscript",
+          "NoiseReducedSignal"
+        ],
+        "direct_paths": "Speech_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_TOUCH_TO_HMI",
+        "name": "Touch_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "触控事件按需传输",
+        "data_category": "TouchEvent",
+        "connected_components": [
+          "Touch_Screen_Interface_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<20ms",
+        "data_elements": [
+          "TouchEvent"
+        ],
+        "direct_paths": "Touch_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_GESTURE_TO_HMI",
+        "name": "Gesture_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "手势事件流",
+        "data_category": "GestureEvent",
+        "connected_components": [
+          "Gesture_Recognition_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<50ms",
+        "data_elements": [
+          "GestureEvent"
+        ],
+        "direct_paths": "Gesture_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_DRIVER_STATUS_TO_DECISION",
+        "name": "Driver_Status_to_Decision_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "状态数据流",
+        "data_category": "DriverStatus",
+        "connected_components": [
+          "Driver_Status_Monitoring_Component",
+          "Decision_Module_Component"
+        ],
+        "performance_requirements": "<100ms",
+        "data_elements": [
+          "DriverStatus",
+          "FatigueLevel"
+        ],
+        "direct_paths": "Driver_Status输出 -> Decision_Module输入"
+      },
+      {
+        "interface_id": "IF_NAVIGATION_DATA",
+        "name": "Navigation_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "导航请求/响应",
+        "data_category": "NavigationData",
+        "connected_components": [
+          "Navigation_Path_Planning_Component",
+          "Map_Render_Component"
+        ],
+        "performance_requirements": "1s以内更新",
+        "data_elements": [
+          "NavigationRequest",
+          "NavigationStatus"
+        ],
+        "direct_paths": "Navigation_Path_Planning输出 -> Map_Render/Input"
+      },
+      {
+        "interface_id": "IF_CLOUD_SERVICE",
+        "name": "Cloud_Service_Interface_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端-云端请求/响应",
+        "data_category": "CloudServiceData",
+        "connected_components": [
+          "Cloud_Service_Interface_Component",
+          "Cloud_Service_Server_Component"
+        ],
+        "performance_requirements": "200–500ms云端响应",
+        "data_elements": [
+          "CloudRequest",
+          "CloudResponse"
+        ],
+        "direct_paths": "Cloud-Service_Interface输出 -> Cloud-Service_Server输入"
+      }
+    ],
+    "component_generation_order": [
+      "Speech_Input_Component",
+      "Touch_Screen_Interface_Component",
+      "Gesture_Recognition_Component",
+      "Driver_Status_Monitoring_Component",
+      "Multimedia_Content_Management_Component",
+      "Navigation_Path_Planning_Component",
+      "Climate_Control_Component",
+      "Ambient_Lighting_Control_Component",
+      "Audio_Rendering_Output_Component",
+      "Cloud_Service_Interface_Component"
+    ],
+    "connection_topology": {
+      "component_connections": "描述性文本，示意各组件间的逻辑连接",
+      "data_flow_paths": "Speech/Input->HMI_Core; Touch/Input->HMI_Core; Gesture/Input->HMI_Core; Driver_Status->Decision; Navigation->MapRender; Cloud_Interface与云端服务",
+      "control_flow_paths": "事件驱动与周期性调度混合，优先级按用户场景联动设定"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用多模态输入聚合+统一HMI核心进行场景推理，定义清晰的接口与数据模型以实现跨域协同",
+      "tradeoff_analysis": "优先保证时序性与可扩展性，牺牲部分本地冗余以降低成本；可通过云端服务实现个性化配置",
+      "alternative_considerations": "考虑将某些高频数据移动到裸机侧进行处理，或引入边缘计算节点分担负载",
+      "risk_assessment": "高并发场景下接口队列长度需控制，需建立故障注入与恢复策略"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "系统以多模态人机交互为核心，分解为输入采集、语义处理、场景联动决策、内容管理、导航与控制输出等模块，明确每个模块的职责边界与接口契约，确保从传感输入到执行输出的端到端可追溯性和可替换性",
+      "data_flow_analysis": "数据流从前端输入（语音、触控、手势、驾驶员状态）经HMI核心进行语义理解与场景推理，输出给内容管理、导航、空调与氛围灯模块，云端服务提供个性化配置与数据同步。数据类型包括SpeechData、TouchEvent、GestureEvent、DriverStatus、NavigationRequest、ContentMeta、ClimateCommand、LightCommand、AudioFrame等，传输采用SENDER-RECEIVER接口与CLIENT-SERVER接口组合，必要时以事件驱动实现异步处理",
+      "timing_requirements": "输入事件需要近实时响应，语音数据端到端延迟<100ms（局部降噪和特征提取阶段<50ms），触控事件<20ms，手势识别<50ms，云端交互在200–500ms内完成高层决策回传，周期性任务如内容同步与路径规划在1–10s内完成",
+      "scalability_considerations": "模块化组件化设计，支持动态替换与扩展，使用可配置的RUNNABLE集合与端口组合，接口类型统一，支持分布式部署与多ECU协同，优先采用事件驱动和队列缓冲以应对峰值负载",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "COMP_SPEECH_INPUT",
+        "name": "Speech_Input_Component",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "语音输入采集、降噪、特征提取并输出语音数据包",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "实现实时语音采集、降噪、特征提取与语音数据打包输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "包含语音输入端口、降噪结果输入端口、语音数据输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Speech_Input_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从输入端口读取语音数据"
+                      }
+                    ],
+                    "notes": "从输入读取语音数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向输出端口发送处理后的语音数据"
+                      }
+                    ],
+                    "notes": "输出处理后的语音数据"
+                  }
+                ],
+                "notes": "语音数据处理与输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component",
+          "CLOUD_SERVICE_INTERFACE_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_TOUCH_SCREEN_INTERFACE",
+        "name": "Touch_Screen_Interface_Component",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "触控输入采集并转发触控事件",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "捕获触控事件、格式化并转发到HMI核心",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "触控输入端口、事件输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Touch_Input_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取触控输入数据"
+                      }
+                    ],
+                    "notes": "获取触控输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送触控事件到HMI"
+                      }
+                    ],
+                    "notes": "输出触控事件"
+                  }
+                ],
+                "notes": "处理并传输出触控事件"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_GESTURE_RECOGNITION",
+        "name": "Gesture_Recognition_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "手势识别与语义编码，输出手势事件与控制指令",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "对输入的手势序列进行识别、分类，并生成高层手势事件",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "手势输入端口、手势输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Gesture_Recognition_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "CONTEXT-DATA-PROTOTYPE-REFS"
+                        ],
+                        "notes": "获取手势输入数据"
+                      }
+                    ],
+                    "notes": "读取手势输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "CONTEXT-DATA-PROTOTYPE-REFS"
+                        ],
+                        "notes": "输出手势识别结果"
+                      }
+                    ],
+                    "notes": "输出手势识别结果"
+                  }
+                ],
+                "notes": "手势识别处理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_DRIVER_STATUS_MONITORING",
+        "name": "Driver_Status_Monitoring_Component",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "监测驾驶员状态并将关键状态数据提供给决策与显示模块",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "采集驾驶员状态、疲劳预警、注意力水平等，输出状态数据",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "状态输入端口、状态输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Driver_Status_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取传感数据"
+                      }
+                    ],
+                    "notes": "读取驾驶员状态数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "传送状态数据"
+                      }
+                    ],
+                    "notes": "输出驾驶员状态"
+                  }
+                ],
+                "notes": "状态监控与输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component",
+          "DECISION_Module_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_MULTIMEDIA_CONTENT_MANAGEMENT",
+        "name": "Multimedia_Content_Management_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "多媒体内容管理与分发，包括播放列表、内容分发和资源管理",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "3"
+        },
+        "behavioral_characteristics": "内容获取、编排、权限控制与播放控制",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "内容输入端口、输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Media_Content_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取内容元数据"
+                      }
+                    ],
+                    "notes": "接收内容元数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出内容控制信息"
+                      }
+                    ],
+                    "notes": "输出内容控制信息"
+                  }
+                ],
+                "notes": "多媒体内容编排与分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "NAVIGATION_Component",
+          "CONTENT_RENDER_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_NAVIGATION_PATH_PLANNING",
+        "name": "Navigation_Path_Planning_Component",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "路径规划与导航决策，输出路线、交通与场景信息",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "基于目的地与实时交通信息计算最优路径，输出导航指令",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "导航请求端口、导航指令端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Navigation_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收导航请求"
+                      }
+                    ],
+                    "notes": "接收导航请求数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出导航指令与路径"
+                      }
+                    ],
+                    "notes": "输出导航结果"
+                  }
+                ],
+                "notes": "路线计算与结果输出"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "MAP_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_CLIMATE_CONTROL",
+        "name": "Climate_Control_Component",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "空调舒适性控制，基于环境与乘员偏好进行温度与风速控制",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "读取环境信息与用户偏好，计算温控指令并输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "环境输入端口、控制输出端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Climate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取环境与偏好数据"
+                      }
+                    ],
+                    "notes": "读取环境数据与偏好"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送空调控制指令"
+                      }
+                    ],
+                    "notes": "输出空调控制指令"
+                  }
+                ],
+                "notes": "温控策略执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_AMBIENT_LIGHTING",
+        "name": "Ambient_Lighting_Control_Component",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "氛围灯控制，响应场景联动策略与用户偏好",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "1",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "接收场景指令并输出灯光控制信号",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入灯控指令端口、输出灯控信号端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Lighting_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取场景灯控数据"
+                      }
+                    ],
+                    "notes": "获取场景指令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "LOCAL-VARIABLE-REF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出灯光控制信号"
+                      }
+                    ],
+                    "notes": "输出氛围灯控制"
+                  }
+                ],
+                "notes": "执行场景化灯光控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "HMI_Core_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_AUDIO_RENDERING_OUTPUT",
+        "name": "Audio_Rendering_Output_Component",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "音频渲染输出，接收音频数据并输出至扬声器/耳机",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "0"
+        },
+        "behavioral_characteristics": "接收音频数据并对播放器进行控制输出",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "音频输入端口、控制输出端口（若有）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Audio_Render_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取音频数据"
+                      }
+                    ],
+                    "notes": "读取音频数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出音频渲染控制"
+                      }
+                    ],
+                    "notes": "输出音频渲染参数"
+                  }
+                ],
+                "notes": "音频渲染控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SPEECH_PROCESSING_Component"
+        ]
+      },
+      {
+        "component_id": "COMP_CLOUD_SERVICE_INTERFACE",
+        "name": "Cloud_Service_Interface_Component",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "云端服务对接，提供个性化配置、模型服务与数据同步",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2",
+          "output_ports": "2"
+        },
+        "behavioral_characteristics": "处理云端请求、转发至本地服务，并返回结果",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "云端请求端口、云端响应端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [],
+            "runnables": [
+              {
+                "name": "Cloud_Service_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收云端请求"
+                      }
+                    ],
+                    "notes": "读取云端请求数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "返回云端响应"
+                      }
+                    ],
+                    "notes": "输出云端响应"
+                  }
+                ],
+                "notes": "云端服务交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Cloud_Service_Backend_Component"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_SPEECH_TO_HMI",
+        "name": "Speech_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "实时语音数据流，事件驱动更新",
+        "data_category": "SpeechData",
+        "connected_components": [
+          "Speech_Input_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<100ms端到端延迟",
+        "data_elements": [
+          "SpeechWaveform",
+          "SpeechTranscript",
+          "NoiseReducedSignal"
+        ],
+        "direct_paths": "Speech_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_TOUCH_TO_HMI",
+        "name": "Touch_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "触控事件按需传输",
+        "data_category": "TouchEvent",
+        "connected_components": [
+          "Touch_Screen_Interface_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<20ms",
+        "data_elements": [
+          "TouchEvent"
+        ],
+        "direct_paths": "Touch_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_GESTURE_TO_HMI",
+        "name": "Gesture_Input_to_HMI_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "手势事件流",
+        "data_category": "GestureEvent",
+        "connected_components": [
+          "Gesture_Recognition_Component",
+          "HMI_Core_Component"
+        ],
+        "performance_requirements": "<50ms",
+        "data_elements": [
+          "GestureEvent"
+        ],
+        "direct_paths": "Gesture_Input输出 -> HMI_Core输入"
+      },
+      {
+        "interface_id": "IF_DRIVER_STATUS_TO_DECISION",
+        "name": "Driver_Status_to_Decision_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "状态数据流",
+        "data_category": "DriverStatus",
+        "connected_components": [
+          "Driver_Status_Monitoring_Component",
+          "Decision_Module_Component"
+        ],
+        "performance_requirements": "<100ms",
+        "data_elements": [
+          "DriverStatus",
+          "FatigueLevel"
+        ],
+        "direct_paths": "Driver_Status输出 -> Decision_Module输入"
+      },
+      {
+        "interface_id": "IF_NAVIGATION_DATA",
+        "name": "Navigation_Data_Interface",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "导航请求/响应",
+        "data_category": "NavigationData",
+        "connected_components": [
+          "Navigation_Path_Planning_Component",
+          "Map_Render_Component"
+        ],
+        "performance_requirements": "1s以内更新",
+        "data_elements": [
+          "NavigationRequest",
+          "NavigationStatus"
+        ],
+        "direct_paths": "Navigation_Path_Planning输出 -> Map_Render/Input"
+      },
+      {
+        "interface_id": "IF_CLOUD_SERVICE",
+        "name": "Cloud_Service_Interface_Interface",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端-云端请求/响应",
+        "data_category": "CloudServiceData",
+        "connected_components": [
+          "Cloud_Service_Interface_Component",
+          "Cloud_Service_Server_Component"
+        ],
+        "performance_requirements": "200–500ms云端响应",
+        "data_elements": [
+          "CloudRequest",
+          "CloudResponse"
+        ],
+        "direct_paths": "Cloud-Service_Interface输出 -> Cloud-Service_Server输入"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "描述性文本，示意各组件间的逻辑连接",
+      "data_flow_paths": "Speech/Input->HMI_Core; Touch/Input->HMI_Core; Gesture/Input->HMI_Core; Driver_Status->Decision; Navigation->MapRender; Cloud_Interface与云端服务",
+      "control_flow_paths": "事件驱动与周期性调度混合，优先级按用户场景联动设定"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用多模态输入聚合+统一HMI核心进行场景推理，定义清晰的接口与数据模型以实现跨域协同",
+      "tradeoff_analysis": "优先保证时序性与可扩展性，牺牲部分本地冗余以降低成本；可通过云端服务实现个性化配置",
+      "alternative_considerations": "考虑将某些高频数据移动到裸机侧进行处理，或引入边缘计算节点分担负载",
+      "risk_assessment": "高并发场景下接口队列长度需控制，需建立故障注入与恢复策略"
+    }
+  },
+  "stats": {
+    "input_tokens": 7591,
+    "output_tokens": 9930,
+    "total_tokens": 17521,
+    "component_count": 10,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-nano",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

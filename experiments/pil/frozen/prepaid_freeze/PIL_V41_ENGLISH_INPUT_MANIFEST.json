@@ -1,0 +1,28 @@
+{
+  "schema_version": "atlas.pil.english_model_inputs.v4.1",
+  "status": "PASS",
+  "translation_policy": "reviewer-confirmed meaning-preserving English translation; no gold fields or legal conclusions added to inference cases",
+  "source_cases": {
+    "path": "data/inference_dataset_v4.jsonl",
+    "sha256": "009dc75fba2019f3aae78132c74c7962240f34b775884817011aae8c2be57573"
+  },
+  "source_kb": {
+    "path": "kb/authoritative_provisions_v4.jsonl",
+    "sha256": "bde7910f19b919bcf4874bc08134066c4ed5e39f4ad133ef6f0f22f606372d9a"
+  },
+  "english_cases": {
+    "path": "data/inference_dataset_v41_en.jsonl",
+    "sha256": "0ebf7505bfb254764035bfad3c88081211487b26ea765b379a363706c0735fcd",
+    "count": 60
+  },
+  "english_kb": {
+    "path": "kb/authoritative_provisions_v41_en.jsonl",
+    "sha256": "7a826e847b128fc76cdabb53c8cddee17fdf8ec269a104e14205ec1ac457c33e",
+    "count": 58
+  },
+  "model_visible_cjk_characters": 0,
+  "case_ids_preserved": true,
+  "cluster_ids_preserved": true,
+  "evidence_ids_preserved": true,
+  "official_urls_preserved": true
+}

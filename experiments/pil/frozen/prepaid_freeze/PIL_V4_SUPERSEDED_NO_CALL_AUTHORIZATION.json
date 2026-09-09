@@ -1,0 +1,27 @@
+{
+  "schema_version": "atlas.pil.superseded_no_call_authorization.v1",
+  "status": "SUPERSEDED_BEFORE_ANY_PROVIDER_CALL",
+  "recorded_on": "2026-09-04",
+  "reason": "The already-authorized PIL V4 candidate did not match the frozen AUTOSAR V20 provider protocol. It used Responses API, medium reasoning, a 4096 output-token cap, a 120-second timeout, and no transmitted replicate seeds. The mismatch was detected before any provider call; the candidate was therefore superseded rather than executed or edited in place.",
+  "superseded_preflight": {
+    "raw_sha256": "ee1eb7af6f048a34e1a89ac584e15d0b62405fbdde273b7bbaeda24fe9dafe42",
+    "content_sha256": "232ecf48294597dfd79a2ead86250d11c6c96472f0e18318ef59a4fb63602328"
+  },
+  "superseded_formal_readiness": {
+    "path": "PIL_V4_FORMAL_READINESS.json",
+    "raw_sha256": "f81a7cc3b65e5184e1e2c58e6ff42202bacab83af9fd4149dbd9959b55ce2428",
+    "content_sha256": "20b482e323c59a70b5e9a3cb0177f4510882e70f2aa7c0b4a3d3044dbae84c7b"
+  },
+  "superseded_schedule": {
+    "path": "PIL_V4_FORMAL_SCHEDULE.json",
+    "raw_sha256": "70d1036a9b895059dfe50b709567fc719ca333eaa5c8bd561538e3085faada75",
+    "content_sha256": "7670a1e8f2bdf60657599b6e02c67badc3d2367d583cd704c46fcf16fcbf5423",
+    "unit_count": 720
+  },
+  "provider_calls": 0,
+  "paid_api_calls": 0,
+  "ledger_created": false,
+  "admissible_to_analysis": false,
+  "resume_permitted": false,
+  "replacement_rule": "Only a separately generated, separately authorized schedule whose preflight includes PIL_V4_AUTOSAR_V20_PARAMETER_MATCH.json may be executed."
+}

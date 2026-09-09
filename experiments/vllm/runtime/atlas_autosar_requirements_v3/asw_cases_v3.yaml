@@ -1,0 +1,454 @@
+schema_version: atlas.autosar.simplified_asw.v3
+
+metadata:
+  title: ATLAS simplified AUTOSAR Classic ASW component benchmark
+  autosar_release: "4.2.2"
+  source_type: author_curated
+  source_description: >-
+    Simplified atomic application-software-component requirements designed by
+    the authors' AUTOSAR tool-chain development group from recurring modeling
+    tasks. This is not an official AUTOSAR benchmark and is not a complete ECU,
+    system, network, deployment, RTE, or BSW configuration benchmark.
+  construction_protocol:
+    - Derive cases from the supported component-level modeling subset.
+    - Review every requested construct against AUTOSAR Classic 4.2.2 terminology
+      and the pinned AUTOSAR_4-2-2.xsd used by ATLAS.
+    - Store requirements as structured obligations and render prompts
+      deterministically; do not hand-edit per-run prompts.
+    - Keep boundary constructs outside the primary score until the generator and
+      deterministic validators support them.
+  primary_language: en
+  translation_policy: >-
+    Chinese translations, if evaluated, are a separate language-robustness
+    condition and must not be pooled with the primary English score.
+
+experiment_design:
+  independent_cases: 20
+  repetitions_per_case: 3
+  run_count: 60
+  seeds: [104729, 130363, 155921]
+  unit_of_analysis: case
+  repeated_run_policy: >-
+    The three runs are repeated observations of one case, not three independent
+    components. Report per-case success first and use run-level results only for
+    stability and cost/latency summaries.
+
+authoritative_context:
+  interface_catalog_policy: external_hash_pinned_fixture
+  unconnected_required_port_init_value: 0
+  init_value_policy: >-
+    Every required sender-receiver port in this component-fragment benchmark is
+    treated as unconnected because no Composition/System connector is supplied.
+    Its matching NONQUEUED-RECEIVER-COM-SPEC shall therefore contain a numerical
+    INIT-VALUE of 0. If a future case supplies a complete composition context,
+    that case must override this policy explicitly.
+  component_output_policy: >-
+    The candidate document contains an ApplicationSwComponentType and its
+    SwcInternalBehavior where requested. SenderReceiverInterface definitions are
+    supplied by the same hash-pinned validation context and are referenced by
+    absolute paths.
+  validation_evidence_profile:
+    profile_id: autosar_component_arxml_only_v1
+    capability_scope_policy: >-
+      Reference completeness is granted only below the exact component and
+      interface paths declared for a case. It is never a global AUTOSAR model
+      completeness claim.
+    manual_evidence_scope_complete: true
+    manual_capabilities_out_of_scope:
+      - external_antecedent
+      - external_design_evidence
+      - generated_artifact
+      - runtime_evidence
+    rationale: >-
+      The primary benchmark evaluates generated component and interface ARXML.
+      RTE/ECU/A2L artifacts, runtime traces, and independent project-design
+      evidence are neither generated nor supplied, so rules requiring those
+      evidence kinds are reported as not applicable to this experiment rather
+      than passed or silently omitted.
+  interface_catalog:
+    MCU01_EmergShutDown:
+      direction: provided
+      interface_ref: /COM_Interface/SR_Interface_MCU01_EmergShutDown
+      data_element: MCU01_EmergShutDown
+    MCU02_MaxTor:
+      direction: provided
+      interface_ref: /COM_Interface/SR_Interface_MCU02_MaxTor
+      data_element: MCU02_MaxTor
+    MCU03_NRF_IdcSamp:
+      direction: provided
+      interface_ref: /COM_Interface/SR_Interface_MCU03_NRF_IdcSamp
+      data_element: MCU03_NRF_IdcSamp
+    HCU01_TqCmd:
+      direction: required
+      interface_ref: /COM_Interface/SR_Interface_HCU01_TqCmd
+      data_element: HCU01_TqCmd
+    HCU01_Shift:
+      direction: required
+      interface_ref: /COM_Interface/SR_Interface_HCU01_Shift
+      data_element: HCU01_Shift
+    HCU02_Poweroff:
+      direction: required
+      interface_ref: /COM_Interface/SR_Interface_HCU02_Poweroff
+      data_element: HCU02_Poweroff
+
+scope:
+  included:
+    - APPLICATION-SW-COMPONENT-TYPE
+    - P-PORT-PROTOTYPE
+    - R-PORT-PROTOTYPE
+    - SENDER-RECEIVER-INTERFACE references
+    - SWC-INTERNAL-BEHAVIOR
+    - RUNNABLE-ENTITY
+    - TIMING-EVENT
+    - DATA-SEND-POINTS and DATA-RECEIVE-POINT-BY-ARGUMENTS variable access
+    - NONQUEUED-RECEIVER-COM-SPEC
+    - numerical INIT-VALUE for unconnected required ports
+    - ALIVE-TIMEOUT
+    - HANDLE-TIMEOUT-TYPE
+  excluded:
+    - ECU and system descriptions
+    - network and communication-cluster configuration
+    - ECU mapping, deployment, RTE generation, and BSW configuration
+    - full implementation-data-type and data-transformation catalogs
+    - functional correctness of application algorithms
+
+scoring_policy:
+  promotion_requires:
+    - XML parsing PASS
+    - AUTOSAR 4.2.2 XSD validation PASS
+    - all expected structural obligations PASS
+    - reference integrity PASS in the same hash-pinned context
+    - ATLAS component-ARXML artifact-profile decision PASS
+  full_corpus_reporting: >-
+    Report the full 554-rule validator decision and all coverage gaps separately.
+    A component-fragment artifact-profile PASS is not an AUTOSAR system-level
+    conformance claim and must not rewrite NOT_EVALUATED rules as PASS.
+  incomplete_when:
+    - validation context hash is absent or different
+    - any required external interface or data element cannot be resolved
+    - a requested semantic obligation is not deterministically evaluated
+  no_silent_fallback: true
+
+cases:
+  - case_id: ASW-MIN-01
+    tier: minimal
+    component: ASW_Com_Min_EmergShutdown
+    intent: Provide the emergency-shutdown signal through one sender-receiver P port.
+    provided_signals: [MCU01_EmergShutDown]
+    required_signals: []
+    internal_behavior: null
+    expected_counts: {p_ports: 1, r_ports: 0, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-MIN-02
+    tier: minimal
+    component: ASW_Com_Min_MaxTorque
+    intent: Provide the maximum-torque signal through one sender-receiver P port.
+    provided_signals: [MCU02_MaxTor]
+    required_signals: []
+    internal_behavior: null
+    expected_counts: {p_ports: 1, r_ports: 0, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-MIN-03
+    tier: minimal
+    component: ASW_Com_Min_CurrentSample
+    intent: Provide the current-sample signal through one sender-receiver P port.
+    provided_signals: [MCU03_NRF_IdcSamp]
+    required_signals: []
+    internal_behavior: null
+    expected_counts: {p_ports: 1, r_ports: 0, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-MIN-04
+    tier: minimal
+    component: ASW_Com_Min_TorqueCommand
+    intent: Receive the torque-command signal through one sender-receiver R port.
+    provided_signals: []
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior: null
+    expected_counts: {p_ports: 0, r_ports: 1, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-MIN-05
+    tier: minimal
+    component: ASW_Com_Min_Shift
+    intent: Receive the shift signal through one sender-receiver R port.
+    provided_signals: []
+    required_signals:
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior: null
+    expected_counts: {p_ports: 0, r_ports: 1, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-MIN-06
+    tier: minimal
+    component: ASW_Com_Min_Poweroff
+    intent: Receive the power-off signal through one sender-receiver R port.
+    provided_signals: []
+    required_signals:
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior: null
+    expected_counts: {p_ports: 0, r_ports: 1, runnables: 0, timing_events: 0, variable_accesses: 0}
+
+  - case_id: ASW-STD-01
+    tier: standard
+    component: ASW_Com_Std_TorqueBridge
+    intent: Periodically receive torque command and publish maximum torque.
+    provided_signals: [MCU02_MaxTor]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_TorqueBridge
+      runnables:
+        - short_name: RE_Com_Std_TorqueBridge
+          period_s: 0.01
+          reads: [HCU01_TqCmd]
+          writes: [MCU02_MaxTor]
+    expected_counts: {p_ports: 1, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 2}
+
+  - case_id: ASW-STD-02
+    tier: standard
+    component: ASW_Com_Std_ShiftMonitor
+    intent: Periodically receive shift state and publish emergency shutdown.
+    provided_signals: [MCU01_EmergShutDown]
+    required_signals:
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_ShiftMonitor
+      runnables:
+        - short_name: RE_Com_Std_ShiftMonitor
+          period_s: 0.005
+          reads: [HCU01_Shift]
+          writes: [MCU01_EmergShutDown]
+    expected_counts: {p_ports: 1, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 2}
+
+  - case_id: ASW-STD-03
+    tier: standard
+    component: ASW_Com_Std_PoweroffMonitor
+    intent: Periodically receive power-off state and publish current sample.
+    provided_signals: [MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_PoweroffMonitor
+      runnables:
+        - short_name: RE_Com_Std_PoweroffMonitor
+          period_s: 0.02
+          reads: [HCU02_Poweroff]
+          writes: [MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 1, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 2}
+
+  - case_id: ASW-STD-04
+    tier: standard
+    component: ASW_Com_Std_TorqueAndShutdown
+    intent: Receive torque command and publish two outputs from one runnable.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_TorqueAndShutdown
+      runnables:
+        - short_name: RE_Com_Std_TorqueAndShutdown
+          period_s: 0.01
+          reads: [HCU01_TqCmd]
+          writes: [MCU01_EmergShutDown, MCU02_MaxTor]
+    expected_counts: {p_ports: 2, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 3}
+
+  - case_id: ASW-STD-05
+    tier: standard
+    component: ASW_Com_Std_DualInput
+    intent: Receive shift and power-off inputs and publish emergency shutdown.
+    provided_signals: [MCU01_EmergShutDown]
+    required_signals:
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_DualInput
+      runnables:
+        - short_name: RE_Com_Std_DualInput
+          period_s: 0.015
+          reads: [HCU01_Shift, HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown]
+    expected_counts: {p_ports: 1, r_ports: 2, runnables: 1, timing_events: 1, variable_accesses: 3}
+
+  - case_id: ASW-STD-06
+    tier: standard
+    component: ASW_Com_Std_DualOutput
+    intent: Receive shift input and publish maximum torque and current sample.
+    provided_signals: [MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_DualOutput
+      runnables:
+        - short_name: RE_Com_Std_DualOutput
+          period_s: 0.01
+          reads: [HCU01_Shift]
+          writes: [MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 2, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 3}
+
+  - case_id: ASW-STD-07
+    tier: standard
+    component: ASW_Com_Std_TimeoutExplicit
+    intent: Exercise explicit nonqueued receiver timeout handling on one R port.
+    provided_signals: [MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.1, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Std_TimeoutExplicit
+      runnables:
+        - short_name: RE_Com_Std_TimeoutExplicit
+          period_s: 0.01
+          reads: [HCU01_TqCmd]
+          writes: [MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 1, r_ports: 1, runnables: 1, timing_events: 1, variable_accesses: 2}
+
+  - case_id: ASW-FULL-01
+    tier: full
+    component: ASW_Com_Full_Baseline
+    intent: Model three S/R inputs, three S/R outputs, and one periodic runnable.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_Baseline
+      runnables:
+        - short_name: RE_Com_Full_Baseline
+          period_s: 0.01
+          reads: [HCU01_TqCmd, HCU01_Shift, HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 1, timing_events: 1, variable_accesses: 6}
+
+  - case_id: ASW-FULL-02
+    tier: full
+    component: ASW_Com_Full_FastSlow
+    intent: Split communication across independent fast and slow periodic runnables.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.1, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_FastSlow
+      runnables:
+        - short_name: RE_Com_Fast
+          period_s: 0.005
+          reads: [HCU01_TqCmd]
+          writes: [MCU02_MaxTor]
+        - short_name: RE_Com_Slow
+          period_s: 0.02
+          reads: [HCU01_Shift, HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown, MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 2, timing_events: 2, variable_accesses: 6}
+
+  - case_id: ASW-FULL-03
+    tier: full
+    component: ASW_Com_Full_DualRate
+    intent: Use two periodic runnables with balanced input/output ownership.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.2, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.2, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.4, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_DualRate
+      runnables:
+        - short_name: RE_Com_Control
+          period_s: 0.01
+          reads: [HCU01_TqCmd, HCU01_Shift]
+          writes: [MCU02_MaxTor, MCU03_NRF_IdcSamp]
+        - short_name: RE_Com_Safety
+          period_s: 0.02
+          reads: [HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 2, timing_events: 2, variable_accesses: 6}
+
+  - case_id: ASW-FULL-04
+    tier: full
+    component: ASW_Com_Full_OneToMany
+    intent: Exercise one input feeding all outputs while retaining all required ports.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_OneToMany
+      runnables:
+        - short_name: RE_Com_OneToMany
+          period_s: 0.01
+          reads: [HCU01_TqCmd]
+          writes: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 1, timing_events: 1, variable_accesses: 4}
+
+  - case_id: ASW-FULL-05
+    tier: full
+    component: ASW_Com_Full_ManyToOne
+    intent: Exercise all inputs feeding one safety output while retaining all P ports.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_ManyToOne
+      runnables:
+        - short_name: RE_Com_ManyToOne
+          period_s: 0.01
+          reads: [HCU01_TqCmd, HCU01_Shift, HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 1, timing_events: 1, variable_accesses: 4}
+
+  - case_id: ASW-FULL-06
+    tier: full
+    component: ASW_Com_Full_ThreeRates
+    intent: Exercise three runnable/event pairs without sharing a data access.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.1, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.2, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.4, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_ThreeRates
+      runnables:
+        - {short_name: RE_Com_Torque, period_s: 0.005, reads: [HCU01_TqCmd], writes: [MCU02_MaxTor]}
+        - {short_name: RE_Com_Shift, period_s: 0.01, reads: [HCU01_Shift], writes: [MCU03_NRF_IdcSamp]}
+        - {short_name: RE_Com_Poweroff, period_s: 0.02, reads: [HCU02_Poweroff], writes: [MCU01_EmergShutDown]}
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 3, timing_events: 3, variable_accesses: 6}
+
+  - case_id: ASW-FULL-07
+    tier: full
+    component: ASW_Com_Full_TimeoutVariation
+    intent: Exercise distinct valid alive-timeout values on three nonqueued R ports.
+    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    required_signals:
+      - {signal: HCU01_TqCmd, alive_timeout_s: 0.05, handle_timeout_type: NONE}
+      - {signal: HCU01_Shift, alive_timeout_s: 0.1, handle_timeout_type: NONE}
+      - {signal: HCU02_Poweroff, alive_timeout_s: 0.5, handle_timeout_type: NONE}
+    internal_behavior:
+      short_name: IB_Com_Full_TimeoutVariation
+      runnables:
+        - short_name: RE_Com_Full_TimeoutVariation
+          period_s: 0.01
+          reads: [HCU01_TqCmd, HCU01_Shift, HCU02_Poweroff]
+          writes: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]
+    expected_counts: {p_ports: 3, r_ports: 3, runnables: 1, timing_events: 1, variable_accesses: 6}
+
+boundary_challenge_cases:
+  scoring_status: excluded_from_primary_until_supported
+  cases:
+    - case_id: ASW-BOUNDARY-MODE-01
+      construct: ModeSwitchInterface and ModeAccessPoint
+      correction: >-
+        A runnable's access to SLEEP mode is modeled with AUTOSAR mode-access
+        structures, not VARIABLE-ACCESS.
+    - case_id: ASW-BOUNDARY-PARAM-01
+      construct: ParameterInterface, ParameterRequireComSpec, and ParameterAccess
+      correction: >-
+        A calibration/parameter port is not a SenderReceiverInterface and does
+        not receive ALIVE-TIMEOUT. The runnable uses PARAMETER-ACCESS rather than
+        VARIABLE-ACCESS for the parameter.
+    - case_id: ASW-BOUNDARY-CS-01
+      construct: ClientServerInterface and synchronous server call point
+      correction: >-
+        Client-server invocation requires operation and call-point structures;
+        it is evaluated separately from sender-receiver communication.

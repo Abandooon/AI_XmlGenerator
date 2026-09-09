@@ -1,0 +1,31 @@
+{
+  "schema_version": "atlas.pil.delivery_rules.v4",
+  "forum_type_required_basis_prefixes": {
+    "exclusive": ["BRUSSELS_I_BIS:Art.24", "EU_TRADE_MARK_REGULATION:Art.63", "EU_TRADE_MARK_REGULATION:Art.124", "EU_TRADE_MARK_REGULATION:Art.128"],
+    "agreement": ["BRUSSELS_I_BIS:Art.25", "BRUSSELS_I_BIS:Art.31(2)", "BRUSSELS_I_BIS:Art.31(3)"],
+    "special": ["BRUSSELS_I_BIS:Art.7", "BRUSSELS_I_BIS:Art.18", "BRUSSELS_I_BIS:Art.21", "BRUSSELS_I_BIS:Art.22"],
+    "general": ["BRUSSELS_I_BIS:Art.4"],
+    "lis_pendens": ["BRUSSELS_I_BIS:Art.29"],
+    "related_actions": ["BRUSSELS_I_BIS:Art.30"],
+    "appearance": ["BRUSSELS_I_BIS:Art.26"]
+  },
+  "cross_field_rules": {
+    "abstention_conclusion": "Abstain_Insufficient_Info",
+    "abstention_forum": "none",
+    "abstention_forum_type": "none",
+    "stay_forum_type": "lis_pendens",
+    "related_actions_forum_type": "related_actions",
+    "chosen_court_forum_type": "agreement",
+    "authority_forum_type": "exclusive",
+    "authority_required_instrument": "EU_TRADE_MARK_REGULATION",
+    "national_law_required_basis_prefix": "BRUSSELS_I_BIS:Art.6"
+  },
+  "repair_policy": {
+    "maximum_attempts": 1,
+    "schema_constrained": true,
+    "same_facts": true,
+    "same_retrieved_evidence": true,
+    "no_new_authorities": true,
+    "failure_after_repair": "fail_closed"
+  }
+}

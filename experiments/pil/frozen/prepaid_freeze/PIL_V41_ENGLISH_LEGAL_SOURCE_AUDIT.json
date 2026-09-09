@@ -1,0 +1,67 @@
+{
+  "schema_version": "atlas.pil.english_legal_source_audit.v1",
+  "status": "PASS",
+  "checked_on": "2026-09-04",
+  "scope": "Provision identity and substantive fidelity of the concise English retrieval paraphrases; this is not a legal opinion and the paraphrases are not verbatim quotations.",
+  "knowledge_base": {
+    "path": "kb/authoritative_provisions_v41_en.jsonl",
+    "sha256": "7a826e847b128fc76cdabb53c8cddee17fdf8ec269a104e14205ec1ac457c33e",
+    "entry_count": 58,
+    "language": "en"
+  },
+  "official_sources": [
+    {
+      "instrument_id": "BRUSSELS_I_BIS",
+      "title": "Regulation (EU) No 1215/2012 on jurisdiction and the recognition and enforcement of judgments in civil and commercial matters (recast)",
+      "celex": "02012R1215-20150226",
+      "version_date": "2015-02-26",
+      "official_url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+      "checked_article_families": [
+        "4", "5", "6", "7", "17", "18", "19", "22", "24", "25",
+        "26", "27", "28", "29", "30", "31", "32", "34", "41", "62", "63"
+      ]
+    },
+    {
+      "instrument_id": "EU_TRADE_MARK_REGULATION",
+      "title": "Regulation (EU) 2017/1001 on the European Union trade mark",
+      "celex": "02017R1001-20251201",
+      "version_date": "2025-12-01",
+      "official_url": "https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng",
+      "checked_article_families": ["63", "124", "128", "135"]
+    }
+  ],
+  "checks": {
+    "official_eur_lex_only": true,
+    "instrument_qualified_evidence_ids": true,
+    "article_and_paragraph_identity_checked": true,
+    "article_29_30_31_roles_separated": true,
+    "brussels_article_63_distinguished_from_eutm_article_63": true,
+    "grouped_paraphrases_replaced_by_paragraph_specific_paraphrases": true,
+    "independent_translation_source_parity_review_incorporated": true,
+    "retrieval_text_presented_as_paraphrase_not_quote": true,
+    "cjk_characters_in_model_visible_kb": 0
+  },
+  "corrections_made_before_any_v41_provider_call": [
+    "Separated Articles 18(1) and 18(2).",
+    "Separated Article 24 and paragraphs 24(1) and 24(3).",
+    "Separated Article 25 and paragraphs 25(1), 25(2), and 25(4).",
+    "Separated paragraphs 28(1) through 28(4), 29(2) and 29(3), 30(1) through 30(3), and 31(2) and 31(3).",
+    "Separated paragraphs 41(1) and 41(2), 6(1) and 6(2), 62(1) and 62(2), and the four cited Article 63 paragraphs.",
+    "Separated contract jurisdiction under Article 7(1)(a) from trust jurisdiction under Article 7(6).",
+    "Narrowed EU Trade Mark Regulation Articles 124(d), 128(1), and 135 to their paragraph-specific propositions.",
+    "Applied the independent reviewer's fuller Article 24(4), 26(1), and 31(2) paraphrases without changing evidence identities or source URLs."
+  ],
+  "independent_review": {
+    "reviewer": "YiRui Wang",
+    "review_date": "2026-09-04",
+    "workbook_sha256": "8f10fcb88a5ceb5e696284282687e04ca8820b5d3a0fce6624327e5e8778b5da",
+    "case_rows_reviewed": 60,
+    "case_rows_accepted_without_revision": 54,
+    "case_rows_revised_and_resolved": 6,
+    "evidence_rows_reviewed": 58,
+    "evidence_rows_accepted_without_revision": 55,
+    "evidence_rows_revised_and_resolved": 3,
+    "unresolved_rows": 0
+  },
+  "provider_calls_during_audit": 0
+}

@@ -1,0 +1,16 @@
+{
+  "NV-BLOCK-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "HMI_Manager",
+    "PORTS": {
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Port_HMI_Status",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/HMI_Status_Interface"
+          }
+        }
+      ]
+    }
+  }
+}

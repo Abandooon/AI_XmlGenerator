@@ -1,0 +1,728 @@
+{
+  "schema_version": "atlas.pil.consensus_gold_provenance.v4",
+  "status": "CONSENSUS_COMPLETE",
+  "frozen_v2_mutated": false,
+  "facts_changed_case_ids": [
+    19,
+    34,
+    44,
+    53,
+    55
+  ],
+  "review_sources": {
+    "a1_workbook_sha256": "24d50da4b801ab675eddb3d0a5e6d0dab77473993f686b356f30fb66092919c4",
+    "c1_workbook_sha256": "e1aacf700b552fee1167b59e7feb0e20f0fe64636b2069f63db25b630449a8f4",
+    "c2_workbook_sha256": "9477e31c0eed765e38fe7d3a5a08fd25d5b1991ffaf37a3a579da063b6c3df19",
+    "d1_workbook_sha256": "5550e771ab515b43ed28dc38418d4b5018090c7f399d1d881a86db525e3f247c"
+  },
+  "derivation_policy": {
+    "no_disagreement": "Use the C1 normalized record only where A1 and C1 were compatible on the adjudicated dimensions; accept the union of compatible atomic forum types and evidence references.",
+    "c2_cases": "Use the jointly confirmed C2 row.",
+    "d1_cases": "Use the jointly reconfirmed D1 facts and labels, overriding the provisional C2 row.",
+    "forum_string_scoring": "The free-text forum name is retained for audit but is not an exact-match primary endpoint."
+  },
+  "cluster_policy": {
+    "cluster_count": 31,
+    "role": "descriptive dependence clusters for sensitivity intervals; not a probability-sampling frame",
+    "clusters": [
+      {
+        "cluster_id": "CL-001",
+        "case_ids": [
+          1,
+          31
+        ]
+      },
+      {
+        "cluster_id": "CL-002",
+        "case_ids": [
+          2,
+          32
+        ]
+      },
+      {
+        "cluster_id": "CL-003",
+        "case_ids": [
+          3,
+          33
+        ]
+      },
+      {
+        "cluster_id": "CL-004",
+        "case_ids": [
+          4,
+          59
+        ]
+      },
+      {
+        "cluster_id": "CL-005",
+        "case_ids": [
+          5,
+          35
+        ]
+      },
+      {
+        "cluster_id": "CL-006",
+        "case_ids": [
+          6,
+          37
+        ]
+      },
+      {
+        "cluster_id": "CL-007",
+        "case_ids": [
+          7,
+          39
+        ]
+      },
+      {
+        "cluster_id": "CL-008",
+        "case_ids": [
+          8,
+          41
+        ]
+      },
+      {
+        "cluster_id": "CL-009",
+        "case_ids": [
+          9,
+          40
+        ]
+      },
+      {
+        "cluster_id": "CL-010",
+        "case_ids": [
+          10,
+          38
+        ]
+      },
+      {
+        "cluster_id": "CL-011",
+        "case_ids": [
+          11,
+          12,
+          43
+        ]
+      },
+      {
+        "cluster_id": "CL-012",
+        "case_ids": [
+          13,
+          45
+        ]
+      },
+      {
+        "cluster_id": "CL-013",
+        "case_ids": [
+          14,
+          44
+        ]
+      },
+      {
+        "cluster_id": "CL-014",
+        "case_ids": [
+          15,
+          46
+        ]
+      },
+      {
+        "cluster_id": "CL-015",
+        "case_ids": [
+          16,
+          50
+        ]
+      },
+      {
+        "cluster_id": "CL-016",
+        "case_ids": [
+          17,
+          48
+        ]
+      },
+      {
+        "cluster_id": "CL-017",
+        "case_ids": [
+          18,
+          19,
+          49
+        ]
+      },
+      {
+        "cluster_id": "CL-018",
+        "case_ids": [
+          20,
+          47
+        ]
+      },
+      {
+        "cluster_id": "CL-019",
+        "case_ids": [
+          21,
+          51
+        ]
+      },
+      {
+        "cluster_id": "CL-020",
+        "case_ids": [
+          22,
+          52
+        ]
+      },
+      {
+        "cluster_id": "CL-021",
+        "case_ids": [
+          23,
+          53
+        ]
+      },
+      {
+        "cluster_id": "CL-022",
+        "case_ids": [
+          24,
+          54
+        ]
+      },
+      {
+        "cluster_id": "CL-023",
+        "case_ids": [
+          25
+        ]
+      },
+      {
+        "cluster_id": "CL-024",
+        "case_ids": [
+          26
+        ]
+      },
+      {
+        "cluster_id": "CL-025",
+        "case_ids": [
+          27,
+          55
+        ]
+      },
+      {
+        "cluster_id": "CL-026",
+        "case_ids": [
+          28,
+          58
+        ]
+      },
+      {
+        "cluster_id": "CL-027",
+        "case_ids": [
+          29,
+          56
+        ]
+      },
+      {
+        "cluster_id": "CL-028",
+        "case_ids": [
+          30,
+          57,
+          60
+        ]
+      },
+      {
+        "cluster_id": "CL-029",
+        "case_ids": [
+          34
+        ]
+      },
+      {
+        "cluster_id": "CL-030",
+        "case_ids": [
+          36
+        ]
+      },
+      {
+        "cluster_id": "CL-031",
+        "case_ids": [
+          42
+        ]
+      }
+    ]
+  },
+  "case_sources": [
+    {
+      "id": 1,
+      "cluster_id": "CL-001",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 2,
+      "cluster_id": "CL-002",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 3,
+      "cluster_id": "CL-003",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 4,
+      "cluster_id": "CL-004",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 5,
+      "cluster_id": "CL-005",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 6,
+      "cluster_id": "CL-006",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 7,
+      "cluster_id": "CL-007",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 8,
+      "cluster_id": "CL-008",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 9,
+      "cluster_id": "CL-009",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 10,
+      "cluster_id": "CL-010",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 11,
+      "cluster_id": "CL-011",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 12,
+      "cluster_id": "CL-011",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 13,
+      "cluster_id": "CL-012",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 14,
+      "cluster_id": "CL-013",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 15,
+      "cluster_id": "CL-014",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 16,
+      "cluster_id": "CL-015",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 17,
+      "cluster_id": "CL-016",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "C2_JOINT_CONSENSUS",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": "C2-6F973FE217"
+    },
+    {
+      "id": 18,
+      "cluster_id": "CL-017",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 19,
+      "cluster_id": "CL-017",
+      "facts_changed_after_v2": true,
+      "review_source_stage": "D1_JOINT_RECONFIRMATION",
+      "d1_reconfirmation_id": "D1-D29CCEB18B",
+      "c2_consensus_id": "C2-BE1C94E83E"
+    },
+    {
+      "id": 20,
+      "cluster_id": "CL-018",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 21,
+      "cluster_id": "CL-019",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 22,
+      "cluster_id": "CL-020",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 23,
+      "cluster_id": "CL-021",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 24,
+      "cluster_id": "CL-022",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 25,
+      "cluster_id": "CL-023",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 26,
+      "cluster_id": "CL-024",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "C2_JOINT_CONSENSUS",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": "C2-1F99728919"
+    },
+    {
+      "id": 27,
+      "cluster_id": "CL-025",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 28,
+      "cluster_id": "CL-026",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 29,
+      "cluster_id": "CL-027",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 30,
+      "cluster_id": "CL-028",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 31,
+      "cluster_id": "CL-001",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 32,
+      "cluster_id": "CL-002",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 33,
+      "cluster_id": "CL-003",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 34,
+      "cluster_id": "CL-029",
+      "facts_changed_after_v2": true,
+      "review_source_stage": "D1_JOINT_RECONFIRMATION",
+      "d1_reconfirmation_id": "D1-CCAF751480",
+      "c2_consensus_id": "C2-862B421FF2"
+    },
+    {
+      "id": 35,
+      "cluster_id": "CL-005",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 36,
+      "cluster_id": "CL-030",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 37,
+      "cluster_id": "CL-006",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 38,
+      "cluster_id": "CL-010",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 39,
+      "cluster_id": "CL-007",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 40,
+      "cluster_id": "CL-009",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 41,
+      "cluster_id": "CL-008",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 42,
+      "cluster_id": "CL-031",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "C2_JOINT_CONSENSUS",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": "C2-86BF6A1739"
+    },
+    {
+      "id": 43,
+      "cluster_id": "CL-011",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 44,
+      "cluster_id": "CL-013",
+      "facts_changed_after_v2": true,
+      "review_source_stage": "D1_JOINT_RECONFIRMATION",
+      "d1_reconfirmation_id": "D1-758307C702",
+      "c2_consensus_id": "C2-724A72C398"
+    },
+    {
+      "id": 45,
+      "cluster_id": "CL-012",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 46,
+      "cluster_id": "CL-014",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "C2_JOINT_CONSENSUS",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": "C2-E0613A9BB2"
+    },
+    {
+      "id": 47,
+      "cluster_id": "CL-018",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 48,
+      "cluster_id": "CL-016",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 49,
+      "cluster_id": "CL-017",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 50,
+      "cluster_id": "CL-015",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 51,
+      "cluster_id": "CL-019",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 52,
+      "cluster_id": "CL-020",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 53,
+      "cluster_id": "CL-021",
+      "facts_changed_after_v2": true,
+      "review_source_stage": "D1_JOINT_RECONFIRMATION",
+      "d1_reconfirmation_id": "D1-7837155405",
+      "c2_consensus_id": "C2-1E0BD448C5"
+    },
+    {
+      "id": 54,
+      "cluster_id": "CL-022",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 55,
+      "cluster_id": "CL-025",
+      "facts_changed_after_v2": true,
+      "review_source_stage": "D1_JOINT_RECONFIRMATION",
+      "d1_reconfirmation_id": "D1-506D85585E",
+      "c2_consensus_id": "C2-2428AB5B5D"
+    },
+    {
+      "id": 56,
+      "cluster_id": "CL-027",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 57,
+      "cluster_id": "CL-028",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 58,
+      "cluster_id": "CL-026",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 59,
+      "cluster_id": "CL-004",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    },
+    {
+      "id": 60,
+      "cluster_id": "CL-028",
+      "facts_changed_after_v2": false,
+      "review_source_stage": "A1_C1_AGREEMENT",
+      "d1_reconfirmation_id": null,
+      "c2_consensus_id": null
+    }
+  ],
+  "content_sha256": "333bf355f54a368f80acf6fa3d3d825f89d93730a1d3fd7dee2e8f5aae3f0598"
+}

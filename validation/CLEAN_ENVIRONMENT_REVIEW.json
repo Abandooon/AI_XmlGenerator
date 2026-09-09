@@ -1,0 +1,69 @@
+{
+  "release_integrity": {
+    "status": "PASS",
+    "files_verified": 871,
+    "release_id": "ATLAS-review-2026-09-09"
+  },
+  "tracks": [
+    {
+      "track": "autosar",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "autosar.log",
+      "result": "autosar/verification.json"
+    },
+    {
+      "track": "vllm",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "vllm.log",
+      "result": "vllm/REVIEW_RESULT.json"
+    },
+    {
+      "track": "pil",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "pil.log",
+      "result": "pil/verification_report.json"
+    },
+    {
+      "track": "railway",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "railway.log",
+      "result": "railway/results/REVIEW_RESULT.json"
+    }
+  ],
+  "status": "PASS",
+  "scope": "Offline review of retained evidence; no new model generation",
+  "historical_provenance_qualifications": {
+    "autosar": "Pre-intervention Phase1 and complete repair interaction bodies not retained",
+    "vllm": {
+      "complete_historical_source_certificate": false,
+      "missing_individual_sources": 2,
+      "historical_logits_not_retained": true
+    },
+    "pil": "Only three new targeted output assessments, not full legal accuracy",
+    "railway": "Eleven transport attempts have unknown usage"
+  },
+  "verification_history": {
+    "initial_unified_run": "AUTOSAR, PIL and Railway passed; the vLLM package guard rejected use of the Windows host temporary directory.",
+    "targeted_followup": "After redirecting vLLM temporary files into the requested work directory, the unified entry point was invoked with --track vllm and passed.",
+    "changed_files_between_runs": [
+      "experiments/vllm/review.py"
+    ],
+    "unchanged_other_track_code_and_inputs_verified": true,
+    "no_failed_log_or_frozen_output_rewritten": true
+  },
+  "clean_environment": {
+    "new_venv": true,
+    "direct_requirements": "requirements.txt",
+    "all_installed_versions": "requirements-lock.txt",
+    "python": "3.12.14",
+    "working_copy": "independent ATLAS Git worktree",
+    "jobs": 4,
+    "model_calls": 0
+  },
+  "tested_release_manifest_sha256": "e8ff386acf098a4b26420c5624ad27ec0b9c6eed364a043701fc322d1f444fc1",
+  "later_release_metadata_updates": "Only validation receipts, publication metadata and the release file manifest were added/updated after these checks; executed code, locked dependencies and frozen inputs remain byte-identical."
+}

@@ -1,0 +1,199 @@
+Verified and extracted 30965 immutable payload files.
+Original XMI verified: 25 / 139
+Original XMI verified: 50 / 139
+Original XMI verified: 75 / 139
+Original XMI verified: 100 / 139
+Original XMI verified: 125 / 139
+{
+  "counts": {
+    "raw_manifest_files": 25624,
+    "source_zip_files": 196,
+    "R/F/total": 144,
+    "R/F/pass": 141,
+    "patch_replayed": 717,
+    "R/S/total": 144,
+    "R/S/pass": 129,
+    "R/V/total": 144,
+    "R/V/pass": 140,
+    "G/G0/total": 72,
+    "G/G0/pass": 23,
+    "generation_replayed": 71,
+    "G/GS/total": 72,
+    "G/GS/pass": 29,
+    "G/GF/total": 72,
+    "G/GF/pass": 51,
+    "no_artifact": 3,
+    "generation_rejected": 1,
+    "T/S/total": 72,
+    "T/S/pass": 67,
+    "T/V/total": 72,
+    "T/V/pass": 69,
+    "T/F/total": 72,
+    "T/F/pass": 72,
+    "CLEAN/S/total": 9,
+    "CLEAN/S/pass": 9,
+    "CLEAN/V/total": 9,
+    "CLEAN/V/pass": 9,
+    "CLEAN/F/total": 9,
+    "CLEAN/F/pass": 9,
+    "transport_evidence": 1074,
+    "unique_artifact_and_identity": 139,
+    "artifact_endpoints": 888
+  },
+  "responses": 1074,
+  "response_models": {
+    "gpt-5.6-luna-2026-07-09": 1074
+  },
+  "usage": {
+    "prompt_tokens": 5714596,
+    "completion_tokens": 403531,
+    "total_tokens": 6118127
+  },
+  "errors": []
+}
+Corrected raw-input scores: 891 endpoints; differences: 0 ; namespace regression: True
+{'events': 1494, 'BEGIN': 747, 'COMPLETE': 747, 'planned_actions': 747, 'ordered_execution_matches_plan': True, 'errors': []}
+{
+  "prior_journals": {
+    "20260908T182751363462Z": {
+      "SESSION": 12,
+      "OPEN": 18,
+      "INTENT": 18,
+      "HTTP": 17,
+      "RECEIVED": 17,
+      "STOP": 1
+    },
+    "20260909_26f3c9b0_recovery_once": {
+      "SESSION": 47,
+      "OPEN": 71,
+      "INTENT": 71,
+      "HTTP": 70,
+      "RECEIVED": 70,
+      "STOP": 1
+    }
+  },
+  "deduplicated_prior_intents": 72,
+  "prior_received_unique": 70,
+  "new_physical_journal": {
+    "PHYSICAL_INTENT": 1013,
+    "PHYSICAL_HTTP": 1004,
+    "TRANSPORT_EXCEPTION": 9,
+    "RETRY_DELAY": 9
+  },
+  "physical_intents_cross_lineage": 1085,
+  "responses_cross_lineage": 1074,
+  "unknown_attempts": 11,
+  "wire_identical_for_retries": true,
+  "inherited_received_resent": 0,
+  "inherited_files_verified_against_checked_manifest": 1673,
+  "unknown_usage": null,
+  "billing_complete": false,
+  "F_V_144_pairs": {
+    "(True, True)": 137,
+    "(False, True)": 3,
+    "(True, False)": 4
+  },
+  "errors": []
+}
+{
+  "G": {
+    "GF-G0": {
+      "estimate": 0.3888888888888889,
+      "interval": [
+        0.2222222222222222,
+        0.5694444444444444
+      ],
+      "matches_report": true
+    },
+    "GF-GS": {
+      "estimate": 0.3055555555555556,
+      "interval": [
+        0.1527777777777778,
+        0.47222222222222227
+      ],
+      "matches_report": true
+    }
+  },
+  "R": {
+    "F-S": {
+      "estimate": 0.08333333333333333,
+      "interval": [
+        0.0,
+        0.19444444444444445
+      ],
+      "matches_report": true
+    },
+    "F-V": {
+      "estimate": 0.0069444444444444475,
+      "interval": [
+        -0.03472222222222222,
+        0.05911458333333839
+      ],
+      "matches_report": true
+    }
+  },
+  "R_planned_arm_orders": {
+    "FSV": 24,
+    "VSF": 24,
+    "SFV": 24,
+    "SVF": 24,
+    "VFS": 24,
+    "FVS": 24
+  },
+  "errors": []
+}
+{
+  "status": "PASS",
+  "format": "atlas.railway.reviewer.replay.v1",
+  "payload_files": 30965,
+  "actions": 747,
+  "endpoints": 891,
+  "artifact_endpoints": 888,
+  "unique_xmi_identity_pairs": 139,
+  "responses": 1074,
+  "historical_outcome_discrepancies": 0,
+  "malformed_namespace_rejected": true,
+  "physical_send_intents": 1085,
+  "unknown_usage_attempts": 11,
+  "billing_complete": false,
+  "network_or_model_calls": 0,
+  "java_version": "openjdk version \"1.8.0_504\"\nOpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)\nOpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)",
+  "python_version": "3.12.14",
+  "elapsed_seconds": 198.469,
+  "counts": {
+    "raw_manifest_files": 25624,
+    "source_zip_files": 196,
+    "R/F/total": 144,
+    "R/F/pass": 141,
+    "patch_replayed": 717,
+    "R/S/total": 144,
+    "R/S/pass": 129,
+    "R/V/total": 144,
+    "R/V/pass": 140,
+    "G/G0/total": 72,
+    "G/G0/pass": 23,
+    "generation_replayed": 71,
+    "G/GS/total": 72,
+    "G/GS/pass": 29,
+    "G/GF/total": 72,
+    "G/GF/pass": 51,
+    "no_artifact": 3,
+    "generation_rejected": 1,
+    "T/S/total": 72,
+    "T/S/pass": 67,
+    "T/V/total": 72,
+    "T/V/pass": 69,
+    "T/F/total": 72,
+    "T/F/pass": 72,
+    "CLEAN/S/total": 9,
+    "CLEAN/S/pass": 9,
+    "CLEAN/V/total": 9,
+    "CLEAN/V/pass": 9,
+    "CLEAN/F/total": 9,
+    "CLEAN/F/pass": 9,
+    "transport_evidence": 1074,
+    "unique_artifact_and_identity": 139,
+    "artifact_endpoints": 888
+  }
+}
+Fresh results: E:\54239\Documents\ATLAS_RELEASE_STAGING_2026-09-09\final_clean_review_v3\railway\results

@@ -1,0 +1,551 @@
+{
+  "groups": {
+    "[GroupName]": {  // 例如 "SwcInternalBehavior"
+      "name": "string",
+      "annotation": "string",
+      "description": "string",
+      "stereotypes": [ "string", ... ],
+      "child": "string",
+      "subTags": [ "string", ... ],
+      "elements": [
+        {
+          "name": "string",
+          "qualifiedName": "string",
+          "document_name": "string",
+          "type": "string",
+          "annotation": "string",
+          "xml_tag": "string" (or null),
+          "xml_wrapper_tag": "string" (or null),
+          "is_xml_attribute": "boolean",
+          "description": "string",
+          "stereotypes": [ "string", ... ],
+          "pure_minOccurs": "integer",
+          "pure_maxOccurs": "integer"
+        },
+        // ... more element objects
+      ],
+      "attributeGroups": [ "string", ... ],
+      "Package": [ "string", ... ],
+      "abstract": "string" (e.g., "false"),
+      "ClassAssociatedFrom": [ "string", ... ],
+      "generalization": [ "string", ... ],
+      "latestBindingTime": [ "string", ... ],
+      "splitkey": [ "string", ... ]
+    },
+    // ... more group entries
+  },
+
+  "attributeGroups": {
+    "[AttributeGroupName]": [ // 例如 "ARObject"
+      { // 结构与 groups.[GroupName].elements[] 中的对象类似
+        "name": "string",
+        "qualifiedName": "string",
+        "document_name": "string",
+        "type": "string",
+        "annotation": "string",
+        "description": "string",
+        "stereotypes": [ "string", ... ],
+        "pure_minOccurs": "integer",
+        "pure_maxOccurs": "integer"
+      },
+      // ... more attribute definitions in this group
+    ],
+    // ... more attribute group entries
+  },
+
+  "simpleTypes": {
+    "[SimpleTypeName]": { // 例如 "AtomicSwComponentTypeSubtypesEnum"
+      "name": "string",
+      "annotation": "string",
+      "base": "string",
+      "enumerations": [ "string", ... ],
+      "isPrimitiveType": "boolean",
+      "pattern": "string" (or null)
+    },
+    // ... more simple type entries
+  },
+
+  "complexTypes": {
+    "[ComplexTypeName]": { // 例如 "CIdentifier"
+      "name": "string",           // 通常是XML标签名
+      "qualifiedName": "string",
+      "document_name": "string",   // 概念上的类型名
+      "attributes": [
+        {
+          "name": "string",
+          "type": "string",
+          "annotation": "string",
+          "pattern": "string" (or null),
+          "isPrimitiveType": "boolean",
+          "source": "string"
+        },
+        // ... more attribute objects
+      ],
+      "elements": [ // 结构与 groups.[GroupName].elements[] 中的对象类似 (如果存在)
+        {
+          "name": "string",
+          "qualifiedName": "string",
+          "document_name": "string",
+          "type": "string",
+          // ... (其他 elementItem 的字段)
+        },
+        // ... more element objects
+      ],
+      "innerClasses": [ /* (数组，具体内容结构未在片段中完全展示) */ ],
+      "extends": "string" (or null),
+      "objFactory": [ /* (数组，具体内容结构未在片段中完全展示) */ ],
+      "isAttribute": "boolean",
+      "attributeGroups": "string", // 可能是一个逗号分隔的列表字符串
+      "enumeration": [ // (如果 complexType 内部定义枚举)
+          "string" // 或 { "value": "string" }
+          // ...
+      ]
+    },
+    // ... more complex type entries
+  },
+
+  "extract_inner_class": {
+    "[InnerClassName]": { // 例如 "BlueprintPolicys"
+      "name": "string",
+      "attributes": [
+        {
+          "name": "string",
+          "type": "string",
+          "annotation": "string",
+          "xml_tag": "string" (or null),
+          "xml_wrapper_tag": "string" (or null),
+          "is_xml_attribute": "boolean",
+          "description": "string",
+          "stereotypes": [ "string", ... ]
+        },
+        // ... more attribute objects
+      ],
+      "isAttribute": "boolean"
+    },
+    // ... more extracted inner class entries
+  }
+}
+
+/*
+sample JSON structure
+{
+  "groups": {
+    "SwcInternalBehavior": {
+      "name": "SwcInternalBehavior",
+      "annotation": "SWC-INTERNAL-BEHAVIOR",
+      "description": "The SwcInternalBehavior of an AtomicSwComponentType describes the relevant aspects of the software-component with respect to the RTE, i.e. the RunnableEntities and the RTEEvents they respond to.",
+      "stereotypes": [
+        "atpObject"
+      ],
+      "child": "SwcInternalBehavior",
+      "subTags": [
+        "SwcInternalBehavior"
+      ],
+      "elements": [
+        {
+          "name": "arTypedPerInstanceMemorys",
+          "qualifiedName": "arTypedPerInstanceMemory",
+          "document_name": "SwcInternalBehavior.arTypedPerInstanceMemory",
+          "type": "VariableDataPrototype",
+          "annotation": "@XmlElementWrapper(name=\"AR-TYPED-PER-INSTANCE-MEMORYS\")\n@XmlElement(name=\"VARIABLE-DATA-PROTOTYPE\")",
+          "xml_tag": "VARIABLE-DATA-PROTOTYPE",
+          "xml_wrapper_tag": "AR-TYPED-PER-INSTANCE-MEMORYS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Defines an AUTOSAR typed memory-block that needs to be available for each instance of the SW-component. This is typically only useful if supportsMultipleInstantiation is set to \"true\" or if the component defines NVRAM access via permanent blocks.\nThe aggregation of arTypedPerInstanceMemory is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "events",
+          "qualifiedName": "event",
+          "document_name": "SwcInternalBehavior.event",
+          "type": "Events_SwcInternalBehavior",
+          "annotation": "@XmlElement(name=\"EVENTS\")",
+          "xml_tag": "EVENTS",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "This is a RTEEvent specified for the particular SwcInternalBehavior.\n\nThe aggregation of RTEEvent is subject to variability with the purpose to support the conditional existence of RTE events. Note: the number of RTE events might vary due to the conditional existence of PortPrototypes using DataReceivedEvents or due to different scheduling needs of algorithms.\n\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "explicitInterRunnableVariables",
+          "qualifiedName": "explicitInterRunnableVariable",
+          "document_name": "SwcInternalBehavior.explicitInterRunnableVariable",
+          "type": "VariableDataPrototype",
+          "annotation": "@XmlElementWrapper(name=\"EXPLICIT-INTER-RUNNABLE-VARIABLES\")\n@XmlElement(name=\"VARIABLE-DATA-PROTOTYPE\")",
+          "xml_tag": "VARIABLE-DATA-PROTOTYPE",
+          "xml_wrapper_tag": "EXPLICIT-INTER-RUNNABLE-VARIABLES",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Implement state message semantics for establishing communication among runnables of the same component.\nThe aggregation of explicitInterRunnableVariable is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "handleTerminationAndRestart",
+          "qualifiedName": "handleTerminationAndRestart",
+          "document_name": "SwcInternalBehavior.handleTerminationAndRestart",
+          "type": "HandleTerminationAndRestartEnum",
+          "annotation": "@XmlElement(name=\"HANDLE-TERMINATION-AND-RESTART\")",
+          "xml_tag": "HANDLE-TERMINATION-AND-RESTART",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "This attribute controls the behavior with respect to stopping and restarting. The corresponding AtomicSwComponentType may either not support stop and restart, or support only stop, or support both stop and restart.",
+          "stereotypes": [],
+          "pure_minOccurs": 1,
+          "pure_maxOccurs": 1
+        },
+        {
+          "name": "implicitInterRunnableVariables",
+          "qualifiedName": "implicitInterRunnableVariable",
+          "document_name": "SwcInternalBehavior.implicitInterRunnableVariable",
+          "type": "VariableDataPrototype",
+          "annotation": "@XmlElementWrapper(name=\"IMPLICIT-INTER-RUNNABLE-VARIABLES\")\n@XmlElement(name=\"VARIABLE-DATA-PROTOTYPE\")",
+          "xml_tag": "VARIABLE-DATA-PROTOTYPE",
+          "xml_wrapper_tag": "IMPLICIT-INTER-RUNNABLE-VARIABLES",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Implement state message semantics for establishing communication among runnables of the same component.\nThe aggregation of implicitInterRunnableVariable is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "includedDataTypeSets",
+          "qualifiedName": "includedDataTypeSet",
+          "document_name": "SwcInternalBehavior.includedDataTypeSet",
+          "type": "IncludedDataTypeSet",
+          "annotation": "@XmlElementWrapper(name=\"INCLUDED-DATA-TYPE-SETS\")\n@XmlElement(name=\"INCLUDED-DATA-TYPE-SET\")",
+          "xml_tag": "INCLUDED-DATA-TYPE-SET",
+          "xml_wrapper_tag": "INCLUDED-DATA-TYPE-SETS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "The includedDataTypeSet is used by a software component for its implementation.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "includedModeDeclarationGroupSets",
+          "qualifiedName": "includedModeDeclarationGroupSet",
+          "document_name": "SwcInternalBehavior.includedModeDeclarationGroupSet",
+          "type": "IncludedModeDeclarationGroupSet",
+          "annotation": "@XmlElementWrapper(name=\"INCLUDED-MODE-DECLARATION-GROUP-SETS\")\n@XmlElement(name=\"INCLUDED-MODE-DECLARATION-GROUP-SET\")",
+          "xml_tag": "INCLUDED-MODE-DECLARATION-GROUP-SET",
+          "xml_wrapper_tag": "INCLUDED-MODE-DECLARATION-GROUP-SETS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "This aggregation represents the included ModeDeclarationGroups",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "instantiationDataDefPropss",
+          "qualifiedName": "instantiationDataDefProps",
+          "document_name": "SwcInternalBehavior.instantiationDataDefProps",
+          "type": "InstantiationDataDefProps",
+          "annotation": "@XmlElementWrapper(name=\"INSTANTIATION-DATA-DEF-PROPSS\")\n@XmlElement(name=\"INSTANTIATION-DATA-DEF-PROPS\")",
+          "xml_tag": "INSTANTIATION-DATA-DEF-PROPS",
+          "xml_wrapper_tag": "INSTANTIATION-DATA-DEF-PROPSS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "The purpose of this is that within the context  of a given SwComponentType some data def properties of individual instantiations can be  modified. \nThe aggregation of InstantiationDataDefProps is subject to variability with the purpose to support the conditional existence of PortPrototypes and component local memories like \"perInstanceParameter\" or \"arTypedPerInstanceMemory\".\n\n\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "perInstanceMemorys",
+          "qualifiedName": "perInstanceMemory",
+          "document_name": "SwcInternalBehavior.perInstanceMemory",
+          "type": "PerInstanceMemory",
+          "annotation": "@XmlElementWrapper(name=\"PER-INSTANCE-MEMORYS\")\n@XmlElement(name=\"PER-INSTANCE-MEMORY\")",
+          "xml_tag": "PER-INSTANCE-MEMORY",
+          "xml_wrapper_tag": "PER-INSTANCE-MEMORYS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Defines a per-instance memory object needed by this software component.\nThe aggregation of PerInstanceMemory is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "perInstanceParameters",
+          "qualifiedName": "perInstanceParameter",
+          "document_name": "SwcInternalBehavior.perInstanceParameter",
+          "type": "ParameterDataPrototype",
+          "annotation": "@XmlElementWrapper(name=\"PER-INSTANCE-PARAMETERS\")\n@XmlElement(name=\"PARAMETER-DATA-PROTOTYPE\")",
+          "xml_tag": "PARAMETER-DATA-PROTOTYPE",
+          "xml_wrapper_tag": "PER-INSTANCE-PARAMETERS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Defines parameter(s) or characteristic value(s) that needs to be available for each instance of the software-component. This is typically only useful if supportsMultipleInstantiation is set to \"true\".\nThe aggregation of perInstanceParameter is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "portApiOptions",
+          "qualifiedName": "portAPIOption",
+          "document_name": "SwcInternalBehavior.portAPIOption",
+          "type": "PortAPIOption",
+          "annotation": "@XmlElementWrapper(name=\"PORT-API-OPTIONS\")\n@XmlElement(name=\"PORT-API-OPTION\")",
+          "xml_tag": "PORT-API-OPTION",
+          "xml_wrapper_tag": "PORT-API-OPTIONS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Options for generating the signature of port-related calls from a runnable to the RTE and vice versa.\nThe aggregation of PortPrototypes is subject to variability with the purpose to support the conditional existence of ports. \nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "runnables",
+          "qualifiedName": "runnable",
+          "document_name": "SwcInternalBehavior.runnable",
+          "type": "RunnableEntity",
+          "annotation": "@XmlElementWrapper(name=\"RUNNABLES\")\n@XmlElement(name=\"RUNNABLE-ENTITY\")",
+          "xml_tag": "RUNNABLE-ENTITY",
+          "xml_wrapper_tag": "RUNNABLES",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "This is a RunnableEntity specified for the particular SwcInternalBehavior.\n\nThe aggregation of RunnableEntity is subject to variability with the purpose to support the conditional existence of RunnableEntities. Note: the number of RunnableEntities might vary due to the conditional existence of PortPrototypes using DataReceivedEvents or due to different scheduling needs of algorithms.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 1,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "serviceDependencys",
+          "qualifiedName": "serviceDependency",
+          "document_name": "SwcInternalBehavior.serviceDependency",
+          "type": "SwcServiceDependency",
+          "annotation": "@XmlElementWrapper(name=\"SERVICE-DEPENDENCYS\")\n@XmlElement(name=\"SWC-SERVICE-DEPENDENCY\")",
+          "xml_tag": "SWC-SERVICE-DEPENDENCY",
+          "xml_wrapper_tag": "SERVICE-DEPENDENCYS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Defines the requirements on AUTOSAR Services for a particular item.\n\nThe aggregation of SwcServiceDependency is subject to variability with the purpose to support the conditional existence of ports as well as the conditional existence of ServiceNeeds.\n\nThe SwcServiceDependency owned by an SwcInternalBehavior can be located in a different physical file in order to support that SwcServiceDependency might be provided in later development \nsteps or even by different expert domain (e.g OBD expert for Obd related  Service Needs) tools. Therefore the aggregation is <<atpSplitable>>.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "sharedParameters",
+          "qualifiedName": "sharedParameter",
+          "document_name": "SwcInternalBehavior.sharedParameter",
+          "type": "ParameterDataPrototype",
+          "annotation": "@XmlElementWrapper(name=\"SHARED-PARAMETERS\")\n@XmlElement(name=\"PARAMETER-DATA-PROTOTYPE\")",
+          "xml_tag": "PARAMETER-DATA-PROTOTYPE",
+          "xml_wrapper_tag": "SHARED-PARAMETERS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Defines parameter(s) or characteristic value(s) shared between SwComponentPrototypes of the same SwComponentType\nThe aggregation of sharedParameter is subject to variability with the purpose to support variability in the software components implementations. Typically different algorithms in the implementation are requiring different number of memory objects.\nThe upper multiplicity of this role has been increased to * due to resolving an atpVariation stereotype. The previous value was -1.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "supportsMultipleInstantiation",
+          "qualifiedName": "supportsMultipleInstantiation",
+          "document_name": "SwcInternalBehavior.supportsMultipleInstantiation",
+          "type": "Boolean",
+          "annotation": "@XmlElement(name=\"SUPPORTS-MULTIPLE-INSTANTIATION\")",
+          "xml_tag": "SUPPORTS-MULTIPLE-INSTANTIATION",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "Indicate whether the corresponding software-component can be multiply instantiated on one ECU. In this case the attribute will result in an appropriate component API on programming language level (with or without instance handle).",
+          "stereotypes": [],
+          "pure_minOccurs": 1,
+          "pure_maxOccurs": 1
+        },
+        {
+          "name": "variationPointProxys",
+          "qualifiedName": "variationPointProxy",
+          "document_name": "SwcInternalBehavior.variationPointProxy",
+          "type": "VariationPointProxy",
+          "annotation": "@XmlElementWrapper(name=\"VARIATION-POINT-PROXYS\")\n@XmlElement(name=\"VARIATION-POINT-PROXY\")",
+          "xml_tag": "VARIATION-POINT-PROXY",
+          "xml_wrapper_tag": "VARIATION-POINT-PROXYS",
+          "is_xml_attribute": false,
+          "maxOccurs": null,
+          "description": "Proxy of a variation points in the C/C++ implementation.",
+          "stereotypes": [
+            "atpSplitable"
+          ],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": -1
+        },
+        {
+          "name": "variationPoint",
+          "qualifiedName": "variationPoint",
+          "document_name": "SwcInternalBehavior.variationPoint",
+          "type": "VariationPoint",
+          "annotation": "@XmlElement(name=\"VARIATION-POINT\")",
+          "xml_tag": "VARIATION-POINT",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "This element was generated/modified due to an atpVariation stereotype.",
+          "stereotypes": [],
+          "pure_minOccurs": 0,
+          "pure_maxOccurs": 1
+        }
+      ],
+      "attributeGroups": [
+        "ARObject",
+        "Identifiable"
+      ],
+      "Package": [
+        "AUTOSAR Templates",
+        "SWComponentTemplate",
+        "SwcInternalBehavior"
+      ],
+      "abstract": "false",
+      "ClassAssociatedFrom": [
+        "SwcBswMapping",
+        "SwcImplementation",
+        "SwcTiming"
+      ],
+      "generalization": [
+        "InternalBehavior"
+      ]
+    }
+  },
+  "attributeGroups": {
+    "ARObject": [
+      {
+        "name": "s",
+        "qualifiedName": "checksum",
+        "document_name": "ARObject.checksum",
+        "type": "StringSimple",
+        "annotation": "S",
+        "description": "Checksum calculated by the user's tool environment for an ArObject. May be used in an own tool environment to determine if an ArObject has changed. The checksum has no semantic meaning for an AUTOSAR model and there is no requirement for AUTOSAR tools to manage the checksum.",
+        "stereotypes": [],
+        "pure_minOccurs": 0,
+        "pure_maxOccurs": 1
+      },
+      {
+        "name": "t",
+        "qualifiedName": "timestamp",
+        "document_name": "ARObject.timestamp",
+        "type": "DateSimple",
+        "annotation": "T",
+        "description": "Timestamp calculated by the user's tool environment for an ArObject. May be used in an own tool environment to determine the last change of an ArObject. The timestamp has no semantic meaning for an AUTOSAR model and there is no requirement for AUTOSAR tools to manage the timestamp.",
+        "stereotypes": [],
+        "pure_minOccurs": 0,
+        "pure_maxOccurs": 1
+      }
+    ]
+  },
+  "simpleTypes": {
+    "AtomicSwComponentTypeSubtypesEnum": {
+      "name": "AtomicSwComponentTypeSubtypesEnum",
+      "annotation": "ATOMIC-SW-COMPONENT-TYPE--SUBTYPES-ENUM",
+      "base": "string",
+      "enumerations": [
+        "APPLICATION-SW-COMPONENT-TYPE",
+        "ATOMIC-SW-COMPONENT-TYPE",
+        "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "NV-BLOCK-SW-COMPONENT-TYPE",
+        "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "SERVICE-SW-COMPONENT-TYPE"
+      ],
+      "isPrimitiveType": false,
+      "pattern": null
+    }
+  },
+  "complexTypes": {
+    "CIdentifier": {
+      "name": "C-IDENTIFIER",
+      "qualifiedName": "",
+      "document_name": "CIdentifier",
+      "attributes": [
+        {
+          "name": "value",
+          "type": "java.lang.String",
+          "annotation": "@XmlValue",
+          "pattern": "[a-zA-Z_][a-zA-Z0-9_]*",
+          "isPrimitiveType": true,
+          "source": "complexType.simpleContent"
+        }
+      ],
+      "elements": [],
+      "innerClasses": [],
+      "extends": null,
+      "objFactory": [],
+      "isAttribute": true,
+      "attributeGroups": "ARObject,CIdentifier"
+    }
+  },
+  "extract_inner_class": {
+    "BlueprintPolicys": {
+      "name": "BlueprintPolicys",
+      "attributes": [
+        {
+          "name": "blueprintPolicyList",
+          "type": "BlueprintPolicyListWrapper",
+          "annotation": "@XmlElement(name=\"BLUEPRINT-POLICY-LIST\")",
+          "xml_tag": "BLUEPRINT-POLICY-LIST",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "",
+          "stereotypes": []
+        },
+        {
+          "name": "blueprintPolicyNotModifiable",
+          "type": "BlueprintPolicyNotModifiableWrapper",
+          "annotation": "@XmlElement(name=\"BLUEPRINT-POLICY-NOT-MODIFIABLE\")",
+          "xml_tag": "BLUEPRINT-POLICY-NOT-MODIFIABLE",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "",
+          "stereotypes": []
+        },
+        {
+          "name": "blueprintPolicySingle",
+          "type": "BlueprintPolicySingleWrapper",
+          "annotation": "@XmlElement(name=\"BLUEPRINT-POLICY-SINGLE\")",
+          "xml_tag": "BLUEPRINT-POLICY-SINGLE",
+          "xml_wrapper_tag": null,
+          "is_xml_attribute": false,
+          "description": "",
+          "stereotypes": []
+        }
+      ],
+      "isAttribute": false
+    }
+    }}
+*/

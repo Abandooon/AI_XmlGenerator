@@ -1,0 +1,44 @@
+{
+  "schema_version": "atlas.pil.c1_review_acceptance_record.v1",
+  "accepted_on": "2026-09-03",
+  "status": "PASS",
+  "returned_workbook": {
+    "file": "PIL_C1_INDEPENDENT_GOLD_REVIEW_YiRui_Wang_2026-09-02_RECHECKED_WITH_SOURCES.xlsx",
+    "sha256": "e1aacf700b552fee1167b59e7feb0e20f0fe64636b2069f63db25b630449a8f4",
+    "bytes": 28017
+  },
+  "frozen_inputs": {
+    "blank_questionnaire_sha256": "97554d04d3cc973d6ff1b329b01f5e8cbb53bab2576f08b8eb69fe41896b3a92",
+    "c1_keymap_sha256": "8828c91f5b807baf8337f30c5361cf8058e07c4c22185cd2ed8adecdd2800a3d",
+    "dataset_sha256": "7af88b23bb9a1f1208e9a4e5dc95c7786b9ee813744027980180fdfadcc56103",
+    "a1_review_sha256": "24d50da4b801ab675eddb3d0a5e6d0dab77473993f686b356f30fb66092919c4",
+    "a1_keymap_sha256": "b2f3af01aa0bd5b0da0a4d94f9f03a1ea3a296b4b5485b6799ffe829cdfd61bc"
+  },
+  "checks": {
+    "rows_complete": "60/60",
+    "headers_unchanged": true,
+    "presentation_order_unchanged": true,
+    "review_ids_unchanged": true,
+    "facts_unchanged": true,
+    "all_required_fields_valid": true,
+    "formula_errors": 0,
+    "source_audit_rows": 60,
+    "source_audit_pass_with_source": 54,
+    "source_audit_revised": 6
+  },
+  "inter_reviewer_agreement": {
+    "analysis_unit": "case",
+    "n": 60,
+    "conclusion_exact": 58,
+    "conclusion_kappa": 0.94140625,
+    "canonical_primary_forum_exact": 56,
+    "canonical_primary_forum_kappa": 0.917864476386037,
+    "forum_set_compatible": 58,
+    "material_sufficiency_exact": 54,
+    "material_sufficiency_kappa": 0.7631578947368421,
+    "hard_disagreements": 2,
+    "cases_sent_to_consensus": 9
+  },
+  "analysis_file_sha256": "decb0f9d6256c1ada90347dbcb9f14c3001d6068568bebafcb22020e4fc27cf3"
+}
+

@@ -1,0 +1,66 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "ASW_COM_STD",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "PPort_MCU01_EmergShutDown",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_MCU01_EmergShutDown"
+          }
+        },
+        {
+          "SHORT-NAME": "PPort_MCU02_MaxTor",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "RPort_HCU01_TqCmd",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd"
+          },
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": {
+              "DATA-ELEMENT-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd"
+              },
+              "ALIVE-TIMEOUT": 0,
+              "HANDLE-TIMEOUT-TYPE": "NONE"
+            }
+          }
+        }
+      ]
+    },
+    "INTERNAL-BEHAVIORS": {
+      "SWC-INTERNAL-BEHAVIOR": {
+        "SHORT-NAME": "IB_ASW_COM_STD",
+        "EVENTS": {
+          "TIMING-EVENT": [
+            {
+              "SHORT-NAME": "TE_RE_COM_SWC",
+              "START-ON-EVENT-REF": {
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/RUNNABLES/RE_COM_SWC"
+              },
+              "PERIOD": 0.01
+            }
+          ]
+        },
+        "RUNNABLES": {
+          "RUNNABLE-ENTITY": [
+            {
+              "SHORT-NAME": "RE_COM_SWC"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

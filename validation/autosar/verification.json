@@ -1,0 +1,310 @@
+{
+  "schema_version": "autosar.reviewer.offline-verification.v1",
+  "decision": "PASS",
+  "scope": "Revalidation of preserved V20 artifacts and logged metadata; not a replay of original model interactions.",
+  "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+  "release_file_identity": {
+    "checked": 9673,
+    "errors": []
+  },
+  "release_manifest_canonical_valid": true,
+  "generation_results_canonical_sha256": "5da533af826edcabca4c08632ffdc684ef31de31a868046be96f70f851ec9ef6",
+  "repair_results_canonical_sha256": "15b0cd2f2f65756ca6373e9abb7fcfdf68ca108e67bccb77bf329e89d111412c",
+  "runtime_sources": {
+    "frozen": 45,
+    "supplemental": 3
+  },
+  "generation": {
+    "runs": 60,
+    "cases": 20,
+    "one_pipeline_attempt_runs": 60,
+    "evaluation_pass": 60,
+    "artifact_profile_pass": 60,
+    "full_corpus_incomplete": 60,
+    "saved_plan_consistency_pass": 60,
+    "arxml_files": 255,
+    "components": 60,
+    "interfaces": 195,
+    "xsd_pass": 255,
+    "structural_obligations": 2418,
+    "structural_failures": 0,
+    "local_references": 675,
+    "local_reference_failures": 0,
+    "provider_responses": 180,
+    "unique_response_ids": 180,
+    "logical_requests": 180,
+    "physical_dispatches": 184,
+    "continued_logical_requests": 2,
+    "logged_total_tokens": 11967476,
+    "logged_duration_seconds": 3882.692131280899,
+    "logged_applied_obligations": 1734,
+    "logged_recoveries": 527,
+    "logged_recovery_runs": 49,
+    "logged_recovery_categories": {
+      "suppressed_phase1_selection_count": 118,
+      "multi_anchor_expansion_count": 10,
+      "structured_anchor_index_repair_count": 13,
+      "structured_anchor_chain_repair_count": 50,
+      "absent_value_repair_count": 0,
+      "structured_value_anchor_binding_count": 161,
+      "derived_anchor_identity_count": 175,
+      "resolved_unsupported_count": 0
+    }
+  },
+  "repair": {
+    "cells": 100,
+    "analysis_layers": {
+      "core_fixed_operator": 85,
+      "substitution": 15
+    },
+    "input_evaluation_fail": 100,
+    "final_evaluation_pass": 100,
+    "final_profile_pass": 100,
+    "final_full_corpus_incomplete": 100,
+    "inputs_differ_from_reference": 100,
+    "final_exact_reference_bytes_and_filenames": 100,
+    "natural_failure_cells": 0,
+    "provider_responses": 130,
+    "unique_response_ids": 130,
+    "logged_total_tokens": 716624
+  },
+  "phase2": {
+    "scope": "Only the post-Phase1 admitted schemas in formal V20; no claim about arbitrary dynamic Phase2 or model-free Phase1.",
+    "schemas": 120,
+    "singleton_and_saved_json_match": 120
+  },
+  "checks": [
+    {
+      "metric": "generation.runs",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.cases",
+      "actual": 20,
+      "expected": 20,
+      "pass": true
+    },
+    {
+      "metric": "generation.one_pipeline_attempt_runs",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.evaluation_pass",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.artifact_profile_pass",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.full_corpus_incomplete",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.saved_plan_consistency_pass",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.arxml_files",
+      "actual": 255,
+      "expected": 255,
+      "pass": true
+    },
+    {
+      "metric": "generation.components",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "metric": "generation.interfaces",
+      "actual": 195,
+      "expected": 195,
+      "pass": true
+    },
+    {
+      "metric": "generation.xsd_pass",
+      "actual": 255,
+      "expected": 255,
+      "pass": true
+    },
+    {
+      "metric": "generation.structural_obligations",
+      "actual": 2418,
+      "expected": 2418,
+      "pass": true
+    },
+    {
+      "metric": "generation.structural_failures",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "metric": "generation.local_references",
+      "actual": 675,
+      "expected": 675,
+      "pass": true
+    },
+    {
+      "metric": "generation.local_reference_failures",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "metric": "generation.provider_responses",
+      "actual": 180,
+      "expected": 180,
+      "pass": true
+    },
+    {
+      "metric": "generation.unique_response_ids",
+      "actual": 180,
+      "expected": 180,
+      "pass": true
+    },
+    {
+      "metric": "generation.logical_requests",
+      "actual": 180,
+      "expected": 180,
+      "pass": true
+    },
+    {
+      "metric": "generation.physical_dispatches",
+      "actual": 184,
+      "expected": 184,
+      "pass": true
+    },
+    {
+      "metric": "generation.continued_logical_requests",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "metric": "generation.logged_total_tokens",
+      "actual": 11967476,
+      "expected": 11967476,
+      "pass": true
+    },
+    {
+      "metric": "generation.logged_applied_obligations",
+      "actual": 1734,
+      "expected": 1734,
+      "pass": true
+    },
+    {
+      "metric": "generation.logged_recoveries",
+      "actual": 527,
+      "expected": 527,
+      "pass": true
+    },
+    {
+      "metric": "generation.logged_recovery_runs",
+      "actual": 49,
+      "expected": 49,
+      "pass": true
+    },
+    {
+      "metric": "repair.cells",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.input_evaluation_fail",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.final_evaluation_pass",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.final_profile_pass",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.final_full_corpus_incomplete",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.inputs_differ_from_reference",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.final_exact_reference_bytes_and_filenames",
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    {
+      "metric": "repair.natural_failure_cells",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "metric": "repair.provider_responses",
+      "actual": 130,
+      "expected": 130,
+      "pass": true
+    },
+    {
+      "metric": "repair.unique_response_ids",
+      "actual": 130,
+      "expected": 130,
+      "pass": true
+    },
+    {
+      "metric": "repair.logged_total_tokens",
+      "actual": 716624,
+      "expected": 716624,
+      "pass": true
+    },
+    {
+      "metric": "formal_v20_admitted_phase2_singleton_and_saved_json_match",
+      "actual": 120,
+      "expected": 120,
+      "pass": true
+    }
+  ],
+  "offline_execution": {
+    "network_attempts_blocked": 0,
+    "subprocesses_started": 0,
+    "all_project_imports_under_work_dir": true,
+    "writes_only_to_requested_work_dir": true
+  },
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "packages": {
+      "lxml": "6.1.1",
+      "jsonschema": "4.26.0",
+      "PyYAML": "6.0.3",
+      "z3-solver": "4.16.0.0"
+    }
+  },
+  "elapsed_seconds": 214.265
+}

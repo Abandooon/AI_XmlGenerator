@@ -1,0 +1,37 @@
+{
+  "format": "atlas-railway-native-validation/v1",
+  "input": "E:\\54239\\Documents\\railway_review_staging_2026-09-09\\relocated_replay_final\\results\\malformed_namespace.xmi",
+  "read_only_input_unchanged": true,
+  "runtime": {
+    "java_version": "1.8.0_504",
+    "java_vendor": "Temurin",
+    "viatra_version": "1.6.1",
+    "network_operations": 0
+  },
+  "loaded": false,
+  "load_exception": "org.eclipse.emf.ecore.resource.impl.ResourceSetImpl$1DiagnosticWrappedException: org.eclipse.emf.ecore.xmi.ClassNotFoundException: Class 'Segment' is not found or is abstract. (file:/E:/54239/Documents/railway_review_staging_2026-09-09/relocated_replay_final/results/malformed_namespace.xmi, 7, 109)",
+  "root_valid": false,
+  "query_tuples": {
+    "PosLength": [],
+    "SwitchMonitored": [],
+    "SwitchSet": [],
+    "RouteSensor": [],
+    "ConnectedSegments": [],
+    "SemaphoreNeighbor": []
+  },
+  "all_native_checks_executed": false,
+  "native_pass": false,
+  "reviewer_raw_input_binding": {
+    "before": {
+      "xmi_sha256": "0fc3bfb065782d6fa6114af94d3a6d45d17a306372c216f92cb67c973972acec",
+      "identity_sha256": "c8bc362382798a67fbcbb45aa0e169a2c344e11124cc59bb6fcd22912219b8c7"
+    },
+    "after": {
+      "xmi_sha256": "0fc3bfb065782d6fa6114af94d3a6d45d17a306372c216f92cb67c973972acec",
+      "identity_sha256": "c8bc362382798a67fbcbb45aa0e169a2c344e11124cc59bb6fcd22912219b8c7"
+    },
+    "unchanged": true,
+    "reserialized": false,
+    "native_exit_code": 2
+  }
+}

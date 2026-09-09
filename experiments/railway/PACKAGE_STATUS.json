@@ -1,0 +1,103 @@
+{
+  "format": "atlas.railway.reviewer.package.status.v1",
+  "status": "PASS",
+  "date": "2026-09-09",
+  "review_entry": "review.py",
+  "command": "python review.py --java java --work-dir railway-review-output",
+  "requirements": {
+    "python": ">=3.10; standard library only",
+    "java": "Java 8; JRE sufficient for review; JDK for optional source recompilation"
+  },
+  "frozen_source_unchanged": true,
+  "raw_formal_evidence_unchanged": true,
+  "modified_original_repository": false,
+  "new_model_calls": 0,
+  "fix": {
+    "historical_file": "frozen/workspace/railway_method_v5/independent_score.py",
+    "historical_behavior": "from_xmi followed by validate(projection), which reserialized before native validation",
+    "corrected_file": "corrected/raw_native_score.py",
+    "corrected_behavior": "Original XMI and identity files passed directly to Java; before/after SHA-256 binding; native projection used only for later relational/task/frame scoring",
+    "counterexample_rejected": true
+  },
+  "counts": {
+    "actions": 747,
+    "endpoints": 891,
+    "artifact_endpoints": 888,
+    "unique_xmi_identity_pairs": 139,
+    "responses": 1074,
+    "physical_send_intents": 1085,
+    "unknown_usage_attempts": 11,
+    "historical_outcome_discrepancies": 0
+  },
+  "billing_complete": false,
+  "unknown_usage_imputed_zero": false,
+  "archives": [
+    {
+      "path": "archives/railway_evidence_01.zip",
+      "bytes": 16810505,
+      "sha256": "6c6437244db5439d53a55067f3a27e4ab0db9ea4cb99bf36b602b46adda841f2",
+      "files": 4248
+    },
+    {
+      "path": "archives/railway_evidence_02.zip",
+      "bytes": 18894357,
+      "sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+      "files": 6150
+    },
+    {
+      "path": "archives/railway_evidence_03.zip",
+      "bytes": 19896896,
+      "sha256": "ef74df05b37a98ff6dac204d33d0c3612e1c9d9d64cf9dd9989d7e209b5f118d",
+      "files": 7455
+    },
+    {
+      "path": "archives/railway_evidence_04.zip",
+      "bytes": 20070756,
+      "sha256": "ed6d6bd90f92d6e7fdd98e2a932c2cf29b4963a4cf9bce5a21384a46e18be10e",
+      "files": 7570
+    },
+    {
+      "path": "archives/railway_evidence_05.zip",
+      "bytes": 30136094,
+      "sha256": "eb1ac5b82d854d588c4b8dfae8a8f03ff0f7d730182684dc049538bfdeb7c6f3",
+      "files": 5542
+    }
+  ],
+  "payload_file_count": 30965,
+  "payload_uncompressed_bytes": 342616816,
+  "native_runtime_jars": 44,
+  "source_rebuild": {
+    "status": "PASS",
+    "java_sources": 101,
+    "byte_identical_classes": 196,
+    "scope": "Offline Java recompilation from retained generated model/matcher and runner source; original non-class resources retained. No Xcore/VQL generator rerun; third-party dependencies not rebuilt."
+  },
+  "relocation_test": {
+    "status": "PASS",
+    "isolated_python_flag": "-I",
+    "executed_from_separate_package_copy": true,
+    "original_machine_data_paths_used": false,
+    "java_executable_supplied_explicitly": true,
+    "tested_payload_manifest_sha256": "e7b54b678d37eaf7ae9a24e5c598023f8134a85c8f8fab1ac36e3ee3623823eb",
+    "java_version": "openjdk version \"1.8.0_504\"\nOpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)\nOpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)",
+    "python_version": "3.12.14",
+    "elapsed_seconds": 196.344,
+    "tested_code_sha256": {
+      "review.py": "64626d8f874cae0ebcc3a7be3d29aa124d68964eb665b73d18a8b2224f8d5421",
+      "corrected/raw_native_score.py": "52a82b7cb66871041fb4d6f0e27638b59eeedc7a54285600785c45ecb31d476a",
+      "corrected/replay_evidence.py": "02b197b673ae7b1b2e310439b4643e667386b640057838f6877cd23f85454efa",
+      "corrected/replay_queue.py": "2cc175b21a1c998bd39e19139e759df27445cd9a1f8d2f17ff74fbed29c1c758",
+      "corrected/replay_statistics.py": "428b0388dd99fa2642a6f22d576e663ecdbc6c60d7e5617e43eddd562b3d7223",
+      "corrected/replay_transport.py": "5efd77bc1cf22e9630edc67b59983f03dc36ed6e83d643ff987acdb49511399f"
+    }
+  },
+  "secret_scan": "SECRET_SCAN.json",
+  "evidence_scope": "Finite author-designed development-exposed Railway V5 cohort only; excludes retired Train/BESSER V2, mock, pilots and scratch runs.",
+  "limits": [
+    "No new LLM generation or repair experiment.",
+    "No independent provider-deployment identity or complete billing certification.",
+    "F minus V does not establish robust superiority.",
+    "One template ancestor; no blind cross-template or population inference.",
+    "Optional source rebuild recompiles existing generated Java, not Xcore/VQL generators or third-party libraries."
+  ]
+}

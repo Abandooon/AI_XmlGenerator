@@ -1,0 +1,1489 @@
+{
+  "session_id": "round1_20251021_150117",
+  "timestamp": "20251021_150117",
+  "user_requirements": "\"TransmissionController\",",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        \"TransmissionController\",\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"medium\", \"estimated_components\": 8, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "将传动控制逻辑拆分为感知、状态聚合、决策、执行与参数/模式管理五类职责：Gear_Sensor_Proxy 负责采集齿轮与车速信号并发布；Engine_Controller_Proxy 提供发动机状态与扭矩信息；Vehicle_State_Service 聚合并标准化车速/模式信息；Transmission_Controller 执行换挡决策和状态机；Shift_Actuator_Driver 负责执行换挡命令与确认；Transmission_Parameters 提供可配置参数存取；Mode_Manager 管理运行模式；Diagnostics_Manager 处理诊断上报与故障隔离。",
+      "data_flow_analysis": "主要数据流：I_Gear_Data (GearPosition: enum, WheelSpeed: float) 从 Gear_Sensor_Proxy 异步周期发布 -> Vehicle_State_Service 与 Transmission_Controller 订阅；I_Engine_Status (EngineTorque: float, Engine_RPM: int) 从 Engine_Controller_Proxy 周期/事件发布 -> Transmission_Controller 订阅；I_Transmission_Parameters (shift_thresholds, hysteresis) 由 Transmission_Parameters 提供给 Transmission_Controller，按请求/缓存机制同步访问；I_Shift_Command (ShiftRequest: operation/params, Ack: status) 为客户端-服务器同步调用，Transmission_Controller 作为客户端调用 Shift_Actuator_Driver 的执行操作，时延要求严格；I_Mode_Switch 提供 ModeManager 向 Transmission_Controller 的模式切换事件；I_Diagnostics 提供 Diagnostics_Manager 向所有组件的诊断上报通道。数据类型统一采用基础标量与枚举，传输时序：车速/齿轮/发动机状态周期发布(10-50ms)，Transmission_Controller 主决策周期 20ms，换挡调用为同步阻塞调用，反馈需在 50ms 内返回。",
+      "timing_requirements": "传感器发布周期: GearSensor 10ms, EngineStatus 20-50ms；Transmission_Controller 决策周期: 20ms (定时触发)；换挡操作 (I_Shift_Command) 响应时延 <50ms；参数读取为低频按需 (<100ms)；诊断上报为事件驱动，允许异步延迟。",
+      "scalability_considerations": "组件以服务/代理模式分离，便于增加额外传感器或 actuator；接口采用发送-接收与客户端-服务器混合，新增数据元素或接口可局部扩展；参数存储与模式管理集中，便于批量调整；建议使用统一批量生成模式 (unified_batch) 以在 Round2 中一致化 ARXML 产出。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_tx_ctrl_001",
+        "name": "Transmission_Controller",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于传感器与参数执行换挡决策，管理换挡状态机并调用执行器",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (Gear, Speed, EngineStatus)",
+          "output_ports": "2 (ShiftCommand, Diagnostics)"
+        },
+        "behavioral_characteristics": "以 20ms 周期定时触发主决策 Runnable。接收周期数据（齿轮/车速/发动机），执行换挡逻辑和状态机；在条件满足时同步调用 Shift_Actuator_Driver 的换挡操作；管理本地状态机与故障回退；对参数变更进行即时读取并影响决策阈值；对异常进行诊断上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports 接收 Gear/Speed/EngineStatus；P-ports 发布 Diagnostics 与 状态；PR-ports 用于客户端-服务器 Shift 调用（提供/请求）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Main_Cycle",
+                "trigger": "periodic 20ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Gear_Update_Event",
+                "trigger": "on reception of I_Gear_Data"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Event",
+                "trigger": "on component init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Decision_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取齿轮和车速及发动机扭矩输入"
+                      }
+                    ],
+                    "notes": "周期读取所有输入"
+                  },
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取换挡阈值与滞回参数"
+                      }
+                    ],
+                    "notes": "按需读取参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用执行器换挡操作"
+                      }
+                    ],
+                    "notes": "在决策条件满足时发起同步换挡调用"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布换挡状态与诊断"
+                      }
+                    ],
+                    "notes": "输出状态与诊断信息"
+                  }
+                ],
+                "notes": "主决策执行体"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Engine_Status",
+          "I_Shift_Command",
+          "I_Transmission_Parameters",
+          "I_Mode_Switch",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_gear_proxy_001",
+        "name": "Gear_Sensor_Proxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "采集齿轮位与车速并周期发布到总线/内部消费者",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (raw sensor interface)",
+          "output_ports": "1 (I_Gear_Data publisher)"
+        },
+        "behavioral_characteristics": "以 10ms 周期采样硬件传感器，进行简单滤波/去抖，生成 GearPosition 与 WheelSpeed，按 Sender-Receiver 模式发布。异常检测触发诊断上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供 I_Gear_Data 的发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Publish_Cycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Publish_Completed",
+                "trigger": "after send"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Publish_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布经滤波的齿轮与速度数据"
+                      }
+                    ],
+                    "notes": "采样后发布"
+                  }
+                ],
+                "notes": "周期采样与发布流程"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_engine_proxy_001",
+        "name": "Engine_Controller_Proxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "收集发动机扭矩与转速信息并提供给传动控制消费者",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CAN/engine bus)",
+          "output_ports": "1 (I_Engine_Status publisher)"
+        },
+        "behavioral_characteristics": "接收发动机总线数据，转换为标准数据结构并按 20-50ms 周期发布。支持异常标志与速率自适应发布策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "对外提供 EngineStatus 发布"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Engine_Publish_Cycle",
+                "trigger": "periodic 20-50ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Engine_Publish_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布发动机扭矩与转速"
+                      }
+                    ],
+                    "notes": "周期性发布发动机状态"
+                  }
+                ],
+                "notes": "发动机数据转换与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Engine_Status",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_shift_driver_001",
+        "name": "Shift_Actuator_Driver",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "直接控制换挡执行器，提供同步换挡操作和动作确认",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (I_Shift_Command server interface)",
+          "output_ports": "1 (actuator hardware interface / ack)"
+        },
+        "behavioral_characteristics": "作为服务器暴露换挡操作，执行低级控制序列并在完成或错误时返回状态；处理并发调用保护执行互斥区域；必须在 50ms 内返回调用结果或超时处理。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "PR 类型用于提供服务器操作接口，R-ports 用于读取执行器反馈"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Actuator_Command_Received",
+                "trigger": "on I_Shift_Command invocation"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "Actuation_Complete",
+                "trigger": "on actuator completion"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收换挡操作参数"
+                      }
+                    ],
+                    "notes": "接收并解析服务器调用参数"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入执行器命令寄存"
+                      }
+                    ],
+                    "notes": "驱动低层执行器并返回 Ack"
+                  }
+                ],
+                "notes": "执行器动作实现与确认"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Shift_Command",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_vehicle_state_001",
+        "name": "Vehicle_State_Service",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "聚合并标准化车速/驾驶模式数据供传动控制与其他服务使用",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (I_Gear_Data, I_Engine_Status)",
+          "output_ports": "1 (aggregated state publisher)"
+        },
+        "behavioral_characteristics": "订阅传感器代理信息，执行数据融合与有效性检测，向 Transmission_Controller 发布统一的车辆状态数据，支持请求式状态查询。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收端和对外发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "State_Aggregation",
+                "trigger": "periodic aggregation on sensor arrivals"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Aggregate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收并融合传感器数据"
+                      }
+                    ],
+                    "notes": "融合逻辑"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布标准化车辆状态"
+                      }
+                    ],
+                    "notes": "发布给消费者"
+                  }
+                ],
+                "notes": "状态聚合与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Engine_Status",
+          "I_Transmission_State"
+        ]
+      },
+      {
+        "component_id": "cmp_diag_mgr_001",
+        "name": "Diagnostics_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集并汇总诊断信息，提供上报与存储接口",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "N (来自各组件的诊断接口)",
+          "output_ports": "1 (diagnostic uplink / storage)"
+        },
+        "behavioral_characteristics": "接收来自各组件的诊断事件，按严重性聚合，触发本地记录或上传；支持异步缓冲（队列）与周期刷新策略；对关键故障可触发安全模式通知。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "接收诊断上报，提供集中上报端"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diag_Aggregation",
+                "trigger": "on diag event or periodic flush"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "Hard_Fault_Detected",
+                "trigger": "on critical error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收各组件诊断事件"
+                      }
+                    ],
+                    "notes": "处理并分类诊断"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向存储或上传通道发送聚合结果"
+                      }
+                    ],
+                    "notes": "上报或存储诊断信息"
+                  }
+                ],
+                "notes": "诊断事件聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_params_001",
+        "name": "Transmission_Parameters",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "存储与提供传动控制可调参数，支持 NVM 持久化",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (parameter access)"
+        },
+        "behavioral_characteristics": "作为参数仓库，支持按需读取/写入，提供缓存与 NVM 同步策略；参数更新可触发通知给 Transmission_Controller。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供参数读取/事件通知端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Param_Write_Error",
+                "trigger": "on write failure"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Param_Access_Runnable",
+                "elements": [
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "提供参数目标与端口映射"
+                      }
+                    ],
+                    "notes": "参数读取写入接口"
+                  }
+                ],
+                "notes": "NVM 缓存与同步逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Transmission_Parameters"
+        ]
+      },
+      {
+        "component_id": "cmp_mode_mgr_001",
+        "name": "Mode_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理传动相关的运行模式与模式切换通知",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (mode switch interface)"
+        },
+        "behavioral_characteristics": "提供模式切换命令与确认，基于外部条件或请求切换运行模式，向 Transmission_Controller 发布模式变更事件，支持回退策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "发布模式切换事件与当前模式状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "Mode_Switch_Event",
+                "trigger": "on external or internal mode change request"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Mode_Switch_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布模式切换通知"
+                      }
+                    ],
+                    "notes": "模式发布"
+                  }
+                ],
+                "notes": "模式管理与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Mode_Switch"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "ifc_gear_001",
+        "name": "I_Gear_Data",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步周期发布 (Sender-Receiver)，非阻塞；周期 10ms；传输采用 latest-value 策略，支持队列缓冲以应对突发；接收端应对数据超时与校验错误触发诊断。",
+        "data_category": "Sensor",
+        "connected_components": [
+          "Gear_Sensor_Proxy",
+          "Vehicle_State_Service",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "端到端传输抖动 <5ms，最大允许丢失周期 2 次触发降级",
+        "data_elements": [
+          "GearPosition:enum",
+          "WheelSpeed:float"
+        ],
+        "direct_paths": "Gear_Sensor_Proxy -> I_Gear_Data -> Transmission_Controller, Vehicle_State_Service"
+      },
+      {
+        "interface_id": "ifc_shift_001",
+        "name": "I_Shift_Command",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步客户端-服务器调用；客户端 (Transmission_Controller) 调用服务器 (Shift_Actuator_Driver) 的 ShiftOperation，调用为阻塞，超时 50ms；错误由返回码与诊断通道报告；调用参数通过 operation arguments 传递。",
+        "data_category": "Control",
+        "connected_components": [
+          "Transmission_Controller",
+          "Shift_Actuator_Driver"
+        ],
+        "performance_requirements": "请求/响应时延 <50ms，支持重试次数 1 次；必须保证在执行时进入互斥区域",
+        "data_elements": [
+          "ShiftRequest(struct: targetGear:int, modeFlags:uint8)",
+          "ShiftAck(struct: status:uint8, errorCode:uint16)"
+        ],
+        "direct_paths": "Transmission_Controller -> I_Shift_Command (sync) -> Shift_Actuator_Driver"
+      },
+      {
+        "interface_id": "ifc_engine_001",
+        "name": "I_Engine_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期或事件驱动发布，频率 20-50ms，可变；latest-value 策略，允许短期丢包；异常上报通过诊断接口。",
+        "data_category": "Sensor",
+        "connected_components": [
+          "Engine_Controller_Proxy",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "发布间隔可变但需保证 50ms 内更新一次关键值",
+        "data_elements": [
+          "EngineTorque:float",
+          "EngineRPM:int"
+        ],
+        "direct_paths": "Engine_Controller_Proxy -> I_Engine_Status -> Transmission_Controller"
+      },
+      {
+        "interface_id": "ifc_params_001",
+        "name": "I_Transmission_Parameters",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "请求/响应与事件通知混合；参数读取为按需同步访问，参数更新触发广播通知；缓存策略用于减少 NVM 访问，写入需持久化到 NVM。",
+        "data_category": "Configuration",
+        "connected_components": [
+          "Transmission_Parameters",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "读取响应 <100ms；写入并持久化需确认机制；参数版本需可追溯",
+        "data_elements": [
+          "shift_thresholds:struct",
+          "hysteresis:float",
+          "enableFlags:uint8"
+        ],
+        "direct_paths": "Transmission_Controller <-> I_Transmission_Parameters (synchronous read / event notify)"
+      },
+      {
+        "interface_id": "ifc_mode_001",
+        "name": "I_Mode_Switch",
+        "type": "MODE-SWITCH-INTERFACE",
+        "communication_pattern": "事件驱动模式切换通知，模式状态以 latest-value 发布；切换需确认，支持回退通知。",
+        "data_category": "Mode",
+        "connected_components": [
+          "Mode_Manager",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "切换确认 <100ms，关键模式切换需优先处理",
+        "data_elements": [
+          "ModeId:enum",
+          "ModeAck:bool"
+        ],
+        "direct_paths": "Mode_Manager -> I_Mode_Switch -> Transmission_Controller"
+      },
+      {
+        "interface_id": "ifc_diag_001",
+        "name": "I_Diagnostics",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步事件驱动，上报使用队列缓冲并周期性汇总发送；重要故障支持立即上报通道；错误处理依赖重试与存储策略。",
+        "data_category": "Diagnostics",
+        "connected_components": [
+          "Diagnostics_Manager",
+          "Transmission_Controller",
+          "Shift_Actuator_Driver",
+          "Gear_Sensor_Proxy",
+          "Engine_Controller_Proxy"
+        ],
+        "performance_requirements": "关键故障优先级较高，应在 100ms 内转发至上位系统；非关键可批量处理",
+        "data_elements": [
+          "DiagEvent(struct: sourceId, severity, code, timestamp)"
+        ],
+        "direct_paths": "各组件 -> I_Diagnostics -> Diagnostics_Manager"
+      }
+    ],
+    "component_generation_order": [
+      "Transmission_Parameters",
+      "Gear_Sensor_Proxy",
+      "Engine_Controller_Proxy",
+      "Vehicle_State_Service",
+      "Mode_Manager",
+      "Shift_Actuator_Driver",
+      "Diagnostics_Manager",
+      "Transmission_Controller"
+    ],
+    "connection_topology": {
+      "component_connections": "传感器代理 (Gear_Sensor_Proxy, Engine_Controller_Proxy) 通过 S-R 接口分别向 Vehicle_State_Service 与 Transmission_Controller 发布；Vehicle_State_Service 进一步向 Transmission_Controller 提供聚合状态；Transmission_Controller 通过 I_Shift_Command 同步调用 Shift_Actuator_Driver；Transmission_Parameters 以参数接口方式服务 Transmission_Controller；Mode_Manager 发布模式切换给 Transmission_Controller；Diagnostics_Manager 集中接收各组件诊断上报。",
+      "data_flow_paths": "Gear_Sensor_Proxy -> I_Gear_Data -> {Vehicle_State_Service, Transmission_Controller}; Engine_Controller_Proxy -> I_Engine_Status -> Transmission_Controller; Transmission_Parameters <-> Transmission_Controller (synchronous reads & event notify); Transmission_Controller -> I_Shift_Command -> Shift_Actuator_Driver -> ack -> Transmission_Controller; All components -> I_Diagnostics -> Diagnostics_Manager.",
+      "control_flow_paths": "Transmission_Controller 主控决策 (周期 20ms) 驱动控制流：基于输入（I_Gear_Data, I_Engine_Status, params）触发同步换挡调用至 Shift_Actuator_Driver；Mode_Manager 可异步触发模式切换控制流；Diagnostics_Manager 在错误场景可影响控制决策（降级）"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用代理 (Proxy) 模式分离硬件/总线细节与逻辑，使用 Sender-Receiver 用于周期性传感器数据以降低阻塞性，使用 Client-Server 用于关键同步换挡操作以保证语义和确认机制。参数和模式集中管理便于调优与一致性。Diagnostics 单独组件提供集中化故障处理与上报。",
+      "tradeoff_analysis": "使用同步客户端-服务器保证换挡确认与时序，但增加了阻塞风险与超时复杂度；为减轻风险，主决策周期与换挡调用分离，并设超时与回退策略。Sender-Receiver 对实时性友好但可能丢失个别样本，采用 latest-value 与短队列缓冲折衷一致性与实时性。集中参数管理便于维护但需注意 NVM 写入延迟与一致性。",
+      "alternative_considerations": "可将 Shift_Actuator_Driver 改为异步命令+状态反馈模式以避免调用阻塞，但需额外状态同步逻辑；也可将 Vehicle_State_Service 合并到 Transmission_Controller 以减少组件间通信，但会降低可重用性与可测试性。",
+      "risk_assessment": "主要风险为同步换挡调用超时导致的决定不确定性与执行失败，缓解措施：超时回退、诊断上报、互斥与重试策略；数据丢失或延迟风险通过缓冲策略与检测时间戳处理；参数一致性风险通过版本控制与确认写入机制缓解。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "将传动控制逻辑拆分为感知、状态聚合、决策、执行与参数/模式管理五类职责：Gear_Sensor_Proxy 负责采集齿轮与车速信号并发布；Engine_Controller_Proxy 提供发动机状态与扭矩信息；Vehicle_State_Service 聚合并标准化车速/模式信息；Transmission_Controller 执行换挡决策和状态机；Shift_Actuator_Driver 负责执行换挡命令与确认；Transmission_Parameters 提供可配置参数存取；Mode_Manager 管理运行模式；Diagnostics_Manager 处理诊断上报与故障隔离。",
+      "data_flow_analysis": "主要数据流：I_Gear_Data (GearPosition: enum, WheelSpeed: float) 从 Gear_Sensor_Proxy 异步周期发布 -> Vehicle_State_Service 与 Transmission_Controller 订阅；I_Engine_Status (EngineTorque: float, Engine_RPM: int) 从 Engine_Controller_Proxy 周期/事件发布 -> Transmission_Controller 订阅；I_Transmission_Parameters (shift_thresholds, hysteresis) 由 Transmission_Parameters 提供给 Transmission_Controller，按请求/缓存机制同步访问；I_Shift_Command (ShiftRequest: operation/params, Ack: status) 为客户端-服务器同步调用，Transmission_Controller 作为客户端调用 Shift_Actuator_Driver 的执行操作，时延要求严格；I_Mode_Switch 提供 ModeManager 向 Transmission_Controller 的模式切换事件；I_Diagnostics 提供 Diagnostics_Manager 向所有组件的诊断上报通道。数据类型统一采用基础标量与枚举，传输时序：车速/齿轮/发动机状态周期发布(10-50ms)，Transmission_Controller 主决策周期 20ms，换挡调用为同步阻塞调用，反馈需在 50ms 内返回。",
+      "timing_requirements": "传感器发布周期: GearSensor 10ms, EngineStatus 20-50ms；Transmission_Controller 决策周期: 20ms (定时触发)；换挡操作 (I_Shift_Command) 响应时延 <50ms；参数读取为低频按需 (<100ms)；诊断上报为事件驱动，允许异步延迟。",
+      "scalability_considerations": "组件以服务/代理模式分离，便于增加额外传感器或 actuator；接口采用发送-接收与客户端-服务器混合，新增数据元素或接口可局部扩展；参数存储与模式管理集中，便于批量调整；建议使用统一批量生成模式 (unified_batch) 以在 Round2 中一致化 ARXML 产出。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "cmp_tx_ctrl_001",
+        "name": "Transmission_Controller",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于传感器与参数执行换挡决策，管理换挡状态机并调用执行器",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (Gear, Speed, EngineStatus)",
+          "output_ports": "2 (ShiftCommand, Diagnostics)"
+        },
+        "behavioral_characteristics": "以 20ms 周期定时触发主决策 Runnable。接收周期数据（齿轮/车速/发动机），执行换挡逻辑和状态机；在条件满足时同步调用 Shift_Actuator_Driver 的换挡操作；管理本地状态机与故障回退；对参数变更进行即时读取并影响决策阈值；对异常进行诊断上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "R-ports 接收 Gear/Speed/EngineStatus；P-ports 发布 Diagnostics 与 状态；PR-ports 用于客户端-服务器 Shift 调用（提供/请求）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Main_Cycle",
+                "trigger": "periodic 20ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Gear_Update_Event",
+                "trigger": "on reception of I_Gear_Data"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Init_Event",
+                "trigger": "on component init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Decision_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取齿轮和车速及发动机扭矩输入"
+                      }
+                    ],
+                    "notes": "周期读取所有输入"
+                  },
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取换挡阈值与滞回参数"
+                      }
+                    ],
+                    "notes": "按需读取参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用执行器换挡操作"
+                      }
+                    ],
+                    "notes": "在决策条件满足时发起同步换挡调用"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布换挡状态与诊断"
+                      }
+                    ],
+                    "notes": "输出状态与诊断信息"
+                  }
+                ],
+                "notes": "主决策执行体"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Engine_Status",
+          "I_Shift_Command",
+          "I_Transmission_Parameters",
+          "I_Mode_Switch",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_gear_proxy_001",
+        "name": "Gear_Sensor_Proxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "采集齿轮位与车速并周期发布到总线/内部消费者",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (raw sensor interface)",
+          "output_ports": "1 (I_Gear_Data publisher)"
+        },
+        "behavioral_characteristics": "以 10ms 周期采样硬件传感器，进行简单滤波/去抖，生成 GearPosition 与 WheelSpeed，按 Sender-Receiver 模式发布。异常检测触发诊断上报。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供 I_Gear_Data 的发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Publish_Cycle",
+                "trigger": "periodic 10ms"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "Publish_Completed",
+                "trigger": "after send"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Publish_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布经滤波的齿轮与速度数据"
+                      }
+                    ],
+                    "notes": "采样后发布"
+                  }
+                ],
+                "notes": "周期采样与发布流程"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_engine_proxy_001",
+        "name": "Engine_Controller_Proxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "收集发动机扭矩与转速信息并提供给传动控制消费者",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CAN/engine bus)",
+          "output_ports": "1 (I_Engine_Status publisher)"
+        },
+        "behavioral_characteristics": "接收发动机总线数据，转换为标准数据结构并按 20-50ms 周期发布。支持异常标志与速率自适应发布策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "对外提供 EngineStatus 发布"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Engine_Publish_Cycle",
+                "trigger": "periodic 20-50ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Engine_Publish_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布发动机扭矩与转速"
+                      }
+                    ],
+                    "notes": "周期性发布发动机状态"
+                  }
+                ],
+                "notes": "发动机数据转换与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Engine_Status",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_shift_driver_001",
+        "name": "Shift_Actuator_Driver",
+        "type": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "purpose": "直接控制换挡执行器，提供同步换挡操作和动作确认",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (I_Shift_Command server interface)",
+          "output_ports": "1 (actuator hardware interface / ack)"
+        },
+        "behavioral_characteristics": "作为服务器暴露换挡操作，执行低级控制序列并在完成或错误时返回状态；处理并发调用保护执行互斥区域；必须在 50ms 内返回调用结果或超时处理。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "PR 类型用于提供服务器操作接口，R-ports 用于读取执行器反馈"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Actuator_Command_Received",
+                "trigger": "on I_Shift_Command invocation"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "Actuation_Complete",
+                "trigger": "on actuator completion"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收换挡操作参数"
+                      }
+                    ],
+                    "notes": "接收并解析服务器调用参数"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入执行器命令寄存"
+                      }
+                    ],
+                    "notes": "驱动低层执行器并返回 Ack"
+                  }
+                ],
+                "notes": "执行器动作实现与确认"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Shift_Command",
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_vehicle_state_001",
+        "name": "Vehicle_State_Service",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "聚合并标准化车速/驾驶模式数据供传动控制与其他服务使用",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (I_Gear_Data, I_Engine_Status)",
+          "output_ports": "1 (aggregated state publisher)"
+        },
+        "behavioral_characteristics": "订阅传感器代理信息，执行数据融合与有效性检测，向 Transmission_Controller 发布统一的车辆状态数据，支持请求式状态查询。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收端和对外发布端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "State_Aggregation",
+                "trigger": "periodic aggregation on sensor arrivals"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Aggregate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收并融合传感器数据"
+                      }
+                    ],
+                    "notes": "融合逻辑"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布标准化车辆状态"
+                      }
+                    ],
+                    "notes": "发布给消费者"
+                  }
+                ],
+                "notes": "状态聚合与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Gear_Data",
+          "I_Engine_Status",
+          "I_Transmission_State"
+        ]
+      },
+      {
+        "component_id": "cmp_diag_mgr_001",
+        "name": "Diagnostics_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集并汇总诊断信息，提供上报与存储接口",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "N (来自各组件的诊断接口)",
+          "output_ports": "1 (diagnostic uplink / storage)"
+        },
+        "behavioral_characteristics": "接收来自各组件的诊断事件，按严重性聚合，触发本地记录或上传；支持异步缓冲（队列）与周期刷新策略；对关键故障可触发安全模式通知。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "接收诊断上报，提供集中上报端"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diag_Aggregation",
+                "trigger": "on diag event or periodic flush"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "Hard_Fault_Detected",
+                "trigger": "on critical error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Process_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收各组件诊断事件"
+                      }
+                    ],
+                    "notes": "处理并分类诊断"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向存储或上传通道发送聚合结果"
+                      }
+                    ],
+                    "notes": "上报或存储诊断信息"
+                  }
+                ],
+                "notes": "诊断事件聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Diagnostics"
+        ]
+      },
+      {
+        "component_id": "cmp_params_001",
+        "name": "Transmission_Parameters",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "存储与提供传动控制可调参数，支持 NVM 持久化",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (parameter access)"
+        },
+        "behavioral_characteristics": "作为参数仓库，支持按需读取/写入，提供缓存与 NVM 同步策略；参数更新可触发通知给 Transmission_Controller。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "提供参数读取/事件通知端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Param_Write_Error",
+                "trigger": "on write failure"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Param_Access_Runnable",
+                "elements": [
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "提供参数目标与端口映射"
+                      }
+                    ],
+                    "notes": "参数读取写入接口"
+                  }
+                ],
+                "notes": "NVM 缓存与同步逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Transmission_Parameters"
+        ]
+      },
+      {
+        "component_id": "cmp_mode_mgr_001",
+        "name": "Mode_Manager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理传动相关的运行模式与模式切换通知",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (mode switch interface)"
+        },
+        "behavioral_characteristics": "提供模式切换命令与确认，基于外部条件或请求切换运行模式，向 Transmission_Controller 发布模式变更事件，支持回退策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "发布模式切换事件与当前模式状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "Mode_Switch_Event",
+                "trigger": "on external or internal mode change request"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Mode_Switch_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布模式切换通知"
+                      }
+                    ],
+                    "notes": "模式发布"
+                  }
+                ],
+                "notes": "模式管理与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "I_Mode_Switch"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "ifc_gear_001",
+        "name": "I_Gear_Data",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步周期发布 (Sender-Receiver)，非阻塞；周期 10ms；传输采用 latest-value 策略，支持队列缓冲以应对突发；接收端应对数据超时与校验错误触发诊断。",
+        "data_category": "Sensor",
+        "connected_components": [
+          "Gear_Sensor_Proxy",
+          "Vehicle_State_Service",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "端到端传输抖动 <5ms，最大允许丢失周期 2 次触发降级",
+        "data_elements": [
+          "GearPosition:enum",
+          "WheelSpeed:float"
+        ],
+        "direct_paths": "Gear_Sensor_Proxy -> I_Gear_Data -> Transmission_Controller, Vehicle_State_Service"
+      },
+      {
+        "interface_id": "ifc_shift_001",
+        "name": "I_Shift_Command",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步客户端-服务器调用；客户端 (Transmission_Controller) 调用服务器 (Shift_Actuator_Driver) 的 ShiftOperation，调用为阻塞，超时 50ms；错误由返回码与诊断通道报告；调用参数通过 operation arguments 传递。",
+        "data_category": "Control",
+        "connected_components": [
+          "Transmission_Controller",
+          "Shift_Actuator_Driver"
+        ],
+        "performance_requirements": "请求/响应时延 <50ms，支持重试次数 1 次；必须保证在执行时进入互斥区域",
+        "data_elements": [
+          "ShiftRequest(struct: targetGear:int, modeFlags:uint8)",
+          "ShiftAck(struct: status:uint8, errorCode:uint16)"
+        ],
+        "direct_paths": "Transmission_Controller -> I_Shift_Command (sync) -> Shift_Actuator_Driver"
+      },
+      {
+        "interface_id": "ifc_engine_001",
+        "name": "I_Engine_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期或事件驱动发布，频率 20-50ms，可变；latest-value 策略，允许短期丢包；异常上报通过诊断接口。",
+        "data_category": "Sensor",
+        "connected_components": [
+          "Engine_Controller_Proxy",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "发布间隔可变但需保证 50ms 内更新一次关键值",
+        "data_elements": [
+          "EngineTorque:float",
+          "EngineRPM:int"
+        ],
+        "direct_paths": "Engine_Controller_Proxy -> I_Engine_Status -> Transmission_Controller"
+      },
+      {
+        "interface_id": "ifc_params_001",
+        "name": "I_Transmission_Parameters",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "请求/响应与事件通知混合；参数读取为按需同步访问，参数更新触发广播通知；缓存策略用于减少 NVM 访问，写入需持久化到 NVM。",
+        "data_category": "Configuration",
+        "connected_components": [
+          "Transmission_Parameters",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "读取响应 <100ms；写入并持久化需确认机制；参数版本需可追溯",
+        "data_elements": [
+          "shift_thresholds:struct",
+          "hysteresis:float",
+          "enableFlags:uint8"
+        ],
+        "direct_paths": "Transmission_Controller <-> I_Transmission_Parameters (synchronous read / event notify)"
+      },
+      {
+        "interface_id": "ifc_mode_001",
+        "name": "I_Mode_Switch",
+        "type": "MODE-SWITCH-INTERFACE",
+        "communication_pattern": "事件驱动模式切换通知，模式状态以 latest-value 发布；切换需确认，支持回退通知。",
+        "data_category": "Mode",
+        "connected_components": [
+          "Mode_Manager",
+          "Transmission_Controller"
+        ],
+        "performance_requirements": "切换确认 <100ms，关键模式切换需优先处理",
+        "data_elements": [
+          "ModeId:enum",
+          "ModeAck:bool"
+        ],
+        "direct_paths": "Mode_Manager -> I_Mode_Switch -> Transmission_Controller"
+      },
+      {
+        "interface_id": "ifc_diag_001",
+        "name": "I_Diagnostics",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步事件驱动，上报使用队列缓冲并周期性汇总发送；重要故障支持立即上报通道；错误处理依赖重试与存储策略。",
+        "data_category": "Diagnostics",
+        "connected_components": [
+          "Diagnostics_Manager",
+          "Transmission_Controller",
+          "Shift_Actuator_Driver",
+          "Gear_Sensor_Proxy",
+          "Engine_Controller_Proxy"
+        ],
+        "performance_requirements": "关键故障优先级较高，应在 100ms 内转发至上位系统；非关键可批量处理",
+        "data_elements": [
+          "DiagEvent(struct: sourceId, severity, code, timestamp)"
+        ],
+        "direct_paths": "各组件 -> I_Diagnostics -> Diagnostics_Manager"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "传感器代理 (Gear_Sensor_Proxy, Engine_Controller_Proxy) 通过 S-R 接口分别向 Vehicle_State_Service 与 Transmission_Controller 发布；Vehicle_State_Service 进一步向 Transmission_Controller 提供聚合状态；Transmission_Controller 通过 I_Shift_Command 同步调用 Shift_Actuator_Driver；Transmission_Parameters 以参数接口方式服务 Transmission_Controller；Mode_Manager 发布模式切换给 Transmission_Controller；Diagnostics_Manager 集中接收各组件诊断上报。",
+      "data_flow_paths": "Gear_Sensor_Proxy -> I_Gear_Data -> {Vehicle_State_Service, Transmission_Controller}; Engine_Controller_Proxy -> I_Engine_Status -> Transmission_Controller; Transmission_Parameters <-> Transmission_Controller (synchronous reads & event notify); Transmission_Controller -> I_Shift_Command -> Shift_Actuator_Driver -> ack -> Transmission_Controller; All components -> I_Diagnostics -> Diagnostics_Manager.",
+      "control_flow_paths": "Transmission_Controller 主控决策 (周期 20ms) 驱动控制流：基于输入（I_Gear_Data, I_Engine_Status, params）触发同步换挡调用至 Shift_Actuator_Driver；Mode_Manager 可异步触发模式切换控制流；Diagnostics_Manager 在错误场景可影响控制决策（降级）"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用代理 (Proxy) 模式分离硬件/总线细节与逻辑，使用 Sender-Receiver 用于周期性传感器数据以降低阻塞性，使用 Client-Server 用于关键同步换挡操作以保证语义和确认机制。参数和模式集中管理便于调优与一致性。Diagnostics 单独组件提供集中化故障处理与上报。",
+      "tradeoff_analysis": "使用同步客户端-服务器保证换挡确认与时序，但增加了阻塞风险与超时复杂度；为减轻风险，主决策周期与换挡调用分离，并设超时与回退策略。Sender-Receiver 对实时性友好但可能丢失个别样本，采用 latest-value 与短队列缓冲折衷一致性与实时性。集中参数管理便于维护但需注意 NVM 写入延迟与一致性。",
+      "alternative_considerations": "可将 Shift_Actuator_Driver 改为异步命令+状态反馈模式以避免调用阻塞，但需额外状态同步逻辑；也可将 Vehicle_State_Service 合并到 Transmission_Controller 以减少组件间通信，但会降低可重用性与可测试性。",
+      "risk_assessment": "主要风险为同步换挡调用超时导致的决定不确定性与执行失败，缓解措施：超时回退、诊断上报、互斥与重试策略；数据丢失或延迟风险通过缓冲策略与检测时间戳处理；参数一致性风险通过版本控制与确认写入机制缓解。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7493,
+    "output_tokens": 9756,
+    "total_tokens": 17249,
+    "component_count": 8,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

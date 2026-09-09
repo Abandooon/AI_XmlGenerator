@@ -1,0 +1,13 @@
+{
+  "version": "atlas.pil.conditional_answer.clarification.2026-09-09",
+  "selected_conclusion_rule": "conditional_answer evaluates whether the selected conclusion itself depends on unresolved facts or legal preconditions. Do not use uncertainty about a downstream conclusion to mark an already determined selected conclusion as conditional.",
+  "case19_canonical": {
+    "conclusion": "No_EU_jurisdiction_use_member_state_law",
+    "conditional_answer": false,
+    "explanation": "Referral to national jurisdiction law is established; the downstream outcome under German law remains undetermined."
+  },
+  "historical_interpretation": "The reviewed 19|p3|1 answer is substantively acceptable but has a level-of-conclusion ambiguity in the flag. No global acceptance of arbitrary true/false labels.",
+  "court_specificity_rule": "Do not infer a particular city court solely from jurisdiction of the defendant's Member State. Evaluate jurisdiction agreements subject to applicable consumer protections.",
+  "deployment_status": "Clarified specification for future protocol use; not retrospectively inserted into frozen V4.1 prompts.",
+  "rerun_requirement": "No model rerun for recording these findings. A claim about performance under newly clarified prompts requires a separately frozen generation run."
+}

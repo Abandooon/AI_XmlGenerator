@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "method": "Copied the complete immutable payload to a separate directory with spaces; launched from an unrelated working directory; explicitly selected Node; regenerated output into an initially empty third directory.",
+  "command_template": "python -B <relocated-package>/tools/verify.py --work-dir <empty-work-directory> --node <node-executable>",
+  "same_interpreter_environment": true,
+  "separate_machine_claimed": false,
+  "author_data_paths_disallowed": true,
+  "all_payload_files_unchanged_after_execution": true,
+  "payload_files_compared": 76,
+  "package_manifest_sha256": "c79ac703be02992c400a3ed7523138547f7a3f9746df27f1f17c704f93ebf0a7",
+  "result_sha256": "39872ceb1d78b26ff3b0565408531934d73eb5f523448c172c30ca530fc540e6",
+  "guard_negative_controls": {
+    "outside_package_input_rejected": true,
+    "network_resolution_rejected_before_access": true
+  },
+  "new_model_requests": 0
+}

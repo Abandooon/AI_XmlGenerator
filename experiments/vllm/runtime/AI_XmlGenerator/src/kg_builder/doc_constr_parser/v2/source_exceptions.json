@@ -1,0 +1,15 @@
+{
+  "TPS_SWCT_01193": {
+    "document": "chapter5.md",
+    "line": 182,
+    "issue": "The parent TPS block has no cid:99 before nested constr_1004.",
+    "recovery_policy": "End the parent expression immediately before constr_1004 and keep the source record malformed until semantic curation confirms the relationship."
+  },
+  "TPS_SWCT_01367": {
+    "document": "chapter7.md",
+    "line": 1183,
+    "issue": "PDF-to-Markdown ordering placed cid:100 before the official ID and split the title.",
+    "recovery_policy": "Keep raw evidence unchanged; recover title and expression in semantic curation."
+  }
+}
+

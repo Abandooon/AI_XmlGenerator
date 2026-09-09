@@ -1,0 +1,600 @@
+# ===== LLM API 配置 =====
+llm:
+  model_name: "gpt-5.4-nano-2026-03-17"        # Gemini模型名称
+  llm_api_url: "http://127.0.0.1:9/offline"
+  api_key: "DUMMY_OFFLINE_NO_CALLS"
+  temperature: 0.2                                   # 生成温度参数
+  max_output_tokens: 128000                     # 提升到100K - 利用Gemini长输出能力
+  reasoning_effort: "medium"                   # 正式模型比较固定推理强度
+  strict_json_schema: true                      # strict transport失败即终止
+  request_timeout_seconds: 180                  # provider request hard timeout
+  max_retries: 3                                # ordinary non-formal default
+  stream_responses: false                       # formal contract overrides this
+  max_context_tokens: 400000                      # 提升到2M - Gemini支持2M上下文
+  # 文件上传功能开关（使用代理API时建议关闭）
+  enable_file_upload: false
+  # 分阶段温度配置（新增）
+  stage_temperatures:
+    round1: 0.7    # 架构设计阶段：较低温度，更确定性
+    round2: 0.3    # 详细生成阶段：低温度，严格遵循Schema
+    interface: 0.2 # 接口生成：极低温度，保证格式正确
+
+# ===== 对话系统配置 =====
+conversation:
+  session_ttl: 86400                                # 会话存活时间（秒）- 24小时
+  enable_memory: true                               # 启用会话记忆功能
+
+# ===== 内存管理配置 =====
+memory:
+  session_ttl: 86400                               # 会话超时时间（秒）
+  max_session_history: 20                          # 最大会话历史记录数
+  enable_user_preferences: true                    # 启用用户偏好学习
+  storage_backend: "memory"                        # 存储后端：memory/redis
+  cache_size: 100                                  # 缓存大小
+
+# ===== 知识图谱配置 =====
+knowledge_graph:
+  neo4j_uri: ""
+  neo4j_password: ""                              # Set NEO4J_PASSWORD in .env
+  neo4j_user: "neo4j"
+  neo4j_database: "neo4j"
+  max_safety_depth: 100                            # 提升安全深度，允许更深的Schema
+
+# ===== ConstraintV2 检索配置 =====
+constraint_engine:
+  enabled: true
+  backend: "hybrid"                # Neo4j 优先；不一致或不可用时显式回退本地
+  max_constraints_interface: 20
+  max_constraints_component: 24
+  per_family_limit: 5
+
+# ===== 生成后验证 =====
+validation:
+  enabled: true
+  plan_path: "src/generate_formal_constraints/v2/validation_plan.json"
+  xsd_enabled: true
+  xsd_path: "src/validation/data/AUTOSAR_4-2-2.xsd"
+  reference_scope: "partial"       # 生成包不包含平台/外部引用，不能宣称 complete
+  auto_repair_enabled: true       # 对可修复错误执行受控的“修复-重验”闭环
+  auto_repair_max_rounds: 2       # 仅接受验证评分严格改善的候选结果
+  auto_repair_temperature: 0.0
+
+# ===== standard_types配置 =====
+standard_types:
+  standard_types_path: "src/llm_generation/standard_types/data"
+
+# ===== Schema生成配置 =====
+schema_generation:
+  # 终止条件配置
+  termination_rules:
+    ref_suffixes: ["-REF", "-TREF", "-IREF"]       # 引用类型后缀
+    standard_prefixes: ["/AUTOSAR/", "/DataTypes/"] # 标准类型前缀
+
+  # 缓存配置
+  cache_config:
+    enable_request_cache: true                      # 启用请求级缓存
+    enable_application_cache: true                  # 启用应用级缓存
+    application_cache_ttl: 7200                     # 提升缓存时间到2小时
+    max_cache_size: 500                            # 增大缓存容量
+
+  # 性能控制
+  performance:
+    query_timeout: 60                               # 增加查询超时
+    max_properties_per_object: 5000                 # 允许更多属性
+    parallel_query: true                            # 启用并行查询
+
+# ===== 生成策略配置（核心优化） =====
+generation:
+  single_batch_threshold: 25                        # 大幅提升到25个组件
+  max_batch_size: 15                               # 增大单批最大容量
+  enable_semantic_placeholders: false               # 关闭语义占位符，直接处理完整引用
+  reference_resolution_timeout: 600                 # 增加引用解析超时
+  enable_direct_reference: true                     # 新增：启用直接引用模式
+  max_schema_injection_depth: 100                    # 新增：Schema注入深度
+
+# ===== 语义解析配置（简化） =====
+semantic_resolution:
+  # 简化语义解析，因为不再主要依赖语义占位符
+  enabled: false                                    # 默认关闭语义解析
+  identifiers: ["引用"]                            # 最小化标识符集合
+  patterns: []                                      # 清空模式列表
+  fuzzy_match_threshold: 0.9                       # 提高匹配阈值
+  enable_heuristic_resolution: false               # 关闭启发式解析
+  resolution_cache_size: 100                       # 减小缓存
+
+# Round1 架构设计Schema配置 - 基于round1.json元模型
+round1_schema:
+  # 基于round1.json中的SW-COMPONENT-TYPE定义
+  component_types:
+    # 从round1.json提取的具体组件类型
+    allowed_types:
+      - "APPLICATION-SW-COMPONENT-TYPE"
+      - "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE"
+      - "ECU-ABSTRACTION-SW-COMPONENT-TYPE"
+      - "NV-BLOCK-SW-COMPONENT-TYPE"
+      - "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+      - "SERVICE-PROXY-SW-COMPONENT-TYPE"
+      - "SERVICE-SW-COMPONENT-TYPE"
+      - "PARAMETER-SW-COMPONENT-TYPE"
+
+    # 基于round1.json中SW-COMPONENT-TYPE的必需属性(min_occurs=1)
+    required_attributes:
+      - "SHORT-NAME"  # min_occurs: 1, max_occurs: 1
+
+    # 基于round1.json中SW-COMPONENT-TYPE的可选属性(min_occurs=0)
+    optional_attributes:
+      - "PORTS"                    # min_occurs: 0, max_occurs: -1
+      - "SW-COMPONENT-DOCUMENTATION" # min_occurs: 0, max_occurs: -1
+      - "CONSISTENCY-NEEDS"        # min_occurs: 0, max_occurs: -1
+      - "PORT-GROUP"               # min_occurs: 0, max_occurs: -1
+      - "UNIT-GROUP-REF"           # min_occurs: 0, max_occurs: -1
+      - "DESC"                     # min_occurs: 0, max_occurs: 1
+      - "CATEGORY"                 # min_occurs: 0, max_occurs: 1
+      - "ADMIN-DATA"               # min_occurs: 0, max_occurs: 1
+      - "ANNOTATION"               # min_occurs: 0, max_occurs: -1
+
+  # Round1架构设计增强配置
+  round1_element_design:
+    # 端口类型定义
+    port_types:
+      - name: "P-PORT-PROTOTYPE"
+        description: "Provided port for sending data"
+      - name: "R-PORT-PROTOTYPE"
+        description: "Required port for receiving data"
+      - name: "PR-PORT-PROTOTYPE"
+        description: "Provided-Required port for bidirectional"
+
+    # 事件类型定义（基于ports_events.json）
+    event_types:
+      - name: "TIMING-EVENT"
+        description: "Periodic time-triggered event"
+      - name: "DATA-RECEIVED-EVENT"
+        description: "Triggered when data is received"
+      - name: "DATA-SEND-COMPLETED-EVENT"
+        description: "Triggered when data send completes"
+      - name: "OPERATION-INVOKED-EVENT"
+        description: "Triggered when operation is called"
+      - name: "SWC-MODE-SWITCH-EVENT"
+        description: "Triggered on mode changes"
+      - name: "INIT-EVENT"
+        description: "Initialization event"
+      - name: "DATA-RECEIVE-ERROR-EVENT"
+        description: "Error in data reception"
+      - name: "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT"
+        description: "Async server call completion"
+      - name: "BACKGROUND-EVENT"
+        description: "Background processing event"
+      - name: "DATA-WRITE-COMPLETED-EVENT"
+        description: "Data write completion"
+      - name: "EXTERNAL-TRIGGER-OCCURRED-EVENT"
+        description: "External trigger"
+      - name: "INTERNAL-TRIGGER-OCCURRED-EVENT"
+        description: "Internal trigger"
+      - name: "MODE-SWITCHED-ACK-EVENT"
+        description: "Mode switch acknowledgment"
+      - name: "SWC-MODE-MANAGER-ERROR-EVENT"
+        description: "Mode manager error"
+      - name: "TRANSFORMER-HARD-ERROR-EVENT"
+        description: "Transformer error"
+
+  runnable_entity_config:
+  # 旧字段保留以便兼容，但不再用于 LLM 枚举
+    required_elements: []
+    optional_elements: []
+
+    # 新：枚举 LLM 可选择的“容器级”键（key）
+    elements:
+      # ---------- RunnableEntity 自身 ----------
+      - key: ARGUMENTS
+        xml_wrapper_tag: ARGUMENTS
+        xml_tag: RUNNABLE-ENTITY-ARGUMENT
+        type: RunnableEntityArgument
+        min: 0
+        max: -1
+
+      - key: ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS
+        xml_wrapper_tag: ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS
+        xml_tag: ASYNCHRONOUS-SERVER-CALL-RESULT-POINT
+        type: AsynchronousServerCallResultPoint
+        min: 0
+        max: -1
+
+      - key: CAN-BE-INVOKED-CONCURRENTLY
+        xml_wrapper_tag: null
+        xml_tag: CAN-BE-INVOKED-CONCURRENTLY
+        type: Boolean
+        min: 0
+        max: 1
+
+      - key: DATA-READ-ACCESSS          # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: DATA-READ-ACCESSS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-RECEIVE-POINT-BY-ARGUMENTS
+        xml_wrapper_tag: DATA-RECEIVE-POINT-BY-ARGUMENTS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-RECEIVE-POINT-BY-VALUES
+        xml_wrapper_tag: DATA-RECEIVE-POINT-BY-VALUES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-SEND-POINTS
+        xml_wrapper_tag: DATA-SEND-POINTS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: DATA-WRITE-ACCESSS         # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: DATA-WRITE-ACCESSS
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: EXTERNAL-TRIGGERING-POINTS
+        xml_wrapper_tag: EXTERNAL-TRIGGERING-POINTS
+        xml_tag: EXTERNAL-TRIGGERING-POINT
+        type: ExternalTriggeringPoint
+        min: 0
+        max: -1
+
+      - key: INTERNAL-TRIGGERING-POINTS
+        xml_wrapper_tag: INTERNAL-TRIGGERING-POINTS
+        xml_tag: INTERNAL-TRIGGERING-POINT
+        type: InternalTriggeringPoint
+        min: 0
+        max: -1
+
+      - key: MODE-ACCESS-POINTS
+        xml_wrapper_tag: MODE-ACCESS-POINTS
+        xml_tag: MODE-ACCESS-POINT
+        type: ModeAccessPoint
+        min: 0
+        max: -1
+
+      - key: MODE-SWITCH-POINTS
+        xml_wrapper_tag: MODE-SWITCH-POINTS
+        xml_tag: MODE-SWITCH-POINT
+        type: ModeSwitchPoint
+        min: 0
+        max: -1
+
+      - key: PARAMETER-ACCESSS          # 注意：三连 S，保持与元模型一致
+        xml_wrapper_tag: PARAMETER-ACCESSS
+        xml_tag: PARAMETER-ACCESS
+        type: ParameterAccess
+        min: 0
+        max: -1
+
+      - key: READ-LOCAL-VARIABLES
+        xml_wrapper_tag: READ-LOCAL-VARIABLES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: SERVER-CALL-POINTS
+        xml_wrapper_tag: null
+        xml_tag: SERVER-CALL-POINTS
+        type: ServerCallPoints
+        min: 0
+        max: -1
+
+      - key: SYMBOL
+        xml_wrapper_tag: null
+        xml_tag: SYMBOL
+        type: CIdentifier
+        min: 0
+        max: 1
+
+      - key: WAIT-POINTS
+        xml_wrapper_tag: WAIT-POINTS
+        xml_tag: WAIT-POINT
+        type: WaitPoint
+        min: 0
+        max: -1
+
+      - key: WRITTEN-LOCAL-VARIABLES
+        xml_wrapper_tag: WRITTEN-LOCAL-VARIABLES
+        xml_tag: VARIABLE-ACCESS
+        type: VariableAccess
+        min: 0
+        max: -1
+
+      - key: VARIATION-POINT
+        xml_wrapper_tag: null
+        xml_tag: VARIATION-POINT
+        type: VariationPoint
+        min: 0
+        max: 1
+
+      # ---------- ExecutableEntity 继承 ----------
+      - key: ACTIVATION-REASONS
+        xml_wrapper_tag: ACTIVATION-REASONS
+        xml_tag: EXECUTABLE-ENTITY-ACTIVATION-REASON
+        type: ExecutableEntityActivationReason
+        min: 0
+        max: -1
+
+      - key: CAN-ENTER-EXCLUSIVE-AREA-REFS
+        xml_wrapper_tag: CAN-ENTER-EXCLUSIVE-AREA-REFS
+        xml_tag: CAN-ENTER-EXCLUSIVE-AREA-REF
+        type: CanEnterExclusiveAreaRef
+        min: 0
+        max: -1
+
+      - key: EXCLUSIVE-AREA-NESTING-ORDER-REFS
+        xml_wrapper_tag: EXCLUSIVE-AREA-NESTING-ORDER-REFS
+        xml_tag: EXCLUSIVE-AREA-NESTING-ORDER-REF
+        type: ExclusiveAreaNestingOrderRef
+        min: 0
+        max: -1
+
+      - key: MINIMUM-START-INTERVAL
+        xml_wrapper_tag: null
+        xml_tag: MINIMUM-START-INTERVAL
+        type: TimeValue
+        min: 0
+        max: 1
+
+      - key: REENTRANCY-LEVEL
+        xml_wrapper_tag: null
+        xml_tag: REENTRANCY-LEVEL
+        type: ReentrancyLevelEnum
+        min: 0
+        max: 1
+
+      - key: RUNS-INSIDE-EXCLUSIVE-AREA-REFS
+        xml_wrapper_tag: RUNS-INSIDE-EXCLUSIVE-AREA-REFS
+        xml_tag: RUNS-INSIDE-EXCLUSIVE-AREA-REF
+        type: RunsInsideExclusiveAreaRef
+        min: 0
+        max: -1
+
+      - key: SW-ADDR-METHOD-REF
+        xml_wrapper_tag: null
+        xml_tag: SW-ADDR-METHOD-REF
+        type: SwAddrMethodRef
+        min: 0
+        max: 1
+
+  preselect:
+    unions:
+      # VariableAccess: ACCESSED-VARIABLE 三选一
+      - of: "ACCESSED-VARIABLE"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "AUTOSAR-VARIABLE-IREF"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REF"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REFS"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "LOCAL-VARIABLE-REF"
+            selectable_children: [ ]
+
+      # ModeAccessPoint / ModeSwitchPoint: MODE-GROUP-IREF 二选一
+      - of: "MODE-GROUP-IREF"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+            selectable_children: [ ]
+          - name: "P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+            selectable_children: [ ]
+
+      # ParameterAccess: ACCESSED-PARAMETER 二选一
+      - of: "ACCESSED-PARAMETER"
+        min_select: 1
+        max_select: 1
+        variants:
+          - name: "AUTOSAR-PARAMETER-IREF"
+            selectable_children:
+              - "TARGET-DATA-PROTOTYPE-REF"
+              - "PORT-PROTOTYPE-REF"
+              - "CONTEXT-DATA-PROTOTYPE-REF"
+              - "ROOT-VARIABLE-DATA-PROTOTYPE-REF"
+          - name: "LOCAL-PARAMETER-REF"
+            selectable_children: [ ]
+
+      # ServerCallPoints：同步/异步可并存（可多选），并允许精确选择子键
+      - of: "SERVER-CALL-POINTS"
+        min_select: 1
+        max_select: 2
+        variants:
+          - name: "SYNCHRONOUS-SERVER-CALL-POINT"
+            selectable_children:
+              - "OPERATION-IREF"
+              - "TIMEOUT"
+              - "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+          - name: "ASYNCHRONOUS-SERVER-CALL-POINT"
+            selectable_children:
+              - "OPERATION-IREF"
+              - "TIMEOUT"
+
+  # 基于round1.json中的PORT-INTERFACE定义
+  interface_types:
+    # 从round1.json提取的具体接口类型
+    allowed_types:
+      - "CLIENT-SERVER-INTERFACE"
+      - "NV-DATA-INTERFACE"
+      - "PARAMETER-INTERFACE"
+      - "SENDER-RECEIVER-INTERFACE"
+      - "MODE-SWITCH-INTERFACE"
+      - "TRIGGER-INTERFACE"
+
+    # 基于round1.json中PORT-INTERFACE的必需属性
+    required_attributes:
+      - "SHORT-NAME"  # min_occurs: 1, max_occurs: 1
+      - "IS-SERVICE"  # min_occurs: 1, max_occurs: 1
+
+    # 基于round1.json中PORT-INTERFACE的可选属性
+    optional_attributes:
+      - "SERVICE-KIND"      # min_occurs: 0, max_occurs: 1
+      - "DESC"              # min_occurs: 0, max_occurs: 1
+      - "CATEGORY"          # min_occurs: 0, max_occurs: 1
+      - "ADMIN-DATA"        # min_occurs: 0, max_occurs: 1
+      - "ANNOTATION"        # min_occurs: 0, max_occurs: -1
+
+  # 基于round1.json中的MODE-DECLARATION-GROUP定义
+  mode_declaration_group:
+    required_attributes:
+      - "SHORT-NAME"        # min_occurs: 1, max_occurs: 1
+      - "INITIAL-MODE-REF"  # min_occurs: 1, max_occurs: 1
+      - "MODE-DECLARATION"  # min_occurs: 1, max_occurs: -1
+
+    optional_attributes:
+      - "MODE-TRANSITION"              # min_occurs: 0, max_occurs: -1
+      - "MODE-MANAGER-ERROR-BEHAVIOR"  # min_occurs: 0, max_occurs: 1
+      - "MODE-USER-ERROR-BEHAVIOR"     # min_occurs: 0, max_occurs: 1
+      - "ON-TRANSITION-VALUE"          # min_occurs: 0, max_occurs: 1
+
+  # Round1输出格式定义 - 映射到round1.json的元素
+  output_schema:
+    system_analysis:
+      required_fields: []  # Round1不直接对应round1.json，这是架构分析
+      optional_fields: ["functional_decomposition", "data_flow_analysis"]
+
+    component_plan:
+      # 每个组件必须指定类型（基于round1.json的组件类型）
+      required_fields: ["name", "type"]  # type必须是allowed_types之一
+      optional_fields: ["purpose", "ports_needed", "behaviors_needed"]
+
+    interface_plan:
+      # 每个接口必须指定类型（基于round1.json的接口类型）
+      required_fields: ["name", "type"]  # type必须是allowed_types之一
+      optional_fields: ["is_service", "connected_components"]
+
+# 元模型注入配置（大幅增强）
+metamodel_injection:
+  round1_depth: 3                                  # Round1也注入更多信息
+  round2_depth: 15                                 # 大幅增加Round2深度
+  include_required_attributes: true
+  include_min_occurs: true
+  include_inheritance_chain: true                  # 新增：包含继承链
+  include_all_children: true                       # 新增：包含所有子元素
+  max_element_expansion: 1000                      # 新增：最大元素展开数
+
+# ===== 批处理优化配置（新增） =====
+batch_optimization:
+  enable_intelligent_grouping: true                # 智能分组
+  prefer_single_batch: true                        # 优先单批生成
+  component_complexity_weights:                    # 组件复杂度权重
+    SIMPLE: 1
+    MEDIUM: 3
+    COMPLEX: 5
+  max_complexity_per_batch: 50                     # 每批最大复杂度总和
+
+# ===== 术语库配置 =====
+terminology:
+  # 组件类型定义
+  component_types:
+    - name: "APPLICATION-SW-COMPONENT-TYPE"
+      description: "应用软件组件类型，实现业务逻辑和算法处理"
+      scenarios:
+        - "业务逻辑处理"
+        - "算法计算"
+        - "数据处理"
+        - "控制逻辑"
+        - "状态管理"
+      complexity: "Medium"
+
+    - name: "SENSOR-ACTUATOR-SW-COMPONENT-TYPE"
+      description: "传感器执行器组件类型，处理硬件接口和I/O操作"
+      scenarios:
+        - "传感器数据采集"
+        - "执行器控制"
+        - "硬件抽象"
+        - "I/O处理"
+        - "信号转换"
+      complexity: "Simple"
+
+    - name: "COMPOSITION-SW-COMPONENT-TYPE"
+      description: "组合组件类型，协调多个子组件的交互"
+      scenarios:
+        - "组件编排"
+        - "系统集成"
+        - "复杂业务流程"
+        - "多组件协调"
+        - "架构组织"
+      complexity: "Complex"
+
+    - name: "PARAMETER-SW-COMPONENT-TYPE"
+      description: "参数组件类型，管理配置参数和标定数据"
+      scenarios:
+        - "参数配置"
+        - "标定数据管理"
+        - "运行时参数"
+        - "系统设置"
+      complexity: "Simple"
+
+  # 接口类型定义
+  interface_types:
+    - name: "SENDER-RECEIVER-INTERFACE"
+      description: "发送接收接口，用于异步数据传输和信号通信"
+      communication_mode: "异步"
+      scenarios:
+        - "传感器数据传输"
+        - "状态信息广播"
+        - "事件通知"
+        - "周期性数据更新"
+        - "信号传递"
+
+    - name: "CLIENT-SERVER-INTERFACE"
+      description: "客户端服务端接口，用于同步服务调用和请求响应"
+      communication_mode: "同步"
+      scenarios:
+        - "服务请求响应"
+        - "远程过程调用"
+        - "查询操作"
+        - "控制指令"
+        - "配置设置"
+
+    - name: "MODE-SWITCH-INTERFACE"
+      description: "模式切换接口，用于系统状态和运行模式管理"
+      communication_mode: "事件驱动"
+      scenarios:
+        - "系统状态切换"
+        - "运行模式管理"
+        - "电源模式控制"
+        - "操作模式变更"
+
+    - name: "NV-DATA-INTERFACE"
+      description: "非易失性数据接口，用于持久化数据存储和恢复"
+      communication_mode: "同步"
+      scenarios:
+        - "配置数据存储"
+        - "历史数据保存"
+        - "参数持久化"
+        - "故障信息记录"
+
+  # 设计模式定义（简化）
+  design_patterns:
+    - name: "统一批次生成模式"
+      components: ["ALL"]
+      interfaces: ["ALL"]
+      scenarios:
+        - "利用长上下文一次性生成所有组件"
+        - "保持引用一致性"
+        - "减少批次切换开销"
+
+# ===== 系统配置 =====
+debug_mode: true
+output_dir: "src/llm_generation/output"

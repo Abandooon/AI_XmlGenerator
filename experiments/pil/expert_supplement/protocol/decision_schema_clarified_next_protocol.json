@@ -1,0 +1,107 @@
+{
+  "$id": "schema/decision_schema_clarified_next_protocol.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "conclusion",
+    "forum",
+    "forum_type",
+    "alternative_forum_types",
+    "conditional_answer",
+    "explicit_abstention",
+    "legal_basis",
+    "reasoning",
+    "missing_facts"
+  ],
+  "properties": {
+    "conclusion": {
+      "type": "string",
+      "enum": [
+        "Court_of_X_has_jurisdiction",
+        "Authority_of_X_has_jurisdiction",
+        "Stay_for_first_seised",
+        "May_stay_or_decline_for_related_actions",
+        "Decline_in_favor_of_chosen_court",
+        "No_EU_jurisdiction_use_member_state_law",
+        "Abstain_Insufficient_Info"
+      ]
+    },
+    "forum": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The competent court, legal forum, or public authority; use 'none' only for explicit abstention. Do not name a specific city court solely from a rule establishing jurisdiction in a Member State; explain any required specific-jurisdiction conditions."
+    },
+    "forum_type": {
+      "type": "string",
+      "enum": [
+        "exclusive",
+        "agreement",
+        "special",
+        "general",
+        "lis_pendens",
+        "related_actions",
+        "appearance",
+        "none"
+      ]
+    },
+    "alternative_forum_types": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "exclusive",
+          "agreement",
+          "special",
+          "general",
+          "lis_pendens",
+          "related_actions",
+          "appearance"
+        ]
+      }
+    },
+    "conditional_answer": {
+      "type": "boolean",
+      "description": "conditional_answer evaluates whether the selected conclusion itself depends on unresolved facts or legal preconditions. Do not use uncertainty about a downstream conclusion to mark an already determined selected conclusion as conditional."
+    },
+    "explicit_abstention": {
+      "type": "boolean"
+    },
+    "legal_basis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "instrument",
+          "provision"
+        ],
+        "properties": {
+          "instrument": {
+            "type": "string",
+            "enum": [
+              "BRUSSELS_I_BIS",
+              "EU_TRADE_MARK_REGULATION"
+            ]
+          },
+          "provision": {
+            "type": "string",
+            "pattern": "^Art\\.(\\d+)(\\(\\d+\\))?(\\([a-z]\\))?$"
+          }
+        }
+      }
+    },
+    "reasoning": {
+      "type": "string",
+      "minLength": 1
+    },
+    "missing_facts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$comment": "Post-hoc clarified description for a future protocol; not used in V4.1 generation or Erratum1 scoring."
+}

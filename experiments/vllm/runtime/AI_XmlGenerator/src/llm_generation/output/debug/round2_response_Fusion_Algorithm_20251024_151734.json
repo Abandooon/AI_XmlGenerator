@@ -1,0 +1,167 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Fusion_Algorithm",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Fusion_Output",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Fusion_Data_Interface"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Radar_Data_Input",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Radar_Data_Interface"
+          }
+        },
+        {
+          "SHORT-NAME": "R_Camera_Data_Input",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Camera_Data_Interface"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "Fusion_Algorithm_Internal_Behavior",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "Fusion_Runnable",
+          "MINIMUM-START-INTERVAL": 50,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-VALUES": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Radar_Data_Input_Variable",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/R_Radar_Data_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "/Interfaces/Radar_Data_Interface/Radar_Data"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/R_Radar_Data_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Radar_Data_Interface/Radar_Data"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "Camera_Data_Input_Variable",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/R_Camera_Data_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "/Interfaces/Camera_Data_Interface/Camera_Image"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/R_Camera_Data_Input"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Camera_Data_Interface/Camera_Image"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "Fused_Data_Output_Variable",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/P_Fusion_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "/Interfaces/Fusion_Data_Interface/Fused_Data"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Fusion_Algorithm/P_Fusion_Output"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Fusion_Data_Interface/Fused_Data"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "FusionAlg"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "Radar_Data_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Fusion_Algorithm/Fusion_Runnable"
+            }
+          },
+          {
+            "SHORT-NAME": "Camera_Data_Received",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Fusion_Algorithm/Fusion_Runnable"
+            }
+          }
+        ],
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "Fusion_Data_Sent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Fusion_Algorithm/Fusion_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Fusion_Algorithm/Fusion_Runnable/DATA-SEND-POINTS/VARIABLE-ACCESS"
+            }
+          }
+        ],
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "Fusion_Timer",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Fusion_Algorithm/Fusion_Runnable"
+            },
+            "PERIOD": 50
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "atlas.pil.reviewer_package_status.v1",
+  "status": "READY_OFFLINE_VERIFIED",
+  "release_date": "2026-09-09",
+  "offline_command": "python -B tools/verify.py --work-dir <empty-work-directory>",
+  "optional_node_override": "--node <node-executable>; otherwise node is resolved on PATH",
+  "python_requirements_file": "requirements.txt",
+  "node_minimum": "18",
+  "source_export": {
+    "original_manifest_payload_files": 61,
+    "included_byte_identical_files": 57,
+    "explicitly_excluded_unrelated_files": 4,
+    "selection_record": "frozen/SOURCE_SELECTION.json"
+  },
+  "package_manifest_sha256": "c79ac703be02992c400a3ed7523138547f7a3f9746df27f1f17c704f93ebf0a7",
+  "historical_units_verified": 720,
+  "corrected_gold_cases_rederived": 60,
+  "changed_gold_cases": [
+    19
+  ],
+  "changed_scored_units": 12,
+  "only_changed_scored_field": "evidence_requirement_met",
+  "summary_and_paired_statistics_unchanged": true,
+  "endpoint_counts": {
+    "p0": 73,
+    "p1": 96,
+    "p2": 101,
+    "p3": 143
+  },
+  "expert_reviewed_units": 3,
+  "expert_not_reviewed_units": 717,
+  "full_legal_accuracy": null,
+  "tests": {
+    "original_pil_tests": 27,
+    "reviewer_export_tests": 7,
+    "article_boundary_checks": 8
+  },
+  "relocation_verification": "verification/relocation/RELOCATION_RECEIPT.json",
+  "new_model_requests": 0,
+  "frozen_scoring_code_changed": false,
+  "portability_adaptations": [
+    "Package-relative offline entry point and immutable file inventory.",
+    "Only the pure requiredEvidence function is executed from the retained revised builder source; full legacy builder is not executed.",
+    "One translation-workbook locator is rebased in test memory after verifying the exact accepted SHA-256.",
+    "Expert join is package-relative and additionally rejects duplicate ledger/scored rows."
+  ],
+  "limitations": [
+    "The four-field endpoint does not establish complete legal-answer correctness.",
+    "Three targeted author-supplied expert findings are not a 720-answer human review.",
+    "Relocation was verified under the same installed interpreter/dependencies, not on a separately provisioned machine.",
+    "Historical absolute paths remain inside byte-preserved provenance records; supported entry points do not read author data at those paths.",
+    "Fresh paid generation is outside this offline export and is not configured."
+  ]
+}

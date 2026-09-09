@@ -1,0 +1,79 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "Radar_Data_Interface",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Radar_Data",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "/Radar_Data_Interface/Radar_Data"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Camera_Data_Interface",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Camera_Image",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "/Camera_Data_Interface/Camera_Image"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Fusion_Data_Interface",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Fused_Data",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-COMPOSITE-DATA-TYPE",
+              "#text": "/Fusion_Data_Interface/Fused_Data"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "Actuation_Command_Interface",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "Actuation_Command",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "/Actuation_Command_Interface/Actuation_Command"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "HMI_Status_Interface",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "ADAS_Status",
+            "TYPE-TREF": {
+              "@DEST": "APPLICATION-DATA-TYPE",
+              "#text": "/HMI_Status_Interface/ADAS_Status"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
