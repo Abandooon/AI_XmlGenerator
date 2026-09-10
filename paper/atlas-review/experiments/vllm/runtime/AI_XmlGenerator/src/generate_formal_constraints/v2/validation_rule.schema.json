@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation_rule.schema.json",
+  "title": "Executable AUTOSAR validation rule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "rule_id", "constraint_id", "source_sha256", "title",
+    "severity", "policy", "backend", "implementation", "selector",
+    "completeness", "dependencies", "bindings"
+  ],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "rule_id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+#r[1-9][0-9]*$"},
+    "constraint_id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "title": {"type": "string", "minLength": 1},
+    "severity": {"enum": ["error", "warning", "info"]},
+    "policy": {"enum": ["must", "should", "optional", "manual"]},
+    "backend": {"enum": ["python", "dsl", "xsd", "shacl", "smt", "manual"]},
+    "implementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "plugin"],
+      "properties": {
+        "status": {"enum": ["implemented", "planned", "disabled"]},
+        "plugin": {"type": ["string", "null"]},
+        "reason": {"type": "string"}
+      }
+    },
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tags"],
+      "properties": {
+        "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "mode": {"enum": ["any", "all", "global"]}
+      }
+    },
+    "parameters": {"type": "object"},
+    "formal_spec": {"type": "object"},
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requires", "on_missing"],
+      "properties": {
+        "requires": {
+          "type": "array",
+          "items": {"enum": ["well_formed_xml", "complete_reference_scope", "xsd", "metamodel", "validation_context", "generation_intent", "generated_artifact", "system_mapping"]},
+          "uniqueItems": true
+        },
+        "on_missing": {"enum": ["not_evaluated", "fail"]}
+      }
+    },
+    "dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "path_variants"],
+        "properties": {
+          "role": {"type": "string"},
+          "path_variants": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

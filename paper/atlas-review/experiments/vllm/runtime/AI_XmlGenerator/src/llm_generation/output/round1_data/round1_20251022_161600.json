@@ -1,0 +1,2401 @@
+{
+  "session_id": "round1_20251022_161600",
+  "timestamp": "20251022_161600",
+  "user_requirements": "system_name: \"ChassisDomainController\",description: \"集成ABS、EPS、ESP功能\",key_requirements: \"ABSController防抱死制动\",\"EPSController电动助力转向\",\"ESPController车身稳定控制\",\"WheelSpeedProcessor处理4个轮速传感器数据\",\"SafetyMonitor实现ASIL-D安全监控\",\"多条CAN总线互联\"",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        system_name: \"ChassisDomainController\",description: \"集成ABS、EPS、ESP功能\",key_requirements: \"ABSController防抱死制动\",\"EPSController电动助力转向\",\"ESPController车身稳定控制\",\"WheelSpeedProcessor处理4个轮速传感器数据\",\"SafetyMonitor实现ASIL-D安全监控\",\"多条CAN总线互联\"\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "系统按功能域拆分为传感器接口层(CANBusManager,SensorInterface)、感知处理(WheelSpeedProcessor,VehicleStateManager)、控制器层(ABSController,EPSController,ESPController)、执行代理(BrakeActuatorProxy,SteeringActuatorProxy)、安全与诊断(SafetyMonitor,DiagnosticManager)及顶层编排(ChassisDomainController)。各组件职责界定：SensorInterface采集原始CAN帧并提供轮速数据；WheelSpeedProcessor去噪与轮速融合；VehicleStateManager汇总车速/横摆/制动力状态并发布全局状态；各控制器基于VehicleState与轮速生成控制命令；ActuatorProxy将控制命令映射到底层总线/驱动；SafetyMonitor独立执行ASIL-D检测与降级；CANBusManager负责多总线路由与传输保障；DiagnosticManager处理故障上报与诊断接口。组件间边界按数据与时间确定，控制命令与反馈通过明确接口传递。",
+      "data_flow_analysis": "传感器->SensorInterface通过多个CAN通道(Sensor CAN1..n)上报原始轮速帧(SR_WHEEL_SPEED, uint16/float, 10ms)。SensorInterface解码并以SENDER-RECEIVER接口发布WheelSpeed_IF(4轮浮点，10ms)。WheelSpeedProcessor订阅WheelSpeed_IF，执行滤波与故障检测，输出ProcessedWheelSpeed_IF(4轮, 10ms, 最新值缓冲)。VehicleStateManager订阅ProcessedWheelSpeed_IF并结合IMU/驾驶员输入计算VehicleState_IF(速度、侧滑率、横摆角速度，20ms)。ABS/EPS/ESP作为客户端订阅VehicleState_IF和ProcessedWheelSpeed_IF，并通过CLIENT-SERVER接口调用ActuatorProxy的命令服务(同步调用，保证命令确认，<=20ms响应)。SafetyMonitor订阅关键数据流(轮速、控制命令、诊断)，在检测到安全违例时通过MODE-SWITCH-INTERFACE或EmergencyCommand触发降级策略。各接口明确数据类型、频率与传输模式，关键路径对时延与确认有硬性要求。",
+      "timing_requirements": "轮速采样周期10ms，处理链路(采样->处理->控制命令)端到端目标时延<=30ms；VehicleState发布周期20ms；ABS紧急制动响应<=20ms并要求命令确认。SafetyMonitor必须在检测到安全故障后<=5ms触发降级信号并保证执行。CANBusManager应支持高优先级帧优先调度并保证关键帧传输抖动<=2ms。",
+      "scalability_considerations": "模块化设计允许增加更多传感器或控制器：WheelSpeedProcessor支持扩展为更多轮速通道；CANBusManager支持多总线扩展与拓扑变更；采用清晰的接口契约便于按需拆分/合并组件以适应ECU资源。为支持大规模(estimated_components=20)推荐复用Service组件和分层部署，使用轻量运行时绑定与可配置队列深度。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "CANBusManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理多条CAN总线的收发、优先级调度与帧路由，为上层提供统一逻辑接口",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "N（多总线接收端口）",
+          "output_ports": "N（多总线发送端口）"
+        },
+        "behavioral_characteristics": "帧接收解码→根据路由/优先级放入队列→转发或上报事件；支持高优先级帧抢占、错误重传及超时检测。提供接收回调与同步发送服务。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供多个P-ports用于上报接收到的帧(Publish)，提供R-ports用于同步发送服务调用(Client-server)"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "物理CAN中断/驱动回调"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Retry_Timer",
+                "trigger": "发送失败后重传计时器"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "RxProcessing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从物理CAN驱动端口接收帧并上报内部数据结构"
+                      }
+                    ],
+                    "notes": "解码并路由到上层接口"
+                  }
+                ],
+                "notes": "处理接收帧解码与上报"
+              },
+              {
+                "name": "TxService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "对底层驱动的同步发送调用"
+                      }
+                    ],
+                    "notes": "暴露发送服务并处理重传/确认"
+                  }
+                ],
+                "notes": "处理发送请求与重试逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorInterface",
+          "WheelSpeedProcessor",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "SensorInterface",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "从CAN总线采集轮速及其他传感器原始帧并解码为内部数据结构",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (CAN Rx for multiple buses)",
+          "output_ports": "1 (WheelSpeed_IF publisher)"
+        },
+        "behavioral_characteristics": "在接收到CAN帧时触发解码Runnable，周期性健康监测Runnable；输出原始轮速数据（最新值缓冲），进行CRC与时间戳校验并上报诊断事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P-ports用于发布解码后的轮速数据;与CANBusManager通过服务或端口对接"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Wheel_CAN_Frame",
+                "trigger": "CANBusManager上报"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "HealthCheck",
+                "trigger": "周期性计时(1s)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DecodeWheelSpeed_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收CANBusManager提供的原始帧"
+                      }
+                    ],
+                    "notes": "解码并转换为轮速数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始轮速数据到WheelSpeed_IF"
+                      }
+                    ],
+                    "notes": "发布解码后数据"
+                  }
+                ],
+                "notes": "解码轮速帧并发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "WheelSpeedProcessor",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "WheelSpeedProcessor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对4轮轮速进行滤波、融合与故障检测，输出用于控制器消费的轮速数据",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (WheelSpeed_IF)",
+          "output_ports": "2 (ProcessedWheelSpeed_IF, WheelHealth_IF)"
+        },
+        "behavioral_characteristics": "以10ms定周期触发主处理Runnable，进行低通滤波、偏差检测、故障隔离(缺失/跳变)、时间同步；提供最新值缓冲与历史窗口用于控制逻辑；当检测故障触发WheelHealth_IF并上报SafetyMonitor。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅SensorInterface发布的轮速(P-port)并向控制器提供ProcessedWheelSpeed_IF(P-port)，提供调参/查询R-port"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Processing_Timer_10ms",
+                "trigger": "周期性10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "New_Raw_WheelSpeed",
+                "trigger": "SensorInterface发布"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "FilterAndDetect_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取原始4轮速度（按值接收）"
+                      }
+                    ],
+                    "notes": "读取原始数据用于滤波与故障检测"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出滤波与融合后的轮速"
+                      }
+                    ],
+                    "notes": "发布处理后轮速"
+                  }
+                ],
+                "notes": "滤波、融合与故障检测主逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorInterface",
+          "VehicleStateManager",
+          "ABSController",
+          "ESPController",
+          "EPSController",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "VehicleStateManager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合轮速、IMU及驾驶员输入，计算车速、侧滑率和横摆角速度并发布全局车辆状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (ProcessedWheelSpeed_IF, IMU_IF, DriverInput_IF)",
+          "output_ports": "2 (VehicleState_IF, VehicleHealth_IF)"
+        },
+        "behavioral_characteristics": "周期20ms执行状态估计算法(卡尔曼/互补滤波)，管理状态机(正常/滑移/故障)并将状态与健康信息广播。支持查询接口供控制器请求实时状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "P-port用于发布VehicleState_IF；R-port用于控制器同步读取或请求历史数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "StateEstimator_20ms",
+                "trigger": "周期20ms"
+              },
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ModeChange",
+                "trigger": "检测到滑移或故障时"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "StateEstimate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "订阅ProcessedWheelSpeed与IMU数据"
+                      }
+                    ],
+                    "notes": "汇总输入数据用于状态估计"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布VehicleState_IF"
+                      }
+                    ],
+                    "notes": "发布全局车辆状态"
+                  }
+                ],
+                "notes": "执行状态估计与模式管理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "WheelSpeedProcessor",
+          "ABSController",
+          "ESPController",
+          "EPSController",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "BrakeActuatorProxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "将ABS/ESP生成的制动命令转换为具体CAN命令并与底层执行器通信，提供同步确认",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (BrakeCmd_CS)",
+          "output_ports": "1 (BrakeStatus_Pub)"
+        },
+        "behavioral_characteristics": "提供Client-Server接口接收控制器命令，映射为CAN帧并同步发送，返回执行确认和错误码；处理超时与重试策略并上报底层执行状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port提供同步命令调用，P-port发布执行状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "BrakeCommand_Invoked",
+                "trigger": "控制器调用命令服务"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "BrakeCmd_Sent",
+                "trigger": "CANBusManager确认发送完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "BrakeCommandService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "接收控制器的同步制动命令并在超时时返回错误"
+                      }
+                    ],
+                    "notes": "处理命令并调用CAN发送"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布执行状态及确认"
+                      }
+                    ],
+                    "notes": "上报执行状态"
+                  }
+                ],
+                "notes": "同步命令处理与确认"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "ABSController",
+          "ESPController",
+          "DiagnosticManager",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "SteeringActuatorProxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "将EPS控制命令转换为执行器通信并提供状态反馈",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (SteerCmd_CS)",
+          "output_ports": "1 (SteerStatus_Pub)"
+        },
+        "behavioral_characteristics": "同步接收转向助力命令，映射为底层CAN或以太网命令，返回状态并在异常时触发诊断。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收同步命令，P-port用于发布执行器状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "SteerCommand_Invoked",
+                "trigger": "EPS调用"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "SteerCmd_Applied",
+                "trigger": "驱动确认命令应用"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "SteerCommandService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "EPS同步调用映射到执行器命令"
+                      }
+                    ],
+                    "notes": "处理EPS命令并返回执行结果"
+                  }
+                ],
+                "notes": "转发并确认转向命令"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "EPSController",
+          "DiagnosticManager",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "ABSController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现防抱死逻辑，基于轮速与VehicleState生成制动调节命令",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (ProcessedWheelSpeed_IF, VehicleState_IF)",
+          "output_ports": "1 (BrakeCmd_CS)"
+        },
+        "behavioral_characteristics": "以事件或20ms周期触发，运行ABS算法(轮速差检测、调节逻辑、阈值/模式管理)，在紧急条件下优先级提升并直接调用BrakeActuatorProxy同步执行，维护内部状态机(NORMAL,PULSE,FAULT)。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅轮速与车辆状态；通过R-port调用BrakeActuatorProxy的命令服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "SlipDetected",
+                "trigger": "WheelSpeedProcessor报告轮速异常"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "ABS_Control_Timer",
+                "trigger": "周期20ms或事件触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ABSControl_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取处理后的轮速与VehicleState"
+                      }
+                    ],
+                    "notes": "读取控制输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用BrakeActuatorProxy以确保命令确认"
+                      }
+                    ],
+                    "notes": "调用执行器代理"
+                  }
+                ],
+                "notes": "执行ABS控制循环并管理状态机"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "WheelSpeedProcessor",
+          "VehicleStateManager",
+          "BrakeActuatorProxy",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C008",
+        "name": "EPSController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于驾驶输入及VehicleState计算电动助力转向命令",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (DriverInput_IF, VehicleState_IF)",
+          "output_ports": "1 (SteerCmd_CS)"
+        },
+        "behavioral_characteristics": "周期或事件驱动(<=20ms)执行助力控制算法(力矩/角度控制)，监控执行器状态并在异常时请求安全降级。支持参数化助力曲线与限幅策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅驾驶输入和车辆状态，调用SteeringActuatorProxy服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "DriverInput_Received",
+                "trigger": "驾驶输入变化或周期"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "EPS_Control_Timer",
+                "trigger": "周期20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "EPSControl_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取驾驶扭矩/角度与VehicleState"
+                      }
+                    ],
+                    "notes": "读取控制输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用SteeringActuatorProxy并等待确认"
+                      }
+                    ],
+                    "notes": "发送转向命令并等待反馈"
+                  }
+                ],
+                "notes": "计算助力并发送命令"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VehicleStateManager",
+          "SteeringActuatorProxy",
+          "SafetyMonitor",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C009",
+        "name": "ESPController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "车身稳定性控制，基于状态估计协调ABS和转向控制以维持车辆稳定",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (VehicleState_IF, ProcessedWheelSpeed_IF, DriverInput_IF)",
+          "output_ports": "2 (BrakeCmd_CS, SteerAssistCmd_CS)"
+        },
+        "behavioral_characteristics": "实时融合多源数据(周期<=20ms)，当检测到横摆或侧滑时协调ABS与EPS输出优先级控制；具有模式管理(NORMAL,ACTIVE,FAULT)并可触发安全降级。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅VehicleState与轮速，向BrakeActuatorProxy和SteeringActuatorProxy发起同步调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "StabilityEvent",
+                "trigger": "VehicleStateManager报告滑移/横摆阈值越限"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "ESP_Mode_Switch",
+                "trigger": "故障或驾驶员请求"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ESPCoordination_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取VehicleState和轮速"
+                      }
+                    ],
+                    "notes": "读取必要输入用于协调算法"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "协调调用Brake/Steer代理并等待确认"
+                      }
+                    ],
+                    "notes": "调用执行器代理并处理确认"
+                  }
+                ],
+                "notes": "执行车身稳定控制算法"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VehicleStateManager",
+          "WheelSpeedProcessor",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C010",
+        "name": "SafetyMonitor",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "按照ASIL-D要求对关键数据与控制路径进行监控、故障检测与降级触发",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (WheelHealth_IF, VehicleState_IF, CommandAck_IF, Diagnostic_IF)",
+          "output_ports": "2 (SafetyModeSwitch_IF, EmergencyCmd_IF)"
+        },
+        "behavioral_characteristics": "独立运行，接收关键流并执行并行监控任务：心跳/超时检测、一致性检查与双检测冗余；在检测到违反安全条件时立即触发MODE切换或下发EmergencyCmd，保证降级路径和记录事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅各关键信号并向控制组件或顶层发出模式切换/紧急命令"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Data_Inconsistency_Detected",
+                "trigger": "不同信号来源不一致或超时"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "Enter_Safety_Mode",
+                "trigger": "ASIL违例判定"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "SafetyCheck_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "订阅轮速健康、命令确认和状态"
+                      }
+                    ],
+                    "notes": "接收并核查关键数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布SafetyMode或EmergencyCmd"
+                      }
+                    ],
+                    "notes": "下发安全相关输出"
+                  }
+                ],
+                "notes": "执行ASIL-D检测与降级触发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "DiagnosticManager",
+          "ChassisDomainController"
+        ]
+      },
+      {
+        "component_id": "C011",
+        "name": "DiagnosticManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集故障码、执行诊断例程并向车载诊断或云端上报",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "N (来自各组件的诊断上报)",
+          "output_ports": "1 (DiagnosticReport_IF)"
+        },
+        "behavioral_characteristics": "收集并聚合诊断信息、按事件或周期上报、支持故障等级分级与历史记录、在安全事件发生时提供原因链追溯。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "接收各组件的诊断事件并发布聚合报告"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "DiagEvent_Received",
+                "trigger": "组件上报诊断事件"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diag_Transmit_Timer",
+                "trigger": "周期性上报"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "AggregateDiag_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "收集来自各组件的诊断条目"
+                      }
+                    ],
+                    "notes": "聚合并格式化诊断报告"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布DiagnosticReport_IF"
+                      }
+                    ],
+                    "notes": "上报诊断数据"
+                  }
+                ],
+                "notes": "诊断聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "SensorInterface",
+          "WheelSpeedProcessor",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C012",
+        "name": "ChassisDomainController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "域控制器顶层编排组件，协调子模块、管理模式并提供整车接口",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Multiple (VehicleState_IF, SafetyMode_IF, Diagnostic_IF)",
+          "output_ports": "Multiple (ModeSwitch, Configuration, AggregatedStatus)"
+        },
+        "behavioral_characteristics": "接收SafetyMonitor和各控制器状态，执行高层模式切换与策略配置，处理外部配置与诊断命令，暴露域级接口给整车ECU/网关；对关键故障响应优先级调度与降级协调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "P-port用于发布域级状态，R-port提供配置服务，PR-port用于双向需求（发布-读取）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "DomainModeChange",
+                "trigger": "来自SafetyMonitor或整车命令"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Domain_Init",
+                "trigger": "ECU启动"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ModeManager_Runnable",
+                "elements": [
+                  {
+                    "key": "MODE-SWITCH-POINTS",
+                    "wrapper": "MODE-SWITCH-POINTS",
+                    "preselect": [
+                      {
+                        "of": "MODE-GROUP-IREF",
+                        "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                        "include": [
+                          "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+                        ],
+                        "notes": "选择运行时模式组引用以实现模式切换"
+                      }
+                    ],
+                    "notes": "管理域模式与降级策略"
+                  }
+                ],
+                "notes": "处理模式变化与协调"
+              },
+              {
+                "name": "Orchestration_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收SafetyMonitor与子模块状态"
+                      }
+                    ],
+                    "notes": "接收并转发策略指令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布域级命令与状态"
+                      }
+                    ],
+                    "notes": "发布域级控制与健康信息"
+                  }
+                ],
+                "notes": "顶层协调与命令分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SafetyMonitor",
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "DiagnosticManager",
+          "CANBusManager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "I001",
+        "name": "WheelSpeed_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布/订阅，最新值缓冲，非确认；发布频率10ms，时延要求<=5ms；接收端按最新值覆盖策略；错误检测通过Diagnostic上报",
+        "data_category": "SensorData",
+        "connected_components": [
+          "SensorInterface",
+          "WheelSpeedProcessor"
+        ],
+        "performance_requirements": "周期10ms，传输抖动<=2ms，丢帧容忍度低",
+        "data_elements": [
+          "wheel_speed_fl",
+          "wheel_speed_fr",
+          "wheel_speed_rl",
+          "wheel_speed_rr",
+          "timestamp"
+        ],
+        "direct_paths": "SensorInterface -> CANBusManager -> WheelSpeedProcessor"
+      },
+      {
+        "interface_id": "I002",
+        "name": "ProcessedWheelSpeed_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布，频率10ms，最新值缓冲；内含健康标志；接收者用于控制器快速读取",
+        "data_category": "ProcessedSensorData",
+        "connected_components": [
+          "WheelSpeedProcessor",
+          "ABSController",
+          "ESPController",
+          "VehicleStateManager",
+          "SafetyMonitor"
+        ],
+        "performance_requirements": "周期10ms，端到端时延<=15ms",
+        "data_elements": [
+          "wheel_speed_filtered[4]",
+          "wheel_speed_variance[4]",
+          "health_flags"
+        ],
+        "direct_paths": "WheelSpeedProcessor -> VehicleStateManager/ABSController/ESPController"
+      },
+      {
+        "interface_id": "I003",
+        "name": "VehicleState_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期发布与按需读取混合(20ms周期为主)，订阅者使用最新值；缓冲策略为最新值覆盖；关键消费者可通过R-port同步读取",
+        "data_category": "StateData",
+        "connected_components": [
+          "VehicleStateManager",
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "ChassisDomainController",
+          "SafetyMonitor"
+        ],
+        "performance_requirements": "周期20ms，紧急事件时延<=10ms",
+        "data_elements": [
+          "vehicle_speed",
+          "yaw_rate",
+          "side_slip_angle",
+          "acceleration"
+        ],
+        "direct_paths": "VehicleStateManager -> Controllers"
+      },
+      {
+        "interface_id": "I004",
+        "name": "BrakeCmd_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用(确认必需)，控制器向BrakeActuatorProxy发出命令，超时<=20ms；错误处理：超时/拒绝通过Diagnostic上报并触发SafetyMonitor",
+        "data_category": "Command",
+        "connected_components": [
+          "ABSController",
+          "ESPController",
+          "BrakeActuatorProxy"
+        ],
+        "performance_requirements": "同步响应<=20ms，确认或错误码必须返回",
+        "data_elements": [
+          "brake_pressure_command",
+          "wheel_select_mask",
+          "command_id"
+        ],
+        "direct_paths": "ABS/ESP -> BrakeActuatorProxy"
+      },
+      {
+        "interface_id": "I005",
+        "name": "SteerCmd_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用，EPSController调用SteeringActuatorProxy并等待确认；超时<=20ms；支持命令序列号与确认码",
+        "data_category": "Command",
+        "connected_components": [
+          "EPSController",
+          "ESPController",
+          "SteeringActuatorProxy"
+        ],
+        "performance_requirements": "响应<=20ms，错误需上报DiagnosticManager",
+        "data_elements": [
+          "steer_torque_command",
+          "steer_angle_request",
+          "command_id"
+        ],
+        "direct_paths": "EPS/ESP -> SteeringActuatorProxy"
+      },
+      {
+        "interface_id": "I006",
+        "name": "SafetyModeSwitch_IF",
+        "type": "MODE-SWITCH-INTERFACE",
+        "communication_pattern": "异步事件驱动，SafetyMonitor发布模式切换指令(ENTER_SAFE_MODE/EXIT_SAFE_MODE)，必须被相关组件尽快响应(<=5ms触发降级流程)",
+        "data_category": "Control",
+        "connected_components": [
+          "SafetyMonitor",
+          "ChassisDomainController",
+          "ABSController",
+          "EPSController",
+          "ESPController"
+        ],
+        "performance_requirements": "触发时延<=5ms，可靠送达",
+        "data_elements": [
+          "mode_id",
+          "reason_code",
+          "timestamp"
+        ],
+        "direct_paths": "SafetyMonitor -> ChassisDomainController -> Controllers"
+      },
+      {
+        "interface_id": "I007",
+        "name": "DiagnosticReport_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "按事件或周期上报，缓冲采用队列，允许批量发送以减少带宽占用；错误无需实时确认，支持重发",
+        "data_category": "Diagnostic",
+        "connected_components": [
+          "DiagnosticManager",
+          "ChassisDomainController",
+          "CloudGateway"
+        ],
+        "performance_requirements": "关键故障上报紧急优先，非关键批量发送",
+        "data_elements": [
+          "DTC",
+          "component_id",
+          "timestamp",
+          "severity"
+        ],
+        "direct_paths": "各组件 -> DiagnosticManager -> 上层/云"
+      }
+    ],
+    "component_generation_order": [
+      "CANBusManager",
+      "SensorInterface",
+      "BrakeActuatorProxy",
+      "SteeringActuatorProxy",
+      "WheelSpeedProcessor",
+      "VehicleStateManager",
+      "ABSController",
+      "EPSController",
+      "ESPController",
+      "DiagnosticManager",
+      "SafetyMonitor",
+      "ChassisDomainController"
+    ],
+    "connection_topology": {
+      "component_connections": "CANBusManager连接SensorInterface和ActuatorProxies以收发底层CAN帧；SensorInterface->WheelSpeedProcessor->VehicleStateManager形成上游感知链；VehicleStateManager/ProcessedWheelSpeed_IF连接到ABSController/EPSController/ESPController；控制器通过Client-Server接口调用BrakeActuatorProxy/SteeringActuatorProxy；SafetyMonitor订阅关键流并向ChassisDomainController与控制器发出ModeSwitch或EmergencyCmd。",
+      "data_flow_paths": "物理传感器->CANBusManager->SensorInterface->WheelSpeedProcessor->(ProcessedWheelSpeed_IF)->VehicleStateManager->(VehicleState_IF)->控制器(ABS/EPS/ESP)->(BrakeCmd_IF/SteerCmd_IF)->ActuatorProxies->CANBusManager->执行器；Diagnostic信息单向汇聚到DiagnosticManager；SafetyMonitor订阅ProcessedWheelSpeed_IF、VehicleState_IF与命令确认路径并发布SafetyModeSwitch_IF。",
+      "control_flow_paths": "控制流以事件和同步调用混合：控制器检测到条件后同步调用ActuatorProxy(客户端-服务器，需确认)；SafetyMonitor可异步触发域模式切换，ChassisDomainController协调各控制器进入安全模式；DiagnosticManager在故障时发起上报与请求配置变更。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采取分层与模块化架构以满足ASIL-D隔离与可维护性需求：将底层总线管理、传感器解码、感知处理、控制器、执行代理和安全/诊断分离。使用SENDER-RECEIVER用于高频数据，CLIENT-SERVER用于需确认的执行命令，MODE-SWITCH用于安全降级。选择同步命令路径以保证确认；关键安全监控独立部署以满足ASIL隔离。",
+      "tradeoff_analysis": "同步客户端-服务器保证了命令确认但增加响应时间与耦合，故对命令路径引入严格超时与重试。使用最新值缓冲降低延迟但可能丢失历史上下文，故在需要历史窗口的组件内部保留本地缓存。将CAN管理集中有利于优化总线负载，但增加了单点复杂度，因此提供冗余链路与诊断分离。",
+      "alternative_considerations": "可将部分控制器部署为更细粒度组件以便于并行开发，但会带来接口管理复杂度；亦可将ActuatorProxy合并进控制器以减少RPC开销，但会降低可移植性与安全隔离性。",
+      "risk_assessment": "主要风险为总线拥塞与关键命令超时导致控制失效、不同组件对时间同步的依赖、以及SafetyMonitor检测与控制命令的时序不足。缓解措施：高优先级帧隔离、超时与重试策略、在关键路径使用同步确认并设计快速降级路径、在开发阶段进行端到端时延验证与压力测试。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "系统按功能域拆分为传感器接口层(CANBusManager,SensorInterface)、感知处理(WheelSpeedProcessor,VehicleStateManager)、控制器层(ABSController,EPSController,ESPController)、执行代理(BrakeActuatorProxy,SteeringActuatorProxy)、安全与诊断(SafetyMonitor,DiagnosticManager)及顶层编排(ChassisDomainController)。各组件职责界定：SensorInterface采集原始CAN帧并提供轮速数据；WheelSpeedProcessor去噪与轮速融合；VehicleStateManager汇总车速/横摆/制动力状态并发布全局状态；各控制器基于VehicleState与轮速生成控制命令；ActuatorProxy将控制命令映射到底层总线/驱动；SafetyMonitor独立执行ASIL-D检测与降级；CANBusManager负责多总线路由与传输保障；DiagnosticManager处理故障上报与诊断接口。组件间边界按数据与时间确定，控制命令与反馈通过明确接口传递。",
+      "data_flow_analysis": "传感器->SensorInterface通过多个CAN通道(Sensor CAN1..n)上报原始轮速帧(SR_WHEEL_SPEED, uint16/float, 10ms)。SensorInterface解码并以SENDER-RECEIVER接口发布WheelSpeed_IF(4轮浮点，10ms)。WheelSpeedProcessor订阅WheelSpeed_IF，执行滤波与故障检测，输出ProcessedWheelSpeed_IF(4轮, 10ms, 最新值缓冲)。VehicleStateManager订阅ProcessedWheelSpeed_IF并结合IMU/驾驶员输入计算VehicleState_IF(速度、侧滑率、横摆角速度，20ms)。ABS/EPS/ESP作为客户端订阅VehicleState_IF和ProcessedWheelSpeed_IF，并通过CLIENT-SERVER接口调用ActuatorProxy的命令服务(同步调用，保证命令确认，<=20ms响应)。SafetyMonitor订阅关键数据流(轮速、控制命令、诊断)，在检测到安全违例时通过MODE-SWITCH-INTERFACE或EmergencyCommand触发降级策略。各接口明确数据类型、频率与传输模式，关键路径对时延与确认有硬性要求。",
+      "timing_requirements": "轮速采样周期10ms，处理链路(采样->处理->控制命令)端到端目标时延<=30ms；VehicleState发布周期20ms；ABS紧急制动响应<=20ms并要求命令确认。SafetyMonitor必须在检测到安全故障后<=5ms触发降级信号并保证执行。CANBusManager应支持高优先级帧优先调度并保证关键帧传输抖动<=2ms。",
+      "scalability_considerations": "模块化设计允许增加更多传感器或控制器：WheelSpeedProcessor支持扩展为更多轮速通道；CANBusManager支持多总线扩展与拓扑变更；采用清晰的接口契约便于按需拆分/合并组件以适应ECU资源。为支持大规模(estimated_components=20)推荐复用Service组件和分层部署，使用轻量运行时绑定与可配置队列深度。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "CANBusManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理多条CAN总线的收发、优先级调度与帧路由，为上层提供统一逻辑接口",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "N（多总线接收端口）",
+          "output_ports": "N（多总线发送端口）"
+        },
+        "behavioral_characteristics": "帧接收解码→根据路由/优先级放入队列→转发或上报事件；支持高优先级帧抢占、错误重传及超时检测。提供接收回调与同步发送服务。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供多个P-ports用于上报接收到的帧(Publish)，提供R-ports用于同步发送服务调用(Client-server)"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "物理CAN中断/驱动回调"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Retry_Timer",
+                "trigger": "发送失败后重传计时器"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "RxProcessing_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从物理CAN驱动端口接收帧并上报内部数据结构"
+                      }
+                    ],
+                    "notes": "解码并路由到上层接口"
+                  }
+                ],
+                "notes": "处理接收帧解码与上报"
+              },
+              {
+                "name": "TxService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "对底层驱动的同步发送调用"
+                      }
+                    ],
+                    "notes": "暴露发送服务并处理重传/确认"
+                  }
+                ],
+                "notes": "处理发送请求与重试逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorInterface",
+          "WheelSpeedProcessor",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "SensorInterface",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "从CAN总线采集轮速及其他传感器原始帧并解码为内部数据结构",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (CAN Rx for multiple buses)",
+          "output_ports": "1 (WheelSpeed_IF publisher)"
+        },
+        "behavioral_characteristics": "在接收到CAN帧时触发解码Runnable，周期性健康监测Runnable；输出原始轮速数据（最新值缓冲），进行CRC与时间戳校验并上报诊断事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P-ports用于发布解码后的轮速数据;与CANBusManager通过服务或端口对接"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Wheel_CAN_Frame",
+                "trigger": "CANBusManager上报"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "HealthCheck",
+                "trigger": "周期性计时(1s)"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DecodeWheelSpeed_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收CANBusManager提供的原始帧"
+                      }
+                    ],
+                    "notes": "解码并转换为轮速数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始轮速数据到WheelSpeed_IF"
+                      }
+                    ],
+                    "notes": "发布解码后数据"
+                  }
+                ],
+                "notes": "解码轮速帧并发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "WheelSpeedProcessor",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "WheelSpeedProcessor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对4轮轮速进行滤波、融合与故障检测，输出用于控制器消费的轮速数据",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "1 (WheelSpeed_IF)",
+          "output_ports": "2 (ProcessedWheelSpeed_IF, WheelHealth_IF)"
+        },
+        "behavioral_characteristics": "以10ms定周期触发主处理Runnable，进行低通滤波、偏差检测、故障隔离(缺失/跳变)、时间同步；提供最新值缓冲与历史窗口用于控制逻辑；当检测故障触发WheelHealth_IF并上报SafetyMonitor。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅SensorInterface发布的轮速(P-port)并向控制器提供ProcessedWheelSpeed_IF(P-port)，提供调参/查询R-port"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Processing_Timer_10ms",
+                "trigger": "周期性10ms"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "New_Raw_WheelSpeed",
+                "trigger": "SensorInterface发布"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "FilterAndDetect_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取原始4轮速度（按值接收）"
+                      }
+                    ],
+                    "notes": "读取原始数据用于滤波与故障检测"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "输出滤波与融合后的轮速"
+                      }
+                    ],
+                    "notes": "发布处理后轮速"
+                  }
+                ],
+                "notes": "滤波、融合与故障检测主逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SensorInterface",
+          "VehicleStateManager",
+          "ABSController",
+          "ESPController",
+          "EPSController",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "VehicleStateManager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合轮速、IMU及驾驶员输入，计算车速、侧滑率和横摆角速度并发布全局车辆状态",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3 (ProcessedWheelSpeed_IF, IMU_IF, DriverInput_IF)",
+          "output_ports": "2 (VehicleState_IF, VehicleHealth_IF)"
+        },
+        "behavioral_characteristics": "周期20ms执行状态估计算法(卡尔曼/互补滤波)，管理状态机(正常/滑移/故障)并将状态与健康信息广播。支持查询接口供控制器请求实时状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "P-port用于发布VehicleState_IF；R-port用于控制器同步读取或请求历史数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "StateEstimator_20ms",
+                "trigger": "周期20ms"
+              },
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ModeChange",
+                "trigger": "检测到滑移或故障时"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "StateEstimate_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "订阅ProcessedWheelSpeed与IMU数据"
+                      }
+                    ],
+                    "notes": "汇总输入数据用于状态估计"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布VehicleState_IF"
+                      }
+                    ],
+                    "notes": "发布全局车辆状态"
+                  }
+                ],
+                "notes": "执行状态估计与模式管理"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "WheelSpeedProcessor",
+          "ABSController",
+          "ESPController",
+          "EPSController",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "BrakeActuatorProxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "将ABS/ESP生成的制动命令转换为具体CAN命令并与底层执行器通信，提供同步确认",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (BrakeCmd_CS)",
+          "output_ports": "1 (BrakeStatus_Pub)"
+        },
+        "behavioral_characteristics": "提供Client-Server接口接收控制器命令，映射为CAN帧并同步发送，返回执行确认和错误码；处理超时与重试策略并上报底层执行状态。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port提供同步命令调用，P-port发布执行状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "BrakeCommand_Invoked",
+                "trigger": "控制器调用命令服务"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "BrakeCmd_Sent",
+                "trigger": "CANBusManager确认发送完成"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "BrakeCommandService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "接收控制器的同步制动命令并在超时时返回错误"
+                      }
+                    ],
+                    "notes": "处理命令并调用CAN发送"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布执行状态及确认"
+                      }
+                    ],
+                    "notes": "上报执行状态"
+                  }
+                ],
+                "notes": "同步命令处理与确认"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "ABSController",
+          "ESPController",
+          "DiagnosticManager",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "SteeringActuatorProxy",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "将EPS控制命令转换为执行器通信并提供状态反馈",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (SteerCmd_CS)",
+          "output_ports": "1 (SteerStatus_Pub)"
+        },
+        "behavioral_characteristics": "同步接收转向助力命令，映射为底层CAN或以太网命令，返回状态并在异常时触发诊断。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R-port用于接收同步命令，P-port用于发布执行器状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "SteerCommand_Invoked",
+                "trigger": "EPS调用"
+              },
+              {
+                "type": "DATA-WRITE-COMPLETED-EVENT",
+                "name": "SteerCmd_Applied",
+                "trigger": "驱动确认命令应用"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "SteerCommandService_Runnable",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "EPS同步调用映射到执行器命令"
+                      }
+                    ],
+                    "notes": "处理EPS命令并返回执行结果"
+                  }
+                ],
+                "notes": "转发并确认转向命令"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "EPSController",
+          "DiagnosticManager",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "ABSController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现防抱死逻辑，基于轮速与VehicleState生成制动调节命令",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (ProcessedWheelSpeed_IF, VehicleState_IF)",
+          "output_ports": "1 (BrakeCmd_CS)"
+        },
+        "behavioral_characteristics": "以事件或20ms周期触发，运行ABS算法(轮速差检测、调节逻辑、阈值/模式管理)，在紧急条件下优先级提升并直接调用BrakeActuatorProxy同步执行，维护内部状态机(NORMAL,PULSE,FAULT)。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅轮速与车辆状态；通过R-port调用BrakeActuatorProxy的命令服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "SlipDetected",
+                "trigger": "WheelSpeedProcessor报告轮速异常"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "ABS_Control_Timer",
+                "trigger": "周期20ms或事件触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ABSControl_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取处理后的轮速与VehicleState"
+                      }
+                    ],
+                    "notes": "读取控制输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用BrakeActuatorProxy以确保命令确认"
+                      }
+                    ],
+                    "notes": "调用执行器代理"
+                  }
+                ],
+                "notes": "执行ABS控制循环并管理状态机"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "WheelSpeedProcessor",
+          "VehicleStateManager",
+          "BrakeActuatorProxy",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C008",
+        "name": "EPSController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "基于驾驶输入及VehicleState计算电动助力转向命令",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "2 (DriverInput_IF, VehicleState_IF)",
+          "output_ports": "1 (SteerCmd_CS)"
+        },
+        "behavioral_characteristics": "周期或事件驱动(<=20ms)执行助力控制算法(力矩/角度控制)，监控执行器状态并在异常时请求安全降级。支持参数化助力曲线与限幅策略。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅驾驶输入和车辆状态，调用SteeringActuatorProxy服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "DriverInput_Received",
+                "trigger": "驾驶输入变化或周期"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "EPS_Control_Timer",
+                "trigger": "周期20ms"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "EPSControl_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "获取驾驶扭矩/角度与VehicleState"
+                      }
+                    ],
+                    "notes": "读取控制输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用SteeringActuatorProxy并等待确认"
+                      }
+                    ],
+                    "notes": "发送转向命令并等待反馈"
+                  }
+                ],
+                "notes": "计算助力并发送命令"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VehicleStateManager",
+          "SteeringActuatorProxy",
+          "SafetyMonitor",
+          "DiagnosticManager"
+        ]
+      },
+      {
+        "component_id": "C009",
+        "name": "ESPController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "车身稳定性控制，基于状态估计协调ABS和转向控制以维持车辆稳定",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (VehicleState_IF, ProcessedWheelSpeed_IF, DriverInput_IF)",
+          "output_ports": "2 (BrakeCmd_CS, SteerAssistCmd_CS)"
+        },
+        "behavioral_characteristics": "实时融合多源数据(周期<=20ms)，当检测到横摆或侧滑时协调ABS与EPS输出优先级控制；具有模式管理(NORMAL,ACTIVE,FAULT)并可触发安全降级。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅VehicleState与轮速，向BrakeActuatorProxy和SteeringActuatorProxy发起同步调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "StabilityEvent",
+                "trigger": "VehicleStateManager报告滑移/横摆阈值越限"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "ESP_Mode_Switch",
+                "trigger": "故障或驾驶员请求"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ESPCoordination_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取VehicleState和轮速"
+                      }
+                    ],
+                    "notes": "读取必要输入用于协调算法"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "协调调用Brake/Steer代理并等待确认"
+                      }
+                    ],
+                    "notes": "调用执行器代理并处理确认"
+                  }
+                ],
+                "notes": "执行车身稳定控制算法"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "VehicleStateManager",
+          "WheelSpeedProcessor",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C010",
+        "name": "SafetyMonitor",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "按照ASIL-D要求对关键数据与控制路径进行监控、故障检测与降级触发",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (WheelHealth_IF, VehicleState_IF, CommandAck_IF, Diagnostic_IF)",
+          "output_ports": "2 (SafetyModeSwitch_IF, EmergencyCmd_IF)"
+        },
+        "behavioral_characteristics": "独立运行，接收关键流并执行并行监控任务：心跳/超时检测、一致性检查与双检测冗余；在检测到违反安全条件时立即触发MODE切换或下发EmergencyCmd，保证降级路径和记录事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "订阅各关键信号并向控制组件或顶层发出模式切换/紧急命令"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Data_Inconsistency_Detected",
+                "trigger": "不同信号来源不一致或超时"
+              },
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "Enter_Safety_Mode",
+                "trigger": "ASIL违例判定"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "SafetyCheck_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "订阅轮速健康、命令确认和状态"
+                      }
+                    ],
+                    "notes": "接收并核查关键数据"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布SafetyMode或EmergencyCmd"
+                      }
+                    ],
+                    "notes": "下发安全相关输出"
+                  }
+                ],
+                "notes": "执行ASIL-D检测与降级触发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "BrakeActuatorProxy",
+          "SteeringActuatorProxy",
+          "DiagnosticManager",
+          "ChassisDomainController"
+        ]
+      },
+      {
+        "component_id": "C011",
+        "name": "DiagnosticManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集故障码、执行诊断例程并向车载诊断或云端上报",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "N (来自各组件的诊断上报)",
+          "output_ports": "1 (DiagnosticReport_IF)"
+        },
+        "behavioral_characteristics": "收集并聚合诊断信息、按事件或周期上报、支持故障等级分级与历史记录、在安全事件发生时提供原因链追溯。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "接收各组件的诊断事件并发布聚合报告"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "DiagEvent_Received",
+                "trigger": "组件上报诊断事件"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diag_Transmit_Timer",
+                "trigger": "周期性上报"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "AggregateDiag_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "收集来自各组件的诊断条目"
+                      }
+                    ],
+                    "notes": "聚合并格式化诊断报告"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布DiagnosticReport_IF"
+                      }
+                    ],
+                    "notes": "上报诊断数据"
+                  }
+                ],
+                "notes": "诊断聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CANBusManager",
+          "SensorInterface",
+          "WheelSpeedProcessor",
+          "SafetyMonitor"
+        ]
+      },
+      {
+        "component_id": "C012",
+        "name": "ChassisDomainController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "域控制器顶层编排组件，协调子模块、管理模式并提供整车接口",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "Multiple (VehicleState_IF, SafetyMode_IF, Diagnostic_IF)",
+          "output_ports": "Multiple (ModeSwitch, Configuration, AggregatedStatus)"
+        },
+        "behavioral_characteristics": "接收SafetyMonitor和各控制器状态，执行高层模式切换与策略配置，处理外部配置与诊断命令，暴露域级接口给整车ECU/网关；对关键故障响应优先级调度与降级协调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE",
+              "PR-PORT-PROTOTYPE"
+            ],
+            "details": "P-port用于发布域级状态，R-port提供配置服务，PR-port用于双向需求（发布-读取）"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "SWC-MODE-SWITCH-EVENT",
+                "name": "DomainModeChange",
+                "trigger": "来自SafetyMonitor或整车命令"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Domain_Init",
+                "trigger": "ECU启动"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "ModeManager_Runnable",
+                "elements": [
+                  {
+                    "key": "MODE-SWITCH-POINTS",
+                    "wrapper": "MODE-SWITCH-POINTS",
+                    "preselect": [
+                      {
+                        "of": "MODE-GROUP-IREF",
+                        "variant": "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF",
+                        "include": [
+                          "R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF"
+                        ],
+                        "notes": "选择运行时模式组引用以实现模式切换"
+                      }
+                    ],
+                    "notes": "管理域模式与降级策略"
+                  }
+                ],
+                "notes": "处理模式变化与协调"
+              },
+              {
+                "name": "Orchestration_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收SafetyMonitor与子模块状态"
+                      }
+                    ],
+                    "notes": "接收并转发策略指令"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布域级命令与状态"
+                      }
+                    ],
+                    "notes": "发布域级控制与健康信息"
+                  }
+                ],
+                "notes": "顶层协调与命令分发"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "SafetyMonitor",
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "DiagnosticManager",
+          "CANBusManager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "I001",
+        "name": "WheelSpeed_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布/订阅，最新值缓冲，非确认；发布频率10ms，时延要求<=5ms；接收端按最新值覆盖策略；错误检测通过Diagnostic上报",
+        "data_category": "SensorData",
+        "connected_components": [
+          "SensorInterface",
+          "WheelSpeedProcessor"
+        ],
+        "performance_requirements": "周期10ms，传输抖动<=2ms，丢帧容忍度低",
+        "data_elements": [
+          "wheel_speed_fl",
+          "wheel_speed_fr",
+          "wheel_speed_rl",
+          "wheel_speed_rr",
+          "timestamp"
+        ],
+        "direct_paths": "SensorInterface -> CANBusManager -> WheelSpeedProcessor"
+      },
+      {
+        "interface_id": "I002",
+        "name": "ProcessedWheelSpeed_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性发布，频率10ms，最新值缓冲；内含健康标志；接收者用于控制器快速读取",
+        "data_category": "ProcessedSensorData",
+        "connected_components": [
+          "WheelSpeedProcessor",
+          "ABSController",
+          "ESPController",
+          "VehicleStateManager",
+          "SafetyMonitor"
+        ],
+        "performance_requirements": "周期10ms，端到端时延<=15ms",
+        "data_elements": [
+          "wheel_speed_filtered[4]",
+          "wheel_speed_variance[4]",
+          "health_flags"
+        ],
+        "direct_paths": "WheelSpeedProcessor -> VehicleStateManager/ABSController/ESPController"
+      },
+      {
+        "interface_id": "I003",
+        "name": "VehicleState_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期发布与按需读取混合(20ms周期为主)，订阅者使用最新值；缓冲策略为最新值覆盖；关键消费者可通过R-port同步读取",
+        "data_category": "StateData",
+        "connected_components": [
+          "VehicleStateManager",
+          "ABSController",
+          "EPSController",
+          "ESPController",
+          "ChassisDomainController",
+          "SafetyMonitor"
+        ],
+        "performance_requirements": "周期20ms，紧急事件时延<=10ms",
+        "data_elements": [
+          "vehicle_speed",
+          "yaw_rate",
+          "side_slip_angle",
+          "acceleration"
+        ],
+        "direct_paths": "VehicleStateManager -> Controllers"
+      },
+      {
+        "interface_id": "I004",
+        "name": "BrakeCmd_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用(确认必需)，控制器向BrakeActuatorProxy发出命令，超时<=20ms；错误处理：超时/拒绝通过Diagnostic上报并触发SafetyMonitor",
+        "data_category": "Command",
+        "connected_components": [
+          "ABSController",
+          "ESPController",
+          "BrakeActuatorProxy"
+        ],
+        "performance_requirements": "同步响应<=20ms，确认或错误码必须返回",
+        "data_elements": [
+          "brake_pressure_command",
+          "wheel_select_mask",
+          "command_id"
+        ],
+        "direct_paths": "ABS/ESP -> BrakeActuatorProxy"
+      },
+      {
+        "interface_id": "I005",
+        "name": "SteerCmd_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步调用，EPSController调用SteeringActuatorProxy并等待确认；超时<=20ms；支持命令序列号与确认码",
+        "data_category": "Command",
+        "connected_components": [
+          "EPSController",
+          "ESPController",
+          "SteeringActuatorProxy"
+        ],
+        "performance_requirements": "响应<=20ms，错误需上报DiagnosticManager",
+        "data_elements": [
+          "steer_torque_command",
+          "steer_angle_request",
+          "command_id"
+        ],
+        "direct_paths": "EPS/ESP -> SteeringActuatorProxy"
+      },
+      {
+        "interface_id": "I006",
+        "name": "SafetyModeSwitch_IF",
+        "type": "MODE-SWITCH-INTERFACE",
+        "communication_pattern": "异步事件驱动，SafetyMonitor发布模式切换指令(ENTER_SAFE_MODE/EXIT_SAFE_MODE)，必须被相关组件尽快响应(<=5ms触发降级流程)",
+        "data_category": "Control",
+        "connected_components": [
+          "SafetyMonitor",
+          "ChassisDomainController",
+          "ABSController",
+          "EPSController",
+          "ESPController"
+        ],
+        "performance_requirements": "触发时延<=5ms，可靠送达",
+        "data_elements": [
+          "mode_id",
+          "reason_code",
+          "timestamp"
+        ],
+        "direct_paths": "SafetyMonitor -> ChassisDomainController -> Controllers"
+      },
+      {
+        "interface_id": "I007",
+        "name": "DiagnosticReport_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "按事件或周期上报，缓冲采用队列，允许批量发送以减少带宽占用；错误无需实时确认，支持重发",
+        "data_category": "Diagnostic",
+        "connected_components": [
+          "DiagnosticManager",
+          "ChassisDomainController",
+          "CloudGateway"
+        ],
+        "performance_requirements": "关键故障上报紧急优先，非关键批量发送",
+        "data_elements": [
+          "DTC",
+          "component_id",
+          "timestamp",
+          "severity"
+        ],
+        "direct_paths": "各组件 -> DiagnosticManager -> 上层/云"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "CANBusManager连接SensorInterface和ActuatorProxies以收发底层CAN帧；SensorInterface->WheelSpeedProcessor->VehicleStateManager形成上游感知链；VehicleStateManager/ProcessedWheelSpeed_IF连接到ABSController/EPSController/ESPController；控制器通过Client-Server接口调用BrakeActuatorProxy/SteeringActuatorProxy；SafetyMonitor订阅关键流并向ChassisDomainController与控制器发出ModeSwitch或EmergencyCmd。",
+      "data_flow_paths": "物理传感器->CANBusManager->SensorInterface->WheelSpeedProcessor->(ProcessedWheelSpeed_IF)->VehicleStateManager->(VehicleState_IF)->控制器(ABS/EPS/ESP)->(BrakeCmd_IF/SteerCmd_IF)->ActuatorProxies->CANBusManager->执行器；Diagnostic信息单向汇聚到DiagnosticManager；SafetyMonitor订阅ProcessedWheelSpeed_IF、VehicleState_IF与命令确认路径并发布SafetyModeSwitch_IF。",
+      "control_flow_paths": "控制流以事件和同步调用混合：控制器检测到条件后同步调用ActuatorProxy(客户端-服务器，需确认)；SafetyMonitor可异步触发域模式切换，ChassisDomainController协调各控制器进入安全模式；DiagnosticManager在故障时发起上报与请求配置变更。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采取分层与模块化架构以满足ASIL-D隔离与可维护性需求：将底层总线管理、传感器解码、感知处理、控制器、执行代理和安全/诊断分离。使用SENDER-RECEIVER用于高频数据，CLIENT-SERVER用于需确认的执行命令，MODE-SWITCH用于安全降级。选择同步命令路径以保证确认；关键安全监控独立部署以满足ASIL隔离。",
+      "tradeoff_analysis": "同步客户端-服务器保证了命令确认但增加响应时间与耦合，故对命令路径引入严格超时与重试。使用最新值缓冲降低延迟但可能丢失历史上下文，故在需要历史窗口的组件内部保留本地缓存。将CAN管理集中有利于优化总线负载，但增加了单点复杂度，因此提供冗余链路与诊断分离。",
+      "alternative_considerations": "可将部分控制器部署为更细粒度组件以便于并行开发，但会带来接口管理复杂度；亦可将ActuatorProxy合并进控制器以减少RPC开销，但会降低可移植性与安全隔离性。",
+      "risk_assessment": "主要风险为总线拥塞与关键命令超时导致控制失效、不同组件对时间同步的依赖、以及SafetyMonitor检测与控制命令的时序不足。缓解措施：高优先级帧隔离、超时与重试策略、在关键路径使用同步确认并设计快速降级路径、在开发阶段进行端到端时延验证与压力测试。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7569,
+    "output_tokens": 12246,
+    "total_tokens": 19815,
+    "component_count": 12,
+    "interface_count": 7,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

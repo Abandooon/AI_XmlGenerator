@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<q:RailwayContainer xmlns:q="http://www.semanticweb.org/ontologies/2015/trainbenchmark" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmi:version="2.0">
+  <regions xmi:id="n22" id="22">
+    <sensors xmi:id="n4" id="4" monitors="n14 n20" />
+    <sensors xmi:id="n6" id="6" monitors="n16" />
+    <sensors xmi:id="n7" id="7" monitors="n17" />
+    <elements xmi:id="n14" id="14" xsi:type="railway:Segment" connectsTo="n15" monitoredBy="n4" length="40">
+      <semaphores xmi:id="n2" id="2" signal="GO" />
+    </elements>
+    <elements xmi:id="n15" id="15" xsi:type="railway:Segment" connectsTo="n16" monitoredBy="n5" length="40">
+      <semaphores xmi:id="n1" id="1" signal="GO" />
+    </elements>
+    <elements xmi:id="n16" id="16" xsi:type="railway:Segment" connectsTo="n17" monitoredBy="n6" length="40" />
+    <elements xmi:id="n20" id="20" xsi:type="railway:Switch" connectsTo="n16" monitoredBy="n4" currentPosition="DIVERGING" positions="n10" />
+  </regions>
+  <regions xmi:id="n23" id="23">
+    <sensors xmi:id="n5" id="5" monitors="n15 n21" />
+    <sensors xmi:id="n8" id="8" monitors="n18" />
+    <sensors xmi:id="n9" id="9" monitors="n17" />
+    <elements xmi:id="n17" id="17" xsi:type="railway:Segment" connectsTo="n18" monitoredBy="n7 n9" length="40" />
+    <elements xmi:id="n18" id="18" xsi:type="railway:Segment" connectsTo="n19" monitoredBy="n8" length="40" />
+    <elements xmi:id="n19" id="19" xsi:type="railway:Segment" connectsTo="" monitoredBy="" length="40">
+      <semaphores xmi:id="n3" id="3" signal="STOP" />
+    </elements>
+    <elements xmi:id="n21" id="21" xsi:type="railway:Switch" connectsTo="n19" monitoredBy="n5" currentPosition="DIVERGING" positions="n11" />
+  </regions>
+  <routes xmi:id="n12" id="12" active="true" entry="n2" exit="n1" requires="n4 n7">
+    <follows xmi:id="n10" id="10" position="DIVERGING" target="n20" route="n12" />
+  </routes>
+  <routes xmi:id="n13" id="13" active="true" entry="n1" exit="n3" requires="n5 n8">
+    <follows xmi:id="n11" id="11" position="DIVERGING" target="n21" route="n13" />
+  </routes>
+</q:RailwayContainer>

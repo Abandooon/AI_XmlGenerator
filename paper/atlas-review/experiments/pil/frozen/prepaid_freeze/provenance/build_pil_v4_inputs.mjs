@@ -1,0 +1,463 @@
+import fs from "node:fs/promises";
+import crypto from "node:crypto";
+import path from "node:path";
+
+const work = "E:/54239/Documents/outputs/01a06128-dffa-7612-9b96-f24d8826f813/pil_d1_acceptance";
+const baseDatasetPath = "E:/git projects/AI_XmlGenerator/Private_International_Law/data/experiment_dataset.jsonl";
+const comparisonPath = "E:/54239/Documents/ATLAS_PIL_C1_REVIEW_LOCK_2026-09-03_e1aacf70/internal/PIL_C1_ACCEPTANCE_AND_A1_COMPARISON.json";
+const c2Path = "E:/54239/Documents/ATLAS_PIL_C2_CONSENSUS_RESULT_LOCK_2026-09-04_9477e31c/PIL_C2_ACCEPTANCE.json";
+const d1InspectionPath = `${work}/PIL_D1_INSPECTION.json`;
+const d1WorkbookPath = "E:/下载/PIL_D1_AFFECTED_CASE_RECONFIRMATION_completed_2026-09-04.xlsx";
+
+const BRUSSELS = "BRUSSELS_I_BIS";
+const EUTMR = "EU_TRADE_MARK_REGULATION";
+const BRUSSELS_URL = "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng";
+const EUTMR_URL = "https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng";
+
+async function readJson(file) {
+  return JSON.parse(await fs.readFile(file, "utf8"));
+}
+
+async function readJsonl(file) {
+  return (await fs.readFile(file, "utf8"))
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map(JSON.parse);
+}
+
+async function sha256(file) {
+  return crypto.createHash("sha256").update(await fs.readFile(file)).digest("hex");
+}
+
+function canonicalSha256(value) {
+  const sort = (item) => {
+    if (Array.isArray(item)) return item.map(sort);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(Object.keys(item).sort().map((key) => [key, sort(item[key])]));
+    }
+    return item;
+  };
+  return crypto.createHash("sha256").update(JSON.stringify(sort(value))).digest("hex");
+}
+
+function boolFromYesNo(value) {
+  return String(value).trim().toLowerCase() === "yes";
+}
+
+function list(value) {
+  if (Array.isArray(value)) return value.map(String).map((x) => x.trim()).filter(Boolean);
+  return String(value || "")
+    .split(/[,，]/)
+    .map((x) => x.trim())
+    .filter((x) => x && x !== "none");
+}
+
+function uniq(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function instrumentForCase(caseId) {
+  return caseId === 34 ? EUTMR : BRUSSELS;
+}
+
+function evidenceKey(instrument, provision) {
+  return `${instrument}:${provision}`;
+}
+
+function parseLegalBasis(text, instrument = BRUSSELS) {
+  const normalized = String(text || "")
+    .split(/Withdrawal Agreement|Hague 2005|CJEU/i)[0]
+    .replace(/Arts?\.\s*/gi, "Art.");
+  const firstArticle = normalized.search(/Art\./i);
+  if (firstArticle < 0) return [];
+  const citationsOnly = normalized.slice(firstArticle).split(/EUR-Lex/i)[0];
+  const results = [];
+  const regex = /(?<![A-Za-z0-9(])(\d+)(?:\((\d+)\))?(?:\(([a-z])\))?(?:\s*-\s*\((\d+|[a-z])\))?/g;
+  for (const match of citationsOnly.matchAll(regex)) {
+    const article = match[1];
+    const paragraph = match[2];
+    const item = match[3];
+    const rangeEnd = match[4];
+    if (rangeEnd && paragraph && /^\d+$/.test(rangeEnd)) {
+      for (let value = Number(paragraph); value <= Number(rangeEnd); value += 1) {
+        results.push(evidenceKey(instrument, `Art.${article}(${value})`));
+      }
+    } else if (rangeEnd && paragraph && item && /^[a-z]$/.test(rangeEnd)) {
+      for (let code = item.charCodeAt(0); code <= rangeEnd.charCodeAt(0); code += 1) {
+        results.push(evidenceKey(instrument, `Art.${article}(${paragraph})(${String.fromCharCode(code)})`));
+      }
+    } else {
+      const provision = `Art.${article}${paragraph ? `(${paragraph})` : ""}${item ? `(${item})` : ""}`;
+      results.push(evidenceKey(instrument, provision));
+    }
+  }
+  return uniq(results);
+}
+
+function legalBasisObjects(keys) {
+  return keys.map((key) => {
+    const split = key.indexOf(":");
+    return { instrument: key.slice(0, split), provision: key.slice(split + 1) };
+  });
+}
+
+const clusterGroups = [
+  [1, 31], [2, 32], [3, 33], [4, 59], [5, 35],
+  [6, 37], [7, 39], [8, 41], [9, 40], [10, 38],
+  [11, 12, 43], [13, 45], [14, 44], [15, 46],
+  [16, 50], [17, 48], [18, 19, 49], [20, 47],
+  [21, 51], [22, 52], [23, 53], [24, 54], [25],
+  [26], [27, 55], [28, 58], [29, 56], [30, 57, 60],
+  [34], [36], [42],
+];
+const clusterByCase = new Map();
+for (let index = 0; index < clusterGroups.length; index += 1) {
+  const clusterId = `CL-${String(index + 1).padStart(3, "0")}`;
+  for (const caseId of clusterGroups[index]) {
+    if (clusterByCase.has(caseId)) throw new Error(`case ${caseId} assigned twice`);
+    clusterByCase.set(caseId, clusterId);
+  }
+}
+
+const [baseDataset, comparison, c2, d1] = await Promise.all([
+  readJsonl(baseDatasetPath), readJson(comparisonPath), readJson(c2Path), readJson(d1InspectionPath),
+]);
+const baseByCase = new Map(baseDataset.map((row) => [Number(row.id), row]));
+const comparisonByCase = new Map(comparison.comparisons.map((row) => [Number(row.case_id), row]));
+const c2ByCase = new Map(c2.rows.map((row) => [Number(row.case_id), row]));
+const d1ByCase = new Map(d1.rows.map((row) => [Number(row.case_id), row]));
+
+if (d1.sheet_order_exact !== true || d1.protected_diffs.length || d1.formulas_unchanged !== true) {
+  throw new Error("D1 inspection did not pass structural checks");
+}
+if (d1.declaration.completion !== "5 / 5") throw new Error("D1 is not complete");
+for (const row of d1.rows) {
+  if (!row.keymap_match || row.completion_status !== "已确认" || row.consistency_check !== "通过") {
+    throw new Error(`D1 row ${row.reconfirmation_id} is not admissible`);
+  }
+}
+if (baseDataset.length !== 60 || comparison.comparisons.length !== 60 || clusterByCase.size !== 60) {
+  throw new Error("expected exactly 60 cases across the dataset, review comparison, and cluster map");
+}
+
+function sourceFromC1(row) {
+  const instrument = instrumentForCase(Number(row.case_id));
+  const a1Evidence = parseLegalBasis(row.a1_legal_basis, instrument);
+  const c1Evidence = parseLegalBasis(row.c1_legal_basis, instrument);
+  const a1Types = list(row.a1_forum_set);
+  const c1Types = list(row.c1_forum_set);
+  return {
+    source_stage: "A1_C1_AGREEMENT",
+    conclusion: row.c1_conclusion,
+    forum: row.c1_forum,
+    forum_type: row.c1_primary_type,
+    alternative_forum_types: uniq([...a1Types, ...c1Types]).filter((x) => x !== row.c1_primary_type && x !== "none"),
+    conditional_answer: boolFromYesNo(row.c1_conditional),
+    explicit_abstention: row.c1_conclusion === "Abstain_Insufficient_Info",
+    evidence: uniq([...a1Evidence, ...c1Evidence]),
+    reasoning: row.c1_notes || row.a1_notes,
+    missing_facts: row.c1_missing_facts ? [row.c1_missing_facts] : [],
+    accepted_conclusions: uniq([row.a1_conclusion, row.c1_conclusion]),
+    accepted_forum_types: uniq([...a1Types, ...c1Types]),
+  };
+}
+
+function sourceFromC2(row) {
+  const instrument = instrumentForCase(Number(row.case_id));
+  return {
+    source_stage: "C2_JOINT_CONSENSUS",
+    conclusion: row.conclusion,
+    forum: row.forum,
+    forum_type: row.primary_type,
+    alternative_forum_types: list(row.alternative_types),
+    conditional_answer: boolFromYesNo(row.conditional),
+    explicit_abstention: row.conclusion === "Abstain_Insufficient_Info",
+    evidence: parseLegalBasis(row.legal_basis, instrument),
+    reasoning: row.consensus_reason,
+    missing_facts: row.missing_facts ? [row.missing_facts] : [],
+    accepted_conclusions: [row.conclusion],
+    accepted_forum_types: uniq([row.primary_type, ...list(row.alternative_types)]),
+  };
+}
+
+function sourceFromD1(row) {
+  const instrument = instrumentForCase(Number(row.case_id));
+  return {
+    source_stage: "D1_JOINT_RECONFIRMATION",
+    conclusion: row.conclusion,
+    forum: row.forum_or_authority,
+    forum_type: row.primary_type,
+    alternative_forum_types: list(row.alternative_types),
+    conditional_answer: boolFromYesNo(row.conditional),
+    explicit_abstention: row.conclusion === "Abstain_Insufficient_Info",
+    evidence: parseLegalBasis(row.legal_basis, instrument),
+    reasoning: row.joint_reason,
+    missing_facts: row.missing_facts_or_conditions && !String(row.missing_facts_or_conditions).startsWith("无；")
+      ? [row.missing_facts_or_conditions]
+      : [],
+    accepted_conclusions: [row.conclusion],
+    accepted_forum_types: uniq([row.primary_type, ...list(row.alternative_types)]),
+  };
+}
+
+function requiredEvidence(item) {
+  if (item.explicit_abstention) return [];
+  const evidence = item.evidence;
+  const first = (instrument, prefixes) => evidence
+    .filter((key) => key.startsWith(`${instrument}:`)
+      && prefixes.some((prefix) => key.slice(key.indexOf(":") + 1).startsWith(prefix)))
+    .sort((left, right) => right.length - left.length)[0];
+  if (item.conclusion === "Authority_of_X_has_jurisdiction") {
+    return [first(EUTMR, ["Art.63"])].filter(Boolean);
+  }
+  if (item.conclusion === "May_stay_or_decline_for_related_actions") {
+    return [first(BRUSSELS, ["Art.30"])].filter(Boolean);
+  }
+  if (item.conclusion === "Stay_for_first_seised") {
+    return [first(BRUSSELS, ["Art.29"])].filter(Boolean);
+  }
+  if (item.conclusion === "Decline_in_favor_of_chosen_court") {
+    return [first(BRUSSELS, ["Art.31", "Art.25"])].filter(Boolean);
+  }
+  if (item.conclusion === "No_EU_jurisdiction_use_member_state_law") {
+    return [first(BRUSSELS, ["Art.6"])].filter(Boolean);
+  }
+  const prefixes = {
+    exclusive: ["Art.24"],
+    agreement: ["Art.25", "Art.31"],
+    special: ["Art.7", "Art.18", "Art.21", "Art.22"],
+    general: ["Art.4"],
+    lis_pendens: ["Art.29"],
+    related_actions: ["Art.30"],
+    appearance: ["Art.26"],
+  }[item.forum_type] || [];
+  return [first(BRUSSELS, prefixes)].filter(Boolean);
+}
+
+const inference = [];
+const gold = [];
+const provenanceCases = [];
+for (let caseId = 1; caseId <= 60; caseId += 1) {
+  const original = baseByCase.get(caseId);
+  const comparisonRow = comparisonByCase.get(caseId);
+  if (!original || !comparisonRow) throw new Error(`missing case ${caseId}`);
+  const d1Row = d1ByCase.get(caseId);
+  const c2Row = c2ByCase.get(caseId);
+  const source = d1Row ? sourceFromD1(d1Row) : c2Row ? sourceFromC2(c2Row) : sourceFromC1(comparisonRow);
+  const factsText = d1Row ? d1Row.final_revised_facts : original.facts_text;
+  const clusterId = clusterByCase.get(caseId);
+  const required = requiredEvidence(source);
+  const acceptedTypes = source.accepted_forum_types.filter(Boolean);
+  const row = {
+    id: caseId,
+    cluster_id: clusterId,
+    conclusion: source.conclusion,
+    forum: source.forum,
+    forum_type: source.forum_type,
+    alternative_forum_types: source.alternative_forum_types,
+    conditional_answer: source.conditional_answer,
+    explicit_abstention: source.explicit_abstention,
+    legal_basis: legalBasisObjects(source.evidence),
+    reasoning: source.reasoning,
+    missing_facts: source.missing_facts,
+    accepted_conclusions: source.accepted_conclusions,
+    accepted_forum_types: acceptedTypes,
+    required_evidence: required,
+    accepted_evidence: source.evidence,
+    review_source_stage: source.source_stage,
+  };
+  inference.push({
+    id: caseId,
+    cluster_id: clusterId,
+    facts_text: factsText,
+    source_class: "synthetic_case_expert_adjudicated",
+  });
+  gold.push(row);
+  provenanceCases.push({
+    id: caseId,
+    cluster_id: clusterId,
+    facts_changed_after_v2: Boolean(d1Row),
+    review_source_stage: source.source_stage,
+    d1_reconfirmation_id: d1Row?.reconfirmation_id || null,
+    c2_consensus_id: c2Row?.consensus_id || null,
+  });
+}
+
+const articleMetadata = {
+  [`${BRUSSELS}:Art.4`]: ["General jurisdiction by defendant domicile", "被告住所在成员国时，原则上由该成员国法院行使一般管辖。", ["住所", "居民", "一般管辖", "domicile"]],
+  [`${BRUSSELS}:Art.5`]: ["Limits on derogation from domicile jurisdiction", "对住所在成员国的被告，只能依本条例列明的特别规则偏离住所地管辖。", ["偏离", "例外", "特别规则"]],
+  [`${BRUSSELS}:Art.6`]: ["Defendant not domiciled in a Member State", "被告不在任何成员国有住所时，原则上由受诉成员国国内法决定管辖，但本条例列明的例外仍适用。", ["欧盟无住所", "任何欧盟成员国均无住所", "中国", "美国公司", "国内法"]],
+  [`${BRUSSELS}:Art.7`]: ["Special jurisdiction", "合同、侵权、分支机构和信托等事项可按本条规定的连接点适用特别管辖。", ["合同", "履行地", "交货地", "服务", "侵权", "损害", "分支机构", "信托", "特别管辖"]],
+  [`${BRUSSELS}:Art.17`]: ["Consumer contract scope", "消费者合同保护性管辖适用于本条规定的经营活动和定向经营等情形。", ["消费者", "网络", "定向经营", "consumer"]],
+  [`${BRUSSELS}:Art.18`]: ["Jurisdiction for consumer contracts", "消费者可在本条允许的法院起诉；经营者起诉消费者通常须在消费者住所地。", ["消费者", "经营者", "消费者住所"]],
+  [`${BRUSSELS}:Art.19`]: ["Choice-of-court limits in consumer contracts", "消费者合同中的选择法院协议只有在本条列明条件下才能偏离保护性规则。", ["消费者", "选择法院", "协议", "诉前条款"]],
+  [`${BRUSSELS}:Art.22`]: ["Employer actions against employees", "雇主对雇员提起诉讼原则上只能在雇员住所地成员国法院进行。", ["雇主", "雇员", "劳动合同", "员工"]],
+  [`${BRUSSELS}:Art.24`]: ["Exclusive jurisdiction", "不论当事人住所，不动产物权、法人机关决议、公共登记、工业产权登记效力和判决执行等事项适用专属管辖。", ["专属", "不动产", "物权", "公司决议", "登记簿", "商标", "专利", "执行"]],
+  [`${BRUSSELS}:Art.25`]: ["Choice-of-court agreements", "符合形式与实质条件的成员国法院选择协议可赋予指定法院管辖，原则上具有专属性。", ["选择法院", "管辖协议", "约定", "书面", "电子", "专属"]],
+  [`${BRUSSELS}:Art.26`]: ["Jurisdiction by appearance", "被告就实体应诉可使法院取得管辖，但仅为争议管辖而出庭以及专属管辖事项除外；弱势方案件另有告知要求。", ["出庭", "应诉", "实体答辩", "管辖异议", "告知"]],
+  [`${BRUSSELS}:Art.27`]: ["Own-motion review of exclusive jurisdiction", "当另一成员国法院依 Article 24 享有专属管辖时，受诉法院应依职权宣告无管辖权。", ["依职权", "专属管辖", "否认管辖"]],
+  [`${BRUSSELS}:Art.28`]: ["Default of appearance", "被告缺席时，法院应依职权审查管辖，并在送达和防御权条件满足前暂停程序。", ["缺席", "送达", "依职权审查", "防御权"]],
+  [`${BRUSSELS}:Art.29`]: ["Same cause and same parties", "不同成员国法院受理同一当事人之间同一诉因的诉讼时，后受理法院必须依职权中止，并在先受理法院确认管辖后让位。", ["同一当事人", "同一诉因", "先受理", "后受理", "必须中止", "lis pendens"]],
+  [`${BRUSSELS}:Art.30`]: ["Related actions", "不同成员国法院受理密切相关诉讼时，后受理法院可以酌情中止；在一审、申请、先受理法院可管辖两案且可合并等条件下，可以放弃管辖。", ["相关诉讼", "不同请求", "同一项目", "不可调和", "酌情中止", "合并审理"]],
+  [`${BRUSSELS}:Art.31`]: ["Exclusive-jurisdiction and chosen-court priority", "本条分别处理多个专属法院主张和有效选择法院协议下指定法院的优先程序，不等同于 Article 29 或 Article 30。", ["多个专属法院", "指定法院", "选择法院", "优先", "中止", "让位"]],
+  [`${BRUSSELS}:Art.32`]: ["When a court is deemed seised", "法院受理时间依文书向法院提交或向负责送达机关提交的时间确定，并要求原告完成必要后续步骤。", ["受理时间", "登记", "提交", "送达机关", "先受理"]],
+  [`${BRUSSELS}:Art.33`]: ["Proceedings pending in a third State", "成员国法院对同一诉因案件面对第三国先行诉讼时，可在本条条件下酌情中止。", ["第三国", "同一诉因", "中止", "承认执行"]],
+  [`${BRUSSELS}:Art.34`]: ["Related proceedings pending in a third State", "成员国法院面对第三国的相关诉讼时，可在避免不可调和判决等条件下酌情中止。", ["第三国", "相关诉讼", "不可调和", "酌情中止"]],
+  [`${BRUSSELS}:Art.41`]: ["Enforcement procedure", "判决执行程序原则上适用被请求执行成员国法律，并受本条例限制。", ["判决执行", "执行程序", "被请求执行国"]],
+  [`${BRUSSELS}:Art.62`]: ["Domicile of natural persons", "自然人是否在某成员国有住所，由法院依本条指定的国内法冲突方法判断。", ["自然人住所", "国内法", "长期居住", "国籍"]],
+  [`${BRUSSELS}:Art.63`]: ["Domicile of companies and legal persons", "公司或法人可按法定住所、中央管理机构或主要营业地确定本条例意义上的住所；信托住所另依法院冲突法规则判断。", ["公司住所", "法定住所", "中央管理", "主要营业地", "信托住所"]],
+  [`${EUTMR}:Art.63`]: ["Application for revocation or invalidity", "欧盟商标的撤销或无效申请可依本条向欧盟知识产权局提交。", ["EUIPO", "欧盟知识产权局", "欧盟商标", "独立无效申请", "宣告无效"]],
+  [`${EUTMR}:Art.124`]: ["EU trade mark court jurisdiction", "欧盟商标法院对侵权等诉讼以及依 Article 128 提出的撤销或无效反诉具有专属权限。", ["欧盟商标法院", "侵权", "反诉", "无效"]],
+  [`${EUTMR}:Art.128`]: ["Counterclaims for revocation or invalidity", "欧盟商标法院中的撤销或无效问题按本条以反诉形式处理，并与 EUIPO 登记程序协调。", ["反诉", "撤销", "无效", "欧盟商标法院"]],
+  [`${EUTMR}:Art.135`]: ["Coordination with other actions", "处理非 Article 124 所列案件的国家法院原则上将欧盟商标视为有效，并遵守本条例的程序协调规则。", ["其他诉讼", "欧盟商标有效", "程序协调"]],
+};
+
+const provisionOverrides = {
+  [`${BRUSSELS}:Art.4(1)`]: ["General jurisdiction by defendant domicile", "被告住所在成员国时，应向该成员国法院起诉，不以国籍为连接点。", ["被告", "住所", "居民", "公司", "企业", "商家", "荷兰商家", "中央管理机构", "主要营业地", "一般管辖"]],
+  [`${BRUSSELS}:Art.6(1)`]: ["Defendant outside all Member States", "被告不在任何成员国有住所时，原则上由受诉成员国国内法决定管辖。", ["住所仅位于中国", "任何欧盟成员国均无住所", "欧盟无住所", "美国公司", "国内法判断"]],
+  [`${BRUSSELS}:Art.7(1)(b)`]: ["Sale and service performance place", "买卖动产以交付地、服务合同以服务提供地作为 Article 7(1)(b) 的特别连接点。", ["买方", "卖方", "出售", "机器", "货物", "交货地", "交付地", "提供服务", "市场推广服务", "服务主要", "主要在"]],
+  [`${BRUSSELS}:Art.7(2)`]: ["Place of harmful event", "侵权或准侵权事项可在损害事件发生地或可能发生地法院起诉。", ["侵权", "疏忽", "撞伤", "受伤", "产品伤害", "损害发生", "事故"]],
+  [`${BRUSSELS}:Art.7(5)`]: ["Branch or establishment", "因分支机构、代理处或其他营业所经营引发的争议，可在该机构所在地起诉。", ["分支机构", "分公司", "营业所", "总公司", "与该分支机构签订"]],
+  [`${BRUSSELS}:Art.24(2)`]: ["Validity of companies and corporate decisions", "公司或法人有效性、解散以及其机关决议有效性争议，由其住所地成员国法院专属管辖。", ["公司", "股东大会", "增资决议", "解任董事", "机关决议", "法定席位"]],
+  [`${BRUSSELS}:Art.24(4)`]: ["Validity of registered intellectual property", "专利、国家商标等登记权利的注册或有效性争议，由登记地成员国法院专属管辖。", ["注册商标", "德国商标", "商标无效", "宣告德国注册商标无效", "专利有效性"]],
+  [`${BRUSSELS}:Art.24(5)`]: ["Enforcement of judgments", "涉及判决执行的诉讼，由执行地成员国法院专属管辖。", ["执行", "强制执行", "执行异议", "金钱判决", "被请求执行"]],
+  [`${BRUSSELS}:Art.26(1)`]: ["Appearance without jurisdiction objection", "被告就实体应诉可使法院取得管辖，但仅为提出管辖异议而出庭除外。", ["实体答辩", "就实体进行答辩", "未提管辖异议", "仅为提出管辖异议", "仍到庭", "被书面告知", "有权对管辖提出异议", "出庭"]],
+  [`${BRUSSELS}:Art.62(1)`]: ["Domicile of natural persons", "自然人是否在某成员国有住所，由法院依本条指定的国内法冲突方法判断。", ["自然人住所", "任何欧盟成员国均无住所", "住所仅位于", "国内法", "长期居住", "国籍"]],
+  [`${BRUSSELS}:Art.29(1)`]: ["Mandatory stay for same cause and parties", "同一当事人之间同一诉因的诉讼在不同成员国法院受理时，后受理法院必须依职权中止。", ["同一合同", "同一当事人", "消极确认", "确认无责", "先在", "后在", "先受理", "后受理"]],
+};
+
+const allEvidence = uniq(gold.flatMap((row) => row.accepted_evidence));
+const knowledge = allEvidence.map((key) => {
+  const split = key.indexOf(":");
+  const instrument = key.slice(0, split);
+  const provision = key.slice(split + 1);
+  const article = /^Art\.\d+/.exec(provision)?.[0];
+  const metadata = provisionOverrides[key] || articleMetadata[`${instrument}:${article}`];
+  if (!metadata) throw new Error(`no authoritative metadata for ${key}`);
+  return {
+    evidence_id: key,
+    instrument,
+    instrument_title: instrument === BRUSSELS
+      ? "Regulation (EU) No 1215/2012 (Brussels I bis)"
+      : "Regulation (EU) 2017/1001 on the European Union trade mark",
+    provision,
+    title: metadata[0],
+    text_zh: metadata[1],
+    keywords: metadata[2],
+    official_url: instrument === BRUSSELS ? BRUSSELS_URL : EUTMR_URL,
+    source_checked_on: "2026-09-04",
+    text_status: "concise_paraphrase_checked_against_official_source",
+  };
+}).sort((a, b) => a.evidence_id.localeCompare(b.evidence_id));
+
+const validConclusions = new Set([
+  "Court_of_X_has_jurisdiction",
+  "Authority_of_X_has_jurisdiction",
+  "Stay_for_first_seised",
+  "May_stay_or_decline_for_related_actions",
+  "Decline_in_favor_of_chosen_court",
+  "No_EU_jurisdiction_use_member_state_law",
+  "Abstain_Insufficient_Info",
+]);
+const validTypes = new Set([
+  "exclusive", "agreement", "special", "general", "lis_pendens", "related_actions", "appearance", "none",
+]);
+const knowledgeIds = new Set(knowledge.map((row) => row.evidence_id));
+const issues = [];
+for (const row of gold) {
+  if (!validConclusions.has(row.conclusion)) issues.push(`case ${row.id}: invalid conclusion`);
+  if (!validTypes.has(row.forum_type)) issues.push(`case ${row.id}: invalid forum_type`);
+  if (row.explicit_abstention !== (row.conclusion === "Abstain_Insufficient_Info")) issues.push(`case ${row.id}: abstention mismatch`);
+  const noEuNationalLaw = row.conclusion === "No_EU_jurisdiction_use_member_state_law";
+  if (!row.explicit_abstention && (!row.forum || row.forum === "none" || (row.forum_type === "none" && !noEuNationalLaw))) issues.push(`case ${row.id}: incomplete positive gold`);
+  if (!row.explicit_abstention && !row.required_evidence.length) issues.push(`case ${row.id}: no required evidence`);
+  for (const key of row.accepted_evidence) if (!knowledgeIds.has(key)) issues.push(`case ${row.id}: KB lacks ${key}`);
+}
+for (const row of inference) {
+  const forbidden = ["expected_output", "gold", "connecting_factors", "accepted_conclusions", "accepted_forum_types"];
+  for (const key of forbidden) if (key in row) issues.push(`case ${row.id}: inference leak ${key}`);
+}
+const byStage = Object.fromEntries([...new Set(gold.map((row) => row.review_source_stage))].map((stage) => [stage, gold.filter((row) => row.review_source_stage === stage).length]));
+const d1AcceptanceBody = {
+  schema_version: "atlas.pil.d1_reconfirmation_acceptance.v1",
+  status: issues.length ? "FAIL" : "PASS",
+  accepted_on: "2026-09-04",
+  returned_workbook: {
+    file: path.basename(d1WorkbookPath),
+    sha256: await sha256(d1WorkbookPath),
+  },
+  frozen_template_sha256: await sha256("E:/54239/Documents/ATLAS_PIL_D1_RECONFIRMATION_PACKAGE_LOCK_2026-09-04_c6da28fc/PIL_D1_AFFECTED_CASE_RECONFIRMATION_v1.xlsx"),
+  checks: {
+    sheet_order_exact: d1.sheet_order_exact,
+    protected_diff_count: d1.protected_diffs.length,
+    formulas_unchanged: d1.formulas_unchanged,
+    formula_error_scan: d1.formula_error_scan,
+    rows_complete: d1.declaration.completion,
+    two_reviewer_confirmation: d1.rows.every((row) => row.r1_confirm === "yes" && row.r2_confirm === "yes"),
+    keymap_matches: d1.rows.every((row) => row.keymap_match),
+  },
+  reviewers: { reviewer_1: d1.declaration.r1, reviewer_2: d1.declaration.r2, date_excel_serial: d1.declaration.date },
+  accepted_case_ids: d1.rows.map((row) => row.case_id).sort((a, b) => a - b),
+  accepted_ontology_repairs: {
+    authority_conclusion: d1.rows.find((row) => row.case_id === 34)?.conclusion,
+    related_actions_conclusion: d1.rows.find((row) => row.case_id === 44)?.conclusion,
+    related_actions_forum_type: d1.rows.find((row) => row.case_id === 44)?.primary_type,
+  },
+};
+const d1Acceptance = { ...d1AcceptanceBody, content_sha256: canonicalSha256(d1AcceptanceBody) };
+
+const adjudicationBody = {
+  schema_version: "atlas.pil.consensus_gold_provenance.v4",
+  status: issues.length ? "FAIL" : "CONSENSUS_COMPLETE",
+  frozen_v2_mutated: false,
+  facts_changed_case_ids: d1.rows.map((row) => row.case_id).sort((a, b) => a - b),
+  review_sources: {
+    a1_workbook_sha256: "24d50da4b801ab675eddb3d0a5e6d0dab77473993f686b356f30fb66092919c4",
+    c1_workbook_sha256: "e1aacf700b552fee1167b59e7feb0e20f0fe64636b2069f63db25b630449a8f4",
+    c2_workbook_sha256: "9477e31c0eed765e38fe7d3a5a08fd25d5b1991ffaf37a3a579da063b6c3df19",
+    d1_workbook_sha256: await sha256(d1WorkbookPath),
+  },
+  derivation_policy: {
+    no_disagreement: "Use the C1 normalized record only where A1 and C1 were compatible on the adjudicated dimensions; accept the union of compatible atomic forum types and evidence references.",
+    c2_cases: "Use the jointly confirmed C2 row.",
+    d1_cases: "Use the jointly reconfirmed D1 facts and labels, overriding the provisional C2 row.",
+    forum_string_scoring: "The free-text forum name is retained for audit but is not an exact-match primary endpoint.",
+  },
+  cluster_policy: {
+    cluster_count: clusterGroups.length,
+    role: "descriptive dependence clusters for sensitivity intervals; not a probability-sampling frame",
+    clusters: clusterGroups.map((caseIds, index) => ({ cluster_id: `CL-${String(index + 1).padStart(3, "0")}`, case_ids: caseIds })),
+  },
+  case_sources: provenanceCases,
+};
+const adjudication = { ...adjudicationBody, content_sha256: canonicalSha256(adjudicationBody) };
+
+const inferenceText = inference.map((row) => JSON.stringify(row)).join("\n") + "\n";
+const goldText = gold.map((row) => JSON.stringify(row)).join("\n") + "\n";
+const knowledgeText = knowledge.map((row) => JSON.stringify(row)).join("\n") + "\n";
+await Promise.all([
+  fs.writeFile(`${work}/inference_dataset_v4.jsonl`, inferenceText, "utf8"),
+  fs.writeFile(`${work}/consensus_gold_v4.jsonl`, goldText, "utf8"),
+  fs.writeFile(`${work}/authoritative_provisions_v4.jsonl`, knowledgeText, "utf8"),
+  fs.writeFile(`${work}/PIL_D1_ACCEPTANCE.json`, JSON.stringify(d1Acceptance, null, 2) + "\n", "utf8"),
+  fs.writeFile(`${work}/PIL_V4_ADJUDICATION_RECORD.json`, JSON.stringify(adjudication, null, 2) + "\n", "utf8"),
+]);
+const report = {
+  status: issues.length ? "FAIL" : "PASS",
+  issues,
+  counts: { inference: inference.length, gold: gold.length, knowledge: knowledge.length, clusters: clusterGroups.length },
+  source_stages: byStage,
+  new_labels: {
+    authority: gold.filter((row) => row.conclusion === "Authority_of_X_has_jurisdiction").map((row) => row.id),
+    related_actions: gold.filter((row) => row.forum_type === "related_actions").map((row) => row.id),
+  },
+  hashes: {
+    inference_dataset_v4: crypto.createHash("sha256").update(inferenceText).digest("hex"),
+    consensus_gold_v4: crypto.createHash("sha256").update(goldText).digest("hex"),
+    authoritative_provisions_v4: crypto.createHash("sha256").update(knowledgeText).digest("hex"),
+    d1_acceptance: await sha256(`${work}/PIL_D1_ACCEPTANCE.json`),
+    adjudication_record: await sha256(`${work}/PIL_V4_ADJUDICATION_RECORD.json`),
+  },
+};
+await fs.writeFile(`${work}/PIL_V4_INPUT_BUILD_REPORT.json`, JSON.stringify(report, null, 2) + "\n", "utf8");
+console.log(JSON.stringify(report, null, 2));

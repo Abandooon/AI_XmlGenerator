@@ -1,0 +1,195 @@
+{
+  "status": "PASS",
+  "offline_network_guard": true,
+  "external_input_guard": true,
+  "new_model_requests": 0,
+  "integrity": {
+    "inventory_files_verified": 76,
+    "selected_frozen_files_verified": 57,
+    "original_inventory_files": 61,
+    "explicitly_excluded_files": 4
+  },
+  "frozen_scored_units_reproduced": 720,
+  "ledger_chain_verified": true,
+  "request_evidence": {
+    "reconstructed_primary_units": 720,
+    "reconstructed_transport_requests": 784,
+    "unique_provider_responses": 782,
+    "response_statuses": {
+      "RESPONSE_RECEIVED": 782,
+      "FAILED": 2
+    },
+    "reported_models": {
+      "gpt-5.6-luna-2026-07-09": 782
+    },
+    "usage": {
+      "input_tokens": 952689,
+      "output_tokens": 268036,
+      "total_tokens": 1220725
+    }
+  },
+  "gold_derivation": {
+    "boundary_tests": 8,
+    "cases_regenerated": 60,
+    "changes": [
+      {
+        "case_id": 19,
+        "before": [
+          "BRUSSELS_I_BIS:Art.62(1)"
+        ],
+        "after": [
+          "BRUSSELS_I_BIS:Art.6(1)"
+        ]
+      }
+    ]
+  },
+  "changed_gold_cases": [
+    {
+      "case_id": 19,
+      "fields": [
+        "required_evidence"
+      ]
+    }
+  ],
+  "changed_scored_units": [
+    {
+      "unit_id": "19|p2|2",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p3|3",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p0|3",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p1|3",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p3|1",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p2|1",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p3|2",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p1|2",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p0|1",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p0|2",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p1|1",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "unit_id": "19|p2|3",
+      "fields": {
+        "evidence_requirement_met": [
+          false,
+          true
+        ]
+      }
+    }
+  ],
+  "summary_and_paired_statistics_reproduced": true,
+  "endpoint_counts": {
+    "p0": 73,
+    "p1": 96,
+    "p2": 101,
+    "p3": 143
+  },
+  "expert_reviewed_units": 3,
+  "expert_not_reviewed_units": 717,
+  "full_legal_accuracy": null,
+  "known_contract_pass_expert_unacceptable": [
+    "42|p1|1"
+  ],
+  "tests": {
+    "tests_run": 34,
+    "failures": 0,
+    "errors": 0,
+    "original_test_module": "frozen/prepaid_freeze/tests_v2/test_pil_v4.py",
+    "release_test_module": "tests/test_release.py",
+    "historical_locator_rebinding": "Translation acceptance accepted_path is rebased in memory to the included workbook after verifying accepted_workbook_sha256; no score or review fields change."
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "node": "v24.20.0",
+    "dependencies": {
+      "jsonschema": "4.26.0",
+      "openai": "2.48.0",
+      "httpx": "0.28.1",
+      "PyYAML": "6.0.3"
+    }
+  }
+}

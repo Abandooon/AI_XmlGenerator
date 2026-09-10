@@ -1,0 +1,185 @@
+18-Jun-2026
+
+Dear Mr. Ma:
+
+Manuscript ID SOSYM-26-00005681 entitled "ATLAS: A Layered Constraint-Guided Framework for Structured Artifact Generation in LLM-Assisted MDE" which you submitted to the journal of Software and Systems Modeling, has been reviewed.  The comments of the reviewers are included at the bottom of this letter.
+
+In view of the criticisms of the reviewers, a major revision of your manuscript is required for it to be reconsidered for publication in the journal of Software and Systems Modeling.  This major revision must incorporate changes that address the reviewers' concerns. When preparing your revised manuscript, please carefully consider the reviewers' input, and create a detailed list of changes to the manuscript and responses to their comments and concerns.  Your list of responses should be submitted and uploaded as a separate file in addition to your revised manuscript.
+
+Please note that resubmitting your manuscript does not guarantee eventual acceptance, and that your resubmission will be subject to re-review before a decision is rendered.
+
+Once you have revised your manuscript, go to https://mc.manuscriptcentral.com/sosym and login to your Author Center.  Click on "Manuscripts with Decisions," and then click on "Create a Resubmission" located next to the manuscript number.  Then, follow the steps for resubmitting your manuscript (please see also "How to proceed" instructions below).
+
+Please submit both the revised manuscript and the file describing the detailed changes and responses to the reviewers' comments and concerns.
+
+Because we are trying to facilitate timely publication of manuscripts submitted to the journal of Software and Systems Modeling, your revised manuscript should be uploaded as soon as possible, and certainly before 16-Sep-2026.  If it is not possible for you to submit your revision within this time, please notify me by e-mail and we will try to accommodate your constraints.  However, if we cannot extend the resubmission date, the paper will have to be treated as a completely new submission.
+
+I look forward to your resubmission.
+
+Sincerely,
+Professor Marsha Chechik
+Editor in Chief, Software and Systems Modeling
+chechik@cs.toronto.edu
+
+
+Login information:
+User ID: (Person not available)
+E-Mail: (Person not available)
+
+(If you do not know or have forgotten your password, please use the 'Password Help' function on your site log in page: https://mc.manuscriptcentral.com/sosym).
+
+How to proceed:
+1) Login to https://mc.manuscriptcentral.com/sosym
+2) Go to your "Author Center"
+3) Click on "Manuscripts with Decisions"
+4) Select the "create a resubmission" link of the corresponding manuscript.
+Note: Directly below this link you'll find the number of remaining days for the resubmission.
+5) Follow the instructions on the screen.
+Note: Page 6 of the resubmission process shows a table "My Files" with all files of the original submission. If you have updated a file for your resubmission, please delete the original version and upload the revised file.
+
+
+Editor's Comments to Author:
+Editor
+Comments to the Author:
+The reviewers agree that this manuscript addresses a relevant challenge in MDE by integrating LLMs into constraint-aware generation pipelines. Even though the proposed ATLAS framework is recognized to be conceptually valuable, the reviewers identified significant issues to be considered for a major revision, related to the following critical areas:
+
+- The manuscript is not always easy to read due to inconsistent terminology and the introduction of abstract concepts without sufficient context.   
+
+- There is a blurred boundary between the general ATLAS framework and its AUTOSAR-specific implementation. Because the evaluation is strictly limited to the AUTOSAR domain, the claims of cross-domain generalizability are not empirically supported and must be properly proven.
+
+- There are severe verifiability concerns regarding the dataset and the provided GitHub repository. Reviewers noted the presence of Chinese documentation and characters in the evaluation data, which raises questions about the language used for natural language requirements, given that AUTOSAR specifications are exclusively in English. The authors must clarify the exact origins of their test cases and address potential dataset biases. Furthermore, using different LLMs across different research questions makes the comparative analysis invalid.
+
+- The "audit-guided repair” component is a central claim of the framework but lacks sufficient empirical backing. The authors must provide quantitative data regarding the execution, stability, and human-in-the-loop effort required for this repair process. Additional technical details on the pipeline implementation are also necessary.
+
+
+
+Reviewers' Comments to Author:
+Please note: Reviewers might have uploaded their review as a separate files which unfortunately are not attached to this message. To get access to these files please go to your author center in Manuscript Central and click on "Manuscripts with Decisions". Find the entry with Manuscript ID SOSYM-26-00005681 and click on the link "view decision letter" next to it. At the end of the appearing pop up window you'll find links for every attached file if exist. Please make sure that your browser does not suppress pop up windows.
+
+Reviewer: 1
+
+Public Comments (these will be made available to the author)
+TITLE:
+ATLAS: A Layered Constraint-Guided Framework for Structured Artifact Generation in LLM-Assisted MDE.
+
+SUMMARY:
+ATLAS is a framework designed to make Large Language Models (LLMs) generate industry-compliant engineering artifacts, specifically AUTOSAR configuration files.
+It builds a knowledge base on AUTOSAR rules that is consumed via RAG to guide the LLM with prompt augmentation. During generation, it enforces syntactic and structural validity of the artifact by using constrained decoding. The framework also uses formal validators (like SHACL and SMT) to check the completed artifacts for semantic errors. The feedback is used to perform a code repair pass (Audit-Guided Repair or AGR).
+
+PROS:
+The paper addresses a concrete engineering challenge in MDE: automating the generation of schema-restricted serialization formats (e.g., ARXML) from natural language requirements. It also works in the domain of AUTOSAR which is a very interesting field for MDE.
+
+CONS:
+- The article is not well-written, very difficult to follow, not easy to read, and obscure. For example, the Research Questions (RQ) are very difficult to read due to the use of technical components of the framework. The terminology used does not fit our community and it is used inconsistently. The authors present the article written as a framework when they understand that it is mainly a methodological contribution, because it is entirely coupled to AUTOSAR. And also considering that there are many components out of the scope of the evaluation, such as the artifact auto-repair process.
+- The novelty is very low. The mix of constrained decoding and prompt augmentation is known in the literature. Specially considering constrained decoding as enforcing a json_schema, according to the authors. The article shows to the reader how it applies to AUTOSAR, which is interesting, but it does not contribute with new knowledge. The derived conclusions are known in the literature, guiding the LLM (in-context learning) to write code works with caveats, using constrained decoding to produce syntactically valid code works with other caveats, enforcing a json_schema (which is not strictly constrained decoding and it is not always guaranteed that it produces valid json) works to produce structured output with other different caveats.
+- There are important concerns that need to be addressed in the evaluation. See detailed evaluation below.
+- The authors are assuming that AUTOSAR artifacts (e.g., ARXML) are well-represented in the pre-training data of the LLMs used, ignoring their scarcity and all the known effects of low-resource representations. Thereby, shifting the discussion from the difficulty to produce syntactically valid ARXML in one-shot (presented in Table 5, with a 0% in one open-weight model and 50% in GPT-5) to the real issue that the LLM does not know how to do it. In the industry and in academia, guiding the LLM, or constrained-decoding the output, or both is common practice to achieve better results under those circumstances.
+
+DETAILED EVALUATION:
+
+- The article is not well-written. For example, the authors do not frame the problem in the abstract that the proposed framework solves, they do not contextualize why it matters, they do not present the framework clearly enough for readers to understand, choosing unnecessary abstract and unexplained terms, such as: “Layer 1”, “Layer 2 backend validation”, “audit-guided repair”, “post-generation semantic/logical obligations”, “generation-time structural constraints”. Another example is how the framework is explained: The workflow of the proposed framework is not presented in a way that readers can easily understand the sequential steps or logical flow of the process followed by the LLM, and the many different variations introduced in the evaluation. The images do not help to understand the problem, they miss the “Layer 1”, “Layer 2” concrete representations.
+- The paper’s structure makes it difficult to follow the proposed framework progressively. Several components and techniques are introduced before the framework itself is clearly explained, which forces the reader to interpret technical details without sufficient context. For example, “Layer 1”, “Layer 2”, “Constraint-Guided, Validation-Backed Generation” are discussed in the Abstract, Section 1, and Section 2, before the overall architecture and workflow of the framework are presented in Section 3. A clearer organization would first introduce the framework at a high level and then discuss related techniques and implementation details afterward.
+- The placement of related work references is also inconsistent. Some relevant discussions appear outside the related work section, which weakens the positioning of the contribution within the state of the art. For instance, the discussion in the RQ1 experimental setup (Section 4.3.1) about constrained decoding addresses an already known problem in constrained decoding that would be more appropriate in the related work or background section.
+- The manuscript introduces ATLAS as a generalizable, cross-domain framework , yet the conclusions state that the true contribution is strictly methodological and bounded to the AUTOSAR case study. Therefore, the article should be rewritten to explicitly focus on the methodological contribution.
+- The text features an inconsistent use of terms and core acronyms. For example: The acronym CVG changes definition across sections. It is introduced as “Constraint-Guided, Validation-Backed Generation” in Section 1 , shifts to “constraint-aware execution” in Section 1.1 , and transforms into “constrained generation plus validation” in Section 5.
+- The authors choose abstract terms in order to explain simple terms. For example, in Section 2, where they introduce internal framework mechanics (e.g., “layered constraint compilation”, “constraint-aware generation”, “constrained execution”, “reusable evidence packaging”, “schema acquisition”, “evidence flow”) prior to explaining the framework architecture or defining them previously. Some of those terms are not even used “as is” or explained anywhere in the following sections. There are no “constraint compilations” or “constraint-aware generation”, only constrained decoding. There is no “constrained execution”, because there is no execution involved to achieve any goal. There is no reusable evidence packaging, but a log of discarded logits when constrained decoding an artifact.
+- The authors use technical jargon (e.g., transformers-specific jargon, RDF-specific) without introducing them first. For example, “decoding”, “decoding paths”, “logit masking”, “transformer configurations”, and “SHACL/SMT-style checks”.
+- The empirical evaluation fails to match the scope of the proposed technical architecture, leaving core claims unverified. For example: (1) Section 3.6 details an elaborate Algorithm 2 (Repair Phase or AGR) for localized structural patching and human-in-the-loop typed editing. However, Section 4 contains zero metrics or performance data regarding the execution, stability, or cost of this repair loop. (2) The methodology allocates substantial overhead to recording step-by-step token selection spaces (averaging 156 allowed options per token step under one configuration) into a persistent audit log. However, the evaluation lacks to prove how navigating this massive log file of tokens (and not words) adds real-world diagnostic utility to the system engineer compared to standard practices such as using an IDE with high-level validator syntaxis and semantic error paths.
+- The evaluation presents a lack of generalizability baseline. First, they only evaluate the framework in one single domain (AUTOSAR). Situation that, given the coupled description of their methodology to AUTOSAR and AUTOSAR evaluation, the generalizability is questionable. Second, the evaluation uses only one single LLM to evaluate their actual constrained decoding component and not just a json_schema enforcement, followed by a JSON to ARXML mapping.
+- RQ1 results and RQ2 results are not comparable, due to the fact that they come from different LLMs according to the manuscript (DeepSeek-R1-Distill-Qwen-32B and GPT-5). This won’t be so important if RQ2 (multi-file testing) would not be mentioning property robustness comparing results to RQ1 (single-file testing). Therefore, RQ2 analysis and discussion is based upon this comparison, and terms such as “robust” or “scale cleanly” do not apply.
+- The GitHub repository documentation is written entirely in Chinese, and several underlying data .json files contain localized Chinese characters. This introduces severe ambiguity regarding whether the evaluation inputs themselves featured Chinese or English text, rendering the dataset composition and its parsing metrics unverifiable for the international community.
+- What are the exact structural origins of the 60 components and 20 multi-file systems used by the authors in the evaluation? Are these test cases derived from an independent, public automotive benchmark, or were they authored internally for this study?.
+- As mentioned before, the GitHub repository contains Chinese documentation, and several dataset .json files use Chinese character fields. For example: When defining the dataset used for RQ2 in Section 4.4.1, the authors mentioned that they curated 20 AUTOSAR systems across three different complexity tiers (simple, middle and complex). Considering the defined complex tier .json (https://github.com/Abandooon/ATLAS/blob/main/nlp_require/complex.json), it  uses a mix of Chinese and English. Because official AUTOSAR specifications are strictly written in English, this creates a major verifiability gap. It is unclear if the natural language requirements evaluated by the LLM were written in Chinese or English. If Chinese requirements were used, the input/output token counts, computational overhead, and decoding latencies reported in Table 3 and Table 4 are strictly language-dependent metrics that cannot be generalized to standard English MDE workflows. So, a note considering the language used should be used explicitly.
+- At the same time, given that the natural language descriptions use Chinese descriptions, the source of the datasets for both RQs seems more likely to be hand-crafted by the authors. Therefore, the datasets used in the evaluation could be biased.
+- Bias arising from the construction or selection of the datasets used in the evaluation should be mentioned in the Threats to Validity section.
+
+
+Reviewer: 2
+
+Public Comments (these will be made available to the author)
+The paper presents ATLAS, a framework for generating structured engineering artifacts with the assistance of Large Language Models in a Model-Driven Engineering setting. The core idea is to avoid treating an LLM as a standalone generator and instead embed it in a constraint-aware MDE pipeline.
+In the AUTOSAR instantiation evaluated in the paper, the framework uses AUTOSAR metamodel assets and constraints to guide the generation of AUTOSAR artifacts, validate them structurally and semantically, and produce evidence useful for inspection and repair.
+
+The main contribution is the proposal of a layered generation architecture in which structural constraints are enforced during generation, while semantic and logical constraints are checked after generation through validation backends. The paper’s central insight is that structural validity and semantic correctness are distinct properties.
+The empirical evaluation is conducted in the AUTOSAR domain. The paper studies both single-file and multi-file artifact generation.
+The results suggest that ATLAS is effective at enforcing structural validity, especially XSD compliance, while multi-file semantic and logical correctness
+remains challenging.
+
+Overall, the paper addresses a highly relevant topic the combination of LLM-assisted generation with explicit metamodels, compiled constraints, validation records, and repair traces is promising. The paper is especially valuable in showing that unconstrained LLM generation is insufficient for schema-rich engineering domains, and that even strong LLMs require explicit structural control.
+The distinction between Layer-1 structural enforcement and Layer-2 semantic/logical validation is conceptually useful and well aligned with modeling practice.
+
+However, the paper is currently difficult to read and assess because the presentation of the pipeline is often confusing. The manuscript alternates between a general framework-level description and an AUTOSAR-specific implementation without always making the boundary clear arising concerns about the flexibility to other domains. Several important notions are introduced (e.g., components, paths, channels) but their precise operational roles and ordering are not always easy to reconstruct. As a result, the paper appears stronger as an architectural proposal than as a fully reproducible system description also because implementation details are insufficient.
+
+In the following my major concerns.
+
+- The abstract describes ATLAS and its components, but it does not provide any context, motivation and objectives of the proposed work. The reader is quickly exposed to domain-specific terms but the broader modeling problem is not framed strongly enough. The abstract should clearly state the problem the authors want to addfress and only after this motivation should ATLAS be introduced.
+- The introduction properly report the trade-off between LLM flexibility and MDE rigor, but the motivation could be sharpened. In particular, the paper should better explain why existing MDE, constrained decoding, validation, or repair approaches are insufficient on their own, and why their combination requires a new framework.
+- The terminology used to describe the pipeline should be made more consistent. At present, the manuscript uses several different labels (e.g., components, stages) for what often seem to be overlapping aspects of the same workflow. This may lead readers to infer distinctions that are not actually intended, or conversely to miss distinctions that are important. The paper would be clearer if the authors introduced a single, stable vocabulary for the main pipeline elements and used it consistently throughout the methodology and evaluation sections.
+- The paper introduces two paths for metamodel construction: one from authoritative schemas and one from natural-language induction. However, only the authoritative-schema path appears to be evaluated in the AUTOSAR study. The text does state that Path S2 is not evaluated, but its inclusion in the methodology section may lead readers to believe that the full dual-path capability is part of the implemented contribution.
+- The description of the Integrated Constraint Model is conceptually clear, but it mixes different operational steps (e.g., repository design, knowledge graph construction, extracted constraints). It is difficult to understand how constraints move from source documents or schemas into executable validators. It would be useful to provide a concrete example of a constraint throughout the pipeline.
+- The paper presents ATLAS as a general framework for structured artifact generation, but the evaluation is entirely AUTOSAR-based. At several points, it is difficult to tell whether a described mechanism is general, AUTOSAR-specific, actually implemented, or only supported in principle. It is important to distinguishing the general ATLAS framework from the AUTOSAR instantiation in order to understand which parts are domain-independent and which are AUTOSAR-specific.
+- The paper assumes significant familiarity with AUTOSAR. However, the reader may not be experts in AUTOSAR-specific artifacts. It is not always clear what artifacts ATLAS is expected to produce, what ARXML files represent, what inputs are used, and why single-file versus multi-file generation matters. The addition of a short AUTOSAR background subsection could strengthen the practical relevance of the evaluation.
+- The manuscript presents ATLAS as an implemented framework, but many descriptions remain at the level of design pattern or architectural interface. Important details are missing about the implementation of the different stages composing the proposed pipeline.
+Maybe a dedicated “Implementation Details” section could help in understanding which components are fully implemented and which are prototype-level.
+- Audit-guided repair is presented as an important part of ATLAS, but the paper does not provide enough evidence about how repair is implemented or evaluated. It is unclear how often repair succeeds, which failures are considered automatically repairable, when human intervention is required, and how much effort is involved.
+- The results show strong structural validity but weak semantic/logical validity at multi-file scale. This is an important finding. However, the paper should be careful not to overstate the extent to which ATLAS solves system-level artifact generation.
+
+Reviewer: 3
+
+Public Comments (these will be made available to the author)
+1. Are the title, abstract, and keywords appropriate?
+
+Yes. The title, abstract, and keywords are appropriate.
+
+2. Does the introduction state the objectives of the submission in terms that encourage the reader to read on?
+
+Yes. The introduction states the objectives clearly and in a way that encourages further reading.
+
+3. How relevant is this submission to the readers of this journal?
+
+This submission is highly relevant to the journal’s target audience.
+
+4. How does this submission advance the field of software and system modeling research and practice?
+
+The submission advances software and system modeling by proposing a structured, constraint-guided framework for integrating LLM-based generation into MDE workflows.
+
+5. Is the submission technically sound?
+
+The submission is technically sound overall. The framework relies on standards and techniques that appear appropriate for the domain. The formal definitions and mathematical expressions appear coherent and support the proposed pipeline. The conclusions are generally well grounded in the empirical results.
+
+6. Does the submission contain sufficient and most appropriate references?
+
+The submission contains sufficient and generally appropriate references. The related work covers relevant areas, including model-driven engineering, LLM-based artifact generation, constrained decoding, validation, repair, and evidence-oriented generation. I do not identify any major missing foundational references.
+
+7. Comment on the organization of the submission.
+
+The submission is well organized and focused. From my point of view, the length is appropriate for the technical scope of the work, although some sections are dense; a simplified overview or running example could improve readability for readers less familiar with MDE, AUTOSAR, or LLM-based generation.
+
+8. Please comment on the readability of this submission. Please comment on the degree of effort required to read and understand this paper.
+
+The submission is generally readable and professionally written. However, I found the paper somewhat dense, and I would say it requires moderate effort to fully understand, particularly because it combines MDE, LLM-based generation, AUTOSAR, metamodel integration, constraint compilation, SHACL/SMT validation, and audit-guided repair. Readers familiar with these areas will be able to follow the argument, but a simplified overview, running example, or additional explanatory examples would improve accessibility for a broader modeling audience.
+
+Overall review:
+
+The manuscript presents ATLAS, a layered, constraint-guided framework for generating structured engineering artifacts with LLMs in model-driven engineering workflows. Its main contribution is the separation of domain representation, constraint compilation, generation, validation, and repair, with the goal of improving structural validity, traceability, and auditability.
+
+Pros.
+
++ The introduction of the Integrated Constraint Model (ICM), together with metamodel integration and constraint-guided validation, provides a well-motivated architecture for schema-guided artifact generation.
++ The paper addresses a timely and important challenge: how to integrate LLMs into MDE pipelines, particularly in structured, safety- and compliance-relevant engineering domains.
++ The focus on explicit constraints, evidence flow, and audit-backed generation is especially relevant for industrial adoption.
++ The methodology is clearly described, with formal definitions, detailed pipeline explanations, and useful figures and tables.
++ The dual-path metamodel integration, from authoritative schemas or induced from text, is also a strong design choice.
++ The empirical evaluation in AUTOSAR is detailed and multi-level, covering structural correctness, audit coverage, computational cost, and semantic/logical validation.
++ The results convincingly demonstrate strong structural validity and auditability in a schema-rich industrial setting.
+
+Cons.
+
+- The evaluation remains limited to a single domain, so broader cross-domain generalizability is not yet empirically established.
+- While structural correctness is robustly achieved, semantic and logical validation at system scale remains challenging.
+- The low SHACL and SMT pass rates in complex scenarios suggest that ATLAS shifts, rather than fully eliminates, the bottleneck from syntax to semantics.
+- The manuscript would benefit from a deeper quantitative analysis of repair effort and effectiveness, more discussion of human-in-the-loop scenarios, and future controlled studies addressing productivity, usability, and practitioner confidence.
+- Additional examples of constraints and their mapping to the ICM, as well as more detail on the AUTOSAR test cases, would improve clarity and reproducibility.
+- A simplified overview or running example could also help readers less familiar with MDE or LLM-based generation.
+
+Overall, I think this is a significant, timely, and well-executed contribution to LLM-assisted MDE. Therefore, I recommend minor revisions before publication.

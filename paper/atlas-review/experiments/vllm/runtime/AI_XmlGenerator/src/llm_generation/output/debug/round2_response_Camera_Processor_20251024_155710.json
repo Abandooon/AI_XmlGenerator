@@ -1,0 +1,118 @@
+{
+  "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "Camera_Processor",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "P_Port_CameraImageIn",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "R_Port_CameraImageIn",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "SHORT-NAME": "CameraDataProcessing_BHV",
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "CameraDataAcquisition_Runnable",
+          "MINIMUM-START-INTERVAL": 0,
+          "CAN-BE-INVOKED-CONCURRENTLY": "false",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CameraImageInput",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/R_Port_CameraImageIn"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "R-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/R_Port_CameraImageIn"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "CameraImageOutput",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/P_Port_CameraImageIn"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "IMPLEMENTATION-DATA-TYPE-ELEMENT",
+                      "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData"
+                    }
+                  },
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "@DEST": "P-PORT-PROTOTYPE",
+                      "#text": "/Components/Camera_Processor/P_Port_CameraImageIn"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                      "#text": "/Interfaces/Sensor_Data_Interface_RadarCamera/CameraImageData"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "SYMBOL": "CameraDataAcquisition_Runnable_Symbol"
+        }
+      ],
+      "EVENTS": {
+        "DATA-RECEIVED-EVENT": [
+          {
+            "SHORT-NAME": "CameraImageReady",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Camera_Processor/CameraDataAcquisition_Runnable"
+            }
+          }
+        ],
+        "DATA-SEND-COMPLETED-EVENT": [
+          {
+            "SHORT-NAME": "CameraImageSent",
+            "START-ON-EVENT-REF": {
+              "@DEST": "RUNNABLE-ENTITY",
+              "#text": "/Components/Camera_Processor/CameraDataAcquisition_Runnable"
+            },
+            "EVENT-SOURCE-REF": {
+              "@DEST": "VARIABLE-ACCESS",
+              "#text": "/Components/Camera_Processor/CameraDataAcquisition_Runnable/CameraImageOutput"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,1247 @@
+{
+  "session_id": "round1_20251022_211658",
+  "timestamp": "20251022_211658",
+  "user_requirements": "系统名称: DoorControlSystem\n系统描述: 控制4个车门的锁止和车窗升降\n组件数量: 4\n组件类型: DoorLockController, WindowController, CANGateway, DiagnosticManager\n关键需求:\n  - DoorLockController管理4个门锁电机\n  - WindowController管理4个车窗电机\n  - 通过CAN接收中控指令\n  - 支持UDS诊断协议",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: DoorControlSystem\n系统描述: 控制4个车门的锁止和车窗升降\n组件数量: 4\n组件类型: DoorLockController, WindowController, CANGateway, DiagnosticManager\n关键需求:\n  - DoorLockController管理4个门锁电机\n  - WindowController管理4个车窗电机\n  - 通过CAN接收中控指令\n  - 支持UDS诊断协议\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "CANGateway: 接收并解析CAN总线消息，映射中控/诊断报文到内部信号并转发；DoorLockController: 管理4个门锁电机的命令解码、闭环/开环控制与状态上报；WindowController: 管理4个车窗电机的命令解码、位置/限位处理与状态上报；DiagnosticManager: 提供UDS诊断服务接口，处理诊断会话并通过CANGateway发送/接收UDS报文。",
+      "data_flow_analysis": "CAN命令报文 -> CANGateway (CAN Rx) -> 内部Sender-Receiver信号(IF_CAN_Command) -> DoorLockController/WindowController 接收并执行。控制命令为枚举/结构（doorId, command {lock/unlock}, targetPos/speed）；状态数据（lockState, windowPos, motorCurrent）由控制器周期性发送至 IF_Status -> CANGateway -> 通过CAN上报/DiagnosticManager订阅。DiagnosticManager <-> CANGateway 使用客户端-服务器模式承载UDS请求/响应（原始字节流）。传输时序：命令低延时（<=50ms 内动作响应），状态周期 100ms，诊断请求按会话处理并可阻塞调用底层发送。",
+      "timing_requirements": "命令接收到动作触发路径端到端延时目标 <=50ms；门锁/车窗控制周期10-20ms（控制闭环采样）；状态上报周期100ms（非关键），诊断请求遵循UDS超时（典型响应 <500ms），CAN传输延时受总线负载影响，设计需支持总线重传场景。",
+      "scalability_considerations": "模块化接口（Sender-Receiver 与 Client-Server 分离）使得门数量/电机数量可扩展；CANGateway 采用映射表可支持更多消息和多个ECU；runnable 和端口按通道参数化以便复制实例化；预留诊断扩展点以支持更多UDS服务。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_001",
+        "name": "CANGateway",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "CAN 帧收发、报文解析与信号映射，为应用组件提供内部信号和为诊断管理器转发UDS报文。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "CAN_RX (raw frames), Internal_Status_Publish (from controllers)",
+          "output_ports": "CAN_TX (raw frames), Internal_Command_Signals (to controllers), Diagnostic_Response"
+        },
+        "behavioral_characteristics": "解析CAN帧，根据配置表将报文解码为内部信号并通过Sender-Receiver接口分发；接收内部响应并封装为CAN帧发送；转发DiagnosticManager的UDS请求/响应；触发条件：CAN帧到达（事件驱动）、后台路由任务（定期清理/重传）；保证顺序性和最小延时转发。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供CAN_RX/CAN_TX的R/P端口及多个Sender-Receiver端口用于内部命令和状态分发；Diagnostic 使用Client-Server代理端口映射。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "On_CAN_Rx_Interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Routing_Background",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Gateway_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CAN_Rx_Processing",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从CAN_RX端口接收原始帧并解码到内部信号"
+                      }
+                    ],
+                    "notes": "解码CAN帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向内部命令端口发送解码后的信号"
+                      }
+                    ],
+                    "notes": "向内部消费者分发信号"
+                  }
+                ],
+                "notes": "处理并路由CAN接收到的报文"
+              },
+              {
+                "name": "UDS_Forwarding",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "将UDS请求异步转发给DiagnosticManager"
+                      }
+                    ],
+                    "notes": "诊断报文转发路径"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将诊断响应或状态打包到CAN_TX"
+                      }
+                    ],
+                    "notes": "封装并发送CAN帧"
+                  }
+                ],
+                "notes": "诊断请求与响应的转发与封装"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status",
+          "IF_Diagnostic_Control"
+        ]
+      },
+      {
+        "component_id": "comp_002",
+        "name": "DoorLockController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理4个门锁电机的命令执行、限位检测与状态汇报，负责锁止/解锁动作与故障检测。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Internal_Command_Signals (lock/unlock commands per door), Config_Params",
+          "output_ports": "Internal_Status_Signals (lockState, motorCurrent, fault), Motor_Driver_Sync_Callpoints"
+        },
+        "behavioral_characteristics": "接收命令触发或定期控制Runnable；命令触发Runnable解析命令->安全检查->生成驱动调用；电机控制Runnable以10ms周期执行闭环或PWM输出；状态Runnable以100ms周期上报当前锁态与故障。状态机管理每个门锁： {IDLE, MOVING, LOCKED, UNLOCKED, FAULT}，按传感器与驱动反馈转换。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入为内部命令R端口，输出为给电机驱动的提供端口（P）。状态通过Sender-Receiver端口发布。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Command_Received",
+                "trigger": "On_Internal_Command_Signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Control_Periodic",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "DoorLock_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Handle_Lock_Command",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收门锁命令(doorId, action)"
+                      }
+                    ],
+                    "notes": "命令解码"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用电机驱动接口以执行动作"
+                      }
+                    ],
+                    "notes": "调用电机驱动"
+                  }
+                ],
+                "notes": "基于接收的命令执行安全检查并调用驱动"
+              },
+              {
+                "name": "Motor_Control_Loop",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取位置/电流反馈"
+                      }
+                    ],
+                    "notes": "读取传感器反馈用于闭环控制"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入驱动命令（PWM/目标位置）"
+                      }
+                    ],
+                    "notes": "向电机驱动下发控制量"
+                  }
+                ],
+                "notes": "周期性执行电机控制"
+              },
+              {
+                "name": "Publish_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送当前锁状态与故障码"
+                      }
+                    ],
+                    "notes": "周期性上报状态"
+                  }
+                ],
+                "notes": "状态打包并发布到IF_Status"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status"
+        ]
+      },
+      {
+        "component_id": "comp_003",
+        "name": "WindowController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理4个车窗电机的升降控制、限位保护与状态上报，实现位置控制和错误处理。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Internal_Command_Signals (window commands per door), Config_Params",
+          "output_ports": "Internal_Status_Signals (position, limitReached, fault), Motor_Driver_Sync_Callpoints"
+        },
+        "behavioral_characteristics": "接收来自CANGateway的升降命令并触发控制流程；周期性控制Runnable以10ms执行位置闭环或速度控制；故障与限位检测进入FAULT状态并上报；状态以100ms周期发送。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供内部接收命令端口和给电机驱动的提供端口，状态通过Sender-Receiver发布。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Window_Command_Received",
+                "trigger": "On_Internal_Command_Signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Window_Control_Period",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Window_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Handle_Window_Command",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收窗户目标位置或移动命令"
+                      }
+                    ],
+                    "notes": "命令解析与安全检查"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用驱动执行移动"
+                      }
+                    ],
+                    "notes": "驱动调用"
+                  }
+                ],
+                "notes": "响应并执行窗户命令"
+              },
+              {
+                "name": "Window_Control_Loop",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取位置与限位传感器"
+                      }
+                    ],
+                    "notes": "闭环位置控制读取"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入驱动目标命令"
+                      }
+                    ],
+                    "notes": "向驱动写控制量"
+                  }
+                ],
+                "notes": "周期性控制与限位处理"
+              },
+              {
+                "name": "Publish_Window_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送窗户位置与故障信息"
+                      }
+                    ],
+                    "notes": "状态上报"
+                  }
+                ],
+                "notes": "周期性发布窗户状态"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status"
+        ]
+      },
+      {
+        "component_id": "comp_004",
+        "name": "DiagnosticManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "实现UDS诊断服务(处理Session, ReadDataByIdentifier, RoutineControl等)，与CANGateway协作进行CAN层的报文传输。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "UDS_Request (from CANGateway), Config_Params",
+          "output_ports": "UDS_Response (to CANGateway), Diagnostic_Events"
+        },
+        "behavioral_characteristics": "作为UDS服务端处理诊断会话，按UDS流程解析请求并调用本地功能/读取数据，必要时通过CANGateway发送/接收CAN报文；触发点为接收到UDS请求或诊断后台任务；需保证UDS事务完整性并处理超时和错误重试。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端/服务器风格的端口以接收/发送UDS原始字节流；也暴露状态事件端口。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "UDS_Request_Received",
+                "trigger": "On_UDS_Request_From_Gateway"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diagnostic_Background",
+                "trigger": "Periodic_100ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Diagnostic_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "UDS_Service_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "处理UDS请求时可能同步调用本地服务/资源"
+                      }
+                    ],
+                    "notes": "UDS 服务请求处理"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送UDS响应到CANGateway"
+                      }
+                    ],
+                    "notes": "响应发送"
+                  }
+                ],
+                "notes": "执行UDS解析、权限检查与响应生成"
+              },
+              {
+                "name": "Publish_Diagnostic_Events",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布诊断事件与故障码"
+                      }
+                    ],
+                    "notes": "上报诊断信息"
+                  }
+                ],
+                "notes": "诊断事件发布和日志"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_Diagnostic_Control",
+          "IF_Status"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Command",
+        "name": "IF_CAN_Command",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步 Sender-Receiver，报文由CANGateway解码后发布为内部信号；消费者采用最新值策略，响应低延时要求。",
+        "data_category": "Signal/Struct (doorId:uint8, command:uint8, param:int16)",
+        "connected_components": [
+          "CANGateway",
+          "DoorLockController",
+          "WindowController"
+        ],
+        "performance_requirements": "端到端处理延时目标 <=50ms，丢帧可接受但要求最新值覆盖（队列深度1），错误检测由CANGateway负责CRC/ID校验。",
+        "data_elements": [
+          "doorId",
+          "command",
+          "targetPosition",
+          "speed"
+        ],
+        "direct_paths": "CAN_RX -> CANGateway decode -> IF_CAN_Command publish -> DoorLockController/WindowController receive"
+      },
+      {
+        "interface_id": "IF_Status",
+        "name": "IF_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性 Sender-Receiver（周期100ms）用于状态上报；消费者采用最新值策略，容忍单点丢失；支持异常/故障上报的事件字段。",
+        "data_category": "Signal/Struct (lockState:uint8, windowPos:int16, motorCurrent:int16, faultCode:uint16)",
+        "connected_components": [
+          "DoorLockController",
+          "WindowController",
+          "CANGateway",
+          "DiagnosticManager"
+        ],
+        "performance_requirements": "周期100ms，上报延时要求 <200ms，采用覆盖最新策略，低优先级总线访问。",
+        "data_elements": [
+          "lockState",
+          "windowPosition",
+          "motorCurrent",
+          "faultCode"
+        ],
+        "direct_paths": "Controller publish -> IF_Status -> CANGateway/DiagnosticManager subscribe and CAN TX"
+      },
+      {
+        "interface_id": "IF_Diagnostic_Control",
+        "name": "IF_Diagnostic_Control",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端-服务器（Client: CANGateway, Server: DiagnosticManager）用于UDS原始报文转发；同步/异步混合，UDS 请求按事务处理并受超时控制，最佳做法是同步等待响应并在超时后重试。",
+        "data_category": "RawByteStream (UDS request/response)",
+        "connected_components": [
+          "CANGateway",
+          "DiagnosticManager"
+        ],
+        "performance_requirements": "遵循UDS超时规范（典型响应 <500ms），需要事务完整性和重试机制，错误由DiagnosticManager返回错误码。",
+        "data_elements": [
+          "udsRequest",
+          "udsResponse",
+          "sessionId",
+          "statusCode"
+        ],
+        "direct_paths": "CANGateway forward UDS -> IF_Diagnostic_Control call -> DiagnosticManager process -> response returned"
+      }
+    ],
+    "component_generation_order": [
+      "CANGateway",
+      "DoorLockController",
+      "WindowController",
+      "DiagnosticManager"
+    ],
+    "connection_topology": {
+      "component_connections": "CANGateway 提供到 DoorLockController 和 WindowController 的内部 Sender-Receiver 信号 (IF_CAN_Command) 和从控制器到网关的 IF_Status。DiagnosticManager 通过 IF_Diagnostic_Control 与 CANGateway 进行 Client-Server 通信以转发 UDS。CANGateway 与外部 CAN 总线连接 (CAN_RX/CAN_TX)。",
+      "data_flow_paths": "外部 CAN -> CANGateway(CAN_Rx) -> IF_CAN_Command -> DoorLockController/WindowController -> MotorDriver calls -> 控制器状态 -> IF_Status -> CANGateway -> CAN_Tx/DiagnosticManager。DiagnosticManager <-> CANGateway 使用 IF_Diagnostic_Control 进行 UDS 请求/响应传输。",
+      "control_flow_paths": "CAN 中控命令触发 CANGateway 的 DATA-RECEIVED 事件 -> 激活 CANGateway runnable -> 发布 IF_CAN_Command -> 激活对应控制器的 Command_Received runnable -> 调用驱动点形成动作；诊断请求触发 CANGateway 的 UDS_Forwarding runnable -> 同步/异步调用 DiagnosticManager 服务 -> 返回响应并封装发送。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用 CANGateway 作为总线与内部信号的边界，简化应用组件的 CAN 依赖并集中处理帧解析/校验。应用组件 (DoorLockController/WindowController) 专注于逻辑与电机控制，DiagnosticManager 专注UDS协议实现。通信采用 Sender-Receiver 承载常规信号，Client-Server 承载诊断事务以保证请求/响应语义。",
+      "tradeoff_analysis": "集中式网关简化各控制器实现与CAN变更管理，但增加了 CANGateway 的复杂度与单点依赖。采用 Sender-Receiver 可降低调用延迟并支持广播，但不适用于有事务语义的诊断请求，因此对诊断选用 Client-Server。周期与优先级划分在性能与实现复杂度之间折中：关键控制采用 10ms 周期，状态上报以较低频率减少总线负荷。",
+      "alternative_considerations": "可选择将诊断直接集成到 CANGateway（减少跨组件调用），或将每个控制器直接连接CAN（去掉网关层）以进一步降低延时，但会增加各控制器的CAN解析复杂度与多副本维护成本。",
+      "risk_assessment": "风险包括 CANGateway 成为性能瓶颈或单点故障、UDS 超时导致诊断事务失败、总线负载高时命令延时升高。缓解措施：在 CANGateway 实现优先级队列与流量控制，增加监控/超时处理与重试机制，必要时可将关键路径（如紧急锁止）以更高优先级或直连方式实现。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "CANGateway: 接收并解析CAN总线消息，映射中控/诊断报文到内部信号并转发；DoorLockController: 管理4个门锁电机的命令解码、闭环/开环控制与状态上报；WindowController: 管理4个车窗电机的命令解码、位置/限位处理与状态上报；DiagnosticManager: 提供UDS诊断服务接口，处理诊断会话并通过CANGateway发送/接收UDS报文。",
+      "data_flow_analysis": "CAN命令报文 -> CANGateway (CAN Rx) -> 内部Sender-Receiver信号(IF_CAN_Command) -> DoorLockController/WindowController 接收并执行。控制命令为枚举/结构（doorId, command {lock/unlock}, targetPos/speed）；状态数据（lockState, windowPos, motorCurrent）由控制器周期性发送至 IF_Status -> CANGateway -> 通过CAN上报/DiagnosticManager订阅。DiagnosticManager <-> CANGateway 使用客户端-服务器模式承载UDS请求/响应（原始字节流）。传输时序：命令低延时（<=50ms 内动作响应），状态周期 100ms，诊断请求按会话处理并可阻塞调用底层发送。",
+      "timing_requirements": "命令接收到动作触发路径端到端延时目标 <=50ms；门锁/车窗控制周期10-20ms（控制闭环采样）；状态上报周期100ms（非关键），诊断请求遵循UDS超时（典型响应 <500ms），CAN传输延时受总线负载影响，设计需支持总线重传场景。",
+      "scalability_considerations": "模块化接口（Sender-Receiver 与 Client-Server 分离）使得门数量/电机数量可扩展；CANGateway 采用映射表可支持更多消息和多个ECU；runnable 和端口按通道参数化以便复制实例化；预留诊断扩展点以支持更多UDS服务。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp_001",
+        "name": "CANGateway",
+        "type": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "purpose": "CAN 帧收发、报文解析与信号映射，为应用组件提供内部信号和为诊断管理器转发UDS报文。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "CAN_RX (raw frames), Internal_Status_Publish (from controllers)",
+          "output_ports": "CAN_TX (raw frames), Internal_Command_Signals (to controllers), Diagnostic_Response"
+        },
+        "behavioral_characteristics": "解析CAN帧，根据配置表将报文解码为内部信号并通过Sender-Receiver接口分发；接收内部响应并封装为CAN帧发送；转发DiagnosticManager的UDS请求/响应；触发条件：CAN帧到达（事件驱动）、后台路由任务（定期清理/重传）；保证顺序性和最小延时转发。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供CAN_RX/CAN_TX的R/P端口及多个Sender-Receiver端口用于内部命令和状态分发；Diagnostic 使用Client-Server代理端口映射。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CAN_Frame_Received",
+                "trigger": "On_CAN_Rx_Interrupt"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Routing_Background",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Gateway_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CAN_Rx_Processing",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从CAN_RX端口接收原始帧并解码到内部信号"
+                      }
+                    ],
+                    "notes": "解码CAN帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向内部命令端口发送解码后的信号"
+                      }
+                    ],
+                    "notes": "向内部消费者分发信号"
+                  }
+                ],
+                "notes": "处理并路由CAN接收到的报文"
+              },
+              {
+                "name": "UDS_Forwarding",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "将UDS请求异步转发给DiagnosticManager"
+                      }
+                    ],
+                    "notes": "诊断报文转发路径"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将诊断响应或状态打包到CAN_TX"
+                      }
+                    ],
+                    "notes": "封装并发送CAN帧"
+                  }
+                ],
+                "notes": "诊断请求与响应的转发与封装"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status",
+          "IF_Diagnostic_Control"
+        ]
+      },
+      {
+        "component_id": "comp_002",
+        "name": "DoorLockController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理4个门锁电机的命令执行、限位检测与状态汇报，负责锁止/解锁动作与故障检测。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Internal_Command_Signals (lock/unlock commands per door), Config_Params",
+          "output_ports": "Internal_Status_Signals (lockState, motorCurrent, fault), Motor_Driver_Sync_Callpoints"
+        },
+        "behavioral_characteristics": "接收命令触发或定期控制Runnable；命令触发Runnable解析命令->安全检查->生成驱动调用；电机控制Runnable以10ms周期执行闭环或PWM输出；状态Runnable以100ms周期上报当前锁态与故障。状态机管理每个门锁： {IDLE, MOVING, LOCKED, UNLOCKED, FAULT}，按传感器与驱动反馈转换。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入为内部命令R端口，输出为给电机驱动的提供端口（P）。状态通过Sender-Receiver端口发布。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Command_Received",
+                "trigger": "On_Internal_Command_Signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Control_Periodic",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "DoorLock_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Handle_Lock_Command",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收门锁命令(doorId, action)"
+                      }
+                    ],
+                    "notes": "命令解码"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用电机驱动接口以执行动作"
+                      }
+                    ],
+                    "notes": "调用电机驱动"
+                  }
+                ],
+                "notes": "基于接收的命令执行安全检查并调用驱动"
+              },
+              {
+                "name": "Motor_Control_Loop",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取位置/电流反馈"
+                      }
+                    ],
+                    "notes": "读取传感器反馈用于闭环控制"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入驱动命令（PWM/目标位置）"
+                      }
+                    ],
+                    "notes": "向电机驱动下发控制量"
+                  }
+                ],
+                "notes": "周期性执行电机控制"
+              },
+              {
+                "name": "Publish_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送当前锁状态与故障码"
+                      }
+                    ],
+                    "notes": "周期性上报状态"
+                  }
+                ],
+                "notes": "状态打包并发布到IF_Status"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status"
+        ]
+      },
+      {
+        "component_id": "comp_003",
+        "name": "WindowController",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理4个车窗电机的升降控制、限位保护与状态上报，实现位置控制和错误处理。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "Internal_Command_Signals (window commands per door), Config_Params",
+          "output_ports": "Internal_Status_Signals (position, limitReached, fault), Motor_Driver_Sync_Callpoints"
+        },
+        "behavioral_characteristics": "接收来自CANGateway的升降命令并触发控制流程；周期性控制Runnable以10ms执行位置闭环或速度控制；故障与限位检测进入FAULT状态并上报；状态以100ms周期发送。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供内部接收命令端口和给电机驱动的提供端口，状态通过Sender-Receiver发布。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Window_Command_Received",
+                "trigger": "On_Internal_Command_Signal"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Window_Control_Period",
+                "trigger": "Periodic_10ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Window_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Handle_Window_Command",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收窗户目标位置或移动命令"
+                      }
+                    ],
+                    "notes": "命令解析与安全检查"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步调用驱动执行移动"
+                      }
+                    ],
+                    "notes": "驱动调用"
+                  }
+                ],
+                "notes": "响应并执行窗户命令"
+              },
+              {
+                "name": "Window_Control_Loop",
+                "elements": [
+                  {
+                    "key": "DATA-READ-ACCESSS",
+                    "wrapper": "DATA-READ-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "TARGET-DATA-PROTOTYPE-REF",
+                          "PORT-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取位置与限位传感器"
+                      }
+                    ],
+                    "notes": "闭环位置控制读取"
+                  },
+                  {
+                    "key": "DATA-WRITE-ACCESSS",
+                    "wrapper": "DATA-WRITE-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写入驱动目标命令"
+                      }
+                    ],
+                    "notes": "向驱动写控制量"
+                  }
+                ],
+                "notes": "周期性控制与限位处理"
+              },
+              {
+                "name": "Publish_Window_Status",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送窗户位置与故障信息"
+                      }
+                    ],
+                    "notes": "状态上报"
+                  }
+                ],
+                "notes": "周期性发布窗户状态"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_CAN_Command",
+          "IF_Status"
+        ]
+      },
+      {
+        "component_id": "comp_004",
+        "name": "DiagnosticManager",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "实现UDS诊断服务(处理Session, ReadDataByIdentifier, RoutineControl等)，与CANGateway协作进行CAN层的报文传输。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "UDS_Request (from CANGateway), Config_Params",
+          "output_ports": "UDS_Response (to CANGateway), Diagnostic_Events"
+        },
+        "behavioral_characteristics": "作为UDS服务端处理诊断会话，按UDS流程解析请求并调用本地功能/读取数据，必要时通过CANGateway发送/接收CAN报文；触发点为接收到UDS请求或诊断后台任务；需保证UDS事务完整性并处理超时和错误重试。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端/服务器风格的端口以接收/发送UDS原始字节流；也暴露状态事件端口。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "UDS_Request_Received",
+                "trigger": "On_UDS_Request_From_Gateway"
+              },
+              {
+                "type": "BACKGROUND-EVENT",
+                "name": "Diagnostic_Background",
+                "trigger": "Periodic_100ms"
+              },
+              {
+                "type": "INIT-EVENT",
+                "name": "Diagnostic_Init",
+                "trigger": "On_System_Init"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "UDS_Service_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "处理UDS请求时可能同步调用本地服务/资源"
+                      }
+                    ],
+                    "notes": "UDS 服务请求处理"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发送UDS响应到CANGateway"
+                      }
+                    ],
+                    "notes": "响应发送"
+                  }
+                ],
+                "notes": "执行UDS解析、权限检查与响应生成"
+              },
+              {
+                "name": "Publish_Diagnostic_Events",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布诊断事件与故障码"
+                      }
+                    ],
+                    "notes": "上报诊断信息"
+                  }
+                ],
+                "notes": "诊断事件发布和日志"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "IF_Diagnostic_Control",
+          "IF_Status"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Command",
+        "name": "IF_CAN_Command",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步 Sender-Receiver，报文由CANGateway解码后发布为内部信号；消费者采用最新值策略，响应低延时要求。",
+        "data_category": "Signal/Struct (doorId:uint8, command:uint8, param:int16)",
+        "connected_components": [
+          "CANGateway",
+          "DoorLockController",
+          "WindowController"
+        ],
+        "performance_requirements": "端到端处理延时目标 <=50ms，丢帧可接受但要求最新值覆盖（队列深度1），错误检测由CANGateway负责CRC/ID校验。",
+        "data_elements": [
+          "doorId",
+          "command",
+          "targetPosition",
+          "speed"
+        ],
+        "direct_paths": "CAN_RX -> CANGateway decode -> IF_CAN_Command publish -> DoorLockController/WindowController receive"
+      },
+      {
+        "interface_id": "IF_Status",
+        "name": "IF_Status",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性 Sender-Receiver（周期100ms）用于状态上报；消费者采用最新值策略，容忍单点丢失；支持异常/故障上报的事件字段。",
+        "data_category": "Signal/Struct (lockState:uint8, windowPos:int16, motorCurrent:int16, faultCode:uint16)",
+        "connected_components": [
+          "DoorLockController",
+          "WindowController",
+          "CANGateway",
+          "DiagnosticManager"
+        ],
+        "performance_requirements": "周期100ms，上报延时要求 <200ms，采用覆盖最新策略，低优先级总线访问。",
+        "data_elements": [
+          "lockState",
+          "windowPosition",
+          "motorCurrent",
+          "faultCode"
+        ],
+        "direct_paths": "Controller publish -> IF_Status -> CANGateway/DiagnosticManager subscribe and CAN TX"
+      },
+      {
+        "interface_id": "IF_Diagnostic_Control",
+        "name": "IF_Diagnostic_Control",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端-服务器（Client: CANGateway, Server: DiagnosticManager）用于UDS原始报文转发；同步/异步混合，UDS 请求按事务处理并受超时控制，最佳做法是同步等待响应并在超时后重试。",
+        "data_category": "RawByteStream (UDS request/response)",
+        "connected_components": [
+          "CANGateway",
+          "DiagnosticManager"
+        ],
+        "performance_requirements": "遵循UDS超时规范（典型响应 <500ms），需要事务完整性和重试机制，错误由DiagnosticManager返回错误码。",
+        "data_elements": [
+          "udsRequest",
+          "udsResponse",
+          "sessionId",
+          "statusCode"
+        ],
+        "direct_paths": "CANGateway forward UDS -> IF_Diagnostic_Control call -> DiagnosticManager process -> response returned"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "CANGateway 提供到 DoorLockController 和 WindowController 的内部 Sender-Receiver 信号 (IF_CAN_Command) 和从控制器到网关的 IF_Status。DiagnosticManager 通过 IF_Diagnostic_Control 与 CANGateway 进行 Client-Server 通信以转发 UDS。CANGateway 与外部 CAN 总线连接 (CAN_RX/CAN_TX)。",
+      "data_flow_paths": "外部 CAN -> CANGateway(CAN_Rx) -> IF_CAN_Command -> DoorLockController/WindowController -> MotorDriver calls -> 控制器状态 -> IF_Status -> CANGateway -> CAN_Tx/DiagnosticManager。DiagnosticManager <-> CANGateway 使用 IF_Diagnostic_Control 进行 UDS 请求/响应传输。",
+      "control_flow_paths": "CAN 中控命令触发 CANGateway 的 DATA-RECEIVED 事件 -> 激活 CANGateway runnable -> 发布 IF_CAN_Command -> 激活对应控制器的 Command_Received runnable -> 调用驱动点形成动作；诊断请求触发 CANGateway 的 UDS_Forwarding runnable -> 同步/异步调用 DiagnosticManager 服务 -> 返回响应并封装发送。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用 CANGateway 作为总线与内部信号的边界，简化应用组件的 CAN 依赖并集中处理帧解析/校验。应用组件 (DoorLockController/WindowController) 专注于逻辑与电机控制，DiagnosticManager 专注UDS协议实现。通信采用 Sender-Receiver 承载常规信号，Client-Server 承载诊断事务以保证请求/响应语义。",
+      "tradeoff_analysis": "集中式网关简化各控制器实现与CAN变更管理，但增加了 CANGateway 的复杂度与单点依赖。采用 Sender-Receiver 可降低调用延迟并支持广播，但不适用于有事务语义的诊断请求，因此对诊断选用 Client-Server。周期与优先级划分在性能与实现复杂度之间折中：关键控制采用 10ms 周期，状态上报以较低频率减少总线负荷。",
+      "alternative_considerations": "可选择将诊断直接集成到 CANGateway（减少跨组件调用），或将每个控制器直接连接CAN（去掉网关层）以进一步降低延时，但会增加各控制器的CAN解析复杂度与多副本维护成本。",
+      "risk_assessment": "风险包括 CANGateway 成为性能瓶颈或单点故障、UDS 超时导致诊断事务失败、总线负载高时命令延时升高。缓解措施：在 CANGateway 实现优先级队列与流量控制，增加监控/超时处理与重试机制，必要时可将关键路径（如紧急锁止）以更高优先级或直连方式实现。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7587,
+    "output_tokens": 8135,
+    "total_tokens": 15722,
+    "component_count": 4,
+    "interface_count": 3,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

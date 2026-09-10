@@ -1,0 +1,212 @@
+{
+  "schema_version": "atlas.pil.v4_retained_output_diagnostic.v1",
+  "created_at_utc": "2026-09-04T03:55:34.939259+00:00",
+  "status": "POST_HOC_DIAGNOSTIC_ONLY",
+  "provider_calls": 0,
+  "paid_api_calls": 0,
+  "inputs": {
+    "v2_ledger": {
+      "path": "E:\\54239\\Documents\\ATLAS_PIL_FORMAL_ARCHIVE_2026-08-21_97f066cc\\PIL_V2_RUN_LEDGER.jsonl",
+      "sha256": "ac350ce3681e38cbbd69402385511980c2bd3a3950e92ffc01520fcd9167bbe8"
+    },
+    "locked_human_parse_audit_csv": {
+      "path": "E:\\54239\\Documents\\ATLAS_PIL_POSTHOC_REVIEW_ANALYSIS_2026-09-01_e40e1ae9\\PIL_V3_B_UNIT_LEVEL_PARSE_AUDIT.csv",
+      "sha256": "ca8831e358ceb96e2cc19c39736822dbf3c708aba50a33709a274510d5f140ab"
+    },
+    "v4_consensus_gold": {
+      "path": "E:\\git projects\\AI_XmlGenerator\\Private_International_Law\\data\\consensus_gold_v4.jsonl",
+      "sha256": "62b47470d7b6582f9e37f82ee8dfebc55fb5880cb317edd0175b2395f84c1d2f"
+    }
+  },
+  "exclusions": {
+    "facts_changed_after_v2": [
+      19,
+      34,
+      44,
+      53,
+      55
+    ],
+    "reason": "The retained V2 outputs answer different facts and cannot be scored against V4 gold."
+  },
+  "design": {
+    "cases": 55,
+    "arms": [
+      "baseline",
+      "rag",
+      "prism"
+    ],
+    "replicates": 3,
+    "units": 495,
+    "baseline_rag_projection": "locked blinded human transcription",
+    "prism_projection": "retained structured V2 decision",
+    "citation_endpoint": "NOT_EVALUATED",
+    "delivery_validity_endpoint": "NOT_EVALUATED"
+  },
+  "arms": {
+    "baseline": {
+      "units": 165,
+      "strict_correct": 95,
+      "strict_rate": 0.5757575757575758,
+      "compatible_correct": 125,
+      "compatible_rate": 0.7575757575757576
+    },
+    "prism": {
+      "units": 165,
+      "strict_correct": 117,
+      "strict_rate": 0.7090909090909091,
+      "compatible_correct": 117,
+      "compatible_rate": 0.7090909090909091
+    },
+    "rag": {
+      "units": 165,
+      "strict_correct": 100,
+      "strict_rate": 0.6060606060606061,
+      "compatible_correct": 119,
+      "compatible_rate": 0.7212121212121212
+    }
+  },
+  "contrasts": {
+    "strict_correct": {
+      "prism-baseline": {
+        "case_bootstrap": {
+          "estimate": 0.13333333333333333,
+          "ci95": [
+            -0.05454545454545456,
+            0.3212121212121212
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": 0.17222222222222222,
+          "ci95": [
+            -0.061111111111111116,
+            0.4
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      },
+      "prism-rag": {
+        "case_bootstrap": {
+          "estimate": 0.10303030303030304,
+          "ci95": [
+            -0.06666666666666667,
+            0.26666666666666666
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": 0.11111111111111112,
+          "ci95": [
+            -0.10013888888888878,
+            0.3222222222222222
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      },
+      "rag-baseline": {
+        "case_bootstrap": {
+          "estimate": 0.0303030303030303,
+          "ci95": [
+            -0.06060606060606061,
+            0.12121212121212122
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": 0.06111111111111111,
+          "ci95": [
+            -0.044444444444444446,
+            0.18333333333333332
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      }
+    },
+    "compatible_correct": {
+      "prism-baseline": {
+        "case_bootstrap": {
+          "estimate": -0.04848484848484849,
+          "ci95": [
+            -0.21212121212121215,
+            0.11515151515151514
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": -0.027777777777777783,
+          "ci95": [
+            -0.22222222222222224,
+            0.16666666666666666
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      },
+      "prism-rag": {
+        "case_bootstrap": {
+          "estimate": -0.012121212121212126,
+          "ci95": [
+            -0.16363636363636364,
+            0.13939393939393938
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": 0.005555555555555551,
+          "ci95": [
+            -0.18333333333333332,
+            0.19444444444444445
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      },
+      "rag-baseline": {
+        "case_bootstrap": {
+          "estimate": -0.03636363636363636,
+          "ci95": [
+            -0.09090909090909091,
+            0.006060606060606058
+          ],
+          "clusters": 55,
+          "draws": 20000,
+          "seed": 20260904
+        },
+        "dependence_cluster_sensitivity": {
+          "estimate": -0.03333333333333333,
+          "ci95": [
+            -0.07777777777777778,
+            0.005555555555555551
+          ],
+          "clusters": 30,
+          "draws": 20000,
+          "seed": 20260904
+        }
+      }
+    }
+  },
+  "claim_boundary": {
+    "confirmatory": false,
+    "is_v4_four_arm_result": false,
+    "supports_v4_power_or_effect_assumption": false,
+    "permitted_use": "measurement-threat and continuity diagnostic only"
+  }
+}

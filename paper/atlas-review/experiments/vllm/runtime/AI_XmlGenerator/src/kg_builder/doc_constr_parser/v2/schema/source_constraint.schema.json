@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source_constraint.schema.json",
+  "title": "AUTOSAR source constraint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "id_type",
+    "title",
+    "expression",
+    "references",
+    "source",
+    "terminology_context",
+    "parse"
+  ],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "id": {"type": "string", "pattern": "^(TPS_SWCT|constr)_[A-Za-z0-9_]+$"},
+    "id_type": {"enum": ["TPS_SWCT", "constr"]},
+    "title": {"type": "string"},
+    "expression": {"type": "string"},
+    "references": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "section_path",
+        "start_line",
+        "end_line",
+        "raw_text",
+        "sha256"
+      ],
+      "properties": {
+        "document": {"type": "string"},
+        "section_path": {"type": "array", "items": {"type": "string"}},
+        "start_line": {"type": "integer", "minimum": 1},
+        "end_line": {"type": "integer", "minimum": 1},
+        "raw_text": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "in_hierarchical_block": {"type": "boolean"},
+        "in_multimodal_block": {"type": "boolean"}
+      }
+    },
+    "terminology_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_classes", "inherited_classes", "local_enums", "inherited_enums"],
+      "properties": {
+        "local_classes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "inherited_classes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "local_enums": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "inherited_enums": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "parse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "issues", "id_position"],
+      "properties": {
+        "status": {"enum": ["exact", "recovered", "malformed"]},
+        "issues": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "id_position": {"enum": ["before_cid100", "after_cid100"]}
+      }
+    }
+  }
+}
+

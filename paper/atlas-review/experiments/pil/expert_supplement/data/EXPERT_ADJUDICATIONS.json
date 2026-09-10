@@ -1,0 +1,49 @@
+{
+  "schema_version": "atlas.pil.targeted_expert_adjudication.v1",
+  "records": [
+    {
+      "unit_id": "19|p3|1",
+      "verdict": "substantively_acceptable_with_label_ambiguity",
+      "canonical_conditional_answer": false,
+      "model_conditional_answer": true,
+      "reason": "转交德国国内法的结论已经确定；德国国内法最终是否赋予管辖权仍未知。模型全文明确解释后者，因此实体解释可接受，不能仅凭布尔标记将法律规则判错。今后 conditional_answer 统一评价所选 conclusion 本身；本案规范编码 false，不允许任意填写。",
+      "ledger_entry_sha256": "8205f504069d59fc994638240bb28fe758e6c6ea1ee6dcc8c870123cbba35bec",
+      "final_decision_sha256": "5a96940cb10bac8f2f4daa0a8b66ee47519e4cfcbc766b66909bb6ee00c9db7b",
+      "review_date": "2026-09-09",
+      "review_source": "Explicit expert assessment supplied by the user in current task",
+      "separate_reviewer_signatures": "not newly supplied or imputed",
+      "selection": "targeted post-hoc diagnostic review, not blinded random sampling"
+    },
+    {
+      "unit_id": "42|p1|1",
+      "verdict": "unacceptable",
+      "reason": "答案将荷兰法院的国际管辖直接等同于阿姆斯特丹法院的具体管辖，后文对消费者规则及协议有效性的保留未纠正这一推论。",
+      "ledger_entry_sha256": "da6e6c18aee984eef934e231f404a3ebdd5b458f9c4a463f010d7972e7374d8b",
+      "final_decision_sha256": "a5c620851da620b526af35446a260e529a8a5881ba109de922e9d5a0f1e38d0b",
+      "review_date": "2026-09-09",
+      "review_source": "Explicit expert assessment supplied by the user in current task",
+      "separate_reviewer_signatures": "not newly supplied or imputed",
+      "selection": "targeted post-hoc diagnostic review, not blinded random sampling"
+    },
+    {
+      "unit_id": "42|p3|1",
+      "verdict": "conditionally_acceptable",
+      "reason": "后文将整体结论明确限定于消费者规则及选择法院协议要求得到满足的假设下；但开头由荷兰住所直接推出阿姆斯特丹管辖不准确，不能据此认定具体管辖或排他效力已经成立。消费者另行确认并不自动使诉前排他条款有效，仍受 Articles 19、25(4) 限制。",
+      "ledger_entry_sha256": "3e942a9a34e56db1733aa4fd2fe8d24e3a36f7b0517e2ab917e0e287c8bd378f",
+      "final_decision_sha256": "822fecaeb79f2ec6058fad83a172e6e5017b01008e3faaa561f5ecafacaefd4f",
+      "review_date": "2026-09-09",
+      "review_source": "Explicit expert assessment supplied by the user in current task",
+      "separate_reviewer_signatures": "not newly supplied or imputed",
+      "selection": "targeted post-hoc diagnostic review, not blinded random sampling"
+    }
+  ],
+  "scope": "Three named final decisions only; case19 normative field definition applies to future consistent encoding.",
+  "legal_source": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A32012R1215",
+  "source_articles": [
+    "4(1)",
+    "6(1)",
+    "18(1)",
+    "19",
+    "25(4)"
+  ]
+}

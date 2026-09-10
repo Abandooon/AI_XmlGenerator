@@ -1,0 +1,101 @@
+{
+  "$id": "schema/consensus_gold_schema_v4.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "conclusion": {
+      "type": "string",
+      "enum": [
+        "Court_of_X_has_jurisdiction",
+        "Authority_of_X_has_jurisdiction",
+        "Stay_for_first_seised",
+        "May_stay_or_decline_for_related_actions",
+        "Decline_in_favor_of_chosen_court",
+        "No_EU_jurisdiction_use_member_state_law",
+        "Abstain_Insufficient_Info"
+      ]
+    },
+    "forum_type": {
+      "type": "string",
+      "enum": ["exclusive", "agreement", "special", "general", "lis_pendens", "related_actions", "appearance", "none"]
+    },
+    "non_none_forum_type": {
+      "type": "string",
+      "enum": ["exclusive", "agreement", "special", "general", "lis_pendens", "related_actions", "appearance"]
+    },
+    "legal_basis_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instrument", "provision"],
+      "properties": {
+        "instrument": {"type": "string", "enum": ["BRUSSELS_I_BIS", "EU_TRADE_MARK_REGULATION"]},
+        "provision": {"type": "string", "pattern": "^Art\\.(\\d+)(\\(\\d+\\))?(\\([a-z]\\))?$"}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "cluster_id",
+    "conclusion",
+    "forum",
+    "forum_type",
+    "alternative_forum_types",
+    "conditional_answer",
+    "explicit_abstention",
+    "legal_basis",
+    "reasoning",
+    "missing_facts",
+    "accepted_conclusions",
+    "accepted_forum_types",
+    "required_evidence",
+    "accepted_evidence",
+    "review_source_stage"
+  ],
+  "properties": {
+    "id": {"type": "integer", "minimum": 1, "maximum": 60},
+    "cluster_id": {"type": "string", "pattern": "^CL-[0-9]{3}$"},
+    "conclusion": {"$ref": "#/$defs/conclusion"},
+    "forum": {"type": "string", "minLength": 1},
+    "forum_type": {"$ref": "#/$defs/forum_type"},
+    "alternative_forum_types": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/non_none_forum_type"}
+    },
+    "conditional_answer": {"type": "boolean"},
+    "explicit_abstention": {"type": "boolean"},
+    "legal_basis": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/legal_basis_item"}
+    },
+    "reasoning": {"type": "string", "minLength": 1},
+    "missing_facts": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "accepted_conclusions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/conclusion"}
+    },
+    "accepted_forum_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/forum_type"}
+    },
+    "required_evidence": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^(BRUSSELS_I_BIS|EU_TRADE_MARK_REGULATION):Art\\.[0-9]+(\\([0-9]+\\))?(\\([a-z]\\))?$"}
+    },
+    "accepted_evidence": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^(BRUSSELS_I_BIS|EU_TRADE_MARK_REGULATION):Art\\.[0-9]+(\\([0-9]+\\))?(\\([a-z]\\))?$"}
+    },
+    "review_source_stage": {
+      "type": "string",
+      "enum": ["A1_C1_AGREEMENT", "C2_JOINT_CONSENSUS", "D1_JOINT_RECONFIRMATION"]
+    }
+  }
+}

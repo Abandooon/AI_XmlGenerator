@@ -1,0 +1,35 @@
+{
+  "schema_version": "atlas.pil.design_audit_abort.v1",
+  "status": "ABORTED_DESIGN_CONFOUND_DETECTED_DURING_EXECUTION",
+  "recorded_on": "2026-09-04",
+  "schedule_sha256": "7bd9aeb6a44cff80b0eeda01c6300f67c6ce8d457302f639d09726824afd48b7",
+  "completed_units": 132,
+  "scheduled_units": 720,
+  "pending_units": 588,
+  "logical_model_calls": 136,
+  "semantic_repair_calls": 4,
+  "infrastructure_attempt_journal_count": 0,
+  "returned_model_set": ["gpt-5.6-luna-2026-07-09"],
+  "observed_gate_counts_at_stop": {
+    "p0": {"completed": 38, "system_release_true": 0},
+    "p1": {"completed": 32, "system_release_true": 0},
+    "p2": {"completed": 32, "system_release_true": 32},
+    "p3": {"completed": 30, "system_release_true": 29}
+  },
+  "design_defect": "P0 and P1 received only field names and selected enums in the natural-language prompt, whereas P2 and P3 additionally received the complete machine-readable JSON Schema through provider enforcement. The planned P2-minus-P1 contrast therefore combined output-contract information completeness with constrained decoding and could not identify the L1 enforcement increment.",
+  "decision": "Stop the whole schedule, retain all outputs as an excluded design-audit batch, and do not resume or selectively reuse any unit. A successor must put the same complete authoritative JSON Schema in every arm's prompt and vary only provider enforcement between P1 and P2.",
+  "admissible_to_primary_analysis": false,
+  "admissible_to_paper_tables": false,
+  "resume_permitted": false,
+  "selective_reuse_permitted": false,
+  "ledger": {
+    "path": "PIL_V4_RUN_LEDGER_AUTOSAR_MATCHED.jsonl",
+    "raw_sha256": "0d49e87876cc928389d1a46cea5b8ef0fc5886420e293434d5eb0398cb3e94c0",
+    "chain_head_sha256": "8cbd00220cdf32b2a124b845cd706983e41b549edfa092841ddf344336bfc0f2"
+  },
+  "run_manifest": {
+    "path": "PIL_V4_RUN_MANIFEST_AUTOSAR_MATCHED.json",
+    "raw_sha256": "088764938166a1863a502e601f99f18b3788d8458ea7174f9c86d7917666afde",
+    "content_sha256": "70a4d2d3fcebb5d82326157c63bb7ef2f99f75ddc99fbb01efa0c84b9179f069"
+  }
+}

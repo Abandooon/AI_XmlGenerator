@@ -1,0 +1,46 @@
+"""Join hash-bound expert findings without imputing unreviewed legal judgments."""
+from pathlib import Path
+import argparse, hashlib, json
+
+VERDICTS={'unacceptable','conditionally_acceptable','substantively_acceptable_with_label_ambiguity','acceptable'}
+def canonical(v):return hashlib.sha256(json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+def join(ledger,scored,records):
+    raw={e['unit_id']:e for e in ledger}
+    scores={s['unit_id']:s for s in scored}
+    if len(raw)!=720 or set(raw)!=set(scores):raise ValueError('Require all 720 matching original units')
+    reviewed={}
+    for r in records:
+        uid=r['unit_id']
+        if uid in reviewed or uid not in raw:raise ValueError('Duplicate or unknown expert unit')
+        if r['verdict'] not in VERDICTS:raise ValueError('Unknown expert verdict')
+        e=raw[uid]
+        if r['ledger_entry_sha256']!=e['entry_sha256'] or r['final_decision_sha256']!=canonical(e['row']['final_decision']):
+            raise ValueError('Expert judgment does not bind to this original decision')
+        reviewed[uid]=r
+    rows=[{'unit_id':e['unit_id'],'case_id':e['case_id'],'arm':e['arm'],
+           'frozen_contract_endpoint':scores[e['unit_id']]['endpoint_success'],
+           'expert_review_status':'reviewed' if e['unit_id'] in reviewed else 'not_reviewed',
+           'expert_verdict':reviewed.get(e['unit_id'],{}).get('verdict'),
+           'expert_reason':reviewed.get(e['unit_id'],{}).get('reason')}
+          for e in ledger]
+    return {'schema_version':'atlas.pil.expert_coverage_join.v1','units':720,'reviewed_units':len(reviewed),
+            'not_reviewed_units':720-len(reviewed),'full_legal_accuracy':None,
+            'full_legal_accuracy_status':'not estimated; targeted review with incomplete coverage',
+            'known_contract_pass_expert_unacceptable':[r['unit_id'] for r in rows if r['frozen_contract_endpoint'] and r['expert_verdict']=='unacceptable'],
+            'contract_endpoint_counts':{a:sum(s['endpoint_success'] for s in scored if s['arm']==a) for a in ['p0','p1','p2','p3']},
+            'rows':rows}
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--erratum',type=Path,required=True)
+    args=parser.parse_args()
+    root=Path(__file__).resolve().parent.parent
+    ledger=[json.loads(s) for s in (args.erratum/'original/PIL_V41_RUN_LEDGER.jsonl').read_text(encoding='utf-8').splitlines()]
+    analysis=json.loads((args.erratum/'results/PIL_V41_ERRATUM1_ANALYSIS.json').read_text(encoding='utf-8'))
+    adjudication=json.loads((root/'data/EXPERT_ADJUDICATIONS.json').read_text(encoding='utf-8'))
+    result=join(ledger,analysis['scored_units'],adjudication['records'])
+    (root/'results/EXPERT_REVIEW_JOIN_720.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps({k:v for k,v in result.items() if k!='rows'},ensure_ascii=False,indent=2))
+
+if __name__=='__main__':main()

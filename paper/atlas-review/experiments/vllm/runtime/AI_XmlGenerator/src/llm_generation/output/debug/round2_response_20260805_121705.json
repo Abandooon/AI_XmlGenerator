@@ -1,0 +1,34 @@
+{
+  "SENDER-RECEIVER-INTERFACE": [
+    {
+      "SHORT-NAME": "SensorTemperatureInput",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "SensorTemperature",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/sint16"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "SHORT-NAME": "TemperatureStatusOutput",
+      "IS-SERVICE": "false",
+      "DATA-ELEMENTS": {
+        "VARIABLE-DATA-PROTOTYPE": [
+          {
+            "SHORT-NAME": "TemperatureStatus",
+            "TYPE-TREF": {
+              "@DEST": "IMPLEMENTATION-DATA-TYPE",
+              "#text": "/AUTOSAR_Platform/ImplementationDataTypes/uint8"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

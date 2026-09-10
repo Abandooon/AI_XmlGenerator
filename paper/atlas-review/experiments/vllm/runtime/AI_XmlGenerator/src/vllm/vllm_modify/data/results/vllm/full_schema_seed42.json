@@ -1,0 +1,124 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "ASW_COM",
+    "ADMIN-DATA": {
+      "SDGS": {
+        "SDG": {
+          "@GID": "Master",
+          "SD": "true"
+        }
+      }
+    },
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "@UUID": "9291d2d6-7dd8-4794-8dc5-562c275f9661",
+          "SHORT-NAME": "PPort_MCU01_EmergShutDown",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_MCU01_EmergShutDown"
+          }
+        },
+        {
+          "@UUID": "2a195d0d-008f-4a55-b98f-64963b9ca4f5",
+          "SHORT-NAME": "PPort_MCU02_MaxTor",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor"
+          }
+        },
+        {
+          "@UUID": "62c54b76-8040-4b43-9744-d1cdfe01d436",
+          "SHORT-NAME": "PPort_MCU03_NRF_IdcSamp",
+          "PROVIDED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "@UUID": "7b1a7fbc-00e6-4b56-8184-2fee13611496",
+          "SHORT-NAME": "RPort_HCU01_TqCmd",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd"
+          },
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": {
+              "DATA-ELEMENT-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_Tq_Cmd"
+              },
+              "ALIVE-TIMEOUT": 0,
+              "HANDLE-TIMEOUT-TYPE": "NONE"
+            }
+          }
+        },
+        {
+          "@UUID": "15f7188e-ec5b-4256-9459-6442d0995495",
+          "SHORT-NAME": "RPort_HCU01_Shift",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_HCU01_Shift"
+          },
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": {
+              "DATA-ELEMENT-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+              },
+              "ALIVE-TIMEOUT": 0,
+              "HANDLE-TIMEOUT-TYPE": "NONE"
+            }
+          }
+        },
+        {
+          "@UUID": "705f7fa6-1d61-43f7-9166-f1abbf8542fb",
+          "SHORT-NAME": "RPort_HCU02_Poweroff",
+          "REQUIRED-INTERFACE-TREF": {
+            "@DEST": "SENDER-RECEIVER-INTERFACE",
+            "#text": "/COM_Interface/SR_Interface_HCU02_Poweroff"
+          },
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": {
+              "DATA-ELEMENT-REF": {
+                "@DEST": "VARIABLE-DATA-PROTOTYPE",
+                "#text": "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+              },
+              "ALIVE-TIMEOUT": 0,
+              "HANDLE-TIMEOUT-TYPE": "NONE"
+            }
+          }
+        }
+      ]
+    },
+    "INTERNAL-BEHAVIORS": {
+      "SWC-INTERNAL-BEHAVIOR": {
+        "SHORT-NAME": "SwcInternalBehavior",
+        "EVENTS": {
+          "TIMING-EVENT": [
+            {
+              "@UUID": "9d816fd8-a6fb-4e66-afa0-2e9954576bf1",
+              "SHORT-NAME": "TE_SWC_COM_10ms",
+              "START-ON-EVENT-REF": {
+                "@DEST": "RUNNABLE-ENTITY",
+                "#text": "/COM_SWC/ASW_COM/SwcInternalBehavior/RE_COM_SWC"
+              },
+              "PERIOD": 0.01
+            }
+          ]
+        },
+        "RUNNABLES": {
+          "RUNNABLE-ENTITY": [
+            {
+              "@UUID": "679af6ce-2509-43d9-8c5d-1ec0e2075cb3",
+              "SHORT-NAME": "RE_COM_SWC",
+              "SYMBOL": "RE_COM_SWC_func"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

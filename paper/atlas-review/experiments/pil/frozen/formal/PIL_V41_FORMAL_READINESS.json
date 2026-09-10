@@ -1,0 +1,220 @@
+{
+  "schema_version": "atlas.pil.formal_readiness.v4.1",
+  "created_at_utc": "2026-09-04T09:35:57.175862+00:00",
+  "status": "READY_FOR_FORMAL_RUN",
+  "formal_run_enabled": true,
+  "external_calls_authorized": true,
+  "provider_calls_before_authorization": 0,
+  "paid_api_calls_before_authorization": 0,
+  "authorization": {
+    "authorized_at_utc": "2026-09-04T09:35:57.175862+00:00",
+    "authorized_unit_count": 720,
+    "confirmation_token_sha256": "f54dc859defe5224645758f9724c8a33e6e5f3fbf65d0a85132834628de2303b",
+    "preflight_file_sha256": "36dedfef697d9a8edede1738a534f59b3f7e4d5ce6ca51b55cb8644ada7cc972",
+    "preflight_content_sha256": "24b0ba92c08dcbc70b71deac37c7c7e950c022d7ab17f1770eabed2d1ea1cdc7",
+    "preflight_path": "E:\\git projects\\AI_XmlGenerator\\Private_International_Law\\PIL_V41_PREFLIGHT_READINESS.json",
+    "api_base_sha256": "f5a9a9ddfe1b4dac7276ccb59339acca10e9820aee221fc60ff1b349ad22d5b9"
+  },
+  "review": {
+    "reviewer_1_locked": true,
+    "reviewer_2_locked": true,
+    "consensus_complete": true,
+    "affected_cases_reconfirmed_after_fact_edits": true,
+    "agreement_report_sha256": "7180e2e2ef167ec3a80a13214ec2316822f4560f6aada618a8a90c677448a397",
+    "adjudication_record_sha256": "88248bd8851c54021092dc6452017cc52a48e4fedb83c7418511a31fd68b1c4e",
+    "d1_acceptance_sha256": "725de239c5bde588248bb5b042e6f75cf6abfa88df9bdc7c53c8902ebcb99020"
+  },
+  "inputs": {
+    "inference_dataset": {
+      "path": "data/inference_dataset_v41_en.jsonl",
+      "sha256": "0ebf7505bfb254764035bfad3c88081211487b26ea765b379a363706c0735fcd"
+    },
+    "consensus_gold": {
+      "path": "data/consensus_gold_v4.jsonl",
+      "sha256": "62b47470d7b6582f9e37f82ee8dfebc55fb5880cb317edd0175b2395f84c1d2f"
+    },
+    "knowledge_base": {
+      "path": "kb/authoritative_provisions_v41_en.jsonl",
+      "sha256": "7a826e847b128fc76cdabb53c8cddee17fdf8ec269a104e14205ec1ac457c33e"
+    },
+    "decision_schema": {
+      "path": "schema/decision_schema_v4.json",
+      "sha256": "d753bb5e72d8e3b8e3d53adb7e772efb067d38ec420b532d270cc3cf7284d11e"
+    },
+    "gold_schema": {
+      "path": "schema/consensus_gold_schema_v4.json",
+      "sha256": "c76de941feeae9e4495e3cc54ac6c0713fbc1d0cb42146afe5129316a2b42ccd"
+    },
+    "delivery_rules": {
+      "path": "rules/delivery_rules_v4.json",
+      "sha256": "374837aba97e3ba88ec3a195411f9b5c3276fff7e4031612b255cddb0ca8965d"
+    },
+    "autosar_v20_parameter_match": {
+      "path": "PIL_V41_AUTOSAR_V20_PARAMETER_MATCH.json",
+      "sha256": "68c22a80225ca5a920de833fd2db7c0a3c8356dc39eee10611717dfb610a610e"
+    },
+    "english_input_manifest": {
+      "path": "PIL_V41_ENGLISH_INPUT_MANIFEST.json",
+      "sha256": "4d6a0b22f9849f5d82c50f1453054e97cab42ef59ac77d3d9816d9ae27918904"
+    },
+    "english_legal_source_audit": {
+      "path": "PIL_V41_ENGLISH_LEGAL_SOURCE_AUDIT.json",
+      "sha256": "01cf9e7a99e414e07618588636dcb39d68b3b2f87a88ca30e8bf358bd34ff7d8"
+    },
+    "translation_parity_acceptance": {
+      "path": "PIL_V41_TRANSLATION_PARITY_ACCEPTANCE.json",
+      "sha256": "d113a69395eae1d0ff5e7c78985fedc2bfd1a6ccf24fcddbfc8c0aac9a93b433"
+    },
+    "rendered_prompts": {
+      "path": "PIL_V41_RENDERED_PROMPTS.jsonl",
+      "sha256": "473228cf97f44a9cc2142062775ec4fb042ff2235fdab58ad7db67e29c71f01a"
+    },
+    "prepaid_code_audit": {
+      "path": "PIL_V41_PREPAID_CODE_AUDIT.json",
+      "sha256": "de3a1edc49180152cd1be09ee49519523798f49d264ef1f5e570d7cfca59bc4b"
+    }
+  },
+  "implementation": {
+    "preflight": {
+      "path": "pil_v4_preflight.py",
+      "sha256": "5a4461e93ee9801e57cf1b4ab2c5866336c112d1c715ed07744400fbf6726b7e"
+    },
+    "contract": {
+      "path": "pil_v4_contract.py",
+      "sha256": "68fb3d096fab8b19bf0638e900736a7e34a0c82197815f7b54b3112280baa804"
+    },
+    "arms": {
+      "path": "pil_v4_arms.py",
+      "sha256": "0d6d69cce68520ae4c5168052fb1622f4112e4216561ebb9e338da4af3bd8859"
+    },
+    "client": {
+      "path": "pil_v4_client.py",
+      "sha256": "729669e0bab9541ecbd87a8efe566e21eb86ba328daf5ca347b04b14f14a8046"
+    },
+    "provider": {
+      "path": "pil_v4_provider.py",
+      "sha256": "9c20c42582315b033368f6ba41e0156619ec528212d5607f26cdc564161aef9c"
+    },
+    "schedule": {
+      "path": "pil_v4_schedule.py",
+      "sha256": "b00f9a42783733e2182268bdc7df452c0b3dfcff278ebff70895f5f1dcd45124"
+    },
+    "runner": {
+      "path": "pil_v4_run.py",
+      "sha256": "80534eaf6e884a5d9e74187bfcf2b737b13f016901690bbd5af3a4aada95298b"
+    },
+    "rescore": {
+      "path": "pil_v4_rescore.py",
+      "sha256": "47b89788b75ca846b26e1d8212bdc36efa128bb12d887bce7284096a1b33e78d"
+    },
+    "authorizer": {
+      "path": "pil_v4_authorize.py",
+      "sha256": "e2af65c226a00aadc1177023c838d4c4a6e051bf421d67b6c62c4fbca4891d14"
+    },
+    "prepaid_freezer": {
+      "path": "pil_v4_freeze_prepaid.py",
+      "sha256": "35dd4145a8c4e6814109b61e4f6e4022b89b322e3ca88365eda5907f36eb8dd2"
+    },
+    "prompt_renderer": {
+      "path": "pil_v41_render_prompts.py",
+      "sha256": "331cd290b3d372ff1f729460707f50241def24e016222d3fd67924adce4335bf"
+    },
+    "english_input_builder": {
+      "path": "build_pil_v41_english_inputs.py",
+      "sha256": "da3fb2737a8eb40e0104b60e80e1586176c59730d360f6c57330f1c08f3e48ca"
+    },
+    "prepaid_audit": {
+      "path": "pil_v41_prepaid_audit.py",
+      "sha256": "e10a039822c0110b3a768650adb6904d6e285233a181278dcb7c31d375e18c22"
+    }
+  },
+  "provider_contract": {
+    "model_name": "gpt-5.6-luna",
+    "expected_response_model": "gpt-5.6-luna-2026-07-09",
+    "provider_family": "openai-compatible",
+    "api_mode": "chat.completions",
+    "reasoning_effort": "low",
+    "temperature": 1.0,
+    "tools_enabled": false,
+    "max_completion_tokens": 128000,
+    "sdk_implicit_retries": 0,
+    "application_transport_max_attempts": 8,
+    "transport_retry_delays_seconds": [
+      1.0,
+      5.0,
+      15.0,
+      30.0,
+      60.0,
+      60.0,
+      60.0
+    ],
+    "request_timeout_seconds": 180.0,
+    "stream_responses": false,
+    "transport_route_policy": "direct_no_environment_proxy",
+    "seed_control": "provider_best_effort_fixed_replicate_seeds",
+    "replicate_seeds": {
+      "1": 104729,
+      "2": 130363,
+      "3": 155921
+    }
+  },
+  "runtime_environment": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "platform_system": "Windows",
+    "platform_machine": "AMD64",
+    "packages": {
+      "openai": "2.48.0",
+      "httpx": "0.28.1",
+      "jsonschema": "4.26.0",
+      "PyYAML": "6.0.3"
+    },
+    "byteorder": "little"
+  },
+  "required_checks": {
+    "inference_dataset_contains_no_gold": true,
+    "knowledge_base_checked_against_eur_lex": true,
+    "article_29_30_31_distinguished": true,
+    "case_count_is_60": true,
+    "gold_case_ids_match_dataset": true,
+    "four_arm_schedule_is_720_units": true,
+    "instrument_qualified_evidence_ids": true,
+    "consensus_gold_schema_valid": true,
+    "retrieval_required_evidence_coverage_complete": true,
+    "dependency_clusters_declared": true,
+    "implementation_files_hashed": true,
+    "provider_contract_frozen": true,
+    "autosar_v20_provider_parameters_matched": true,
+    "english_model_inputs_verified": true,
+    "english_legal_source_audit_passed": true,
+    "translation_parity_review_complete": true,
+    "translation_review_workbook_hash_verified": true,
+    "all_240_primary_prompts_are_english": true,
+    "p1_p2_p3_prompt_text_is_identical": true,
+    "rendered_prompt_artifact_matches_implementation": true,
+    "prepaid_code_audit_passed": true,
+    "runtime_environment_complete": true,
+    "offline_tests_pass": true
+  },
+  "summary": {
+    "case_count": 60,
+    "gold_count": 60,
+    "knowledge_entries": 58,
+    "dependence_clusters": 31,
+    "facts_changed_after_v2": [
+      19,
+      34,
+      44,
+      53,
+      55
+    ],
+    "retrieval_miss_count": 0,
+    "four_arm_units": 720
+  },
+  "scope_limits": [
+    "The 60 cases are synthetic, two-reviewer-adjudicated scenarios, not a probability sample of legal disputes.",
+    "Five facts were changed after V2, so the frozen V2 outputs for those cases cannot be rescored against V4 gold.",
+    "V4 estimates the four-arm mechanism within this PIL case set; it does not establish statistical generalization across domains."
+  ],
+  "content_sha256": "4366b4f803d09dd56b31f8f3213288a3399beb83e72c16ae0fd76de654881fcd"
+}

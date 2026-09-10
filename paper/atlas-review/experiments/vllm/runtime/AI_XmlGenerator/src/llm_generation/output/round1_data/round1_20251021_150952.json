@@ -1,0 +1,1737 @@
+{
+  "session_id": "round1_20251021_150952",
+  "timestamp": "20251021_150952",
+  "user_requirements": "{",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        {\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"medium\", \"estimated_components\": 8, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "系统划分为传感器采集层(Sensor_Manager)、信号预处理层(Signal_Filter)、多传感器融合层(Fusion_Manager)、执行器命令层(Actuator_Command)、车载通信抽象层(CAN_Comm)、诊断服务层(Diagnostics_Service)、参数管理(Configuration_Manager)和非易失存储(Nv_Storage)。各组件职责边界明确：Sensor_Manager负责硬件采样并发布原始信号；Signal_Filter负责滤波、去噪和缩放；Fusion_Manager负责融合与状态估计并生成控制参考；Actuator_Command基于参考生成执行器帧并通过CAN_Comm发送；CAN_Comm封装底层帧收发和总线时序；Diagnostics_Service采集健康信息并提供查询/上报接口；Configuration_Manager提供运行参数读写接口；Nv_Storage负责持久化参数与故障记录。",
+      "data_flow_analysis": "数据从Sensor_Manager按固定采样率(50Hz)通过SENDER-RECEIVER接口发布RawSensorSignal(float)到Signal_Filter；Signal_Filter以同频率输出FilteredSignal(float)到Fusion_Manager；Fusion_Manager在50Hz或事件触发下融合多路FilteredSignal输出StateEstimate(float/vector)和ControlReference(float)到Actuator_Command；Actuator_Command将ControlCommand转为FrameData(byte[8])通过CLIENT-SERVER接口调用CAN_Comm的SendFrame操作，CAN_Comm异步下行总线并回传TxStatus。Configuration_Manager以PARAMETER-INTERFACE提供标定系数(CalibrationCoef:float)的读取/订阅，Signal_Filter和Fusion_Manager订阅该参数并在变更时立即应用(事件驱动)。Diagnostics_Service通过CLIENT-SERVER接口接收状态查询并订阅关键运行指标(health flags)。数据传输时序：周期性信号50Hz端到端延迟目标<=20ms，命令路径(感知->命令->CAN发帧)目标<=30ms，CAN发送异步确认超时<=50ms。通信模式与数据类型在接口定义中明确。",
+      "timing_requirements": "周期性路径：Sensor采样50Hz(20ms)、Filter处理<=5ms、Fusion处理<=5ms、Actuator生成与CAN调用总和<=10ms，以保证端到端<=30ms。参数变更为异步事件，要求在参数更新后下一个周期(<=20ms)生效。诊断查询应在100ms内响应。CAN发送操作异步确认超时配置<=50ms。系统允许部分软实时偏差，但控制命令必须保证最多丢失一帧的容忍度。",
+      "scalability_considerations": "采用分层组件与清晰接口，以便新增传感器或滤波模块时通过新增或替换Signal_Filter实例和扩展Fusion_Manager输入。参数管理集中化便于扩展标定项。CAN_Comm抽象可支持多帧类型与多通道扩展。设计预留并行runnable和可配置队列策略以支持更高频率场景。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "Configuration_Manager",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "集中管理运行时参数与标定，支持读取、写入、订阅通知与持久化请求。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (parameter write client-server)",
+          "output_ports": "1 (parameter publish sender-receiver)"
+        },
+        "behavioral_characteristics": "维护参数池，提供同步读取与异步发布；参数写入触发持久化请求到Nv_Storage并发布变更事件；对订阅组件推送最新值。触发条件：外部写请求、启动时从Nv_Storage加载、内存临时修改。状态管理：参数版本与dirty标志。数据流程：请求->验证->更新内存->发布->可选持久化调用。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供PARAMETER-INTERFACE的提供端口(P-PORT)与事件发布端(R-PORT)用于订阅通知。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "LoadParametersOnInit",
+                "trigger": "system_init"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ParameterWriteReceived",
+                "trigger": "external write RPC"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PeriodicSync",
+                "trigger": "periodic 1s"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Param_Load_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Nv_Storage获取持久化参数并映射到内部参数表"
+                      }
+                    ],
+                    "notes": "初始化时从NV读取参数"
+                  }
+                ],
+                "notes": "初始化时加载参数并发布"
+              },
+              {
+                "name": "Param_Write_R",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "请求Kv写入到Nv_Storage的异步持久化操作"
+                      }
+                    ],
+                    "notes": "接收外部写请求并触发持久化"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布参数变更给订阅者"
+                      }
+                    ],
+                    "notes": "发布参数变更事件"
+                  }
+                ],
+                "notes": "处理参数写入与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Nv_Storage",
+          "Signal_Filter",
+          "Fusion_Manager"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "Nv_Storage",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "提供非易失数据存储接口，持久化参数与故障记录，支持异步写与同步读。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (async write client-server)",
+          "output_ports": "1 (sync read server-response)"
+        },
+        "behavioral_characteristics": "暴露异步写和同步读接口给上层，写入排队与重试策略；在初始化时提供读取回调；处理超时与回写错误并通知Diagnostics_Service。数据流程：写请求->队列->flash写->完成事件->上层回调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端调用的服务端口与写完成通知端口。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "NvWriteCompleted",
+                "trigger": "flash write completion"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "NvWriteError",
+                "trigger": "flash error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Nv_Write_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收待写入数据块"
+                      }
+                    ],
+                    "notes": "接收写请求并排队"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写完成/失败通知上层"
+                      }
+                    ],
+                    "notes": "发送写完成或错误通知"
+                  }
+                ],
+                "notes": "处理NV写队列"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Configuration_Manager",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "CAN_Comm",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "封装CAN总线发送/接收，提供帧发射和接收回调，处理重传和超时。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (send frame client-server)",
+          "output_ports": "1 (frame receive sender-receiver + tx status)"
+        },
+        "behavioral_characteristics": "提供异步发送操作和事件驱动的接收回调；发送操作接收FrameData并返回发送状态，内部管理Tx队列与重传计时器；接收帧解帧后通过Sender-Receiver接口发布。触发条件：上层调用发送、总线中断到来。数据流程：SendFrameCall->TxQueue->HW_Send->TxCompleteEvent->客户回调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供CLIENT-SERVER端口用于发送帧及SENDER-RECEIVER用于发布接收帧"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CanFrameReceived",
+                "trigger": "hw interrupt"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "CanTxCompleted",
+                "trigger": "hw tx complete"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Can_Rx_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将接收帧发布为接收信号"
+                      }
+                    ],
+                    "notes": "处理CAN帧接收并发布"
+                  }
+                ],
+                "notes": "CAN接收解帧并发布"
+              },
+              {
+                "name": "Can_Tx_R",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "底层驱动同步封装可能用于直接HW访问"
+                      }
+                    ],
+                    "notes": "低层同步驱动调用"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收上层待发送帧数据"
+                      }
+                    ],
+                    "notes": "接收发送请求并入队"
+                  }
+                ],
+                "notes": "处理上层发送请求与驱动交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Actuator_Command",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "Sensor_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "采样物理传感器并将原始数据以周期性消息发布到总线/中间层。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (raw signal sender)"
+        },
+        "behavioral_characteristics": "定周期(50Hz)从硬件采样，多通道采样并做最小校验，发布RawSensorSignal。初始化时调用配置管理读取标定系数并在收到参数变更事件时应用。状态管理包括采样健康标志与error counters。数据流程：HW采样->最小验证->发布。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输出SENDER-RECEIVER端口发布原始采样；可能的配置订阅端口为R-PORT"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "SensorSamplingTimer",
+                "trigger": "50Hz"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ParamUpdateReceived",
+                "trigger": "Configuration_Manager publish"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Sensor_Sample_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始传感器数据到Signal_Filter"
+                      }
+                    ],
+                    "notes": "周期性采样后发布原始信号"
+                  }
+                ],
+                "notes": "50Hz采样与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Filter",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "Signal_Filter",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对原始传感器信号进行滤波、去噪与比例缩放，输出可用于融合的信号。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (raw signal receive)",
+          "output_ports": "1 (filtered signal send)"
+        },
+        "behavioral_characteristics": "接收RawSensorSignal事件驱动处理或定周期（50Hz）批处理；应用标定系数和滤波器(例如一阶低通或卡尔曼简化)，异常值检测并标注质量标志。状态管理包括滤波器内部状态缓存。数据流程：Raw->滤波->质量判定->FilteredSignal输出；对参数变更立即重置滤波器状态或更新系数。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入S-R端口订阅RawSensorSignal，输出S-R端口发布FilteredSignal；订阅参数端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawSignalReceived",
+                "trigger": "Sensor_Manager publish"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "SignalValidationFailed",
+                "trigger": "value out-of-range"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Filter_Process_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从输入端口读取原始数据"
+                      }
+                    ],
+                    "notes": "接收原始传感器数据"
+                  },
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取标定系数用于滤波与缩放"
+                      }
+                    ],
+                    "notes": "访问运行时参数"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布滤波后的信号到Fusion_Manager"
+                      }
+                    ],
+                    "notes": "输出滤波结果"
+                  }
+                ],
+                "notes": "滤波主处理runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Sensor_Manager",
+          "Fusion_Manager",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "Fusion_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合来自多个传感器的滤波信号，进行状态估计并生成控制参考。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2..4 (multiple filtered inputs)",
+          "output_ports": "1 (control reference)"
+        },
+        "behavioral_characteristics": "以50Hz为主周期或在关键输入到达时触发融合算法(卡尔曼/加权均值)；维护状态向量并对输入质量进行加权；在融合后生成ControlReference并发布，同时可触发Diagnostics_Service的健康上报。状态管理涉及状态协变量和时间戳一致性检查。数据流程：多输入->时间对齐->融合->输出->命令生成触发。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "多个输入S-R端口接收FilteredSignal，输出S-R端口发布ControlReference；支持参数订阅"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "FusionTimer",
+                "trigger": "50Hz"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "InputSignalArrived",
+                "trigger": "FilteredSignal publish"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Process_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取多路滤波信号作融合输入"
+                      }
+                    ],
+                    "notes": "接收并校验融合输入数据"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "与Diagnostics_Service同步上报或请求健康校验"
+                      }
+                    ],
+                    "notes": "调用诊断查询以决定权重调整"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布ControlReference到Actuator_Command"
+                      }
+                    ],
+                    "notes": "发布融合输出"
+                  }
+                ],
+                "notes": "融合算法的主runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Filter",
+          "Actuator_Command",
+          "Diagnostics_Service",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "Actuator_Command",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "将融合输出转换为执行器帧并请求CAN发送，处理命令限幅与安全检查。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (control reference receive)",
+          "output_ports": "1 (CAN send client-server)"
+        },
+        "behavioral_characteristics": "在接收到ControlReference时进行命令限幅、故障掩蔽检查及帧封装，然后异步调用CAN_Comm的SendFrame；保持命令历史用于回溯与诊断。触发条件：Fusion_Manager输出或安全状态变更。数据流程：ControlReference->limit/safety->FrameData->CAN_SendCall->等待TxStatus。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收ControlReference的S-R端口，调用CAN_Comm的CLIENT-SERVER端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ControlRefReceived",
+                "trigger": "Fusion_Manager publish"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "CanTxAckReceived",
+                "trigger": "CAN_Comm tx complete event"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuator_Generate_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取ControlReference作为命令来源"
+                      }
+                    ],
+                    "notes": "接收融合输出作为输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用CAN_Comm.SendFrame异步接口"
+                      }
+                    ],
+                    "notes": "发起CAN发送请求"
+                  }
+                ],
+                "notes": "生成帧并调用CAN发送"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Comm",
+          "Fusion_Manager",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C008",
+        "name": "Diagnostics_Service",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集运行时健康信息，响应上层查询并对故障事件进行记录和上报。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (diagnostic queries)",
+          "output_ports": "1 (health publish)"
+        },
+        "behavioral_characteristics": "监听关键组件的错误事件并聚合健康状态；提供同步查询接口和异步上报；对严重故障触发系统级告警并请求持久化。数据流程：事件收集->聚合->存储/上报->响应查询。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端-服务器接口以响应健康查询，发布健康summary"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "DiagQueryReceived",
+                "trigger": "external request"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "CriticalFaultDetected",
+                "trigger": "component reported critical error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Aggregate_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收各组件上报的错误/状态数据"
+                      }
+                    ],
+                    "notes": "收集并聚合运行时指标"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布健康摘要"
+                      }
+                    ],
+                    "notes": "发布健康上报"
+                  }
+                ],
+                "notes": "诊断聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Nv_Storage",
+          "CAN_Comm",
+          "Configuration_Manager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "I001",
+        "name": "If_Sensor_to_Filter",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布-订阅，周期性发布(50Hz)，非阻塞，采用最新值覆盖策略，不排队；传输时延目标<=5ms；错误处理为质量位标注并触发重复采样。",
+        "data_category": "signal",
+        "connected_components": [
+          "Sensor_Manager",
+          "Signal_Filter"
+        ],
+        "performance_requirements": "50Hz频率，端到端延迟<=5ms，丢包容忍率低于1%",
+        "data_elements": [
+          "RawSensorSignal:float",
+          "SignalQuality:uint8"
+        ],
+        "direct_paths": "Sensor_Manager -> Signal_Filter via S-R"
+      },
+      {
+        "interface_id": "I002",
+        "name": "If_Filter_to_Fusion",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布-订阅，周期性(50Hz)，最新值策略，接收端需时间对齐；错误处理包含timestamp mismatch报警。",
+        "data_category": "signal",
+        "connected_components": [
+          "Signal_Filter",
+          "Fusion_Manager"
+        ],
+        "performance_requirements": "50Hz, 端到端<=10ms, 时间戳一致性要求<=5ms",
+        "data_elements": [
+          "FilteredSignal:float",
+          "FilteredQuality:uint8",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "Signal_Filter -> Fusion_Manager via S-R"
+      },
+      {
+        "interface_id": "I003",
+        "name": "If_Fusion_to_Actuator",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件或周期触发(50Hz或输入事件)，发布最新ControlReference；使用最新值覆盖策略，以保证低延迟传递；异常时触发Diagnostics_Service.",
+        "data_category": "command",
+        "connected_components": [
+          "Fusion_Manager",
+          "Actuator_Command"
+        ],
+        "performance_requirements": "50Hz, 端到端延迟目标<=10ms, 丢失一帧容忍",
+        "data_elements": [
+          "ControlReference:float",
+          "ControlFlags:uint8",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "Fusion_Manager -> Actuator_Command via S-R"
+      },
+      {
+        "interface_id": "I004",
+        "name": "If_Actuator_to_CAN",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端发起异步发送请求(ASYNCHRONOUS), 可配置超时(<=50ms)，发送为fire-and-forget语义但返回TxStatus；缓冲策略为Tx队列(有限长度)与重试；错误处理包含超时回调与诊断上报。",
+        "data_category": "frame",
+        "connected_components": [
+          "Actuator_Command",
+          "CAN_Comm"
+        ],
+        "performance_requirements": "框发送请求<=5ms打包，CAN发送确认<=50ms，队列溢出需返回错误",
+        "data_elements": [
+          "FrameData:byte[8]",
+          "FrameId:uint32",
+          "TxPriority:uint8"
+        ],
+        "direct_paths": "Actuator_Command -> CAN_Comm (SendFrame op)"
+      },
+      {
+        "interface_id": "I005",
+        "name": "If_Config_Param",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "同步读取与异步发布订阅混合：读取为RPC同步，变更通过发布异步通知；缓冲策略为最新值；错误处理为写失败回滚与错误码返回。",
+        "data_category": "parameter",
+        "connected_components": [
+          "Configuration_Manager",
+          "Signal_Filter",
+          "Fusion_Manager"
+        ],
+        "performance_requirements": "参数读取<=10ms，参数变更在下一个周期内生效(<=20ms)",
+        "data_elements": [
+          "CalibrationCoef:float",
+          "ParamVersion:uint16"
+        ],
+        "direct_paths": "Configuration_Manager -> Signal_Filter/Fusion_Manager"
+      },
+      {
+        "interface_id": "I006",
+        "name": "If_Diag_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步查询与异步上报并存；查询响应目标<=100ms；上报使用队列或事件驱动，错误处理包含重试与持久化失败报警。",
+        "data_category": "diagnostic",
+        "connected_components": [
+          "Diagnostics_Service",
+          "Fusion_Manager",
+          "CAN_Comm",
+          "Configuration_Manager"
+        ],
+        "performance_requirements": "查询响应<=100ms，上报可靠性99%，错误需落盘(Nv_Storage)",
+        "data_elements": [
+          "HealthSummary:uint8",
+          "ErrorCodes:uint32[]",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "多个组件 -> Diagnostics_Service"
+      }
+    ],
+    "component_generation_order": [
+      "Configuration_Manager",
+      "Nv_Storage",
+      "CAN_Comm",
+      "Sensor_Manager",
+      "Signal_Filter",
+      "Fusion_Manager",
+      "Actuator_Command",
+      "Diagnostics_Service"
+    ],
+    "connection_topology": {
+      "component_connections": "Sensor_Manager publishes RawSensorSignal to Signal_Filter; Signal_Filter publishes FilteredSignal to Fusion_Manager; Fusion_Manager publishes ControlReference to Actuator_Command; Actuator_Command calls CAN_Comm.SendFrame; Configuration_Manager provides parameters to Signal_Filter and Fusion_Manager and calls Nv_Storage for persistence; Diagnostics_Service subscribes to health/events from CAN_Comm, Fusion_Manager and Configuration_Manager; Nv_Storage serves Configuration_Manager and Diagnostics_Service.",
+      "data_flow_paths": "RawSensorSignal: Sensor_Manager -> Signal_Filter -> Fusion_Manager -> Actuator_Command -> CAN_Comm. Parameters: Configuration_Manager -> Signal_Filter/Fusion_Manager. Diagnostics: components -> Diagnostics_Service -> Nv_Storage for persistence.",
+      "control_flow_paths": "Control calls: Actuator_Command -> CAN_Comm (CLIENT-SERVER). Parameter writes: external -> Configuration_Manager -> Nv_Storage (async). Diagnostics queries: external -> Diagnostics_Service -> components (sync calls possible). Initialization control: Configuration_Manager -> Nv_Storage (read) -> publish parameters -> other components initialize."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层(采集-预处理-融合-执行)与服务化(参数/诊断/NV)架构，接口以SENDER-RECEIVER处理周期性信号，CLIENT-SERVER用于控制或需要确认的操作，PARAMETER接口用于集中配置。这样分离职责降低耦合，便于替换算法与扩展传感器数量。",
+      "tradeoff_analysis": "采用S-R接口降低延迟与耦合但牺牲点对点确认能力，关键的命令路径使用CLIENT-SERVER以获得发送确认。将Nv_Storage设计为异步提高响应性但增加复杂度与重试逻辑。融合算法放在中间层以集中处理多输入，但会增加计算负载，需要在ECU上评估时间片。",
+      "alternative_considerations": "可将滤波器做为可插拔多个实例以支持更多传感器或在Signal_Filter内部引入多线程并行化；亦可将部分诊断逻辑下放至CAN_Comm以减轻中央诊断负担；对于严格实时场景可将Fusion_Manager迁移为更靠近硬件的优先级更高的SWC或裸机实现。",
+      "risk_assessment": "中等风险：主要风险为端到端时延超出目标和NV写入失败影响配置一致性。缓解措施包括配置软超时与重试策略、在关键路径使用同步确认并对重载场景进行性能测试。参数变更采用版本与回滚机制以防止不一致。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "系统划分为传感器采集层(Sensor_Manager)、信号预处理层(Signal_Filter)、多传感器融合层(Fusion_Manager)、执行器命令层(Actuator_Command)、车载通信抽象层(CAN_Comm)、诊断服务层(Diagnostics_Service)、参数管理(Configuration_Manager)和非易失存储(Nv_Storage)。各组件职责边界明确：Sensor_Manager负责硬件采样并发布原始信号；Signal_Filter负责滤波、去噪和缩放；Fusion_Manager负责融合与状态估计并生成控制参考；Actuator_Command基于参考生成执行器帧并通过CAN_Comm发送；CAN_Comm封装底层帧收发和总线时序；Diagnostics_Service采集健康信息并提供查询/上报接口；Configuration_Manager提供运行参数读写接口；Nv_Storage负责持久化参数与故障记录。",
+      "data_flow_analysis": "数据从Sensor_Manager按固定采样率(50Hz)通过SENDER-RECEIVER接口发布RawSensorSignal(float)到Signal_Filter；Signal_Filter以同频率输出FilteredSignal(float)到Fusion_Manager；Fusion_Manager在50Hz或事件触发下融合多路FilteredSignal输出StateEstimate(float/vector)和ControlReference(float)到Actuator_Command；Actuator_Command将ControlCommand转为FrameData(byte[8])通过CLIENT-SERVER接口调用CAN_Comm的SendFrame操作，CAN_Comm异步下行总线并回传TxStatus。Configuration_Manager以PARAMETER-INTERFACE提供标定系数(CalibrationCoef:float)的读取/订阅，Signal_Filter和Fusion_Manager订阅该参数并在变更时立即应用(事件驱动)。Diagnostics_Service通过CLIENT-SERVER接口接收状态查询并订阅关键运行指标(health flags)。数据传输时序：周期性信号50Hz端到端延迟目标<=20ms，命令路径(感知->命令->CAN发帧)目标<=30ms，CAN发送异步确认超时<=50ms。通信模式与数据类型在接口定义中明确。",
+      "timing_requirements": "周期性路径：Sensor采样50Hz(20ms)、Filter处理<=5ms、Fusion处理<=5ms、Actuator生成与CAN调用总和<=10ms，以保证端到端<=30ms。参数变更为异步事件，要求在参数更新后下一个周期(<=20ms)生效。诊断查询应在100ms内响应。CAN发送操作异步确认超时配置<=50ms。系统允许部分软实时偏差，但控制命令必须保证最多丢失一帧的容忍度。",
+      "scalability_considerations": "采用分层组件与清晰接口，以便新增传感器或滤波模块时通过新增或替换Signal_Filter实例和扩展Fusion_Manager输入。参数管理集中化便于扩展标定项。CAN_Comm抽象可支持多帧类型与多通道扩展。设计预留并行runnable和可配置队列策略以支持更高频率场景。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "C001",
+        "name": "Configuration_Manager",
+        "type": "PARAMETER-SW-COMPONENT-TYPE",
+        "purpose": "集中管理运行时参数与标定，支持读取、写入、订阅通知与持久化请求。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (parameter write client-server)",
+          "output_ports": "1 (parameter publish sender-receiver)"
+        },
+        "behavioral_characteristics": "维护参数池，提供同步读取与异步发布；参数写入触发持久化请求到Nv_Storage并发布变更事件；对订阅组件推送最新值。触发条件：外部写请求、启动时从Nv_Storage加载、内存临时修改。状态管理：参数版本与dirty标志。数据流程：请求->验证->更新内存->发布->可选持久化调用。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供PARAMETER-INTERFACE的提供端口(P-PORT)与事件发布端(R-PORT)用于订阅通知。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "LoadParametersOnInit",
+                "trigger": "system_init"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "ParameterWriteReceived",
+                "trigger": "external write RPC"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "PeriodicSync",
+                "trigger": "periodic 1s"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Param_Load_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从Nv_Storage获取持久化参数并映射到内部参数表"
+                      }
+                    ],
+                    "notes": "初始化时从NV读取参数"
+                  }
+                ],
+                "notes": "初始化时加载参数并发布"
+              },
+              {
+                "name": "Param_Write_R",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "请求Kv写入到Nv_Storage的异步持久化操作"
+                      }
+                    ],
+                    "notes": "接收外部写请求并触发持久化"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布参数变更给订阅者"
+                      }
+                    ],
+                    "notes": "发布参数变更事件"
+                  }
+                ],
+                "notes": "处理参数写入与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Nv_Storage",
+          "Signal_Filter",
+          "Fusion_Manager"
+        ]
+      },
+      {
+        "component_id": "C002",
+        "name": "Nv_Storage",
+        "type": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "purpose": "提供非易失数据存储接口，持久化参数与故障记录，支持异步写与同步读。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (async write client-server)",
+          "output_ports": "1 (sync read server-response)"
+        },
+        "behavioral_characteristics": "暴露异步写和同步读接口给上层，写入排队与重试策略；在初始化时提供读取回调；处理超时与回写错误并通知Diagnostics_Service。数据流程：写请求->队列->flash写->完成事件->上层回调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "PR-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端调用的服务端口与写完成通知端口。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT",
+                "name": "NvWriteCompleted",
+                "trigger": "flash write completion"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "NvWriteError",
+                "trigger": "flash error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Nv_Write_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收待写入数据块"
+                      }
+                    ],
+                    "notes": "接收写请求并排队"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写完成/失败通知上层"
+                      }
+                    ],
+                    "notes": "发送写完成或错误通知"
+                  }
+                ],
+                "notes": "处理NV写队列"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Configuration_Manager",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C003",
+        "name": "CAN_Comm",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "封装CAN总线发送/接收，提供帧发射和接收回调，处理重传和超时。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (send frame client-server)",
+          "output_ports": "1 (frame receive sender-receiver + tx status)"
+        },
+        "behavioral_characteristics": "提供异步发送操作和事件驱动的接收回调；发送操作接收FrameData并返回发送状态，内部管理Tx队列与重传计时器；接收帧解帧后通过Sender-Receiver接口发布。触发条件：上层调用发送、总线中断到来。数据流程：SendFrameCall->TxQueue->HW_Send->TxCompleteEvent->客户回调。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供CLIENT-SERVER端口用于发送帧及SENDER-RECEIVER用于发布接收帧"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "CanFrameReceived",
+                "trigger": "hw interrupt"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "CanTxCompleted",
+                "trigger": "hw tx complete"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Can_Rx_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "将接收帧发布为接收信号"
+                      }
+                    ],
+                    "notes": "处理CAN帧接收并发布"
+                  }
+                ],
+                "notes": "CAN接收解帧并发布"
+              },
+              {
+                "name": "Can_Tx_R",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT",
+                          "CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF"
+                        ],
+                        "notes": "底层驱动同步封装可能用于直接HW访问"
+                      }
+                    ],
+                    "notes": "低层同步驱动调用"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IN-IMPL-DATATYPE",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收上层待发送帧数据"
+                      }
+                    ],
+                    "notes": "接收发送请求并入队"
+                  }
+                ],
+                "notes": "处理上层发送请求与驱动交互"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Actuator_Command",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C004",
+        "name": "Sensor_Manager",
+        "type": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "purpose": "采样物理传感器并将原始数据以周期性消息发布到总线/中间层。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1 (raw signal sender)"
+        },
+        "behavioral_characteristics": "定周期(50Hz)从硬件采样，多通道采样并做最小校验，发布RawSensorSignal。初始化时调用配置管理读取标定系数并在收到参数变更事件时应用。状态管理包括采样健康标志与error counters。数据流程：HW采样->最小验证->发布。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输出SENDER-RECEIVER端口发布原始采样；可能的配置订阅端口为R-PORT"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "SensorSamplingTimer",
+                "trigger": "50Hz"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ParamUpdateReceived",
+                "trigger": "Configuration_Manager publish"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Sensor_Sample_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布原始传感器数据到Signal_Filter"
+                      }
+                    ],
+                    "notes": "周期性采样后发布原始信号"
+                  }
+                ],
+                "notes": "50Hz采样与发布"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Filter",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C005",
+        "name": "Signal_Filter",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "对原始传感器信号进行滤波、去噪与比例缩放，输出可用于融合的信号。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (raw signal receive)",
+          "output_ports": "1 (filtered signal send)"
+        },
+        "behavioral_characteristics": "接收RawSensorSignal事件驱动处理或定周期（50Hz）批处理；应用标定系数和滤波器(例如一阶低通或卡尔曼简化)，异常值检测并标注质量标志。状态管理包括滤波器内部状态缓存。数据流程：Raw->滤波->质量判定->FilteredSignal输出；对参数变更立即重置滤波器状态或更新系数。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入S-R端口订阅RawSensorSignal，输出S-R端口发布FilteredSignal；订阅参数端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "RawSignalReceived",
+                "trigger": "Sensor_Manager publish"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "SignalValidationFailed",
+                "trigger": "value out-of-range"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Filter_Process_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从输入端口读取原始数据"
+                      }
+                    ],
+                    "notes": "接收原始传感器数据"
+                  },
+                  {
+                    "key": "PARAMETER-ACCESSS",
+                    "wrapper": "PARAMETER-ACCESSS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-PARAMETER",
+                        "variant": "AUTOSAR-PARAMETER-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取标定系数用于滤波与缩放"
+                      }
+                    ],
+                    "notes": "访问运行时参数"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布滤波后的信号到Fusion_Manager"
+                      }
+                    ],
+                    "notes": "输出滤波结果"
+                  }
+                ],
+                "notes": "滤波主处理runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Sensor_Manager",
+          "Fusion_Manager",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C006",
+        "name": "Fusion_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "融合来自多个传感器的滤波信号，进行状态估计并生成控制参考。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2..4 (multiple filtered inputs)",
+          "output_ports": "1 (control reference)"
+        },
+        "behavioral_characteristics": "以50Hz为主周期或在关键输入到达时触发融合算法(卡尔曼/加权均值)；维护状态向量并对输入质量进行加权；在融合后生成ControlReference并发布，同时可触发Diagnostics_Service的健康上报。状态管理涉及状态协变量和时间戳一致性检查。数据流程：多输入->时间对齐->融合->输出->命令生成触发。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "多个输入S-R端口接收FilteredSignal，输出S-R端口发布ControlReference；支持参数订阅"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "FusionTimer",
+                "trigger": "50Hz"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "InputSignalArrived",
+                "trigger": "FilteredSignal publish"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Fusion_Process_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取多路滤波信号作融合输入"
+                      }
+                    ],
+                    "notes": "接收并校验融合输入数据"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "与Diagnostics_Service同步上报或请求健康校验"
+                      }
+                    ],
+                    "notes": "调用诊断查询以决定权重调整"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布ControlReference到Actuator_Command"
+                      }
+                    ],
+                    "notes": "发布融合输出"
+                  }
+                ],
+                "notes": "融合算法的主runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Signal_Filter",
+          "Actuator_Command",
+          "Diagnostics_Service",
+          "Configuration_Manager"
+        ]
+      },
+      {
+        "component_id": "C007",
+        "name": "Actuator_Command",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "将融合输出转换为执行器帧并请求CAN发送，处理命令限幅与安全检查。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (control reference receive)",
+          "output_ports": "1 (CAN send client-server)"
+        },
+        "behavioral_characteristics": "在接收到ControlReference时进行命令限幅、故障掩蔽检查及帧封装，然后异步调用CAN_Comm的SendFrame；保持命令历史用于回溯与诊断。触发条件：Fusion_Manager输出或安全状态变更。数据流程：ControlReference->limit/safety->FrameData->CAN_SendCall->等待TxStatus。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收ControlReference的S-R端口，调用CAN_Comm的CLIENT-SERVER端口"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "ControlRefReceived",
+                "trigger": "Fusion_Manager publish"
+              },
+              {
+                "type": "DATA-SEND-COMPLETED-EVENT",
+                "name": "CanTxAckReceived",
+                "trigger": "CAN_Comm tx complete event"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Actuator_Generate_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取ControlReference作为命令来源"
+                      }
+                    ],
+                    "notes": "接收融合输出作为输入"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用CAN_Comm.SendFrame异步接口"
+                      }
+                    ],
+                    "notes": "发起CAN发送请求"
+                  }
+                ],
+                "notes": "生成帧并调用CAN发送"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "CAN_Comm",
+          "Fusion_Manager",
+          "Diagnostics_Service"
+        ]
+      },
+      {
+        "component_id": "C008",
+        "name": "Diagnostics_Service",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "收集运行时健康信息，响应上层查询并对故障事件进行记录和上报。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (diagnostic queries)",
+          "output_ports": "1 (health publish)"
+        },
+        "behavioral_characteristics": "监听关键组件的错误事件并聚合健康状态；提供同步查询接口和异步上报；对严重故障触发系统级告警并请求持久化。数据流程：事件收集->聚合->存储/上报->响应查询。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供客户端-服务器接口以响应健康查询，发布健康summary"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "DiagQueryReceived",
+                "trigger": "external request"
+              },
+              {
+                "type": "TRANSFORMER-HARD-ERROR-EVENT",
+                "name": "CriticalFaultDetected",
+                "trigger": "component reported critical error"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Diag_Aggregate_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收各组件上报的错误/状态数据"
+                      }
+                    ],
+                    "notes": "收集并聚合运行时指标"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布健康摘要"
+                      }
+                    ],
+                    "notes": "发布健康上报"
+                  }
+                ],
+                "notes": "诊断聚合与上报"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Nv_Storage",
+          "CAN_Comm",
+          "Configuration_Manager"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "I001",
+        "name": "If_Sensor_to_Filter",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布-订阅，周期性发布(50Hz)，非阻塞，采用最新值覆盖策略，不排队；传输时延目标<=5ms；错误处理为质量位标注并触发重复采样。",
+        "data_category": "signal",
+        "connected_components": [
+          "Sensor_Manager",
+          "Signal_Filter"
+        ],
+        "performance_requirements": "50Hz频率，端到端延迟<=5ms，丢包容忍率低于1%",
+        "data_elements": [
+          "RawSensorSignal:float",
+          "SignalQuality:uint8"
+        ],
+        "direct_paths": "Sensor_Manager -> Signal_Filter via S-R"
+      },
+      {
+        "interface_id": "I002",
+        "name": "If_Filter_to_Fusion",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步发布-订阅，周期性(50Hz)，最新值策略，接收端需时间对齐；错误处理包含timestamp mismatch报警。",
+        "data_category": "signal",
+        "connected_components": [
+          "Signal_Filter",
+          "Fusion_Manager"
+        ],
+        "performance_requirements": "50Hz, 端到端<=10ms, 时间戳一致性要求<=5ms",
+        "data_elements": [
+          "FilteredSignal:float",
+          "FilteredQuality:uint8",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "Signal_Filter -> Fusion_Manager via S-R"
+      },
+      {
+        "interface_id": "I003",
+        "name": "If_Fusion_to_Actuator",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件或周期触发(50Hz或输入事件)，发布最新ControlReference；使用最新值覆盖策略，以保证低延迟传递；异常时触发Diagnostics_Service.",
+        "data_category": "command",
+        "connected_components": [
+          "Fusion_Manager",
+          "Actuator_Command"
+        ],
+        "performance_requirements": "50Hz, 端到端延迟目标<=10ms, 丢失一帧容忍",
+        "data_elements": [
+          "ControlReference:float",
+          "ControlFlags:uint8",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "Fusion_Manager -> Actuator_Command via S-R"
+      },
+      {
+        "interface_id": "I004",
+        "name": "If_Actuator_to_CAN",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "客户端发起异步发送请求(ASYNCHRONOUS), 可配置超时(<=50ms)，发送为fire-and-forget语义但返回TxStatus；缓冲策略为Tx队列(有限长度)与重试；错误处理包含超时回调与诊断上报。",
+        "data_category": "frame",
+        "connected_components": [
+          "Actuator_Command",
+          "CAN_Comm"
+        ],
+        "performance_requirements": "框发送请求<=5ms打包，CAN发送确认<=50ms，队列溢出需返回错误",
+        "data_elements": [
+          "FrameData:byte[8]",
+          "FrameId:uint32",
+          "TxPriority:uint8"
+        ],
+        "direct_paths": "Actuator_Command -> CAN_Comm (SendFrame op)"
+      },
+      {
+        "interface_id": "I005",
+        "name": "If_Config_Param",
+        "type": "PARAMETER-INTERFACE",
+        "communication_pattern": "同步读取与异步发布订阅混合：读取为RPC同步，变更通过发布异步通知；缓冲策略为最新值；错误处理为写失败回滚与错误码返回。",
+        "data_category": "parameter",
+        "connected_components": [
+          "Configuration_Manager",
+          "Signal_Filter",
+          "Fusion_Manager"
+        ],
+        "performance_requirements": "参数读取<=10ms，参数变更在下一个周期内生效(<=20ms)",
+        "data_elements": [
+          "CalibrationCoef:float",
+          "ParamVersion:uint16"
+        ],
+        "direct_paths": "Configuration_Manager -> Signal_Filter/Fusion_Manager"
+      },
+      {
+        "interface_id": "I006",
+        "name": "If_Diag_Service",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "同步查询与异步上报并存；查询响应目标<=100ms；上报使用队列或事件驱动，错误处理包含重试与持久化失败报警。",
+        "data_category": "diagnostic",
+        "connected_components": [
+          "Diagnostics_Service",
+          "Fusion_Manager",
+          "CAN_Comm",
+          "Configuration_Manager"
+        ],
+        "performance_requirements": "查询响应<=100ms，上报可靠性99%，错误需落盘(Nv_Storage)",
+        "data_elements": [
+          "HealthSummary:uint8",
+          "ErrorCodes:uint32[]",
+          "Timestamp:uint32"
+        ],
+        "direct_paths": "多个组件 -> Diagnostics_Service"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "Sensor_Manager publishes RawSensorSignal to Signal_Filter; Signal_Filter publishes FilteredSignal to Fusion_Manager; Fusion_Manager publishes ControlReference to Actuator_Command; Actuator_Command calls CAN_Comm.SendFrame; Configuration_Manager provides parameters to Signal_Filter and Fusion_Manager and calls Nv_Storage for persistence; Diagnostics_Service subscribes to health/events from CAN_Comm, Fusion_Manager and Configuration_Manager; Nv_Storage serves Configuration_Manager and Diagnostics_Service.",
+      "data_flow_paths": "RawSensorSignal: Sensor_Manager -> Signal_Filter -> Fusion_Manager -> Actuator_Command -> CAN_Comm. Parameters: Configuration_Manager -> Signal_Filter/Fusion_Manager. Diagnostics: components -> Diagnostics_Service -> Nv_Storage for persistence.",
+      "control_flow_paths": "Control calls: Actuator_Command -> CAN_Comm (CLIENT-SERVER). Parameter writes: external -> Configuration_Manager -> Nv_Storage (async). Diagnostics queries: external -> Diagnostics_Service -> components (sync calls possible). Initialization control: Configuration_Manager -> Nv_Storage (read) -> publish parameters -> other components initialize."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用分层(采集-预处理-融合-执行)与服务化(参数/诊断/NV)架构，接口以SENDER-RECEIVER处理周期性信号，CLIENT-SERVER用于控制或需要确认的操作，PARAMETER接口用于集中配置。这样分离职责降低耦合，便于替换算法与扩展传感器数量。",
+      "tradeoff_analysis": "采用S-R接口降低延迟与耦合但牺牲点对点确认能力，关键的命令路径使用CLIENT-SERVER以获得发送确认。将Nv_Storage设计为异步提高响应性但增加复杂度与重试逻辑。融合算法放在中间层以集中处理多输入，但会增加计算负载，需要在ECU上评估时间片。",
+      "alternative_considerations": "可将滤波器做为可插拔多个实例以支持更多传感器或在Signal_Filter内部引入多线程并行化；亦可将部分诊断逻辑下放至CAN_Comm以减轻中央诊断负担；对于严格实时场景可将Fusion_Manager迁移为更靠近硬件的优先级更高的SWC或裸机实现。",
+      "risk_assessment": "中等风险：主要风险为端到端时延超出目标和NV写入失败影响配置一致性。缓解措施包括配置软超时与重试策略、在关键路径使用同步确认并对重载场景进行性能测试。参数变更采用版本与回滚机制以防止不一致。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7490,
+    "output_tokens": 10187,
+    "total_tokens": 17677,
+    "component_count": 8,
+    "interface_count": 6,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

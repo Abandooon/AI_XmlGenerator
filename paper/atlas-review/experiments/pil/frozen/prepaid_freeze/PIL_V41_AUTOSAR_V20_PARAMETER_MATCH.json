@@ -1,0 +1,42 @@
+{
+  "schema_version": "atlas.pil.autosar_v20_parameter_match.v1.1",
+  "status": "MATCHED_BEFORE_ANY_PIL_V41_PROVIDER_CALL",
+  "verified_on": "2026-09-04",
+  "pil_v41_provider_calls_before_match": 0,
+  "excluded_pil_v4_design_audit_calls": 136,
+  "excluded_pil_v4_schedule_sha256": "7bd9aeb6a44cff80b0eeda01c6300f67c6ce8d457302f639d09726824afd48b7",
+  "autosar_v20_source": {
+    "archive": "E:/Desktop/ATLAS论文修改版/AUTOSAR_V20正式实验材料/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+    "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+    "contract_entry": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/frozen_contract/FORMAL_EXPERIMENT_CONTRACT.json",
+    "contract_entry_sha256": "105094cc146c62a9b5655306bcfdbe90d975bff28b84c80d7c050d9eaf89fc99"
+  },
+  "matched_provider_parameters": {
+    "requested_model": "gpt-5.6-luna",
+    "observed_response_model": "gpt-5.6-luna-2026-07-09",
+    "api_mode": "chat.completions",
+    "stream_responses": false,
+    "structured_output_for_constrained_arms": "strict_json_schema_no_fallback",
+    "reasoning_effort": "low",
+    "temperature": 1.0,
+    "max_completion_tokens": 128000,
+    "request_timeout_seconds": 180.0,
+    "sdk_implicit_retries": 0,
+    "application_transport_max_attempts": 8,
+    "transport_retry_delays_seconds": [1.0, 5.0, 15.0, 30.0, 60.0, 60.0, 60.0],
+    "transport_route_policy": "direct_no_environment_proxy",
+    "replicate_seeds": {"1": 104729, "2": 130363, "3": 155921},
+    "seed_semantics": "provider_best_effort_determinism"
+  },
+  "treatment_isolation_correction": {
+    "status": "PASS",
+    "rule": "All four arms receive the identical complete authoritative JSON Schema in the prompt. P1 and P2 differ only in provider-side strict-schema enforcement.",
+    "excluded_predecessor": "PIL_V4_DESIGN_AUDIT_ABORT_2026-09-04.json"
+  },
+  "necessary_task_specific_differences": [
+    "PIL prompts and legal evidence differ from AUTOSAR requirements and schema context.",
+    "P0 and P1 use prompt-only JSON while seeing the same complete output contract as P2 and P3.",
+    "P3 permits one semantic repair call; AUTOSAR V20 generation had repair off and evaluated repair separately.",
+    "The studies remain separate estimands and are never pooled as a cross-domain average."
+  ]
+}

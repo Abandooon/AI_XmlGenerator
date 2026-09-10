@@ -1,0 +1,98 @@
+{
+  "schema_version": "atlas.pil.v41.preflight_report.v1",
+  "created_on_local_date": "2026-09-04",
+  "status": "READY_FOR_PAID_AUTHORIZATION",
+  "formal_run_enabled": false,
+  "external_calls_authorized": false,
+  "pil_v41_provider_calls": 0,
+  "pil_v41_paid_api_calls": 0,
+  "excluded_predecessor": {
+    "id": "PIL-V4-DESIGN-AUDIT-7bd9aeb6",
+    "status": "ABORTED_DESIGN_CONFOUND_DETECTED_DURING_EXECUTION",
+    "completed_units": 132,
+    "logical_model_calls": 136,
+    "admissible_to_primary_analysis": false,
+    "admissible_to_paper_tables": false,
+    "resume_permitted": false
+  },
+  "design": {
+    "cases": 60,
+    "arms": ["p0", "p1", "p2", "p3"],
+    "replicates": 3,
+    "formal_units": 720,
+    "dependence_clusters": 31,
+    "primary_comparisons": ["p1-p0", "p2-p1", "p3-p2", "p3-p0"]
+  },
+  "review_chain": {
+    "independent_compatible_agreement": 51,
+    "joint_consensus": 4,
+    "joint_reconfirmation_after_fact_or_label_edits": 5,
+    "total_gold_cases": 60,
+    "d1_status": "PASS"
+  },
+  "english_input_qualification": {
+    "case_rows": 60,
+    "knowledge_entries": 58,
+    "model_visible_cjk_characters": 0,
+    "rendered_distinct_primary_prompts": 240,
+    "rendered_prompt_sha256": "473228cf97f44a9cc2142062775ec4fb042ff2235fdab58ad7db67e29c71f01a",
+    "case_dataset_sha256": "0ebf7505bfb254764035bfad3c88081211487b26ea765b379a363706c0735fcd",
+    "knowledge_base_sha256": "7a826e847b128fc76cdabb53c8cddee17fdf8ec269a104e14205ec1ac457c33e",
+    "human_translation_parity_review": "PASS",
+    "translation_review_template_sha256": "373899070171f23dd258081d686af754741633721a3a96c061528b420ca23cda",
+    "translation_review_completed_sha256": "8f10fcb88a5ceb5e696284282687e04ca8820b5d3a0fce6624327e5e8778b5da",
+    "case_rows_accepted": 60,
+    "case_rows_revised_and_resolved": 6,
+    "evidence_rows_accepted": 58,
+    "evidence_rows_revised_and_resolved": 3,
+    "unresolved_rows": 0
+  },
+  "input_qualification": {
+    "consensus_gold_cases": 60,
+    "retrieval_required_evidence_misses": 0,
+    "inference_gold_leaks": 0,
+    "article_29_30_31_distinguished": true,
+    "instrument_qualified_evidence": true
+  },
+  "verification": {
+    "pil_v41_tests": {"passed": 27, "failed": 0},
+    "workbench_tests": {"passed": 38, "failed": 0},
+    "zero_network_code_audit": {
+      "status": "PASS",
+      "real_provider_requests": 0,
+      "raw_sha256": "de3a1edc49180152cd1be09ee49519523798f49d264ef1f5e570d7cfca59bc4b"
+    }
+  },
+  "autosar_v20_parameter_match": {
+    "status": "PASS",
+    "requested_model": "gpt-5.6-luna",
+    "required_response_model": "gpt-5.6-luna-2026-07-09",
+    "api_mode": "chat.completions",
+    "reasoning_effort": "low",
+    "temperature": 1.0,
+    "max_completion_tokens": 128000,
+    "request_timeout_seconds": 180.0,
+    "sdk_implicit_retries": 0,
+    "application_transport_max_attempts": 8,
+    "replicate_seeds": [104729, 130363, 155921]
+  },
+  "data_capture": {
+    "primary_prompt_text_and_sha256": true,
+    "repair_prompt_text_and_sha256_when_applicable": true,
+    "requested_and_response_model": true,
+    "provider_response_id_and_finish_reason": true,
+    "per_response_input_output_total_tokens": true,
+    "logical_and_transport_request_counts": true,
+    "append_only_result_ledger": true,
+    "append_only_infrastructure_attempt_journal": true,
+    "implicit_failed_unit_retry": false
+  },
+  "preflight": {
+    "path": "Private_International_Law/PIL_V41_PREFLIGHT_READINESS.json",
+    "raw_sha256": "36dedfef697d9a8edede1738a534f59b3f7e4d5ce6ca51b55cb8644ada7cc972",
+    "content_sha256": "24b0ba92c08dcbc70b71deac37c7c7e950c022d7ab17f1770eabed2d1ea1cdc7",
+    "provider_runtime_frozen": true,
+    "failed_checks": []
+  },
+  "remaining_gate": "Create a separate V4.1 paid-run authorization bound to the frozen zero-call preflight, verified runtime, model snapshot and API-base hash; only then may the formal schedule be created."
+}

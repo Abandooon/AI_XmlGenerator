@@ -1,0 +1,995 @@
+{
+  "session_id": "round1_20251023_193530",
+  "timestamp": "20251023_193530",
+  "user_requirements": "系统名称: BatteryMonitorBasic\n系统描述: 监控电池电压、电流、温度\n组件数量: 4\n组件类型: VoltageMonitor, CurrentMonitor, TempMonitor, DataAggregator\n关键需求:\n  - 3个独立监控组件分别采集电压、电流、温度\n  - DataAggregator汇总数据并计算SOC\n  - 通过CAN发送电池状态信息",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n            你的预选决策将直接指导Round2的Schema生成：\n            - 每个选择都会影响最终生成的XML结构\n            - preselect中的include列表决定了哪些子元素会被包含\n            - 联合类型的variant选择决定了数据访问的具体实现方式\n            \n            **重要提醒**：AUTOSAR组件必须遵守封装原则\n            - 组件的事件只能触发本组件的Runnable，不能跨组件触发\n            - 组件访问数据必须通过本组件的端口，不能直接引用其他组件的端口\n            - 跨组件通信通过RTE的端口连接机制实现，而非直接引用\n            - 因此在设计Runnable的数据访问时，应规划使用本组件的R-Port/P-Port进行通信\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: BatteryMonitorBasic\n系统描述: 监控电池电压、电流、温度\n组件数量: 4\n组件类型: VoltageMonitor, CurrentMonitor, TempMonitor, DataAggregator\n关键需求:\n  - 3个独立监控组件分别采集电压、电流、温度\n  - DataAggregator汇总数据并计算SOC\n  - 通过CAN发送电池状态信息\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"small\", \"estimated_components\": 3, \"recommended_mode\": \"unified_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "VoltageMonitor: 周期采样电池总压，执行去噪/限幅，发布电压数据。\nCurrentMonitor: 周期采样电池电流，执行去噪/方向处理，发布电流数据。\nTempMonitor: 周期采样电池温度，执行去噪/限幅，发布温度数据。\nDataAggregator: 订阅三路测量数据，时间对齐与一致性检查，计算SOC与状态标志，汇总为电池状态并对外发布供CAN发送。",
+      "data_flow_analysis": "接口与数据: \n- Voltage_Measurement_I(S/R, latest): 元素 voltage_mV (uint16/标定比例)。\n- Current_Measurement_I(S/R, latest): 元素 current_mA (int16/标定比例)。\n- Temp_Measurement_I(S/R, latest): 元素 temp_cDegC (int16/0.01℃)。\n- Battery_Status_I(S/R, latest): 元素 voltage_mV, current_mA, temp_cDegC, soc_perc(uint8,0..100), status_flags(uint8)。\n流向与时序: \nVoltageMonitor(P)->DataAggregator(R) 每10ms; CurrentMonitor(P)->DataAggregator(R) 每10ms; TempMonitor(P)->DataAggregator(R) 每10ms; DataAggregator(P)->External_CAN 每100ms。\n依赖与调用链: 监控组件仅发布数据，无跨组件调用；DataAggregator通过R-Port订阅三路数据并输出汇总数据；CAN发送由外部通信栈基于Battery_Status_I订阅完成。",
+      "timing_requirements": "采样周期: 电压/电流/温度=10ms; 聚合/计算SOC=100ms。\n端到端延迟: 采样至状态上报≤110ms；聚合抖动≤2ms；单笔RTE传输≤1ms(ECU内)。\n新鲜度: 三路测量数据max age≤50ms；Battery_Status_I更新周期=100ms，max age≤150ms。\n初始化: 各监控组件在INIT后立即发布一次默认值；聚合在INIT后发布安全默认状态。",
+      "scalability_considerations": "可按需扩展更多传感通道(如单体电压)、增加诊断/DTC及故障降级模式；S/R最新值语义支持不同速率解耦；可添加参数接口用于标定滤波与SOC模型；聚合可拆分为SOC计算与状态打包两个SWC以适配更高复杂度。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp.voltage_monitor",
+        "name": "VoltageMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池电压，滤波与限幅，发布电压数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Voltage_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取ADC/驱动层电压，去噪(如一阶IIR)+限幅，单位转换为mV并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 故障时置无效标志并输出上次有效或默认值。\n数据流程: 采样->滤波/限幅->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Voltage: 提供 Voltage_Measurement_I 的voltage_mV。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "VM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "VM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "VM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认电压值至P_Voltage.voltage_mV"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值，确保订阅方有可用数据"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "VM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Voltage.voltage_mV最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的电压写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Voltage_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.current_monitor",
+        "name": "CurrentMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池电流，滤波与方向处理，发布电流数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Current_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取电流传感器，去噪/零点校正，单位转换为mA并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 传感异常时标志并输出默认值或上次有效。\n数据流程: 采样->滤波/零偏校正->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Current: 提供 Current_Measurement_I 的current_mA。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "CM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "CM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认电流值至P_Current.current_mA"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "CM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Current.current_mA最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的电流写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Current_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.temp_monitor",
+        "name": "TempMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池温度，滤波与限幅，发布温度数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Temp_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取温度传感器，去噪/限幅，单位转换为0.01℃并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 故障时置无效并输出默认值或上次有效。\n数据流程: 采样->滤波/限幅->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Temp: 提供 Temp_Measurement_I 的temp_cDegC。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "TM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "TM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "TM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认温度值至P_Temp.temp_cDegC"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "TM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Temp.temp_cDegC最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的温度写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Temp_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.data_aggregator",
+        "name": "DataAggregator",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "汇总电压/电流/温度，执行数据一致性检查与SOC计算，发布电池状态供CAN发送。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3个R-Port: Voltage_Measurement_I, Current_Measurement_I, Temp_Measurement_I",
+          "output_ports": "1个P-Port: Battery_Status_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取三路最新测量值，时间一致性/新鲜度检查，异常置位status_flags; 计算SOC(库仑积分/简化估算)，打包电池状态并输出。\n触发: 周期100ms; INIT时输出安全默认状态。\n状态管理: INIT->RUN; 输入缺失或过期时降级与标志位设置。\n数据流程: 订阅R-Port(电压/电流/温度)->校验/计算SOC->通过P-Port发布Battery_Status。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R_Voltage: 订阅 Voltage_Measurement_I.voltage_mV; R_Current: 订阅 Current_Measurement_I.current_mA; R_Temp: 订阅 Temp_Measurement_I.temp_cDegC; P_BattStatus: 提供 Battery_Status_I 的汇总元素。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "DA_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "DA_100ms_Event",
+                "trigger": "每100ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DA_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出安全默认Battery_Status至P_BattStatus"
+                      }
+                    ],
+                    "notes": "INIT阶段输出默认状态"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "DA_100ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Voltage.voltage_mV最新值"
+                      }
+                    ],
+                    "notes": "接收电压"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Current.current_mA最新值"
+                      }
+                    ],
+                    "notes": "接收电流"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Temp.temp_cDegC最新值"
+                      }
+                    ],
+                    "notes": "接收温度"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_BattStatus的voltage_mV/current_mA/temp_cDegC/soc_perc/status_flags"
+                      }
+                    ],
+                    "notes": "发布汇总后的Battery_Status"
+                  }
+                ],
+                "notes": "100ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Voltage_Measurement_I",
+          "Current_Measurement_I",
+          "Temp_Measurement_I",
+          "Battery_Status_I"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if.voltage_meas",
+        "name": "Voltage_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值语义; 生产者(VoltageMonitor)每10ms写一次; RTE缓冲策略为最新值(队列深度1); 消费者(DataAggregator)按100ms周期读取; 超时/老化检测>50ms标记无效; 错误通过无效标志与默认值处理。",
+        "data_category": "measurement",
+        "connected_components": [
+          "VoltageMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 最长传输与调度延迟≤1ms; 数据最大老化≤50ms。",
+        "data_elements": [
+          "voltage_mV"
+        ],
+        "direct_paths": "VoltageMonitor.P_Voltage -> DataAggregator.R_Voltage"
+      },
+      {
+        "interface_id": "if.current_meas",
+        "name": "Current_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(CurrentMonitor)每10ms写; RTE保留最新值(深度1); 消费者(DataAggregator)每100ms读取; 老化>50ms置无效; 错误以默认值/标志处理。",
+        "data_category": "measurement",
+        "connected_components": [
+          "CurrentMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 端到端读到写≤11ms; 最大老化≤50ms。",
+        "data_elements": [
+          "current_mA"
+        ],
+        "direct_paths": "CurrentMonitor.P_Current -> DataAggregator.R_Current"
+      },
+      {
+        "interface_id": "if.temp_meas",
+        "name": "Temp_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(TempMonitor)每10ms写; RTE最新值(深度1); 消费者(DataAggregator)每100ms读取; 老化>50ms置无效。",
+        "data_category": "measurement",
+        "connected_components": [
+          "TempMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 最大老化≤50ms; 抖动≤2ms。",
+        "data_elements": [
+          "temp_cDegC"
+        ],
+        "direct_paths": "TempMonitor.P_Temp -> DataAggregator.R_Temp"
+      },
+      {
+        "interface_id": "if.batt_status",
+        "name": "Battery_Status_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(DataAggregator)每100ms写; RTE最新值(深度1); 外部COM/CAN栈订阅并按100ms打包发送; 错误时发送降级状态与标志位。",
+        "data_category": "status",
+        "connected_components": [
+          "DataAggregator",
+          "External_CAN"
+        ],
+        "performance_requirements": "更新周期100ms; ECU内传输≤1ms; CAN报文发送周期100ms; 端到端≤110ms。",
+        "data_elements": [
+          "voltage_mV",
+          "current_mA",
+          "temp_cDegC",
+          "soc_perc",
+          "status_flags"
+        ],
+        "direct_paths": "DataAggregator.P_BattStatus -> External_CAN/COM"
+      }
+    ],
+    "component_generation_order": [
+      "VoltageMonitor",
+      "CurrentMonitor",
+      "TempMonitor",
+      "DataAggregator"
+    ],
+    "connection_topology": {
+      "component_connections": "VoltageMonitor的P_Voltage连接到DataAggregator的R_Voltage；CurrentMonitor的P_Current连接到DataAggregator的R_Current；TempMonitor的P_Temp连接到DataAggregator的R_Temp；DataAggregator的P_BattStatus连接到外部COM/CAN订阅端。",
+      "data_flow_paths": "VoltageMonitor -> DataAggregator；CurrentMonitor -> DataAggregator；TempMonitor -> DataAggregator；DataAggregator -> External_CAN。",
+      "control_flow_paths": "各监控组件由各自TIMING-EVENT驱动；DataAggregator由100ms TIMING-EVENT驱动；无跨组件调用链，仅S/R数据耦合。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用S/R最新值接口解耦不同采样与计算节拍；聚合集中计算SOC并统一导出Battery_Status以简化与COM的对接；各监控组件职责单一、边界清晰，便于扩展与测试。",
+      "tradeoff_analysis": "S/R相比C/S减少阻塞与时序耦合，提升鲁棒性；放弃严格请求应答的确定性，改以新鲜度与降级策略保障功能；聚合集中化便于一致性控制但增加单点复杂度。",
+      "alternative_considerations": "可选方案: 将SOC计算下沉至CurrentMonitor或独立成SOCCalculator SWC；或将三路监控合并为一个多通道SWC以减少端口数。因可维护性与解耦需求，当前选择保持四组件划分。",
+      "risk_assessment": "风险: 采样抖动导致SOC误差、数据老化导致状态不一致、传感器故障传播。\n缓解: 输入新鲜度检查与降级标志；滤波与限幅；初始化默认值；定期监控输入时间戳/老化并按需保持上次有效值。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "VoltageMonitor: 周期采样电池总压，执行去噪/限幅，发布电压数据。\nCurrentMonitor: 周期采样电池电流，执行去噪/方向处理，发布电流数据。\nTempMonitor: 周期采样电池温度，执行去噪/限幅，发布温度数据。\nDataAggregator: 订阅三路测量数据，时间对齐与一致性检查，计算SOC与状态标志，汇总为电池状态并对外发布供CAN发送。",
+      "data_flow_analysis": "接口与数据: \n- Voltage_Measurement_I(S/R, latest): 元素 voltage_mV (uint16/标定比例)。\n- Current_Measurement_I(S/R, latest): 元素 current_mA (int16/标定比例)。\n- Temp_Measurement_I(S/R, latest): 元素 temp_cDegC (int16/0.01℃)。\n- Battery_Status_I(S/R, latest): 元素 voltage_mV, current_mA, temp_cDegC, soc_perc(uint8,0..100), status_flags(uint8)。\n流向与时序: \nVoltageMonitor(P)->DataAggregator(R) 每10ms; CurrentMonitor(P)->DataAggregator(R) 每10ms; TempMonitor(P)->DataAggregator(R) 每10ms; DataAggregator(P)->External_CAN 每100ms。\n依赖与调用链: 监控组件仅发布数据，无跨组件调用；DataAggregator通过R-Port订阅三路数据并输出汇总数据；CAN发送由外部通信栈基于Battery_Status_I订阅完成。",
+      "timing_requirements": "采样周期: 电压/电流/温度=10ms; 聚合/计算SOC=100ms。\n端到端延迟: 采样至状态上报≤110ms；聚合抖动≤2ms；单笔RTE传输≤1ms(ECU内)。\n新鲜度: 三路测量数据max age≤50ms；Battery_Status_I更新周期=100ms，max age≤150ms。\n初始化: 各监控组件在INIT后立即发布一次默认值；聚合在INIT后发布安全默认状态。",
+      "scalability_considerations": "可按需扩展更多传感通道(如单体电压)、增加诊断/DTC及故障降级模式；S/R最新值语义支持不同速率解耦；可添加参数接口用于标定滤波与SOC模型；聚合可拆分为SOC计算与状态打包两个SWC以适配更高复杂度。",
+      "complexity_assessment": "Medium"
+    },
+    "component_plan": [
+      {
+        "component_id": "comp.voltage_monitor",
+        "name": "VoltageMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池电压，滤波与限幅，发布电压数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Voltage_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取ADC/驱动层电压，去噪(如一阶IIR)+限幅，单位转换为mV并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 故障时置无效标志并输出上次有效或默认值。\n数据流程: 采样->滤波/限幅->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Voltage: 提供 Voltage_Measurement_I 的voltage_mV。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "VM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "VM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "VM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认电压值至P_Voltage.voltage_mV"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值，确保订阅方有可用数据"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "VM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Voltage.voltage_mV最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的电压写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Voltage_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.current_monitor",
+        "name": "CurrentMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池电流，滤波与方向处理，发布电流数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Current_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取电流传感器，去噪/零点校正，单位转换为mA并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 传感异常时标志并输出默认值或上次有效。\n数据流程: 采样->滤波/零偏校正->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Current: 提供 Current_Measurement_I 的current_mA。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "CM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "CM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "CM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认电流值至P_Current.current_mA"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "CM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Current.current_mA最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的电流写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Current_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.temp_monitor",
+        "name": "TempMonitor",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "采样电池温度，滤波与限幅，发布温度数据供聚合计算。",
+        "estimated_complexity": "Simple",
+        "port_estimates": {
+          "input_ports": "0",
+          "output_ports": "1个P-Port: Temp_Measurement_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取温度传感器，去噪/限幅，单位转换为0.01℃并输出。\n触发: 周期10ms; INIT时输出默认值。\n状态管理: INIT->RUN; 故障时置无效并输出默认值或上次有效。\n数据流程: 采样->滤波/限幅->标度换算->通过P-Port写出。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "P_Temp: 提供 Temp_Measurement_I 的temp_cDegC。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "TM_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "TM_10ms_Event",
+                "trigger": "每10ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "TM_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出默认温度值至P_Temp.temp_cDegC"
+                      }
+                    ],
+                    "notes": "初始化阶段发布默认值"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "TM_10ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_Temp.temp_cDegC最新值"
+                      }
+                    ],
+                    "notes": "周期性将滤波后的温度写出"
+                  }
+                ],
+                "notes": "10ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Temp_Measurement_I"
+        ]
+      },
+      {
+        "component_id": "comp.data_aggregator",
+        "name": "DataAggregator",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "汇总电压/电流/温度，执行数据一致性检查与SOC计算，发布电池状态供CAN发送。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "3个R-Port: Voltage_Measurement_I, Current_Measurement_I, Temp_Measurement_I",
+          "output_ports": "1个P-Port: Battery_Status_I"
+        },
+        "behavioral_characteristics": "主要逻辑: 读取三路最新测量值，时间一致性/新鲜度检查，异常置位status_flags; 计算SOC(库仑积分/简化估算)，打包电池状态并输出。\n触发: 周期100ms; INIT时输出安全默认状态。\n状态管理: INIT->RUN; 输入缺失或过期时降级与标志位设置。\n数据流程: 订阅R-Port(电压/电流/温度)->校验/计算SOC->通过P-Port发布Battery_Status。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "R-PORT-PROTOTYPE",
+              "P-PORT-PROTOTYPE"
+            ],
+            "details": "R_Voltage: 订阅 Voltage_Measurement_I.voltage_mV; R_Current: 订阅 Current_Measurement_I.current_mA; R_Temp: 订阅 Temp_Measurement_I.temp_cDegC; P_BattStatus: 提供 Battery_Status_I 的汇总元素。"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INIT-EVENT",
+                "name": "DA_Init_Event",
+                "trigger": "组件初始化后触发一次"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "DA_100ms_Event",
+                "trigger": "每100ms触发"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "DA_Init_R",
+                "elements": [
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "初始化输出安全默认Battery_Status至P_BattStatus"
+                      }
+                    ],
+                    "notes": "INIT阶段输出默认状态"
+                  }
+                ],
+                "notes": "INIT一次性执行"
+              },
+              {
+                "name": "DA_100ms_R",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Voltage.voltage_mV最新值"
+                      }
+                    ],
+                    "notes": "接收电压"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Current.current_mA最新值"
+                      }
+                    ],
+                    "notes": "接收电流"
+                  },
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "读取R_Temp.temp_cDegC最新值"
+                      }
+                    ],
+                    "notes": "接收温度"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "写P_BattStatus的voltage_mV/current_mA/temp_cDegC/soc_perc/status_flags"
+                      }
+                    ],
+                    "notes": "发布汇总后的Battery_Status"
+                  }
+                ],
+                "notes": "100ms周期执行"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Voltage_Measurement_I",
+          "Current_Measurement_I",
+          "Temp_Measurement_I",
+          "Battery_Status_I"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "if.voltage_meas",
+        "name": "Voltage_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值语义; 生产者(VoltageMonitor)每10ms写一次; RTE缓冲策略为最新值(队列深度1); 消费者(DataAggregator)按100ms周期读取; 超时/老化检测>50ms标记无效; 错误通过无效标志与默认值处理。",
+        "data_category": "measurement",
+        "connected_components": [
+          "VoltageMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 最长传输与调度延迟≤1ms; 数据最大老化≤50ms。",
+        "data_elements": [
+          "voltage_mV"
+        ],
+        "direct_paths": "VoltageMonitor.P_Voltage -> DataAggregator.R_Voltage"
+      },
+      {
+        "interface_id": "if.current_meas",
+        "name": "Current_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(CurrentMonitor)每10ms写; RTE保留最新值(深度1); 消费者(DataAggregator)每100ms读取; 老化>50ms置无效; 错误以默认值/标志处理。",
+        "data_category": "measurement",
+        "connected_components": [
+          "CurrentMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 端到端读到写≤11ms; 最大老化≤50ms。",
+        "data_elements": [
+          "current_mA"
+        ],
+        "direct_paths": "CurrentMonitor.P_Current -> DataAggregator.R_Current"
+      },
+      {
+        "interface_id": "if.temp_meas",
+        "name": "Temp_Measurement_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(TempMonitor)每10ms写; RTE最新值(深度1); 消费者(DataAggregator)每100ms读取; 老化>50ms置无效。",
+        "data_category": "measurement",
+        "connected_components": [
+          "TempMonitor",
+          "DataAggregator"
+        ],
+        "performance_requirements": "更新周期10ms; 最大老化≤50ms; 抖动≤2ms。",
+        "data_elements": [
+          "temp_cDegC"
+        ],
+        "direct_paths": "TempMonitor.P_Temp -> DataAggregator.R_Temp"
+      },
+      {
+        "interface_id": "if.batt_status",
+        "name": "Battery_Status_I",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "异步S/R最新值; 生产者(DataAggregator)每100ms写; RTE最新值(深度1); 外部COM/CAN栈订阅并按100ms打包发送; 错误时发送降级状态与标志位。",
+        "data_category": "status",
+        "connected_components": [
+          "DataAggregator",
+          "External_CAN"
+        ],
+        "performance_requirements": "更新周期100ms; ECU内传输≤1ms; CAN报文发送周期100ms; 端到端≤110ms。",
+        "data_elements": [
+          "voltage_mV",
+          "current_mA",
+          "temp_cDegC",
+          "soc_perc",
+          "status_flags"
+        ],
+        "direct_paths": "DataAggregator.P_BattStatus -> External_CAN/COM"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "VoltageMonitor的P_Voltage连接到DataAggregator的R_Voltage；CurrentMonitor的P_Current连接到DataAggregator的R_Current；TempMonitor的P_Temp连接到DataAggregator的R_Temp；DataAggregator的P_BattStatus连接到外部COM/CAN订阅端。",
+      "data_flow_paths": "VoltageMonitor -> DataAggregator；CurrentMonitor -> DataAggregator；TempMonitor -> DataAggregator；DataAggregator -> External_CAN。",
+      "control_flow_paths": "各监控组件由各自TIMING-EVENT驱动；DataAggregator由100ms TIMING-EVENT驱动；无跨组件调用链，仅S/R数据耦合。"
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用S/R最新值接口解耦不同采样与计算节拍；聚合集中计算SOC并统一导出Battery_Status以简化与COM的对接；各监控组件职责单一、边界清晰，便于扩展与测试。",
+      "tradeoff_analysis": "S/R相比C/S减少阻塞与时序耦合，提升鲁棒性；放弃严格请求应答的确定性，改以新鲜度与降级策略保障功能；聚合集中化便于一致性控制但增加单点复杂度。",
+      "alternative_considerations": "可选方案: 将SOC计算下沉至CurrentMonitor或独立成SOCCalculator SWC；或将三路监控合并为一个多通道SWC以减少端口数。因可维护性与解耦需求，当前选择保持四组件划分。",
+      "risk_assessment": "风险: 采样抖动导致SOC误差、数据老化导致状态不一致、传感器故障传播。\n缓解: 输入新鲜度检查与降级标志；滤波与限幅；初始化默认值；定期监控输入时间戳/老化并按需保持上次有效值。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7683,
+    "output_tokens": 9013,
+    "total_tokens": 16696,
+    "component_count": 4,
+    "interface_count": 4,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-2025-08-07",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}

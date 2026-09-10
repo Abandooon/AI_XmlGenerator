@@ -1,0 +1,1461 @@
+{
+  "session_id": "round1_20251022_224750",
+  "timestamp": "20251022_224750",
+  "user_requirements": "系统名称: InfotainmentSystem\n系统描述: 车载娱乐和导航系统\n组件数量: 6\n组件类型: MediaPlayer, NavigationEngine, BluetoothStack, VoiceRecognition, DisplayManager, CANInterface\n关键需求:\n  - MediaPlayer支持多格式音视频播放\n  - NavigationEngine实现在线导航\n  - BluetoothStack支持电话和音乐\n  - VoiceRecognition实现语音控制\n  - DisplayManager管理双屏显示\n  - 通过CAN获取车速、档位等信息",
+  "prompt": "\n        你是一个AUTOSAR软件组件架构设计专家，精通AUTOSAR标准和最佳实践，按后面的json schema字段严格匹配进行设计输出，注意不要将你的思考和其他冗余信息输出，请简洁且清晰的填充各字段，不要在功能描述中过于详细。\n        ==========================================\n        本系统采用两阶段生成架构：\n        - Round1（当前阶段）: 架构设计与元素预选 - 决定系统的整体结构和每个组件的内部元素\n        - Round2（后续阶段任务）: 基于Round1设计，逐组件生成详细的ARXML内容\n\n        Round1 架构设计师职责:\n        ------------------------------------------\n        你作为Round1架构设计师，需要完成以下关键决策并按后面的json schema字段严格匹配进行设计输出：\n\n        1. system_analysis（系统分析）:\n           - functional_decomposition: 明确每个组件的具体功能职责和分工边界\n           - data_flow_analysis: 详细描述组件间的数据流向、数据类型和传输时序\n           - 明确每个接口承载的数据类型和通信模式\n           - 分析组件间的依赖关系和调用链路\n        2. connection_topology\n           - 描述系统中组件和接口的连接关系和数据流向\n        3. architecture_rationale\n           - 记录和说明架构设计的决策依据和思考过程\n\n        4. component_plan（组件设计）:\n           - behavioral_characteristics: 详细描述该组件的运行时行为特征\n             * 主要处理逻辑和算法\n             * 触发条件和执行周期\n             * 状态管理和转换逻辑\n             * 数据处理流程（输入→处理→输出）\n           - element_design: 预先确定组件需要的所有内部元素\n             * 精确指定需要的端口类型（P-PORT/R-PORT等）\n             * 明确事件类型和触发机制\n             * 详细设计每个Runnable的元素结构和数据访问点\n\n        5. interface_plan（接口设计）:\n           - communication_pattern: 详细说明该接口的通信模式\n             * 同步/异步特性\n             * 数据传输频率和时延要求\n             * 缓冲策略（队列/最新值）\n             * 错误处理机制\n           - data_elements/operations: 明确接口包含的数据元素或操作\n           - 连接拓扑: 指明哪些组件通过此接口连接\n\n        6. element_design预选（关键）:\n           你的预选决策将直接指导Round2的Schema生成：\n           - 每个选择都会影响最终生成的XML结构\n           - preselect中的include列表决定了哪些子元素会被包含\n           - 联合类型的variant选择决定了数据访问的具体实现方式\n\n        架构设计质量标准:\n        ------------------------------------------\n        - 完整性: 所有组件和接口都有明确的功能定义和实现策略\n        - 一致性: 组件间的接口匹配，数据类型统一\n        - 可追溯性: 每个设计决策都能追溯到用户需求\n        - 可实现性: element_design提供足够的细节供Round2生成\n\n        注意：你的设计输出将作为Round2的输入，Round2会严格按照你的element_design生成对应的Schema和实例。\n        \n        ## 用户需求\n        系统名称: InfotainmentSystem\n系统描述: 车载娱乐和导航系统\n组件数量: 6\n组件类型: MediaPlayer, NavigationEngine, BluetoothStack, VoiceRecognition, DisplayManager, CANInterface\n关键需求:\n  - MediaPlayer支持多格式音视频播放\n  - NavigationEngine实现在线导航\n  - BluetoothStack支持电话和音乐\n  - VoiceRecognition实现语音控制\n  - DisplayManager管理双屏显示\n  - 通过CAN获取车速、档位等信息\n    \n        ## 设计上下文\n        设计背景: {\"optimization_info\": {\"estimated_scale\": \"large\", \"estimated_components\": 20, \"recommended_mode\": \"intelligent_batch\"}, \"document_context\": \"\"}\n\n        ---\n\n        ## 元素预选任务（由于round2需要根据round1输出来查询组件元素，所以在此阶段需要先预选组件的子元素，务必遵循schema结构化输出）\n        对每个 runnable 的 `elements`，按如下对象结构产出（数组）：\n        - `key`: 从配置列出的元素键中选择（如 VariableAccess / ServerCallPoints / ModeAccessPoint / ModeSwitchPoint / ParameterAccess ...）\n        - `wrapper`: 若该元素位于某 wrapper，请写明（如 DATA-SEND-POINTS / SERVER-CALL-POINTS）\n        - `preselect`: 针对该元素内部的“联合位置”执行 **确定性选择**：\n          - `of`: 联合名称（如 ACCESSED-VARIABLE / MODE-GROUP-IREF / SERVER-CALL-POINTS）\n          - `variant`: 选择的分支名（例如 AUTOSAR-VARIABLE-IREF / LOCAL-VARIABLE-REF / SYNCHRONOUS-SERVER-CALL-POINT 等）\n          - `include`: **从该 variant 的可选子键（selectable_children）中，精确挑选这次要生成 Schema 的子键**（不要罗列未选子键，注意子键子键的含义，注意子健互斥）\n          - `notes`: 可选说明\n\n        ### 预选清单（参考）\n        - VariableAccess:\n          - of=ACCESSED-VARIABLE → 3选1：AUTOSAR-VARIABLE-IREF | AUTOSAR-VARIABLE-IN-IMPL-DATATYPE | LOCAL-VARIABLE-REF，\n          - 注意AUTOSAR-VARIABLE-IREF和AUTOSAR-VARIABLE-IN-IMPL-DATATYPE中TARGET-DATA-PROTOTYPE-REF为必选项，其他三个子键为互斥选项\n            > 例如：`AUTOSAR-VARIABLE-IREF` 只选择 `[\"PORT-PROTOTYPE-REF\",\"TARGET-DATA-PROTOTYPE-REF\"]` 两个子键，此为常见组合；不要输出与PORT-PROTOTYPE-REF互斥的 `CONTEXT-*`、`ROOT-*` 等（**从schema中精确挑选要生成的**）。\n        - ModeAccessPoint / ModeSwitchPoint:\n          - of=MODE-GROUP-IREF → 2选1：R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF | P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\n        - ParameterAccess:\n          - of=ACCESSED-PARAMETER → 2选1：AUTOSAR-PARAMETER-IREF | LOCAL-PARAMETER-REF\n        - ServerCallPoints:\n          - of=SERVER-CALL-POINTS → 可多选：SYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT/EXCLUSIVE-AREA 供选择）\n                                     ASYNCHRONOUS-SERVER-CALL-POINT（含 OPERATION-IREF/TIMEOUT 供选择）\n                                     \n        element_design 输出示例（必须严格遵循）:\n        ------------------------------------------\n        ```json\n        {\n            \"runnables\": [\n              {\n                \"name\": \"Processing_Runnable\",\n                \"elements\": [\n                  {\n                    \"key\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"wrapper\": \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"从输入端口读取数据\"\n                      }\n                    ]\n                  },\n                  {\n                    \"key\": \"DATA-SEND-POINTS\",\n                    \"wrapper\": \"DATA-SEND-POINTS\",\n                    \"preselect\": [\n                      {\n                        \"of\": \"ACCESSED-VARIABLE\",\n                        \"variant\": \"AUTOSAR-VARIABLE-IREF\",\n                        \"include\": [\"PORT-PROTOTYPE-REF\", \"TARGET-DATA-PROTOTYPE-REF\"],\n                        \"notes\": \"向输出端口发送处理后的数据\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n        ## 输出 JSON Schema（**必须严格匹配此结构与键名**）\n        【输出硬规则 / HARD RULES】\n            - 仅输出 1 个 JSON 对象，严格匹配稍后给出的 JSON Schema。\n            - 不要输出任何解释、注释、自然语言、或 ```markdown 栅栏```。\n            - JSON 字符串内不要出现裸换行，请使用 \\n。\n            - 不要出现尾随逗号。\n            - name字段的连接符用'_'。\n        {\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"system_analysis\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"functional_decomposition\": {\n          \"type\": \"string\",\n          \"description\": \"功能分解和职责划分\"\n        },\n        \"data_flow_analysis\": {\n          \"type\": \"string\",\n          \"description\": \"数据流分析\"\n        },\n        \"timing_requirements\": {\n          \"type\": \"string\",\n          \"description\": \"时序要求分析\"\n        },\n        \"scalability_considerations\": {\n          \"type\": \"string\",\n          \"description\": \"可扩展性考虑\"\n        },\n        \"complexity_assessment\": {\n          \"type\": \"string\",\n          \"description\": \"复杂度评估\",\n          \"enum\": [\n            \"Simple\",\n            \"Medium\",\n            \"Complex\"\n          ]\n        }\n      },\n      \"required\": [\n        \"functional_decomposition\",\n        \"data_flow_analysis\",\n        \"timing_requirements\",\n        \"scalability_considerations\",\n        \"complexity_assessment\"\n      ]\n    },\n    \"component_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"component_id\": {\n            \"type\": \"string\",\n            \"description\": \"组件唯一标识符\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"组件名称\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"APPLICATION-SW-COMPONENT-TYPE\",\n              \"COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE\",\n              \"ECU-ABSTRACTION-SW-COMPONENT-TYPE\",\n              \"NV-BLOCK-SW-COMPONENT-TYPE\",\n              \"SENSOR-ACTUATOR-SW-COMPONENT-TYPE\",\n              \"SERVICE-PROXY-SW-COMPONENT-TYPE\",\n              \"SERVICE-SW-COMPONENT-TYPE\",\n              \"PARAMETER-SW-COMPONENT-TYPE\"\n            ],\n            \"description\": \"AUTOSAR组件类型\"\n          },\n          \"purpose\": {\n            \"type\": \"string\",\n            \"description\": \"功能目的和职责\"\n          },\n          \"estimated_complexity\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Simple\",\n              \"Medium\",\n              \"Complex\"\n            ],\n            \"description\": \"复杂度评估\"\n          },\n          \"port_estimates\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"input_ports\": {\n                \"type\": \"string\"\n              },\n              \"output_ports\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"input_ports\",\n              \"output_ports\"\n            ]\n          },\n          \"behavioral_characteristics\": {\n            \"type\": \"string\",\n            \"description\": \"行为特征描述\"\n          },\n          \"element_design\": {\n            \"type\": \"object\",\n            \"description\": \"LLM 决定需要哪些具体元素（含联合分支与子键的确定性选择）\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"ports\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"string\",\n                      \"enum\": [\n                        \"P-PORT-PROTOTYPE\",\n                        \"PR-PORT-PROTOTYPE\",\n                        \"R-PORT-PROTOTYPE\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组；needed=true 时给出需要的端口类型集合\"\n                  },\n                  \"details\": {\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"types\",\n                  \"details\"\n                ]\n              },\n              \"internal_behaviors\": {\n                \"type\": \"object\",\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"needed\": {\n                    \"type\": \"boolean\"\n                  },\n                  \"events\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"type\": {\n                          \"type\": \"string\",\n                          \"enum\": [\n                            \"ASYNCHRONOUS-SERVER-CALL-RETURNS-EVENT\",\n                            \"BACKGROUND-EVENT\",\n                            \"DATA-RECEIVE-ERROR-EVENT\",\n                            \"DATA-RECEIVED-EVENT\",\n                            \"DATA-SEND-COMPLETED-EVENT\",\n                            \"DATA-WRITE-COMPLETED-EVENT\",\n                            \"EXTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"INIT-EVENT\",\n                            \"INTERNAL-TRIGGER-OCCURRED-EVENT\",\n                            \"MODE-SWITCHED-ACK-EVENT\",\n                            \"OPERATION-INVOKED-EVENT\",\n                            \"SWC-MODE-MANAGER-ERROR-EVENT\",\n                            \"SWC-MODE-SWITCH-EVENT\",\n                            \"TIMING-EVENT\",\n                            \"TRANSFORMER-HARD-ERROR-EVENT\"\n                          ]\n                        },\n                        \"name\": {\n                          \"type\": \"string\"\n                        },\n                        \"trigger\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"type\",\n                        \"name\",\n                        \"trigger\"\n                      ]\n                    },\n                    \"description\": \"当 needed=false 时应为空数组\"\n                  },\n                  \"runnables\": {\n                    \"type\": \"array\",\n                    \"minItems\": 0,\n                    \"items\": {\n                      \"type\": \"object\",\n                      \"additionalProperties\": false,\n                      \"properties\": {\n                        \"name\": {\n                          \"type\": \"string\",\n                          \"description\": \"Runnable 实体名\"\n                        },\n                        \"elements\": {\n                          \"type\": \"array\",\n                          \"minItems\": 1,\n                          \"items\": {\n                            \"type\": \"object\",\n                            \"additionalProperties\": false,\n                            \"properties\": {\n                              \"key\": {\n                                \"type\": \"string\",\n                                \"enum\": [\n                                  \"ACTIVATION-REASONS\",\n                                  \"ARGUMENTS\",\n                                  \"ASYNCHRONOUS-SERVER-CALL-RESULT-POINTS\",\n                                  \"CAN-BE-INVOKED-CONCURRENTLY\",\n                                  \"CAN-ENTER-EXCLUSIVE-AREA-REFS\",\n                                  \"DATA-READ-ACCESSS\",\n                                  \"DATA-RECEIVE-POINT-BY-ARGUMENTS\",\n                                  \"DATA-RECEIVE-POINT-BY-VALUES\",\n                                  \"DATA-SEND-POINTS\",\n                                  \"DATA-WRITE-ACCESSS\",\n                                  \"EXCLUSIVE-AREA-NESTING-ORDER-REFS\",\n                                  \"EXTERNAL-TRIGGERING-POINTS\",\n                                  \"INTERNAL-TRIGGERING-POINTS\",\n                                  \"MINIMUM-START-INTERVAL\",\n                                  \"MODE-ACCESS-POINTS\",\n                                  \"MODE-SWITCH-POINTS\",\n                                  \"PARAMETER-ACCESSS\",\n                                  \"READ-LOCAL-VARIABLES\",\n                                  \"REENTRANCY-LEVEL\",\n                                  \"RUNS-INSIDE-EXCLUSIVE-AREA-REFS\",\n                                  \"SERVER-CALL-POINTS\",\n                                  \"SW-ADDR-METHOD-REF\",\n                                  \"SYMBOL\",\n                                  \"VARIATION-POINT\",\n                                  \"WAIT-POINTS\",\n                                  \"WRITTEN-LOCAL-VARIABLES\"\n                                ]\n                              },\n                              \"wrapper\": {\n                                \"type\": \"string\"\n                              },\n                              \"preselect\": {\n                                \"type\": \"array\",\n                                \"minItems\": 1,\n                                \"items\": {\n                                  \"type\": \"object\",\n                                  \"additionalProperties\": false,\n                                  \"properties\": {\n                                    \"of\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"variant\": {\n                                      \"type\": \"string\"\n                                    },\n                                    \"include\": {\n                                      \"type\": \"array\",\n                                      \"items\": {\n                                        \"type\": \"string\"\n                                      },\n                                      \"minItems\": 1,\n                                      \"description\": \"从配置的 selectable_children 中精确选择本次要生成 Schema 的子键（确定性选择）\",\n                                      \"x-allowed-children\": {\n                                        \"AUTOSAR-VARIABLE-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"AUTOSAR-VARIABLE-IN-IMPL-DATATYPE\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REFS\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-VARIABLE-REF\": [],\n                                        \"R-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"P-MODE-GROUP-IN-ATOMIC-SWC-INSTANCE-REF\": [],\n                                        \"AUTOSAR-PARAMETER-IREF\": [\n                                          \"TARGET-DATA-PROTOTYPE-REF\",\n                                          \"PORT-PROTOTYPE-REF\",\n                                          \"CONTEXT-DATA-PROTOTYPE-REF\",\n                                          \"ROOT-VARIABLE-DATA-PROTOTYPE-REF\"\n                                        ],\n                                        \"LOCAL-PARAMETER-REF\": [],\n                                        \"SYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\",\n                                          \"CALLED-FROM-WITHIN-EXCLUSIVE-AREA-REF\"\n                                        ],\n                                        \"ASYNCHRONOUS-SERVER-CALL-POINT\": [\n                                          \"OPERATION-IREF\",\n                                          \"TIMEOUT\"\n                                        ]\n                                      }\n                                    },\n                                    \"notes\": {\n                                      \"type\": \"string\"\n                                    }\n                                  },\n                                  \"required\": [\n                                    \"of\",\n                                    \"variant\",\n                                    \"include\",\n                                    \"notes\"\n                                  ]\n                                },\n                                \"description\": \"在该元素内部的联合位置进行分支与子键的确定性选择\"\n                              },\n                              \"notes\": {\n                                \"type\": \"string\"\n                              }\n                            },\n                            \"required\": [\n                              \"key\",\n                              \"wrapper\",\n                              \"preselect\",\n                              \"notes\"\n                            ]\n                          },\n                          \"description\": \"该 Runnable 需要的深层元素（结构化 & 确定性 include）\"\n                        },\n                        \"notes\": {\n                          \"type\": \"string\"\n                        }\n                      },\n                      \"required\": [\n                        \"name\",\n                        \"elements\",\n                        \"notes\"\n                      ]\n                    },\n                    \"description\": \"每个 runnable 选择所需的深层元素，并给出联合与子键的确定性选择\"\n                  }\n                },\n                \"required\": [\n                  \"needed\",\n                  \"events\",\n                  \"runnables\"\n                ]\n              }\n            },\n            \"required\": [\n              \"ports\",\n              \"internal_behaviors\"\n            ]\n          },\n          \"direct_references\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"required\": [\n          \"component_id\",\n          \"name\",\n          \"type\",\n          \"purpose\",\n          \"estimated_complexity\",\n          \"port_estimates\",\n          \"behavioral_characteristics\",\n          \"element_design\",\n          \"direct_references\"\n        ]\n      }\n    },\n    \"interface_plan\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"interface_id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"CLIENT-SERVER-INTERFACE\",\n              \"NV-DATA-INTERFACE\",\n              \"PARAMETER-INTERFACE\",\n              \"SENDER-RECEIVER-INTERFACE\",\n              \"MODE-SWITCH-INTERFACE\",\n              \"TRIGGER-INTERFACE\"\n            ]\n          },\n          \"communication_pattern\": {\n            \"type\": \"string\"\n          },\n          \"data_category\": {\n            \"type\": \"string\"\n          },\n          \"connected_components\": {\n            \"type\": \"array\",\n            \"minItems\": 1,\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"performance_requirements\": {\n            \"type\": \"string\"\n          },\n          \"data_elements\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"direct_paths\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"interface_id\",\n          \"name\",\n          \"type\",\n          \"communication_pattern\",\n          \"data_category\",\n          \"connected_components\",\n          \"performance_requirements\",\n          \"data_elements\",\n          \"direct_paths\"\n        ]\n      }\n    },\n    \"component_generation_order\": {\n      \"type\": \"array\",\n      \"description\": \"组件的生成顺序列表。根据依赖关系，被依赖的组件应排在前面。数组中的名称必须与 component_plan 中的组件 'name' 完全匹配。\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"connection_topology\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"component_connections\": {\n          \"type\": \"string\"\n        },\n        \"data_flow_paths\": {\n          \"type\": \"string\"\n        },\n        \"control_flow_paths\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"component_connections\",\n        \"data_flow_paths\",\n        \"control_flow_paths\"\n      ]\n    },\n    \"architecture_rationale\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"design_decisions\": {\n          \"type\": \"string\"\n        },\n        \"tradeoff_analysis\": {\n          \"type\": \"string\"\n        },\n        \"alternative_considerations\": {\n          \"type\": \"string\"\n        },\n        \"risk_assessment\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"design_decisions\",\n        \"tradeoff_analysis\",\n        \"alternative_considerations\",\n        \"risk_assessment\"\n      ]\n    }\n  },\n  \"required\": [\n    \"system_analysis\",\n    \"component_plan\",\n    \"interface_plan\",\n    \"component_generation_order\",\n    \"connection_topology\",\n    \"architecture_rationale\"\n  ]\n}\n        ",
+  "response_data": {
+    "system_analysis": {
+      "functional_decomposition": "划分为六个自治 AUTOSAR 应用组件与一个 ECU 抽象层：CAN_Interface 负责车速/档位等车辆总线数据采集并做本地时间戳；Bluetooth_Stack 负责蓝牙连接、音频流与电话会话管理；Voice_Recognition 负责麦克风音频预处理与语音指令识别；Navigation_Engine 负责在线路径计算、地图/位置融合与导航状态管理；Media_Player 负责多格式解码、播放控制与音视频同步；Display_Manager 负责双屏内容合成、UI 状态管理与渲染输出。每个组件职责边界清晰：CAN_Interface 提供基础车况数据；Bluetooth_Stack 提供外部音源/电话输入；Voice_Recognition 提供控制事件；Navigation_Engine 与 Media_Player 提供内容与控制给 Display_Manager。",
+      "data_flow_analysis": "主要数据流：1) CAN_Interface -> Navigation_Engine / Media_Player (sender-receiver): 车速(float, 10Hz), 车门/档位状态(enum, event-driven)；2) Bluetooth_Stack <-> Media_Player (sender-receiver + client-server): 音频流(chunks, 20ms frames, RTP-like) 与控制命令(command requests)；3) Voice_Recognition -> Navigation_Engine / Media_Player / Display_Manager (sender-receiver): 命令事件(semantic JSON, event)；4) Navigation_Engine -> Display_Manager (sender-receiver & client-server): 导航渲染数据(map tiles refs, route guidance, turn-by-turn events, 1Hz updates and immediate events)；5) Media_Player -> Display_Manager (sender-receiver): 媒体元数据、播放状态(更新 5Hz)；6) Display_Manager <- user inputs -> Media_Player/Navigation_Engine (client-server requests for control). 数据传输时序：周期性流（音频 50fps 20ms 帧），车速 10Hz，UI 更新 5-10Hz，命令事件即时(≤100ms)。每个接口明确承载的数据类型（标量/结构/二进制流）并采用合适缓冲策略（音频帧队列，状态取最新值）。组件间依赖：Media_Player 依赖 Bluetooth_Stack（流）与 CAN_Interface（车辆信息）；Navigation_Engine 依赖 CAN_Interface；Display_Manager 依赖 Navigation_Engine 与 Media_Player；Voice_Recognition 输入可来自 Bluetooth_Stack 或本地麦克风。",
+      "timing_requirements": "音频流端到端延迟目标 <100ms；音频帧处理周期 20ms；媒体播放控制响应 <200ms；导航位置/车速融合延迟 <200ms，导航提示提前 1s；UI 更新 100-200ms；CAN 关键信号 100ms (10Hz)。实时性分级：硬实时（音频帧处理链）、软实时（UI、导航提示）、事件驱动（语音命令）。",
+      "scalability_considerations": "设计支持模块化扩展：新增媒体解码器、第三方在线服务或额外传感器应通过新增接口或实现现有接口即可集成。使用 Sender-Receiver 与 Client-Server 分离数据与控制，便于水平扩展（多个音源、多个显示面板）。组件内部使用抽象端口与明确数据原语，便于拆分为多个子组件或分布式部署（未来增加网络服务组件）。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "CMP_CAN_Interface",
+        "name": "CAN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "采集车速、档位及其他车辆总线信号并以 Sender-Receiver 接口发布给上层应用；提供时间戳与基本滤波。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CAN driver binding)",
+          "output_ports": "3 (VehicleStatus, WheelSpeed, GearState)"
+        },
+        "behavioral_characteristics": "从底层驱动接收 CAN frames，解码为信号，时间戳并按 10Hz 发布；对突变信号做去抖/滤波；在总线错误或丢帧时发布错误事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供 Sender-Receiver 输出端口 (VehicleStatus, WheelSpeed, GearState)；提供 R-PORT 用于诊断/配置客户端调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Can_Poll_Timer",
+                "trigger": "10ms periodic to aggregate and publish signals at 10Hz"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Can_Error_Detected",
+                "trigger": "CAN driver error callback"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Can_ReadAndPublish",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收底层 CAN 解码后的信号并写入输出端口"
+                      }
+                    ],
+                    "notes": "读取并解析 CAN driver 输出"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向上层发布标准化车辆状态信号"
+                      }
+                    ],
+                    "notes": "发布 VehicleStatus/Speed/Gear"
+                  }
+                ],
+                "notes": "采集周期性 runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Navigation_Engine",
+          "Media_Player"
+        ]
+      },
+      {
+        "component_id": "CMP_Bluetooth_Stack",
+        "name": "Bluetooth_Stack",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理蓝牙连接、音频流输入输出和电话会话，为 Media_Player 与 Voice_Recognition 提供音频源与控制通道。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (Control_Commands, Mic_Audio_In)",
+          "output_ports": "2 (Audio_Stream_Out, Phone_Events)"
+        },
+        "behavioral_characteristics": "维护蓝牙会话，负责流媒体接入（接收外部音频帧并以 20ms 帧发布），处理电话事件并转换为高层事件；在连接/断开时发出状态事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入端口用于接收控制命令和麦克风数据，输出端口用于提供解码或透传音频帧及电话事件"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Bt_Connection_Event",
+                "trigger": "蓝牙连接状态变化回调"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Audio_Frame_Timer",
+                "trigger": "20ms periodic to push audio frames"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Bt_Audio_Receiver",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收来自蓝牙适配器的音频帧"
+                      }
+                    ],
+                    "notes": "接收并缓冲原始音频帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 Media_Player 发布音频帧"
+                      }
+                    ],
+                    "notes": "推送音频帧给 Media_Player"
+                  }
+                ],
+                "notes": "音频流接收与发布"
+              },
+              {
+                "name": "Bt_Control_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用配置/配对操作或同步控制"
+                      }
+                    ],
+                    "notes": "用于控制与配置交互"
+                  }
+                ],
+                "notes": "管理配对、控制命令和电话会话"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Media_Player",
+          "Voice_Recognition"
+        ]
+      },
+      {
+        "component_id": "CMP_Media_Player",
+        "name": "Media_Player",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "解码与播放多格式音视频，管理播放队列、同步音视频并提供播放控制接口给 UI 与 VoiceRecognition。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (Audio_Stream_In, Control_Commands, Vehicle_State)",
+          "output_ports": "3 (Audio_Out, Video_Frames, Playback_Status)"
+        },
+        "behavioral_characteristics": "接收来自 Bluetooth_Stack 的音频帧或本地文件流，解码并送至音频硬件与 Display_Manager；触发由 Voice_Recognition 或 UI 的播放控制命令可中断/调整播放；实时保证音频帧连续性（Jitter buffer），音视频同步基于 PTS 和车速影响（e.g., speed-dependent ducking）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收端口包含流输入与控制命令，输出端口提供已解码音频与视频帧，使用队列缓冲音频帧"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Playback_Timer",
+                "trigger": "20ms periodic to process audio frame and maintain playback"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Stream_Frame_Arrived",
+                "trigger": "音频帧到达发布端口"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Playback_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从 Bluetooth_Stack 或本地源接收音频帧"
+                      }
+                    ],
+                    "notes": "读取输入音频帧与控制参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用解码库/硬件加速器操作"
+                      }
+                    ],
+                    "notes": "调用解码服务"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布解码后音频帧与视频帧到 Display_Manager / Audio_Hw"
+                      }
+                    ],
+                    "notes": "向下游发布解码数据"
+                  }
+                ],
+                "notes": "主要播放处理 runnable，保证音频解码与输出连续性"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Bluetooth_Stack",
+          "Display_Manager",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "CMP_Navigation_Engine",
+        "name": "Navigation_Engine",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现在线导航、路径规划、位置融合与实时路线指示并向 Display_Manager 提供渲染数据与提示事件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (GPS_Position, Vehicle_Status, Map_Updates)",
+          "output_ports": "2 (Route_Guidance, Map_Render_Data)"
+        },
+        "behavioral_characteristics": "定期融合 GPS 与 CAN 车速数据以更新位置；在导航状态变化（重新规划、到达）时发送事件；支持在线地图切片拉取（异步 client-server 操作），并缓存结果供 Display_Manager 使用。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收 GPS/车速与地图更新，输出导航指示与渲染数据；提供 client-server 调用以访问在线服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Nav_Update_Timer",
+                "trigger": "500ms periodic for position fusion and guidance update"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Map_Tile_Response",
+                "trigger": "在线服务返回地图切片"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Position_Fusion",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收 GPS 与 CAN 车速进行融合"
+                      }
+                    ],
+                    "notes": "位置融合输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布融合后位置与导航事件"
+                      }
+                    ],
+                    "notes": "发布位置与 guidance"
+                  }
+                ],
+                "notes": "位置融合与导航计算 runnable"
+              },
+              {
+                "name": "Map_Service_Client",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步请求在线地图切片"
+                      }
+                    ],
+                    "notes": "异步在线服务调用"
+                  }
+                ],
+                "notes": "在线地图拉取与缓存逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Display_Manager",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "CMP_Voice_Recognition",
+        "name": "Voice_Recognition",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "处理麦克风音频，执行语音活动检测、识别及语义解析，向系统发布控制命令事件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (Mic_Audio, Bt_Mic_In)",
+          "output_ports": "2 (Voice_Commands, Recognition_Status)"
+        },
+        "behavioral_characteristics": "音频帧预处理（20ms），VAD 触发识别，识别后输出语义命令事件；提供可配置模型加载（client-server）与在线识别退化策略；对连续命令做去重与节流。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收麦克风或蓝牙麦克风的音频帧，输出识别结果事件与状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Audio_Frame_Arrived",
+                "trigger": "20ms frame arrival"
+              },
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Model_Load_Invoked",
+                "trigger": "配置或启动时触发模型加载"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "VAD_and_Recognition",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收音频帧进行 VAD 与预处理"
+                      }
+                    ],
+                    "notes": "音频输入处理"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布识别后的命令事件"
+                      }
+                    ],
+                    "notes": "发布识别结果"
+                  }
+                ],
+                "notes": "主要识别 runnable"
+              },
+              {
+                "name": "Model_Management",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步加载/切换本地模型"
+                      }
+                    ],
+                    "notes": "模型加载与切换"
+                  }
+                ],
+                "notes": "管理识别模型及在线回退"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Media_Player",
+          "Navigation_Engine",
+          "Display_Manager",
+          "Bluetooth_Stack"
+        ]
+      },
+      {
+        "component_id": "CMP_Display_Manager",
+        "name": "Display_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理双屏渲染与 UI 状态，合成来自 Navigation_Engine、Media_Player 与系统状态的数据并驱动显示硬件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (Nav_Render_Data, Media_Frames, User_Inputs, System_Status)",
+          "output_ports": "1 (Display_Output)"
+        },
+        "behavioral_characteristics": "接收多个数据源并进行优先级合成（导航提示 > 电话 > 媒体）；支持双屏不同内容分发与镜像；对渲染数据进行节流（UI 100-200ms）与立即事件（导航提示即时）；提供 client-server 接口供 UI 请求详情或触发操作。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收导航与媒体帧并输出到显示驱动；提供请求响应端口供 UI 组件查询数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "UI_Update_Timer",
+                "trigger": "100ms periodic for UI refresh"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Display_Input_Event",
+                "trigger": "用户触控或外部命令"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Render_Compositor",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收来自 Navigation_Engine 与 Media_Player 的渲染数据"
+                      }
+                    ],
+                    "notes": "收集并合成渲染内容"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布合成后的帧到显示硬件"
+                      }
+                    ],
+                    "notes": "输出到显示驱动"
+                  }
+                ],
+                "notes": "渲染合成 runnable"
+              },
+              {
+                "name": "UI_Request_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "处理 UI 的同步查询请求"
+                      }
+                    ],
+                    "notes": "响应 UI 查询"
+                  }
+                ],
+                "notes": "处理 UI 请求与控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Navigation_Engine",
+          "Media_Player",
+          "Voice_Recognition"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Data",
+        "name": "CAN_Data_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性 Sender-Receiver，车速 10Hz，车况事件 event-driven；采用最新值语义对状态类信号，队列对关键序列信号。",
+        "data_category": "Vehicle_Status (float, enum), Event",
+        "connected_components": [
+          "CAN_Interface",
+          "Navigation_Engine",
+          "Media_Player"
+        ],
+        "performance_requirements": "端到端延迟 ≤100ms，丢帧时使用最近值；网络错误时上报错误事件",
+        "data_elements": [
+          "WheelSpeed",
+          "VehicleSpeed",
+          "GearState",
+          "DoorStatus"
+        ],
+        "direct_paths": "CAN_Interface -> Navigation_Engine (WheelSpeed, VehicleSpeed); CAN_Interface -> Media_Player (VehicleSpeed)"
+      },
+      {
+        "interface_id": "IF_Bluetooth_Audio",
+        "name": "Bluetooth_Audio_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "音频流帧 20ms 时基，使用帧队列缓冲，适配抖动；控制命令通过同接口的 control channel 同步/异步混合。",
+        "data_category": "Audio_Stream (binary frames), Control_Commands",
+        "connected_components": [
+          "Bluetooth_Stack",
+          "Media_Player",
+          "Voice_Recognition"
+        ],
+        "performance_requirements": "音频帧端到端抖动处理保证播放连续性，延迟目标 <100ms；控制命令响应 <200ms。",
+        "data_elements": [
+          "AudioFrame",
+          "StreamMetadata",
+          "CallEvents",
+          "ControlCommands"
+        ],
+        "direct_paths": "Bluetooth_Stack -> Media_Player (AudioFrame); Bluetooth_Stack -> Voice_Recognition (Mic frames)"
+      },
+      {
+        "interface_id": "IF_Media_Control",
+        "name": "Media_Control_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server 用于 UI/Voice 发起播放控制和查询，支持同步请求/响应（短超时）和异步事件通知。",
+        "data_category": "Control (play/pause/seek), Status (position, state)",
+        "connected_components": [
+          "Display_Manager",
+          "Media_Player",
+          "Voice_Recognition"
+        ],
+        "performance_requirements": "控制响应 <200ms；状态查询 <300ms；失败重试策略 1 次。",
+        "data_elements": [
+          "PlayCommand",
+          "PauseCommand",
+          "SeekPosition",
+          "PlaybackStatus"
+        ],
+        "direct_paths": "Display_Manager -> Media_Player (control requests); Voice_Recognition -> Media_Player (voice commands)"
+      },
+      {
+        "interface_id": "IF_Navigation_Data",
+        "name": "Navigation_Data_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "导航渲染与提示以 Sender-Receiver 发布，周期性 1Hz 与事件驱动的即时提示并行。Map tile 请求为异步 client-server。",
+        "data_category": "MapTiles, RouteGuidance, TurnByTurnEvents",
+        "connected_components": [
+          "Navigation_Engine",
+          "Display_Manager"
+        ],
+        "performance_requirements": "导航提示事件延迟 <200ms；地图切片异步拉取超时策略 2s，缓存优先。",
+        "data_elements": [
+          "RouteGeometry",
+          "NextManeuver",
+          "MapTileRef"
+        ],
+        "direct_paths": "Navigation_Engine -> Display_Manager (RouteGuidance, MapTileRefs)"
+      },
+      {
+        "interface_id": "IF_Voice_Commands",
+        "name": "Voice_Commands_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件驱动（即时）发布语义命令，采用最新值语义并支持命令去重与节流。",
+        "data_category": "Command (JSON semantic)",
+        "connected_components": [
+          "Voice_Recognition",
+          "Media_Player",
+          "Navigation_Engine",
+          "Display_Manager"
+        ],
+        "performance_requirements": "命令传递延迟 <150ms；重复命令过滤 300ms 窗口。",
+        "data_elements": [
+          "VoiceIntent",
+          "ConfidenceScore",
+          "CommandParams"
+        ],
+        "direct_paths": "Voice_Recognition -> Media_Player/Navigation_Engine/Display_Manager (VoiceIntent events)"
+      }
+    ],
+    "component_generation_order": [
+      "CAN_Interface",
+      "Bluetooth_Stack",
+      "Navigation_Engine",
+      "Voice_Recognition",
+      "Media_Player",
+      "Display_Manager"
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Interface publishes Vehicle signals to Navigation_Engine and Media_Player; Bluetooth_Stack provides audio frames to Media_Player and mic input to Voice_Recognition; Voice_Recognition publishes command events consumed by Media_Player, Navigation_Engine and Display_Manager; Navigation_Engine and Media_Player publish render/metadata to Display_Manager.",
+      "data_flow_paths": "CAN_Interface -> Navigation_Engine (WheelSpeed,VehicleSpeed) -> Display_Manager (Route guidance); Bluetooth_Stack -> Media_Player (AudioFrame) -> Display_Manager (Audio/Video frames); Voice_Recognition -> Media_Player/Navigation_Engine/Display_Manager (VoiceIntent events).",
+      "control_flow_paths": "Display_Manager (UI) -> Media_Player (control requests) via Media_Control_IF client-server; Navigation_Engine requests map tiles via asynchronous server calls to external map service (modeled as ServerCallPoints in component)."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰的 Sender-Receiver 分离数据流和 Client-Server 处理控制/查询操作；将 CAN 作为 ECU 抽象层独立出以隔离硬件依赖；Bluetooth 做为服务组件负责外部通信；Media 与 Navigation 分别负责各自复杂域的信号处理，Display_Manager 负责合成与呈现。Runnables 以时间关键性划分，保证音频 20ms 周期和导航/车速 10Hz 更新。",
+      "tradeoff_analysis": "集中式 Display_Manager 简化 UI 合成但增加其复杂度；将 Bluetooth 作为服务组件利于复用但需额外同步界面与流延迟控制。选择在 Media_Player 内进行解码而非硬件全卸载以便灵活支持多格式，但会增加 CPU 负载；为低延迟音频选择局部队列缓冲以换取更高的计算与内存开销。",
+      "alternative_considerations": "可选方案包括将音频解码移至独立解码器组件或硬件抽象层以减轻应用负载；将 Voice_Recognition 与 Bluetooth 合并以减少跨组件数据传输；将 Display_Manager 拆分为多个区域管理组件以减轻单点复杂度。",
+      "risk_assessment": "风险：音频端到端延迟与抖动、在线地图服务不可用时的退化策略、语音识别误触或命令丢失。缓解：采用 jitter buffer、缓存地图切片并支持离线地图、语义命令确认与去重。系统集成风险通过明确接口和端到端性能测试来降低。"
+    }
+  },
+  "design": {
+    "system_analysis": {
+      "functional_decomposition": "划分为六个自治 AUTOSAR 应用组件与一个 ECU 抽象层：CAN_Interface 负责车速/档位等车辆总线数据采集并做本地时间戳；Bluetooth_Stack 负责蓝牙连接、音频流与电话会话管理；Voice_Recognition 负责麦克风音频预处理与语音指令识别；Navigation_Engine 负责在线路径计算、地图/位置融合与导航状态管理；Media_Player 负责多格式解码、播放控制与音视频同步；Display_Manager 负责双屏内容合成、UI 状态管理与渲染输出。每个组件职责边界清晰：CAN_Interface 提供基础车况数据；Bluetooth_Stack 提供外部音源/电话输入；Voice_Recognition 提供控制事件；Navigation_Engine 与 Media_Player 提供内容与控制给 Display_Manager。",
+      "data_flow_analysis": "主要数据流：1) CAN_Interface -> Navigation_Engine / Media_Player (sender-receiver): 车速(float, 10Hz), 车门/档位状态(enum, event-driven)；2) Bluetooth_Stack <-> Media_Player (sender-receiver + client-server): 音频流(chunks, 20ms frames, RTP-like) 与控制命令(command requests)；3) Voice_Recognition -> Navigation_Engine / Media_Player / Display_Manager (sender-receiver): 命令事件(semantic JSON, event)；4) Navigation_Engine -> Display_Manager (sender-receiver & client-server): 导航渲染数据(map tiles refs, route guidance, turn-by-turn events, 1Hz updates and immediate events)；5) Media_Player -> Display_Manager (sender-receiver): 媒体元数据、播放状态(更新 5Hz)；6) Display_Manager <- user inputs -> Media_Player/Navigation_Engine (client-server requests for control). 数据传输时序：周期性流（音频 50fps 20ms 帧），车速 10Hz，UI 更新 5-10Hz，命令事件即时(≤100ms)。每个接口明确承载的数据类型（标量/结构/二进制流）并采用合适缓冲策略（音频帧队列，状态取最新值）。组件间依赖：Media_Player 依赖 Bluetooth_Stack（流）与 CAN_Interface（车辆信息）；Navigation_Engine 依赖 CAN_Interface；Display_Manager 依赖 Navigation_Engine 与 Media_Player；Voice_Recognition 输入可来自 Bluetooth_Stack 或本地麦克风。",
+      "timing_requirements": "音频流端到端延迟目标 <100ms；音频帧处理周期 20ms；媒体播放控制响应 <200ms；导航位置/车速融合延迟 <200ms，导航提示提前 1s；UI 更新 100-200ms；CAN 关键信号 100ms (10Hz)。实时性分级：硬实时（音频帧处理链）、软实时（UI、导航提示）、事件驱动（语音命令）。",
+      "scalability_considerations": "设计支持模块化扩展：新增媒体解码器、第三方在线服务或额外传感器应通过新增接口或实现现有接口即可集成。使用 Sender-Receiver 与 Client-Server 分离数据与控制，便于水平扩展（多个音源、多个显示面板）。组件内部使用抽象端口与明确数据原语，便于拆分为多个子组件或分布式部署（未来增加网络服务组件）。",
+      "complexity_assessment": "Complex"
+    },
+    "component_plan": [
+      {
+        "component_id": "CMP_CAN_Interface",
+        "name": "CAN_Interface",
+        "type": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "purpose": "采集车速、档位及其他车辆总线信号并以 Sender-Receiver 接口发布给上层应用；提供时间戳与基本滤波。",
+        "estimated_complexity": "Medium",
+        "port_estimates": {
+          "input_ports": "1 (CAN driver binding)",
+          "output_ports": "3 (VehicleStatus, WheelSpeed, GearState)"
+        },
+        "behavioral_characteristics": "从底层驱动接收 CAN frames，解码为信号，时间戳并按 10Hz 发布；对突变信号做去抖/滤波；在总线错误或丢帧时发布错误事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "提供 Sender-Receiver 输出端口 (VehicleStatus, WheelSpeed, GearState)；提供 R-PORT 用于诊断/配置客户端调用"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Can_Poll_Timer",
+                "trigger": "10ms periodic to aggregate and publish signals at 10Hz"
+              },
+              {
+                "type": "DATA-RECEIVE-ERROR-EVENT",
+                "name": "Can_Error_Detected",
+                "trigger": "CAN driver error callback"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Can_ReadAndPublish",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收底层 CAN 解码后的信号并写入输出端口"
+                      }
+                    ],
+                    "notes": "读取并解析 CAN driver 输出"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向上层发布标准化车辆状态信号"
+                      }
+                    ],
+                    "notes": "发布 VehicleStatus/Speed/Gear"
+                  }
+                ],
+                "notes": "采集周期性 runnable"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Navigation_Engine",
+          "Media_Player"
+        ]
+      },
+      {
+        "component_id": "CMP_Bluetooth_Stack",
+        "name": "Bluetooth_Stack",
+        "type": "SERVICE-SW-COMPONENT-TYPE",
+        "purpose": "管理蓝牙连接、音频流输入输出和电话会话，为 Media_Player 与 Voice_Recognition 提供音频源与控制通道。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (Control_Commands, Mic_Audio_In)",
+          "output_ports": "2 (Audio_Stream_Out, Phone_Events)"
+        },
+        "behavioral_characteristics": "维护蓝牙会话，负责流媒体接入（接收外部音频帧并以 20ms 帧发布），处理电话事件并转换为高层事件；在连接/断开时发出状态事件。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "输入端口用于接收控制命令和麦克风数据，输出端口用于提供解码或透传音频帧及电话事件"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Bt_Connection_Event",
+                "trigger": "蓝牙连接状态变化回调"
+              },
+              {
+                "type": "TIMING-EVENT",
+                "name": "Audio_Frame_Timer",
+                "trigger": "20ms periodic to push audio frames"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Bt_Audio_Receiver",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收来自蓝牙适配器的音频帧"
+                      }
+                    ],
+                    "notes": "接收并缓冲原始音频帧"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "向 Media_Player 发布音频帧"
+                      }
+                    ],
+                    "notes": "推送音频帧给 Media_Player"
+                  }
+                ],
+                "notes": "音频流接收与发布"
+              },
+              {
+                "name": "Bt_Control_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用配置/配对操作或同步控制"
+                      }
+                    ],
+                    "notes": "用于控制与配置交互"
+                  }
+                ],
+                "notes": "管理配对、控制命令和电话会话"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Media_Player",
+          "Voice_Recognition"
+        ]
+      },
+      {
+        "component_id": "CMP_Media_Player",
+        "name": "Media_Player",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "解码与播放多格式音视频，管理播放队列、同步音视频并提供播放控制接口给 UI 与 VoiceRecognition。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (Audio_Stream_In, Control_Commands, Vehicle_State)",
+          "output_ports": "3 (Audio_Out, Video_Frames, Playback_Status)"
+        },
+        "behavioral_characteristics": "接收来自 Bluetooth_Stack 的音频帧或本地文件流，解码并送至音频硬件与 Display_Manager；触发由 Voice_Recognition 或 UI 的播放控制命令可中断/调整播放；实时保证音频帧连续性（Jitter buffer），音视频同步基于 PTS 和车速影响（e.g., speed-dependent ducking）。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收端口包含流输入与控制命令，输出端口提供已解码音频与视频帧，使用队列缓冲音频帧"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Playback_Timer",
+                "trigger": "20ms periodic to process audio frame and maintain playback"
+              },
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Stream_Frame_Arrived",
+                "trigger": "音频帧到达发布端口"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Playback_Runnable",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "从 Bluetooth_Stack 或本地源接收音频帧"
+                      }
+                    ],
+                    "notes": "读取输入音频帧与控制参数"
+                  },
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "调用解码库/硬件加速器操作"
+                      }
+                    ],
+                    "notes": "调用解码服务"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布解码后音频帧与视频帧到 Display_Manager / Audio_Hw"
+                      }
+                    ],
+                    "notes": "向下游发布解码数据"
+                  }
+                ],
+                "notes": "主要播放处理 runnable，保证音频解码与输出连续性"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Bluetooth_Stack",
+          "Display_Manager",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "CMP_Navigation_Engine",
+        "name": "Navigation_Engine",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "实现在线导航、路径规划、位置融合与实时路线指示并向 Display_Manager 提供渲染数据与提示事件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "3 (GPS_Position, Vehicle_Status, Map_Updates)",
+          "output_ports": "2 (Route_Guidance, Map_Render_Data)"
+        },
+        "behavioral_characteristics": "定期融合 GPS 与 CAN 车速数据以更新位置；在导航状态变化（重新规划、到达）时发送事件；支持在线地图切片拉取（异步 client-server 操作），并缓存结果供 Display_Manager 使用。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收 GPS/车速与地图更新，输出导航指示与渲染数据；提供 client-server 调用以访问在线服务"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "TIMING-EVENT",
+                "name": "Nav_Update_Timer",
+                "trigger": "500ms periodic for position fusion and guidance update"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Map_Tile_Response",
+                "trigger": "在线服务返回地图切片"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Position_Fusion",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收 GPS 与 CAN 车速进行融合"
+                      }
+                    ],
+                    "notes": "位置融合输入"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布融合后位置与导航事件"
+                      }
+                    ],
+                    "notes": "发布位置与 guidance"
+                  }
+                ],
+                "notes": "位置融合与导航计算 runnable"
+              },
+              {
+                "name": "Map_Service_Client",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "ASYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "异步请求在线地图切片"
+                      }
+                    ],
+                    "notes": "异步在线服务调用"
+                  }
+                ],
+                "notes": "在线地图拉取与缓存逻辑"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Display_Manager",
+          "CAN_Interface"
+        ]
+      },
+      {
+        "component_id": "CMP_Voice_Recognition",
+        "name": "Voice_Recognition",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "处理麦克风音频，执行语音活动检测、识别及语义解析，向系统发布控制命令事件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "2 (Mic_Audio, Bt_Mic_In)",
+          "output_ports": "2 (Voice_Commands, Recognition_Status)"
+        },
+        "behavioral_characteristics": "音频帧预处理（20ms），VAD 触发识别，识别后输出语义命令事件；提供可配置模型加载（client-server）与在线识别退化策略；对连续命令做去重与节流。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收麦克风或蓝牙麦克风的音频帧，输出识别结果事件与状态"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "DATA-RECEIVED-EVENT",
+                "name": "Audio_Frame_Arrived",
+                "trigger": "20ms frame arrival"
+              },
+              {
+                "type": "OPERATION-INVOKED-EVENT",
+                "name": "Model_Load_Invoked",
+                "trigger": "配置或启动时触发模型加载"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "VAD_and_Recognition",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-ARGUMENTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收音频帧进行 VAD 与预处理"
+                      }
+                    ],
+                    "notes": "音频输入处理"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布识别后的命令事件"
+                      }
+                    ],
+                    "notes": "发布识别结果"
+                  }
+                ],
+                "notes": "主要识别 runnable"
+              },
+              {
+                "name": "Model_Management",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "同步加载/切换本地模型"
+                      }
+                    ],
+                    "notes": "模型加载与切换"
+                  }
+                ],
+                "notes": "管理识别模型及在线回退"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Media_Player",
+          "Navigation_Engine",
+          "Display_Manager",
+          "Bluetooth_Stack"
+        ]
+      },
+      {
+        "component_id": "CMP_Display_Manager",
+        "name": "Display_Manager",
+        "type": "APPLICATION-SW-COMPONENT-TYPE",
+        "purpose": "管理双屏渲染与 UI 状态，合成来自 Navigation_Engine、Media_Player 与系统状态的数据并驱动显示硬件。",
+        "estimated_complexity": "Complex",
+        "port_estimates": {
+          "input_ports": "4 (Nav_Render_Data, Media_Frames, User_Inputs, System_Status)",
+          "output_ports": "1 (Display_Output)"
+        },
+        "behavioral_characteristics": "接收多个数据源并进行优先级合成（导航提示 > 电话 > 媒体）；支持双屏不同内容分发与镜像；对渲染数据进行节流（UI 100-200ms）与立即事件（导航提示即时）；提供 client-server 接口供 UI 请求详情或触发操作。",
+        "element_design": {
+          "ports": {
+            "needed": true,
+            "types": [
+              "P-PORT-PROTOTYPE",
+              "R-PORT-PROTOTYPE"
+            ],
+            "details": "接收导航与媒体帧并输出到显示驱动；提供请求响应端口供 UI 组件查询数据"
+          },
+          "internal_behaviors": {
+            "needed": true,
+            "events": [
+              {
+                "type": "INTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "UI_Update_Timer",
+                "trigger": "100ms periodic for UI refresh"
+              },
+              {
+                "type": "EXTERNAL-TRIGGER-OCCURRED-EVENT",
+                "name": "Display_Input_Event",
+                "trigger": "用户触控或外部命令"
+              }
+            ],
+            "runnables": [
+              {
+                "name": "Render_Compositor",
+                "elements": [
+                  {
+                    "key": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "wrapper": "DATA-RECEIVE-POINT-BY-VALUES",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "接收来自 Navigation_Engine 与 Media_Player 的渲染数据"
+                      }
+                    ],
+                    "notes": "收集并合成渲染内容"
+                  },
+                  {
+                    "key": "DATA-SEND-POINTS",
+                    "wrapper": "DATA-SEND-POINTS",
+                    "preselect": [
+                      {
+                        "of": "ACCESSED-VARIABLE",
+                        "variant": "AUTOSAR-VARIABLE-IREF",
+                        "include": [
+                          "PORT-PROTOTYPE-REF",
+                          "TARGET-DATA-PROTOTYPE-REF"
+                        ],
+                        "notes": "发布合成后的帧到显示硬件"
+                      }
+                    ],
+                    "notes": "输出到显示驱动"
+                  }
+                ],
+                "notes": "渲染合成 runnable"
+              },
+              {
+                "name": "UI_Request_Handler",
+                "elements": [
+                  {
+                    "key": "SERVER-CALL-POINTS",
+                    "wrapper": "SERVER-CALL-POINTS",
+                    "preselect": [
+                      {
+                        "of": "SERVER-CALL-POINTS",
+                        "variant": "SYNCHRONOUS-SERVER-CALL-POINT",
+                        "include": [
+                          "OPERATION-IREF",
+                          "TIMEOUT"
+                        ],
+                        "notes": "处理 UI 的同步查询请求"
+                      }
+                    ],
+                    "notes": "响应 UI 查询"
+                  }
+                ],
+                "notes": "处理 UI 请求与控制"
+              }
+            ]
+          }
+        },
+        "direct_references": [
+          "Navigation_Engine",
+          "Media_Player",
+          "Voice_Recognition"
+        ]
+      }
+    ],
+    "interface_plan": [
+      {
+        "interface_id": "IF_CAN_Data",
+        "name": "CAN_Data_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "周期性 Sender-Receiver，车速 10Hz，车况事件 event-driven；采用最新值语义对状态类信号，队列对关键序列信号。",
+        "data_category": "Vehicle_Status (float, enum), Event",
+        "connected_components": [
+          "CAN_Interface",
+          "Navigation_Engine",
+          "Media_Player"
+        ],
+        "performance_requirements": "端到端延迟 ≤100ms，丢帧时使用最近值；网络错误时上报错误事件",
+        "data_elements": [
+          "WheelSpeed",
+          "VehicleSpeed",
+          "GearState",
+          "DoorStatus"
+        ],
+        "direct_paths": "CAN_Interface -> Navigation_Engine (WheelSpeed, VehicleSpeed); CAN_Interface -> Media_Player (VehicleSpeed)"
+      },
+      {
+        "interface_id": "IF_Bluetooth_Audio",
+        "name": "Bluetooth_Audio_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "音频流帧 20ms 时基，使用帧队列缓冲，适配抖动；控制命令通过同接口的 control channel 同步/异步混合。",
+        "data_category": "Audio_Stream (binary frames), Control_Commands",
+        "connected_components": [
+          "Bluetooth_Stack",
+          "Media_Player",
+          "Voice_Recognition"
+        ],
+        "performance_requirements": "音频帧端到端抖动处理保证播放连续性，延迟目标 <100ms；控制命令响应 <200ms。",
+        "data_elements": [
+          "AudioFrame",
+          "StreamMetadata",
+          "CallEvents",
+          "ControlCommands"
+        ],
+        "direct_paths": "Bluetooth_Stack -> Media_Player (AudioFrame); Bluetooth_Stack -> Voice_Recognition (Mic frames)"
+      },
+      {
+        "interface_id": "IF_Media_Control",
+        "name": "Media_Control_IF",
+        "type": "CLIENT-SERVER-INTERFACE",
+        "communication_pattern": "Client-Server 用于 UI/Voice 发起播放控制和查询，支持同步请求/响应（短超时）和异步事件通知。",
+        "data_category": "Control (play/pause/seek), Status (position, state)",
+        "connected_components": [
+          "Display_Manager",
+          "Media_Player",
+          "Voice_Recognition"
+        ],
+        "performance_requirements": "控制响应 <200ms；状态查询 <300ms；失败重试策略 1 次。",
+        "data_elements": [
+          "PlayCommand",
+          "PauseCommand",
+          "SeekPosition",
+          "PlaybackStatus"
+        ],
+        "direct_paths": "Display_Manager -> Media_Player (control requests); Voice_Recognition -> Media_Player (voice commands)"
+      },
+      {
+        "interface_id": "IF_Navigation_Data",
+        "name": "Navigation_Data_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "导航渲染与提示以 Sender-Receiver 发布，周期性 1Hz 与事件驱动的即时提示并行。Map tile 请求为异步 client-server。",
+        "data_category": "MapTiles, RouteGuidance, TurnByTurnEvents",
+        "connected_components": [
+          "Navigation_Engine",
+          "Display_Manager"
+        ],
+        "performance_requirements": "导航提示事件延迟 <200ms；地图切片异步拉取超时策略 2s，缓存优先。",
+        "data_elements": [
+          "RouteGeometry",
+          "NextManeuver",
+          "MapTileRef"
+        ],
+        "direct_paths": "Navigation_Engine -> Display_Manager (RouteGuidance, MapTileRefs)"
+      },
+      {
+        "interface_id": "IF_Voice_Commands",
+        "name": "Voice_Commands_IF",
+        "type": "SENDER-RECEIVER-INTERFACE",
+        "communication_pattern": "事件驱动（即时）发布语义命令，采用最新值语义并支持命令去重与节流。",
+        "data_category": "Command (JSON semantic)",
+        "connected_components": [
+          "Voice_Recognition",
+          "Media_Player",
+          "Navigation_Engine",
+          "Display_Manager"
+        ],
+        "performance_requirements": "命令传递延迟 <150ms；重复命令过滤 300ms 窗口。",
+        "data_elements": [
+          "VoiceIntent",
+          "ConfidenceScore",
+          "CommandParams"
+        ],
+        "direct_paths": "Voice_Recognition -> Media_Player/Navigation_Engine/Display_Manager (VoiceIntent events)"
+      }
+    ],
+    "connection_topology": {
+      "component_connections": "CAN_Interface publishes Vehicle signals to Navigation_Engine and Media_Player; Bluetooth_Stack provides audio frames to Media_Player and mic input to Voice_Recognition; Voice_Recognition publishes command events consumed by Media_Player, Navigation_Engine and Display_Manager; Navigation_Engine and Media_Player publish render/metadata to Display_Manager.",
+      "data_flow_paths": "CAN_Interface -> Navigation_Engine (WheelSpeed,VehicleSpeed) -> Display_Manager (Route guidance); Bluetooth_Stack -> Media_Player (AudioFrame) -> Display_Manager (Audio/Video frames); Voice_Recognition -> Media_Player/Navigation_Engine/Display_Manager (VoiceIntent events).",
+      "control_flow_paths": "Display_Manager (UI) -> Media_Player (control requests) via Media_Control_IF client-server; Navigation_Engine requests map tiles via asynchronous server calls to external map service (modeled as ServerCallPoints in component)."
+    },
+    "architecture_rationale": {
+      "design_decisions": "采用清晰的 Sender-Receiver 分离数据流和 Client-Server 处理控制/查询操作；将 CAN 作为 ECU 抽象层独立出以隔离硬件依赖；Bluetooth 做为服务组件负责外部通信；Media 与 Navigation 分别负责各自复杂域的信号处理，Display_Manager 负责合成与呈现。Runnables 以时间关键性划分，保证音频 20ms 周期和导航/车速 10Hz 更新。",
+      "tradeoff_analysis": "集中式 Display_Manager 简化 UI 合成但增加其复杂度；将 Bluetooth 作为服务组件利于复用但需额外同步界面与流延迟控制。选择在 Media_Player 内进行解码而非硬件全卸载以便灵活支持多格式，但会增加 CPU 负载；为低延迟音频选择局部队列缓冲以换取更高的计算与内存开销。",
+      "alternative_considerations": "可选方案包括将音频解码移至独立解码器组件或硬件抽象层以减轻应用负载；将 Voice_Recognition 与 Bluetooth 合并以减少跨组件数据传输；将 Display_Manager 拆分为多个区域管理组件以减轻单点复杂度。",
+      "risk_assessment": "风险：音频端到端延迟与抖动、在线地图服务不可用时的退化策略、语音识别误触或命令丢失。缓解：采用 jitter buffer、缓存地图切片并支持离线地图、语义命令确认与去重。系统集成风险通过明确接口和端到端性能测试来降低。"
+    }
+  },
+  "stats": {
+    "input_tokens": 7598,
+    "output_tokens": 8760,
+    "total_tokens": 16358,
+    "component_count": 6,
+    "interface_count": 5,
+    "validation_passed": true,
+    "validation_errors": 0,
+    "documents_processed": 0
+  },
+  "config": {
+    "model": "gpt-5-mini",
+    "temperature": 1,
+    "max_output_tokens": 128000
+  }
+}
