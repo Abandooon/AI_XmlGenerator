@@ -4,7 +4,7 @@ import argparse, hashlib, json, os, shutil, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT=Path(__file__).resolve().parent
-TRACKS=('autosar','vllm','pil','railway')
+TRACKS=('autosar','vllm','pil','railway','railway_terra')
 EXCLUDED={'RELEASE_MANIFEST.json','RELEASE_MANIFEST.sha256'}
 def digest(path):
     h=hashlib.sha256()
@@ -27,7 +27,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--integrity-only',action='store_true');p.add_argument('--track',choices=('all',)+TRACKS,default='all')
     p.add_argument('--work-dir',type=Path);p.add_argument('--node',default='node');p.add_argument('--java',default='java')
-    p.add_argument('--jobs',type=int,choices=range(1,5),default=1,help='Concurrent independent tracks (default: 1)')
+    p.add_argument('--jobs',type=int,choices=range(1,6),default=1,help='Concurrent independent tracks (default: 1)')
     a=p.parse_args();integrity=verify_files();print(json.dumps(integrity))
     if a.integrity_only:return 0
     if a.work_dir is None:p.error('--work-dir is required for replay')
@@ -39,18 +39,18 @@ def main():
     node=shutil.which(a.node)
     if 'pil' in tracks and not node:p.error('Node executable not found: '+a.node)
     java=shutil.which(a.java)
-    if 'railway' in tracks and not java:p.error('Java executable not found: '+a.java)
+    if any(t in tracks for t in ('railway','railway_terra')) and not java:p.error('Java executable not found: '+a.java)
     env=os.environ.copy();env['PYTHONDONTWRITEBYTECODE']='1';env['PYTHONIOENCODING']='utf-8';env.pop('PYTHONPATH',None)
     if node:env['PATH']=str(Path(node).resolve().parent)+os.pathsep+env.get('PATH','')
     def run_track(track):
         experiment=ROOT/'experiments'/track
         if track=='pil':command=[str(experiment/'tools/verify.py'),'--output-dir',str(work/track),'--node',str(Path(node).resolve())]
         else:command=[str(experiment/'review.py'),'--work-dir',str(work/track)]
-        if track=='railway':command+=['--java',str(Path(java).resolve())]
+        if track in ('railway','railway_terra'):command+=['--java',str(Path(java).resolve())]
         print('Reviewing '+track+' ...',flush=True)
         with (work/(track+'.log')).open('w',encoding='utf8') as stream:
             run=subprocess.run([sys.executable,'-B']+command,cwd=work,env=env,stdout=stream,stderr=subprocess.STDOUT)
-        result_path={'autosar':'autosar/verification.json','vllm':'vllm/REVIEW_RESULT.json','pil':'pil/verification_report.json','railway':'railway/results/REVIEW_RESULT.json'}[track]
+        result_path={'autosar':'autosar/verification.json','vllm':'vllm/REVIEW_RESULT.json','pil':'pil/verification_report.json','railway':'railway/results/REVIEW_RESULT.json','railway_terra':'railway_terra/results/REVIEW_RESULT.json'}[track]
         outcome={'track':track,'exit_code':run.returncode,'status':'PASS' if run.returncode==0 else 'FAIL','log':track+'.log','result':result_path}
         print(json.dumps(outcome),flush=True)
         return outcome

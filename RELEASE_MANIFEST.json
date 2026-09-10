@@ -1,8 +1,15 @@
 {
-  "release_id": "ATLAS-review-2026-09-09",
+  "release_id": "ATLAS-review-2026-09-10",
   "format": "atlas.reviewer.release.v1",
-  "manuscript_modified": false,
-  "new_model_calls": 0,
+  "manuscript_sections_updated": true,
+  "original_whole_paper_modified": false,
+  "new_model_calls_during_release_preparation": 0,
+  "completed_terra_supplement": {
+    "tasks": 24,
+    "known_endpoints": 72,
+    "historical_dispatches": 62,
+    "received_responses": 60
+  },
   "files": [
     {
       "path": ".gitattributes",
@@ -16,18 +23,18 @@
     },
     {
       "path": "docs/ACCESS.md",
-      "bytes": 595,
-      "sha256": "9600824d2c8065c7a08d55050c14d8b3e9518d48c01189ef12a3366f5e7d876b"
+      "bytes": 778,
+      "sha256": "f2be08c6b7e0dafe734d7f6bfa7fb6dee8ccd3f7c9746077c85d1dbdc008eea7"
     },
     {
       "path": "docs/CHANGE_REGISTER.md",
-      "bytes": 2271,
-      "sha256": "b7b440b93efc3d21d4e8af579d25b7bc213eb9c4b8e5ace187b15077b71116f9"
+      "bytes": 3268,
+      "sha256": "04c9b9cf9309c8c4139424a95bf00bb2f7aa59e27964398dd9c3689c5031c510"
     },
     {
       "path": "docs/EVIDENCE_AND_CLAIMS.md",
-      "bytes": 5215,
-      "sha256": "c41eb56c3f13940b0ab605181bcfac824af27a1da09cbc880dfe2f427292bd74"
+      "bytes": 6505,
+      "sha256": "cc582bf7a0d2aae00bba35299707d01e626848669790c088aa2a731fe26e6930"
     },
     {
       "path": "docs/PROVENANCE.md",
@@ -41,13 +48,18 @@
     },
     {
       "path": "docs/REVIEWER_EVIDENCE_MAP.md",
-      "bytes": 2921,
-      "sha256": "f6272ccd03692a6b48c779cbbab1671b1102e4df6af9ca4f6a6dbf130e588f56"
+      "bytes": 3470,
+      "sha256": "7979e8faeb5113045aaf2de77899165aab559a3968c498bf1d96a94577a6214b"
+    },
+    {
+      "path": "docs/SELF_REVIEW.md",
+      "bytes": 3260,
+      "sha256": "9ef64ec30a2942ee1f90da794a99b973e349841fc525ec0ccc3a5e7bd2179771"
     },
     {
       "path": "docs/THIRD_PARTY_NOTICES.md",
-      "bytes": 1605,
-      "sha256": "c000a764e974c7e1d561a6aa490c96edee0fc81c7264ae823bc524d6289a9d5e"
+      "bytes": 1766,
+      "sha256": "8f3c61d8fd4fe9a8bce10896a69cfcc464a52966ebee78075e9233e9331f054e"
     },
     {
       "path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
@@ -1143,6 +1155,156 @@
       "path": "experiments/railway/SECRET_SCAN.json",
       "bytes": 710,
       "sha256": "8ba7625ecde071d4f57429b0396a76a41ed13ad667ce81c669b6ec3b62ddade9"
+    },
+    {
+      "path": "experiments/railway_terra/archives/terra_complete.zip.part01",
+      "bytes": 41943040,
+      "sha256": "700814f5a6d83745476f5e111e1ac0377e9a12c07440d6add9ad7446262f54e6"
+    },
+    {
+      "path": "experiments/railway_terra/archives/terra_complete.zip.part02",
+      "bytes": 41943040,
+      "sha256": "6b85d655bea0f7784c575d749ffe5ef78bbd433e7c8eb4001adfac06c6e438c9"
+    },
+    {
+      "path": "experiments/railway_terra/archives/terra_complete.zip.part03",
+      "bytes": 41943040,
+      "sha256": "df051e40d715d7c543cdc09c145fec3c2349fa1f08632e979f64687c6c8929a2"
+    },
+    {
+      "path": "experiments/railway_terra/archives/terra_complete.zip.part04",
+      "bytes": 31817656,
+      "sha256": "3a0f8b7eb8a5702bc780f8a8aba17cd9668d2a166dd39c91a1f6995a932054c1"
+    },
+    {
+      "path": "experiments/railway_terra/PARTS_MANIFEST.json",
+      "bytes": 1385,
+      "sha256": "94fad11ddcc824f3f80df5206b69c389ba14f90a2f8415f6a546c7b426d03b63"
+    },
+    {
+      "path": "experiments/railway_terra/README.md",
+      "bytes": 3354,
+      "sha256": "7d0bfc2ac130d4ba9330750a972404e2755dae60644948d331b638a07a8ae319"
+    },
+    {
+      "path": "experiments/railway_terra/reports/CURRENT_RESULTS_SUMMARY.json",
+      "bytes": 12696,
+      "sha256": "6369f0323b0b7f6f11746fedb3a91ad1b1d1c8900f5083ae2dd635952ef04fce"
+    },
+    {
+      "path": "experiments/railway_terra/reports/EXTRACTED_QA_REPORT.json",
+      "bytes": 1050,
+      "sha256": "f85c80a32755cf4dfd7fecebe1629424b5e4e7b3141e5b8652ca9dd5227a0392"
+    },
+    {
+      "path": "experiments/railway_terra/reports/PACKAGE_SHA256.txt",
+      "bytes": 133,
+      "sha256": "665b20efb6038994e3f0c1f659e4ee90c9fdc02068dc5d5f68656f81a1c0f758"
+    },
+    {
+      "path": "experiments/railway_terra/reports/PACKAGING_RESULT.json",
+      "bytes": 595,
+      "sha256": "eec8aabadec9462a3af4fa3ca052b905dca0d08b943f54a2e8372cf3e5b1879c"
+    },
+    {
+      "path": "experiments/railway_terra/reports/paired_tasks.csv",
+      "bytes": 2765,
+      "sha256": "4c1c9bfa18f681a6b425231e44a6a1b8a24fa4952a65d3b30f5e2eb14732c7f7"
+    },
+    {
+      "path": "experiments/railway_terra/reports/PRIVATE_DATA_SCAN.json",
+      "bytes": 979,
+      "sha256": "c4fa72b8bcde136acaedf575296a4d387c4a0620cb4449d1a93c8b3f9f14833e"
+    },
+    {
+      "path": "experiments/railway_terra/reports/received_responses.csv",
+      "bytes": 16801,
+      "sha256": "46befe679fef9e1e0b65d583a1a1c2f5cf91a9f48403de78f24f5baebeeeb762"
+    },
+    {
+      "path": "experiments/railway_terra/reports/实验审查报告.md",
+      "bytes": 11960,
+      "sha256": "3abe17664e07ca75a180636ba8f53ad123285d9557a428e31c726ae1fe3ef2c5"
+    },
+    {
+      "path": "experiments/railway_terra/reports/审计报告索引.json",
+      "bytes": 951,
+      "sha256": "a883ceef84c1dd02502bece4912158193c27014caed693b69dd4c91bedf862b2"
+    },
+    {
+      "path": "experiments/railway_terra/reports/审计结构核对.json",
+      "bytes": 927,
+      "sha256": "b2a5d6a13024e8f062543c215017b80443e6e50e0efaec526c7d666533749d61"
+    },
+    {
+      "path": "experiments/railway_terra/reports/最终独立审计.json",
+      "bytes": 179480,
+      "sha256": "b72ef371491eb26714047035db0d5fe9024d475d209b9cbe8980769ad26db75c"
+    },
+    {
+      "path": "experiments/railway_terra/reports/离线复核说明.md",
+      "bytes": 4015,
+      "sha256": "fef74b9a504ac42b013b518d0ac989c837985cc4d73e77f9fe2aa7737dd4c35e"
+    },
+    {
+      "path": "experiments/railway_terra/review.py",
+      "bytes": 7604,
+      "sha256": "aec29789644831de6048796e24a744dcd868694eb391bf594604fef24ba89214"
+    },
+    {
+      "path": "experiments/railway_terra/source/continuation3/delivery/verify_package.py",
+      "bytes": 1594,
+      "sha256": "2e91becf2037e45a8531eebefce63056363bd90d91eba539070291b671a66aef"
+    },
+    {
+      "path": "experiments/railway_terra/source/raw_native_score.py",
+      "bytes": 7634,
+      "sha256": "52a82b7cb66871041fb4d6f0e27638b59eeedc7a54285600785c45ecb31d476a"
+    },
+    {
+      "path": "experiments/railway_terra/source/review/continuation2/endpoint_review.py",
+      "bytes": 6451,
+      "sha256": "1f9d5aa1a9888278df28e5d10143d250ed6e04f8ee69e98c424b6d44d57acbf4"
+    },
+    {
+      "path": "experiments/railway_terra/source/review/continuation2/verify_final.py",
+      "bytes": 49094,
+      "sha256": "342b442e232d9fdb16935624e5df101bc0405d0cba70cea81eae5c9c46d758ba"
+    },
+    {
+      "path": "experiments/railway_terra/source/review/continuation3/test_verifier.py",
+      "bytes": 4657,
+      "sha256": "2a5baa446d8d1a3bb84767a70b96eecd5de3ac55c47e32fc1c620e61c272a5d6"
+    },
+    {
+      "path": "experiments/railway_terra/source/review/continuation3/verify_final.py",
+      "bytes": 25519,
+      "sha256": "5fd9fb19252655ff3bffffdb6b3499ba1768cdd9eceb419c0d7eea883e46d52f"
+    },
+    {
+      "path": "experiments/railway_terra/source/review/verify_final.py",
+      "bytes": 38959,
+      "sha256": "e302dd8d75736770038e1e92b98c74150375fe03f4c9e178fa1f38c58a5e4e8a"
+    },
+    {
+      "path": "experiments/railway_terra/source/run_supplement.py",
+      "bytes": 19914,
+      "sha256": "d416505031b031d66e0b700a2611e01a6a7862a165e6e4c31f5337dc9425ae21"
+    },
+    {
+      "path": "experiments/railway_terra/source/supplement_native.py",
+      "bytes": 1204,
+      "sha256": "8ca14402cdfd2f45578e8c6e696b3656595f4901d89c0d8fc35cda89f37144a1"
+    },
+    {
+      "path": "experiments/railway_terra/source/supplement_runtime.py",
+      "bytes": 17441,
+      "sha256": "bbf3a833588cf1ec717ba12669695fd01cfd60c08a3305502311db5388357c08"
+    },
+    {
+      "path": "experiments/railway_terra/SOURCE_INDEX.json",
+      "bytes": 2787,
+      "sha256": "03921040005d85578dc3b62b6896118ef7cbbf62b9c0e660162a3296387905cd"
     },
     {
       "path": "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-bundle-20260829.tar.gz",
@@ -4340,9 +4502,214 @@
       "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
     },
     {
+      "path": "paper/README.md",
+      "bytes": 1744,
+      "sha256": "34b21047dca5f4df5e301c81eaffee5ba1ce3b603979959b03d82e732458c9b9"
+    },
+    {
+      "path": "paper/REVIEW_RESPONSE_MATRIX.md",
+      "bytes": 10688,
+      "sha256": "8f2030a6b2d36b8667e98cce3006f862034368858c039ee3d36256a2acace5e8"
+    },
+    {
+      "path": "paper/sources/ATLAS_constraint_production_methodology_and_reviewer_response.docx",
+      "bytes": 49304,
+      "sha256": "fe757a929c120616be29da420e677d9ac7a89fe1aa9709ac5b770cb136a0144c"
+    },
+    {
+      "path": "paper/sources/ATLAS_constraint_production_methodology_and_reviewer_response.pdf",
+      "bytes": 487437,
+      "sha256": "5d9ec188fb19b5a3b916a4a0e2191300741ff384a15c1d035f718f3e75799dbe"
+    },
+    {
+      "path": "paper/sources/ATLAS_原版.tex",
+      "bytes": 107524,
+      "sha256": "7c58d32e1c7549ef6d0e99a27053540f70ea092528d8759a9ec3c3284570ef55"
+    },
+    {
+      "path": "paper/sources/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md",
+      "bytes": 35428,
+      "sha256": "88fb2e4d7403b84c4b945a71660a7b702437df61e3da5a721b6626d3a6e1b0a8"
+    },
+    {
+      "path": "paper/sources/SOSYM-26-00005681_DECISION_LETTER_2026-06-18.txt",
+      "bytes": 27716,
+      "sha256": "6b8693708052843b8ba5132747bcdb5c4fa0efe7e43baeb068b39d403eaefaa5"
+    },
+    {
+      "path": "paper/实验与附录/实验章节.docx",
+      "bytes": 685280,
+      "sha256": "0c745e7f3e1041f2842a75759f3cce885643e74b3e5526542b40bee91335ebf6"
+    },
+    {
+      "path": "paper/实验与附录/实验章节.md",
+      "bytes": 17300,
+      "sha256": "636ed93a23f4f12c8a9ed0737b921fbabe0bfd7fdc531067bc90a73e85ce9f90"
+    },
+    {
+      "path": "paper/实验与附录/附录章节.docx",
+      "bytes": 60409,
+      "sha256": "163f11bbbfd8991c7e92c935e9661fc273ec06422172d77c6c559d26fbd9cd5a"
+    },
+    {
+      "path": "paper/实验与附录/附录章节.md",
+      "bytes": 36258,
+      "sha256": "73b0b568e339bd9d4cd9cd8ebad380356aa78237abbc00b8102b41cf4f8fcef6"
+    },
+    {
+      "path": "paper/方法论/方法论.docx",
+      "bytes": 2410485,
+      "sha256": "1817d8bed62d4a6dba91f334d6753efb61cf4de3a739bf129530dce799651caf"
+    },
+    {
+      "path": "paper/方法论/方法论.md",
+      "bytes": 32967,
+      "sha256": "7da6744d6c9d518f7b1edbb8773f049c51590870d239355df5e2a62fb6a2d22a"
+    },
+    {
+      "path": "paper/论文图/ATLAS_方法论五图_黑白版.pdf",
+      "bytes": 202412,
+      "sha256": "42557dfc4f1cebca45526489a38561b5217cd47e753188bdbdb0198a9ac46aec"
+    },
+    {
+      "path": "paper/论文图/Fig0_symbol_legend.png",
+      "bytes": 392191,
+      "sha256": "37df1150082bd8e9c77ea19bd4082443888dbe0e7f5d1fc40f36d7fff9cac9de"
+    },
+    {
+      "path": "paper/论文图/Fig0_symbol_legend.svg",
+      "bytes": 4722,
+      "sha256": "e2f36ae3ed44282cfd190df950df6718cc0b6d10d91d5fb92b55a6442fb18c89"
+    },
+    {
+      "path": "paper/论文图/Fig1_method_overview.png",
+      "bytes": 620810,
+      "sha256": "cd7bd815702ef8fea05286cbba6e8448b83cddd5bb1bb4c11cfdb4eb79502701"
+    },
+    {
+      "path": "paper/论文图/Fig1_method_overview.svg",
+      "bytes": 15149,
+      "sha256": "4c7953e754c786a790049b0522ebace959c31b9ec04508fd7111d2ed73b0d060"
+    },
+    {
+      "path": "paper/论文图/Fig2_icm_construction.png",
+      "bytes": 339684,
+      "sha256": "cf8dd43faf39916969208957709ece79e692c1a9e0f8b140b500d974b1f5ef71"
+    },
+    {
+      "path": "paper/论文图/Fig2_icm_construction.svg",
+      "bytes": 9761,
+      "sha256": "26d84a916c6036f2945326071aedbf2d0aa9a8c77e2baf044e79db9b064047a3"
+    },
+    {
+      "path": "paper/论文图/Fig3_icm_information_model.png",
+      "bytes": 419154,
+      "sha256": "0b8fb7eb882bd21380e43b11d8b23a7538aacf6c465d77dac09e3665ac4949ee"
+    },
+    {
+      "path": "paper/论文图/Fig3_icm_information_model.svg",
+      "bytes": 7875,
+      "sha256": "467a455aebb7acb7d58186f18a79a85845c0122396c800ab517e78159d3babad"
+    },
+    {
+      "path": "paper/论文图/Fig4_task_binding_generation.png",
+      "bytes": 730357,
+      "sha256": "c5e4ce3960ca89032f27bcf5e7cfb99003da92ecb5c0df5ac72cb7e1f0a46545"
+    },
+    {
+      "path": "paper/论文图/Fig4_task_binding_generation.svg",
+      "bytes": 16425,
+      "sha256": "a4039a20be1dff98e0287630e71a434ba3bcab2e91b7cd07779c2bf7cbb12874"
+    },
+    {
+      "path": "paper/论文图/Fig5_validation_repair.png",
+      "bytes": 762452,
+      "sha256": "dd68c9535c852ec238f0b577ffcd6fb8064926509f28f1b566d807932e90233d"
+    },
+    {
+      "path": "paper/论文图/Fig5_validation_repair.svg",
+      "bytes": 16121,
+      "sha256": "67ddedaaa62f95844491d7b0c92575e65883516fa2c74f7a54d129f078b73e39"
+    },
+    {
+      "path": "paper/论文图/Fig6_icm_trace.pdf",
+      "bytes": 83250,
+      "sha256": "0aac1ea395fb16c62a1bcc5f2bab8fc81674547fae7a86f6d5baeb4953323bcd"
+    },
+    {
+      "path": "paper/论文图/Fig6_icm_trace.png",
+      "bytes": 384967,
+      "sha256": "8815e706299b198db2681d44d8a67f618e58b08b8b91de6dbd13b1ca92749c96"
+    },
+    {
+      "path": "paper/论文图/Fig6_icm_trace.svg",
+      "bytes": 17325,
+      "sha256": "3a33efdfdf04fd4498f05d30adc6003f32c06bef83bfd8f965cb3ec299d98fa7"
+    },
+    {
+      "path": "paper/论文图/Fig6_icm_trace_data.json",
+      "bytes": 19604,
+      "sha256": "bace16d17a62cd98e218202ca8d15b58fa34d0ec00b667b028a60edbc57db7c4"
+    },
+    {
+      "path": "paper/论文图/Fig6_icm_trace_sources.md",
+      "bytes": 7717,
+      "sha256": "56028e24ddded73f63a9dd1be4afe7f4d0cf396a13844c09210c3c024218ae9d"
+    },
+    {
+      "path": "paper/论文图/Fig7_vllm_intervention.pdf",
+      "bytes": 64789,
+      "sha256": "18ad9b775de2870acb0ad20ff415ebd3a6c453f430226d9f580646e50f24b2e6"
+    },
+    {
+      "path": "paper/论文图/Fig7_vllm_intervention.png",
+      "bytes": 229688,
+      "sha256": "d7ddcdfcbec03e63c831c317ed455b0b31c1023e3f3da7c2e3f8ae1b76aeefe2"
+    },
+    {
+      "path": "paper/论文图/Fig7_vllm_intervention.svg",
+      "bytes": 114827,
+      "sha256": "fa2d8473b040e125859edf126fa9cc5971df7e546acad468452522da47e8e9a7"
+    },
+    {
+      "path": "paper/论文图/Fig7_vllm_intervention_data.json",
+      "bytes": 223473,
+      "sha256": "00a4e4ff84dc272108417a2e2a8527d52d8a65f7feccaf663c87074a6ee27a2b"
+    },
+    {
+      "path": "paper/论文图/Fig8_railway_results.pdf",
+      "bytes": 30402,
+      "sha256": "fda7d9ff7304bd134be3080c4e545b8d02d0ff3d5f7a39961026f42873d75fed"
+    },
+    {
+      "path": "paper/论文图/Fig8_railway_results.png",
+      "bytes": 88385,
+      "sha256": "ddc1ca86188e9a4e12e57708014fdd98c5c075bc20c9db3b05acce88bd8c5eef"
+    },
+    {
+      "path": "paper/论文图/Fig8_railway_results.svg",
+      "bytes": 20471,
+      "sha256": "d2d6e3c7da4a62b1d6afddad6886db589fc1193ef91ae0b8be3ea9458104b1ca"
+    },
+    {
+      "path": "paper/论文图/Fig8_railway_results_data.json",
+      "bytes": 862,
+      "sha256": "71b7a7f47cab002833af4fb85bb2138203b248c85430610ea7bb8de5598518e1"
+    },
+    {
+      "path": "paper/论文图/实验图说明.md",
+      "bytes": 2126,
+      "sha256": "87e37b714c892f9da81706130a93a0d599e550344ce03e01d2783d47413b2a19"
+    },
+    {
+      "path": "paper/论文图/统一图形规范与图注.md",
+      "bytes": 5591,
+      "sha256": "12fb54f7d1b770427085f8b9f11548de429ba41d8abe8c8796a9cb72a09a4a9d"
+    },
+    {
       "path": "README.md",
-      "bytes": 4282,
-      "sha256": "48e1ceba124d85d691f890ecc2d3d01cd3f038dfd689247bbb4ef7b6790bedd5"
+      "bytes": 4486,
+      "sha256": "bcd80da8fa46b9fa1daa0a6e1f5f6eecdea7466e29683da364c0e17e2bc9b929"
     },
     {
       "path": "requirements-lock.txt",
@@ -4365,14 +4732,59 @@
       "sha256": "819a423b484b2a8ca04e031c694e7f84805f0e83f354e561fb2b98635ee373f5"
     },
     {
+      "path": "validation/CHAPTER_DATA_AUDIT.json",
+      "bytes": 9708,
+      "sha256": "41392de9da552b61d3d936ceb7ac987b2f13652516d6c906d45873f9fc53fd4b"
+    },
+    {
       "path": "validation/CLEAN_ENVIRONMENT_REVIEW.json",
       "bytes": 2515,
       "sha256": "e83ef39b979f88e35dc0ac71839ffd986e8ba0f05e41f8dd54149616301365b2"
     },
     {
+      "path": "validation/current_replay/autosar.json",
+      "bytes": 7883,
+      "sha256": "8ca6522c65b3c46e6633e2b80672b1e62424dbb9ae1fd070ee2b3082d45fc50f"
+    },
+    {
+      "path": "validation/current_replay/pil.json",
+      "bytes": 4066,
+      "sha256": "27d3e972b6d26c64d4a449d9dbbc910861f8ae8d5f464ae1dc692714b53f7ded"
+    },
+    {
+      "path": "validation/current_replay/railway.json",
+      "bytes": 1533,
+      "sha256": "b14077779f86dea028259f9b5d0203498187e2739d3e8d89534337b936fdeb85"
+    },
+    {
+      "path": "validation/current_replay/railway_terra.json",
+      "bytes": 2424,
+      "sha256": "2c332acc7230e3ef4fe66c4ef9ca7b0b621077d72a1a35f9ea13e8db26710ff2"
+    },
+    {
+      "path": "validation/current_replay/terra_independent_audit.json",
+      "bytes": 179480,
+      "sha256": "66c8218561b828f5eb91a7a78fc9f7ebdc1c7a8ecea911eca807a35f6a607238"
+    },
+    {
+      "path": "validation/current_replay/vllm.json",
+      "bytes": 2666,
+      "sha256": "0ee98977e51f84a4bd252a8608663f6aa0415f7544ccc98c039cf4f5ff19cb00"
+    },
+    {
+      "path": "validation/CURRENT_REVIEW.json",
+      "bytes": 1605,
+      "sha256": "c654c1d9d41612bb60d7853b53bc55167f79e171e562d4e6fb82b93691454de3"
+    },
+    {
+      "path": "validation/DOCUMENT_QA.json",
+      "bytes": 2398,
+      "sha256": "9f76fc1e84501df2c98b98eda8c7e2c7321425b4756dafcebe5ba1dd7b3919f9"
+    },
+    {
       "path": "validation/NAVIGATION_CHECK.json",
-      "bytes": 74,
-      "sha256": "b04b00183dcd2baea5de2c2ca679f82a21e176531243f161e9833b9edf68e3cc"
+      "bytes": 198,
+      "sha256": "d5e453b9fb92f0a3be623f590fc70a7b9999435ea2acbc04fa948c36817dde86"
     },
     {
       "path": "validation/pil/verification_report.json",
@@ -4383,6 +4795,11 @@
       "path": "validation/pil.log",
       "bytes": 536,
       "sha256": "88bd7fd84a47034f82f714468617aab3a878e5fc4c6ebcd49d850c32925f630c"
+    },
+    {
+      "path": "validation/PUBLICATION_SECRET_SCAN.json",
+      "bytes": 250,
+      "sha256": "72ad47f0375e5124b71a9d1bb73f46139b88b8284ef104d9c63bf075fdc35b72"
     },
     {
       "path": "validation/railway/results/REVIEW_RESULT.json",
@@ -4405,6 +4822,31 @@
       "sha256": "2a06b5503211a6949c83a46cc36402b0e3aeb0338503cffd6823ca0056df1382"
     },
     {
+      "path": "validation/self_review/appendix_visual_qa.md",
+      "bytes": 2643,
+      "sha256": "f327743e522d98ee805219f19bb69bfff93433a96272026b77333c94a638688e"
+    },
+    {
+      "path": "validation/self_review/autosar_method_review.md",
+      "bytes": 7097,
+      "sha256": "974b500514b493efc8a5fc6fc21181fcd04b4589d996861707a6210d1b9b652b"
+    },
+    {
+      "path": "validation/self_review/chapter_changes.diff",
+      "bytes": 5762,
+      "sha256": "4351cdbc1b3f22ad54d7b390a5cec02bf2c138c858bda0382c65e154d9b693aa"
+    },
+    {
+      "path": "validation/self_review/pil_reviewer_review.md",
+      "bytes": 12490,
+      "sha256": "018de07af9c16ef31af88d8a13a5f714cc869acb999f3620c3d6d44c00b1095a"
+    },
+    {
+      "path": "validation/self_review/railway_terra_review.md",
+      "bytes": 11260,
+      "sha256": "d38f8e50c430df99d5aade4ba8b6b15ec6d7bc88d119ac2f67cc36dfec779e39"
+    },
+    {
       "path": "validation/TESTED_INPUT_IDENTITIES.json",
       "bytes": 173313,
       "sha256": "48205fb27d5aa321b4b9e241e7b6f4d45a5aac1ad5216684c84620bde60f84f8"
@@ -4421,8 +4863,8 @@
     },
     {
       "path": "verify_release.py",
-      "bytes": 4848,
-      "sha256": "8c876ef85600c39717369ea1ea729573539e0d2c972d88032426de7b52eae1a6"
+      "bytes": 4977,
+      "sha256": "d508a5f1506b902d68688256cbee5bd8067695dd3d2fef519969dab3430c1ea4"
     }
   ]
 }

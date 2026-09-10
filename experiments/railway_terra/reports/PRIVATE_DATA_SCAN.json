@@ -1,0 +1,24 @@
+{
+  "checked_text_files": 8358,
+  "credential_configuration_files": [],
+  "literal_credential_pattern_paths": [
+    "workspace/railway_formal_v5/qualify_formal_runtime.py",
+    "workspace/railway_live_v5/test_admission.py"
+  ],
+  "content_values_not_output": true,
+  "limited_pattern_scan_not_general_secret_proof": true,
+  "pattern_matches_reviewed": [
+    {
+      "path": "workspace/railway_formal_v5/qualify_formal_runtime.py",
+      "classification": "synthetic mock Authorization fixture",
+      "evidence": "send compares to a synthetic/no-authority mock literal; no real HTTP in this qualification"
+    },
+    {
+      "path": "workspace/railway_live_v5/test_admission.py",
+      "classification": "synthetic unittest key fixture",
+      "evidence": "setUp binds a no-network.invalid endpoint and a synthetic no-authority test literal"
+    }
+  ],
+  "unexplained_literal_credential_patterns": 0,
+  "actual_api_configuration_not_read_by_scan": true
+}

@@ -1,5 +1,5 @@
 # Access to the reviewer release
 
-At preparation on 2026-09-09, the GitHub repository is private. The ATLAS branch does not grant anonymous access. Editors and reviewers can use the complete standalone release ZIP supplied by the author; the ZIP contains the same manifested files and needs no GitHub account for offline review. An authorized collaborator can also obtain this branch directly.
+The author can grant authorized repository access or supply an archive of this complete release tree. The ATLAS branch has the reviewer tree at its root; api_rag contains an identical copy in `paper/atlas-review/`. A standalone archive of that tree needs no GitHub account for offline review. All four Terra archive parts must remain together with their manifest.
 
-Repository visibility and access to other development branches were not changed as part of the experimental release. No manuscript submission or message to reviewers was sent by this release process.
+The repository was private when the preceding release was prepared. This synchronization does not change repository visibility or access permissions, and does not send a submission or message to reviewers. Historical standalone release archives do not automatically include the newly completed supplement and current chapters; use this current tree as the packaging source.

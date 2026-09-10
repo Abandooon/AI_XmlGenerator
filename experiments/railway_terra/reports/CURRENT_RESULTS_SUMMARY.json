@@ -1,0 +1,438 @@
+{
+  "status": "COMPLETE",
+  "all_72_endpoints_known": true,
+  "source_results_sha256": "a12ada6a49d90da411f371e3331cba0d18bea9308ffde07b7a143d0cfce40a30",
+  "source_run_manifest_sha256": "c288aea55c5a3cfd75a2a8b1ae372709c01597c50e0240a10ef90e6a058cdbc6",
+  "planned_tasks": 24,
+  "complete_tasks": 24,
+  "complete_task_ids": [
+    "BAL-2-05",
+    "BAL-1-06",
+    "BAL-3-07",
+    "BAL-3-05",
+    "BAL-3-02",
+    "BAL-2-01",
+    "BAL-1-08",
+    "BAL-1-07",
+    "BAL-2-06",
+    "BAL-3-06",
+    "BAL-2-07",
+    "BAL-2-02",
+    "BAL-1-03",
+    "BAL-2-08",
+    "BAL-1-01",
+    "BAL-1-05",
+    "BAL-2-04",
+    "BAL-1-04",
+    "BAL-3-08",
+    "BAL-2-03",
+    "BAL-3-04",
+    "BAL-3-03",
+    "BAL-1-02",
+    "BAL-3-01"
+  ],
+  "partial_tasks": [],
+  "unstarted_or_no_known_endpoints": [],
+  "groups": {
+    "G0": {
+      "planned": 24,
+      "known": 24,
+      "strict_success": 18,
+      "strict_success_rate_all_planned": 0.75,
+      "received_responses": 24,
+      "prompt_tokens": 108161,
+      "completion_tokens": 16184
+    },
+    "GS": {
+      "planned": 24,
+      "known": 24,
+      "strict_success": 22,
+      "strict_success_rate_all_planned": 0.9166666666666666,
+      "received_responses": 30,
+      "prompt_tokens": 158278,
+      "completion_tokens": 17495
+    },
+    "GF": {
+      "planned": 24,
+      "known": 24,
+      "strict_success": 22,
+      "strict_success_rate_all_planned": 0.9166666666666666,
+      "received_responses": 6,
+      "prompt_tokens": 35395,
+      "completion_tokens": 2925
+    }
+  },
+  "complete_task_scope_successes": {
+    "Terra": {
+      "G0": 18,
+      "GS": 22,
+      "GF": 22
+    },
+    "Luna": {
+      "G0": 6,
+      "GS": 8,
+      "GF": 13
+    }
+  },
+  "paired_transitions_same_complete_tasks": {
+    "G0_GS": {
+      "both_fail": 2,
+      "a_fail_b_pass": 4,
+      "a_pass_b_fail": 0,
+      "both_pass": 18,
+      "second_minus_first_percentage_points": 16.666666666666668
+    },
+    "G0_GF": {
+      "both_fail": 2,
+      "a_fail_b_pass": 4,
+      "a_pass_b_fail": 0,
+      "both_pass": 18,
+      "second_minus_first_percentage_points": 16.666666666666668
+    },
+    "GS_GF": {
+      "both_fail": 1,
+      "a_fail_b_pass": 1,
+      "a_pass_b_fail": 1,
+      "both_pass": 21,
+      "second_minus_first_percentage_points": 0.0
+    }
+  },
+  "planned_mcnemar_holm": {
+    "G0_vs_GF": {
+      "both_success": 18,
+      "only_first_success": 0,
+      "only_second_success": 4,
+      "neither_success": 2,
+      "second_minus_first_pp": 16.666666666666668,
+      "exact_two_sided_p": 0.125,
+      "holm_p": 0.25
+    },
+    "GS_vs_GF": {
+      "both_success": 21,
+      "only_first_success": 1,
+      "only_second_success": 1,
+      "neither_success": 1,
+      "second_minus_first_pp": 0.0,
+      "exact_two_sided_p": 1.0,
+      "holm_p": 1
+    }
+  },
+  "failure_rows": [
+    {
+      "task_id": "BAL-3-07",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4593,
+      "completion_tokens": 593,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-1-08",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4458,
+      "completion_tokens": 408,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-3-06",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4652,
+      "completion_tokens": 545,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-3-06",
+      "arm": "GS",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "KEEP",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 5461,
+      "completion_tokens": 527,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-2-02",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4479,
+      "completion_tokens": 833,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-2-02",
+      "arm": "GF",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "regression",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 5930,
+      "completion_tokens": 511,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-1-01",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4396,
+      "completion_tokens": 298,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-1-01",
+      "arm": "GS",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "BUDGET_EXHAUSTED",
+      "model_failure": true,
+      "requests": 2,
+      "prompt_tokens": 10320,
+      "completion_tokens": 1410,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "ConnectedSegments": 1
+      }
+    },
+    {
+      "task_id": "BAL-1-01",
+      "arm": "GF",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "regression",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 5806,
+      "completion_tokens": 557,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    },
+    {
+      "task_id": "BAL-1-02",
+      "arm": "G0",
+      "known_endpoint": true,
+      "strict_success": false,
+      "failure_type": "EVALUATED",
+      "model_failure": true,
+      "requests": 1,
+      "prompt_tokens": 4447,
+      "completion_tokens": 330,
+      "truncations": 0,
+      "refusals": 0,
+      "unknown_usage": 0,
+      "task_failures": [],
+      "frame_failures": [],
+      "query_failures": {
+        "SemaphoreNeighbor": 1
+      }
+    }
+  ],
+  "unknown_or_not_run_endpoints": [],
+  "received_responses": 60,
+  "combined_dispatch_intents": 62,
+  "initial_total_budget_cap_usd": 5,
+  "explicit_final_total_budget_cap_usd": 6,
+  "budget_extension_events": [
+    {
+      "amendment_sha256": "a390431d0a375c5448d04b2a043d537514e1b71b5b454bb05149c180cbcac422",
+      "approval_sha256": "531bd3e2e5a170f46ae7c4a28848a10ac6c9b48871d6f76934d91c630b6dacaf",
+      "hash": "d2b176f7b60f930b33d5f914f55294c32ce9c67972ab1c75f95cadcd332b3191",
+      "historical_unknown_occupied_nano": 2187456000,
+      "key": "GLOBAL_BUDGET_CAP",
+      "kind": "BUDGET_CAP_EXTENSION_AUTHORIZED",
+      "missing_response_replacements_added": 0,
+      "new_cap_nano": 6000000000,
+      "occupied_nano": 3916463250,
+      "old_cap_nano": 5000000000,
+      "previous": "2181f87a3bb6e2011c22dc728ef19f80f9316a87931afed8b3e0bc099e3cb993",
+      "sequence": 124,
+      "user_explicit_total_cap_usd": 6,
+      "utc": "2026-09-10T06:07:55.985986+00:00"
+    }
+  ],
+  "manual_missing_response_replacements_total": 2,
+  "budget_extension_added_missing_response_replacements": 0,
+  "known_cache_read_tokens": 0,
+  "known_cache_write_tokens": 301654,
+  "known_ordinary_input_tokens": 180,
+  "all_transport_unknown_events": [
+    {
+      "key": "BAL-3-07/G0/shared_initial",
+      "reason": "TRANSPORT_RemoteDisconnected",
+      "permanent_occupied_usd": "1.093728000"
+    },
+    {
+      "key": "CONTINUATION1/BAL-1-03/GS/round_01",
+      "reason": "TRANSPORT_RemoteDisconnected",
+      "permanent_occupied_usd": "1.093728000"
+    }
+  ],
+  "denials": [
+    {
+      "cap_nano": 5000000000,
+      "hash": "2181f87a3bb6e2011c22dc728ef19f80f9316a87931afed8b3e0bc099e3cb993",
+      "key": "CONTINUATION2/BAL-3-01/G0/shared_initial",
+      "kind": "DENY",
+      "network_dispatched": false,
+      "occupied_nano": 3916463250,
+      "previous": "13b0683b51cb7abf897b8177b348e8c991b6cf0be29e030d2c39e0aa09c85e60",
+      "reason": "INSUFFICIENT_COMBINED_PRE_DISPATCH_RESERVATION",
+      "required_nano": 1093728000,
+      "sequence": 123,
+      "utc": "2026-09-10T05:39:15.930994+00:00"
+    }
+  ],
+  "prompt_tokens_known": 301834,
+  "completion_tokens_known_including_reasoning": 36604,
+  "reasoning_tokens_reported": 32930,
+  "maximum_prompt_response": {
+    "task_id": "BAL-3-06",
+    "arm": "GF",
+    "opportunity": "round_01",
+    "path": "continuation3/run/tasks/BAL-3-06/GF/round_01/response.json",
+    "response_id": "chatcmpl-EMKJFbtGAv9CAxHijY304MTEQGUHA",
+    "response_model": "gpt-5.6-terra-2026-07-09",
+    "finish_reason": "stop",
+    "kind": "CONTENT",
+    "prompt_tokens": 5976,
+    "completion_tokens": 357,
+    "reasoning_tokens": 312,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 5973,
+    "wire_bytes": 23051,
+    "request_seed": 104729,
+    "reasoning_effort": "low",
+    "max_completion_tokens": 4096,
+    "response_sha256": "6ed47c1dc9feb6676f771c5725f082698ccceaa56c59710917e86af6f9bdf05b"
+  },
+  "maximum_completion_response": {
+    "task_id": "BAL-1-08",
+    "arm": "GS",
+    "opportunity": "round_01",
+    "path": "continuation3/run/tasks/BAL-1-08/GS/round_01/response.json",
+    "response_id": "chatcmpl-EMKHkBjnChpJpfhu4XVyCkkbWmTm8",
+    "response_model": "gpt-5.6-terra-2026-07-09",
+    "finish_reason": "stop",
+    "kind": "CONTENT",
+    "prompt_tokens": 5222,
+    "completion_tokens": 1197,
+    "reasoning_tokens": 1140,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 5219,
+    "wire_bytes": 22092,
+    "request_seed": 104729,
+    "reasoning_effort": "low",
+    "max_completion_tokens": 4096,
+    "response_sha256": "70e58b71690f3503997b3a9291f2cdcca7ff4e555d6a8a870197e8756bfcc7cb"
+  },
+  "response_models": {
+    "gpt-5.6-terra-2026-07-09": 60
+  },
+  "finish_reasons": {
+    "stop": 60
+  },
+  "response_kinds": {
+    "CONTENT": 60
+  },
+  "maximum_request_bytes": 23182,
+  "monetary": {
+    "known_cache_component_estimate_usd": "1.790614500",
+    "cache_breakdown_known_responses": 60,
+    "cache_breakdown_missing_responses": 0,
+    "known_conservative_occupancy_usd": "1.790749500",
+    "historical_and_new_unknown_occupancy_usd": "2.187456000",
+    "known_cache_estimate_plus_unknown_occupancy_usd": "3.978070500",
+    "client_total_conservative_occupancy_usd": "3.978205500",
+    "known_base_3_18_estimate_usd": "1.564374000",
+    "not_a_provider_invoice": true
+  },
+  "scope_limits": [
+    "Fixed 24 authored tasks with shared templates and development exposure; one prespecified seed",
+    "Model comparisons descriptive; no population or general model-superiority claim",
+    "Historical completion cap128000 versus supplement4096 is retained as a declared difference",
+    "Two user-authorized manual transport replacements are retained separately from received quality results",
+    "Any incomplete endpoints are not imputed as model failures; planned statistics require all72 known"
+  ]
+}

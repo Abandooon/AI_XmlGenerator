@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "scope": "Validates schema keywords used by audit_schema.json plus endpoint/completion/source-identity invariants; standard-library implementation, not a general JSON Schema engine",
+  "checks": {
+    "report_matches_used_schema_keywords": true,
+    "all_72_endpoints_known": true,
+    "endpoint_identities_unique": true,
+    "four_stage_review_complete": true,
+    "reject_unknown_as_success": true,
+    "reject_incomplete_inference": true,
+    "reject_nonoffline_scope": true,
+    "reject_false_complete_count": true,
+    "eight_boundary_tests_bind_current_sources": true,
+    "executed_report_binds_current_entry": true
+  },
+  "boundary_tests_passed": 8,
+  "boundary_test_evidence": "../PREPARATION_TEST_RESULTS.json",
+  "source_report_sha256": "b72ef371491eb26714047035db0d5fe9024d475d209b9cbe8980769ad26db75c",
+  "utc": "2026-09-10T06:13:12.405285+00:00",
+  "network_calls": 0
+}
