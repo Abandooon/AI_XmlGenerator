@@ -1,0 +1,499 @@
+[
+  {
+    "chapter": "引言",
+    "section": "1 引言",
+    "bibkey": "kahaniSurveyClassificationModel2019",
+    "context": "模型驱动工程（Model-Driven Engineering，MDE）将模型作为软件与系统开发中的主要制品，通过显式的建模语言、模型转换和分析工具支持设计、验证与实现。领域专用建模语言以领域概念表达问题，其元模型规定模型的抽象语法，包括元素类型、属性、继承、包含与引用关系，以及关系的基数等要求；良构约束进一步规定合法模型需要满足的条件。模型转换连接不同抽象层次和不同表示，并支持从模型生成代码及其他制品[@kahaniSurveyClassificationModel2019]。这些机制为自动化提供了明确的操作对象和检查依据。",
+    "number": 1
+  },
+  {
+    "chapter": "引言",
+    "section": "1 引言",
+    "bibkey": "DiRocco2025LLMMDE",
+    "context": "大语言模型（Large Language Model，LLM）使用户能够通过自然语言提出建模要求，并获得模型元素、关系和属性值的建议。近期研究已将 LLM 用于领域建模、模型实例生成、交互式补全和建模制品转换，推动自然语言交互与既有 MDE 工具结合[@DiRocco2025LLMMDE]。然而，语言上合理的回答与可被建模工具接受的模型之间仍有距离。生成器需要同时遵守类型、必需特征、嵌套结构、基数和引用关系，还要满足规范中的复杂语义与逻辑要求，以及当前任务指定的对象、取值和连接方式。模型越复杂，这些要求在生成过程中越容易相互影响。",
+    "number": 2
+  },
+  {
+    "chapter": "引言",
+    "section": "1 引言",
+    "bibkey": "poesiaSynchromeshReliableCode2021",
+    "context": "已有研究从不同环节将显式知识引入生成。Synchromesh 结合检索与受约束语义解码，在输出构造过程中执行语法、类型和部分上下文规则[@poesiaSynchromeshReliableCode2021]；AbsCon 将多个候选图聚合为概率部分模型，再根据元模型和良构约束求解一致模型[@Chen2025AccurateGraph]；EMF-Kaizen 将元模型和当前模型用于交互式模型片段推荐[@Almonte2026EMFKaizen]。这些工作表明，约束既可以参与生成，也可以用于候选的检查与选择。对于同时涉及复杂结构和领域逻辑的任务，一个关键问题是如何组织两类互补能力：尽可能在生成时排除不合法的结构与取值，同时在模型形成后检查依赖完整对象、跨元素关系或目标制品的要求。",
+    "number": 3
+  },
+  {
+    "chapter": "引言",
+    "section": "1 引言",
+    "bibkey": "Chen2025AccurateGraph",
+    "context": "已有研究从不同环节将显式知识引入生成。Synchromesh 结合检索与受约束语义解码，在输出构造过程中执行语法、类型和部分上下文规则[@poesiaSynchromeshReliableCode2021]；AbsCon 将多个候选图聚合为概率部分模型，再根据元模型和良构约束求解一致模型[@Chen2025AccurateGraph]；EMF-Kaizen 将元模型和当前模型用于交互式模型片段推荐[@Almonte2026EMFKaizen]。这些工作表明，约束既可以参与生成，也可以用于候选的检查与选择。对于同时涉及复杂结构和领域逻辑的任务，一个关键问题是如何组织两类互补能力：尽可能在生成时排除不合法的结构与取值，同时在模型形成后检查依赖完整对象、跨元素关系或目标制品的要求。",
+    "number": 4
+  },
+  {
+    "chapter": "引言",
+    "section": "1 引言",
+    "bibkey": "Almonte2026EMFKaizen",
+    "context": "已有研究从不同环节将显式知识引入生成。Synchromesh 结合检索与受约束语义解码，在输出构造过程中执行语法、类型和部分上下文规则[@poesiaSynchromeshReliableCode2021]；AbsCon 将多个候选图聚合为概率部分模型，再根据元模型和良构约束求解一致模型[@Chen2025AccurateGraph]；EMF-Kaizen 将元模型和当前模型用于交互式模型片段推荐[@Almonte2026EMFKaizen]。这些工作表明，约束既可以参与生成，也可以用于候选的检查与选择。对于同时涉及复杂结构和领域逻辑的任务，一个关键问题是如何组织两类互补能力：尽可能在生成时排除不合法的结构与取值，同时在模型形成后检查依赖完整对象、跨元素关系或目标制品的要求。",
+    "number": 5
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.1 模型转换与一致模型生成",
+    "bibkey": "omgOCL242014",
+    "context": "MDE 通过建模语言规定可表达的概念和合法模型的条件。元模型刻画抽象语法，良构约束补充类型、关系等结构定义难以完整表达的要求，具体语法则规定模型的文本或图形呈现。OCL 可以在模型上下文中表达不变式、前置条件和后置条件，并为这些表达式规定类型及求值语义[@omgOCL242014]。XMI 提供模型对象的 XML 交换表示[@omgXMI2512015]。这些基础说明，模型及其序列化文档具有相互关联但不同的检查对象：文档能否解析、对象是否符合元模型、跨对象规则是否满足，需要使用对应的依据判断。",
+    "number": 6
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.1 模型转换与一致模型生成",
+    "bibkey": "omgXMI2512015",
+    "context": "MDE 通过建模语言规定可表达的概念和合法模型的条件。元模型刻画抽象语法，良构约束补充类型、关系等结构定义难以完整表达的要求，具体语法则规定模型的文本或图形呈现。OCL 可以在模型上下文中表达不变式、前置条件和后置条件，并为这些表达式规定类型及求值语义[@omgOCL242014]。XMI 提供模型对象的 XML 交换表示[@omgXMI2512015]。这些基础说明，模型及其序列化文档具有相互关联但不同的检查对象：文档能否解析、对象是否符合元模型、跨对象规则是否满足，需要使用对应的依据判断。",
+    "number": 7
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.1 模型转换与一致模型生成",
+    "bibkey": "kahaniSurveyClassificationModel2019",
+    "context": "模型转换将不同模型或表示之间的对应关系显式化。Kahani 等对模型转换工具进行分类，讨论模型到模型、模型到文本转换及其支持能力[@kahaniSurveyClassificationModel2019]。Ma 等的双阶段代码生成框架融合 XMI 结构信息与 XSD 约束，先生成静态代码结构，再依据模型注解和关联补充行为[@DualStageFramework]。这类工作体现了工业建模语言接入中表示转换的重要性：类型和结构需要在不同表示间传递，目标制品还可能具有源表示中未直接呈现的组织要求。读取元模型并形成便于处理的表示，与据此创建模型实例、生成代码或交换制品，是可以衔接的不同操作。",
+    "number": 1
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.1 模型转换与一致模型生成",
+    "bibkey": "DualStageFramework",
+    "context": "模型转换将不同模型或表示之间的对应关系显式化。Kahani 等对模型转换工具进行分类，讨论模型到模型、模型到文本转换及其支持能力[@kahaniSurveyClassificationModel2019]。Ma 等的双阶段代码生成框架融合 XMI 结构信息与 XSD 约束，先生成静态代码结构，再依据模型注解和关联补充行为[@DualStageFramework]。这类工作体现了工业建模语言接入中表示转换的重要性：类型和结构需要在不同表示间传递，目标制品还可能具有源表示中未直接呈现的组织要求。读取元模型并形成便于处理的表示，与据此创建模型实例、生成代码或交换制品，是可以衔接的不同操作。",
+    "number": 8
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.1 模型转换与一致模型生成",
+    "bibkey": "Semerath2018GraphSolver",
+    "context": "一致模型生成使约束直接参与模型构造。Semeráth 等以元模型、良构约束和搜索规模为输入，通过三值部分模型细化、约束传播和增量检查引导图求解，并在具体化后检查原始良构约束[@Semerath2018GraphSolver]。该方法能够从空模型或已有部分模型开始，在搜索过程中利用显式约束缩小候选空间。这为生成时控制与完成后检查的协同提供了 MDE 基础。相对于以形式化约束驱动求解，自然语言驱动的生成还需要确定文本中的概念和要求如何对应到可操作的模型元素，以及本次任务应选用哪些约束。",
+    "number": 9
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "DiRocco2025LLMMDE",
+    "context": "LLM 辅助建模的研究对象涵盖建模语言及其元模型、符合已有语言的模型实例，以及对当前模型的补全和修改。Di Rocco 等从 MDE 活动出发梳理这一研究领域，讨论建模制品的编码、生成结果后处理和评价，并提出 LLM 与 MDE 相互支持的研究议程[@DiRocco2025LLMMDE]。这一视角强调将生成能力接入模型工具链，而不把建模任务简化为普通文本输出。",
+    "number": 2
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "Alaoui2025",
+    "context": "自然语言与语言定义相结合是常见的生成方式。Alaoui Mdaghri 等利用自然语言说明和建模语言文档生成 DSL 模型，并通过迭代过程验证结果[@Alaoui2025]。Petrovic 等的汽车系统技术报告将 Ecore 元模型与需求组合为提示，生成 XMI 实例，以 OCL 检查决定是否进入下游代码生成；报告同时探索了根据参考要求和元模型提出 OCL 约束[@Petrovic_2024]。这些研究连接了自然语言输入、显式语言表示和后续模型处理。",
+    "number": 10
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "Petrovic_2024",
+    "context": "自然语言与语言定义相结合是常见的生成方式。Alaoui Mdaghri 等利用自然语言说明和建模语言文档生成 DSL 模型，并通过迭代过程验证结果[@Alaoui2025]。Petrovic 等的汽车系统技术报告将 Ecore 元模型与需求组合为提示，生成 XMI 实例，以 OCL 检查决定是否进入下游代码生成；报告同时探索了根据参考要求和元模型提出 OCL 约束[@Petrovic_2024]。这些研究连接了自然语言输入、显式语言表示和后续模型处理。",
+    "number": 11
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "el-gnainyAIEnhancedAUTOSARConfiguration2024a",
+    "context": "领域配置生成进一步揭示了中间表示和制品映射的作用。El-Gnainy 等研究 AI 辅助 AUTOSAR 配置、数据集生成与代码生产[@el-gnainyAIEnhancedAUTOSARConfiguration2024a]。Samy 等采用微调模型生成精简 JSON，再确定性展开为 ARXML，并在 Watchdog Manager 配置中评价结构、引用、参数和语义条件[@Samy2026AUTOSARBSW]。精简表示降低了生成器直接处理复杂交换格式的负担，但相应的展开规则仍是领域实现的重要组成部分；中间表示的合法性与最终 ARXML 的合法性需要通过这一映射连接。",
+    "number": 12
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "Samy2026AUTOSARBSW",
+    "context": "领域配置生成进一步揭示了中间表示和制品映射的作用。El-Gnainy 等研究 AI 辅助 AUTOSAR 配置、数据集生成与代码生产[@el-gnainyAIEnhancedAUTOSARConfiguration2024a]。Samy 等采用微调模型生成精简 JSON，再确定性展开为 ARXML，并在 Watchdog Manager 配置中评价结构、引用、参数和语义条件[@Samy2026AUTOSARBSW]。精简表示降低了生成器直接处理复杂交换格式的负担，但相应的展开规则仍是领域实现的重要组成部分；中间表示的合法性与最终 ARXML 的合法性需要通过这一映射连接。",
+    "number": 13
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "Almonte2026EMFKaizen",
+    "context": "面向建模环境的交互式助手则以当前模型作为持续演化的上下文。EMF-Kaizen 在抽象语法层面结合元模型、当前模型、用户请求和示例推荐模型片段，并支持元模型裁剪、JSON 与 EMF 对象转换以及由用户选择片段纳入模型[@Almonte2026EMFKaizen]。其适用对象包含领域模型和元模型，体现了基于共同建模基础设施复用助手能力的方向。该实现采用容错解析处理返回片段，元模型中的 OCL 注解可以进入提示，但尚未对推荐片段执行 OCL 检查。交互式推荐关注可供建模者继续使用的片段，完整任务生成则还需要判断必需对象及关联是否齐备。",
+    "number": 5
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.2 大模型辅助建模与模型实例构造",
+    "bibkey": "Chen2025AccurateGraph",
+    "context": "AbsCon 将候选之间的一致性与显式约束结合：先从同一文本生成多个候选图，合并为概率部分模型，再通过约束优化选择满足元模型和良构约束的具体模型[@Chen2025AccurateGraph]。这里的约束参与最终模型的求解，而不仅用于事后评分；论文中元模型及良构约束由人工转为逻辑表达。与直接生成、交互补全等方式相比，这一路线利用多候选中的共同信息减少不一致，展现了模型求解与语言模型生成互补的可能性。",
+    "number": 4
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.3 结构化约束获取与可追溯性",
+    "bibkey": "abukhalafPathOCLPathBasedPrompt2024",
+    "context": "将自然语言规范用于自动化，需要确定规则所指的领域概念、适用范围和逻辑关系。模型上下文可以为这种解释提供类型和导航依据。PathOCL 以 UML 类模型和自然语言约束为输入，选取相关类及模型路径构造提示，再生成 OCL 表达式[@abukhalafPathOCLPathBasedPrompt2024]。其结果显示，选择路径上下文可以减少提示规模并改善生成约束的有效性，而语义正确性的改善仍需单独考察。这反映了约束获取中的两个关联问题：为文本找到合适的模型上下文，以及将文本要求正确表达为约束。",
+    "number": 14
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.3 结构化约束获取与可追溯性",
+    "bibkey": "winklerTraceability2010",
+    "context": "可追溯性关注不同制品间的对应关系及其使用。Winkler 和 von Pilgrim 讨论了需求工程与模型驱动开发中的制品追溯，以及两类活动之间的衔接[@winklerTraceability2010]。对于约束生成，来源与模型元素的链接能够帮助解释一条规则依据哪段规范、作用于哪些类型或关系，并支持后续修改时定位受影响的内容。规则关联到元模型元素，有利于跨任务复用；规则在某次任务中绑定到具体对象，则确定了该次检查的作用范围。",
+    "number": 15
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.3 结构化约束获取与可追溯性",
+    "bibkey": "Lewis2020RAG",
+    "context": "检索增强生成通过外部材料为模型生成提供依据[@Lewis2020RAG]。在工程规范场景中，检索可以补充适用条件、例外及背景解释；结构化约束则进一步显式记录这些信息与模型元素的联系。两者可以结合使用：同一项要求既可作为提示中的依据，也可在存在相应映射时用于生成控制或逻辑检查。元模型信息的组织、文本要求的结构化和可执行检查的实现由此形成相关但不同的工作，完成文本抽取并不意味着已经生成了检查程序。",
+    "number": 16
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "gengGrammarConstrainedDecodingStructured2024",
+    "context": "受约束解码在生成过程中筛选合法的后续词元，使已编码的结构要求直接影响输出。Geng 等研究面向结构化任务的语法约束解码及依赖输入的文法[@gengGrammarConstrainedDecodingStructured2024]。XGrammar 通过文法处理与运行时掩码计算优化结构化生成效率[@Dong2024XGrammar]；XGrammar-2 进一步支持单次请求中的动态结构切换和跨文法缓存复用[@XGrammar22026]。这些技术使随任务变化的结构限制能够在解码时执行，为将元模型中的类型、必需特征、枚举和可表示的关系限制接入模型实例生成提供了基础。",
+    "number": 17
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "Dong2024XGrammar",
+    "context": "受约束解码在生成过程中筛选合法的后续词元，使已编码的结构要求直接影响输出。Geng 等研究面向结构化任务的语法约束解码及依赖输入的文法[@gengGrammarConstrainedDecodingStructured2024]。XGrammar 通过文法处理与运行时掩码计算优化结构化生成效率[@Dong2024XGrammar]；XGrammar-2 进一步支持单次请求中的动态结构切换和跨文法缓存复用[@XGrammar22026]。这些技术使随任务变化的结构限制能够在解码时执行，为将元模型中的类型、必需特征、枚举和可表示的关系限制接入模型实例生成提供了基础。",
+    "number": 18
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "XGrammar22026",
+    "context": "受约束解码在生成过程中筛选合法的后续词元，使已编码的结构要求直接影响输出。Geng 等研究面向结构化任务的语法约束解码及依赖输入的文法[@gengGrammarConstrainedDecodingStructured2024]。XGrammar 通过文法处理与运行时掩码计算优化结构化生成效率[@Dong2024XGrammar]；XGrammar-2 进一步支持单次请求中的动态结构切换和跨文法缓存复用[@XGrammar22026]。这些技术使随任务变化的结构限制能够在解码时执行，为将元模型中的类型、必需特征、枚举和可表示的关系限制接入模型实例生成提供了基础。",
+    "number": 19
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "poesiaSynchromeshReliableCode2021",
+    "context": "生成时控制也可以包含语义信息。Synchromesh 将示例检索与完成引擎结合，在部分输出上执行语法、作用域、类型和部分上下文逻辑[@poesiaSynchromeshReliableCode2021]。Projectional Decoding 进一步维护与文本并行的部分图模型，利用元模型及增量语义检查指导词元选择[@Chen2026ProjectionalDecoding]。因此，生成阶段与生成后阶段的区别并非语法和语义的绝对分界。适合提前检查的条件取决于部分模型中已经确定的信息、约束的可执行表示和后端能力；需要完整模型或跨制品上下文的条件仍可由后续检查承担。",
+    "number": 3
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "Chen2026ProjectionalDecoding",
+    "context": "生成时控制也可以包含语义信息。Synchromesh 将示例检索与完成引擎结合，在部分输出上执行语法、作用域、类型和部分上下文逻辑[@poesiaSynchromeshReliableCode2021]。Projectional Decoding 进一步维护与文本并行的部分图模型，利用元模型及增量语义检查指导词元选择[@Chen2026ProjectionalDecoding]。因此，生成阶段与生成后阶段的区别并非语法和语义的绝对分界。适合提前检查的条件取决于部分模型中已经确定的信息、约束的可执行表示和后端能力；需要完整模型或跨制品上下文的条件仍可由后续检查承担。",
+    "number": 20
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "parkGrammaralignedDecoding2025",
+    "context": "约束执行还会影响生成分布。Grammar-Aligned Decoding 指出，逐步屏蔽非法词元并重新归一化，通常不等同于在完整序列满足文法的条件下从原模型分布采样，并提出具有渐近收敛性质的采样方法[@parkGrammaralignedDecoding2025]。这一结果区分了输出合法性与采样分布保持两个目标。对工程建模而言，受约束解码可减少不合法候选，但候选是否满足任务含义仍需要相应的评价依据。",
+    "number": 21
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "marchezanGeneratingRepairsInconsistent2023",
+    "context": "模型一致性维护为修复提供了定位和操作选择机制。Marchezan 等依据规则求值过程定位不一致原因，构造包含替代项与操作序列的抽象修复树，并支持按制品或用户所有权筛选动作[@marchezanGeneratingRepairsInconsistent2023]。LLM 反馈修订研究则探索如何利用反馈生成新候选。Self-Refine 由同一模型生成结果、提出反馈并迭代修订[@madaanSelfRefineIterativeRefinement2023]；SpecGen 面向 Java 程序生成 JML 规格，先利用验证错误反馈改进候选，再结合运算符变异与启发式筛选寻找可验证规格[@maSpecGenAutomatedGeneration2025]。这些研究表明，反馈来源、可用修改操作及候选接纳条件共同影响修复效果。",
+    "number": 22
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "madaanSelfRefineIterativeRefinement2023",
+    "context": "模型一致性维护为修复提供了定位和操作选择机制。Marchezan 等依据规则求值过程定位不一致原因，构造包含替代项与操作序列的抽象修复树，并支持按制品或用户所有权筛选动作[@marchezanGeneratingRepairsInconsistent2023]。LLM 反馈修订研究则探索如何利用反馈生成新候选。Self-Refine 由同一模型生成结果、提出反馈并迭代修订[@madaanSelfRefineIterativeRefinement2023]；SpecGen 面向 Java 程序生成 JML 规格，先利用验证错误反馈改进候选，再结合运算符变异与启发式筛选寻找可验证规格[@maSpecGenAutomatedGeneration2025]。这些研究表明，反馈来源、可用修改操作及候选接纳条件共同影响修复效果。",
+    "number": 23
+  },
+  {
+    "chapter": "相关工作",
+    "section": "2.4 受约束解码与验证反馈修复",
+    "bibkey": "maSpecGenAutomatedGeneration2025",
+    "context": "模型一致性维护为修复提供了定位和操作选择机制。Marchezan 等依据规则求值过程定位不一致原因，构造包含替代项与操作序列的抽象修复树，并支持按制品或用户所有权筛选动作[@marchezanGeneratingRepairsInconsistent2023]。LLM 反馈修订研究则探索如何利用反馈生成新候选。Self-Refine 由同一模型生成结果、提出反馈并迭代修订[@madaanSelfRefineIterativeRefinement2023]；SpecGen 面向 Java 程序生成 JML 规格，先利用验证错误反馈改进候选，再结合运算符变异与启发式筛选寻找可验证规格[@maSpecGenAutomatedGeneration2025]。这些研究表明，反馈来源、可用修改操作及候选接纳条件共同影响修复效果。",
+    "number": 24
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.1 适用范围与方法概述",
+    "bibkey": "JSONSchemaValidation202012",
+    "context": "在结构化生成中，JSON Schema 是一种广泛采用、具有成熟工具支持的约束表示，可描述字段类型、必需项、数量及允许值[@JSONSchemaValidation202012]。本方法按任务组装这些限制，再由受约束解码后端将其用于生成过程。例如，XGrammar 可编译相应约束并据此筛选允许生成的词元[@Dong2024XGrammar]。JSON Schema 是本方法采用的一种实现形式；领域适配也可以使用后端支持的文法等其他约束表示。",
+    "number": 25
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.1 适用范围与方法概述",
+    "bibkey": "Dong2024XGrammar",
+    "context": "在结构化生成中，JSON Schema 是一种广泛采用、具有成熟工具支持的约束表示，可描述字段类型、必需项、数量及允许值[@JSONSchemaValidation202012]。本方法按任务组装这些限制，再由受约束解码后端将其用于生成过程。例如，XGrammar 可编译相应约束并据此筛选允许生成的词元[@Dong2024XGrammar]。JSON Schema 是本方法采用的一种实现形式；领域适配也可以使用后端支持的文法等其他约束表示。",
+    "number": 18
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.2 提取与转换元模型信息",
+    "bibkey": "tolvanenFrameworkCoevolution2025",
+    "context": "转换结果可以采用对象模型、关系记录、JSON 或图结构。其关键是保存后续抽取、查询与绑定所需的信息及源元素对应，而不是选择某一种存储格式。模型驱动语言工程区分抽象语法、具体语法及其演化关系[@tolvanenFrameworkCoevolution2025]。相应地，元模型表示描述领域构造，序列化映射规定其目标表达，生成约束规定本次允许生成的结构和值。三者在流程中承担不同职责。",
+    "number": 26
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.4 绑定本次任务的对象与要求",
+    "bibkey": "Lewis2020RAG",
+    "context": "绑定结果用于三个环节。具有生成映射的要求进入 L1 生成约束；检索得到的规范内容作为外部知识加入提示[@Lewis2020RAG]；需要在构造结果上判断的要求，则绑定到已有检查器的输入对象和参数。运行时可据此装配新的检查项，而无需为每个任务生成新的验证代码。",
+    "number": 16
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.1 动态组装生成约束",
+    "bibkey": "JSONSchemaValidation202012",
+    "context": "L1 将元模型结构、适用领域规则及任务绑定中可执行的部分组装为本次生成约束。JSON Schema 可表达字段类型、必需项、数量、固定值及枚举等限制[@JSONSchemaValidation202012]。动态组装以元模型为结构依据，以任务选择确定需要展开的部分，并结合已有模型上下文约束可用引用。因此，生成规范随任务及已获得的上下文变化。",
+    "number": 25
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.1 动态组装生成约束",
+    "bibkey": "W3CXMLSchema2004",
+    "context": "生成约束的表达与目标语言的表达并不总是一一对应。以 XML 目标为例，XML Schema 可以要求子元素按 sequence 出现[@W3CXMLSchema2004]。采用 JSON 对象承载命名字段时，字段的排列没有直接携带这一 XML 顺序要求；本方法的相应适配由序列化器依据目标模式排列元素，再用 XML Schema 验证制品。这体现了生成约束、模型构造和目标表达之间的职责分配。采用其他中间表示或直接针对目标语言解码时，可以选择不同的映射方式。",
+    "number": 27
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.2 受约束解码如何参与实例模型生成",
+    "bibkey": "gengGrammarConstrainedDecodingStructured2024",
+    "context": "在 MDE 中，生成输出需要能够被解析、构造为实例模型并交由后续工具处理。错误的层次结构、遗漏的必需项或非法枚举会使这一过程在进入领域验证前就失败。**受约束解码**（constrained decoding）将已编码的结构限制作用于生成的每一步，使模型在允许的表达空间内选择内容，为后续模型构造提供满足生成规范的输入[@gengGrammarConstrainedDecodingStructured2024]。",
+    "number": 17
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.2 受约束解码如何参与实例模型生成",
+    "bibkey": "Dong2024XGrammar",
+    "context": "可控制的解码后端先将本次生成规范转换为支持的语法表示，并结合分词器进行编译[@Dong2024XGrammar][@XGrammar22026]。生成过程中，匹配器根据当前输出前缀维护语法状态，确定下一步允许的词元。LLM 给出下一词元的得分后，后端将不允许词元的得分设为负无穷，再从允许候选中选择下一个词元；输出增加该词元，匹配器也随之更新，直至完成输出。",
+    "number": 18
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.2 受约束解码如何参与实例模型生成",
+    "bibkey": "XGrammar22026",
+    "context": "可控制的解码后端先将本次生成规范转换为支持的语法表示，并结合分词器进行编译[@Dong2024XGrammar][@XGrammar22026]。生成过程中，匹配器根据当前输出前缀维护语法状态，确定下一步允许的词元。LLM 给出下一词元的得分后，后端将不允许词元的得分设为负无穷，再从允许候选中选择下一个词元；输出增加该词元，匹配器也随之更新，直至完成输出。",
+    "number": 19
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.2 受约束解码如何参与实例模型生成",
+    "bibkey": "Dong2024XGrammar",
+    "context": "这一控制既涉及标点和嵌套结构，也涉及 schema 已编码的字段名与合法值。进入引用取值时，约束可将输出限制在本次配置的候选路径内；进入已绑定的数值字段时，则可限制为任务指定的值。词元与字符、语法符号并非一一对应，后端需在分词器层面维护这些允许关系[@Dong2024XGrammar]。图 4 将任务约束组装与这一逐步执行过程分开表示。",
+    "number": 18
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.5.2 受约束解码如何参与实例模型生成",
+    "bibkey": "parkGrammaralignedDecoding2025",
+    "context": "检索提示与受约束解码在此承担互补作用：前者提供需求含义和领域依据，后者排除违反已执行结构限制的延续。受约束解码会改变原模型的输出分布，其局部筛选不等同于在所有满足约束的完整结果中进行最优选择[@parkGrammaralignedDecoding2025]。因此，L1 的作用是执行已经编码且得到后端支持的生成约束，领域一致性与任务满足情况继续由 L2 检查。",
+    "number": 21
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.6 生成后验证与任务验收",
+    "bibkey": "Chen2026ProjectionalDecoding",
+    "context": "L2 检查候选模型与序列化制品是否满足元模型规定、适用领域规则和本次任务。它与 L1 按表达能力和上下文需求分工：能够提前表达为结构或有限取值限制的要求在生成时执行；需要完整对象、跨对象关系或目标制品的要求在构造后判断。同一规则也可以同时参与两层。例如，L1 按目标类型筛选引用候选，L2 检查构造后的引用能否正确解析。近期研究也探索在模型构造期间执行部分语义检查[@Chen2026ProjectionalDecoding]，因而两层并不对应固定的“语法／语义”二分。",
+    "number": 20
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.6 生成后验证与任务验收",
+    "bibkey": "W3CXMLSchema2004",
+    "context": "**检查对象与验收依据。** 验证按实际作用对象组织为四个方面：生成表示与目标制品的格式有效性、候选模型的**元模型符合性**（metamodel conformance）、领域**良构约束**（well-formedness constraints）与其他规则，以及本次任务的**需求满足**（requirements satisfaction）。元模型符合性涉及类型、属性、关系和基数等规定，良构约束可以涉及跨元素一致性；某些格式工具也能同时检查内容结构[@W3CXMLSchema2004]。检查配置明确各项要求由哪个工具或检查器判断。",
+    "number": 27
+  },
+  {
+    "chapter": "方法论",
+    "section": "3.7 依据验证反馈修复模型",
+    "bibkey": "marchezanGeneratingRepairsInconsistent2023",
+    "context": "模型修复以不一致定位、编辑操作和修复候选为基础[@marchezanGeneratingRepairsInconsistent2023]。本方法使用 L2 的规则标识、模型元素与制品位置确定可修改对象，再将失败诊断、相关规则、原任务要求及允许操作提供给 LLM。允许操作由领域适配者定义，例如修改属性值、替换引用、补充必需对象或删除允许删除的元素。",
+    "number": 22
+  },
+  {
+    "chapter": "实验",
+    "section": "4.2.1 需求来源与生成流程",
+    "bibkey": "AUTOSAR422",
+    "context": "AUTOSAR 用于描述汽车软件组件、接口及其交互，ARXML 是相应的 XML 交换表示。20 个需求由作者依据 AUTOSAR Classic 4.2.2 的 Software Component Template 设计组件结构、端口及引用要求[@AUTOSAR422]，并依据同版 Specification of RTE 核对周期触发和显式数据访问的含义[@AUTOSARRTE422]。案例组合还参考 ETAS 工具链中一个 RH850 工程的模型结构。作者对观察到的接口、端口、Runnable、周期事件及访问关系进行去上下文化、分解重组和参数变化，形成 6 个最小、7 个标准和 7 个完整案例。规范依据与作者设计内容见附录 A.1、表 A1。",
+    "number": 28
+  },
+  {
+    "chapter": "实验",
+    "section": "4.2.1 需求来源与生成流程",
+    "bibkey": "AUTOSARRTE422",
+    "context": "AUTOSAR 用于描述汽车软件组件、接口及其交互，ARXML 是相应的 XML 交换表示。20 个需求由作者依据 AUTOSAR Classic 4.2.2 的 Software Component Template 设计组件结构、端口及引用要求[@AUTOSAR422]，并依据同版 Specification of RTE 核对周期触发和显式数据访问的含义[@AUTOSARRTE422]。案例组合还参考 ETAS 工具链中一个 RH850 工程的模型结构。作者对观察到的接口、端口、Runnable、周期事件及访问关系进行去上下文化、分解重组和参数变化，形成 6 个最小、7 个标准和 7 个完整案例。规范依据与作者设计内容见附录 A.1、表 A1。",
+    "number": 29
+  },
+  {
+    "chapter": "实验",
+    "section": "4.2.2 从 ICM 到一次检查",
+    "bibkey": "AUTOSAR422",
+    "context": "AUTOSAR 的 ICM 保存 1,085 张约束卡片与 6,533 条约束关联，检查计划配置 554 条规则，具体运行按适用对象执行检查。约束记录的语义整理、元素绑定与检查实现具有各自的状态，附录 A.2 分别说明。规范约束抽取、元模型关联及验证器构造见附录 A.2，抽取规格汇总于表 A2。图 6 展示其中一条周期 Runnable 约束的应用：规范规则 TPS_SWCT_01519 关联到 Runnable、内部行为和 TimingEvent[@AUTOSAR422]；任务绑定选出具体 Runnable；运行时调用已有周期事件检查，判断事件是否存在、是否指向该 Runnable，以及周期值是否可解析。该次记录中的一个适用对象已实际完成检查并通过。",
+    "number": 28
+  },
+  {
+    "chapter": "实验",
+    "section": "4.3 AUTOSAR-vLLM：生成约束对解码的实际干预",
+    "bibkey": "Kwon2023PagedAttention",
+    "context": "此实验固定 AUTOSAR 案例及其生成约束，直接观察 L1 在生成过程中的作用。三种条件分别为：**提示约束（U）**，仅在提示中给出需求和完整 JSON Schema；**受约束解码（G）**，在相同提示下进一步启用解码约束；**受约束解码与审计（A）**，在 G 的基础上记录逐步解码信息。三组使用相同模型与采样设置，并平衡执行顺序。运行采用 vLLM[@Kwon2023PagedAttention]和 XGrammar[@Dong2024XGrammar]。",
+    "number": 30
+  },
+  {
+    "chapter": "实验",
+    "section": "4.3 AUTOSAR-vLLM：生成约束对解码的实际干预",
+    "bibkey": "Dong2024XGrammar",
+    "context": "此实验固定 AUTOSAR 案例及其生成约束，直接观察 L1 在生成过程中的作用。三种条件分别为：**提示约束（U）**，仅在提示中给出需求和完整 JSON Schema；**受约束解码（G）**，在相同提示下进一步启用解码约束；**受约束解码与审计（A）**，在 G 的基础上记录逐步解码信息。三组使用相同模型与采样设置，并平衡执行顺序。运行采用 vLLM[@Kwon2023PagedAttention]和 XGrammar[@Dong2024XGrammar]。",
+    "number": 18
+  },
+  {
+    "chapter": "实验",
+    "section": "4.4.1 任务、验证器与比较条件",
+    "bibkey": "TrainBenchmark2018",
+    "context": "铁路实验采用 Train Benchmark 的既有元模型和六条模型查询[@TrainBenchmark2018]。作者设计三类配置任务——服务衔接、维护预备和冗余监测——并分别应用于八种线路布局，形成 24 个基础任务。结构化任务规格声明固定对象、物理连接、可赋值字段及任务义务；这些信息被编译为结构计划和生成约束。LLM 选择字段取值，适配器装配候选模型并输出 XMI。",
+    "number": 31
+  },
+  {
+    "chapter": "实验",
+    "section": "4.4.1 任务、验证器与比较条件",
+    "bibkey": "madaanSelfRefineIterativeRefinement2023",
+    "context": "每个任务运行三次，得到 72 个生成起点。比较**初始生成（G0）**、**自修复（GS）**和**验证反馈修复（GF）**。自修复要求模型依据规则检查并修改自身输出，与 Self-Refine 的自我修订思路相关[@madaanSelfRefineIterativeRefinement2023]；验证反馈修复进一步提供实际诊断、违规位置和局部候选，并通过接纳检查保持已满足的要求。每个修复分支最多两轮，每轮最多修改六个显式字段。根据不一致原因组织修复并限制修改范围，也与已有模型修复研究相衔接[@marchezanGeneratingRepairsInconsistent2023]。",
+    "number": 23
+  },
+  {
+    "chapter": "实验",
+    "section": "4.4.1 任务、验证器与比较条件",
+    "bibkey": "marchezanGeneratingRepairsInconsistent2023",
+    "context": "每个任务运行三次，得到 72 个生成起点。比较**初始生成（G0）**、**自修复（GS）**和**验证反馈修复（GF）**。自修复要求模型依据规则检查并修改自身输出，与 Self-Refine 的自我修订思路相关[@madaanSelfRefineIterativeRefinement2023]；验证反馈修复进一步提供实际诊断、违规位置和局部候选，并通过接纳检查保持已满足的要求。每个修复分支最多两轮，每轮最多修改六个显式字段。根据不一致原因组织修复并限制修改范围，也与已有模型修复研究相衔接[@marchezanGeneratingRepairsInconsistent2023]。",
+    "number": 22
+  },
+  {
+    "chapter": "实验",
+    "section": "4.5 国际私法：结构化法律决策中的分层检查",
+    "bibkey": "EU1215_2012",
+    "context": "案例集由两名国际私法研究生依据 Brussels I bis[@EU1215_2012]及欧盟商标条例[@EU2017_1001]构建，共包含 60 个合成情景，涵盖一般与特别管辖、协议管辖、程序关系及国内法转介等情况。两人分别复核参考标签，初轮复核中不查看对方判断，并通过讨论解决分歧。参考判断在正式生成前确定。",
+    "number": 32
+  },
+  {
+    "chapter": "实验",
+    "section": "4.5 国际私法：结构化法律决策中的分层检查",
+    "bibkey": "EU2017_1001",
+    "context": "案例集由两名国际私法研究生依据 Brussels I bis[@EU1215_2012]及欧盟商标条例[@EU2017_1001]构建，共包含 60 个合成情景，涵盖一般与特别管辖、协议管辖、程序关系及国内法转介等情况。两人分别复核参考标签，初轮复核中不查看对方判断，并通过讨论解决分歧。参考判断在正式生成前确定。",
+    "number": 33
+  },
+  {
+    "chapter": "实验",
+    "section": "4.5 国际私法：结构化法律决策中的分层检查",
+    "bibkey": "Lewis2020RAG",
+    "context": "实验依次比较四种条件：仅有共同输出要求的**基础提示（P0）**、加入法律依据的**检索增强（P1）**、进一步执行严格输出结构的**结构约束（P2）**，以及增加生成后审计、一次修复和发布控制的**完整检查（P3）**。检索增强与相关工作中的检索支持生成思路一致[@Lewis2020RAG]。各组均为 60 案各三次运行，每组 180 个结果。案例准备和各组输入、生成及处理条件见附录 D.1、表 D1。",
+    "number": 16
+  },
+  {
+    "chapter": "结论",
+    "section": "5 结论",
+    "bibkey": "Almonte2026EMFKaizen",
+    "context": "近期 LLM 与 MDE 研究已涉及模型与元模型构造、语义引导生成，以及形式化规格生成[@Almonte2026EMFKaizen][@Chen2026ProjectionalDecoding][@maSpecGenAutomatedGeneration2025]。随着自然语言逐步参与模型、规格和代码等制品的构造，显式建模语言、模型转换及验证工具仍是组织自动化的重要基础。本文的分层原则为这些能力的衔接提供了方法依据：在生成过程中执行可提前判定的限制，在生成后审查需要完整上下文的性质，并以原始要求判断最终制品是否完成任务。在此基础上，后续工作可进一步向领域资源准备阶段延伸。",
+    "number": 5
+  },
+  {
+    "chapter": "结论",
+    "section": "5 结论",
+    "bibkey": "Chen2026ProjectionalDecoding",
+    "context": "近期 LLM 与 MDE 研究已涉及模型与元模型构造、语义引导生成，以及形式化规格生成[@Almonte2026EMFKaizen][@Chen2026ProjectionalDecoding][@maSpecGenAutomatedGeneration2025]。随着自然语言逐步参与模型、规格和代码等制品的构造，显式建模语言、模型转换及验证工具仍是组织自动化的重要基础。本文的分层原则为这些能力的衔接提供了方法依据：在生成过程中执行可提前判定的限制，在生成后审查需要完整上下文的性质，并以原始要求判断最终制品是否完成任务。在此基础上，后续工作可进一步向领域资源准备阶段延伸。",
+    "number": 20
+  },
+  {
+    "chapter": "结论",
+    "section": "5 结论",
+    "bibkey": "maSpecGenAutomatedGeneration2025",
+    "context": "近期 LLM 与 MDE 研究已涉及模型与元模型构造、语义引导生成，以及形式化规格生成[@Almonte2026EMFKaizen][@Chen2026ProjectionalDecoding][@maSpecGenAutomatedGeneration2025]。随着自然语言逐步参与模型、规格和代码等制品的构造，显式建模语言、模型转换及验证工具仍是组织自动化的重要基础。本文的分层原则为这些能力的衔接提供了方法依据：在生成过程中执行可提前判定的限制，在生成后审查需要完整上下文的性质，并以原始要求判断最终制品是否完成任务。在此基础上，后续工作可进一步向领域资源准备阶段延伸。",
+    "number": 24
+  },
+  {
+    "chapter": "附录",
+    "section": "A.1 需求设计与生成设置",
+    "bibkey": "AUTOSAR422",
+    "context": "20 个需求依据 AUTOSAR Classic 4.2.2 的 Software Component Template 和 Specification of RTE 设计[@AUTOSAR422][@AUTOSARRTE422]。前者规定组件、端口、通信属性、内部行为及引用结构，后者用于解释周期触发与显式数据访问。ETAS 工具链下 RH850 工程中的接口与行为组合提供工程观察依据；作者进行去上下文化、命名规范化、分解重组和参数变化，形成表 A1 的三个层次。",
+    "number": 28
+  },
+  {
+    "chapter": "附录",
+    "section": "A.1 需求设计与生成设置",
+    "bibkey": "AUTOSARRTE422",
+    "context": "20 个需求依据 AUTOSAR Classic 4.2.2 的 Software Component Template 和 Specification of RTE 设计[@AUTOSAR422][@AUTOSARRTE422]。前者规定组件、端口、通信属性、内部行为及引用结构，后者用于解释周期触发与显式数据访问。ETAS 工具链下 RH850 工程中的接口与行为组合提供工程观察依据；作者进行去上下文化、命名规范化、分解重组和参数变化，形成表 A1 的三个层次。",
+    "number": 29
+  },
+  {
+    "chapter": "附录",
+    "section": "A.1 需求设计与生成设置",
+    "bibkey": "AUTOSAR422",
+    "context": "所选初始值的规范依据见 Software Component Template 的 constr_1201，使用含义见 TPS_SWCT_01220[@AUTOSAR422]；数值 0 是任务设计中的具体选择。20 个基础案例共要求 33 个提供端口、32 个需求端口、18 个 Runnable、18 个周期事件和 55 个变量访问。详细案例来源与设计说明随复现材料提供。",
+    "number": 28
+  },
+  {
+    "chapter": "附录",
+    "section": "A.2 规范约束抽取、ICM 与验证器",
+    "bibkey": "AUTOSAR422",
+    "context": "规范约束抽取使用 Software Component Template 第 2–13 章的文本及其元模型信息[@AUTOSAR422]。作者标注章节、相关类和枚举，系统从元模型转换所得的表示中补入相应属性和枚举字面量，按章节与段落形成带上下文的输入片段。LLM 据此提出结构化约束及其目标元素候选，后续整理结合规范原文形成约束记录与元素绑定。规范原文为英文，抽取实现中的控制提示使用中文；抽取与后续语义整理的实现、记录及身份分别提供。表 A2 概括领域准备流程，固定资源的实际复核状态见下文。",
+    "number": 28
+  },
+  {
+    "chapter": "附录",
+    "section": "A.4 贯穿案例 周期组件的构造与事件引用恢复",
+    "bibkey": "AUTOSAR422",
+    "context": "**任务及领域依据。** ASW-FULL-01 要求构造组件 ASW_Com_Full_Baseline，含三个提供端口、三个需求端口及六个接口；一个 Runnable 每隔 10 ms 执行三项读取和三项写入。需求还指定接收初始值为 0、超时为 0.3 s。元模型提供内部行为、Runnable、TimingEvent 及其包含和引用关系；ICM 中的 TPS_SWCT_01519 为声明为周期执行的 Runnable 提供事件检查依据[@AUTOSAR422]。",
+    "number": 28
+  },
+  {
+    "chapter": "附录",
+    "section": "B.1 比较条件与执行设置",
+    "bibkey": "Kwon2023PagedAttention",
+    "context": "实验使用 Qwen3.5-9B、vLLM[@Kwon2023PagedAttention] 和 XGrammar[@Dong2024XGrammar]，在两张 RTX 4090 上执行，张量并行度为 2。温度为 0，top_p 为 1，关闭 thinking、推测解码和前缀缓存，最大输出为 16,384 词元。20 个案例各使用三个固定种子，形成 60 个区组；提示约束 U、受约束解码 G、解码与审计 A 的六种执行排列各用于十个区组。",
+    "number": 30
+  },
+  {
+    "chapter": "附录",
+    "section": "B.1 比较条件与执行设置",
+    "bibkey": "Dong2024XGrammar",
+    "context": "实验使用 Qwen3.5-9B、vLLM[@Kwon2023PagedAttention] 和 XGrammar[@Dong2024XGrammar]，在两张 RTX 4090 上执行，张量并行度为 2。温度为 0，top_p 为 1，关闭 thinking、推测解码和前缀缓存，最大输出为 16,384 词元。20 个案例各使用三个固定种子，形成 60 个区组；提示约束 U、受约束解码 G、解码与审计 A 的六种执行排列各用于十个区组。",
+    "number": 18
+  },
+  {
+    "chapter": "附录",
+    "section": "C.1 模型来源与检查",
+    "bibkey": "TrainBenchmark2018",
+    "context": "实验复用 Train Benchmark 的元模型和六条 VIATRA 查询[@TrainBenchmark2018]，作者设计服务衔接、维护预备和冗余监测三类任务，并应用于链式、分支汇合、环、自环、共享道岔、分离线路、多区域和分支环八种布局。任务规格规定对象、固定物理连接、允许赋值字段以及必须保持的服务状态和监测关系。作者将这些任务要求明确写入结构化规格，系统据此形成任务相关的约束表示和结构计划；实现中该任务产物命名为 ICM，用于绑定本次对象与要求，与方法中的可复用领域约束资源分别说明。领域检查沿用上述原生查询。",
+    "number": 31
+  },
+  {
+    "chapter": "附录",
+    "section": "C.2 条件与补充集合",
+    "bibkey": "madaanSelfRefineIterativeRefinement2023",
+    "context": "主实验使用 gpt-5.6-luna、low 推理强度、温度 1.0、128,000 词元最大输出预算及三个固定种子。初始生成 G0 的两个分支分别为自修复 GS 和验证反馈修复 GF。受控集合中，自修复 S 获得公共规则、当前模型及允许字段，采用与 Self-Refine 相关的自我检查思路[@madaanSelfRefineIterativeRefinement2023]；V 增加验证反馈与非回归接纳，F 进一步提供违规位置、局部候选和依赖信息。每个分支最多两轮，每轮最多修改六个显式字段，拒绝或无进展时可以提前停止。",
+    "number": 23
+  },
+  {
+    "chapter": "附录",
+    "section": "D.1 案例与比较条件",
+    "bibkey": "EU1215_2012",
+    "context": "PIL 实验采用由两名国际私法研究生构建的 60 个英文合成管辖情景。两人分别复核初轮参考标签，初轮未查看对方判断，再共同讨论分歧。案例依据 Brussels I bis 的 2015 年 2 月 26 日合并文本[@EU1215_2012]及欧盟商标条例的 2025 年 12 月 1 日合并文本[@EU2017_1001]。依据条文含义整理决策字段、管辖类型和跨字段检查，并将 58 条条款转述组织为支持库。条文以法律文书和条款的联合身份引用，固定词汇检索最多返回 12 条。",
+    "number": 32
+  },
+  {
+    "chapter": "附录",
+    "section": "D.1 案例与比较条件",
+    "bibkey": "EU2017_1001",
+    "context": "PIL 实验采用由两名国际私法研究生构建的 60 个英文合成管辖情景。两人分别复核初轮参考标签，初轮未查看对方判断，再共同讨论分歧。案例依据 Brussels I bis 的 2015 年 2 月 26 日合并文本[@EU1215_2012]及欧盟商标条例的 2025 年 12 月 1 日合并文本[@EU2017_1001]。依据条文含义整理决策字段、管辖类型和跨字段检查，并将 58 条条款转述组织为支持库。条文以法律文书和条款的联合身份引用，固定词汇检索最多返回 12 条。",
+    "number": 33
+  },
+  {
+    "chapter": "附录",
+    "section": "D.3 贯穿案例 选法院协议的类型修订",
+    "bibkey": "EU1215_2012",
+    "context": "**复验与发布。** 修订交换主要与备选类型，保留法院、结论及上述依据。复验的结构和审计均通过，记录实际发布，并由参考不兼容转为兼容，达到主要复合终点。本文以 `agreement` 表示协议管辖依据，`exclusive` 的主要类型对应预先编码的法定专属管辖类别；该修订不否定 Article 25(1) 下选法院协议可能具有的排他效力[@EU1215_2012]。此例展示结构有效之后的跨字段检查与修订，不能据此认定全部法律条件均已得到证明。",
+    "number": 32
+  },
+  {
+    "chapter": "附录",
+    "section": "D.4 定向专家复核",
+    "bibkey": "EU1215_2012",
+    "context": "在自动评分之外，专家还对 case19 和 case42 的三份具体回答作了定向复核。case19 中，依据 Article 6(1) 转交德国国内法的结论明确，后续国内法是否赋予管辖权仍待判断[@EU1215_2012]；条件标记应评价所选结论本身，规范编码为 false。原模型 true 反映了对后一层问题的解释，实体解释可接受，但不据此改写其原自动终点。",
+    "number": 32
+  },
+  {
+    "chapter": "附录",
+    "section": "D.4 定向专家复核",
+    "bibkey": "EU1215_2012",
+    "context": "case42 中，法国消费者向荷兰商家网购家具，并另行确认阿姆斯特丹法院条款。P1 第一次回答从荷兰住所直接推出阿姆斯特丹具体法院具有管辖权，专家认为后文未纠正这一错误，判为不可接受；该回答的自动终点通过。P3 第一次回答在后文明确给整个结论加上消费者规则和选法院条件限制，专家判为有条件可接受。消费者另行确认条款并不自动满足 Articles 19 和 25(4) 的要求[@EU1215_2012]。这一对照说明结构化终点与全文实体判断应分别解释。",
+    "number": 32
+  }
+]
