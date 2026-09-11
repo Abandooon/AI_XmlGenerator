@@ -1,4 +1,22 @@
-# AUTOSAR Classic ASW 20 条需求的来源、设计与合规说明
+# AUTOSAR requirement provenance and source navigation
+
+This English entry identifies the sources used by Section 4.2.1 and Appendix A.1 of the [current manuscript](../current/README.md). The original Chinese design explanation is retained below as historical source context. Its dated statements and earlier publication recommendations are not current manuscript instructions.
+
+The 20 cases are author-curated component-level requirements: six minimal, seven standard and seven full cases. AUTOSAR Classic 4.2.2 defines the modeled elements and relations; an ETAS/RH850 engineering example informed recurring modeling patterns; the authors simplified, recombined and parameterized those patterns. The set is not an official AUTOSAR test suite or a statistical sample of customer projects.
+
+| Inspect | Current package location |
+| --- | --- |
+| Structured case definitions | [asw_cases_v3.yaml](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/asw_cases_v3.yaml) |
+| Prompt renderer | [render_cases.py](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/render_cases.py) |
+| Original rendered prompts and run identities | [AUTOSAR archive](../../experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip); members under `AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/requirements/` |
+| Worked example, actual ARXML and checks | [Evidence map](../../docs/REVIEWER_EVIDENCE_MAP.md#autosar-periodic-component-example) |
+| Constraint preparation and language roles | [ICM evidence](../../docs/ICM_EVIDENCE.md) |
+| Current statistical methods | [Statistical analysis](../../docs/STATISTICAL_ANALYSIS.md) |
+
+The saved `requirements/rendered/prompts/ASW-FULL-01.txt` and that run's retained component-generation prompt are in English. This observation identifies those particular inputs; it does not make the normative source, extraction instructions, all control messages or comments one language. See the ICM guide for the separate preparation workflow. The historical engineering-workspace locator below is not a distributable package link.
+
+---
+## Historical Chinese design note
 
 ## 1. 文档目的
 
@@ -9,7 +27,7 @@
 - 为论文中的需求构造方法、数据集说明和局限性提供可复用文字；
 - 防止将作者构建的组件片段基准误称为 AUTOSAR 官方测试集或完整工业需求集。
 
-本文档是冻结需求集的伴随说明，不改变 [`asw_cases_v3.yaml`](asw_cases_v3.yaml)、已渲染提示词、运行清单或任何实验哈希。
+本文档是冻结需求集的伴随说明，不改变 [`asw_cases_v3.yaml`](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/asw_cases_v3.yaml)、已渲染提示词、运行清单或任何实验哈希。
 
 ## 2. 结论摘要
 
@@ -188,7 +206,7 @@ ETAS 公开资料将 ISOLAR-A 描述为用于设计 AUTOSAR Classic architecture
 E:/博士材料/AUTOSAR/ETAS_RH850_AR422_OnSiteSupport_Multicore
 ```
 
-其中 [`ASW_COM.arxml`](<E:/博士材料/AUTOSAR/ETAS_RH850_AR422_OnSiteSupport_Multicore/ASW/ASW_COM/arxml/ASW_COM.arxml>) 的根元素声明：
+其中 `ASW_COM.arxml`（历史工程观察文件；作者本机定位不作为公开包链接） 的根元素声明：
 
 ```xml
 xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd"
@@ -496,17 +514,18 @@ ETAS 工程中重复出现的六接口通信模式
 
 如果出版格式允许，建议对 [3]-[5] 进一步替换为 AUTOSAR 官方文档检索页中明确标记的 4.2.2 版本；较新版本可保留为概念延续的补充引用，但不承担目标版本合规证明。
 
-## 18. 本项目中的权威工件
+## 18. Current package locations
 
-1. [`asw_cases_v3.yaml`](asw_cases_v3.yaml)：需求、范围、接口目录、评分规则和 20 条结构化案例的权威源。
-2. [`README.md`](README.md)：人类可读的数据集与冻结哈希说明。
-3. [`render_cases.py`](render_cases.py)：从结构化需求确定性生成提示词与运行定义。
-4. [`rendered/run_manifest.json`](rendered/run_manifest.json)：20 份提示词、60 条运行定义和哈希。
-5. [`../atlas_model_probe/PAPER_READY_AUTOSAR_EXECUTION_PLAN.md`](../atlas_model_probe/PAPER_READY_AUTOSAR_EXECUTION_PLAN.md)：实验范围、验证门、统计与执行协议。
-6. [`../atlas_model_probe/ALL_REQUIREMENTS_OFFLINE_PRECHECK_MANIFEST.json`](../atlas_model_probe/ALL_REQUIREMENTS_OFFLINE_PRECHECK_MANIFEST.json)：85/85 XSD、225/225 引用和受控变异检测证据。
+The following links replace the historical author's-directory navigation. They do not change the frozen requirement definitions.
 
-需求设计的权威顺序为：`asw_cases_v3.yaml` > 确定性渲染工件 > 执行调度。运行调度只决定何时、以何 seed 执行，不是需求来源。
+1. [Case specification](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/asw_cases_v3.yaml): the 20 structured cases and declared task obligations.
+2. [Deterministic renderer](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/render_cases.py): converts case specifications into requirement prompts and run definitions.
+3. [Original AUTOSAR archive](../../experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip): under `AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/`, inspect `requirements/README.md`, `requirements/rendered/run_manifest.json` and `requirements/rendered/prompts/`.
+4. The same archive retains `code_snapshot/experiment/ALL_REQUIREMENTS_OFFLINE_PRECHECK_MANIFEST.json`. This is a historical preparation check; use the [current package entry](../../experiments/autosar/README.md) for the documented offline review of the formal experiment.
+5. [Paper-to-evidence map](../../docs/REVIEWER_EVIDENCE_MAP.md): exact prompt, schema, ARXML and validation member paths for the current worked example.
+6. [Statistical analysis](../../docs/STATISTICAL_ANALYSIS.md) and [ICM evidence](../../docs/ICM_EVIDENCE.md): current explanations and source-status distinctions.
 
+The case specification defines the requirement; rendered artifacts express it deterministically; the schedule assigns executions and seeds. The schedule is not the origin of the requirement.
 ## 19. V20 正式证据的使用边界（2026-09-02）
 
 本需求来源说明与 V20 正式数据配套使用。V20 不改变上述 20 条需求的来源、语言、裁剪方式或代表性边界；它只是在通用 IR 编译与验证路径修复并重新冻结后，统一执行了完整正式设计。

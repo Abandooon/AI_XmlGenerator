@@ -1,33 +1,43 @@
-# ICM 追溯实例图数据来源
+# Figure 6: source identities and archive navigation
 
-图：一条周期激活约束的真实追溯实例。上部显示规范来源、ICM 记录及其元模型实体关联；下部全部运行证据来自 ASW-FULL-01 的第一次生成运行。R 表示 RE_Com_Full_Baseline，E 表示 TE_Com_Full_Baseline。规则检查确认事件、目标引用和周期数值，原任务验收程序另从案例定义读取 0.01 s 并进行精确比较。该规范不规定统一的 10 ms 周期。ICM 记录仍处于待语义复核状态；此图展示可追溯性，未将通过结果作为抽取准确率。本运行未启用修复，图中不含修复轨迹。图示为选定的信息关系和检查输入，不是完整执行流程。
+Figure 6 connects one periodic-runnable constraint to its source, ICM record, object binding and executed checks. The run evidence comes from `ASW-FULL-01`, first repetition, with repair disabled. `R` is `RE_Com_Full_Baseline`; `E` is `TE_Com_Full_Baseline`. The full runnable path is `/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline`.
 
-R 的完整路径：`/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline`。
+Read the figure with Section 4.2.2 and Appendix A.2/A.4 of the [current manuscript](../current/README.md), the [ICM evidence guide](../../docs/ICM_EVIDENCE.md) and the [worked-example archive index](../../docs/REVIEWER_EVIDENCE_MAP.md#autosar-periodic-component-example). The standalone normative excerpt is supplied for inspection in this revision; it is not represented as an entire specification chapter included in the historical runtime.
 
-图中处理后计划、上下文、原始 ARXML 和两项检查均来自同一运行目录。规范记录保存在审稿包冻结运行资源中，其来源文本校验值与 AUTOSAR 冻结检查计划一致，检索数据集身份与本次验证上下文一致。
+## Directly browseable sources
 
-## 可核对来源
+| Source | Location and selector | SHA-256 |
+| --- | --- | --- |
+| Normative source excerpt | [Selected source and preparation records](../../supporting/autosar_constraint_preparation/TPS_SWCT_01519_source_excerpt.json), `normative_source.raw_text`; original chapter 7, line 134, section 7.2.3 | Original complete source file: `f3af5fb5cfc099ecc676f9558a1d67544056ad6d2e95f60d53682809089bbdc0`; excerpt identity is recorded separately in the JSON |
+| Structured constraint | [constraints_v2.json](../../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json), item 698 | `d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d` |
+| Retrieval identity | [retrieval_manifest.json](../../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/retrieval_manifest.json), `dataset_sha256` | `5415f606091efc22ae9f8e8f7e71c712c4d003c6ce32fa6e253766d17d9b3524` |
+| Original case | [Case YAML](../../experiments/vllm/runtime/atlas_autosar_requirements_v3/asw_cases_v3.yaml), lines 303–319, period at line 316 | `3b61eb5926b5646a12f8767524192cd7ed65a39e27a37aa9672277058489e024` |
+| Task evaluator | [Frozen evaluator](../../experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py), lines 346–370 | `2e5f4dda22b575dbbed7ee7a1d30ca7bfa108c5bb88367205fc5a4596434b383` |
 
-- normative_source_copy: [E:\git projects\AI_XmlGenerator\src\kg_builder\doc_constr_parser\input\chapter7.md](E:/git projects/AI_XmlGenerator/src/kg_builder/doc_constr_parser/input/chapter7.md); line 134; section 7.2.3; SHA-256 `f3af5fb5cfc099ecc676f9558a1d67544056ad6d2e95f60d53682809089bbdc0`。
-- structured_record: [E:\Desktop\ATLAS论文修改版\12_审稿复现包_2026-09-09\reviewer_release\experiments\vllm\runtime\AI_XmlGenerator\src\kg_builder\doc_constr_parser\v2\constraints_v2.json](E:/Desktop/ATLAS论文修改版/12_审稿复现包_2026-09-09/reviewer_release/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json); $[698]; SHA-256 `d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d`。
-- retrieval_identity: [E:\Desktop\ATLAS论文修改版\12_审稿复现包_2026-09-09\reviewer_release\experiments\vllm\runtime\AI_XmlGenerator\src\llm_generation\knowledge\v2\retrieval_manifest.json](E:/Desktop/ATLAS论文修改版/12_审稿复现包_2026-09-09/reviewer_release/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/retrieval_manifest.json); $.dataset_sha256; SHA-256 `5415f606091efc22ae9f8e8f7e71c712c4d003c6ce32fa6e253766d17d9b3524`。
-- original_case: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\requirements\asw_cases_v3.yaml](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/requirements/asw_cases_v3.yaml); lines 303-319; period at line 316; SHA-256 `3b61eb5926b5646a12f8767524192cd7ed65a39e27a37aa9672277058489e024`。
-- processed_phase1_plan: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\runs\gpt-5.6-luna\ASW-FULL-01\R1\repair-off\attempt-001\atlas_output\round1_data\round1_20260902_162824.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/round1_data/round1_20260902_162824.json); $.design.component_plan[0].element_design.selections[18]; SHA-256 `6140a22b53de5c387247d7ab93404495c6d662cdbdf3f58b54eb2741bbd05c0d`。
-- validation_context: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\runs\gpt-5.6-luna\ASW-FULL-01\R1\repair-off\attempt-001\atlas_output\ARXML\validation_context_8f34364d_1788337723.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_context_8f34364d_1788337723.json); $.declared_targets.TPS_SWCT_01519; SHA-256 `4340bfbc69da58317ca40cca2f40dd42745938ca32125cfe4ed6f69418676f37`。
-- original_component: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\runs\gpt-5.6-luna\ASW-FULL-01\R1\repair-off\attempt-001\atlas_output\ARXML\Components\ASW_Com_Full_Baseline_8f34364d_1788337723.arxml](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/Components/ASW_Com_Full_Baseline_8f34364d_1788337723.arxml); TIMING-EVENT[SHORT-NAME=TE_Com_Full_Baseline]; SHA-256 `062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f`。
-- original_validation: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\runs\gpt-5.6-luna\ASW-FULL-01\R1\repair-off\attempt-001\atlas_output\ARXML\validation_8f34364d_1788337723.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_8f34364d_1788337723.json); $.rules[336]; SHA-256 `1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80`。
-- original_task_evaluation: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\runs\gpt-5.6-luna\ASW-FULL-01\R1\repair-off\attempt-001\independent_evaluation.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/independent_evaluation.json); $.structural_obligations[54]; SHA-256 `2b13e53ef9bfb9f3a76976eda723e35c637633f8ac4d1dc992f3126f095321c9`。
-- frozen_rule_plan: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\code_snapshot\runtime_assets\src\generate_formal_constraints\v2\validation_plan.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/code_snapshot/runtime_assets/src/generate_formal_constraints/v2/validation_plan.json); $.rules[335]; SHA-256 `ff719d51316b013051c7814c644b4e79ceeced7a1e210751c121d341f2649e9d`。
-- frozen_plugin: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\code_snapshot\runtime_assets\src\validation\v2\value_and_local_plugins.py](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/code_snapshot/runtime_assets/src/validation/v2/value_and_local_plugins.py); lines 349-366; SHA-256 `39592a74615820f363d947f6ed9c302c15daed0343f18acc3a41d698f2c39d4c`。
-- frozen_task_evaluator: [E:\Desktop\ATLAS论文修改版\12_审稿复现包_2026-09-09\reviewer_release\experiments\autosar\frozen_code\experiment\evaluate_asw_v3_run.py](E:/Desktop/ATLAS论文修改版/12_审稿复现包_2026-09-09/reviewer_release/experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py); lines 346-370; SHA-256 `2e5f4dda22b575dbbed7ee7a1d30ca7bfa108c5bb88367205fc5a4596434b383`。
-- run_ledger: [E:\54239\Documents\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\evidence\formal_v20\generation\experiment_results.json](E:/54239/Documents/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/experiment_results.json); $.records[39]; SHA-256 `6b9c0eaa7ae4b0add4b33e4bf70fe00dd863b66c848c377eaa561b3845aa7def`。
+## Original run and checker members
 
-## 核对边界
+Open the [original AUTOSAR ZIP](../../experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip). Its top-level directory is `AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/`. The selected run prefix after that directory is:
 
-- The normative requirement does not prescribe 0.01 s; that value belongs to the case.
-- The constraint remains provisional/needs_review. Rule execution does not certify source interpretation.
-- The existing plugin checks event existence, runnable reference, and numeric period, not equality to the original requested period.
-- The exact requested period is checked separately by the task evaluator.
-- The preserved Phase 1 plan is a processed plan, not the missing original pre-intervention response body.
-- This run disabled repair. No repair trajectory is depicted.
-- The full-corpus result remains INCOMPLETE despite the depicted local and task checks passing.
+```text
+evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/
+```
+
+| Run member after that prefix | Selector | SHA-256 |
+| --- | --- | --- |
+| `atlas_output/round1_data/round1_20260902_162824.json` | `design.component_plan[0].element_design.selections[18]` | `6140a22b53de5c387247d7ab93404495c6d662cdbdf3f58b54eb2741bbd05c0d` |
+| `atlas_output/ARXML/validation_context_8f34364d_1788337723.json` | `declared_targets.TPS_SWCT_01519` | `4340bfbc69da58317ca40cca2f40dd42745938ca32125cfe4ed6f69418676f37` |
+| `atlas_output/ARXML/Components/ASW_Com_Full_Baseline_8f34364d_1788337723.arxml` | `TIMING-EVENT` named `TE_Com_Full_Baseline` | `062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f` |
+| `atlas_output/ARXML/validation_8f34364d_1788337723.json` | `rules[336]` | `1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80` |
+| `independent_evaluation.json` | `structural_obligations[54]` | `2b13e53ef9bfb9f3a76976eda723e35c637633f8ac4d1dc992f3126f095321c9` |
+
+Additional members are relative to the archive's top-level directory, not the run directory:
+
+| Member | Selector | SHA-256 |
+| --- | --- | --- |
+| `code_snapshot/runtime_assets/src/generate_formal_constraints/v2/validation_plan.json` | `rules[335]` | `ff719d51316b013051c7814c644b4e79ceeced7a1e210751c121d341f2649e9d` |
+| `code_snapshot/runtime_assets/src/validation/v2/value_and_local_plugins.py` | lines 349–366 | `39592a74615820f363d947f6ed9c302c15daed0343f18acc3a41d698f2c39d4c` |
+| `evidence/formal_v20/generation/experiment_results.json` | `records[39]` | `6b9c0eaa7ae4b0add4b33e4bf70fe00dd863b66c848c377eaa561b3845aa7def` |
+
+## Interpretation
+
+The normative requirement does not prescribe 10 ms; `0.01 s` belongs to this task. The rule checks the event, runnable reference and numeric period, while the task evaluator separately checks the requested value. Source/semantic review status and actual checker execution are distinct; a passed artifact check does not certify extraction accuracy. The retained task plan is a processed plan. This figure does not depict repair; Appendix A.4 separately identifies its controlled-repair example. Broader replay qualifications remain in the [AUTOSAR package guide](../../experiments/autosar/README.md).

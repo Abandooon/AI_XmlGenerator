@@ -1,0 +1,317 @@
+{
+  "artifact_kind": "selected_source_and_preparation_excerpt",
+  "created_for": "Read-only reviewer navigation; not a new experiment or a replacement for frozen resources.",
+  "constraint_id": "TPS_SWCT_01519",
+  "normative_source": {
+    "source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\input\\chapter7.md",
+    "source_file_sha256": "f3af5fb5cfc099ecc676f9558a1d67544056ad6d2e95f60d53682809089bbdc0",
+    "line": 134,
+    "raw_text": "[TPS_SWCT_01519] RTE executes certain RunnableEntity periodically (cid:100) If the SwcInternalBehavior of an AtomicSwComponentType requires that the RTE executes certain RunnableEntitys periodically, the description needs to define a TimingEvent with the desired period. This TimingEvent then contains a reference to the Runnable that needs to be executed with this period. (cid:99)()",
+    "raw_text_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+    "line_hash_convention": "UTF-8 text without the line terminator"
+  },
+  "preparation_layers": {
+    "source_manifest.jsonl": {
+      "source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\v2\\work\\source_manifest.jsonl",
+      "source_file_sha256": "f23fae16e6b8faa782ddf3e9c2bc7f51b015895ac7b56ca3ae80c6fd27db32d8",
+      "line": 699,
+      "record": {
+        "schema_version": "2.0",
+        "id": "TPS_SWCT_01519",
+        "id_type": "TPS_SWCT",
+        "title": "RTE executes certain RunnableEntity periodically",
+        "expression": "If the SwcInternalBehavior of an AtomicSwComponentType requires that the RTE executes certain RunnableEntitys periodically, the description needs to define a TimingEvent with the desired period. This TimingEvent then contains a reference to the Runnable that needs to be executed with this period.",
+        "references": [],
+        "source": {
+          "document": "chapter7.md",
+          "section_path": [
+            "7 Internal Behavior",
+            "7.2 Runnable Entity",
+            "7.2.3 Timed Activation of Runnable Entities"
+          ],
+          "start_line": 134,
+          "end_line": 134,
+          "raw_text": "[TPS_SWCT_01519] RTE executes certain RunnableEntity periodically (cid:100) If the SwcInternalBehavior of an AtomicSwComponentType requires that the RTE executes certain RunnableEntitys periodically, the description needs to define a TimingEvent with the desired period. This TimingEvent then contains a reference to the Runnable that needs to be executed with this period. (cid:99)()",
+          "sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+          "in_hierarchical_block": false,
+          "in_multimodal_block": false
+        },
+        "terminology_context": {
+          "local_classes": [
+            "AtomicSwComponentType",
+            "RunnableEntity",
+            "RTEEvent",
+            "SwcInternalBehavior",
+            "TimingEvent"
+          ],
+          "inherited_classes": [
+            "AtomicSwComponentType",
+            "CompositionSwComponentType",
+            "ExecutableEntity",
+            "RunnableEntity",
+            "SwcInternalBehavior",
+            "SwComponentPrototype",
+            "SwComponentType",
+            "EcuInstance"
+          ],
+          "local_enums": [],
+          "inherited_enums": []
+        },
+        "parse": {
+          "status": "exact",
+          "issues": [],
+          "id_position": "before_cid100"
+        }
+      }
+    },
+    "semantic_curation.jsonl": {
+      "source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\v2\\work\\semantic_curation.jsonl",
+      "source_file_sha256": "21696b100daef8dc5b386364ccae9be1f2bb04da66d74dee3dd651e3018b7436",
+      "line": 699,
+      "record": {
+        "schema_version": "2.0",
+        "id": "TPS_SWCT_01519",
+        "source_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+        "semantics": {
+          "normativity": "mandatory",
+          "importance": "core",
+          "is_core": true,
+          "usages": [
+            "generation_context",
+            "automatic_validation",
+            "repair_guidance"
+          ],
+          "rule_family": "conditional_existence",
+          "scope": "object",
+          "summary": "RTE executes certain RunnableEntity periodically",
+          "rationale": "The source states an unambiguous, core existence invariant that is observable in ARXML."
+        },
+        "targets": [
+          {
+            "role": "context",
+            "class_name": "AtomicSwComponentType",
+            "property_name": null,
+            "evidence": "explicit source mention AtomicSwComponentType"
+          },
+          {
+            "role": "context",
+            "class_name": "RunnableEntity",
+            "property_name": null,
+            "evidence": "explicit source mention RunnableEntity"
+          },
+          {
+            "role": "context",
+            "class_name": "SwcInternalBehavior",
+            "property_name": null,
+            "evidence": "explicit source mention SwcInternalBehavior"
+          },
+          {
+            "role": "context",
+            "class_name": "TimingEvent",
+            "property_name": null,
+            "evidence": "explicit source mention TimingEvent"
+          }
+        ],
+        "verification": {
+          "observability": "full",
+          "observability_reason": "The source states an unambiguous, core existence invariant that is observable in ARXML.",
+          "policy": "must",
+          "must_validate": true,
+          "severity": "error",
+          "preferred_backend": "python",
+          "fallback_backend": "manual"
+        },
+        "curation": {
+          "status": "provisional",
+          "issues": [
+            "triage_only_requires_deep_curation"
+          ],
+          "notes": ""
+        }
+      }
+    },
+    "binding_decisions.jsonl": {
+      "source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\v2\\work\\binding_decisions.jsonl",
+      "source_file_sha256": "29c4dc88bf445423481f7d9cc029ee9a29ce7113ed26b8f533e24afbc7f42e46",
+      "line": 699,
+      "record": {
+        "schema_version": "2.0",
+        "id": "TPS_SWCT_01519",
+        "source_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+        "binding_status": "complete",
+        "targets": [
+          {
+            "target_index": 0,
+            "role": "context",
+            "class_name": "AtomicSwComponentType",
+            "property_name": null,
+            "evidence": "explicit source mention AtomicSwComponentType",
+            "binding_status": "resolved",
+            "declared_owner": null,
+            "class_is_abstract": true,
+            "class_xml_tags": [
+              "APPLICATION-SW-COMPONENT-TYPE",
+              "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+              "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+              "NV-BLOCK-SW-COMPONENT-TYPE",
+              "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+              "SERVICE-PROXY-SW-COMPONENT-TYPE",
+              "SERVICE-SW-COMPONENT-TYPE"
+            ],
+            "property_xml_tag": null,
+            "xml_wrapper_tag": null,
+            "path_variants": [
+              "APPLICATION-SW-COMPONENT-TYPE",
+              "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+              "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+              "NV-BLOCK-SW-COMPONENT-TYPE",
+              "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+              "SERVICE-PROXY-SW-COMPONENT-TYPE",
+              "SERVICE-SW-COMPONENT-TYPE"
+            ],
+            "type_name": null,
+            "min_occurs": null,
+            "max_occurs": null,
+            "enum_values": [],
+            "candidates": [],
+            "issues": []
+          },
+          {
+            "target_index": 1,
+            "role": "context",
+            "class_name": "RunnableEntity",
+            "property_name": null,
+            "evidence": "explicit source mention RunnableEntity",
+            "binding_status": "resolved",
+            "declared_owner": null,
+            "class_is_abstract": false,
+            "class_xml_tags": [
+              "RUNNABLE-ENTITY"
+            ],
+            "property_xml_tag": null,
+            "xml_wrapper_tag": null,
+            "path_variants": [
+              "RUNNABLE-ENTITY"
+            ],
+            "type_name": null,
+            "min_occurs": null,
+            "max_occurs": null,
+            "enum_values": [],
+            "candidates": [],
+            "issues": []
+          },
+          {
+            "target_index": 2,
+            "role": "context",
+            "class_name": "SwcInternalBehavior",
+            "property_name": null,
+            "evidence": "explicit source mention SwcInternalBehavior",
+            "binding_status": "resolved",
+            "declared_owner": null,
+            "class_is_abstract": false,
+            "class_xml_tags": [
+              "SWC-INTERNAL-BEHAVIOR"
+            ],
+            "property_xml_tag": null,
+            "xml_wrapper_tag": null,
+            "path_variants": [
+              "SWC-INTERNAL-BEHAVIOR"
+            ],
+            "type_name": null,
+            "min_occurs": null,
+            "max_occurs": null,
+            "enum_values": [],
+            "candidates": [],
+            "issues": []
+          },
+          {
+            "target_index": 3,
+            "role": "context",
+            "class_name": "TimingEvent",
+            "property_name": null,
+            "evidence": "explicit source mention TimingEvent",
+            "binding_status": "resolved",
+            "declared_owner": null,
+            "class_is_abstract": false,
+            "class_xml_tags": [
+              "TIMING-EVENT"
+            ],
+            "property_xml_tag": null,
+            "xml_wrapper_tag": null,
+            "path_variants": [
+              "TIMING-EVENT"
+            ],
+            "type_name": null,
+            "min_occurs": null,
+            "max_occurs": null,
+            "enum_values": [],
+            "candidates": [],
+            "issues": []
+          }
+        ],
+        "issues": []
+      }
+    }
+  },
+  "frozen_publication": {
+    "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json",
+    "sha256": "d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d",
+    "array_index_zero_based": 698,
+    "quality": {
+      "semantic_status": "provisional",
+      "binding_status": "complete",
+      "review_status": "needs_review",
+      "issues": [
+        "triage_only_requires_deep_curation"
+      ]
+    }
+  },
+  "implementation_references": [
+    {
+      "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/context_injector.py",
+      "development_source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\context_injector.py",
+      "development_source_sha256": "fb3a840e9097c92cac58bda1a7b113273bb7505c24233e76e5e678324d8874da",
+      "release_sha256": "fb3a840e9097c92cac58bda1a7b113273bb7505c24233e76e5e678324d8874da",
+      "same_bytes_as_development_source": true,
+      "identity": "Existing release implementation reference; not evidence that an extraction call was executed in a frozen experiment."
+    },
+    {
+      "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/llm_extractor.py",
+      "development_source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\llm_extractor.py",
+      "development_source_sha256": "033360dca69c98b9e4cae7ad9a4631b32969b35d9db7202a2a03fbac88f86297",
+      "release_sha256": "033360dca69c98b9e4cae7ad9a4631b32969b35d9db7202a2a03fbac88f86297",
+      "same_bytes_as_development_source": true,
+      "identity": "Existing release implementation reference; not evidence that an extraction call was executed in a frozen experiment."
+    },
+    {
+      "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/linker_validator.py",
+      "development_source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\linker_validator.py",
+      "development_source_sha256": "f5135d39a3812b71fb5847f22ed283aa820c2c707e7794e7c8971edbd60764aa",
+      "release_sha256": "f5135d39a3812b71fb5847f22ed283aa820c2c707e7794e7c8971edbd60764aa",
+      "same_bytes_as_development_source": true,
+      "identity": "Existing release implementation reference; not evidence that an extraction call was executed in a frozen experiment."
+    },
+    {
+      "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/config.py",
+      "development_source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\config.py",
+      "development_source_sha256": "2d14b83a323b1985e1784d552798b1738c5bef6d4fdace3fa14ed09aa0a43b10",
+      "release_sha256": "2d14b83a323b1985e1784d552798b1738c5bef6d4fdace3fa14ed09aa0a43b10",
+      "same_bytes_as_development_source": true,
+      "identity": "Existing release implementation reference; not evidence that an extraction call was executed in a frozen experiment."
+    },
+    {
+      "release_path": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/main.py",
+      "development_source_path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\main.py",
+      "development_source_sha256": "1467482a635c5e90a0c23d30538128f6e6cd534f743ad63e54f423b77688976e",
+      "release_sha256": "1467482a635c5e90a0c23d30538128f6e6cd534f743ad63e54f423b77688976e",
+      "same_bytes_as_development_source": true,
+      "identity": "Existing release implementation reference; not evidence that an extraction call was executed in a frozen experiment."
+    }
+  ],
+  "limits": [
+    "Selected records are copied from retained development files for inspection and compared with the frozen publication.",
+    "The enclosing chapter file hash is a current retained-file byte hash, not a claim that it equals every historical build-manifest document hash.",
+    "No API was called; no constraint extraction or graph construction was rerun.",
+    "No environment files, credentials, or configuration values are included in this excerpt."
+  ]
+}

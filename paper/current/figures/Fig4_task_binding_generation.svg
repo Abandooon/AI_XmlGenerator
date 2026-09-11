@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1300" viewBox="0 0 1200 1300">
+<title>图4 任务约束与受约束解码</title>
+<desc>中文学术流程图。圆角矩形为处理步骤，矩形为结构化数据，折角文件为文档，菱形为判断。实线箭头为数据流，虚线箭头为控制流；无箭头线为明确标注的信息关联。</desc>
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<text x="25" y="34.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="27" font-weight="700" text-anchor="start" fill="#111111">(a) 选择并绑定本次任务的约束</text>
+<path d="M255 110 L290 110 L290 230 L340 230" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M330.0 235.0 L340 230 L330.0 225.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M255 230 L290 230 L290 230 L340 230" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M330.0 235.0 L340 230 L330.0 225.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M255 350 L290 350 L290 230 L340 230" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M330.0 235.0 L340 230 L330.0 225.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M580 230 L650 230 L650 95 L730 95" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M720.0 100.0 L730 95 L720.0 90.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M650 230 L650 190 L730 190" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M720.0 195.0 L730 190 L720.0 185.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M650 230 L650 285 L730 285" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M720.0 290.0 L730 285 L720.0 280.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M650 230 L650 380 L730 380" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M720.0 385.0 L730 380 L720.0 375.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<rect x="25" y="75" width="230" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="140.0" y="118.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">ICM</text>
+<path d="M25 195 H234.0 L255 216.0 V265 H25 Z M234.0 195 V216.0 H255" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="140.0" y="242.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">本次需求文本</text>
+<rect x="25" y="305" width="230" height="90" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="140.0" y="341.875" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">已有上下文</text>
+<text x="140.0" y="375.625" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">与可选设计</text>
+<rect x="340" y="185" width="240" height="90" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="460.0" y="221.875" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">选择适用约束</text>
+<text x="460.0" y="255.625" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">绑定对象与值</text>
+<rect x="730" y="60" width="445" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="952.5" y="103.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">本次生成约束</text>
+<rect x="730" y="155" width="445" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="952.5" y="198.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">供提示使用的检索内容</text>
+<rect x="730" y="250" width="445" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="952.5" y="293.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">检查项与调用参数</text>
+<path d="M730 345 H1154.0 L1175 366.0 V415 H730 Z M1154.0 345 V366.0 H1175" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="952.5" y="392.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">未支持事项记录</text>
+<path d="M25 435 H1175" stroke="#BBBBBB" stroke-width="1" fill="none"/>
+<text x="25" y="473.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="27" font-weight="700" text-anchor="start" fill="#111111">(b) 后端编译与逐步解码</text>
+<path d="M255 540 L335 540" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M325.0 545.0 L335 540 L325.0 535.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M570 540 L650 540" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M640.0 545.0 L650 540 L640.0 535.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M960 540 L920 540 L920 490 L452.5 490 L452.5 505" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M447.5 495.0 L452.5 505 L457.5 495.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M760 575 L760 610 L142.5 610 L142.5 750" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M137.5 740.0 L142.5 750 L147.5 740.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M445 705 L445 750" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M440.0 740.0 L445 750 L450.0 740.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M260 795 L335 795" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M325.0 800.0 L335 795 L325.0 790.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M570 795 L650 795" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M640.0 800.0 L650 795 L640.0 790.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M870 795 L950 795" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M940.0 800.0 L950 795 L940.0 790.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M1062.5 840 L1062.5 890" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M1057.5 880.0 L1062.5 890 L1067.5 880.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<path d="M950 955 L565 955" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-dasharray="8 6"/>
+<path d="M575.0 950.0 L565 955 L575.0 960.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="775" y="940.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">否</text>
+<path d="M1062.5 1020 L1062.5 1065" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-dasharray="8 6"/>
+<path d="M1057.5 1055.0 L1062.5 1065 L1067.5 1055.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="1090" y="1050.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">是</text>
+<path d="M335 955 L142.5 955 L142.5 840" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-dasharray="8 6"/>
+<path d="M147.5 850.0 L142.5 840 L137.5 850.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="255" y="941.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">是</text>
+<path d="M450 1020 L450 1100 L650 1100" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-dasharray="8 6"/>
+<path d="M640.0 1105.0 L650 1100 L640.0 1095.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="565" y="1086.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">否</text>
+<rect x="25" y="505" width="230" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="140.0" y="548.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">本次生成约束</text>
+<rect x="335" y="505" width="235" height="70" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="452.5" y="548.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">转换并编译语法</text>
+<rect x="650" y="505" width="220" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="760.0" y="548.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">后端匹配配置</text>
+<rect x="960" y="505" width="215" height="70" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="1067.5" y="531.875" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">后端配置</text>
+<text x="1067.5" y="565.625" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">分词器配置</text>
+<rect x="335" y="640" width="220" height="65" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="445.0" y="681.25" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">LLM 词元得分</text>
+<rect x="25" y="750" width="235" height="90" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="142.5" y="803.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">匹配允许词元</text>
+<rect x="335" y="750" width="235" height="90" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="452.5" y="803.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">对得分施加掩码</text>
+<rect x="650" y="750" width="220" height="90" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="760.0" y="803.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">选择词元</text>
+<rect x="950" y="750" width="225" height="90" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="1062.5" y="786.875" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">更新输出</text>
+<text x="1062.5" y="820.625" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">与匹配状态</text>
+<path d="M1062.5 890 L1175 955.0 L1062.5 1020 L950 955.0 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="1062.5" y="947.525" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">完整且</text>
+<text x="1062.5" y="978.5749999999999" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">合法结束？</text>
+<path d="M450.0 890 L565 955.0 L450.0 1020 L335 955.0 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="450.0" y="963.05" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="middle" fill="#111111">可以继续？</text>
+<rect x="950" y="1065" width="225" height="70" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="1062.5" y="1108.75" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">接收完整输出</text>
+<rect x="650" y="1065" width="220" height="70" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="760.0" y="1091.875" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">记录失败</text>
+<text x="760.0" y="1125.625" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="25" font-weight="400" text-anchor="middle" fill="#111111">或未完成</text>
+<text x="125" y="1028.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" fill="#111111">继续生成</text>
+<text x="25" y="1180.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" fill="#111111">图示为正常迭代。空候选且不能合法结束、后端异常或预算截断时，</text>
+<text x="25" y="1215.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" fill="#111111">直接记录失败或未完成。合法结束须满足完整语法及后端结束协议。</text>
+<path d="M25 1240 H1175" stroke="#BBBBBB" stroke-width="1" fill="none"/>
+<text x="25" y="1277.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="700" text-anchor="start" fill="#111111">图例</text>
+<rect x="100" y="1254" width="62" height="38" rx="14" fill="#E6E6E6" stroke="#333333" stroke-width="1.8"/>
+<text x="131.0" y="1279.3" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="18" font-weight="400" text-anchor="middle" fill="#111111"></text>
+<text x="176" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">处理</text>
+<rect x="287" y="1254" width="62" height="38" rx="0" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="318.0" y="1279.3" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="18" font-weight="400" text-anchor="middle" fill="#111111"></text>
+<text x="363" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">数据</text>
+<path d="M474 1254 H525.46 L536 1264.54 V1292 H474 Z M525.46 1254 V1264.54 H536" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="505.0" y="1283.3" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="18" font-weight="400" text-anchor="middle" fill="#111111"></text>
+<text x="550" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">文档</text>
+<path d="M692.0 1254 L723 1273.0 L692.0 1292 L661 1273.0 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.8"/>
+<text x="692.0" y="1279.3" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="18" font-weight="400" text-anchor="middle" fill="#111111"></text>
+<text x="737" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">判断</text>
+<path d="M855 1271 L920 1271" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter"/>
+<path d="M910.0 1276.0 L920 1271 L910.0 1266.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="935" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">数据流</text>
+<path d="M1030 1271 L1095 1271" stroke="#333333" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-dasharray="8 6"/>
+<path d="M1085.0 1276.0 L1095 1271 L1085.0 1266.0" stroke="#333333" stroke-width="1.8" fill="none"/>
+<text x="1110" y="1280.0" font-family="Microsoft YaHei, SimHei, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" fill="#111111">控制流</text>
+</svg>
