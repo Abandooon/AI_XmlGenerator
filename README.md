@@ -1,5 +1,7 @@
 # Manuscript, implementation and reviewer evidence
 
+Current literature and source checks: [bibliography revisions](paper/current/latex/引用核对/外部复核修订.md) and [AUTOSAR/Train source versions](supporting/reference_source_recheck/README.md).
+
 The [integrated Chinese manuscript](paper/current/latex/main.pdf) contains the main text, references and Appendices A–D. Its [LaTeX source](paper/current/latex/main.tex), [bibliography](paper/current/latex/references.bib) and [figures](paper/current/latex/figures/) are supplied together.
 
 | Read or inspect | Entry point |

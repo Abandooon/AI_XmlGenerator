@@ -1,5 +1,7 @@
 # Paper, appendix, artifact and reviewer crosswalk
 
+The [source recheck](../supporting/reference_source_recheck/README.md) supplies the verified AUTOSAR original-version locators and the fixed Train Benchmark query version used in Appendix C.1 and Table C1.
+
 The [bibliography audit](../paper/current/latex/引用核对/README.md) connects the current numbered references and citation contexts to the downloaded official exports. The [key mapping](../paper/current/latex/引用核对/KEY_MAP.json) and [redline](../paper/current/latex/引用核对/引文修改对照.html) accompany the source.
 
 The [compiled location index](../paper/current/latex/LOCATIONS.md) maps all 80 stable LaTeX labels to their Chinese titles, displayed numbers and exact PDF pages, with direct page links.

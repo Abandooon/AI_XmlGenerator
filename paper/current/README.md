@@ -1,6 +1,6 @@
 # Current integrated manuscript
 
-The [bibliography audit](latex/引用核对/README.md) records official export provenance, the key mapping and checked citation contexts; its [redline](latex/引用核对/引文修改对照.html) shows the eight local wording/placement revisions.
+The [bibliography audit](latex/引用核对/README.md) records official export provenance, the key mapping and checked citation contexts; its [redline](latex/引用核对/引文修改对照.html) shows the five current wording/placement revisions and two bibliography updates.
 
 | Material | Files |
 | --- | --- |

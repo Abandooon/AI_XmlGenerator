@@ -1,5 +1,7 @@
 # Response to the editor and reviewers
 
+The [source recheck](../supporting/reference_source_recheck/README.md) connects Appendix A source clauses and Appendix C.1 query conditions to the verified official versions. The [implemented citation revisions](current/latex/引用核对/外部复核修订.md) preserve the method claims, experimental tables and original outcomes.
+
 Reference provenance and the checked literature descriptions are documented in the [bibliography audit](current/latex/引用核对/README.md), including raw official exports and a [redline](current/latex/引用核对/引文修改对照.html). Stable section and appendix labels are unchanged.
 
 The [compiled location index](current/latex/LOCATIONS.md) gives exact PDF pages for all stable LaTeX labels cited below, together with their Chinese titles and displayed numbers.
