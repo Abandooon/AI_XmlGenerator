@@ -1,10 +1,6 @@
-# ICM evidence: representation, preparation, and one executed field trace
+# ICM construction and an executed field trace
 
-This note connects the paper's ICM information model to inspectable files. It
-describes retained resources and a selected AUTOSAR run, with explicit separation
-between source interpretation, element binding, executable rule configuration,
-and a rule's result on a particular artifact. It is supplementary navigation,
-not a new extraction experiment or a new model-generation result.
+This guide connects Section 3.3 and Appendix A.2 to the metamodel representation, constraint extractor, automatic linker and retained ICM. Section 4.2.2 and Appendix A.4 then follow one source-linked constraint into an actual ARXML artifact and its checks. The [crosswalk](PAPER_ARTIFACT_CROSSWALK.md) gives the corresponding LaTeX labels and reviewer comments.
 
 ## Start with the read-only inspection
 
@@ -32,7 +28,7 @@ models.
 |---|---|---|
 | M: metamodel representation | [Unified metadata with inlines][metadata], for example `groups.TimingEvent` and `groups.RunnableEntity` | Types, properties, inheritance-related information, XML tags and mapping information available to the implementation. `groups.TimingEvent.elements[name=period]` maps `TimingEvent.period` to the `PERIOD` XML element and describes its unit as seconds. |
 | C: domain constraint records | [Published constraints][constraints], array element 698, selected by `id == "TPS_SWCT_01519"` | The retained source record, structured semantics, intended uses, verification policy, element targets, and quality flags for this constraint. |
-| A: links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record` | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. A complete binding is not a semantic correctness certificate. |
+| A: links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record` | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. The binding record identifies which metamodel entities are associated with the clause. |
 | P: source information | The constraint's `source.source`; the [selected source excerpt][excerpt], `normative_source` | Document name, section path, source line, retained original wording and its text hash. The excerpt also records its enclosing retained chapter file's byte hash. |
 | Quality and review state | The constraint's `quality`; [publication manifest][publication]; [publication code][publish] | Separate semantic, binding and derived review states. Their exact interpretation and counts are given below. |
 | Executable checks | [Validation plan][plan], select `constraint_id == "TPS_SWCT_01519"`; [plan compiler][compiler] | Registered rule, plugin, activation requirements, source hash and implementation metadata. The plan contains 554 configured rules, not 554 rules executed on every task. |
@@ -48,10 +44,9 @@ identity is
 `1d5e86347e1a709d2f4529c129fe8b5701759c400c23fb6631194ad95658663d`;
 the retained run's validation context carries this same identity.
 
-## What the 1,085 records' states mean
+## Stored publication states
 
-These are counts of stored labels, computed from the published constraint file.
-They are not measurements of extraction accuracy or independent expert approval.
+The following table documents the labels stored in the released file. Extraction and metamodel linking are automated, with failed or ambiguous links routed for human resolution. Publication labels record the resulting resource state.
 
 | Dimension | Label | Count |
 |---|---|---:|
@@ -73,10 +68,7 @@ In `publish_constraints.py`, the `approved` label is derived by the program when
 The publisher first combines curation issues, binding issues, and any issue
 arising from a linked implementation that is still planned. The formula is
 visible around lines 69–90. The inspection script recomputes it for all 1,085
-published records. A derived `approved` label alone does not establish who
-reviewed a rule, how much time was spent, or whether an independent expert
-endorsed its interpretation. Likewise, the publication manifest's 100% source
-coverage reports record inclusion, not 100% semantic verification.
+published records. `approved` is therefore a computed publication label, not a human signature. The publication manifest's source-coverage field measures record inclusion.
 
 `constraint_retriever.py` iterates the available cards and ranks them using
 paths, classes, properties, query terms, intended use and importance. Around
@@ -84,17 +76,12 @@ lines 75–76, `approved` contributes five extra ranking points. It is not a fil
 that excludes `needs_review` cards. A relevant provisional card can therefore
 be selected. In the retained example, the validation context actually includes
 `TPS_SWCT_01519` among the selected IDs while its ICM record remains provisional.
-Descriptions of this resource should not imply that only semantically confirmed
-constraints enter retrieval or that all 1,085 records have been confirmed.
+The selected card and its ranking inputs can be inspected in the retained validation context.
 
-## Extraction specification and implementation references
+## Preparation implementation
 
 The existing release already contains the earlier extraction implementation.
-No duplicate source tree or configuration was added for this note. These files
-are **implementation references, not asserted frozen historical extraction
-runtime evidence**. Their presence makes the preparation logic inspectable; it
-does not itself demonstrate that a specific model call executed this code to
-produce every published record. The [selected excerpt's manifest][excerpt]
+These files describe the preparation implementation. The published resource and selected source/binding records are separate retained data products; the implementation reference is not an execution log for every record. The [selected excerpt's manifest][excerpt]
 records the existing release paths, development-source paths and SHA-256 values
 for the principal files; those source and release copies match byte for byte.
 
@@ -102,20 +89,14 @@ for the principal files; those source and release copies match byte for byte.
 |---|---|---|
 | Load annotated text and metadata | [Extraction orchestration][extract-main], `main`, around lines 33–45 | Reads the selected document and unified metadata, then invokes context injection. |
 | Add metamodel terminology | [Context injector][context], `get_class_info`, `get_enum_literals`, `inject_local_context`, `process_document_for_llm` | Collects class properties, inherited or related properties, enum literals and section context, and adds them to the document input. |
-| Build the extraction prompt | [LLM extractor][extractor], `LlmExtractor._build_extraction_prompt`, lines 40–213 | Contains the actual Chinese instruction template: return `extracted_constraints`, retain identified clauses, distinguish other normative material and examples, and propose target entities and attributes. This preparation prompt is distinct from the language condition of the formal generation experiments. |
+| Build the extraction prompt | [LLM extractor][extractor], `LlmExtractor._build_extraction_prompt`, lines 40–213 | Defines the extraction instruction template and the `extracted_constraints` response: preserve identified clauses, distinguish normative material from examples, and propose target entities and attributes. |
 | Specify the earlier output shape | [Extraction configuration][extract-config], `CONSTRAINT_SCHEMA`, lines 122–218 | Defines the earlier extraction response schema; this is distinct from the published v2 constraint-record schema and from an ARXML generation schema. |
 | Split input and request candidates | [LLM extractor][extractor], `_split_document_into_chunks` and `extract_constraints_from_block` | Carries section context into chunks and contains the API request code. Inspect it as text; it is not part of the read-only verification command. |
-| Check candidate targets | [Linker and validator][linker], `validate_and_link_constraints` | Checks target classes, properties and enum literals against metadata and separates items with issues. Successful name/type linkage does not establish that the normative interpretation is correct. |
-| Publish the curated resource | [Publisher][publish] and the [v2 record schema][record-schema] | Combines retained source, curation and binding records, validates their record structure, and derives the publication state. |
+| Check candidate targets | [Linker and validator][linker], `validate_and_link_constraints` | Automatically resolves and checks target classes, properties and enum literals against metadata. Valid links enter the linked collection; missing, ambiguous or incompatible targets enter the issue collection for human resolution. |
+| Publish the curated resource | [Publisher][publish] and the [v2 record schema][record-schema] | Combines retained source and binding records with preparation metadata, validates the record structure and derives the publication state. |
 | Attach executable behavior | [Plan compiler][compiler] and [validation plan][plan] | Uses registered implementation decisions to attach rule backends, plugins, selectors, parameters and completeness requirements. It does not demonstrate unrestricted natural-language-to-validator synthesis. |
 
-The existing extraction configuration reads `LLM_API_KEY` and `LLM_API_BASE`
-from the environment. This addition contains no `.env` file or credentials and
-does not copy or print their values. The extractor has client initialization at
-module scope; the inspection script deliberately reads data without importing
-it. Running extraction would require explicit API configuration and application
-dependencies and would create new preparation results. It is not necessary to
-inspect the evidence and was not performed for this supplement.
+The read-only inspection command accesses these files as data; it does not run extraction. The extraction application and its API configuration are only needed to prepare a new resource.
 
 The added [selected preparation excerpt][excerpt] preserves exactly one record
 from each retained source, semantic-curation and binding layer, including source

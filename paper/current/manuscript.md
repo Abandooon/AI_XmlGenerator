@@ -1,6 +1,6 @@
 # 摘要
 
-大语言模型为自然语言驱动的工程建模提供了新的交互方式，但生成结果仍可能违反模型结构、领域规则或具体任务要求。本文提出一种以领域元模型为基础、协同执行生成时约束与生成后验证的模型生成方法。方法首先提取并转换元模型信息，以元模型术语引导自然语言规范中的结构化约束抽取，将约束链接到元模型元素并记录规范出处，构建集成约束模型（Integrated Constraint Model，ICM）。任务执行时，结合需求和已有模型选择适用约束：生成时约束层 L1 限制候选结构、取值和引用，生成后验证层 L2 检查模型及其序列化制品，并核对原始任务要求；发现问题后，依据验证反馈在允许范围内修复并重新验收。验证能力来自已有领域工具和 LLM 辅助人工编写的检查器。实验覆盖 AUTOSAR、铁路模型和国际私法结构化决策，其中 AUTOSAR 的 20 个需求各运行 3 次，60 次完整流程均通过任务范围内的验收，形成的 255 份 ARXML 均通过 XSD 检查；独立的 AUTOSAR 本地实验记录了约束对解码过程的实际干预。结果表明，分层执行能够将结构生成、逻辑检查和任务验收组织为可追溯的构造与修复过程。
+大语言模型为自然语言驱动的工程建模提供了新的交互方式，但生成结果仍可能违反模型结构、领域规则或具体任务要求。本文提出一种以领域元模型为基础、协同执行生成时约束与生成后验证的模型生成方法。方法首先提取并转换元模型信息，以元模型术语引导自然语言规范中的结构化约束抽取，自动将约束链接到元模型元素并记录规范出处，构建集成约束模型（Integrated Constraint Model，ICM）。任务执行时，结合需求和已有模型选择适用约束：生成时约束层 L1 限制候选结构、取值和引用，生成后验证层 L2 检查模型及其序列化制品，并核对原始任务要求；发现问题后，依据验证反馈在允许范围内修复并重新验收。验证能力来自已有领域工具和 LLM 辅助人工编写的检查器。实验覆盖 AUTOSAR、铁路模型和国际私法结构化决策，其中 AUTOSAR 的 20 个需求各运行 3 次，60 次完整流程均通过任务范围内的验收，形成的 255 份 ARXML 均通过 XSD 检查；独立的 AUTOSAR 本地实验记录了约束对解码过程的实际干预。结果表明，生成时限制与生成后检查能够协同支持模型构造，并依据领域规则和原始任务要求检测问题、指导修复与验收。
 
 关键词：模型驱动工程；大语言模型；元模型；分层约束；集成约束模型。
 
@@ -18,9 +18,9 @@
 
 已有研究从不同环节将显式知识引入生成。Synchromesh 结合检索与受约束语义解码，在输出构造过程中执行语法、类型和部分上下文规则<sup style="color:#FF0000">[3]</sup>；AbsCon 将多个候选图聚合为概率部分模型，再根据元模型和良构约束求解一致模型<sup style="color:#FF0000">[4]</sup>；EMF-Kaizen 将元模型和当前模型用于交互式模型片段推荐<sup style="color:#FF0000">[5]</sup>。这些工作表明，约束既可以参与生成，也可以用于候选的检查与选择。对于同时涉及复杂结构和领域逻辑的任务，一个关键问题是如何组织两类互补能力：尽可能在生成时排除不合法的结构与取值，同时在模型形成后检查依赖完整对象、跨元素关系或目标制品的要求。
 
-本文围绕这一问题提出一种**元模型引导的分层约束模型生成方法**。研究重点是让分散的建模依据在生成与验证之间保持可追溯的对应：从元模型锚定的规范约束出发，确定本次对象上的执行方式，并以原始任务要求接纳生成与修复结果。其核心是生成时约束层 L1 与生成后验证层 L2 的协同：L1 将适合提前执行的要求落实到受约束解码，L2 调用领域检查工具审查生成模型及其序列化制品，任务验收再核对原始需求中指定的对象、取值与关系。两层按执行阶段和实际检查能力分工，结构与逻辑要求可以根据表示方式和后端能力分配到相应层次。
+本文围绕这一问题提出一种**元模型引导的分层约束模型生成方法**，以生成时约束层 L1 与生成后验证层 L2 协同处理结构构造和领域规则满足。L1 将适合提前执行的要求落实到受约束解码，L2 调用领域检查工具审查生成模型及其序列化制品，任务验收再核对原始需求中指定的对象、取值与关系。两层按执行阶段和实际检查能力分工，结构与逻辑要求根据表示方式和后端能力分配到相应层次。
 
-为支持这种分工，方法构建可复用的**集成约束模型（Integrated Constraint Model，ICM）**。首先从已有领域元模型提取并转换信息，保留元素标识及其源表示对应；再将元模型术语注入自然语言规范的约束抽取过程，识别约束的作用对象、条件、要求与例外，建立约束与元模型元素的链接，并记录规范出处。元模型元素为约束解释提供共同的领域语境，ICM 则将分散的结构信息和规范要求组织为后续生成、检索与检查可使用的依据。
+为支持这种分工，方法构建可复用的**集成约束模型（Integrated Constraint Model，ICM）**。首先从已有领域元模型提取并转换信息，保留元素标识及其源表示对应；再将元模型术语注入自然语言规范的约束抽取过程，识别约束的作用对象、条件、要求与例外，自动建立约束与元模型元素的链接，并记录规范出处。元模型元素为约束解释提供共同的领域语境，ICM 将分散的结构信息和规范要求组织为生成、检索与检查的共同依据。
 
 单次任务执行时，方法根据需求和已有模型选择相关约束，并将其绑定到本次对象、取值和引用目标，动态组装生成限制与检查配置。这些任务相关的临时要求用于当前生成和修复，可复用的领域规则则保存在 ICM 中。发现错误后，检查反馈指出违反了什么要求、涉及哪些对象，修复过程据此提出允许范围内的修改。每次修复后重新检查领域规则与原始任务，避免通过删除必需对象或改写指定取值获得表面的通过。
 
@@ -30,7 +30,7 @@
 
 （1）**生成与验证协同的分层约束方法。**通过 L1 的生成限制和 L2 的生成后检查，共同处理结构构造与领域规则满足；将原始任务要求保留为生成和修复的验收依据，形成受约束的模型构造、检查与修复过程。
 
-（2）**以元模型元素为锚点的 ICM 构建方法。**将元模型信息转换、术语引导的结构化约束抽取，以及约束与元素、来源和执行用途的关联组织为领域准备过程，为分层执行提供可复用且可追溯的约束依据。
+（2）**以元模型元素为锚点的 ICM 构建方法。**通过元模型信息转换、术语引导的结构化约束抽取和自动链接，将规范要求关联到其作用元素，保存来源和执行用途，为分层执行提供可复用的约束依据。
 
 （3）**三个领域中的实证评价。**在 AUTOSAR 汽车软件模型、铁路模型以及国际私法（Private International Law，PIL）结构化决策中，分别考察模型与制品验收、约束对解码过程的干预、验证反馈修复和决策约束的执行效果。前两个领域评价工程模型实例构造，PIL 则考察分层原则在规则密集、对结论可靠性要求较高的决策任务中的应用。
 
@@ -40,7 +40,7 @@ AUTOSAR 的 20 个需求各运行 3 次，60 次完整流程均通过任务范�
 
 # 2 相关工作
 
-本研究位于模型驱动工程与大模型辅助生成的交汇处。相关工作既包括以显式元模型和约束构造一致模型的传统技术，也包括自然语言驱动的建模、结构化约束获取、受约束解码和反馈修复。以下先梳理各条研究路线，再讨论它们与本文分层方法的关系。
+相关研究包括以元模型和约束构造一致模型的传统 MDE 技术，以及自然语言驱动的建模、结构化约束获取、受约束解码和反馈修复。
 
 ## 2.1 模型转换与一致模型生成
 
@@ -80,7 +80,7 @@ AbsCon 将候选之间的一致性与显式约束结合：先从同一文本生�
 
 模型一致性维护为修复提供了定位和操作选择机制。Marchezan 等依据规则求值过程定位不一致原因，构造包含替代项与操作序列的抽象修复树，并支持按制品或用户所有权筛选动作<sup style="color:#FF0000">[22]</sup>。LLM 反馈修订研究则探索如何利用反馈生成新候选。Self-Refine 由同一模型生成结果、提出反馈并迭代修订<sup style="color:#FF0000">[23]</sup>；SpecGen 面向 Java 程序生成 JML 规格，先利用验证错误反馈改进候选，再结合运算符变异与启发式筛选寻找可验证规格<sup style="color:#FF0000">[24]</sup>。这些研究表明，反馈来源、可用修改操作及候选接纳条件共同影响修复效果。
 
-综合上述研究，本文将分层约束作为组织模型生成与检查的中心原则：利用 L1 在生成时限制可表达、可执行的结构与取值要求，利用 L2 检查完整模型及其制品，并在修复接纳时保持原始任务要求。ICM 构建为两层提供共同依据，将元模型信息、结构化规范约束及其来源关联起来，再根据任务确定作用对象。本文据此研究从领域准备到生成、验证和修复的整体方法，并分别评价工程制品、解码干预和跨域约束执行。已有的模型转换、约束求解、受约束解码与修复技术为这一方法提供可接入的实现能力。本文在此基础上明确约束从领域来源到任务对象、生成限制和检查实现的对应，并将任务要求贯穿修复接纳。这种组织关系是分层方法与 ICM 构建共同研究的内容，其实证依据是可追溯执行案例及分阶段对照。
+已有研究为模型转换、约束求解、受约束解码与反馈修复提供了多种实现能力。本文以 L1 与 L2 的分层执行组织这些能力：在生成时限制可执行的结构与取值要求，在生成后检查完整模型及其制品，并依据原始任务接纳修复结果。ICM 构建将元模型信息、结构化规范约束及其来源关联起来，再根据任务确定作用对象，为两层提供共同依据。后续实验分别评价工程模型与制品、解码干预和跨域约束执行。
 
 # 3 元模型引导的分层约束生成方法
 
@@ -96,7 +96,7 @@ AbsCon 将候选之间的一致性与显式约束结合：先从同一文本生�
 
 **候选模型**（candidate model）是依据领域元模型构造、尚待验证和验收的实例模型，包含具体对象、属性值及对象之间的关系。JSON Schema 规定本次允许生成的结构和取值，生成的具体内容经模型构造后形成候选模型。**序列化制品**（serialized artifact）是候选模型在目标建模语言或交换格式中的具体表示，例如 XML 文件。对于结构化决策应用，输出可以是包含事实、适用规则和结论的决策记录；这类输出复用分层约束执行过程，其表示与领域概念的对应在领域适配中确定，与工程实例模型的构造分别说明。
 
-整体流程分为领域准备和任务执行。领域准备从已有元模型提取信息，以元模型术语引导自然语言约束抽取，建立约束与元模型元素及规范来源的对应，形成可复用的 ICM；同时提供生成约束映射、模型构造与序列化规则，以及可调用的验证器。任务执行将本次需求绑定到具体对象与取值，组装 L1 生成约束，检索相关规则，并配置 L2 检查。生成结果经模型构造和序列化后进入验证与任务验收；发现可处理的问题时，依据诊断修改模型并复验。图 1 展示这一过程。
+整体流程分为领域准备和任务执行。领域准备从已有元模型提取信息，以元模型术语引导自然语言约束抽取，自动建立约束与元模型元素的链接并保存规范来源，形成可复用的 ICM；同时提供生成约束映射、模型构造与序列化规则，以及可调用的验证器。任务执行将本次需求绑定到具体对象与取值，组装 L1 生成约束，检索相关规则，并配置 L2 检查。生成结果经模型构造和序列化后进入验证与任务验收；发现可处理的问题时，依据诊断修改模型并复验。图 1 展示这一过程。
 
 ![方法总览：领域准备、任务约束绑定、L1 生成、L2 验证与修复](figures/Fig1_method_overview.png)
 
@@ -128,11 +128,11 @@ ICM 构建首先将已有元模型转换为可查询的中间表示。转换读�
 
 ICM 将元模型提供的结构信息与自然语言规范中的规则组织在一起。自然语言规范以片段为单位进入抽取流程。系统将相关元模型类型、属性、关系和枚举术语加入抽取上下文，要求 LLM 按统一记录格式提取作用对象、适用条件、要求与例外，并保留规范版本和片段位置。元模型术语为文本解释提供共同的概念依据，使抽取结果能够直接关联领域元素。
 
-抽取记录随后与元模型元素建立关联。系统解析目标名称、检查目标类型及其所属关系，并将可定位的目标连接到元模型表示；有歧义的名称和不完整的关系交由补充上下文或人工复核处理。复核同时对照原文检查约束含义，使“找到了对应元素”与“规则解释已经确认”分别具有明确状态。已有的结构化规则和领域检查定义也可以按相同信息要求接入 ICM，复用其规则内容与来源。图 2 给出从自然语言规范构建 ICM 的流程，表 1 列出约束记录的主要信息。
+系统随后自动将抽取记录链接到元模型元素：解析目标名称，校验目标类型以及属性、关系或枚举字面量的归属，建立约束到相应元素的引用。链接失败、名称歧义或成员不匹配的记录进入人工处理；处理者对照规范及元模型补充或修正记录，再执行链接检查。已有的结构化规则和领域检查定义也可以按相同信息要求接入 ICM，复用其规则内容与来源。图 2 给出从自然语言规范构建 ICM 的流程，表 1 列出约束记录的主要信息。
 
-![ICM 构建：元模型上下文注入、结构化抽取、元素关联与复核](figures/Fig2_icm_construction.png)
+![ICM 构建：元模型上下文注入、结构化抽取、自动链接及异常处理](figures/Fig2_icm_construction.png)
 
-图 2 从已有领域元模型及自然语言规范构建 ICM。元模型表示提供抽取术语、元素关联依据及结构信息；抽取结果经关联与复核后，保存约束内容、来源和后续用途。
+图 2 从已有领域元模型及自然语言规范构建 ICM。元模型表示提供抽取术语、自动链接依据及结构信息；链接异常交由人工处理，ICM 保存约束内容、元素关联、来源和后续用途。
 
 表 1 ICM 约束记录的主要信息
 
@@ -142,13 +142,13 @@ ICM 将元模型提供的结构信息与自然语言规范中的规则组织在�
 | 约束内容 | 作用范围、适用条件、要求及例外 | 确定何时、对哪些对象检查什么 |
 | 元模型元素关联 | 涉及的类、属性、包含或引用关系 | 按领域概念检索并绑定任务对象 |
 | 用途与实现关联 | 用途、生成映射或检查器标识 | 连接生成、检索与验证环节 |
-| 复核状态 | 约束解释、元素关联和待处理问题 | 支持复核与后续维护 |
+| 链接检查 | 目标名称、类型和成员归属的检查结果及异常项 | 定位未匹配或冲突的关联并支持修正 |
 
 为概括其中的信息关系，本文将 ICM 表示为：
 
 $$I = (M, C, A, P)$$
 
-其中，$I$ 表示接入领域的集成约束模型；$M$ 是提取和转换后的元模型表示，包括元素标识、类型、属性、关系、基数和枚举等信息；$C$ 是持久保存的领域约束记录集合，包括从规范抽取的约束，以及需要独立引用的元模型结构规则；$A$ 是约束记录与元模型元素之间建立的关联；$P$ 是来源信息及其与元模型元素、约束记录的对应，包括源元模型或模式文件、自然语言规范的版本和具体位置。约束的用途、已有实现关联及复核状态保存在约束记录中。
+其中，$I$ 表示接入领域的集成约束模型；$M$ 是提取和转换后的元模型表示，包括元素标识、类型、属性、关系、基数和枚举等信息；$C$ 是持久保存的领域约束记录集合，包括从规范抽取的约束，以及需要独立引用的元模型结构规则；$A$ 是约束记录与元模型元素之间建立的关联；$P$ 是来源信息及其与元模型元素、约束记录的对应，包括源元模型或模式文件、自然语言规范的版本和具体位置。约束的用途、已有实现关联及链接检查结果保存在约束记录中。
 
 图 3 展示这四类信息。约束和元模型元素之间可以存在多对多关联：一条引用一致性规则可以同时涉及引用方类型、引用关系和目标类型，同一类型也可以参与多条规则。来源记录则使读者能够从该约束回到规范原文，并从相关类型和属性回到元模型定义。
 
@@ -270,7 +270,7 @@ LLM 提出结构化修改后，确定性程序检查其操作与目标是否在�
 
 # 4 实验评价
 
-本章从工程生成、解码过程、验证修复和领域应用四个方面评价分层约束方法。AUTOSAR 实验考察从规范与元模型到 ARXML 制品的完整流程；AUTOSAR-vLLM 实验直接观察生成约束对词元选择的干预；铁路实验考察具有跨对象关系的模型能否通过验证反馈得到修复；国际私法实验考察分层检查在结构化法律决策中的作用。四组实验分别呈现，附录 A—D 按相同顺序补充设置、详细结果和案例。附录解释主要比较的统计口径，完整配对数据、敏感性分析及计算脚本由复现材料提供。
+本章评价分层约束方法在模型生成和修复中的作用。AUTOSAR 实验基于已准备的 ICM，考察实例模型生成、ARXML 制品验收和受控故障修复；AUTOSAR-vLLM 实验直接观察生成约束对词元选择的干预；铁路实验考察具有跨对象关系的模型能否通过验证反馈得到修复；国际私法实验考察分层检查在结构化法律决策中的作用。附录 A—D 按相同顺序补充设置、详细结果和案例，并说明主要比较的统计方法；完整配对数据、敏感性分析及计算脚本保存在复现材料中。
 
 ## 4.1 研究问题与评价设置
 
@@ -291,7 +291,7 @@ LLM 提出结构化修改后，确定性程序检查其操作与目标是否在�
 
 AUTOSAR 和铁路的主要指标是**严格成功**：最终制品通过适用的结构检查、领域检查和原任务验收。例如，一个铁路任务运行三次即得到三个生成起点；每个起点的自修复与验证反馈修复从同一初始模型出发。通过数以这 72 个起点为分母，未形成模型或修复后仍未通过的起点均计为失败。基础任务数仍为 24，用于表示需求与布局的多样性。各实验的条件在对应小节首次使用时定义。
 
-托管主实验统一使用 gpt-5.6-luna，推理强度为 low；铁路第二模型使用 gpt-5.6-terra，推理强度同为 low。AUTOSAR-vLLM 使用本地 Qwen3.5-9B，以取得解码过程记录。自定义验证器由 LLM 辅助人工编写，作者负责解释规则、确定输入与适用对象、采用检查实现并进行测试；已有 XSD、EMF 和 VIATRA 验证能力直接复用。各领域的检查构造与配置随相应实验说明。AUTOSAR 和 PIL 正式案例的自然语言输入为英文，铁路采用作者明确编写的结构化任务规格；各阶段提示的实际语言及内容随复现材料分别提供。
+托管主实验统一使用 gpt-5.6-luna，推理强度为 low；铁路第二模型使用 gpt-5.6-terra，推理强度同为 low。AUTOSAR-vLLM 使用本地 Qwen3.5-9B，以取得解码过程记录。自定义验证器由 LLM 辅助人工编写，作者负责解释规则、确定输入与适用对象、选择检查实现并进行测试；已有 XSD、EMF 和 VIATRA 验证能力直接复用。各领域的检查构造与配置在相应小节说明。AUTOSAR 和 PIL 生成任务的自然语言输入为英文，铁路采用作者编写的结构化任务规格。
 
 ## 4.2 AUTOSAR：约束组织与工程模型生成
 
@@ -305,7 +305,7 @@ AUTOSAR 用于描述汽车软件组件、接口及其交互，ARXML 是相应的
 
 ### 4.2.2 从 ICM 到一次检查
 
-AUTOSAR 的 ICM 保存 1,085 张约束卡片与 6,533 条约束关联，检查计划配置 554 条规则，具体运行按适用对象执行检查。约束记录的语义整理、元素绑定与检查实现具有各自的状态，附录 A.2 分别说明。规范约束抽取、元模型关联及验证器构造见附录 A.2，抽取规格汇总于表 A2。图 6 展示其中一条周期 Runnable 约束的应用：规范规则 TPS_SWCT_01519 关联到 Runnable、内部行为和 TimingEvent<sup style="color:#FF0000">[28]</sup>；任务绑定选出具体 Runnable；运行时调用已有周期事件检查，判断事件是否存在、是否指向该 Runnable，以及周期值是否可解析。该次记录中的一个适用对象已实际完成检查并通过。
+AUTOSAR 的 ICM 保存 1,085 条结构化约束与 6,533 条约束关联。验证计划包含 554 条检查规则，运行时依据生成模型及规则适用条件执行检查。规范约束抽取、元模型链接及验证器构造见附录 A.2，抽取规格汇总于表 A2。图 6 展示其中一条周期 Runnable 约束的应用：规范规则 TPS_SWCT_01519 关联到 Runnable、内部行为和 TimingEvent<sup style="color:#FF0000">[28]</sup>；任务绑定选出具体 Runnable；运行时调用已有周期事件检查，判断事件是否存在、是否指向该 Runnable，以及周期值是否可解析。该次检查的一个适用对象通过验证。
 
 周期存在还不足以说明任务已经完成。例如，该任务指定 10 ms 周期，验收器从案例要求中读取期望值，与 ARXML 中的 0.01 s 比较。这样，即使生成计划误写了周期，也不能仅因制品与该计划一致就通过任务验收。ICM 保留规范依据及适用元素，任务绑定确定本次检查对象，任务验收核对本次要求的具体值。
 
@@ -397,15 +397,15 @@ PIL 为 RQ3 提供了决策领域的应用证据：相同的生成时限制与�
 
 ## 4.6 有效性讨论
 
-实验结论取决于任务与检查的覆盖。AUTOSAR 评价组件建模范围，铁路评价配置模型和六条既有查询，PIL 评价结构化决策及已定义参考义务。XSD 或 EMF 检查、领域规则和原任务验收承担不同职责；自由文本解释、系统部署行为及规范中的未执行性质仍需相应证据。自定义验证器经过测试，规则解释与任务规格仍可能包含人工判断偏差；部分规格同时参与生成与验收，也可能共享这种偏差。本文未单独测量领域准备、规则复核与失败后人工处理的人时；报告的模型响应时间和词元消耗不包含这些人工投入，也不作为人员效率的评价。
+实验结论受任务与检查范围限制。AUTOSAR 评价组件建模，铁路评价配置模型和六条既有查询，PIL 评价结构化决策及已定义参考义务。自由文本解释和系统部署行为不在上述检查范围内。自定义验证器经过测试，规则解释与任务规格仍可能包含人工判断偏差；部分规格同时参与生成与验收，也可能共享这种偏差。本文未单独测量领域准备、检查器开发与失败后人工处理的人时；模型响应时间和词元消耗仅反映自动运行成本。
 
-题集多样性和比较条件影响结果的外推。AUTOSAR 需求参考规范与一个工程样例；铁路任务由三类任务和八种布局组合，共享模板；PIL 支持库与检索器在本题集上开发。三次重复刻画相同任务上的运行变化，不能增加需求来源的多样性。部分修复条件同时改变反馈和修改接纳策略，第二模型只采用一个种子，因此本文按实际比较解释收益。后续评价需要覆盖更多独立任务、规则与生成模型，并分别检验约束提取质量、验证覆盖和修复策略。
+题集多样性和比较条件影响结果的外推。AUTOSAR 需求参考规范与一个工程样例；铁路任务由三类任务和八种布局组合，共享模板；PIL 支持库与检索器在本题集上开发。三次重复用于观察相同任务上的运行变化。部分修复条件同时改变反馈和修改接纳策略，其效果不能全部归因于反馈内容；第二模型只采用一个种子。后续评价需要覆盖更多独立任务、规则与生成模型，并分别检验约束提取质量、验证覆盖和修复策略。
 
 # 5 结论
 
-本文提出一种元模型引导的分层约束模型生成方法，将自然语言交互与 MDE 中显式的模型表示和检查能力结合。方法以已有领域元模型为基础，通过信息提取与转换、元模型术语引导的结构化约束抽取，以及约束与元素和规范来源的关联，构建集成约束模型 ICM。在单次任务中，约束绑定到具体对象、取值和引用，形成生成时约束层 L1 与生成后验证层 L2 的执行依据。L1 控制生成过程中的可选结构，L2 检查模型及其制品，原始任务要求则持续约束候选的接纳和后续修复。
+本文提出一种元模型引导的分层约束模型生成方法，将自然语言交互与 MDE 中显式的模型表示和检查能力结合。方法以已有领域元模型为基础，通过信息提取与转换、元模型术语引导的结构化约束抽取和自动链接，构建保存规则、元素关联及规范来源的集成约束模型 ICM。在单次任务中，约束绑定到具体对象、取值和引用，形成生成时约束层 L1 与生成后验证层 L2 的执行依据。L1 控制生成过程中的可选结构，L2 检查模型及其制品，原始任务要求则持续约束候选的接纳和后续修复。
 
-这一分层安排共同处理结构构造与逻辑验证。必需特征、基数和可选引用等要求可以在具有相应表示和执行能力时提前限制生成；依赖完整对象、跨元素关系或目标制品的检查在模型形成后执行。ICM 将这些处理与领域依据联系起来，使同一规则能够服务于生成限制、检索提示和验证器开发。方法的贡献由此不仅在于增加检查步骤，也在于将约束的获取、组织、任务绑定和分层执行衔接为可复用的建模过程。
+这一分层安排共同处理结构构造与逻辑验证。必需特征、基数和可选引用等要求可以在具有相应表示和执行能力时提前限制生成；依赖完整对象、跨元素关系或目标制品的检查在模型形成后执行。ICM 将这些处理与领域依据联系起来，使同一规则能够服务于生成限制、检索提示和验证器开发，支持约束从领域准备到任务执行的复用。
 
 实验从三个领域考察了这一方法。AUTOSAR 的 60 次完整流程均通过任务范围内的验收，生成的 255 份 ARXML 均通过 XSD 检查，85 个核心受控故障单元和 15 个替代单元均恢复为参考制品；独立的 AUTOSAR 本地实验在全部 60 次审计生成中记录到约束对解码的实际干预。铁路主实验的严格成功数由初始生成的 23/72 提高至验证反馈修复后的 51/72，表明检查反馈能够帮助修复相当一部分失败候选，同时仍有任务未能在当前修复配置下完成。PIL 实验将结构限制、规则检查和任务结论评价用于国际私法决策，补充了分层原则在工程模型之外的应用证据。不同实验共同呈现了约束执行、验收和修复的作用及其实际边界。
 
@@ -421,72 +421,4 @@ PIL 为 RQ3 提供了决策领域的应用证据：相同的生成时限制与�
 
 ## 数据与代码可用性
 
-研究数据与代码整理为配套复现材料，仓库入口为 [审稿材料分支](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS)。材料包含领域约束及其来源、正式任务与提示、生成制品、验证器、修复记录和统计分析脚本。README 按论文章节提供具体文件与压缩包成员的导航，发布清单记录文件校验值；同时提供同内容的完整离线包，以便不依赖 GitHub 登录核对已保存的结果。复核命令不调用模型服务。
-
-# 参考文献
-
-[1] Kahani, Nafiseh; Bagherzadeh, Mojtaba; Cordy, James R.; Dingel, Juergen; Varró, Daniel (2019). Survey and classification of model transformation tools. Software and Systems Modeling, 18(4), 2361–2397. [https://doi.org/10.1007/s10270-018-0665-6](https://doi.org/10.1007/s10270-018-0665-6)
-
-[2] Di Rocco, Juri; Di Ruscio, Davide; Di Sipio, Claudio; Nguyen, Phuong T.; Rubei, Riccardo (2025). On the use of large language models in model-driven engineering. Software and Systems Modeling, 24(3), 923–948. [https://doi.org/10.1007/s10270-025-01263-8](https://doi.org/10.1007/s10270-025-01263-8)
-
-[3] Poesia, Gabriel; Polozov, Alex; Le, Vu; Tiwari, Ashish; Soares, Gustavo; Meek, Christopher; Gulwani, Sumit (2022). Synchromesh: Reliable Code Generation from Pre-trained Language Models. International Conference on Learning Representations. [https://openreview.net/forum?id=KmtVD97J43e](https://openreview.net/forum?id=KmtVD97J43e)
-
-[4] Chen, Boqi; Wei, Ou; Zheng, Bingzhou; Mussbacher, Gunter (2025). Accurate and Consistent Graph Model Generation from Text with Large Language Models. 2025 ACM/IEEE 28th International Conference on Model Driven Engineering Languages and Systems (MODELS), 130–141. [https://doi.org/10.1109/MODELS67397.2025.00018](https://doi.org/10.1109/MODELS67397.2025.00018)
-
-[5] Almonte, Lissette; Rengifo, Jefferson Iván; Guerra, Esther; de Lara, Juan (2026). EMF-Kaizen: an intelligent assistant for domain-specific modelling and meta-modelling. Journal of Object Technology, 25(3), 99–112. [https://doi.org/10.5381/jot.2026.25.3.a8](https://doi.org/10.5381/jot.2026.25.3.a8)
-
-[6] Object Management Group (2014). Object Constraint Language, Version 2.4. Object Management Group. [https://www.omg.org/spec/OCL/2.4](https://www.omg.org/spec/OCL/2.4)
-
-[7] Object Management Group (2015). XML Metadata Interchange (XMI) Specification, Version 2.5.1. Object Management Group. [https://www.omg.org/spec/XMI/2.5.1](https://www.omg.org/spec/XMI/2.5.1)
-
-[8] Ma, Tong; Dai, Shenlong; Gao, Yongfan; Xu, Fengjie; Fang, Ling (2025). A Dual-Stage Framework for Behavior-Enhanced Automated Code Generation in Industrial-Scale Meta-Models. IEEE Access, 13, 170943–170959. [https://doi.org/10.1109/ACCESS.2025.3614174](https://doi.org/10.1109/ACCESS.2025.3614174)
-
-[9] Semeráth, Oszkár; Nagy, András Szabolcs; Varró, Dániel (2018). A Graph Solver for the Automated Generation of Consistent Domain-Specific Models. Proceedings of the 40th International Conference on Software Engineering, 969–980. [https://doi.org/10.1145/3180155.3180186](https://doi.org/10.1145/3180155.3180186)
-
-[10] Alaoui Mdaghri, Ahmed; Ouederni, Meriem; Chaari, Lotfi (2025). MDE in the Era of Generative AI. Verification and Evaluation of Computer and Communication Systems, 15466, 113–127. [https://doi.org/10.1007/978-3-031-85356-2_8](https://doi.org/10.1007/978-3-031-85356-2_8)
-
-[11] Petrovic, Nenad; Pan, Fengjunjie; Lebioda, Krzysztof; Zolfaghari, Vahid; Kirchner, Sven; Purschke, Nils; Khan, Muhammad Aqib; Vorobev, Viktor; Knoll, Alois (2024). Synergy of Large Language Model and Model Driven Engineering for Automated Development of Centralized Vehicular Systems. Technical University of Munich. [https://doi.org/10.48550/arXiv.2404.05508](https://doi.org/10.48550/arXiv.2404.05508)
-
-[12] El-Gnainy, Nada; Shanouda, Mira; Essam, Ahmed; Ibrahim, Anas Abdallah; William, John; Elsharkawy, Mariam; Moustafa, Passant Ahmed; Al Ansary, Mohamed; Mahmoud, Hossam; Moro, Ahmed; Salama, Cherif (2024). AI-Enhanced AUTOSAR Configuration: Efficient Methods for Dataset Generation and Automated Code Production. 2024 IEEE 8th Forum on Research and Technologies for Society and Industry Innovation (RTSI), 214–219. [https://doi.org/10.1109/RTSI61910.2024.10761393](https://doi.org/10.1109/RTSI61910.2024.10761393)
-
-[13] Samy, Amr; Moro, Ahmed; Taher, Mohamed (2026). Automating AUTOSAR BSW Configuration Generation with Fine-Tuned LLMs and a Compact Intermediate Representation. Applied Sciences, 16(17), Article 8443. [https://doi.org/10.3390/app16178443](https://doi.org/10.3390/app16178443)
-
-[14] Abukhalaf, Seif; Hamdaqa, Mohammad; Khomh, Foutse (2024). PathOCL: Path-Based Prompt Augmentation for OCL Generation with GPT-4. Proceedings of the 2024 IEEE/ACM First International Conference on AI Foundation Models and Software Engineering. [https://doi.org/10.1145/3650105.3652290](https://doi.org/10.1145/3650105.3652290)
-
-[15] Winkler, Stefan; von Pilgrim, Jens (2010). A survey of traceability in requirements engineering and model-driven development. Software and Systems Modeling, 9(4), 529–565. [https://doi.org/10.1007/s10270-009-0145-0](https://doi.org/10.1007/s10270-009-0145-0)
-
-[16] Lewis, Patrick; Perez, Ethan; Piktus, Aleksandra; Petroni, Fabio; Karpukhin, Vladimir; Goyal, Naman; Küttler, Heinrich; Lewis, Mike; Yih, Wen-tau; Rocktäschel, Tim; Riedel, Sebastian; Kiela, Douwe (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. Advances in Neural Information Processing Systems, 33. [https://papers.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html](https://papers.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html)
-
-[17] Geng, Saibo; Josifoski, Martin; Peyrard, Maxime; West, Robert (2023). Grammar-Constrained Decoding for Structured NLP Tasks without Finetuning. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 10932–10952. [https://doi.org/10.18653/v1/2023.emnlp-main.674](https://doi.org/10.18653/v1/2023.emnlp-main.674)
-
-[18] Dong, Yixin; Ruan, Charlie F.; Cai, Yaxing; Lai, Ruihang; Xu, Ziyi; Zhao, Yilong; Chen, Tianqi (2025). XGrammar: Flexible and Efficient Structured Generation Engine for Large Language Models. Proceedings of Machine Learning and Systems, 7. [https://proceedings.mlsys.org/paper_files/paper/2025/hash/5c20ca4b0b20b0bd2f1d839dc605e70f-Abstract-Conference.html](https://proceedings.mlsys.org/paper_files/paper/2025/hash/5c20ca4b0b20b0bd2f1d839dc605e70f-Abstract-Conference.html)
-
-[19] Li, Linzhang; Dong, Yixin; Wang, Guanjie; Xu, Ziyi; Jiang, Alexander; Chen, Tianqi (2026). XGrammar-2: Dynamic and Efficient Structured Generation Engine for Agentic LLMs. Proceedings of the ACM Conference on AI and Agentic Systems, 1009–1022. [https://doi.org/10.1145/3786335.3813124](https://doi.org/10.1145/3786335.3813124)
-
-[20] Chen, Boqi; Hernández López, José Antonio; Babikian, Aren A. (2026). Projectional Decoding: Towards Semantic-Aware LLM Generation. Proceedings of the 34th ACM International Conference on the Foundations of Software Engineering, 1277–1281. [https://doi.org/10.1145/3803437.3805571](https://doi.org/10.1145/3803437.3805571)
-
-[21] Park, Kanghee; Wang, Jiayu; Berg-Kirkpatrick, Taylor; Polikarpova, Nadia; D'Antoni, Loris (2024). Grammar-Aligned Decoding. Advances in Neural Information Processing Systems, 37, 24547–24568. [https://doi.org/10.52202/079017-0774](https://doi.org/10.52202/079017-0774)
-
-[22] Marchezan, Luciano; Kretschmer, Roland; Assunção, Wesley K. G.; Reder, Alexander; Egyed, Alexander (2023). Generating repairs for inconsistent models. Software and Systems Modeling, 22(1), 297–329. [https://doi.org/10.1007/s10270-022-00996-0](https://doi.org/10.1007/s10270-022-00996-0)
-
-[23] Madaan, Aman; Tandon, Niket; Gupta, Prakhar; Hallinan, Skyler; Gao, Luyu; Wiegreffe, Sarah; Alon, Uri; Dziri, Nouha; Prabhumoye, Shrimai; Yang, Yiming; Gupta, Shashank; Majumder, Bodhisattwa Prasad; Hermann, Katherine; Welleck, Sean; Yazdanbakhsh, Amir; Clark, Peter (2023). Self-Refine: Iterative Refinement with Self-Feedback. Advances in Neural Information Processing Systems, 36, 46534–46594. [https://doi.org/10.52202/075280-2019](https://doi.org/10.52202/075280-2019)
-
-[24] Ma, Lezhi; Liu, Shangqing; Li, Yi; Xie, Xiaofei; Bu, Lei (2025). SpecGen: Automated Generation of Formal Program Specifications via Large Language Models. 2025 IEEE/ACM 47th International Conference on Software Engineering (ICSE). [https://doi.org/10.1109/ICSE55347.2025.00129](https://doi.org/10.1109/ICSE55347.2025.00129)
-
-[25] Wright, Austin; Andrews, Henry; Hutton, Ben (2022). JSON Schema Validation: A Vocabulary for Structural Validation of JSON. Internet Engineering Task Force; JSON Schema Draft 2020-12; 16 June 2022. [https://json-schema.org/draft/2020-12/json-schema-validation](https://json-schema.org/draft/2020-12/json-schema-validation)
-
-[26] Tolvanen, Juha-Pekka; Kelly, Steven; Di Rocco, Juri; Pierantonio, Alfonso; Tinella, Giordano (2025). A framework for evaluating tool support for co-evolution of modeling languages, tools and models. Software and Systems Modeling, 24, 311–338. [https://doi.org/10.1007/s10270-024-01218-5](https://doi.org/10.1007/s10270-024-01218-5)
-
-[27] World Wide Web Consortium (2004). XML Schema Part 1: Structures Second Edition. World Wide Web Consortium. [https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/)
-
-[28] AUTOSAR (2015). Software Component Template. AUTOSAR; Document ID 062; Classic Platform Release 4.2.2; 31 July 2015. [https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf](https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf)
-
-[29] AUTOSAR (2015). Specification of RTE. AUTOSAR; Document ID 084; Release 4.2.2; 31 July 2015. [https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf](https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf)
-
-[30] Kwon, Woosuk; Li, Zhuohan; Zhuang, Siyuan; Sheng, Ying; Zheng, Lianmin; Yu, Cody Hao; Gonzalez, Joseph E.; Zhang, Hao; Stoica, Ion (2023). Efficient Memory Management for Large Language Model Serving with PagedAttention. Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles. [https://doi.org/10.1145/3600006.3613165](https://doi.org/10.1145/3600006.3613165)
-
-[31] Szárnyas, Gábor; Izsó, Benedek; Ráth, István; Varró, Dániel (2018). The Train Benchmark: cross-technology performance evaluation of continuous model queries. Software and Systems Modeling, 17, 1365–1393. [https://doi.org/10.1007/s10270-016-0571-8](https://doi.org/10.1007/s10270-016-0571-8)
-
-[32] European Parliament; Council of the European Union (2012). Regulation (EU) No 1215/2012 of the European Parliament and of the Council of 12 December 2012 on jurisdiction and the recognition and enforcement of judgments in civil and commercial matters (recast). Official Journal of the European Union, L 351, 20 December 2012, pp. 1–32; Consolidated text of 26 February 2015. [https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng](https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng)
-
-[33] European Parliament; Council of the European Union (2017). Regulation (EU) 2017/1001 of the European Parliament and of the Council of 14 June 2017 on the European Union trade mark (codification) (Text with EEA relevance). Official Journal of the European Union, L 154, 16 June 2017, pp. 1–99; Consolidated text of 1 December 2025. [https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng](https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng)
+研究数据与代码见[配套复现材料](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS)，包括领域约束及其来源、任务与提示、生成制品、验证器、修复记录和统计分析脚本。仓库 README 按附录 A—D 的实验顺序提供文件导航，并附完整离线包与文件校验清单。

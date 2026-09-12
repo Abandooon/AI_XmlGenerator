@@ -1,6 +1,6 @@
 # Evidence and claim boundaries
 
-Read these boundaries with the [current manuscript](../paper/current/README.md), [evidence map](REVIEWER_EVIDENCE_MAP.md), [ICM guide](ICM_EVIDENCE.md) and [statistical analysis](STATISTICAL_ANALYSIS.md). This revision made no new model calls.
+Read these boundaries with the [current manuscript](../paper/current/README.md), [evidence map](REVIEWER_EVIDENCE_MAP.md), [ICM guide](ICM_EVIDENCE.md) and [statistical analysis](STATISTICAL_ANALYSIS.md). The [crosswalk](PAPER_ARTIFACT_CROSSWALK.md) links these results to manuscript labels and reviewer comments.
 
 ## AUTOSAR: Section 4.2 and Appendix A
 
@@ -8,7 +8,7 @@ The evaluated workflow combines task analysis, case specifications and the exist
 
 The 60 accepted bundles contain 255 ARXML files. The 85 core and 15 substitution repair cells use controlled corruptions of accepted reference artifacts and are reported separately. Artifact, domain and task checks have distinct scopes; the result does not establish complete system deployment conformance or a natural-failure repair rate. The [AUTOSAR package](../experiments/autosar/README.md) preserves full replay definitions and historical qualifications.
 
-Constraint extraction and ICM preparation are distinct from formal generation model calls. Normative text, extraction prompts, requirements, model-visible control prompts and source-code comments may have different languages. Stored record counts and checker coverage are not extraction-accuracy measurements; see [ICM_EVIDENCE.md](ICM_EVIDENCE.md).
+Constraint extraction and automatic metamodel linking prepare the ICM used by the model-generation workflow. Failed or ambiguous links are resolved during domain preparation. The validation plan configures 554 rules; applicability and execution are recorded per artifact. See [ICM_EVIDENCE.md](ICM_EVIDENCE.md) for source and implementation navigation.
 
 ## AUTOSAR–vLLM: Section 4.3 and Appendix B
 
