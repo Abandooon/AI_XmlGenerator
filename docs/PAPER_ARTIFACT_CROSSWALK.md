@@ -1,5 +1,7 @@
 # Paper, appendix, artifact and reviewer crosswalk
 
+The [bibliography audit](../paper/current/latex/引用核对/README.md) connects the current numbered references and citation contexts to the downloaded official exports. The [key mapping](../paper/current/latex/引用核对/KEY_MAP.json) and [redline](../paper/current/latex/引用核对/引文修改对照.html) accompany the source.
+
 The [compiled location index](../paper/current/latex/LOCATIONS.md) maps all 80 stable LaTeX labels to their Chinese titles, displayed numbers and exact PDF pages, with direct page links.
 
 Use this index alongside the [integrated manuscript](../paper/current/latex/main.pdf), its [LaTeX source](../paper/current/latex/main.tex), and the [31-comment response matrix](../paper/REVIEW_RESPONSE_MATRIX.md). LaTeX labels remain stable when pagination changes. Each row in the final table gives a route from a reviewer comment to the main text, appendix and the materials defined below.

@@ -1,39 +1,39 @@
-# 引用编号与 bibkey 对照
+# 当前引用编号与 bibkey 对照
 
-当前编号按正文及附录首次引用顺序排列；同一文献复用同一编号。
+以当前 LaTeX 编译编号为准。导出来源、原始文件和必要兼容修正见 [完整核验说明](../latex/引用核对/README.md)。
 
-| 当前编号 | 原审阅稿编号 | bibkey | 文献 |
-| --- | --- | --- | --- |
-| [1] | [1] | `kahaniSurveyClassificationModel2019` | Survey and classification of model transformation tools |
-| [2] | [2] | `DiRocco2025LLMMDE` | On the use of large language models in model-driven engineering |
-| [3] | [3] | `poesiaSynchromeshReliableCode2021` | {Synchromesh}: Reliable Code Generation from Pre-trained Language Models |
-| [4] | [4] | `Chen2025AccurateGraph` | Accurate and Consistent Graph Model Generation from Text with Large Language Models |
-| [5] | [5] | `Almonte2026EMFKaizen` | EMF-Kaizen: an intelligent assistant for domain-specific modelling and meta-modelling |
-| [6] | [6] | `omgOCL242014` | Object Constraint Language, Version 2.4 |
-| [7] | [7] | `omgXMI2512015` | XML Metadata Interchange (XMI) Specification, Version 2.5.1 |
-| [8] | [8] | `DualStageFramework` | A Dual-Stage Framework for Behavior-Enhanced Automated Code Generation in Industrial-Scale Meta-Models |
-| [9] | [9] | `Semerath2018GraphSolver` | A Graph Solver for the Automated Generation of Consistent Domain-Specific Models |
-| [10] | [10] | `Alaoui2025` | MDE in the Era of Generative AI |
-| [11] | [11] | `Petrovic_2024` | Synergy of Large Language Model and Model Driven Engineering for Automated Development of Centralized Vehicular Systems |
-| [12] | [12] | `el-gnainyAIEnhancedAUTOSARConfiguration2024a` | AI-Enhanced AUTOSAR Configuration: Efficient Methods for Dataset Generation and Automated Code Production |
-| [13] | [13] | `Samy2026AUTOSARBSW` | Automating AUTOSAR BSW Configuration Generation with Fine-Tuned LLMs and a Compact Intermediate Representation |
-| [14] | [14] | `abukhalafPathOCLPathBasedPrompt2024` | PathOCL: Path-Based Prompt Augmentation for OCL Generation with GPT-4 |
-| [15] | [15] | `winklerTraceability2010` | A survey of traceability in requirements engineering and model-driven development |
-| [16] | [16] | `Lewis2020RAG` | Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks |
-| [17] | [17] | `gengGrammarConstrainedDecodingStructured2024` | Grammar-Constrained Decoding for Structured NLP Tasks without Finetuning |
-| [18] | [18] | `Dong2024XGrammar` | XGrammar: Flexible and Efficient Structured Generation Engine for Large Language Models |
-| [19] | [19] | `XGrammar22026` | XGrammar-2: Dynamic and Efficient Structured Generation Engine for Agentic LLMs |
-| [20] | [20] | `Chen2026ProjectionalDecoding` | Projectional Decoding: Towards Semantic-Aware LLM Generation |
-| [21] | [21] | `parkGrammaralignedDecoding2025` | Grammar-Aligned Decoding |
-| [22] | [22] | `marchezanGeneratingRepairsInconsistent2023` | Generating repairs for inconsistent models |
-| [23] | [23] | `madaanSelfRefineIterativeRefinement2023` | Self-Refine: Iterative Refinement with Self-Feedback |
-| [24] | [24] | `maSpecGenAutomatedGeneration2025` | SpecGen: Automated Generation of Formal Program Specifications via Large Language Models |
-| [25] | [25] | `JSONSchemaValidation202012` | JSON Schema Validation: A Vocabulary for Structural Validation of JSON |
-| [26] | [26] | `tolvanenFrameworkCoevolution2025` | A framework for evaluating tool support for co-evolution of modeling languages, tools and models |
-| [27] | [27] | `W3CXMLSchema2004` | XML Schema Part 1: Structures Second Edition |
-| [28] | [28] | `AUTOSAR422` | Software Component Template |
-| [29] | [29] | `AUTOSARRTE422` | Specification of RTE |
-| [30] | [30] | `Kwon2023PagedAttention` | Efficient Memory Management for Large Language Model Serving with PagedAttention |
-| [31] | [31] | `TrainBenchmark2018` | The Train Benchmark: cross-technology performance evaluation of continuous model queries |
-| [32] | [32] | `EU1215_2012` | Regulation (EU) No 1215/2012 on jurisdiction and the recognition and enforcement of judgments in civil and commercial matters (recast) |
-| [33] | [33] | `EU2017_1001` | Regulation (EU) 2017/1001 on the European Union trade mark (codification) |
+| 编号 | bibkey | 文献 |
+| --- | --- | --- |
+| [1] | `Kahani2019` | Survey and classification of model transformation tools |
+| [2] | `DiRocco2025` | On the use of large language models in model-driven engineering |
+| [3] | `W3C2004XMLSchemaStructures` | XML Schema Part 1: Structures Second Edition |
+| [4] | `poesia2022synchromesh` | Synchromesh: Reliable code generation from pre-trained language models |
+| [5] | `Chen_2025` | Accurate and Consistent Graph Model Generation from Text with Large Language Models |
+| [6] | `JOT:issue_2026_03/a8` | EMF-Kaizen: an intelligent assistant for domain-specific modelling and meta-modelling |
+| [7] | `OMG2014OCL24` | Object Constraint Language, Version 2.4 |
+| [8] | `OMG2015XMI251` | XML Metadata Interchange (XMI) Specification, Version 2.5.1 |
+| [9] | `Ma_2025a` | A Dual-Stage Framework for Behavior-Enhanced Automated Code Generation in Industrial-Scale Meta-Models |
+| [10] | `Semer_th_2018` | A graph solver for the automated generation of consistent domain-specific models |
+| [11] | `10.1007/978-3-031-85356-2_8` | MDE in the Era of Generative AI |
+| [12] | `https://doi.org/10.48550/arxiv.2404.05508` | Synergy of Large Language Model and Model Driven Engineering for Automated Development of Centralized Vehicular Systems |
+| [13] | `El_Gnainy_2024` | AI-Enhanced AUTOSAR Configuration: Efficient Methods for Dataset Generation and Automated Code Production |
+| [14] | `Samy_2026` | Automating AUTOSAR BSW Configuration Generation with Fine-Tuned LLMs and a Compact Intermediate Representation |
+| [15] | `Abukhalaf_2024` | PathOCL: Path-Based Prompt Augmentation for OCL Generation with GPT-4 |
+| [16] | `Winkler2010` | A survey of traceability in requirements engineering and model-driven development |
+| [17] | `NEURIPS2020_6b493230` | Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks |
+| [18] | `geng-etal-2023-grammar` | Grammar-Constrained Decoding for Structured NLP Tasks without Finetuning |
+| [19] | `MLSYS2025_5c20ca4b` | XGrammar: Flexible and Efficient Structured Generation Engine for Large Language Models |
+| [20] | `Li_2026` | XGrammar-2: Dynamic and Efficient Structured Generation Engine for Agentic LLMs |
+| [21] | `Chen_2026` | Projectional Decoding: Towards Semantic-Aware LLM Generation |
+| [22] | `NEURIPS2024_2bdc2267` | Grammar-Aligned Decoding |
+| [23] | `Marchezan2023` | Generating repairs for inconsistent models |
+| [24] | `NEURIPS2023_91edff07` | Self-Refine: Iterative Refinement with Self-Feedback |
+| [25] | `Ma_2025b` | SpecGen: Automated Generation of Formal Program Specifications via Large Language Models |
+| [26] | `bhutton-json-schema-validation-01` | JSON Schema Validation: A Vocabulary for Structural Validation of JSON |
+| [27] | `Tolvanen2025` | A framework for evaluating tool support for co-evolution of modeling languages, tools and models |
+| [28] | `AUTOSAR2015SoftwareComponentTemplate422` | Software Component Template |
+| [29] | `AUTOSAR2015RTE422` | Specification of RTE |
+| [30] | `Kwon_2023` | Efficient Memory Management for Large Language Model Serving with PagedAttention |
+| [31] | `Szarnyas2018` | The Train Benchmark: cross-technology performance evaluation of continuous model queries |
+| [32] | `EU1215_2012_Consolidated20150226` | Regulation (EU) No 1215/2012 of the European Parliament and of the Council of 12 December 2012 on jurisdiction and the recognition and enforcement of judgments in civil and commercial matters (recast) |
+| [33] | `EU2017_1001_Consolidated20251201` | Regulation (EU) 2017/1001 of the European Parliament and of the Council of 14 June 2017 on the European Union trade mark (codification) (Text with EEA relevance) |

@@ -1,3 +1,5 @@
+Current bibliography and citation validation: [latest checks](../bibliography_revision/README.md). The records below document the earlier LaTeX integration stage.
+
 # Integrated manuscript validation
 
 The current paper is `paper/current/latex/main.tex`, with its compiled PDF and Appendices A–D. The checks in this directory apply to that integrated source. Earlier validation directories describe earlier review stages.

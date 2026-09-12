@@ -1,0 +1,876 @@
+{
+  "pages": 36,
+  "checks": {
+    "33_unique_cited_keys": true,
+    "first_citation_order_matches_numbers": true,
+    "all_80_labels_preserved": true,
+    "all_label_destinations_correct": true,
+    "all_internal_links_resolve": true,
+    "no_unresolved_citations": true,
+    "no_missing_glyphs": true,
+    "no_bibtex_warnings": true,
+    "no_overfull_boxes": true,
+    "no_placeholder_locations": true,
+    "no_replacement_glyph": true
+  },
+  "all_pass": true,
+  "labels": [
+    {
+      "label": "sec:introduction",
+      "number": "1",
+      "page": 1,
+      "title": "引言",
+      "destination": "section.1",
+      "actual_page": 1,
+      "pass": true
+    },
+    {
+      "label": "sec:related",
+      "number": "2",
+      "page": 3,
+      "title": "相关工作",
+      "destination": "section.2",
+      "actual_page": 3,
+      "pass": true
+    },
+    {
+      "label": "sec:related-2-1",
+      "number": "2.1",
+      "page": 3,
+      "title": "模型转换与一致模型生成",
+      "destination": "subsection.2.1",
+      "actual_page": 3,
+      "pass": true
+    },
+    {
+      "label": "sec:related-2-2",
+      "number": "2.2",
+      "page": 4,
+      "title": "大模型辅助建模与模型实例构造",
+      "destination": "subsection.2.2",
+      "actual_page": 4,
+      "pass": true
+    },
+    {
+      "label": "sec:related-2-3",
+      "number": "2.3",
+      "page": 5,
+      "title": "结构化约束获取与可追溯性",
+      "destination": "subsection.2.3",
+      "actual_page": 5,
+      "pass": true
+    },
+    {
+      "label": "sec:related-2-4",
+      "number": "2.4",
+      "page": 5,
+      "title": "受约束解码与验证反馈修复",
+      "destination": "subsection.2.4",
+      "actual_page": 5,
+      "pass": true
+    },
+    {
+      "label": "sec:method",
+      "number": "3",
+      "page": 6,
+      "title": "元模型引导的分层约束生成方法",
+      "destination": "section.3",
+      "actual_page": 6,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-1",
+      "number": "3.1",
+      "page": 6,
+      "title": "适用范围与方法概述",
+      "destination": "subsection.3.1",
+      "actual_page": 6,
+      "pass": true
+    },
+    {
+      "label": "fig:1",
+      "number": "1",
+      "page": 7,
+      "title": "领域准备与单次任务执行。ICM、生成映射和验证器在领域准备阶段形成，供不同任务复用；任务绑定确定本次生成、检索和检查的内容。L1 限制生成过程，L2 检查构造后的结果并驱动修复，任务验收依据原始需求确定",
+      "destination": "figure.1",
+      "actual_page": 7,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-2",
+      "number": "3.2",
+      "page": 7,
+      "title": "提取与转换元模型信息",
+      "destination": "subsection.3.2",
+      "actual_page": 7,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-3",
+      "number": "3.3",
+      "page": 8,
+      "title": "元模型引导的约束抽取与 ICM 构建",
+      "destination": "subsection.3.3",
+      "actual_page": 8,
+      "pass": true
+    },
+    {
+      "label": "eq:icm",
+      "number": "1",
+      "page": 8,
+      "title": "元模型引导的约束抽取与 ICM 构建",
+      "destination": "equation.3.1",
+      "actual_page": 8,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-4",
+      "number": "3.4",
+      "page": 8,
+      "title": "绑定本次任务的对象与要求",
+      "destination": "subsection.3.4",
+      "actual_page": 8,
+      "pass": true
+    },
+    {
+      "label": "fig:2",
+      "number": "2",
+      "page": 9,
+      "title": "从已有领域元模型及自然语言规范构建 ICM。元模型表示提供抽取术语、自动链接依据及结构信息；链接异常交由人工处理，ICM 保存约束内容、元素关联、来源和后续用途",
+      "destination": "figure.2",
+      "actual_page": 9,
+      "pass": true
+    },
+    {
+      "label": "tab:1",
+      "number": "1",
+      "page": 9,
+      "title": "ICM 约束记录的主要信息",
+      "destination": "table.1",
+      "actual_page": 9,
+      "pass": true
+    },
+    {
+      "label": "tab:2",
+      "number": "2",
+      "page": 9,
+      "title": "ICM 约束的三类用途",
+      "destination": "table.2",
+      "actual_page": 9,
+      "pass": true
+    },
+    {
+      "label": "fig:3",
+      "number": "3",
+      "page": 10,
+      "title": "ICM 的信息与关联。元模型表示 M 提供领域元素及关系，约束记录 C 表达规则内容，关联 A 连接约束与其作用元素，来源信息 P 支持回查。下方三类用途共用这些信息，不构成额外的元模型层次",
+      "destination": "figure.3",
+      "actual_page": 10,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-5",
+      "number": "3.5",
+      "page": 10,
+      "title": "组装生成约束与受约束解码",
+      "destination": "subsection.3.5",
+      "actual_page": 10,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-5-1",
+      "number": "3.5.1",
+      "page": 10,
+      "title": "动态组装生成约束",
+      "destination": "subsubsection.3.5.1",
+      "actual_page": 10,
+      "pass": true
+    },
+    {
+      "label": "alg:assembly",
+      "number": "1",
+      "page": 11,
+      "title": "动态组装生成约束",
+      "destination": "algorithm.1",
+      "actual_page": 11,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-5-2",
+      "number": "3.5.2",
+      "page": 11,
+      "title": "受约束解码如何参与实例模型生成",
+      "destination": "subsubsection.3.5.2",
+      "actual_page": 11,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-5-3",
+      "number": "3.5.3",
+      "page": 12,
+      "title": "从生成结果到模型与序列化制品",
+      "destination": "subsubsection.3.5.3",
+      "actual_page": 12,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-6",
+      "number": "3.6",
+      "page": 12,
+      "title": "生成后验证与任务验收",
+      "destination": "subsection.3.6",
+      "actual_page": 12,
+      "pass": true
+    },
+    {
+      "label": "fig:4",
+      "number": "4",
+      "page": 13,
+      "title": "任务绑定与 L1 执行。（a）结合任务需求、ICM 和已有模型上下文组装生成约束、检索内容及检查配置；（b）展示语法编译、允许词元筛选和状态更新。完整输出经结构验证与模型装配后进入 L2",
+      "destination": "figure.4",
+      "actual_page": 13,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-7",
+      "number": "3.7",
+      "page": 13,
+      "title": "依据验证反馈修复模型",
+      "destination": "subsection.3.7",
+      "actual_page": 13,
+      "pass": true
+    },
+    {
+      "label": "sec:method-3-8",
+      "number": "3.8",
+      "page": 14,
+      "title": "领域适配与可追溯性",
+      "destination": "subsection.3.8",
+      "actual_page": 14,
+      "pass": true
+    },
+    {
+      "label": "sec:evaluation",
+      "number": "4",
+      "page": 14,
+      "title": "实验评价",
+      "destination": "section.4",
+      "actual_page": 14,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-1",
+      "number": "4.1",
+      "page": 14,
+      "title": "研究问题与评价设置",
+      "destination": "subsection.4.1",
+      "actual_page": 14,
+      "pass": true
+    },
+    {
+      "label": "fig:5",
+      "number": "5",
+      "page": 15,
+      "title": "L2 驱动的修复与复验。失败诊断用于定位修改对象，允许操作限制修复范围；修改后重建并复验，原任务要求贯穿接纳过程。自动处理结束后仍未解决的问题交由人工处理",
+      "destination": "figure.5",
+      "actual_page": 15,
+      "pass": true
+    },
+    {
+      "label": "tab:3",
+      "number": "3",
+      "page": 15,
+      "title": "领域适配接口",
+      "destination": "table.3",
+      "actual_page": 15,
+      "pass": true
+    },
+    {
+      "label": "tab:4",
+      "number": "4",
+      "page": 16,
+      "title": "实验设计及规模",
+      "destination": "table.4",
+      "actual_page": 16,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-2",
+      "number": "4.2",
+      "page": 16,
+      "title": "AUTOSAR：约束组织与工程模型生成",
+      "destination": "subsection.4.2",
+      "actual_page": 16,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-2-1",
+      "number": "4.2.1",
+      "page": 16,
+      "title": "需求来源与生成流程",
+      "destination": "subsubsection.4.2.1",
+      "actual_page": 16,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-2-2",
+      "number": "4.2.2",
+      "page": 16,
+      "title": "从 ICM 到一次检查",
+      "destination": "subsubsection.4.2.2",
+      "actual_page": 16,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-2-3",
+      "number": "4.2.3",
+      "page": 17,
+      "title": "生成结果与运行代价",
+      "destination": "subsubsection.4.2.3",
+      "actual_page": 17,
+      "pass": true
+    },
+    {
+      "label": "tab:5",
+      "number": "5",
+      "page": 17,
+      "title": "AUTOSAR 完整生成流程的结果",
+      "destination": "table.5",
+      "actual_page": 17,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-3",
+      "number": "4.3",
+      "page": 17,
+      "title": "AUTOSAR-vLLM：生成约束对解码的实际干预",
+      "destination": "subsection.4.3",
+      "actual_page": 17,
+      "pass": true
+    },
+    {
+      "label": "fig:6",
+      "number": "6",
+      "page": 18,
+      "title": "周期 Runnable 约束从规范来源到模型对象及检查结果的关联。R 表示 RE\\_Com\\_Full\\_Baseline，E 表示 TE\\_Com\\_Full\\_Baseline；任务要求的 10 ms 在制品中表示为 0.01 s",
+      "destination": "figure.6",
+      "actual_page": 18,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-4",
+      "number": "4.4",
+      "page": 18,
+      "title": "铁路：生成后验证与受限修复",
+      "destination": "subsection.4.4",
+      "actual_page": 18,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-4-1",
+      "number": "4.4.1",
+      "page": 18,
+      "title": "任务、验证器与比较条件",
+      "destination": "subsubsection.4.4.1",
+      "actual_page": 18,
+      "pass": true
+    },
+    {
+      "label": "fig:7",
+      "number": "7",
+      "page": 19,
+      "title": "AUTOSAR-vLLM 的过程与结果。（a）每个案例三次审计生成中的干预位置，短线表示无约束最高分词元被语法限制排除。（b）同一案例在提示约束与受约束解码下通过结构验收的次数",
+      "destination": "figure.7",
+      "actual_page": 19,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-4-2",
+      "number": "4.4.2",
+      "page": 19,
+      "title": "主要结果与失败解释",
+      "destination": "subsubsection.4.4.2",
+      "actual_page": 19,
+      "pass": true
+    },
+    {
+      "label": "fig:8",
+      "number": "8",
+      "page": 20,
+      "title": "铁路模型结果。（a）72 个初始生成起点上的两种修复。（b）144 个受控损坏输入上的自修复、验证反馈与增加局部定位的修复。（c）同一 24 个任务及固定种子上的 Luna 与 Terra 比较",
+      "destination": "figure.8",
+      "actual_page": 20,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-4-3",
+      "number": "4.4.3",
+      "page": 20,
+      "title": "第二模型补充",
+      "destination": "subsubsection.4.4.3",
+      "actual_page": 20,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-5",
+      "number": "4.5",
+      "page": 20,
+      "title": "国际私法：结构化法律决策中的分层检查",
+      "destination": "subsection.4.5",
+      "actual_page": 20,
+      "pass": true
+    },
+    {
+      "label": "sec:eval-4-6",
+      "number": "4.6",
+      "page": 21,
+      "title": "有效性讨论",
+      "destination": "subsection.4.6",
+      "actual_page": 21,
+      "pass": true
+    },
+    {
+      "label": "sec:conclusion",
+      "number": "5",
+      "page": 21,
+      "title": "结论",
+      "destination": "section.5",
+      "actual_page": 21,
+      "pass": true
+    },
+    {
+      "label": "tab:6",
+      "number": "6",
+      "page": 22,
+      "title": "PIL 主要结果",
+      "destination": "table.6",
+      "actual_page": 22,
+      "pass": true
+    },
+    {
+      "label": "sec:data-availability",
+      "number": "5",
+      "page": 22,
+      "title": "数据与代码可用性",
+      "destination": "section*.3",
+      "actual_page": 22,
+      "pass": true
+    },
+    {
+      "label": "app:A",
+      "number": "A",
+      "page": 23,
+      "title": "AUTOSAR 工程生成与修复",
+      "destination": "appendix.A",
+      "actual_page": 23,
+      "pass": true
+    },
+    {
+      "label": "app:A-1",
+      "number": "A.1",
+      "page": 23,
+      "title": "需求设计与生成设置",
+      "destination": "subsection.A.1",
+      "actual_page": 23,
+      "pass": true
+    },
+    {
+      "label": "app:A-2",
+      "number": "A.2",
+      "page": 23,
+      "title": "规范约束抽取、ICM 与验证器",
+      "destination": "subsection.A.2",
+      "actual_page": 23,
+      "pass": true
+    },
+    {
+      "label": "tab:A1",
+      "number": "A1",
+      "page": 24,
+      "title": "AUTOSAR 需求设计及来源",
+      "destination": "table.A.1",
+      "actual_page": 24,
+      "pass": true
+    },
+    {
+      "label": "tab:A2",
+      "number": "A2",
+      "page": 24,
+      "title": "AUTOSAR 规范约束抽取与链接规格",
+      "destination": "table.A.2",
+      "actual_page": 24,
+      "pass": true
+    },
+    {
+      "label": "app:A-3",
+      "number": "A.3",
+      "page": 24,
+      "title": "核心故障与替代故障",
+      "destination": "subsection.A.3",
+      "actual_page": 24,
+      "pass": true
+    },
+    {
+      "label": "tab:A3",
+      "number": "A3",
+      "page": 25,
+      "title": "核心故障修复结果",
+      "destination": "table.A.3",
+      "actual_page": 25,
+      "pass": true
+    },
+    {
+      "label": "tab:A4",
+      "number": "A4",
+      "page": 25,
+      "title": "运行前声明的替代操作",
+      "destination": "table.A.4",
+      "actual_page": 25,
+      "pass": true
+    },
+    {
+      "label": "app:A-4",
+      "number": "A.4",
+      "page": 25,
+      "title": "贯穿案例 周期组件的构造与事件引用恢复",
+      "destination": "subsection.A.4",
+      "actual_page": 25,
+      "pass": true
+    },
+    {
+      "label": "app:B",
+      "number": "B",
+      "page": 26,
+      "title": "AUTOSAR-vLLM 解码干预",
+      "destination": "appendix.B",
+      "actual_page": 26,
+      "pass": true
+    },
+    {
+      "label": "app:B-1",
+      "number": "B.1",
+      "page": 26,
+      "title": "比较条件与执行设置",
+      "destination": "subsection.B.1",
+      "actual_page": 26,
+      "pass": true
+    },
+    {
+      "label": "app:B-2",
+      "number": "B.2",
+      "page": 26,
+      "title": "分层结果与运行代价",
+      "destination": "subsection.B.2",
+      "actual_page": 26,
+      "pass": true
+    },
+    {
+      "label": "tab:B1",
+      "number": "B1",
+      "page": 26,
+      "title": "各案例层次的结构验收结果",
+      "destination": "table.B.1",
+      "actual_page": 26,
+      "pass": true
+    },
+    {
+      "label": "tab:B2",
+      "number": "B2",
+      "page": 27,
+      "title": "词元与请求时间",
+      "destination": "table.B.2",
+      "actual_page": 27,
+      "pass": true
+    },
+    {
+      "label": "app:C",
+      "number": "C",
+      "page": 27,
+      "title": "铁路模型生成与修复",
+      "destination": "appendix.C",
+      "actual_page": 27,
+      "pass": true
+    },
+    {
+      "label": "app:C-1",
+      "number": "C.1",
+      "page": 27,
+      "title": "模型来源与检查",
+      "destination": "subsection.C.1",
+      "actual_page": 27,
+      "pass": true
+    },
+    {
+      "label": "app:C-2",
+      "number": "C.2",
+      "page": 27,
+      "title": "条件与补充集合",
+      "destination": "subsection.C.2",
+      "actual_page": 27,
+      "pass": true
+    },
+    {
+      "label": "tab:C1",
+      "number": "C1",
+      "page": 28,
+      "title": "六条原生查询",
+      "destination": "table.C.1",
+      "actual_page": 28,
+      "pass": true
+    },
+    {
+      "label": "tab:C2",
+      "number": "C2",
+      "page": 28,
+      "title": "实验集合与严格成功",
+      "destination": "table.C.2",
+      "actual_page": 28,
+      "pass": true
+    },
+    {
+      "label": "app:C-3",
+      "number": "C.3",
+      "page": 28,
+      "title": "第二模型及运行代价",
+      "destination": "subsection.C.3",
+      "actual_page": 28,
+      "pass": true
+    },
+    {
+      "label": "tab:C3",
+      "number": "C3",
+      "page": 29,
+      "title": "铁路主实验的成功率差及区间",
+      "destination": "table.C.3",
+      "actual_page": 29,
+      "pass": true
+    },
+    {
+      "label": "tab:C4",
+      "number": "C4",
+      "page": 29,
+      "title": "两模型的同任务结果",
+      "destination": "table.C.4",
+      "actual_page": 29,
+      "pass": true
+    },
+    {
+      "label": "app:C-4",
+      "number": "C.4",
+      "page": 29,
+      "title": "贯穿案例 两条服务路径的关系修复",
+      "destination": "subsection.C.4",
+      "actual_page": 29,
+      "pass": true
+    },
+    {
+      "label": "app:D",
+      "number": "D",
+      "page": 30,
+      "title": "国际私法决策",
+      "destination": "appendix.D",
+      "actual_page": 30,
+      "pass": true
+    },
+    {
+      "label": "app:D-1",
+      "number": "D.1",
+      "page": 30,
+      "title": "案例与比较条件",
+      "destination": "subsection.D.1",
+      "actual_page": 30,
+      "pass": true
+    },
+    {
+      "label": "app:D-2",
+      "number": "D.2",
+      "page": 30,
+      "title": "审计与结果",
+      "destination": "subsection.D.2",
+      "actual_page": 30,
+      "pass": true
+    },
+    {
+      "label": "app:D-3",
+      "number": "D.3",
+      "page": 30,
+      "title": "贯穿案例 选法院协议的类型修订",
+      "destination": "subsection.D.3",
+      "actual_page": 30,
+      "pass": true
+    },
+    {
+      "label": "tab:D1",
+      "number": "D1",
+      "page": 31,
+      "title": "生成条件",
+      "destination": "table.D.1",
+      "actual_page": 31,
+      "pass": true
+    },
+    {
+      "label": "tab:D2",
+      "number": "D2",
+      "page": 31,
+      "title": "四组结果 每组 180 个结果",
+      "destination": "table.D.2",
+      "actual_page": 31,
+      "pass": true
+    },
+    {
+      "label": "tab:D3",
+      "number": "D3",
+      "page": 31,
+      "title": "PIL 主要复合终点的成功率差及区间",
+      "destination": "table.D.3",
+      "actual_page": 31,
+      "pass": true
+    },
+    {
+      "label": "app:D-4",
+      "number": "D.4",
+      "page": 32,
+      "title": "定向专家复核",
+      "destination": "subsection.D.4",
+      "actual_page": 32,
+      "pass": true
+    }
+  ],
+  "citation_numbers": [
+    {
+      "number": 1,
+      "key": "Kahani2019"
+    },
+    {
+      "number": 2,
+      "key": "DiRocco2025"
+    },
+    {
+      "number": 3,
+      "key": "W3C2004XMLSchemaStructures"
+    },
+    {
+      "number": 4,
+      "key": "poesia2022synchromesh"
+    },
+    {
+      "number": 5,
+      "key": "Chen_2025"
+    },
+    {
+      "number": 6,
+      "key": "JOT:issue_2026_03/a8"
+    },
+    {
+      "number": 7,
+      "key": "OMG2014OCL24"
+    },
+    {
+      "number": 8,
+      "key": "OMG2015XMI251"
+    },
+    {
+      "number": 9,
+      "key": "Ma_2025a"
+    },
+    {
+      "number": 10,
+      "key": "Semer_th_2018"
+    },
+    {
+      "number": 11,
+      "key": "10.1007/978-3-031-85356-2_8"
+    },
+    {
+      "number": 12,
+      "key": "https://doi.org/10.48550/arxiv.2404.05508"
+    },
+    {
+      "number": 13,
+      "key": "El_Gnainy_2024"
+    },
+    {
+      "number": 14,
+      "key": "Samy_2026"
+    },
+    {
+      "number": 15,
+      "key": "Abukhalaf_2024"
+    },
+    {
+      "number": 16,
+      "key": "Winkler2010"
+    },
+    {
+      "number": 17,
+      "key": "NEURIPS2020_6b493230"
+    },
+    {
+      "number": 18,
+      "key": "geng-etal-2023-grammar"
+    },
+    {
+      "number": 19,
+      "key": "MLSYS2025_5c20ca4b"
+    },
+    {
+      "number": 20,
+      "key": "Li_2026"
+    },
+    {
+      "number": 21,
+      "key": "Chen_2026"
+    },
+    {
+      "number": 22,
+      "key": "NEURIPS2024_2bdc2267"
+    },
+    {
+      "number": 23,
+      "key": "Marchezan2023"
+    },
+    {
+      "number": 24,
+      "key": "NEURIPS2023_91edff07"
+    },
+    {
+      "number": 25,
+      "key": "Ma_2025b"
+    },
+    {
+      "number": 26,
+      "key": "bhutton-json-schema-validation-01"
+    },
+    {
+      "number": 27,
+      "key": "Tolvanen2025"
+    },
+    {
+      "number": 28,
+      "key": "AUTOSAR2015SoftwareComponentTemplate422"
+    },
+    {
+      "number": 29,
+      "key": "AUTOSAR2015RTE422"
+    },
+    {
+      "number": 30,
+      "key": "Kwon_2023"
+    },
+    {
+      "number": 31,
+      "key": "Szarnyas2018"
+    },
+    {
+      "number": 32,
+      "key": "EU1215_2012_Consolidated20150226"
+    },
+    {
+      "number": 33,
+      "key": "EU2017_1001_Consolidated20251201"
+    }
+  ],
+  "internal_links": 132,
+  "badlinks": [],
+  "pdf_sha256": "3eb8c9af39e1dbb62009cc9f586270f7b158c866e3d09f3ab98e8cf4bca41227"
+}
