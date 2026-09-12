@@ -1,9 +1,9 @@
 # 当前引用编号与 bibkey 对照
 
-以当前 LaTeX 编译编号为准。导出来源、原始文件和必要兼容修正见 [完整核验说明](README.md)。
+编号按当前首次引用顺序生成。导出及补全来源见[完整核验说明](README.md)。
 
 | 编号 | bibkey | 文献 |
-| --- | --- | --- |
+|---|---|---|
 | [1] | `Kahani2019` | Survey and classification of model transformation tools |
 | [2] | `DiRocco2025` | On the use of large language models in model-driven engineering |
 | [3] | `W3C2004XMLSchemaStructures` | XML Schema Part 1: Structures Second Edition |

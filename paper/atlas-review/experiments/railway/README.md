@@ -1,5 +1,7 @@
 # Railway V5: offline reviewer package and raw-XMI scoring correction
 
+Query source/version: Appendix C.1 and Table C1 use the six VIATRA queries from official Train Benchmark commit `9c76520`. SwitchSet includes `Route.active(route, true)`. The [source note](../../supporting/reference_source_recheck/README.md#train-benchmark) provides the full commit, official query and frozen-member locators.
+
 This package preserves the completed Railway V5 formal evidence and provides a corrected, portable offline scoring entry point. It makes **no model/API requests**. Original evidence and source bytes are retained under `frozen/` inside the numbered ZIP files; corrected reviewer code is separate in `corrected/`.
 
 Requirements: **Python 3.10 or newer**, standard library only, and **Java 8** on your PATH. No pip packages, network downloads, Gradle, database, or model credentials are needed for the review. Allow approximately 450 MB of temporary disk space. All five numbered ZIP files must remain in `archives/`.

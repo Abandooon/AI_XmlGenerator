@@ -5,7 +5,8 @@
     "replacement": "PathOCL 以 UML 类模型和自然语言约束为输入，选取相关类及模型路径构造提示，再生成 OCL 表达式。该文分别评价约束的可编译性和语义正确性：路径提示缩短了单次输入，通过多条路径尝试提高了可编译约束的比例，语义正确率的改善较小\\paperref{abukhalafPathOCLPathBasedPrompt2024}。",
     "reason": "有效性需明确所指。原句可能被理解为论文未评价语义；实际上分别评价且相对完整 UML 上下文正确率提升较小。并须避免暗示只缩短单个提示就带来了较高总体通过率，作者使用 top-k 路径尝试。",
     "source_url": "https://arxiv.org/html/2405.12450v1",
-    "old_line": 149
+    "old_line": 149,
+    "batch": "official_export_replacement"
   },
   {
     "id": "IR20",
@@ -13,7 +14,8 @@
     "replacement": "检索增强生成将外部文档的检索结果与语言模型的文本生成过程结合\\paperref{Lewis2020RAG}。",
     "reason": "MDE 语境中的模型生成通常指实例模型构造；RAG 原论文这里支撑的是语言模型生成与外部知识检索的结合。",
     "source_url": "https://papers.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html",
-    "old_line": 155
+    "old_line": 155,
+    "batch": "official_export_replacement"
   },
   {
     "id": "IR24",
@@ -21,7 +23,8 @@
     "replacement": "Synchromesh 将示例检索与补全引擎结合，在部分输出上执行语法、作用域、类型和部分上下文逻辑\\paperref{poesiaSynchromeshReliableCode2021}。",
     "reason": "completion engine 通常译为补全引擎；技术内容和引用位置正确。",
     "source_url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2022/01/csd_arxiv.pdf",
-    "old_line": 163
+    "old_line": 163,
+    "batch": "official_export_replacement"
   },
   {
     "id": "INTRO-XSD",
@@ -29,7 +32,8 @@
     "replacement": "例如，以对象属性表示模型特征时，属性书写顺序不能替代 XSD 中的元素顺序规则\\paperref{W3CXMLSchema2004}；后者需要由序列化映射和目标格式检查共同处理。",
     "reason": "W3C XML Schema Part1 §3.8（Model Groups）定义 sequence、choice、all；sequence 保留颗粒顺序。此引文支撑 XSD 顺序规则，末半句是本文序列化设计。",
     "source_url": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cModel_Group",
-    "old_line": 70
+    "old_line": 70,
+    "batch": "official_export_replacement"
   },
   {
     "id": "M1",
@@ -37,7 +41,8 @@
     "replacement": "受约束解码会改变原模型的输出分布；逐步筛选并重新归一化，通常不同于在完整输出满足约束的条件下从原模型分布采样\\paperref{parkGrammaralignedDecoding2025}。",
     "reason": "Grammar-Aligned Decoding 讨论条件采样分布，原句将其改写为最优化问题，论断对象发生了变化。",
     "source_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/2bdc2267c3d7d01523e2e17ac0a754f3-Abstract-Conference.html",
-    "old_line": 390
+    "old_line": 390,
+    "batch": "official_export_replacement"
   },
   {
     "id": "M2",
@@ -45,7 +50,8 @@
     "replacement": "JSON Schema 通过验证关键字描述 JSON 实例的字段类型、必需项、数量及允许值，为结构化生成提供约束表示\\paperref{JSONSchemaValidation202012}。",
     "reason": "该规范直接支持关键字和验证语义，不直接支持“广泛采用、成熟”的评价。保留其与结构化生成的关系，并让引文贴合可核查技术内容。",
     "source_url": "https://json-schema.org/draft/2020-12/json-schema-validation",
-    "old_line": 190
+    "old_line": 190,
+    "batch": "official_export_replacement"
   },
   {
     "id": "M3",
@@ -57,7 +63,8 @@
       "https://conf.researchr.org/details/fse-2026/fse-2026-ideas-visions-and-reflections/20/Projectional-Decoding-Towards-Semantic-Aware-LLM-Generation",
       "https://conf.researchr.org/details/icse-2025/icse-2025-research-track/173/SpecGen-Automated-Generation-of-Formal-Program-Specifications-via-Large-Language-Mod"
     ],
-    "old_line": 714
+    "old_line": 714,
+    "batch": "official_export_replacement"
   },
   {
     "id": "M4",
@@ -65,6 +72,52 @@
     "replacement": "case19 的被告仅在中国有住所，题干已排除 Article 6(1) 所列例外，因此应由德国国内法判断管辖权；现有材料尚不能确定德国国内法是否赋予管辖权\\paperref{EU1215_2012}。",
     "reason": "不重新裁判案例；仅补回已有题干事实，使国内法转介结论的适用前提可由读者看懂，避免把附例外的 Article6(1) 写成无条件规则。后续布尔标记说明与专家意见保持原样。",
     "source_url": "https://eur-lex.europa.eu/legal-content/EN/AUTO/?qid=1755638897268&uri=CELEX%3A02012R1215-20150226",
-    "old_line": 1281
+    "old_line": 1281,
+    "batch": "official_export_replacement"
+  },
+  {
+    "id": "SEM-PARTIAL",
+    "original": "该方法能够从空模型或已有部分模型开始，在搜索过程中利用显式约束缩小候选空间。",
+    "replacement": "该方法能够从最抽象部分模型或工程师提供的初始部分模型开始，在搜索过程中利用显式约束缩小候选空间。",
+    "reason": "最抽象部分模型包含表示未知信息的抽象对象，不能称为空模型。",
+    "source_url": "https://real.mtak.hu/82389/1/icse18_viatrasolver.pdf",
+    "old_line": 127,
+    "batch": "external_reference_recheck"
+  },
+  {
+    "id": "EMF-IMPLEMENTATION",
+    "original": "该实现采用容错解析处理返回片段，元模型中的 OCL 注解可以进入提示，但尚未对推荐片段执行 OCL 检查。",
+    "replacement": "该文报告的实现采用容错解析处理返回片段，元模型中的 OCL 注解可以进入提示，但尚未对推荐片段执行 OCL 检查\\paperref{JOT:issue_2026_03/a8}。",
+    "reason": "将限制对应到该文报告的实现，并在相关句后复用引用。",
+    "source_url": "https://www.jot.fm/issues/issue_2026_03/a8.pdf",
+    "old_line": 141,
+    "batch": "external_reference_recheck"
+  },
+  {
+    "id": "ABSCON-LOGIC",
+    "original": "论文中元模型及良构约束由人工转为逻辑表达。",
+    "replacement": "该文实现中，元模型及良构约束由人工转为一阶逻辑表达\\paperref{Chen_2025}。",
+    "reason": "精确说明原文实现中的一阶逻辑转换，不将实现选择扩大为方法的必然限制。",
+    "source_url": "https://arxiv.org/html/2508.00255v1#S3.SS5",
+    "old_line": 144,
+    "batch": "external_reference_recheck"
+  },
+  {
+    "id": "PROJECTION-EVALUATION",
+    "original": "Projectional Decoding 进一步维护与文本并行的部分图模型，利用元模型及增量语义检查指导词元选择\\paperref{Chen_2026}。",
+    "replacement": "Projectional Decoding 提出在生成文本的同时维护部分图模型，以元模型和增量语义检查筛选后续词元，并在程序生成任务上进行了初步评价\\paperref{Chen_2026}。",
+    "reason": "保留技术机制，同时说明原型的初步评价性质。",
+    "source_url": "https://arxiv.org/html/2605.30054v1",
+    "old_line": 163,
+    "batch": "external_reference_recheck"
+  },
+  {
+    "id": "TRAIN-QUERY-VERSION",
+    "original": "领域检查沿用上述原生查询。",
+    "replacement": "领域检查采用 Train Benchmark 官方仓库提交 \\texttt{9c76520} 中的六条 VIATRA 查询，表~\\ref{tab:C1} 按该实现概括规则条件。",
+    "reason": "查询来自锁定的官方实现；SwitchSet 的启用条件保留。",
+    "source_url": "https://github.com/FTSRG/trainbenchmark/tree/9c76520dec5a26213707b0e1f04b263f16b340ee",
+    "old_line": 993,
+    "batch": "external_reference_recheck"
   }
 ]

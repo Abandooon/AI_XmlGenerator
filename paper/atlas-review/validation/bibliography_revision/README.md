@@ -1,5 +1,7 @@
 # Bibliography and citation revision
 
+Current validation is [reference_audit_recheck](../reference_audit_recheck/README.md). This directory records the preceding official-export replacement stage.
+
 This directory validates the current manuscript after official BibTeX replacement and eight local citation/content clarifications. Earlier validation directories document earlier manuscript stages.
 
 - `REVISION_QA.json`: citation and content invariants.
