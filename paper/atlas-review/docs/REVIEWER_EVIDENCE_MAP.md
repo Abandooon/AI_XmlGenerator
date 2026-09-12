@@ -1,13 +1,13 @@
 # Paper-to-evidence index
 
-This index uses the [current manuscript](../paper/current/manuscript.md) and [current appendix](../paper/current/appendix.md). All file links are relative to this release. Archive-member paths below are literal paths inside the linked archive, not separate files that GitHub can preview before extraction. Original experiment packages are unchanged. No new model calls were made for this revision.
+This index follows the [integrated manuscript and appendix](../paper/current/latex/main.pdf). The [artifact crosswalk](PAPER_ARTIFACT_CROSSWALK.md) adds stable LaTeX labels and reviewer-comment IDs. File links are relative to this release; archive-member paths denote entries inside the linked archive.
 
 ## Paper locations and direct entries
 
 | Paper location | Question | Evidence |
 | --- | --- | --- |
 | Section 4.2.1; Appendix A.1/Table A1 | Where do the 20 AUTOSAR requirements come from? | [Source/design guide](../paper/sources/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md), [case YAML](../experiments/vllm/runtime/atlas_autosar_requirements_v3/asw_cases_v3.yaml), [deterministic renderer](../experiments/vllm/runtime/atlas_autosar_requirements_v3/render_cases.py) |
-| Section 4.2.2; Appendix A.2/Table A2 | How are source constraints linked to metamodel entities and executable checks? | [ICM evidence and extraction/language details](ICM_EVIDENCE.md), [structured records](../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json), [constraint links](../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/output/constraints_linked.json) |
+| Section 4.2.2; Appendix A.2/Table A2 | How are source constraints linked to metamodel entities and executable checks? | [ICM construction and implementation](ICM_EVIDENCE.md), [structured records](../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json), [constraint links](../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/output/constraints_linked.json) |
 | Section 4.2; Appendix A.4; Figure 6 | Which prompt, schema, ARXML and checks belong to the periodic-component example? | [AUTOSAR member index below](#autosar-periodic-component-example), [Figure 6 source identities](../paper/论文图/Fig6_icm_trace_sources.md), [frozen source index](../experiments/autosar/frozen_code/CODE_INDEX.json) |
 | Section 4.3; Appendix B/Table B1–B2 | How are U/G/A prompts, schemas, decoding and outputs connected? | [vLLM guide](../experiments/vllm/README.md), [prompt construction](../experiments/vllm/frozen_code/tools/qwen35_prompt_v026.py), [schema compilation](../experiments/vllm/frozen_code/tools/compile_qwen35_uga_assets_v026.py), [audit implementation](../experiments/vllm/frozen_code/vllm_overlay/overlay/vllm/v1/structured_output/audit.py), [frozen source index](../experiments/vllm/FROZEN_CODE_INDEX.json) |
 | Section 4.4; Appendix C.1–C.2/Table C1–C2 | Which model queries, tasks, repair conditions and actual XMI are checked? | [Railway guide](../experiments/railway/README.md), [payload member inventory](../experiments/railway/PAYLOAD_MANIFEST.json), [original-XMI scorer](../experiments/railway/corrected/raw_native_score.py), [worked-example members below](#railway-relational-repair-example) |
@@ -17,7 +17,7 @@ This index uses the [current manuscript](../paper/current/manuscript.md) and [cu
 | Appendix D.3 | Where are the before/after decisions and actual diagnostics? | [Original ledger](../experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl), unit `8\|p3\|1`; see [selectors below](#pil-choice-of-court-example) |
 | Appendix D.4 | Where are the targeted expert findings? | [Expert assessments](../experiments/pil/expert_supplement/data/EXPERT_ADJUDICATIONS.json), [field-semantics clarification](../experiments/pil/expert_supplement/protocol/FIELD_SEMANTICS_CLARIFICATION.json), [PIL guide](../experiments/pil/README.md) |
 
-Language is recorded by input role: source specifications, authored requirements, extraction instructions, generation/control prompts and comments. The [ICM guide](ICM_EVIDENCE.md) records this distinction. Chinese documentation alone does not establish that a formal model request was Chinese, and a generation template does not identify the model used for prior constraint preparation.
+Formal evaluation inputs are linked in each track: AUTOSAR requirements and component prompts, local decoding cases, railway TaskSpec inputs and PIL scenarios. Domain preparation is documented separately in [ICM_EVIDENCE.md](ICM_EVIDENCE.md).
 
 ## AUTOSAR periodic-component example
 
@@ -48,7 +48,24 @@ Within that run, inspect:
 | Executed artifact checks | `atlas_output/ARXML/validation_8f34364d_1788337723.json` |
 | Independent task evaluation | `independent_evaluation.json` |
 
-For admitted per-run schemas, use [the schema inventory](../experiments/autosar/validation/phase2_schema_rows.json) and its recorded paths, rather than an unrelated development example. The [frozen prompt source](../experiments/autosar/frozen_code/repository/src/llm_generation/llm/prompt_templates.py), [artifact validator](../experiments/autosar/frozen_code/runtime_assets/src/validation/v2/validate_arxml.py) and [task evaluator](../experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py) are directly browseable copies. Appendix A.4 distinguishes successful formal generation from an independent controlled-damage repair on the same requirement.
+For the per-run generation schemas, use [the schema inventory](../experiments/autosar/validation/phase2_schema_rows.json) and its recorded paths, rather than an unrelated development example. The [frozen prompt source](../experiments/autosar/frozen_code/repository/src/llm_generation/llm/prompt_templates.py), [artifact validator](../experiments/autosar/frozen_code/runtime_assets/src/validation/v2/validate_arxml.py) and [task evaluator](../experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py) are directly browseable copies. Appendix A.4 distinguishes successful formal generation from an independent controlled-damage repair on the same requirement.
+
+## Local AUTOSAR–vLLM prompts, decoding and artifacts
+
+Open the [paper-evidence archive](../experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz). Every member below begins with `atlas_vllm_uga_v6_3_4_formal_b1_evidence_2026-08-29/`.
+
+| Evidence | Member after the prefix |
+| --- | --- |
+| Formal cases and paired conditions | `FORMAL_SCHEDULE.json` |
+| Compiled prompt and schema | `compiled_assets/cases/ASW-MIN-01.json`, fields `prompt`, `schema` and their hashes |
+| One saved response | `formal_run_b1/001.json`; its `schedule` identifies ASW-MIN-01, repetition 1, condition U |
+| Corresponding component artifact | `formal_postprocess_local_v1/001/ASW_Com_Min_EmergShutdown.arxml` |
+| Corresponding artifact and task checks | `formal_postprocess_local_v1/001/validation.json` and `formal_postprocess_local_v1/001/independent_evaluation.json` |
+| Recorded decoding intervention | `formal_audit_b1/structured-output-audit-20541.ndjson`; match requests through the schedule and response request IDs |
+| Request time and token records | `formal_metrics_b1.ndjson` and individual `formal_run_b1/` records |
+| Aggregate analysis and its implementation | `PAPER_ANALYSIS.json` and `analyze_formal_results_v1.py` |
+
+The [frozen source index](../experiments/vllm/FROZEN_CODE_INDEX.json) links the schema compiler, prompt builder and modified decoding backend to their archive members. These records support Section 4.3, Figure 7 and Appendix B; the hosted AUTOSAR artifacts in Appendix A remain a separate experiment.
 
 ## Railway relational-repair example
 
@@ -64,7 +81,7 @@ For `BAL-1-01`, seed `155921`, unit `G0291`, open [railway_evidence_02.zip](../e
 | Repaired actual model and identity map | `GF/final_artifact/model.xmi`, `GF/final_artifact/identity.json` |
 | Final task and domain verdict | `GF/independent_final.json` |
 
-The original query is `frozen/workspace/authority/SemaphoreNeighbor.vql` inside [railway_evidence_05.zip](../experiments/railway/archives/railway_evidence_05.zip). The [payload manifest](../experiments/railway/PAYLOAD_MANIFEST.json) maps the full task/prompt/source collection and every original member to its archive and SHA-256. Native receipts are retained in [direct_native_receipts.zip](../experiments/railway/results/direct_native_receipts.zip); they are matched using both XMI and identity-file hashes. Appendix C.4 explains the identity mapping before displaying the selected XML.
+The original query is `frozen/workspace/authority/SemaphoreNeighbor.vql` inside [railway_evidence_05.zip](../experiments/railway/archives/railway_evidence_05.zip). The same archive contains the task compiler at `frozen/workspace/railway_method_v5/task_compiler.py` and prompt construction at `frozen/workspace/formal_runtime/prompts.py`. The formal generation and damage schedules are `G_SCHEDULE.json` and `R_SCHEDULE.json` under `frozen/workspace/railway_formal_v5/outputs/20260908T101621938149Z/`. The [payload manifest](../experiments/railway/PAYLOAD_MANIFEST.json) maps the full task/prompt/source collection and every original member to its archive and SHA-256. Native receipts are retained in [direct_native_receipts.zip](../experiments/railway/results/direct_native_receipts.zip); they are matched using both XMI and identity-file hashes. Appendix C.4 explains the identity mapping before displaying the selected XML.
 
 For the second model, [PARTS_MANIFEST.json](../experiments/railway_terra/PARTS_MANIFEST.json) specifies how four lossless parts reconstruct the original ZIP. The complete result member is `ATLAS_TERRA_SUPPLEMENT/continuation3/run/RESULTS.json`; the [source index](../experiments/railway_terra/SOURCE_INDEX.json) identifies the retained implementation and audit members. Use the supported entry point below to reconstruct the archive.
 
@@ -72,7 +89,7 @@ For the second model, [PARTS_MANIFEST.json](../experiments/railway_terra/PARTS_M
 
 The [original JSONL ledger](../experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl) contains unit `8|p3|1` at line 229. Read `row.parsed_decision`, `row.internal_audit.findings`, `row.repair.decision`, `row.repair.audit` and `row.system_release`. The original JSON response strings are retained in `row.raw_text` and `row.repair.raw_text`.
 
-The initial and repaired fields use `forum_type` and `alternative_forum_types`; the selected court and Article 25/25(1) evidence remain the same. The [corrected analysis](../experiments/pil/corrections/expected/PIL_V41_ERRATUM1_ANALYSIS.json), `scored_units` item with `unit_id=8|p3|1`, records release, reference compatibility and the composite endpoint. The [corrected reference](../experiments/pil/corrections/data/consensus_gold_v41_erratum1.jsonl) has `id=8`. These selectors connect Appendix D.3 to the actual records without inventing JSON keys or making a claim about complete legal correctness.
+The initial and repaired fields use `forum_type` and `alternative_forum_types`; the selected court and Article 25/25(1) evidence remain the same. The [corrected analysis](../experiments/pil/corrections/expected/PIL_V41_ERRATUM1_ANALYSIS.json), `scored_units` item with `unit_id=8|p3|1`, records release, reference compatibility and the composite endpoint. The [corrected reference](../experiments/pil/corrections/data/consensus_gold_v41_erratum1.jsonl) has `id=8`. These selectors connect Appendix D.3 to the original decision, diagnostic and repair records.
 
 ## Offline checks
 

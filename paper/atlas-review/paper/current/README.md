@@ -1,16 +1,15 @@
-# Current manuscript
+# Current integrated manuscript
 
 | Material | Files |
 | --- | --- |
-| Integrated manuscript | [Word](manuscript.docx), [Markdown](manuscript.md) |
-| Appendix | [Word](appendix.docx), [Markdown](appendix.md) |
-| Editable chapter sources | [Chapters](chapters/) |
-| Figures | [Figures and supporting files](figures/) |
-| Full statistical methods and results | [Statistical analysis](../../docs/STATISTICAL_ANALYSIS.md) |
-| ICM, prompts and implementation evidence | [ICM evidence](../../docs/ICM_EVIDENCE.md), [paper-to-evidence map](../../docs/REVIEWER_EVIDENCE_MAP.md) |
+| Main text, references and Appendices A–D | [PDF](latex/main.pdf), [LaTeX](latex/main.tex) |
+| Bibliography and figure assets | [BibTeX](latex/references.bib), [figures](latex/figures/) |
+| Markdown reading copies | [Main text](manuscript.md), [appendix](appendix.md), [chapter sources](chapters/) |
+| Paper–artifact–response correspondence | [Crosswalk](../../docs/PAPER_ARTIFACT_CROSSWALK.md), [31-comment response matrix](../REVIEW_RESPONSE_MATRIX.md) |
+| Evidence and full calculations | [Evidence map](../../docs/REVIEWER_EVIDENCE_MAP.md), [ICM guide](../../docs/ICM_EVIDENCE.md), [statistical analysis](../../docs/STATISTICAL_ANALYSIS.md) |
 
-This is the current Chinese manuscript. Section 4.2 and Appendix A cover AUTOSAR; Section 4.3 and Appendix B cover AUTOSAR–vLLM; Section 4.4 and Appendix C cover railway generation and repair, including the second model; Section 4.5 and Appendix D cover PIL. Worked examples are in A.4, C.4 and D.3. Railway Table C3 reports main-experiment statistical comparisons and Table C4 reports second-model results.
+Section 4.2 and Appendix A cover AUTOSAR; Section 4.3 and Appendix B cover AUTOSAR–vLLM; Section 4.4 and Appendix C cover railway generation and repair, including the second model; Section 4.5 and Appendix D cover PIL. Worked examples appear in A.4, C.4 and D.3. Railway Table C3 reports main-experiment comparisons; Table C4 reports the second-model results.
 
-Earlier chapter files elsewhere under `paper/` are historical source context. Their earlier Appendix E/F references do not apply to this manuscript. The statistical document is repository documentation, not a separate statistical Word appendix. No new model calls were made for this revision.
+The PDF is compiled from `latex/main.tex`, which includes the appendix in the same document. Stable labels such as `sec:method-3-3`, `sec:eval-4-2`, `app:A-2` and `tab:A2` are used by the crosswalk and response matrix. For the build command and required fonts, use the instructions alongside the LaTeX source.
 
-For original experiment files, use the [evidence map](../../docs/REVIEWER_EVIDENCE_MAP.md) and its archive-member paths. Publication and access status are described in [ACCESS.md](../../docs/ACCESS.md); inclusion in this local package does not by itself establish remote reviewer access.
+Earlier Word drafts remain in repository history or in the historical source directories listed in [paper/README.md](../README.md). They are not parallel current versions. Repository access and the complete offline archive are described in [ACCESS.md](../../docs/ACCESS.md).

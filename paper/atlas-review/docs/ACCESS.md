@@ -1,16 +1,12 @@
 # Access and branch navigation
 
-Use the [current manuscript](../paper/current/README.md) and [evidence map](REVIEWER_EVIDENCE_MAP.md) after obtaining the complete reviewer tree. Relative links work from either an extracted archive or the intended branch layout.
-
-| Repository location | Reviewer tree |
+| Repository entry | Contents |
 | --- | --- |
-| ATLAS branch | Repository root |
-| api_rag branch | `paper/atlas-review/` |
+| [ATLAS branch](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS) | Reviewer tree at the branch root |
+| [api_rag reviewer directory](https://github.com/Abandooon/AI_XmlGenerator/tree/api_rag/paper/atlas-review) | The same reviewer tree under `paper/atlas-review/` |
 
-The configured repository is [AI_XmlGenerator](https://github.com/Abandooon/AI_XmlGenerator). The intended review entry is the [ATLAS branch](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS), or the [api_rag reviewer directory](https://github.com/Abandooon/AI_XmlGenerator/tree/api_rag/paper/atlas-review). Use these explicit branch paths rather than the repository default page. Exact synchronized commits are recorded in the delivery receipt accompanying the standalone package. A successful authenticated push does not establish anonymous reviewer access.
+Start with the root README, then the [integrated manuscript](../paper/current/README.md), [artifact crosswalk](PAPER_ARTIFACT_CROSSWALK.md) and [response matrix](../paper/REVIEW_RESPONSE_MATRIX.md). The delivery receipt records the synchronized commits; the release manifest records file hashes.
 
-Earlier reviewer comments refer to `Abandooon/ATLAS/blob/main/nlp_require/complex.json`. That is a historical URL and dataset location, not the entry for the current 20-case corpus. The current source is linked from the [AUTOSAR requirement guide](../paper/sources/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md). Do not substitute an old `main` link for the current branch and evidence identity.
+The complete standalone archive provides the same relative paths for offline review without a GitHub account. Preserve all experiment archives, manifests and the four Terra archive parts together. Supported offline checks require no model API. The [root README](../README.md#offline-review) lists the local prerequisites and commands.
 
-The preceding access record described the repository as private. Authenticated remote access was verified during this revision; anonymous access is not established by that check. Provide authorized repository access or the complete standalone archive when supplying materials to reviewers. An archive supports offline review without a GitHub account; retain all experiment archives, manifests and the four Terra archive parts together.
-
-No model calls, repository visibility changes or messages to reviewers were made as part of this document revision. A prior push receipt or verification result describes its own revision and does not establish current remote availability.
+Repository visibility is separate from authenticated author access. Supply the standalone archive or grant reviewers access to the branch-specific entry. Earlier reviewer comments refer to `Abandooon/ATLAS/blob/main/nlp_require/complex.json`; that historical location is not the current 20-case corpus. Use the [requirement source guide](../paper/sources/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md) for the current dataset and its provenance.

@@ -1,8 +1,8 @@
 # 引用编号与 bibkey 对照
 
-当前编号沿用 v4；同一文献复用同一编号。
+当前编号按正文及附录首次引用顺序排列；同一文献复用同一编号。
 
-| 当前编号 | v4 编号 | bibkey | 文献 |
+| 当前编号 | 原审阅稿编号 | bibkey | 文献 |
 | --- | --- | --- | --- |
 | [1] | [1] | `kahaniSurveyClassificationModel2019` | Survey and classification of model transformation tools |
 | [2] | [2] | `DiRocco2025LLMMDE` | On the use of large language models in model-driven engineering |

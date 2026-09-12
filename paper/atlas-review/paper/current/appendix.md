@@ -21,27 +21,28 @@
 
 所选初始值的规范依据见 Software Component Template 的 constr_1201，使用含义见 TPS_SWCT_01220<sup style="color:#FF0000">[28]</sup>；数值 0 是任务设计中的具体选择。20 个基础案例共要求 33 个提供端口、32 个需求端口、18 个 Runnable、18 个周期事件和 55 个变量访问。详细案例来源与设计说明随复现材料提供。
 
-生成使用 gpt-5.6-luna、low 推理强度、温度 1.0、严格结构化输出和 128,000 词元最大输出预算，三个固定种子为 104729、130363、155921。任务输入包括英文需求描述、据需求确定的结构化规格及已有接口目录。正式包保留 20 份需求提示和 120 份第二阶段生成提示；它们与规范抽取时使用的提示分别保存。任务分析选定所需结构，再与 ICM 和图谱中的元模型信息共同组装生成约束。适配器绑定固定对象和值，装配结构化输出并序列化为 ARXML。生成评价与受控修复分开执行。
+生成使用 gpt-5.6-luna、low 推理强度、温度 1.0、严格结构化输出和 128,000 词元最大输出预算，三个固定种子为 104729、130363、155921。任务输入包括英文需求描述、据需求确定的结构化规格及已有接口目录。任务分析选定所需结构，再与 ICM 和图谱中的元模型信息共同组装生成约束。适配器绑定固定对象和值，装配结构化输出并序列化为 ARXML。生成评价与受控修复分开执行。
 
 60 次生成形成 60 份组件文件和 195 份接口文件。单个组件文档含 11–115 个 XML 元素，接口文档各含 10 个元素，最大嵌套深度为 14，根 AUTOSAR 计为第 1 层。最大案例 ASW-FULL-06 的一次输出包含七份文档，共 175 个元素。上述元素数按 XML 元素节点计算，属性、文本及重复副本不另计。
 
 ### A.2 规范约束抽取、ICM 与验证器
 
-规范约束抽取使用 Software Component Template 第 2–13 章的文本及其元模型信息<sup style="color:#FF0000">[28]</sup>。作者标注章节、相关类和枚举，系统从元模型转换所得的表示中补入相应属性和枚举字面量，按章节与段落形成带上下文的输入片段。LLM 据此提出结构化约束及其目标元素候选，后续整理结合规范原文形成约束记录与元素绑定。规范原文为英文，抽取实现中的控制提示使用中文；抽取与后续语义整理的实现、记录及身份分别提供。表 A2 概括领域准备流程，固定资源的实际复核状态见下文。
+AUTOSAR 的领域准备使用 Software Component Template 第 2–13 章的文本及其元模型信息<sup style="color:#FF0000">[28]</sup>。作者标注章节、相关类和枚举，系统从元模型转换所得的表示中补入相应属性和枚举字面量，按章节与段落形成带上下文的输入片段。LLM 据此抽取结构化约束及其目标元素，链接器自动校验目标类、属性和枚举字面量并建立引用。未能链接或存在成员不匹配等异常的记录交由人工修正，再执行链接检查。表 A2 概括这一准备流程。
 
-表 A2 AUTOSAR 规范约束抽取与整理规格
+表 A2 AUTOSAR 规范约束抽取与链接规格
 
 | 项目 | 内容 |
 | --- | --- |
 | 材料范围 | 所选规范章节中的带标识条款、规范性叙述及相关示例；保留条款标识和章节出处 |
 | 术语上下文 | 片段及上级章节、相关元模型类及属性、枚举及字面量 |
 | 结构化输出 | 约束标识、内容、类型、取值、关联条款，以及目标类、属性或枚举候选 |
-| 关联与语义复核 | 检查目标元素及其成员归属；分别记录元素绑定、规则解释及待复核问题 |
-| 后续使用 | 按已有映射与检查实现接入生成和验证；检索根据关联与相关性选择约束材料，并保留其复核状态 |
+| 自动链接 | 解析目标名称并检查类型与成员归属，建立约束到元模型元素的引用 |
+| 异常处理 | 链接失败或成员不匹配的记录交由人工修正，再执行链接检查 |
+| 后续使用 | 依据元素关联与任务相关性检索约束，并通过已有映射与检查实现接入生成和验证 |
 
-正式实验使用固定的 ICM 资源，分别保存规范来源、语义整理与元素绑定。该存量含 1,085 条结构化约束、6,533 条约束关联，以及 11,177 个结构节点和 14,106 条结构关系。结构节点包含多种表示对象。语义状态中，473 条标记为已整理（curated），612 条为暂定（provisional）；综合状态中，472 条标记为 approved，613 条为 needs_review。综合状态由发布程序依据整理、绑定及实现问题标记生成，不等同于独立人工签核。元素绑定另有 1,052 条完整、30 条不适用、2 条部分完成和 1 条未解决。
+模型生成实验使用固定的 ICM 资源，包含 1,085 条结构化约束、6,533 条约束关联，以及 11,177 个结构节点和 14,106 条结构关系。ICM 保存规范出处和元模型元素链接，任务执行据此选择相关约束并绑定具体对象。
 
-检索器将复核状态用于排序，但不排除待复核材料，因此检索到的卡片仍需按其状态解释。规则实现另行登记：检查计划接入 554 条规则，包括 400 条 Python 后端规则和 154 条声明式规则；这是配置规模，每次运行的实际检查由适用对象确定。图 6 的 TPS_SWCT_01519 卡片标记为暂定且待复核，元素绑定已完成，其检查计划中的形式化规格则标记为已审查。该例展示规则实现的实际检查，未将其视为整条约束解释或全部 ICM 存量已经完成语义确认。
+验证计划包含 554 条检查规则，包括 400 条 Python 后端规则和 154 条声明式规则，运行时依据生成模型及规则适用条件执行检查。
 
 自定义检查由 LLM 辅助人工编写。作者对照规范确定适用对象、判定条件和诊断位置，选择实现并用满足、违反及边界样例测试。声明式操作处理范围、枚举、基数、存在性和引用等要求；专用检查处理跨对象关系。运行时依据规则标识和本次对象绑定装配检查项，不为每个任务重新生成验证代码。
 
@@ -159,7 +160,7 @@
 
 ### C.1 模型来源与检查
 
-实验复用 Train Benchmark 的元模型和六条 VIATRA 查询<sup style="color:#FF0000">[31]</sup>，作者设计服务衔接、维护预备和冗余监测三类任务，并应用于链式、分支汇合、环、自环、共享道岔、分离线路、多区域和分支环八种布局。任务规格规定对象、固定物理连接、允许赋值字段以及必须保持的服务状态和监测关系。作者将这些任务要求明确写入结构化规格，系统据此形成任务相关的约束表示和结构计划；实现中该任务产物命名为 ICM，用于绑定本次对象与要求，与方法中的可复用领域约束资源分别说明。领域检查沿用上述原生查询。
+实验复用 Train Benchmark 的元模型和六条 VIATRA 查询<sup style="color:#FF0000">[31]</sup>，作者设计服务衔接、维护预备和冗余监测三类任务，并应用于链式、分支汇合、环、自环、共享道岔、分离线路、多区域和分支环八种布局。任务规格规定对象、固定物理连接、允许赋值字段以及必须保持的服务状态和监测关系。系统将这些结构化要求与元模型信息结合，形成任务约束和结构计划，绑定本次对象与取值。领域检查沿用上述原生查询。
 
 表 C1 六条原生查询
 
@@ -218,7 +219,7 @@
 | GS，自修复 | 8/24（33.3%） | 22/24（91.7%） |
 | GF，完整修复 | 13/24（54.2%） | 22/24（91.7%） |
 
-Terra 的 18 个初始成功全部保留，六个失败起点在 GS 和 GF 下各恢复四个。两分支共同成功 21 个，共同失败一个，另外各有一个仅该分支成功。补充运行最大完成预算为 4,096 词元；本批保存响应均在上限内完成。Luna 与 Terra 的输出预算不同，因此该补充按实际配置描述初始生成及修复结果。
+Terra 的 18 个初始成功全部保留，六个失败起点在 GS 和 GF 下各恢复四个。两分支共同成功 21 个，共同失败一个，另外各有一个仅该分支成功。补充运行最大完成预算为 4,096 词元，本批响应均在上限内完成。Luna 与 Terra 的输出预算不同，比较反映两种模型在各自运行配置下的结果。
 
 Terra 保存的 60 份响应共用 338,438 词元，其中输入 301,834、输出 36,604。
 
@@ -306,7 +307,7 @@ P3 的交付有效记录中包含四个关闭记录，实际发布为 176 个，
 | 完整检查 − 结构约束 | +23.3 | [13.3, 33.9] |
 | 完整检查 − 基础提示 | +38.9 | [27.8, 50.0] |
 
-完整检查相对结构约束增加 42 个主要终点成功结果，对应 23.3 个百分点。单独增加结构约束的差值为 2.8 个百分点，区间包含零。按 31 个设计来源组的敏感性分析及四项比较的校正检验保存在复现材料中。表中区间估计平均差值；另存的符号检验评价改善与退化方向并进行多重比较校正，不能将两种分析视为同一个判定。
+完整检查相对结构约束增加 42 个主要终点成功结果，对应 23.3 个百分点。单独增加结构约束的差值为 2.8 个百分点，区间包含零。按 31 个设计来源组的敏感性分析及四项比较的校正检验保存在复现材料中。
 
 P0–P3 的引用 F1 均值分别为 0.449、0.720、0.712、0.692；每个预定单元的平均词元用量分别为 1,177.39、1,465.77、1,746.33、2,392.31，P3 包含追加修复。完整检查的主要终点更高，引用重合度与成本则呈现不同变化。
 
@@ -346,7 +347,7 @@ P0–P3 的引用 F1 均值分别为 0.449、0.720、0.712、0.692；每个预�
 }
 ```
 
-**复验与发布。** 修订交换主要与备选类型，保留法院、结论及上述依据。复验的结构和审计均通过，记录实际发布，并由参考不兼容转为兼容，达到主要复合终点。本文以 `agreement` 表示协议管辖依据，`exclusive` 的主要类型对应预先编码的法定专属管辖类别；该修订不否定 Article 25(1) 下选法院协议可能具有的排他效力<sup style="color:#FF0000">[32]</sup>。此例展示结构有效之后的跨字段检查与修订，不能据此认定全部法律条件均已得到证明。
+**复验与发布。** 修订交换主要与备选类型，保留法院、结论及上述依据。复验的结构和审计均通过，记录实际发布，并由参考不兼容转为兼容，达到主要复合终点。本文以 `agreement` 表示协议管辖依据，`exclusive` 的主要类型对应预先编码的法定专属管辖类别；该修订不否定 Article 25(1) 下选法院协议可能具有的排他效力<sup style="color:#FF0000">[32]</sup>。此例展示结构有效之后的跨字段检查与修订。
 
 ### D.4 定向专家复核
 
@@ -355,21 +356,3 @@ P0–P3 的引用 F1 均值分别为 0.449、0.720、0.712、0.692；每个预�
 case42 中，法国消费者向荷兰商家网购家具，并另行确认阿姆斯特丹法院条款。P1 第一次回答从荷兰住所直接推出阿姆斯特丹具体法院具有管辖权，专家认为后文未纠正这一错误，判为不可接受；该回答的自动终点通过。P3 第一次回答在后文明确给整个结论加上消费者规则和选法院条件限制，专家判为有条件可接受。消费者另行确认条款并不自动满足 Articles 19 和 25(4) 的要求<sup style="color:#FF0000">[32]</sup>。这一对照说明结构化终点与全文实体判断应分别解释。
 
 上述意见关联具体案例和原回答，用于解释评分所覆盖的内容。完整案例、任务配置、模型制品、评价结果和分析入口按四组实验保存在随文复现材料中。
-
-# 参考文献
-
-[18] Dong, Yixin; Ruan, Charlie F.; Cai, Yaxing; Lai, Ruihang; Xu, Ziyi; Zhao, Yilong; Chen, Tianqi (2025). XGrammar: Flexible and Efficient Structured Generation Engine for Large Language Models. Proceedings of Machine Learning and Systems, 7. [https://proceedings.mlsys.org/paper_files/paper/2025/hash/5c20ca4b0b20b0bd2f1d839dc605e70f-Abstract-Conference.html](https://proceedings.mlsys.org/paper_files/paper/2025/hash/5c20ca4b0b20b0bd2f1d839dc605e70f-Abstract-Conference.html)
-
-[23] Madaan, Aman; Tandon, Niket; Gupta, Prakhar; Hallinan, Skyler; Gao, Luyu; Wiegreffe, Sarah; Alon, Uri; Dziri, Nouha; Prabhumoye, Shrimai; Yang, Yiming; Gupta, Shashank; Majumder, Bodhisattwa Prasad; Hermann, Katherine; Welleck, Sean; Yazdanbakhsh, Amir; Clark, Peter (2023). Self-Refine: Iterative Refinement with Self-Feedback. Advances in Neural Information Processing Systems, 36, 46534–46594. [https://doi.org/10.52202/075280-2019](https://doi.org/10.52202/075280-2019)
-
-[28] AUTOSAR (2015). Software Component Template. AUTOSAR; Document ID 062; Classic Platform Release 4.2.2; 31 July 2015. [https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf](https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf)
-
-[29] AUTOSAR (2015). Specification of RTE. AUTOSAR; Document ID 084; Release 4.2.2; 31 July 2015. [https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf](https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf)
-
-[30] Kwon, Woosuk; Li, Zhuohan; Zhuang, Siyuan; Sheng, Ying; Zheng, Lianmin; Yu, Cody Hao; Gonzalez, Joseph E.; Zhang, Hao; Stoica, Ion (2023). Efficient Memory Management for Large Language Model Serving with PagedAttention. Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles. [https://doi.org/10.1145/3600006.3613165](https://doi.org/10.1145/3600006.3613165)
-
-[31] Szárnyas, Gábor; Izsó, Benedek; Ráth, István; Varró, Dániel (2018). The Train Benchmark: cross-technology performance evaluation of continuous model queries. Software and Systems Modeling, 17, 1365–1393. [https://doi.org/10.1007/s10270-016-0571-8](https://doi.org/10.1007/s10270-016-0571-8)
-
-[32] European Parliament; Council of the European Union (2012). Regulation (EU) No 1215/2012 of the European Parliament and of the Council of 12 December 2012 on jurisdiction and the recognition and enforcement of judgments in civil and commercial matters (recast). Official Journal of the European Union, L 351, 20 December 2012, pp. 1–32; Consolidated text of 26 February 2015. [https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng](https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng)
-
-[33] European Parliament; Council of the European Union (2017). Regulation (EU) 2017/1001 of the European Parliament and of the Council of 14 June 2017 on the European Union trade mark (codification) (Text with EEA relevance). Official Journal of the European Union, L 154, 16 June 2017, pp. 1–99; Consolidated text of 1 December 2025. [https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng](https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng)
