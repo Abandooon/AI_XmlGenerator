@@ -1,5 +1,7 @@
 # Paper-to-evidence index
 
+[Figure 7 and Figure 8 plotting scripts](../paper/figure_sources/README.md) read the retained inputs and produce the English figures without new model calls.
+
 This index follows the [integrated manuscript and appendix](../paper/current/latex/main.pdf). The [artifact crosswalk](PAPER_ARTIFACT_CROSSWALK.md) adds stable LaTeX labels and reviewer-comment IDs. File links are relative to this release; archive-member paths denote entries inside the linked archive.
 
 ## Paper locations and direct entries
