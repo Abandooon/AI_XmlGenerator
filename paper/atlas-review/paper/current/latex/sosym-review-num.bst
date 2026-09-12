@@ -930,28 +930,9 @@ FUNCTION {upercase.first.letters}{
 FUNCTION {format.title}
 { title empty$
     { "" }
-    { title  
-      "article" type$ =
-      type$ "techreport" =
-      type$ "inbook" =
-      type$ "inproceedings" =
-      type$ "incollection" =
-      type$ "phdthesis" =
-      type$ "mastersthesis" =
-      or or or or or or
-         {"t" change.case$}
-         {	type$ "unpublished" =
-           type$ "misc" =
-           or
-             'skip$
-            'upercase.first.letters
-          if$
-        }
-      if$
-    }
+    { title }
   if$
 }
-
 
 FUNCTION {note.presented}
 {	note #1 #9 substring$ "presented" = 
@@ -1369,8 +1350,8 @@ FUNCTION {replace.tilde}
 
 FUNCTION {format.url}
 { url empty$
-  url field.or.null "https://doi.org/" doi field.or.null * = or
-  url field.or.null "http://dx.doi.org/" doi field.or.null * = or
+  url field.or.null "l" change.case$ "https://doi.org/" doi field.or.null "l" change.case$ * = or
+  url field.or.null "l" change.case$ "http://dx.doi.org/" doi field.or.null "l" change.case$ * = or
     'skip$
     { type$ "article" =
         'skip$	

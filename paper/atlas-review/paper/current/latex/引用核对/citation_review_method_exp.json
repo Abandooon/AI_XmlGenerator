@@ -1,0 +1,651 @@
+{
+  "date": "2026-09-12",
+  "source": "E:\\Desktop\\ATLAS论文修改版\\中文论文LaTeX整合稿\\main.tex",
+  "scope": "方法、实验、结论、附录全部含文献引文的段落；只读审查，不修改论文、参考文献或实验数据。",
+  "paragraph_count": 31,
+  "citation_occurrence_count": 42,
+  "unique_reference_count": 19,
+  "summary": "发现一处引文结论失准，应修正 Grammar-Aligned Decoding 的条件分布解释；另建议三处局部文字/引文位置改进。实验对照依据、规范版本及主要技术引用相符，无须改变实验设计或数值。",
+  "changes": [
+    {
+      "id": "M1",
+      "line": 390,
+      "priority": "required",
+      "kind": "correct_supported_claim",
+      "original": "受约束解码会改变原模型的输出分布，其局部筛选不等同于在所有满足约束的完整结果中进行最优选择\\paperref{parkGrammaralignedDecoding2025}。",
+      "replacement": "受约束解码会改变原模型的输出分布；逐步筛选并重新归一化，通常不同于在完整输出满足约束的条件下从原模型分布采样\\paperref{parkGrammaralignedDecoding2025}。",
+      "reason": "Grammar-Aligned Decoding 讨论条件采样分布，原句将其改写为最优化问题，论断对象发生了变化。",
+      "url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/2bdc2267c3d7d01523e2e17ac0a754f3-Abstract-Conference.html"
+    },
+    {
+      "id": "M2",
+      "line": 190,
+      "priority": "recommended",
+      "kind": "align_wording_with_source",
+      "original": "在结构化生成中，JSON Schema 是一种广泛采用、具有成熟工具支持的约束表示，可描述字段类型、必需项、数量及允许值\\paperref{JSONSchemaValidation202012}。",
+      "replacement": "JSON Schema 通过验证关键字描述 JSON 实例的字段类型、必需项、数量及允许值，为结构化生成提供约束表示\\paperref{JSONSchemaValidation202012}。",
+      "reason": "该规范直接支持关键字和验证语义，不直接支持“广泛采用、成熟”的评价。保留其与结构化生成的关系，并让引文贴合可核查技术内容。",
+      "url": "https://json-schema.org/draft/2020-12/json-schema-validation"
+    },
+    {
+      "id": "M3",
+      "line": 714,
+      "priority": "recommended",
+      "kind": "place_citations_at_respective_claims",
+      "original": "近期 LLM 与 MDE 研究已涉及模型与元模型构造、语义引导生成，以及形式化规格生成\\paperref{Almonte2026EMFKaizen}\\paperref{Chen2026ProjectionalDecoding}\\paperref{maSpecGenAutomatedGeneration2025}。",
+      "replacement": "近期 LLM 与 MDE 研究已涉及模型与元模型构造\\paperref{Almonte2026EMFKaizen}、语义引导生成\\paperref{Chen2026ProjectionalDecoding}，以及形式化规格生成\\paperref{maSpecGenAutomatedGeneration2025}。",
+      "reason": "三个不同研究对象分别对应三篇来源。移动现有引文，使对应关系直接可见，不增加参考文献或改变结论。",
+      "url": [
+        "https://www.jot.fm/issues/issue_2026_03/a8.pdf",
+        "https://conf.researchr.org/details/fse-2026/fse-2026-ideas-visions-and-reflections/20/Projectional-Decoding-Towards-Semantic-Aware-LLM-Generation",
+        "https://conf.researchr.org/details/icse-2025/icse-2025-research-track/173/SpecGen-Automated-Generation-of-Formal-Program-Specifications-via-Large-Language-Mod"
+      ]
+    },
+    {
+      "id": "M4",
+      "line": 1281,
+      "priority": "recommended",
+      "kind": "restore_case_premises_for_cited_rule",
+      "original": "case19 中，依据 Article 6(1) 转交德国国内法的结论明确，后续国内法是否赋予管辖权仍待判断\\paperref{EU1215_2012}；",
+      "replacement": "case19 的被告仅在中国有住所，题干已排除 Article 6(1) 所列例外，因此应由德国国内法判断管辖权；现有材料尚不能确定德国国内法是否赋予管辖权\\paperref{EU1215_2012}。",
+      "reason": "不重新裁判案例；仅补回已有题干事实，使国内法转介结论的适用前提可由读者看懂，避免把附例外的 Article6(1) 写成无条件规则。后续布尔标记说明与专家意见保持原样。",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/AUTO/?qid=1755638897268&uri=CELEX%3A02012R1215-20150226"
+    }
+  ],
+  "preserve": [
+    "RAG 引文作为检索支持生成的思想来源；PIL 固定词汇检索由本实验另行说明。",
+    "Self-Refine 引文只支撑自我检查/修订思路，不将 GS、S 称为原方法完整复现。",
+    "vLLM/PagedAttention 支撑推理框架，XGrammar 支撑受约束解码；两者当前引用位置正确。",
+    "Train Benchmark 只作为既有元模型和六条查询来源；作者三类任务和八种布局的独立设计已明确。",
+    "AUTOSAR 保留 4.2.2 规范身份和留存正文依据，不用新版替换，也不在论文中描述网络读取失败。",
+    "PIL 保留两份合并文本的精确日期，与冻结输入相对应；不改变法律案例、专家判断或统计结果。",
+    "ICM 的链接异常人工处理与当前方法定位保持；没有为引用审查额外加入抽取质量/人工确认的防御性段落。"
+  ],
+  "optional_addition": {
+    "line": 206,
+    "description": "方法节首次 ARXML 周期事件例子若希望读者就地回查规范，可在“运行实体（Runnable）表示可被触发执行的软件行为”后复用 AUTOSAR422；现有实验与附录已对此示例提供具体规则来源，所以不作为必改项。",
+    "existing_key": "AUTOSAR422",
+    "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf"
+  },
+  "local_support": [
+    "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\supporting\\autosar_constraint_preparation\\TPS_SWCT_01519_source_excerpt.json",
+    "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\input\\chapter4.md:1205",
+    "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\input\\chapter4.md:1220",
+    "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\input\\chapter7.md:134",
+    "E:\\Desktop\\ATLAS论文修改版\\AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md",
+    "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\experiments\\pil\\frozen\\prepaid_freeze\\PIL_V41_ENGLISH_LEGAL_SOURCE_AUDIT.json",
+    "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\experiments\\pil\\frozen\\prepaid_freeze\\provenance\\build_pil_v4_inputs.mjs"
+  ],
+  "paragraphs": [
+    {
+      "line": 190,
+      "original_paragraph": "在结构化生成中，JSON Schema 是一种广泛采用、具有成熟工具支持的约束表示，可描述字段类型、必需项、数量及允许值\\paperref{JSONSchemaValidation202012}。本方法按任务组装这些限制，再由受约束解码后端将其用于生成过程。例如，XGrammar 可编译相应约束并据此筛选允许生成的词元\\paperref{Dong2024XGrammar}。JSON Schema 是本方法采用的一种实现形式；领域适配也可以使用后端支持的文法等其他约束表示。",
+      "cited_keys": [
+        "JSONSchemaValidation202012",
+        "Dong2024XGrammar"
+      ],
+      "status": "citation_or_clarity_improvement",
+      "recommended_change_ids": [
+        "M2"
+      ],
+      "evidence": [
+        {
+          "key": "JSONSchemaValidation202012",
+          "url": "https://json-schema.org/draft/2020-12/json-schema-validation",
+          "assessment": "官方规范 §6.1.1 type、§6.1.2 enum、§6.1.3 const、§6.4 数组数量、§6.5.3 required 支持结构与取值限制；规范本身不是 LLM 解码实现，也没有评价采用率或工具成熟度。"
+        },
+        {
+          "key": "Dong2024XGrammar",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2025/file/5c20ca4b0b20b0bd2f1d839dc605e70f-Paper-Conference.pdf",
+          "assessment": "官方论文支持文法编译、词元合法性判定、生成时掩码及推理引擎接入。论文中引用它支撑解码后端，而非借用其性能数字。"
+        }
+      ]
+    },
+    {
+      "line": 234,
+      "original_paragraph": "转换结果可以采用对象模型、关系记录、JSON 或图结构。其关键是保存后续抽取、查询与绑定所需的信息及源元素对应，而不是选择某一种存储格式。模型驱动语言工程区分抽象语法、具体语法及其演化关系\\paperref{tolvanenFrameworkCoevolution2025}。相应地，元模型表示描述领域构造，序列化映射规定其目标表达，生成约束规定本次允许生成的结构和值。三者在流程中承担不同职责。",
+      "cited_keys": [
+        "tolvanenFrameworkCoevolution2025"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "tolvanenFrameworkCoevolution2025",
+          "url": "https://link.springer.com/article/10.1007/s10270-024-01218-5",
+          "assessment": "官方全文 §4 区分抽象语法、具体语法、约束及其协同演化，支持当前术语解释。"
+        }
+      ]
+    },
+    {
+      "line": 331,
+      "original_paragraph": "绑定结果用于三个环节。具有生成映射的要求进入 L1 生成约束；检索得到的规范内容作为外部知识加入提示\\paperref{Lewis2020RAG}；需要在构造结果上判断的要求，则绑定到已有检查器的输入对象和参数。运行时可据此装配新的检查项，而无需为每个任务生成新的验证代码。",
+      "cited_keys": [
+        "Lewis2020RAG"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Lewis2020RAG",
+          "url": "https://papers.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html",
+          "assessment": "原方法组合参数化与非参数化记忆，并联合使用神经检索和生成。正文仅引用其检索支持生成的基本思路；PIL 已明确自己的固定词汇检索，没有声称复现原论文的密集检索训练。"
+        }
+      ]
+    },
+    {
+      "line": 341,
+      "original_paragraph": "L1 将元模型结构、适用领域规则及任务绑定中可执行的部分组装为本次生成约束。JSON Schema 可表达字段类型、必需项、数量、固定值及枚举等限制\\paperref{JSONSchemaValidation202012}。动态组装以元模型为结构依据，以任务选择确定需要展开的部分，并结合已有模型上下文约束可用引用。因此，生成规范随任务及已获得的上下文变化。",
+      "cited_keys": [
+        "JSONSchemaValidation202012"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "JSONSchemaValidation202012",
+          "url": "https://json-schema.org/draft/2020-12/json-schema-validation",
+          "assessment": "官方规范 §6.1.1 type、§6.1.2 enum、§6.1.3 const、§6.4 数组数量、§6.5.3 required 支持结构与取值限制；规范本身不是 LLM 解码实现，也没有评价采用率或工具成熟度。"
+        }
+      ]
+    },
+    {
+      "line": 376,
+      "original_paragraph": "生成约束的表达与目标语言的表达并不总是一一对应。以 XML 目标为例，XML Schema 可以要求子元素按 sequence 出现\\paperref{W3CXMLSchema2004}。采用 JSON 对象承载命名字段时，字段的排列没有直接携带这一 XML 顺序要求；本方法的相应适配由序列化器依据目标模式排列元素，再用 XML Schema 验证制品。这体现了生成约束、模型构造和目标表达之间的职责分配。采用其他中间表示或直接针对目标语言解码时，可以选择不同的映射方式。",
+      "cited_keys": [
+        "W3CXMLSchema2004"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "W3CXMLSchema2004",
+          "url": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/",
+          "assessment": "官方规范 §3.8.4 的 sequence 规则明确要求对应子序列按顺序匹配；XSD 可验证内容模型，支撑元素顺序及结构验证说明。"
+        }
+      ]
+    },
+    {
+      "line": 381,
+      "original_paragraph": "在 MDE 中，生成输出需要能够被解析、构造为实例模型并交由后续工具处理。错误的层次结构、遗漏的必需项或非法枚举会使这一过程在进入领域验证前就失败。\\textbf{受约束解码}（constrained decoding）将已编码的结构限制作用于生成的每一步，使模型在允许的表达空间内选择内容，为后续模型构造提供满足生成规范的输入\\paperref{gengGrammarConstrainedDecodingStructured2024}。",
+      "cited_keys": [
+        "gengGrammarConstrainedDecodingStructured2024"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "gengGrammarConstrainedDecodingStructured2024",
+          "url": "https://aclanthology.org/2023.emnlp-main.674/",
+          "assessment": "官方论文支持文法约束解码控制完整结构化输出、输入相关文法。当前方法将此能力用于自己的模型构造流程，没有把原论文任务写成 MDE 实验。"
+        }
+      ]
+    },
+    {
+      "line": 384,
+      "original_paragraph": "可控制的解码后端先将本次生成规范转换为支持的语法表示，并结合分词器进行编译\\paperref{Dong2024XGrammar}\\paperref{XGrammar22026}。生成过程中，匹配器根据当前输出前缀维护语法状态，确定下一步允许的词元。LLM 给出下一词元的得分后，后端将不允许词元的得分设为负无穷，再从允许候选中选择下一个词元；输出增加该词元，匹配器也随之更新，直至完成输出。",
+      "cited_keys": [
+        "Dong2024XGrammar",
+        "XGrammar22026"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Dong2024XGrammar",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2025/file/5c20ca4b0b20b0bd2f1d839dc605e70f-Paper-Conference.pdf",
+          "assessment": "官方论文支持文法编译、词元合法性判定、生成时掩码及推理引擎接入。论文中引用它支撑解码后端，而非借用其性能数字。"
+        },
+        {
+          "key": "XGrammar22026",
+          "url": "https://github.com/mlc-ai/xgrammar",
+          "assessment": "作者官方项目确认 XGrammar-2 及相应正式出版条目。方法节讨论一般后端机制，没有声称实验采用 XGrammar-2；一代已足以支撑该处编译/匹配说明，保留二代引用不构成技术错误。"
+        }
+      ]
+    },
+    {
+      "line": 387,
+      "original_paragraph": "这一控制既涉及标点和嵌套结构，也涉及 schema 已编码的字段名与合法值。进入引用取值时，约束可将输出限制在本次配置的候选路径内；进入已绑定的数值字段时，则可限制为任务指定的值。词元与字符、语法符号并非一一对应，后端需在分词器层面维护这些允许关系\\paperref{Dong2024XGrammar}。图~\\ref{fig:4} 将任务约束组装与这一逐步执行过程分开表示。",
+      "cited_keys": [
+        "Dong2024XGrammar"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Dong2024XGrammar",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2025/file/5c20ca4b0b20b0bd2f1d839dc605e70f-Paper-Conference.pdf",
+          "assessment": "官方论文支持文法编译、词元合法性判定、生成时掩码及推理引擎接入。论文中引用它支撑解码后端，而非借用其性能数字。"
+        }
+      ]
+    },
+    {
+      "line": 390,
+      "original_paragraph": "检索提示与受约束解码在此承担互补作用：前者提供需求含义和领域依据，后者排除违反已执行结构限制的延续。受约束解码会改变原模型的输出分布，其局部筛选不等同于在所有满足约束的完整结果中进行最优选择\\paperref{parkGrammaralignedDecoding2025}。因此，L1 的作用是执行已经编码且得到后端支持的生成约束，领域一致性与任务满足情况继续由 L2 检查。",
+      "cited_keys": [
+        "parkGrammaralignedDecoding2025"
+      ],
+      "status": "revision_required",
+      "recommended_change_ids": [
+        "M1"
+      ],
+      "evidence": [
+        {
+          "key": "parkGrammaralignedDecoding2025",
+          "url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/2bdc2267c3d7d01523e2e17ac0a754f3-Abstract-Conference.html",
+          "assessment": "原文研究文法约束下原模型条件分布与逐步掩码重归一化造成的分布偏移，不能概括成全局最优解选择。需修改方法节第 390 行。"
+        }
+      ]
+    },
+    {
+      "line": 416,
+      "original_paragraph": "L2 检查候选模型与序列化制品是否满足元模型规定、适用领域规则和本次任务。它与 L1 按表达能力和上下文需求分工：能够提前表达为结构或有限取值限制的要求在生成时执行；需要完整对象、跨对象关系或目标制品的要求在构造后判断。同一规则也可以同时参与两层。例如，L1 按目标类型筛选引用候选，L2 检查构造后的引用能否正确解析。近期研究也探索在模型构造期间执行部分语义检查\\paperref{Chen2026ProjectionalDecoding}，因而两层并不对应固定的“语法／语义”二分。",
+      "cited_keys": [
+        "Chen2026ProjectionalDecoding"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Chen2026ProjectionalDecoding",
+          "url": "https://conf.researchr.org/details/fse-2026/fse-2026-ideas-visions-and-reflections/20/Projectional-Decoding-Towards-Semantic-Aware-LLM-Generation",
+          "assessment": "官方会议摘要将其定位为概念框架，维护部分图模型以支持增量语义检查，并报告初步结果。方法节使用“探索”恰当；结论只说研究涉及该方向，未声称已有普适成熟验证。"
+        }
+      ]
+    },
+    {
+      "line": 425,
+      "original_paragraph": "\\textbf{检查对象与验收依据。} 验证按实际作用对象组织为四个方面：生成表示与目标制品的格式有效性、候选模型的\\textbf{元模型符合性}（metamodel conformance）、领域\\textbf{良构约束}（well-formedness constraints）与其他规则，以及本次任务的\\textbf{需求满足}（requirements satisfaction）。元模型符合性涉及类型、属性、关系和基数等规定，良构约束可以涉及跨元素一致性；某些格式工具也能同时检查内容结构\\paperref{W3CXMLSchema2004}。检查配置明确各项要求由哪个工具或检查器判断。",
+      "cited_keys": [
+        "W3CXMLSchema2004"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "W3CXMLSchema2004",
+          "url": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/",
+          "assessment": "官方规范 §3.8.4 的 sequence 规则明确要求对应子序列按顺序匹配；XSD 可验证内容模型，支撑元素顺序及结构验证说明。"
+        }
+      ]
+    },
+    {
+      "line": 436,
+      "original_paragraph": "模型修复以不一致定位、编辑操作和修复候选为基础\\paperref{marchezanGeneratingRepairsInconsistent2023}。本方法使用 L2 的规则标识、模型元素与制品位置确定可修改对象，再将失败诊断、相关规则、原任务要求及允许操作提供给 LLM。允许操作由领域适配者定义，例如修改属性值、替换引用、补充必需对象或删除允许删除的元素。",
+      "cited_keys": [
+        "marchezanGeneratingRepairsInconsistent2023"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "marchezanGeneratingRepairsInconsistent2023",
+          "url": "https://link.springer.com/article/10.1007/s10270-022-00996-0",
+          "assessment": "官方全文依据不一致原因生成修复树及编辑动作，并可按所有权过滤；支持定位、操作及限制修改范围的思路。本文实验用语“相衔接”正确，没有声称复现其修复算法。"
+        }
+      ]
+    },
+    {
+      "line": 533,
+      "original_paragraph": "AUTOSAR 用于描述汽车软件组件、接口及其交互，ARXML 是相应的 XML 交换表示。20 个需求由作者依据 AUTOSAR Classic 4.2.2 的 Software Component Template 设计组件结构、端口及引用要求\\paperref{AUTOSAR422}，并依据同版 Specification of RTE 核对周期触发和显式数据访问的含义\\paperref{AUTOSARRTE422}。案例组合还参考 ETAS 工具链中一个 RH850 工程的模型结构。作者对观察到的接口、端口、Runnable、周期事件及访问关系进行去上下文化、分解重组和参数变化，形成 6 个最小、7 个标准和 7 个完整案例。规范依据与作者设计内容见附录~\\ref{app:A-1}、表~\\ref{tab:A1}。",
+      "cited_keys": [
+        "AUTOSAR422",
+        "AUTOSARRTE422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        },
+        {
+          "key": "AUTOSARRTE422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502；已有来源核验材料记录同版 §4.2.2.8、§4.3.1.5 与 §5.6.4 作为周期触发与显式访问解释。本轮没有重新取得 RTE 完整官方正文；维持版本与已有准确定位，不用新版替换，不在论文增加访问失败说明。"
+        }
+      ]
+    },
+    {
+      "line": 544,
+      "original_paragraph": "AUTOSAR 的 ICM 保存 1,085 条结构化约束与 6,533 条约束关联。验证计划包含 554 条检查规则，运行时依据生成模型及规则适用条件执行检查。规范约束抽取、元模型链接及验证器构造见附录~\\ref{app:A-2}，抽取规格汇总于表~\\ref{tab:A2}。图~\\ref{fig:6} 展示其中一条周期 Runnable 约束的应用：规范规则 TPS\\_SWCT\\_01519 关联到 Runnable、内部行为和 TimingEvent\\paperref{AUTOSAR422}；任务绑定选出具体 Runnable；运行时调用已有周期事件检查，判断事件是否存在、是否指向该 Runnable，以及周期值是否可解析。该次检查的一个适用对象通过验证。",
+      "cited_keys": [
+        "AUTOSAR422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        }
+      ]
+    },
+    {
+      "line": 593,
+      "original_paragraph": "此实验固定 AUTOSAR 案例及其生成约束，直接观察 L1 在生成过程中的作用。三种条件分别为：\\textbf{提示约束（U）}，仅在提示中给出需求和完整 JSON Schema；\\textbf{受约束解码（G）}，在相同提示下进一步启用解码约束；\\textbf{受约束解码与审计（A）}，在 G 的基础上记录逐步解码信息。三组使用相同模型与采样设置，并平衡执行顺序。运行采用 vLLM\\paperref{Kwon2023PagedAttention}和 XGrammar\\paperref{Dong2024XGrammar}。",
+      "cited_keys": [
+        "Kwon2023PagedAttention",
+        "Dong2024XGrammar"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Kwon2023PagedAttention",
+          "url": "https://sigops.org/s/conferences/sosp/2023/toc.html",
+          "assessment": "ACM SIGOPS 官方论文集的 PagedAttention 摘要明确介绍 vLLM 服务系统；用此文引用所用推理框架正确。实验把逐词元约束执行归于 XGrammar，未混为 PagedAttention 的贡献。"
+        },
+        {
+          "key": "Dong2024XGrammar",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2025/file/5c20ca4b0b20b0bd2f1d839dc605e70f-Paper-Conference.pdf",
+          "assessment": "官方论文支持文法编译、词元合法性判定、生成时掩码及推理引擎接入。论文中引用它支撑解码后端，而非借用其性能数字。"
+        }
+      ]
+    },
+    {
+      "line": 619,
+      "original_paragraph": "铁路实验采用 Train Benchmark 的既有元模型和六条模型查询\\paperref{TrainBenchmark2018}。作者设计三类配置任务——服务衔接、维护预备和冗余监测——并分别应用于八种线路布局，形成 24 个基础任务。结构化任务规格声明固定对象、物理连接、可赋值字段及任务义务；这些信息被编译为结构计划和生成约束。LLM 选择字段取值，适配器装配候选模型并输出 XMI。",
+      "cited_keys": [
+        "TrainBenchmark2018"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "TrainBenchmark2018",
+          "url": "https://link.springer.com/article/10.1007/s10270-016-0571-8",
+          "assessment": "官方论文提供铁路元模型与六条查询。正文明确三类任务和八种布局是作者设计。附录 C1 的 ConnectedSegments 按官方附录关系公式写为六个位置的有向游走；公式未要求六个变量互异，现文比“传感器最多五个区段”的非形式摘要更忠于实际检查。"
+        }
+      ]
+    },
+    {
+      "line": 625,
+      "original_paragraph": "每个任务运行三次，得到 72 个生成起点。比较\\textbf{初始生成（G0）}、\\textbf{自修复（GS）}和\\textbf{验证反馈修复（GF）}。自修复要求模型依据规则检查并修改自身输出，与 Self-Refine 的自我修订思路相关\\paperref{madaanSelfRefineIterativeRefinement2023}；验证反馈修复进一步提供实际诊断、违规位置和局部候选，并通过接纳检查保持已满足的要求。每个修复分支最多两轮，每轮最多修改六个显式字段。根据不一致原因组织修复并限制修改范围，也与已有模型修复研究相衔接\\paperref{marchezanGeneratingRepairsInconsistent2023}。",
+      "cited_keys": [
+        "madaanSelfRefineIterativeRefinement2023",
+        "marchezanGeneratingRepairsInconsistent2023"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "madaanSelfRefineIterativeRefinement2023",
+          "url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html",
+          "assessment": "原文由同一 LLM 生成、反馈与修订。当前正文仅据此解释自我修订思路，并明确本文轮数、允许字段和接纳限制；引用范围恰当。"
+        },
+        {
+          "key": "marchezanGeneratingRepairsInconsistent2023",
+          "url": "https://link.springer.com/article/10.1007/s10270-022-00996-0",
+          "assessment": "官方全文依据不一致原因生成修复树及编辑动作，并可按所有权过滤；支持定位、操作及限制修改范围的思路。本文实验用语“相衔接”正确，没有声称复现其修复算法。"
+        }
+      ]
+    },
+    {
+      "line": 659,
+      "original_paragraph": "案例集由两名国际私法研究生依据 Brussels I bis\\paperref{EU1215_2012}及欧盟商标条例\\paperref{EU2017_1001}构建，共包含 60 个合成情景，涵盖一般与特别管辖、协议管辖、程序关系及国内法转介等情况。两人分别复核参考标签，初轮复核中不查看对方判断，并通过讨论解决分歧。参考判断在正式生成前确定。",
+      "cited_keys": [
+        "EU1215_2012",
+        "EU2017_1001"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "EU1215_2012",
+          "url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+          "assessment": "版本与冻结法律来源审计、输入构造脚本一致。官方 EUR-Lex 同版索引可读，Article 25(1) 规定协议管辖原则上排他，25(4) 受19等保护规则限制；Article6(1) 国内法转介附例外。本文 agreement/exclusive 是自己的主要类型编码，不否定25(1)效力。case19 结论依赖题干的非欧盟住所和排除例外，建议把此前已有事实简要写回说明。"
+        },
+        {
+          "key": "EU2017_1001",
+          "url": "https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng",
+          "assessment": "官方页面可读，合并文本身份为 02017R1001-20251201，与冻结输入/来源审计一致；现文引用用于案例与条文支持库来源，没有额外断言商标实体案件结论。"
+        }
+      ]
+    },
+    {
+      "line": 662,
+      "original_paragraph": "实验依次比较四种条件：仅有共同输出要求的\\textbf{基础提示（P0）}、加入法律依据的\\textbf{检索增强（P1）}、进一步执行严格输出结构的\\textbf{结构约束（P2）}，以及增加生成后审计、一次修复和发布控制的\\textbf{完整检查（P3）}。检索增强与相关工作中的检索支持生成思路一致\\paperref{Lewis2020RAG}。各组均为 60 案各三次运行，每组 180 个结果。案例准备和各组输入、生成及处理条件见附录~\\ref{app:D-1}、表~\\ref{tab:D1}。",
+      "cited_keys": [
+        "Lewis2020RAG"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Lewis2020RAG",
+          "url": "https://papers.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html",
+          "assessment": "原方法组合参数化与非参数化记忆，并联合使用神经检索和生成。正文仅引用其检索支持生成的基本思路；PIL 已明确自己的固定词汇检索，没有声称复现原论文的密集检索训练。"
+        }
+      ]
+    },
+    {
+      "line": 714,
+      "original_paragraph": "近期 LLM 与 MDE 研究已涉及模型与元模型构造、语义引导生成，以及形式化规格生成\\paperref{Almonte2026EMFKaizen}\\paperref{Chen2026ProjectionalDecoding}\\paperref{maSpecGenAutomatedGeneration2025}。随着自然语言逐步参与模型、规格和代码等制品的构造，显式建模语言、模型转换及验证工具仍是组织自动化的重要基础。本文的分层原则为这些能力的衔接提供了方法依据：在生成过程中执行可提前判定的限制，在生成后审查需要完整上下文的性质，并以原始要求判断最终制品是否完成任务。在此基础上，后续工作可进一步向领域资源准备阶段延伸。",
+      "cited_keys": [
+        "Almonte2026EMFKaizen",
+        "Chen2026ProjectionalDecoding",
+        "maSpecGenAutomatedGeneration2025"
+      ],
+      "status": "citation_or_clarity_improvement",
+      "recommended_change_ids": [
+        "M3"
+      ],
+      "evidence": [
+        {
+          "key": "Almonte2026EMFKaizen",
+          "url": "https://www.jot.fm/issues/issue_2026_03/a8.pdf",
+          "assessment": "官方论文明确辅助领域模型与元模型构造，支持结论的方向概括。"
+        },
+        {
+          "key": "Chen2026ProjectionalDecoding",
+          "url": "https://conf.researchr.org/details/fse-2026/fse-2026-ideas-visions-and-reflections/20/Projectional-Decoding-Towards-Semantic-Aware-LLM-Generation",
+          "assessment": "官方会议摘要将其定位为概念框架，维护部分图模型以支持增量语义检查，并报告初步结果。方法节使用“探索”恰当；结论只说研究涉及该方向，未声称已有普适成熟验证。"
+        },
+        {
+          "key": "maSpecGenAutomatedGeneration2025",
+          "url": "https://conf.researchr.org/details/icse-2025/icse-2025-research-track/173/SpecGen-Automated-Generation-of-Formal-Program-Specifications-via-Large-Language-Mod",
+          "assessment": "ICSE 官方会议论文支持自动程序规格生成；结论采用“形式化规格生成”，并未把它扩写为已有完整自动形式化验证。"
+        }
+      ]
+    },
+    {
+      "line": 752,
+      "original_paragraph": "20 个需求依据 AUTOSAR Classic 4.2.2 的 Software Component Template 和 Specification of RTE 设计\\paperref{AUTOSAR422}\\paperref{AUTOSARRTE422}。前者规定组件、端口、通信属性、内部行为及引用结构，后者用于解释周期触发与显式数据访问。ETAS 工具链下 RH850 工程中的接口与行为组合提供工程观察依据；作者进行去上下文化、命名规范化、分解重组和参数变化，形成表~\\ref{tab:A1} 的三个层次。",
+      "cited_keys": [
+        "AUTOSAR422",
+        "AUTOSARRTE422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        },
+        {
+          "key": "AUTOSARRTE422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_SWS_RTE.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502；已有来源核验材料记录同版 §4.2.2.8、§4.3.1.5 与 §5.6.4 作为周期触发与显式访问解释。本轮没有重新取得 RTE 完整官方正文；维持版本与已有准确定位，不用新版替换，不在论文增加访问失败说明。"
+        }
+      ]
+    },
+    {
+      "line": 775,
+      "original_paragraph": "所选初始值的规范依据见 Software Component Template 的 constr\\_1201，使用含义见 TPS\\_SWCT\\_01220\\paperref{AUTOSAR422}；数值 0 是任务设计中的具体选择。20 个基础案例共要求 33 个提供端口、32 个需求端口、18 个 Runnable、18 个周期事件和 55 个变量访问。详细案例来源与设计说明随复现材料提供。",
+      "cited_keys": [
+        "AUTOSAR422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        }
+      ]
+    },
+    {
+      "line": 786,
+      "original_paragraph": "AUTOSAR 的领域准备使用 Software Component Template 第 2–13 章的文本及其元模型信息\\paperref{AUTOSAR422}。作者标注章节、相关类和枚举，系统从元模型转换所得的表示中补入相应属性和枚举字面量，按章节与段落形成带上下文的输入片段。LLM 据此抽取结构化约束及其目标元素，链接器自动校验目标类、属性和枚举字面量并建立引用。未能链接或存在成员不匹配等异常的记录交由人工修正，再执行链接检查。表~\\ref{tab:A2} 概括这一准备流程。",
+      "cited_keys": [
+        "AUTOSAR422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        }
+      ]
+    },
+    {
+      "line": 873,
+      "original_paragraph": "\\textbf{任务及领域依据。} ASW-FULL-01 要求构造组件 ASW\\_Com\\_Full\\_Baseline，含三个提供端口、三个需求端口及六个接口；一个 Runnable 每隔 10 ms 执行三项读取和三项写入。需求还指定接收初始值为 0、超时为 0.3 s。元模型提供内部行为、Runnable、TimingEvent 及其包含和引用关系；ICM 中的 TPS\\_SWCT\\_01519 为声明为周期执行的 Runnable 提供事件检查依据\\paperref{AUTOSAR422}。",
+      "cited_keys": [
+        "AUTOSAR422"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "AUTOSAR422",
+          "url": "https://www.autosar.org/fileadmin/standards/R4.2.2/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf",
+          "assessment": "历史官网 PDF 本轮返回 502。用已留存的规范正文 chapter4.md、chapter7.md 及带来源哈希的 TPS_SWCT_01519 摘录交叉核对：constr_1201 针对 RPortPrototype 所有的 NonqueuedReceiverComSpec 要求 initValue；TPS_SWCT_01220 解释未接收数据时的初始值；TPS_SWCT_01519 规定周期 Runnable 所需 TimingEvent、期望周期及引用。现文所引含义与留存原文相符。"
+        }
+      ]
+    },
+    {
+      "line": 932,
+      "original_paragraph": "实验使用 Qwen3.5-9B、vLLM\\paperref{Kwon2023PagedAttention} 和 XGrammar\\paperref{Dong2024XGrammar}，在两张 RTX 4090 上执行，张量并行度为 2。温度为 0，top\\_p 为 1，关闭 thinking、推测解码和前缀缓存，最大输出为 16,384 词元。20 个案例各使用三个固定种子，形成 60 个区组；提示约束 U、受约束解码 G、解码与审计 A 的六种执行排列各用于十个区组。",
+      "cited_keys": [
+        "Kwon2023PagedAttention",
+        "Dong2024XGrammar"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "Kwon2023PagedAttention",
+          "url": "https://sigops.org/s/conferences/sosp/2023/toc.html",
+          "assessment": "ACM SIGOPS 官方论文集的 PagedAttention 摘要明确介绍 vLLM 服务系统；用此文引用所用推理框架正确。实验把逐词元约束执行归于 XGrammar，未混为 PagedAttention 的贡献。"
+        },
+        {
+          "key": "Dong2024XGrammar",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2025/file/5c20ca4b0b20b0bd2f1d839dc605e70f-Paper-Conference.pdf",
+          "assessment": "官方论文支持文法编译、词元合法性判定、生成时掩码及推理引擎接入。论文中引用它支撑解码后端，而非借用其性能数字。"
+        }
+      ]
+    },
+    {
+      "line": 993,
+      "original_paragraph": "实验复用 Train Benchmark 的元模型和六条 VIATRA 查询\\paperref{TrainBenchmark2018}，作者设计服务衔接、维护预备和冗余监测三类任务，并应用于链式、分支汇合、环、自环、共享道岔、分离线路、多区域和分支环八种布局。任务规格规定对象、固定物理连接、允许赋值字段以及必须保持的服务状态和监测关系。系统将这些结构化要求与元模型信息结合，形成任务约束和结构计划，绑定本次对象与取值。领域检查沿用上述原生查询。",
+      "cited_keys": [
+        "TrainBenchmark2018"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "TrainBenchmark2018",
+          "url": "https://link.springer.com/article/10.1007/s10270-016-0571-8",
+          "assessment": "官方论文提供铁路元模型与六条查询。正文明确三类任务和八种布局是作者设计。附录 C1 的 ConnectedSegments 按官方附录关系公式写为六个位置的有向游走；公式未要求六个变量互异，现文比“传感器最多五个区段”的非形式摘要更忠于实际检查。"
+        }
+      ]
+    },
+    {
+      "line": 1021,
+      "original_paragraph": "主实验使用 gpt-5.6-luna、low 推理强度、温度 1.0、128,000 词元最大输出预算及三个固定种子。初始生成 G0 的两个分支分别为自修复 GS 和验证反馈修复 GF。受控集合中，自修复 S 获得公共规则、当前模型及允许字段，采用与 Self-Refine 相关的自我检查思路\\paperref{madaanSelfRefineIterativeRefinement2023}；V 增加验证反馈与非回归接纳，F 进一步提供违规位置、局部候选和依赖信息。每个分支最多两轮，每轮最多修改六个显式字段，拒绝或无进展时可以提前停止。",
+      "cited_keys": [
+        "madaanSelfRefineIterativeRefinement2023"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "madaanSelfRefineIterativeRefinement2023",
+          "url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html",
+          "assessment": "原文由同一 LLM 生成、反馈与修订。当前正文仅据此解释自我修订思路，并明确本文轮数、允许字段和接纳限制；引用范围恰当。"
+        }
+      ]
+    },
+    {
+      "line": 1156,
+      "original_paragraph": "PIL 实验采用由两名国际私法研究生构建的 60 个英文合成管辖情景。两人分别复核初轮参考标签，初轮未查看对方判断，再共同讨论分歧。案例依据 Brussels I bis 的 2015 年 2 月 26 日合并文本\\paperref{EU1215_2012}及欧盟商标条例的 2025 年 12 月 1 日合并文本\\paperref{EU2017_1001}。依据条文含义整理决策字段、管辖类型和跨字段检查，并将 58 条条款转述组织为支持库。条文以法律文书和条款的联合身份引用，固定词汇检索最多返回 12 条。",
+      "cited_keys": [
+        "EU1215_2012",
+        "EU2017_1001"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "EU1215_2012",
+          "url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+          "assessment": "版本与冻结法律来源审计、输入构造脚本一致。官方 EUR-Lex 同版索引可读，Article 25(1) 规定协议管辖原则上排他，25(4) 受19等保护规则限制；Article6(1) 国内法转介附例外。本文 agreement/exclusive 是自己的主要类型编码，不否定25(1)效力。case19 结论依赖题干的非欧盟住所和排除例外，建议把此前已有事实简要写回说明。"
+        },
+        {
+          "key": "EU2017_1001",
+          "url": "https://eur-lex.europa.eu/eli/reg/2017/1001/2025-12-01/eng",
+          "assessment": "官方页面可读，合并文本身份为 02017R1001-20251201，与冻结输入/来源审计一致；现文引用用于案例与条文支持库来源，没有额外断言商标实体案件结论。"
+        }
+      ]
+    },
+    {
+      "line": 1276,
+      "original_paragraph": "\\textbf{复验与发布。} 修订交换主要与备选类型，保留法院、结论及上述依据。复验的结构和审计均通过，记录实际发布，并由参考不兼容转为兼容，达到主要复合终点。本文以 \\texttt{agreement} 表示协议管辖依据，\\texttt{exclusive} 的主要类型对应预先编码的法定专属管辖类别；该修订不否定 Article 25(1) 下选法院协议可能具有的排他效力\\paperref{EU1215_2012}。此例展示结构有效之后的跨字段检查与修订。",
+      "cited_keys": [
+        "EU1215_2012"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "EU1215_2012",
+          "url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+          "assessment": "版本与冻结法律来源审计、输入构造脚本一致。官方 EUR-Lex 同版索引可读，Article 25(1) 规定协议管辖原则上排他，25(4) 受19等保护规则限制；Article6(1) 国内法转介附例外。本文 agreement/exclusive 是自己的主要类型编码，不否定25(1)效力。case19 结论依赖题干的非欧盟住所和排除例外，建议把此前已有事实简要写回说明。"
+        }
+      ]
+    },
+    {
+      "line": 1281,
+      "original_paragraph": "在自动评分之外，专家还对 case19 和 case42 的三份具体回答作了定向复核。case19 中，依据 Article 6(1) 转交德国国内法的结论明确，后续国内法是否赋予管辖权仍待判断\\paperref{EU1215_2012}；条件标记应评价所选结论本身，规范编码为 false。原模型 true 反映了对后一层问题的解释，实体解释可接受，但不据此改写其原自动终点。",
+      "cited_keys": [
+        "EU1215_2012"
+      ],
+      "status": "citation_or_clarity_improvement",
+      "recommended_change_ids": [
+        "M4"
+      ],
+      "evidence": [
+        {
+          "key": "EU1215_2012",
+          "url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+          "assessment": "版本与冻结法律来源审计、输入构造脚本一致。官方 EUR-Lex 同版索引可读，Article 25(1) 规定协议管辖原则上排他，25(4) 受19等保护规则限制；Article6(1) 国内法转介附例外。本文 agreement/exclusive 是自己的主要类型编码，不否定25(1)效力。case19 结论依赖题干的非欧盟住所和排除例外，建议把此前已有事实简要写回说明。"
+        }
+      ]
+    },
+    {
+      "line": 1284,
+      "original_paragraph": "case42 中，法国消费者向荷兰商家网购家具，并另行确认阿姆斯特丹法院条款。P1 第一次回答从荷兰住所直接推出阿姆斯特丹具体法院具有管辖权，专家认为后文未纠正这一错误，判为不可接受；该回答的自动终点通过。P3 第一次回答在后文明确给整个结论加上消费者规则和选法院条件限制，专家判为有条件可接受。消费者另行确认条款并不自动满足 Articles 19 和 25(4) 的要求\\paperref{EU1215_2012}。这一对照说明结构化终点与全文实体判断应分别解释。",
+      "cited_keys": [
+        "EU1215_2012"
+      ],
+      "status": "supported_keep",
+      "recommended_change_ids": [],
+      "evidence": [
+        {
+          "key": "EU1215_2012",
+          "url": "https://eur-lex.europa.eu/eli/reg/2012/1215/2015-02-26/eng",
+          "assessment": "版本与冻结法律来源审计、输入构造脚本一致。官方 EUR-Lex 同版索引可读，Article 25(1) 规定协议管辖原则上排他，25(4) 受19等保护规则限制；Article6(1) 国内法转介附例外。本文 agreement/exclusive 是自己的主要类型编码，不否定25(1)效力。case19 结论依赖题干的非欧盟住所和排除例外，建议把此前已有事实简要写回说明。"
+        }
+      ]
+    }
+  ]
+}
