@@ -1,5 +1,7 @@
 # Current integrated manuscript
 
+Figures 7 and 8 use English labels; identical repeats in Figure 7(a) are merged by case. [Plotting scripts and input data](../figure_sources/README.md) reproduce both figures.
+
 The [bibliography audit](latex/引用核对/README.md) records official export provenance, the key mapping and checked citation contexts; its [redline](latex/引用核对/引文修改对照.html) shows the five current wording/placement revisions and two bibliography updates.
 
 | Material | Files |
