@@ -1,5 +1,5 @@
-# ATLAS 论文与可复核实验
+# 模型生成实验与复核材料
 
-当前方法论、实验和附录、中文图、五项离线复核入口及原始证据见 [审稿材料](paper/atlas-review/README.md)。该目录与 ATLAS 分支根目录按同一发布清单同步。
+ICM、提示词、生成约束、生成制品、实验结果及五项离线复核入口见[实验材料导航](https://github.com/Abandooon/AI_XmlGenerator/blob/api_rag/paper/atlas-review/README.md)。该目录与 [ATLAS 分支](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS)根目录按同一发布清单同步。
 
-用于生成既有实验的准确代码以材料内冻结源码、归档和 SOURCE_INDEX 为准。该目录以外是开发工作树，不能据其后续修改反推历史实验配置。完整英文论文合稿与最终回复页码仍待完成。
+历史实验的准确实现以材料中的冻结源码、归档与来源索引为准。该目录以外为开发工作树。论文、审稿回复和决定信保存在作者材料中，当前实验导出不包含这些文件。

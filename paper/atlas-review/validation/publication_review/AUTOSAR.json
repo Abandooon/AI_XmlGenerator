@@ -2,9 +2,14 @@
   "schema_version": "autosar.reviewer.offline-verification.v1",
   "decision": "PASS",
   "scope": "Revalidation of preserved V20 artifacts and logged metadata; not a replay of original model interactions.",
-  "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+  "archive_sha256": "afb8255562bea5e9dc3e19f1527a20b96374ad85f471a1a10563ec9d882bc4ec",
+  "archive_selection": {
+    "original_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+    "excluded_members": 12,
+    "retained_member_bytes_unchanged": true
+  },
   "release_file_identity": {
-    "checked": 9673,
+    "checked": 9661,
     "errors": []
   },
   "release_manifest_canonical_valid": true,
@@ -306,5 +311,5 @@
       "z3-solver": "4.16.0.0"
     }
   },
-  "elapsed_seconds": 271.079
+  "elapsed_seconds": 287.172
 }

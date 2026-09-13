@@ -24,8 +24,8 @@ import zlib
 
 sys.dont_write_bytecode = True
 
-FIGURE7 = Path("paper/figure_sources/data/Fig7_vllm_intervention_data.json")
-FIGURE8 = Path("paper/figure_sources/data/Fig8_railway_results_data.json")
+FIGURE7 = Path("analysis/figures/data/Fig7_vllm_intervention_data.json")
+FIGURE8 = Path("analysis/figures/data/Fig8_railway_results_data.json")
 VLLM_ARCHIVE = Path("experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz")
 
 
@@ -59,8 +59,12 @@ def check_figure7(root, plot_path):
     plot = read_json(plot_path)
     source = plot["sources"]["formal_paper_evidence"]
     archive_bytes = (root / VLLM_ARCHIVE).read_bytes()
-    equal(sha256(archive_bytes), source["archive_sha256"], "Figure 7 original archive hash")
-    equal(len(archive_bytes), source["archive_size_bytes"], "Figure 7 original archive size")
+    selection = read_json(root / "docs/ARCHIVE_SELECTION.json")
+    selected = next(row for row in selection["archives"] if row["path"] == VLLM_ARCHIVE.as_posix())
+    equal(selected["original"]["sha256"], source["archive_sha256"], "Figure 7 historical source archive hash")
+    equal(selected["original"]["bytes"], source["archive_size_bytes"], "Figure 7 historical source archive size")
+    equal(sha256(archive_bytes), selected["current"]["sha256"], "Figure 7 selected archive hash")
+    equal(len(archive_bytes), selected["current"]["bytes"], "Figure 7 selected archive size")
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:gz") as archive:
         def read_member(name):
             stream = archive.extractfile(name)

@@ -1,14 +1,12 @@
 # Supported commands and expected results
 
-This is the complete active reviewer command list. [Actual executions and result checks](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.md) record each entry. [Manuscript numbers](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/PAPER_DATA_CROSSCHECK.md) are checked against the underlying evidence separately from file integrity.
+This is the complete active reviewer command list. [Actual executions and result checks](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.md) record each entry. [Experiment metrics](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/EXPERIMENT_DATA.md) are recomputed from the underlying records separately from file integrity.
 
 ## Environment and output
 
 Use Python 3.12. Run S01 from the release root; use the resulting `.venv` interpreter for every later `python` command. On Windows it is `.venv/Scripts/python.exe`; on Unix it is `.venv/bin/python`. Activate that environment or substitute its interpreter path. S02 and S03 need package-download access during setup. Evidence checks then run offline and make no model API calls.
 
 PIL requires Node.js 22 or newer, available as `node`. Railway checks require Java 8; native recompilation requires the Java 8 JDK. The commands below use PowerShell's `$env:JAVA8_HOME` variable, which must point to the installed Java 8 JDK. This is an external runtime prerequisite, not a repository material location. The audit supplies and records the actual runtime versions. Do not rely on an unrelated default Java installation. For Unix, substitute the equivalent executable path and shell variable syntax.
-
-Tectonic 0.17.0 is used for P01. Its first build may download its TeX bundle; the audited build used an existing cache with `--offline`. Overleaf users instead upload the [English submission inputs](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS/paper/current/english) and select XeLaTeX. No unexecuted XeLaTeX command is advertised as a locally verified check.
 
 Each command gives its working directory relative to the release root. Output paths resolve from that directory and lead outside the release. Use new or empty output directories; railway and Terra require a directory that does not yet exist. Run V05 before V09. F01 and F02 can share their figures directory. If you run V02 and individual entries, they must use separate output directories as shown. Allow several GiB of free space.
 
@@ -45,7 +43,7 @@ Expected: All pinned packages install in that environment.
 Working directory: `.`.
 
 ```powershell
-python -m pip install -r paper/figure_sources/requirements-plot.txt
+python -m pip install -r analysis/figures/requirements-plot.txt
 ```
 
 Expected: Matplotlib 3.11.1 and its dependencies install.
@@ -196,15 +194,15 @@ Expected: PASS; 720 initial decisions, 62 repairs and final release decisions ma
 
 <a id="v13"></a>
 
-## V13 · Compare manuscript data with original evidence
+## V13 · Aggregate experiment data from original evidence
 
 Working directory: `.`.
 
 ```powershell
-python -B inspection/check_paper_data.py --self-test
+python -B inspection/check_experiment_data.py
 ```
 
-Expected: PASS for all 19 inventoried tables and 428 specified numerical occurrences, plus rejection of a deliberately altered manuscript number. See the data crosscheck for exact fields, denominators and sources.
+Expected: PASS; 332 metrics are assembled from retained evidence. The report identifies values, units, denominators, source files and aggregation procedures.
 
 <a id="f01"></a>
 
@@ -213,7 +211,7 @@ Expected: PASS for all 19 inventoried tables and 428 specified numerical occurre
 Working directory: `.`.
 
 ```powershell
-python -B paper/figure_sources/scripts/plot_figure7.py --output-dir ../review-output/figures
+python -B analysis/figures/scripts/plot_figure7.py --output-dir ../review-output/figures
 ```
 
 Expected: SVG, PDF, PNG and receipt are written outside the release; all three retained traces of each merged case agree.
@@ -225,22 +223,10 @@ Expected: SVG, PDF, PNG and receipt are written outside the release; all three r
 Working directory: `.`.
 
 ```powershell
-python -B paper/figure_sources/scripts/plot_figure8.py --output-dir ../review-output/figures
+python -B analysis/figures/scripts/plot_figure8.py --output-dir ../review-output/figures
 ```
 
 Expected: SVG, PDF, PNG and receipt are written outside the release using the checked counts.
-
-<a id="p01"></a>
-
-## P01 · Compile the English manuscript
-
-Working directory: `.`.
-
-```powershell
-python -B inspection/build_paper.py --output-dir ../review-output/paper --tectonic tectonic
-```
-
-Expected: Tectonic builds main.pdf and a BUILD_RESULT.json outside the release. Add --offline only when its required bundle and fonts are already cached.
 
 <a id="v14"></a>
 
@@ -252,10 +238,10 @@ Working directory: `.`.
 python -B inspection/check_navigation.py
 ```
 
-Expected: PASS. Current manuscript, response and evidence links resolve inside the published repository tree; source line anchors and Markdown section anchors are valid. No navigation target uses a local drive or a file URL. External publisher URLs are classified separately.
+Expected: PASS. Current code, data and evidence links resolve inside the published repository tree; source line anchors and Markdown section anchors are valid. No navigation target uses a local drive or a file URL. External publisher URLs are classified separately.
 
 ## What PASS means
 
-File integrity, experimental rescoring, event reconstruction and manuscript comparison are separate checks. A successful process exit is accepted only together with its expected report fields. In AUTOSAR, task-scoped acceptance does not turn the saved full-corpus INCOMPLETE status into PASS. The data crosscheck reports the unit and denominator for each manuscript value.
+File integrity, experimental rescoring, event reconstruction and data aggregation are separate checks. A successful process exit is accepted only together with its expected report fields. In AUTOSAR, task-scoped acceptance does not turn the saved full-corpus INCOMPLETE status into PASS. The data crosscheck reports the unit and denominator for each metric.
 
 The frozen source snapshots also preserve original development and generation code. They are source evidence, not additional reviewer commands; rerunning paid model generation is not part of this offline workflow. Earlier execution reports retain the commands and output locations used at that time. Their command examples are superseded by this page.

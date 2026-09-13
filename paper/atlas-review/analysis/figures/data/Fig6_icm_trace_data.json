@@ -1,0 +1,449 @@
+{
+  "figure_id": "Fig6_icm_trace",
+  "description": "One real constraint record and one frozen ASW-FULL-01 repetition-1 generation run. The diagram is a selected traceability view, not a complete execution graph.",
+  "run": {
+    "case_id": "ASW-FULL-01",
+    "repetition": 1,
+    "run_id": "gpt-5.6-luna__ASW-FULL-01-R1__repair-off",
+    "run_root": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001",
+    "repair_mode": "off",
+    "component_sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f"
+  },
+  "aliases": {
+    "R": "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline",
+    "E": "TE_Com_Full_Baseline"
+  },
+  "constraint": {
+    "id": "TPS_SWCT_01519",
+    "source": {
+      "schema_version": "2.0",
+      "id": "TPS_SWCT_01519",
+      "id_type": "TPS_SWCT",
+      "title": "RTE executes certain RunnableEntity periodically",
+      "expression": "If the SwcInternalBehavior of an AtomicSwComponentType requires that the RTE executes certain RunnableEntitys periodically, the description needs to define a TimingEvent with the desired period. This TimingEvent then contains a reference to the Runnable that needs to be executed with this period.",
+      "references": [],
+      "source": {
+        "document": "chapter7.md",
+        "section_path": [
+          "7 Internal Behavior",
+          "7.2 Runnable Entity",
+          "7.2.3 Timed Activation of Runnable Entities"
+        ],
+        "start_line": 134,
+        "end_line": 134,
+        "raw_text": "[TPS_SWCT_01519] RTE executes certain RunnableEntity periodically (cid:100) If the SwcInternalBehavior of an AtomicSwComponentType requires that the RTE executes certain RunnableEntitys periodically, the description needs to define a TimingEvent with the desired period. This TimingEvent then contains a reference to the Runnable that needs to be executed with this period. (cid:99)()",
+        "sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+        "in_hierarchical_block": false,
+        "in_multimodal_block": false
+      },
+      "terminology_context": {
+        "local_classes": [
+          "AtomicSwComponentType",
+          "RunnableEntity",
+          "RTEEvent",
+          "SwcInternalBehavior",
+          "TimingEvent"
+        ],
+        "inherited_classes": [
+          "AtomicSwComponentType",
+          "CompositionSwComponentType",
+          "ExecutableEntity",
+          "RunnableEntity",
+          "SwcInternalBehavior",
+          "SwComponentPrototype",
+          "SwComponentType",
+          "EcuInstance"
+        ],
+        "local_enums": [],
+        "inherited_enums": []
+      },
+      "parse": {
+        "status": "exact",
+        "issues": [],
+        "id_position": "before_cid100"
+      }
+    },
+    "targets": [
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "APPLICATION-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "APPLICATION-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "NV-BLOCK-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "SERVICE-PROXY-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "AtomicSwComponentType",
+        "class_xml_tag": "SERVICE-SW-COMPONENT-TYPE",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "SERVICE-SW-COMPONENT-TYPE",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention AtomicSwComponentType",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "RunnableEntity",
+        "class_xml_tag": "RUNNABLE-ENTITY",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "RUNNABLE-ENTITY",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention RunnableEntity",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "SwcInternalBehavior",
+        "class_xml_tag": "SWC-INTERNAL-BEHAVIOR",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "SWC-INTERNAL-BEHAVIOR",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention SwcInternalBehavior",
+        "candidates": []
+      },
+      {
+        "role": "context",
+        "class_name": "TimingEvent",
+        "class_xml_tag": "TIMING-EVENT",
+        "property_name": null,
+        "property_xml_tag": null,
+        "path": "TIMING-EVENT",
+        "binding_status": "resolved",
+        "evidence": "explicit source mention TimingEvent",
+        "candidates": []
+      }
+    ],
+    "quality": {
+      "semantic_status": "provisional",
+      "binding_status": "complete",
+      "review_status": "needs_review",
+      "issues": [
+        "triage_only_requires_deep_curation"
+      ]
+    },
+    "semantics": {
+      "normativity": "mandatory",
+      "importance": "core",
+      "is_core": true,
+      "usages": [
+        "generation_context",
+        "automatic_validation",
+        "repair_guidance"
+      ],
+      "rule_family": "conditional_existence",
+      "scope": "object",
+      "summary": "RTE executes certain RunnableEntity periodically",
+      "rationale": "The source states an unambiguous, core existence invariant that is observable in ARXML."
+    }
+  },
+  "dataset_identity": {
+    "context_dataset_sha256": "1d5e86347e1a709d2f4529c129fe8b5701759c400c23fb6631194ad95658663d",
+    "retrieval_manifest_dataset_sha256": "1d5e86347e1a709d2f4529c129fe8b5701759c400c23fb6631194ad95658663d",
+    "note": "This is the retrieval dataset identity, not the byte hash of constraints_v2.json."
+  },
+  "task": {
+    "requirements_excerpt": "  - case_id: ASW-FULL-01\n    tier: full\n    component: ASW_Com_Full_Baseline\n    intent: Model three S/R inputs, three S/R outputs, and one periodic runnable.\n    provided_signals: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]\n    required_signals:\n      - {signal: HCU01_TqCmd, alive_timeout_s: 0.3, handle_timeout_type: NONE}\n      - {signal: HCU01_Shift, alive_timeout_s: 0.3, handle_timeout_type: NONE}\n      - {signal: HCU02_Poweroff, alive_timeout_s: 0.3, handle_timeout_type: NONE}\n    internal_behavior:\n      short_name: IB_Com_Full_Baseline\n      runnables:\n        - short_name: RE_Com_Full_Baseline\n          period_s: 0.01\n          reads: [HCU01_TqCmd, HCU01_Shift, HCU02_Poweroff]\n          writes: [MCU01_EmergShutDown, MCU02_MaxTor, MCU03_NRF_IdcSamp]\n    expected_counts: {p_ports: 3, r_ports: 3, runnables: 1, timing_events: 1, variable_accesses: 6}",
+    "period_seconds": 0.01,
+    "processed_plan_selection": {
+      "path": [
+        "INTERNAL-BEHAVIORS",
+        "SWC-INTERNAL-BEHAVIOR",
+        "EVENTS",
+        "TIMING-EVENT",
+        "PERIOD",
+        "#TEXT"
+      ],
+      "min_occurs": 1,
+      "max_occurs": 1,
+      "value_present": true,
+      "value": "0.01",
+      "anchors": [
+        {
+          "path_index": 3,
+          "short_name": "TE_Com_Full_Baseline"
+        }
+      ],
+      "notes": "10 ms period."
+    },
+    "declared_constraint_ids": [
+      "TPS_SWCT_01519",
+      "constr_1100"
+    ],
+    "declared_targets": [
+      "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline"
+    ]
+  },
+  "artifact": {
+    "event_short_name": "TE_Com_Full_Baseline",
+    "start_on_event_ref": "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline",
+    "start_on_event_dest": "RUNNABLE-ENTITY",
+    "period_text": "0.01"
+  },
+  "checking": {
+    "planned_rule": {
+      "schema_version": "2.0",
+      "rule_id": "TPS_SWCT_01519#r1",
+      "constraint_id": "TPS_SWCT_01519",
+      "source_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+      "title": "RTE executes certain RunnableEntity periodically",
+      "severity": "error",
+      "policy": "must",
+      "backend": "python",
+      "implementation": {
+        "status": "implemented",
+        "plugin": "periodic_runnable_event",
+        "reason": "Periodic-execution intent is external; each intended RunnableEntity must be exactly bound in the manifest."
+      },
+      "selector": {
+        "tags": [
+          "RUNNABLE-ENTITY"
+        ],
+        "mode": "any"
+      },
+      "parameters": {},
+      "completeness": {
+        "requires": [
+          "well_formed_xml",
+          "complete_reference_scope",
+          "validation_context",
+          "generation_intent"
+        ],
+        "on_missing": "not_evaluated"
+      },
+      "dependencies": [],
+      "bindings": [
+        {
+          "role": "context",
+          "path_variants": [
+            "APPLICATION-SW-COMPONENT-TYPE",
+            "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+            "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+            "NV-BLOCK-SW-COMPONENT-TYPE",
+            "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+            "SERVICE-PROXY-SW-COMPONENT-TYPE",
+            "SERVICE-SW-COMPONENT-TYPE"
+          ]
+        },
+        {
+          "role": "context",
+          "path_variants": [
+            "RUNNABLE-ENTITY"
+          ]
+        },
+        {
+          "role": "context",
+          "path_variants": [
+            "SWC-INTERNAL-BEHAVIOR"
+          ]
+        },
+        {
+          "role": "context",
+          "path_variants": [
+            "TIMING-EVENT"
+          ]
+        }
+      ],
+      "formal_spec": {
+        "language": "autosar-constraint-ir/1.0",
+        "status": "reviewed",
+        "coverage": "full",
+        "rule_family": "conditional_existence",
+        "checks": [],
+        "qualification_reason": "Periodic-execution intent is external; each intended RunnableEntity must be exactly bound in the manifest.",
+        "reviewed_selector_tags": [
+          "RUNNABLE-ENTITY"
+        ],
+        "review_basis": "complete_normative_assertion_and_resolved_arxml_paths",
+        "activation": {
+          "requires_validation_context": true,
+          "requires_declared_constraint": true,
+          "requires_declared_targets": true
+        },
+        "evidence": {
+          "source_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+          "implementation_map": "rule_implementations_merged.json"
+        }
+      }
+    },
+    "rule_result": {
+      "rule_id": "TPS_SWCT_01519#r1",
+      "constraint_id": "TPS_SWCT_01519",
+      "policy": "must",
+      "severity": "error",
+      "title": "RTE executes certain RunnableEntity periodically",
+      "dependencies": [],
+      "completeness_requires": [
+        "well_formed_xml",
+        "complete_reference_scope",
+        "validation_context",
+        "generation_intent"
+      ],
+      "status": "PASS",
+      "applicable_count": 1,
+      "checked_count": 1,
+      "violations": [],
+      "observations": [],
+      "notes": []
+    },
+    "independent_period_obligation": {
+      "actual": [
+        "0.01"
+      ],
+      "code": "runnable_period",
+      "expected": 0.01,
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    "independent_task_decision": "PASS",
+    "full_corpus_decision": "INCOMPLETE"
+  },
+  "sources": {
+    "normative_source_copy": {
+      "path": "E:\\git projects\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\input\\chapter7.md",
+      "file_sha256": "f3af5fb5cfc099ecc676f9558a1d67544056ad6d2e95f60d53682809089bbdc0",
+      "locator": "line 134; section 7.2.3",
+      "source_line_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702"
+    },
+    "structured_record": {
+      "path": "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\experiments\\vllm\\runtime\\AI_XmlGenerator\\src\\kg_builder\\doc_constr_parser\\v2\\constraints_v2.json",
+      "file_sha256": "d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d",
+      "locator": "$[698]"
+    },
+    "retrieval_identity": {
+      "path": "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\experiments\\vllm\\runtime\\AI_XmlGenerator\\src\\llm_generation\\knowledge\\v2\\retrieval_manifest.json",
+      "file_sha256": "5415f606091efc22ae9f8e8f7e71c712c4d003c6ce32fa6e253766d17d9b3524",
+      "locator": "$.dataset_sha256"
+    },
+    "original_case": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\requirements\\asw_cases_v3.yaml",
+      "file_sha256": "3b61eb5926b5646a12f8767524192cd7ed65a39e27a37aa9672277058489e024",
+      "locator": "lines 303-319; period at line 316"
+    },
+    "processed_phase1_plan": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\atlas_output\\round1_data\\round1_20260902_162824.json",
+      "file_sha256": "6140a22b53de5c387247d7ab93404495c6d662cdbdf3f58b54eb2741bbd05c0d",
+      "locator": "$.design.component_plan[0].element_design.selections[18]"
+    },
+    "validation_context": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\atlas_output\\ARXML\\validation_context_8f34364d_1788337723.json",
+      "file_sha256": "4340bfbc69da58317ca40cca2f40dd42745938ca32125cfe4ed6f69418676f37",
+      "locator": "$.declared_targets.TPS_SWCT_01519"
+    },
+    "original_component": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\atlas_output\\ARXML\\Components\\ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "file_sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f",
+      "locator": "TIMING-EVENT[SHORT-NAME=TE_Com_Full_Baseline]"
+    },
+    "original_validation": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\atlas_output\\ARXML\\validation_8f34364d_1788337723.json",
+      "file_sha256": "1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80",
+      "locator": "$.rules[336]"
+    },
+    "original_task_evaluation": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\independent_evaluation.json",
+      "file_sha256": "2b13e53ef9bfb9f3a76976eda723e35c637633f8ac4d1dc992f3126f095321c9",
+      "locator": "$.structural_obligations[54]"
+    },
+    "frozen_rule_plan": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\code_snapshot\\runtime_assets\\src\\generate_formal_constraints\\v2\\validation_plan.json",
+      "file_sha256": "ff719d51316b013051c7814c644b4e79ceeced7a1e210751c121d341f2649e9d",
+      "locator": "$.rules[335]"
+    },
+    "frozen_plugin": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\code_snapshot\\runtime_assets\\src\\validation\\v2\\value_and_local_plugins.py",
+      "file_sha256": "39592a74615820f363d947f6ed9c302c15daed0343f18acc3a41d698f2c39d4c",
+      "locator": "lines 349-366"
+    },
+    "frozen_task_evaluator": {
+      "path": "E:\\Desktop\\ATLAS论文修改版\\12_审稿复现包_2026-09-09\\reviewer_release\\experiments\\autosar\\frozen_code\\experiment\\evaluate_asw_v3_run.py",
+      "file_sha256": "2e5f4dda22b575dbbed7ee7a1d30ca7bfa108c5bb88367205fc5a4596434b383",
+      "locator": "lines 346-370"
+    },
+    "run_ledger": {
+      "path": "E:\\54239\\Documents\\AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02\\evidence\\formal_v20\\generation\\experiment_results.json",
+      "file_sha256": "6b9c0eaa7ae4b0add4b33e4bf70fe00dd863b66c848c377eaa561b3845aa7def",
+      "locator": "$.records[39]"
+    }
+  },
+  "verification": {
+    "source_line_equals_retained_record": true,
+    "source_text_hash_matches_rule_plan": true,
+    "dataset_identity_matches_runtime_context": true,
+    "context_declares_exact_rule_and_runnable": true,
+    "four_run_files_match_original_ledger_sha256": true,
+    "case_identity_matches_original_evaluation": true,
+    "plan_artifact_and_task_period_agree": true,
+    "same_case_same_repetition_no_cross_run_join": true
+  },
+  "limitations": [
+    "The normative requirement does not prescribe 0.01 s; that value belongs to the case.",
+    "The constraint remains provisional/needs_review. Rule execution does not certify source interpretation.",
+    "The existing plugin checks event existence, runnable reference, and numeric period, not equality to the original requested period.",
+    "The exact requested period is checked separately by the task evaluator.",
+    "The preserved Phase 1 plan is a processed plan, not the missing original pre-intervention response body.",
+    "This run disabled repair. No repair trajectory is depicted.",
+    "The full-corpus result remains INCOMPLETE despite the depicted local and task checks passing."
+  ]
+}
