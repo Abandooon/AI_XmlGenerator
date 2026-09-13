@@ -55,9 +55,9 @@ def main():
                         content=rebuilt
                 new.writestr(entry,content)
         records.append({'jar':name,'class_count':total,'byte_identical_recompiled_classes':matching,'different_classes':different,'missing_classes':missing})
-    result={'status':'PASS' if all(not r['missing_classes'] for r in records) else 'FAIL','source_files':len(sources),'jars':records,
+    result={'status':'PASS' if all(not r['missing_classes'] and not r['different_classes'] for r in records) else 'FAIL','source_files':len(sources),'jars':records,
             'scope':'Offline Java recompilation from retained generated model/matcher and runner source; original non-class resources retained. No Xcore/VQL generator rerun; third-party dependencies not rebuilt.'}
     (out/'REBUILD_RESULT.json').write_text(json.dumps(result,indent=2),'utf-8');print(json.dumps(result,indent=2))
-    if result['status']!='PASS':raise AssertionError('Missing classes')
+    if result['status']!='PASS':raise AssertionError('Missing or non-identical recompiled classes')
 
 if __name__=='__main__':main()

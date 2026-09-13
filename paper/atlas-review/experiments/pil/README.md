@@ -4,7 +4,7 @@ This package supports offline inspection and recomputation of a bounded, four-ar
 
 ## Verify with one offline command
 
-Prerequisites: Python 3.11 or later, Node.js 18 or later available as `node`, and the Python dependencies in `requirements.txt`. In an environment that needs setup, install those dependencies before disconnecting from the network, or use a local wheel cache. The listed versions describe the tested verification environment; the original generation protocol remains in the frozen evidence.
+Use Python 3.12, Node.js 22 or later available as `node`, and the pinned dependencies in the release-root `requirements-lock.txt`, as specified in the command list. Install dependencies before disconnecting from the network, or use a local wheel cache. These are the current review prerequisites; the original generation protocol remains in the frozen evidence.
 
 From this directory:
 
@@ -14,9 +14,11 @@ The command uses package-relative inputs. It checks file identities, the 720-row
 
 One original preflight test follows a workstation-specific translation-workbook locator. The test adapter rebases only that locator in memory to the bundled workbook after verifying its accepted SHA-256. The test source, frozen JSON file, expert judgments and scoring logic remain byte-preserved. This path adapter is recorded in the verification report.
 
-Outputs go to `verification/latest/`; evidence files are not overwritten. An alternative output directory may be passed with `--work-dir` (alias `--output-dir`). An explicit Node executable may be passed with `--node`, or selected by prepending its directory to `PATH`. The main result is `verification_report.json`, accompanied by the unit-test log and independently regenerated corrected gold. `verification/relocation/` records the separate relocation check performed for this export.
+Use `--output-dir` (alias `--work-dir`) to select a new directory outside the release. Without this argument, the verifier creates a fresh system temporary directory. Output inside the release is rejected. An explicit Node executable may be passed with `--node`, or selected by prepending its directory to `PATH`. The main result is `verification_report.json`, accompanied by the unit-test log and independently regenerated corrected gold. The retained `verification/` files record earlier checks and are not overwritten.
 
 ## Layout and entry points
+
+The [English protocol and reference-review guide](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/PIL_PROTOCOL_AND_REFERENCE_REVIEW_EN.md) explains the retained Chinese preparation records and links each original. The frozen records and derivation source retain their original bytes.
 
 | Directory | Role |
 |---|---|

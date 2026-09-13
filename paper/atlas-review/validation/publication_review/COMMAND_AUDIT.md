@@ -1,6 +1,6 @@
 # Executed experiment verification commands
 
-Status: **PASS**. The active list contains 19 entries. No model calls were made.
+Status: **PASS**. This execution record covers the original 19 entries. The [subsequent railway audit](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/review_closure_2026-09-14/RAILWAY_AUDIT.md) records another independent railway execution and the added V15 rebuild tests. No model calls were made.
 
 [Commands and prerequisites](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md) · [Execution record](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.json) · [Metric sources](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/EXPERIMENT_DATA.md)
 

@@ -1,6 +1,6 @@
 # Supported commands and expected results
 
-This is the complete active reviewer command list. [Actual executions and result checks](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.md) record each entry. [Experiment metrics](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/EXPERIMENT_DATA.md) are recomputed from the underlying records separately from file integrity.
+This is the complete active reviewer command list. [Actual executions and result checks](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.md) record the original 19 entries; the [subsequent railway audit](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/review_closure_2026-09-14/RAILWAY_AUDIT.md) records V05, V06 and V09 again and adds V15. [Experiment metrics](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/EXPERIMENT_DATA.md) are recomputed from the underlying records separately from file integrity.
 
 ## Environment and output
 
@@ -154,7 +154,7 @@ Working directory: `experiments/railway`.
 python -B rebuild_native.py --payload ../../../review-output/railway/payload --out ../../../review-output/native-build --javac "$env:JAVA8_HOME/bin/javac.exe"
 ```
 
-Expected: After V05, 101 retained Java sources compile to 196 matching class files.
+Expected: After V05, 101 retained Java sources compile to 196 byte-identical class files. Missing or different class bytes cause a failure.
 
 <a id="v10"></a>
 
@@ -239,6 +239,18 @@ python -B inspection/check_navigation.py
 ```
 
 Expected: PASS. Current code, data and evidence links resolve inside the published repository tree; source line anchors and Markdown section anchors are valid. No navigation target uses a local drive or a file URL. External publisher URLs are classified separately.
+
+<a id="v15"></a>
+
+## V15 · Check native rebuild failure detection
+
+Working directory: `experiments/railway`.
+
+```powershell
+python -B test_rebuild_native.py -v
+```
+
+Expected: Three tests pass. Matching class bytes produce PASS; changed and missing class files each produce FAIL and an exception. These tests simulate compiler output to exercise the verdict. V09 separately recompiles the real sources with Java 8.
 
 ## What PASS means
 
