@@ -1,22 +1,21 @@
 # ICM construction and an executed field trace
 
-This guide connects Section 3.3 and Appendix A.2 to the metamodel representation, constraint extractor, automatic linker and retained ICM. Section 4.2.2 and Appendix A.4 then follow one source-linked constraint into an actual ARXML artifact and its checks. The [crosswalk](PAPER_ARTIFACT_CROSSWALK.md) gives the corresponding LaTeX labels and reviewer comments.
+This guide connects Section 3.3 and Appendix A.2 to the metamodel representation, constraint extractor, automatic linker and retained ICM. Section 4.2.2 and Appendix A.4 then follow one source-linked constraint into an actual ARXML artifact and its checks. The [crosswalk](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/PAPER_ARTIFACT_CROSSWALK.md) gives the corresponding LaTeX labels and reviewer comments.
 
 ## Start with the read-only inspection
 
 From the release root, run:
 
-```text
-python -B inspection/check_icm_evidence.py
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
-The [inspection script](../inspection/check_icm_evidence.py) uses only the Python
-standard library. It reads JSON and selected ZIP members, checks the retained
-identities and the field trace below, and prints its report. It does not import
-the extraction application, call an API, start a database, extract an archive,
-build a graph, rerun a validator, or write a result file. Its `PASS` means that the
-specified retained evidence agrees; reported XSD and rule outcomes remain the
-outcomes recorded by the original run.
+The [inspection script](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/check_icm_evidence.py) uses only the Python
+standard library. It calls the pure v2 `bind_record` function on the retained
+semantic record and metamodel representation, compares the entire returned
+binding record with the retained decision, checks the field trace below, and
+summarizes the 60 original generation validation reports. It prints to stdout
+without API calls, database access, archive extraction or output files. Its
+`PASS` covers this binding replay and the specified evidence comparisons.
+XSD and rule outcomes are read from the original reports, not rerun here.
 
 ## Locate M, C, A, P, and the execution resources
 
@@ -28,7 +27,7 @@ models.
 |---|---|---|
 | M: metamodel representation | [Unified metadata with inlines][metadata], for example `groups.TimingEvent` and `groups.RunnableEntity` | Types, properties, inheritance-related information, XML tags and mapping information available to the implementation. `groups.TimingEvent.elements[name=period]` maps `TimingEvent.period` to the `PERIOD` XML element and describes its unit as seconds. |
 | C: domain constraint records | [Published constraints][constraints], array element 698, selected by `id == "TPS_SWCT_01519"` | The retained source record, structured semantics, intended uses, verification policy, element targets, and quality flags for this constraint. |
-| A: links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record` | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. The binding record identifies which metamodel entities are associated with the clause. |
+| A: links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record`; the [v2 binder][bind-v2] | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. The inspection command recomputes this complete binding record. |
 | P: source information | The constraint's `source.source`; the [selected source excerpt][excerpt], `normative_source` | Document name, section path, source line, retained original wording and its text hash. The excerpt also records its enclosing retained chapter file's byte hash. |
 | Quality and review state | The constraint's `quality`; [publication manifest][publication]; [publication code][publish] | Separate semantic, binding and derived review states. Their exact interpretation and counts are given below. |
 | Executable checks | [Validation plan][plan], select `constraint_id == "TPS_SWCT_01519"`; [plan compiler][compiler] | Registered rule, plugin, activation requirements, source hash and implementation metadata. The plan contains 554 configured rules, not 554 rules executed on every task. |
@@ -92,11 +91,12 @@ for the principal files; those source and release copies match byte for byte.
 | Build the extraction prompt | [LLM extractor][extractor], `LlmExtractor._build_extraction_prompt`, lines 40–213 | Defines the extraction instruction template and the `extracted_constraints` response: preserve identified clauses, distinguish normative material from examples, and propose target entities and attributes. |
 | Specify the earlier output shape | [Extraction configuration][extract-config], `CONSTRAINT_SCHEMA`, lines 122–218 | Defines the earlier extraction response schema; this is distinct from the published v2 constraint-record schema and from an ARXML generation schema. |
 | Split input and request candidates | [LLM extractor][extractor], `_split_document_into_chunks` and `extract_constraints_from_block` | Carries section context into chunks and contains the API request code. Inspect it as text; it is not part of the read-only verification command. |
-| Check candidate targets | [Linker and validator][linker], `validate_and_link_constraints` | Automatically resolves and checks target classes, properties and enum literals against metadata. Valid links enter the linked collection; missing, ambiguous or incompatible targets enter the issue collection for human resolution. |
+| Check earlier extraction candidates | [Earlier linker and validator][linker], `validate_and_link_constraints` | Checks target names and properties in the earlier extraction format. Its [1,161-record linked output][legacy-links] is a historical preparation artifact, not the element links for the current 1,085-record resource. |
+| Bind the current structured records | [v2 binder][bind-v2], `MetamodelIndex`, `bind_target`, `bind_record` | Resolves class and inherited property declarations, XML tags, concrete class variants, enum values and path variants. Missing targets and ambiguous property declarations are retained with explicit issues for resolution. The current bindings are stored in the published records' `targets`. |
 | Publish the curated resource | [Publisher][publish] and the [v2 record schema][record-schema] | Combines retained source and binding records with preparation metadata, validates the record structure and derives the publication state. |
 | Attach executable behavior | [Plan compiler][compiler] and [validation plan][plan] | Uses registered implementation decisions to attach rule backends, plugins, selectors, parameters and completeness requirements. It does not demonstrate unrestricted natural-language-to-validator synthesis. |
 
-The read-only inspection command accesses these files as data; it does not run extraction. The extraction application and its API configuration are only needed to prepare a new resource.
+The read-only inspection invokes only `bind_record(MetamodelIndex(metadata), semantic_record)` from the v2 binder. It does not invoke the binder's file-writing CLI or the extraction application. For `TPS_SWCT_01519`, all four target records and the aggregate binding decision match the retained binding record exactly.
 
 The added [selected preparation excerpt][excerpt] preserves exactly one record
 from each retained source, semantic-curation and binding layer, including source
@@ -205,25 +205,87 @@ example's artifact profile passes, while `full_corpus_decision` remains
 coverage have different denominators. Neither this local pass nor the reported
 1,085-record inventory establishes complete AUTOSAR semantic compliance.
 
-[metadata]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/data/unified_metadata_with_inlines.json
-[constraints]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json
-[excerpt]: ../supporting/autosar_constraint_preparation/TPS_SWCT_01519_source_excerpt.json
-[publication]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/publication_manifest.json
-[publish]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/tools/publish_constraints.py
-[plan]: ../experiments/vllm/runtime/AI_XmlGenerator/src/generate_formal_constraints/v2/validation_plan.json
-[compiler]: ../experiments/vllm/runtime/AI_XmlGenerator/src/generate_formal_constraints/v2/compile_validation_plan.py
-[retrieval-manifest]: ../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/retrieval_manifest.json
-[cards]: ../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/build_retrieval_cards.py
-[retriever]: ../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/constraint_retriever.py
-[figure-data]: ../paper/论文图/Fig6_icm_trace_data.json
-[archive]: ../experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip
-[context]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/context_injector.py
-[extractor]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/llm_extractor.py
-[extract-config]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/config.py
-[extract-main]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/main.py
-[linker]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/linker_validator.py
-[record-schema]: ../experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/schema/structured_constraint.schema.json
-[selection]: ../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/element_selection.py
-[serializer]: ../experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/core/xsd_serializer.py
-[plugin]: ../experiments/vllm/runtime/AI_XmlGenerator/src/validation/v2/value_and_local_plugins.py
-[evaluator]: ../experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py
+## Rule coverage across the 60 generation runs
+
+The inspection command reads each original `atlas_output/ARXML/validation_*.json`
+under `evidence/formal_v20/generation/runs/` in the [AUTOSAR archive][archive].
+It excludes `validation_context_*.json` and the separate `XSD` result when
+counting configured domain rules.
+
+| Quantity recomputed from the original reports | Result |
+|---|---:|
+| Generation validation reports | 60 |
+| Configured domain rules in each report | 554 |
+| Rules with `checked_count > 0` in one report | 11–24 |
+| Distinct rules with checked objects across all 60 reports | 24 |
+| Recorded rule statuses across 60 × 554 entries | 1,302 `PASS`; 29,298 `NOT_APPLICABLE`; 2,640 `NOT_EVALUATED` |
+
+There are 25 distinct rule IDs with a recorded `PASS`, but only 24 with checked
+objects. The difference is `constr_1161`: its [INDEX uniqueness plugin][index-plugin]
+returns `PASS` with `checked_count=0` when the artifact has no INDEX objects.
+The command reports this distinction and the per-report counts instead of
+treating the configured inventory or every PASS label as an executed object check.
+
+The same archive contains `frozen_contract/FORMAL_NEO4J_CONTEXT.json`. Its
+`constraint_card_count=1085` and `constraint_link_count=6533` describe the retained
+graph context. The inspection prints these stored values and the stored link
+hash; it does not reconstruct Neo4j or recount its relationships. These 6,533
+relationships are a different quantity from either constraint records or target
+records in a JSON file.
+
+## Connect plotted results to original evidence
+
+From the release root, run:
+
+```text
+python -B inspection/check_figure_evidence.py
+```
+
+The [figure inspection](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/check_figure_evidence.py) compares the
+[Figure 7 plotting data](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/figure_sources/data/Fig7_vllm_intervention_data.json)
+with the original vLLM archive. It recalculates all 165,066 event hashes and
+previous-hash links, recovers the 516 recorded intervention positions and their
+source line numbers, checks identical trajectories across each case's three
+repetitions, and verifies the request and structural-acceptance data against
+the original request/postprocessing files. The event flags are re-extracted;
+historical logits and masks are not reconstructed.
+
+For [Figure 8](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/figure_sources/data/Fig8_railway_results_data.json), it
+reads 645 original railway score records and the three rejected-unit outcomes,
+recombines their recorded checks, and obtains 23/29/51 of 72 and 129/140/141 of
+144. It then reads the Terra archive's 72 endpoint rows and compares the original
+Luna seed-104729 records and Terra outcomes with the [24-task paired CSV][terra-pairs].
+The plotted comparison is 6/8/13 versus 18/22/22 of 24. This command verifies
+source-to-plot consistency; the separate domain replay commands execute the validators.
+
+Both inspection commands write only to stdout. The figure command accepts
+`--figure7-data` and `--figure8-data` to check external copies without editing
+the release. Changing one copied intervention position or one plotted endpoint
+count causes a nonzero exit and identifies the mismatching field.
+
+[metadata]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/data/unified_metadata_with_inlines.json
+[constraints]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/constraints_v2.json
+[excerpt]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/supporting/autosar_constraint_preparation/TPS_SWCT_01519_source_excerpt.json
+[publication]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/publication_manifest.json
+[publish]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/tools/publish_constraints.py
+[plan]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/generate_formal_constraints/v2/validation_plan.json
+[compiler]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/generate_formal_constraints/v2/compile_validation_plan.py
+[retrieval-manifest]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/retrieval_manifest.json
+[cards]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/build_retrieval_cards.py
+[retriever]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/constraint_retriever.py
+[figure-data]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/%E8%AE%BA%E6%96%87%E5%9B%BE/Fig6_icm_trace_data.json
+[archive]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip
+[context]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/context_injector.py
+[extractor]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/llm_extractor.py
+[extract-config]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/config.py
+[extract-main]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/main.py
+[linker]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/linker_validator.py
+[legacy-links]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/output/constraints_linked.json
+[bind-v2]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/tools/bind_semantic_targets.py
+[record-schema]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/schema/structured_constraint.schema.json
+[selection]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/element_selection.py
+[serializer]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/core/xsd_serializer.py
+[plugin]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/validation/v2/value_and_local_plugins.py
+[evaluator]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen_code/experiment/evaluate_asw_v3_run.py
+[index-plugin]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/validation/v2/qualified_plugins.py
+[terra-pairs]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway_terra/reports/paired_tasks.csv

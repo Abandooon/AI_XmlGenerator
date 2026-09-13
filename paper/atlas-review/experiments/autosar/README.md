@@ -8,9 +8,7 @@ Use Python 3.10 or newer in an environment with `pip install -r requirements.txt
 
 From this package directory, run one offline command:
 
-```sh
-python -I -B review.py --work-dir ./reviewer-work
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 `--work-dir` may be any new or empty directory. Allow at least 1 GiB of free space. The entrypoint verifies the frozen ZIP digest, safely extracts it there, checks all 9,673 manifest-listed file hashes, restores the runtime from frozen source files and the declared supplement, and writes fresh per-run reports plus `reviewer-work/verification.json`. It refuses to overwrite a nonempty work directory. Exit code 0 means every identity check and expected metric matched; failures raise an error or return exit code 1. The Python audit hook rejects network/subprocess attempts, reads outside the package/work/Python-installation roots, and writes outside the requested work directory. No result is sent anywhere.
 

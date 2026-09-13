@@ -1,0 +1,228 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "ASW_Com_Full_Baseline",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Pp_MCU01_EmergShutDown",
+          "PROVIDED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_MCU01_EmergShutDown",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        },
+        {
+          "SHORT-NAME": "Pp_MCU02_MaxTor",
+          "PROVIDED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        },
+        {
+          "SHORT-NAME": "Pp_MCU03_NRF_IdcSamp",
+          "PROVIDED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        }
+      ],
+      "R-PORT-PROTOTYPE": [
+        {
+          "SHORT-NAME": "Rp_HCU01_Shift",
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": [
+              {
+                "INIT-VALUE": {
+                  "NUMERICAL-VALUE-SPECIFICATION": {
+                    "VALUE": {
+                      "#text": "0"
+                    }
+                  }
+                },
+                "DATA-ELEMENT-REF": {
+                  "#text": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift",
+                  "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                },
+                "ALIVE-TIMEOUT": 0.3,
+                "HANDLE-TIMEOUT-TYPE": "NONE"
+              }
+            ]
+          },
+          "REQUIRED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_HCU01_Shift",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        },
+        {
+          "SHORT-NAME": "Rp_HCU01_TqCmd",
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": [
+              {
+                "INIT-VALUE": {
+                  "NUMERICAL-VALUE-SPECIFICATION": {
+                    "VALUE": {
+                      "#text": "0"
+                    }
+                  }
+                },
+                "DATA-ELEMENT-REF": {
+                  "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd",
+                  "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                },
+                "ALIVE-TIMEOUT": 0.3,
+                "HANDLE-TIMEOUT-TYPE": "NONE"
+              }
+            ]
+          },
+          "REQUIRED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        },
+        {
+          "SHORT-NAME": "Rp_HCU02_Poweroff",
+          "REQUIRED-COM-SPECS": {
+            "NONQUEUED-RECEIVER-COM-SPEC": [
+              {
+                "INIT-VALUE": {
+                  "NUMERICAL-VALUE-SPECIFICATION": {
+                    "VALUE": {
+                      "#text": "0"
+                    }
+                  }
+                },
+                "DATA-ELEMENT-REF": {
+                  "#text": "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff",
+                  "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                },
+                "ALIVE-TIMEOUT": 0.3,
+                "HANDLE-TIMEOUT-TYPE": "NONE"
+              }
+            ]
+          },
+          "REQUIRED-INTERFACE-TREF": {
+            "#text": "/COM_Interface/SR_Interface_HCU02_Poweroff",
+            "@DEST": "SENDER-RECEIVER-INTERFACE"
+          }
+        }
+      ]
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "RUNNABLE-ENTITY": [
+        {
+          "SHORT-NAME": "RE_Com_Full_Baseline",
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Read_HCU01_TqCmd",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Rp_HCU01_TqCmd",
+                      "@DEST": "R-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Read_HCU01_Shift",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Rp_HCU01_Shift",
+                      "@DEST": "R-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Read_HCU02_Poweroff",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Rp_HCU02_Poweroff",
+                      "@DEST": "R-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": [
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Write_MCU01_EmergShutDown",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Pp_MCU01_EmergShutDown",
+                      "@DEST": "P-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Write_MCU02_MaxTor",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Pp_MCU02_MaxTor",
+                      "@DEST": "P-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              },
+              {
+                "SHORT-NAME": "VA_Com_Full_Baseline_Write_MCU03_NRF_IdcSamp",
+                "ACCESSED-VARIABLE": {
+                  "AUTOSAR-VARIABLE-IREF": {
+                    "PORT-PROTOTYPE-REF": {
+                      "#text": "/Components/ASW_Com_Full_Baseline/Pp_MCU03_NRF_IdcSamp",
+                      "@DEST": "P-PORT-PROTOTYPE"
+                    },
+                    "TARGET-DATA-PROTOTYPE-REF": {
+                      "#text": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp",
+                      "@DEST": "VARIABLE-DATA-PROTOTYPE"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "EVENTS": {
+        "TIMING-EVENT": [
+          {
+            "SHORT-NAME": "TE_Com_Full_Baseline",
+            "START-ON-EVENT-REF": {
+              "#text": "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline",
+              "@DEST": "RUNNABLE-ENTITY"
+            },
+            "PERIOD": 0.01
+          }
+        ]
+      },
+      "SHORT-NAME": "IB_Com_Full_Baseline"
+    }
+  }
+}

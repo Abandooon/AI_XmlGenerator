@@ -6,6 +6,19 @@ Xcore or VQL generators. Third-party JARs remain the frozen dependencies.
 from pathlib import Path
 import argparse,hashlib,json,os,shutil,subprocess,zipfile
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--payload',required=True,type=Path,help='payload directory produced by review.py')
@@ -16,7 +29,7 @@ def main():
     version=subprocess.run([javac,'-version'],capture_output=True,text=True,check=True)
     if '1.8.' not in version.stderr+version.stdout:p.error('Use Java 8 javac for this frozen stack')
     if a.out.exists():p.error('Refusing existing build output')
-    out=a.out.resolve();out.mkdir(parents=True);classes=out/'classes';classes.mkdir()
+    out=external_output(a.out);out.mkdir(parents=True);classes=out/'classes';classes.mkdir()
     native=a.payload.resolve()/'native';sources=sorted((native/'source').rglob('*.java'))
     if not sources:raise ValueError('Retained Java sources missing')
     argfile=out/'javac.args'

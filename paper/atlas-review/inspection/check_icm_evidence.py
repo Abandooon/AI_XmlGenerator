@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Inspect retained ICM records and one frozen AUTOSAR field trace.
 
-Standard library only. Reads files and ZIP members, prints to stdout, and does
-not import application modules, contact a service, or write any files.
+Standard library only. Replays the pure v2 metamodel binder for one retained
+record and reads the original 60 validation reports. Prints to stdout without
+contacting services, generating models, rerunning validators, or writing files.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ import argparse
 from collections import Counter
 from decimal import Decimal
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -102,6 +104,13 @@ def inspect(root: Path) -> dict:
         )
 
     metadata = read_json(root / RUNTIME / "kg_builder/data/unified_metadata_with_inlines.json")
+    binder_path = RUNTIME / "kg_builder/doc_constr_parser/v2/tools/bind_semantic_targets.py"
+    spec = importlib.util.spec_from_file_location("_retained_icm_binder", root / binder_path)
+    require(spec is not None and spec.loader is not None, "Cannot load retained v2 binder")
+    binder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(binder)
+    rebound = binder.bind_record(binder.MetamodelIndex(metadata), semantic)
+    require(rebound == layers["binding_decisions.jsonl"]["record"], "Recomputed v2 binding differs from retained decision")
     period_meta = one(
         (e for e in metadata["groups"]["TimingEvent"]["elements"] if e["name"] == "period"),
         "TimingEvent.period metamodel property",
@@ -185,14 +194,58 @@ def inspect(root: Path) -> dict:
         require(validation["validation_context"]["dataset_sha256"] == retrieval["dataset_sha256"], "Retrieval dataset identities differ")
         require(RULE_ID in validation["validation_context"]["manifest"]["selected_constraint_ids"], "Example not selected in this run")
 
+        report_names = sorted(n for n in archive.namelist()
+                              if "/generation/runs/" in n and "/ARXML/validation_" in n
+                              and "/ARXML/validation_context_" not in n and n.endswith(".json"))
+        require(len(report_names) == 60, "Expected 60 original generation validation reports")
+        status_totals, checked_ids, pass_ids, coverage_rows = Counter(), set(), set(), []
+        for name in report_names:
+            saved = json_member(name)
+            rules = [r for r in saved["rules"] if r["constraint_id"] != "XSD"]
+            require(len(rules) == len(plan["rules"]), f"Configured rule denominator differs: {name}")
+            nonempty = [r for r in rules if r.get("checked_count", 0) > 0]
+            status_totals.update(r["status"] for r in rules)
+            checked_ids.update(r["constraint_id"] for r in nonempty)
+            pass_ids.update(r["constraint_id"] for r in rules if r["status"] == "PASS")
+            require(saved["artifact_profile"]["decision"] == "PASS", f"Artifact profile differs: {name}")
+            coverage_rows.append({"member": name, "rules_with_checked_objects": len(nonempty),
+                                  "checked_rule_object_pairs": sum(r["checked_count"] for r in nonempty)})
+        coverage_range = [min(r["rules_with_checked_objects"] for r in coverage_rows),
+                          max(r["rules_with_checked_objects"] for r in coverage_rows)]
+        require(coverage_range == [11, 24] and len(checked_ids) == 24, "Observed rule coverage differs")
+        require(dict(status_totals) == {"PASS": 1302, "NOT_APPLICABLE": 29298, "NOT_EVALUATED": 2640},
+                "Original validation status totals differ")
+        require(pass_ids - checked_ids == {"constr_1161"}, "Unexpected PASS rules without checked objects")
+        graph_name = member("frozen_contract/FORMAL_NEO4J_CONTEXT.json")
+        graph = json_member(graph_name)
+
         return {
-            "inspection": "PASS (retained evidence consistency; no generation or validator rerun)",
+            "inspection": "PASS (pure v2 binding replay and retained evidence consistency; no generation or validator rerun)",
             "constraint_count": len(constraints), "constraints_file_sha256": DATASET_SHA256,
             "quality_counts": counts, "program_derived_approved_status_matches": True,
             "retrieval_manifest_card_count": retrieval["card_count"],
             "retrieval_policy_source": (RUNTIME / "llm_generation/knowledge/v2/constraint_retriever.py").as_posix(),
             "retrieval_policy_note": "Source inspection: approved adds 5 ranking points; it is not an inclusion gate.",
             "configured_rule_backends": backends,
+            "binding_replay": {"source": binder_path.as_posix(), "constraint_id": RULE_ID,
+                               "function": "bind_record(MetamodelIndex(metadata), semantic_record)",
+                               "exact_retained_record_match": True, "result": rebound},
+            "original_validation_coverage": {
+                "reports": len(report_names), "configured_rules_per_report_excluding_XSD": len(plan["rules"]),
+                "rules_with_checked_objects_per_report_range": coverage_range,
+                "distinct_rules_with_checked_objects": len(checked_ids),
+                "distinct_rule_ids_with_checked_objects": sorted(checked_ids),
+                "recorded_status_totals": dict(sorted(status_totals.items())),
+                "distinct_PASS_rule_ids": len(pass_ids),
+                "PASS_without_checked_objects_note": "constr_1161 checks INDEX uniqueness; no INDEX objects yields a vacuous PASS and checked_count=0.",
+                "rows": coverage_rows,
+            },
+            "retained_graph_context": {
+                "member": graph_name, "constraint_card_count": graph["constraint_card_count"],
+                "constraint_link_count": graph["constraint_link_count"],
+                "constraint_links_sha256": graph["constraint_links_sha256"],
+                "scope": "Values read from the retained Neo4j context; the 6533 graph relationships are not rebuilt or recounted by this command.",
+            },
             "representative_constraint": {
                 "id": RULE_ID, "source_document": source["document"],
                 "source_line": source["start_line"], "source_text_sha256": source["sha256"],

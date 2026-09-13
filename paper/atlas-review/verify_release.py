@@ -56,7 +56,7 @@ def main():
         return outcome
     with ThreadPoolExecutor(max_workers=a.jobs) as pool:
         outcomes=list(pool.map(run_track,tracks))
-    report={'release_integrity':integrity,'tracks':outcomes,'status':'PASS' if all(r['exit_code']==0 for r in outcomes) else 'FAIL','scope':'Offline review of retained evidence; no new model generation','historical_provenance_qualifications':{'autosar':'Pre-intervention Phase1 and complete repair interaction bodies not retained','vllm':{'complete_historical_source_certificate':False,'missing_individual_sources':2,'historical_logits_not_retained':True},'pil':'Only three new targeted output assessments, not full legal accuracy','railway':'Eleven transport attempts have unknown usage'}}
+    report={'release_integrity':integrity,'tracks':outcomes,'status':'PASS' if all(r['exit_code']==0 for r in outcomes) else 'FAIL','scope':'Offline review of retained evidence; no new model generation','inspection_index':'docs/COMMANDS.md','data_crosscheck':'docs/PAPER_DATA_CROSSCHECK.md'}
     (work/'RELEASE_REVIEW_RESULT.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf8')
     return 0 if report['status']=='PASS' else 1
 if __name__=='__main__':raise SystemExit(main())

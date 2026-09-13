@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "name": "icm",
+      "arguments": [
+        "inspection/check_icm_evidence.py"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "name": "figures",
+      "arguments": [
+        "inspection/check_figure_evidence.py"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "name": "negative_figure7_position",
+      "arguments": [
+        "inspection/check_figure_evidence.py",
+        "--figure",
+        "7",
+        "--figure7-data",
+        "<audit-workspace>\\inspection_checks\\figure7_changed_position.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Figure evidence inspection failed: Figure 7 ASW-FULL-01 repetition 1 bound_sample_ordinals: recomputed [1, 2, 3, 4, 5, 13, 234, 1229, 1661]; plotting input has [2, 2, 3, 4, 5, 13, 234, 1229, 1661]"
+    },
+    {
+      "name": "negative_figure8_count",
+      "arguments": [
+        "inspection/check_figure_evidence.py",
+        "--figure",
+        "8",
+        "--figure8-data",
+        "<audit-workspace>\\inspection_checks\\figure8_changed_count.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Figure evidence inspection failed: Figure 8 Terra_counts: recomputed [18, 22, 22]; plotting input has [19, 22, 22]"
+    }
+  ],
+  "docs_missing_targets": []
+}

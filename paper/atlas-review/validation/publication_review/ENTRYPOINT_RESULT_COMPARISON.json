@@ -1,0 +1,126 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "track": "autosar",
+      "field": "generation",
+      "equal": true
+    },
+    {
+      "track": "autosar",
+      "field": "repair",
+      "equal": true
+    },
+    {
+      "track": "autosar",
+      "field": "phase2",
+      "equal": true
+    },
+    {
+      "track": "vllm",
+      "field": "requests",
+      "equal": true
+    },
+    {
+      "track": "vllm",
+      "field": "end_to_end_pass_counts",
+      "equal": true
+    },
+    {
+      "track": "vllm",
+      "field": "six_gate_differences",
+      "equal": true
+    },
+    {
+      "track": "vllm",
+      "field": "all_postprocess_scientific_fields_equal",
+      "equal": true
+    },
+    {
+      "track": "vllm",
+      "field": "arxml_files_byte_equal",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "counts",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "historical_outcome_discrepancies",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "actions",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "endpoints",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "artifact_endpoints",
+      "equal": true
+    },
+    {
+      "track": "railway",
+      "field": "responses",
+      "equal": true
+    },
+    {
+      "track": "pil",
+      "field": "endpoint_counts",
+      "equal": true
+    },
+    {
+      "track": "pil",
+      "field": "frozen_scored_units_reproduced",
+      "equal": true
+    },
+    {
+      "track": "pil",
+      "field": "request_evidence",
+      "equal": true
+    },
+    {
+      "track": "pil",
+      "field": "changed_scored_units",
+      "equal": true
+    },
+    {
+      "track": "pil",
+      "field": "summary_and_paired_statistics_reproduced",
+      "equal": true
+    },
+    {
+      "track": "railway_terra",
+      "field": "groups",
+      "equal": true
+    },
+    {
+      "track": "railway_terra",
+      "field": "task_completion",
+      "equal": true
+    },
+    {
+      "track": "railway_terra",
+      "field": "planned_statistics",
+      "equal": true
+    },
+    {
+      "track": "railway_terra",
+      "field": "paired_luna_terra",
+      "equal": true
+    },
+    {
+      "track": "railway_terra",
+      "field": "usage_and_cost",
+      "equal": true
+    }
+  ],
+  "scope": "Scientific results from direct and complete-release commands; elapsed times and relocated output hashes are excluded."
+}

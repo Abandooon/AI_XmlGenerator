@@ -1,0 +1,15 @@
+{
+  "status": "FAIL",
+  "findings": [
+    {
+      "code": "chosen_court_type_mismatch",
+      "stage": "cross_field",
+      "message": "Chosen-court decline requires forum_type=agreement."
+    },
+    {
+      "code": "forum_type_basis_mismatch",
+      "stage": "precedence",
+      "message": "forum_type=exclusive requires one of the declared basis prefixes: ['BRUSSELS_I_BIS:Art.24', 'EU_TRADE_MARK_REGULATION:Art.63', 'EU_TRADE_MARK_REGULATION:Art.124', 'EU_TRADE_MARK_REGULATION:Art.128']."
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "status": "PASS",
+  "active_commands": [
+    {
+      "id": "S01",
+      "title": "Create the Python environment",
+      "cwd": ".",
+      "command": "python -m venv .venv",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#s01"
+    },
+    {
+      "id": "S02",
+      "title": "Install pinned review dependencies",
+      "cwd": ".",
+      "command": "python -m pip install -r requirements-lock.txt",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#s02"
+    },
+    {
+      "id": "S03",
+      "title": "Install pinned plotting dependencies",
+      "cwd": ".",
+      "command": "python -m pip install -r paper/figure_sources/requirements-plot.txt",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#s03"
+    },
+    {
+      "id": "V01",
+      "title": "Verify release file identity",
+      "cwd": ".",
+      "command": "python -B verify_release.py --integrity-only",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v01"
+    },
+    {
+      "id": "V02",
+      "title": "Review all five experiment packages",
+      "cwd": ".",
+      "command": "python -B verify_release.py --track all --work-dir ../review-output/all --node node --java \"$env:JAVA8_HOME/bin/java.exe\" --jobs 4",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v02"
+    },
+    {
+      "id": "V03",
+      "title": "AUTOSAR direct isolated entry",
+      "cwd": "experiments/autosar",
+      "command": "python -I -B review.py --work-dir ../../../review-output/autosar",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v03"
+    },
+    {
+      "id": "V04",
+      "title": "Local AUTOSAR–vLLM direct entry",
+      "cwd": "experiments/vllm",
+      "command": "python -B review.py --work-dir ../../../review-output/vllm",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v04"
+    },
+    {
+      "id": "V05",
+      "title": "Railway direct entry",
+      "cwd": "experiments/railway",
+      "command": "python -B review.py --work-dir ../../../review-output/railway --java \"$env:JAVA8_HOME/bin/java.exe\"",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v05"
+    },
+    {
+      "id": "V06",
+      "title": "Second railway model direct entry",
+      "cwd": "experiments/railway_terra",
+      "command": "python -B review.py --work-dir ../../../review-output/railway_terra --java \"$env:JAVA8_HOME/bin/java.exe\"",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v06"
+    },
+    {
+      "id": "V07",
+      "title": "PIL direct entry",
+      "cwd": "experiments/pil",
+      "command": "python -B tools/verify.py --output-dir ../../../review-output/pil --node node",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v07"
+    },
+    {
+      "id": "V08",
+      "title": "Regenerate corrected PIL reference",
+      "cwd": "experiments/pil",
+      "command": "node corrections/code/correct_gold.mjs --output ../../../review-output/corrected_gold.jsonl",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v08"
+    },
+    {
+      "id": "V09",
+      "title": "Recompile the retained railway native checker",
+      "cwd": "experiments/railway",
+      "command": "python -B rebuild_native.py --payload ../../../review-output/railway/payload --out ../../../review-output/native-build --javac \"$env:JAVA8_HOME/bin/javac.exe\"",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v09"
+    },
+    {
+      "id": "V10",
+      "title": "Inspect ICM, actual element binding and ARXML field",
+      "cwd": ".",
+      "command": "python -B inspection/check_icm_evidence.py",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v10"
+    },
+    {
+      "id": "V11",
+      "title": "Check every plotted count and decoding position",
+      "cwd": ".",
+      "command": "python -B inspection/check_figure_evidence.py",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v11"
+    },
+    {
+      "id": "V12",
+      "title": "Recompute PIL decision flow and test corruption detection",
+      "cwd": ".",
+      "command": "python -B inspection/check_pil_decision_flow.py --self-test",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v12"
+    },
+    {
+      "id": "V13",
+      "title": "Compare manuscript data with original evidence",
+      "cwd": ".",
+      "command": "python -B inspection/check_paper_data.py --self-test",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v13"
+    },
+    {
+      "id": "F01",
+      "title": "Regenerate Figure 7",
+      "cwd": ".",
+      "command": "python -B paper/figure_sources/scripts/plot_figure7.py --output-dir ../review-output/figures",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#f01"
+    },
+    {
+      "id": "F02",
+      "title": "Regenerate Figure 8",
+      "cwd": ".",
+      "command": "python -B paper/figure_sources/scripts/plot_figure8.py --output-dir ../review-output/figures",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#f02"
+    },
+    {
+      "id": "P01",
+      "title": "Compile the English manuscript",
+      "cwd": ".",
+      "command": "python -B inspection/build_paper.py --output-dir ../review-output/paper --tectonic tectonic",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#p01"
+    },
+    {
+      "id": "V14",
+      "title": "Check repository navigation",
+      "cwd": ".",
+      "command": "python -B inspection/check_navigation.py",
+      "instructions": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md#v14"
+    }
+  ],
+  "initial_guides_with_command_mentions": 13,
+  "initial_command_mentions": 33,
+  "current_policy": "Duplicate and incomplete examples in active guides are replaced by links to this complete list. Historical execution reports and frozen development sources retain their original content and are explicitly not current launch instructions."
+}

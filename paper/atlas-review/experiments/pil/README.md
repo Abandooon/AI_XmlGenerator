@@ -8,9 +8,7 @@ Prerequisites: Python 3.11 or later, Node.js 18 or later available as `node`, an
 
 From this directory:
 
-```sh
-python -B tools/verify.py
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 The command uses package-relative inputs. It checks file identities, the 720-row ledger chain and schedule, all 720 prompt instances and 784 recorded transport request hashes, 782 unique response IDs, response parsing and token totals. It reproduces every historical score, regenerates corrected gold for all 60 cases, reproduces the 720 corrected scores and paired statistics, binds the three expert findings, and executes the 27 original PIL tests plus 7 export tests and 8 article-boundary checks. Tests use fake clients; network access is blocked in Python. The verifier also rejects experiment-file access outside the package and its output/runtime directories.
 
@@ -34,9 +32,7 @@ The original `frozen/prepaid_freeze/data/consensus_gold_v4.jsonl` and `frozen/pr
 
 For corrected derivation alone, without running the full verification:
 
-```sh
-node corrections/code/correct_gold.mjs --output verification/corrected_gold.jsonl
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 Generation modules are retained to explain the experiment; this reviewer export does not configure or authorize a fresh paid run. Personal provider configuration and the cross-experiment workstation registry are absent.
 

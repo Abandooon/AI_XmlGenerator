@@ -1,6 +1,6 @@
 # Railway V5: offline reviewer package and raw-XMI scoring correction
 
-Query source/version: Appendix C.1 and Table C1 use the six VIATRA queries from official Train Benchmark commit `9c76520`. SwitchSet includes `Route.active(route, true)`. The [source note](../../supporting/reference_source_recheck/README.md#train-benchmark) provides the full commit, official query and frozen-member locators.
+Query source/version: Appendix C.1 and Table C1 use the six VIATRA queries from official Train Benchmark commit `9c76520`. SwitchSet includes `Route.active(route, true)`. The [source note](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/supporting/reference_source_recheck/README.md#train-benchmark) provides the full commit, official query and frozen-member locators.
 
 This package preserves the completed Railway V5 formal evidence and provides a corrected, portable offline scoring entry point. It makes **no model/API requests**. Original evidence and source bytes are retained under `frozen/` inside the numbered ZIP files; corrected reviewer code is separate in `corrected/`.
 
@@ -8,9 +8,7 @@ Requirements: **Python 3.10 or newer**, standard library only, and **Java 8** on
 
 From this directory, run:
 
-```text
-python review.py --java java --work-dir railway-review-output
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 The work directory must not already exist. Use `--java /path/to/java` when Java 8 is not your default Java; on Windows quote paths containing spaces. Omit `--work-dir` to use a newly allocated temporary directory. The package may be moved to another location. Paths in historical logs are preserved as evidence, but the reviewer entry point does not use the original author's paths, machine configuration, credentials, or running services.
 
@@ -57,8 +55,6 @@ Excluded: mock runs, development/pilot result cohorts, fault/probe scratch runs,
 
 For readers with a **Java 8 JDK**, the three project JARs can be rebuilt from retained Java using the same runtime dependencies:
 
-```text
-python rebuild_native.py --payload railway-review-output/payload --out railway-native-rebuild --javac javac
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 This compiles 101 Java source files and compares every resulting class with the frozen project JARs. The validation run produced 196/196 byte-identical class files: runner 3, model 30, matchers 163. Non-class resources are retained unchanged from the corresponding original JARs. This command recompiles the retained **generated Java**; it does not rerun the Xcore/VQL source generators or rebuild third-party libraries. Those boundaries are intentional and are recorded in `REBUILD_RESULT.json`.

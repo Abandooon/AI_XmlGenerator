@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Draw Figure 8 from the preserved railway summary (Python + Matplotlib).
 
-Run from any directory. Defaults are relative to this script:
-    python plot_figure8.py --data ../data/Fig8_railway_results_data.json \
-        --output-dir ../output
+Run from any directory. The input defaults to the retained figure data.
+New figures are written outside the evidence release. See docs/COMMANDS.md.
 
 The input summary contains the original source hashes. This script reads its
 counts directly; it neither reads nor modifies experimental results.
 """
 from __future__ import annotations
 
+import tempfile
 import argparse
 import hashlib
 import json
@@ -51,14 +51,28 @@ def read_data(path: Path) -> dict:
     return data
 
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--data", type=Path,
         default=HERE.parent / "data" / "Fig8_railway_results_data.json",
     )
-    parser.add_argument("--output-dir", type=Path, default=HERE.parent / "output")
+    parser.add_argument("--output-dir", type=Path, default=None, help='External directory; defaults to a new system temporary directory')
     args = parser.parse_args()
+    args.output_dir = external_output(args.output_dir) if args.output_dir else Path(tempfile.mkdtemp(prefix="paper_figures_"))
     source = args.data.resolve()
     data = read_data(source)
     before = hashlib.sha256(source.read_bytes()).hexdigest()

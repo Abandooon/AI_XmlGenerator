@@ -1,0 +1,48 @@
+{
+  "release_integrity": {
+    "status": "PASS",
+    "files_verified": 1148,
+    "release_id": "reviewer-evidence-2026-09-13"
+  },
+  "tracks": [
+    {
+      "track": "autosar",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "autosar.log",
+      "result": "autosar/verification.json"
+    },
+    {
+      "track": "vllm",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "vllm.log",
+      "result": "vllm/REVIEW_RESULT.json"
+    },
+    {
+      "track": "pil",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "pil.log",
+      "result": "pil/verification_report.json"
+    },
+    {
+      "track": "railway",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "railway.log",
+      "result": "railway/results/REVIEW_RESULT.json"
+    },
+    {
+      "track": "railway_terra",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "railway_terra.log",
+      "result": "railway_terra/results/REVIEW_RESULT.json"
+    }
+  ],
+  "status": "PASS",
+  "scope": "Offline review of retained evidence; no new model generation",
+  "inspection_index": "docs/COMMANDS.md",
+  "data_crosscheck": "docs/PAPER_DATA_CROSSCHECK.md"
+}

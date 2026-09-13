@@ -1,0 +1,407 @@
+{
+  "status": "PASS",
+  "active_documented_commands": 20,
+  "commands": [
+    {
+      "id": "S01",
+      "title": "Python environment",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-m",
+        "venv",
+        ".venv"
+      ],
+      "result": null
+    },
+    {
+      "id": "S02",
+      "title": "Pinned review packages",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "requirements-lock.txt"
+      ],
+      "result": null
+    },
+    {
+      "id": "S03",
+      "title": "Pinned plotting packages",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "paper/figure_sources/requirements-plot.txt"
+      ],
+      "result": null
+    },
+    {
+      "id": "V01",
+      "title": "Release file identity",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-B",
+        "verify_release.py",
+        "--integrity-only"
+      ],
+      "result": "INTEGRITY.json"
+    },
+    {
+      "id": "V02",
+      "title": "Five-track offline check",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-B",
+        "verify_release.py",
+        "--track",
+        "all",
+        "--work-dir",
+        "<external-output>/all",
+        "--node",
+        "node",
+        "--java",
+        "<java-8>",
+        "--jobs",
+        "4"
+      ],
+      "result": "ALL_TRACKS.json"
+    },
+    {
+      "id": "V03",
+      "title": "AUTOSAR isolated direct entry",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/autosar",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-I",
+        "-B",
+        "review.py",
+        "--work-dir",
+        "<audit-workspace>\\command_runs\\autosar"
+      ],
+      "result": "AUTOSAR.json"
+    },
+    {
+      "id": "V04",
+      "title": "AUTOSAR–vLLM direct entry",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/vllm",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "review.py",
+        "--work-dir",
+        "<audit-workspace>\\command_runs\\vllm"
+      ],
+      "result": "AUTOSAR_VLLM.json"
+    },
+    {
+      "id": "V05",
+      "title": "Railway direct entry",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/railway",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "review.py",
+        "--work-dir",
+        "<audit-workspace>\\command_runs\\railway",
+        "--java",
+        "<java-8>"
+      ],
+      "result": "RAILWAY.json"
+    },
+    {
+      "id": "V06",
+      "title": "Terra direct entry",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/railway_terra",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "review.py",
+        "--work-dir",
+        "<audit-workspace>\\command_runs\\railway_terra",
+        "--java",
+        "<java-8>"
+      ],
+      "result": "RAILWAY_TERRA.json"
+    },
+    {
+      "id": "V07",
+      "title": "PIL direct entry",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/pil",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "tools/verify.py",
+        "--output-dir",
+        "<audit-workspace>\\command_runs\\pil",
+        "--node",
+        "<node-24>"
+      ],
+      "result": "PIL.json"
+    },
+    {
+      "id": "V08",
+      "title": "PIL corrected reference",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/pil",
+      "resolved_argv": [
+        "<node-24>",
+        "corrections/code/correct_gold.mjs",
+        "--output",
+        "<audit-workspace>\\command_runs\\corrected_gold.jsonl"
+      ],
+      "result": "GOLD.json"
+    },
+    {
+      "id": "V09",
+      "title": "Native Java rebuild",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": "experiments/railway",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "rebuild_native.py",
+        "--payload",
+        "<audit-workspace>\\command_runs\\railway\\payload",
+        "--out",
+        "<audit-workspace>\\command_runs\\native_rebuild",
+        "--javac",
+        "<javac-8>"
+      ],
+      "result": "NATIVE_REBUILD.json"
+    },
+    {
+      "id": "V10",
+      "title": "ICM binding and field check",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "inspection/check_icm_evidence.py"
+      ],
+      "result": "ICM.json"
+    },
+    {
+      "id": "V11",
+      "title": "Original figure evidence",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "inspection/check_figure_evidence.py"
+      ],
+      "result": "FIGURES.json"
+    },
+    {
+      "id": "V12",
+      "title": "PIL decision flow and negative controls",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "inspection/check_pil_decision_flow.py",
+        "--self-test"
+      ],
+      "result": "PIL_FLOW.json"
+    },
+    {
+      "id": "V13",
+      "title": "Manuscript numerical crosscheck",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-B",
+        "inspection/check_paper_data.py",
+        "--self-test",
+        "--output",
+        "<external-output>/paper-data-final428.json"
+      ],
+      "result": "PAPER_DATA.json"
+    },
+    {
+      "id": "V14",
+      "title": "Repository navigation",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-B",
+        "inspection/check_navigation.py"
+      ],
+      "result": "NAVIGATION.json"
+    },
+    {
+      "id": "F01",
+      "title": "Figure 7 plotting",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "paper/figure_sources/scripts/plot_figure7.py",
+        "--output-dir",
+        "<audit-workspace>\\command_runs\\figures"
+      ],
+      "result": "FIGURE7_PLOT.json"
+    },
+    {
+      "id": "F02",
+      "title": "Figure 8 plotting",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "<python-3.12>",
+        "-B",
+        "paper/figure_sources/scripts/plot_figure8.py",
+        "--output-dir",
+        "<audit-workspace>\\command_runs\\figures"
+      ],
+      "result": "FIGURE8_PLOT.json"
+    },
+    {
+      "id": "P01",
+      "title": "English manuscript compilation",
+      "status": "PASS",
+      "exit_code": 0,
+      "cwd": ".",
+      "resolved_argv": [
+        "python",
+        "-B",
+        "inspection/build_paper.py",
+        "--tectonic",
+        "<tectonic-0.17.0>",
+        "--output-dir",
+        "<external-output>/paper-default"
+      ],
+      "result": "BUILD_RESULT.json"
+    }
+  ],
+  "default_output_regressions": [
+    {
+      "id": "REG-PIL-DEFAULT",
+      "status": "PASS",
+      "exit_code": 0,
+      "argv": [
+        "<python-3.12>",
+        "-B",
+        "tools/verify.py",
+        "--node",
+        "<node-24>"
+      ]
+    },
+    {
+      "id": "REG-FIG7-DEFAULT",
+      "status": "PASS",
+      "exit_code": 0,
+      "argv": [
+        "<python-3.12>",
+        "-B",
+        "paper/figure_sources/scripts/plot_figure7.py"
+      ]
+    },
+    {
+      "id": "REG-FIG8-DEFAULT",
+      "status": "PASS",
+      "exit_code": 0,
+      "argv": [
+        "<python-3.12>",
+        "-B",
+        "paper/figure_sources/scripts/plot_figure8.py"
+      ]
+    }
+  ],
+  "setup": {
+    "status": "PASS",
+    "python": "3.12.14",
+    "node": "24.19.0",
+    "java": "1.8.0_504",
+    "matplotlib": "3.11.1",
+    "review_dependencies": "requirements-lock.txt",
+    "plot_dependencies": "paper/figure_sources/requirements-plot.txt",
+    "installation_logs_sha256": {
+      "pip-install.log": "384271246d4ef5b7f77403da063702d1d0b837725ef084a779f9d753c6c4ba37",
+      "pip-plot-install.log": "d7c9f5a780b126dcd49a588f23783cf854c4db7217e88795c7b9958adf7664a5"
+    }
+  },
+  "entrypoint_scientific_fields_equal": true,
+  "new_model_calls": 0,
+  "current_entrypoint_sha256": {
+    "verify_release.py": "f397776867083ec431d24bb08cd3ee60e4edb951ea87baffcf4e2bbfadb9f3aa",
+    "inspection/build_paper.py": "72bcd70dc410a3d988dd559bbb5ca5fe4b5493e79b5a975b45ad186ec6c1637a",
+    "inspection/check_figure_evidence.py": "5a4bbb8db78a4aa2ce64d50a4cf970a12a147861e218f1f65b3d2f550dee8da1",
+    "inspection/check_icm_evidence.py": "015bbdb4eb8def31658488447dad794cb6f390460a3e30a86188b5561399abd0",
+    "inspection/check_navigation.py": "3d244195c926584571eea5cadde4c26102a4c124ad690ddc8152c1d5e738d79c",
+    "inspection/check_paper_data.py": "ba9791e6bf5991eab634d18ff34b117d74cd29211692e37928531d72536d43d5",
+    "inspection/check_pil_decision_flow.py": "681ef22291256b02ee44fa7e2cb79c7393e82321d59d1af2577f788a95532346",
+    "experiments/autosar/review.py": "42725414e3a79cc1aabfdae5bd820fc1c04b2c48fc27c67aecce742452ce8481",
+    "experiments/railway/review.py": "4395f256ab74658a71d1ad6b995c736e7c6bb2d6741ccb60b2617880faf71f6f",
+    "experiments/railway_terra/review.py": "f190475a13251aad549c7bc43b8f2c32e959f04467b44dda35d0f9d1e73e54e3",
+    "experiments/vllm/review.py": "ecd085637bb844b4b24dff94b6020428313260baf6987c8c7096da476de51552",
+    "experiments/autosar/offline/verify.py": "8e35097a2ea88f125fe3deea8481b5ab583dae10d005f8851e8978e5b30ae703",
+    "experiments/pil/tools/verify.py": "6939b75c80a511d4c475f5d6de504e8fcf8dedbc48770d1a9fc5745236ef6e13",
+    "experiments/pil/corrections/code/correct_gold.mjs": "3a056484739a74b86b0a1489fcb13c8252696078e4610eb006cd2511ee4914c1",
+    "experiments/railway/rebuild_native.py": "d49813cac4efa50142ccb9031b09f1e5efd34ab6fd59c015187974bed8c7132c",
+    "paper/figure_sources/scripts/plot_figure7.py": "a8a0e46afe352fead2bab639817b01a1a43e60e97d138e3f47d1b175b98626c3",
+    "paper/figure_sources/scripts/plot_figure8.py": "8ca093ecf6b2f2de5b8bcb96f777c82c1c79b3f79e043cd579ca8374f7de8212"
+  },
+  "path_normalization": "Execution reports replace current author runtime and output directory prefixes with descriptive tokens. Frozen historical source identifiers and scientific values are retained.",
+  "frozen_archives_unchanged": true,
+  "source_report_sha256": {
+    "AUTOSAR.json": "ffa87bfd85d1e951510ab9088c0634a6b9fb2233abad9700ca9acfb03c11b79e",
+    "AUTOSAR_VLLM.json": "f2c77e33eb41734fe8cf8a30dc7088f586044a4fd9cd1b9a8f4b1a4f748b785e",
+    "RAILWAY.json": "ed0b6b0e9aefd1a15b2e7827a6005ff6f1230a6f03054320811999fe5c4105b3",
+    "RAILWAY_TERRA.json": "5e5ad7f78e1d0c1128e9bf2dad4c6f4cb8034c9c3ad19dc6fb736001a397c408",
+    "TERRA_INDEPENDENT.json": "65c44338a56306b0f9947554892722ff42c752bd988cd5bf7a7fa6124bb91062",
+    "PIL.json": "27d3e972b6d26c64d4a449d9dbbc910861f8ae8d5f464ae1dc692714b53f7ded",
+    "NATIVE_REBUILD.json": "72d1d1e08c495e520b29d4d9c626a3c984582a920bb15a47cc5039223fff97b9",
+    "ALL_TRACKS.json": "3a8becb40911509ef2a6b65c21cdb109b65951e6e114aa78fbb930395e00423d",
+    "PAPER_DATA.json": "2d6f53cc091e198e47e904aa87d30ec3184c5598139ad7bf90c95a1503227a08",
+    "PDF_QA.json": "3f04fed954a61352fc567757e8cf2e10491b9d6154630870a896bbaf5eeffadd",
+    "BUILD_RESULT.json": "b1242302462888a3d6cd83cc7bece4b0fac7777fb585fc2cdae9fd9fff74eff9",
+    "OUTPUT_GUARD_TEST_RESULTS.json": "9050275424ced0e5b32dcf9f36377cb417e5af3440d29733fefa3fdfb48bd690",
+    "FIGURE_NEGATIVE_CONTROLS.json": "69f6c6d367fad29cc422a88a233967fb1516c0c2cd7350b8ebad2867cf6b3b47",
+    "NAVIGATION_SELF_TESTS.json": "8b68f994926634f81ac35ecfb6b85fe93833c823b3d9a49b740bf7ca37a3b1f3",
+    "EXAMPLE_SELECTION_CHECK.json": "5cab21c11efdc7f37104755d8afae8a273513bef632c7d6f8f356f5d3536155a"
+  }
+}

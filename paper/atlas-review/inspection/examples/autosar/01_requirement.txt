@@ -1,0 +1,33 @@
+Generate one AUTOSAR Classic Platform 4.2.2 ARXML document for the simplified atomic application software component described below.
+This is a component-level benchmark, not a complete ECU configuration.
+
+Case ID: ASW-FULL-01
+Component: APPLICATION-SW-COMPONENT-TYPE ASW_Com_Full_Baseline
+Intent: Model three S/R inputs, three S/R outputs, and one periodic runnable.
+
+Ports and communication specifications:
+- P-PORT-PROTOTYPE Pp_MCU01_EmergShutDown: PROVIDED-INTERFACE-TREF /COM_Interface/SR_Interface_MCU01_EmergShutDown (DEST=SENDER-RECEIVER-INTERFACE); data element MCU01_EmergShutDown.
+- P-PORT-PROTOTYPE Pp_MCU02_MaxTor: PROVIDED-INTERFACE-TREF /COM_Interface/SR_Interface_MCU02_MaxTor (DEST=SENDER-RECEIVER-INTERFACE); data element MCU02_MaxTor.
+- P-PORT-PROTOTYPE Pp_MCU03_NRF_IdcSamp: PROVIDED-INTERFACE-TREF /COM_Interface/SR_Interface_MCU03_NRF_IdcSamp (DEST=SENDER-RECEIVER-INTERFACE); data element MCU03_NRF_IdcSamp.
+- R-PORT-PROTOTYPE Rp_HCU01_TqCmd: REQUIRED-INTERFACE-TREF /COM_Interface/SR_Interface_HCU01_TqCmd (DEST=SENDER-RECEIVER-INTERFACE); data element HCU01_TqCmd; NONQUEUED-RECEIVER-COM-SPEC with ALIVE-TIMEOUT=0.3 seconds and HANDLE-TIMEOUT-TYPE=NONE; because this benchmark supplies no Composition connector, represent the required port as unconnected and set INIT-VALUE/NUMERICAL-VALUE-SPECIFICATION/VALUE=0.
+- R-PORT-PROTOTYPE Rp_HCU01_Shift: REQUIRED-INTERFACE-TREF /COM_Interface/SR_Interface_HCU01_Shift (DEST=SENDER-RECEIVER-INTERFACE); data element HCU01_Shift; NONQUEUED-RECEIVER-COM-SPEC with ALIVE-TIMEOUT=0.3 seconds and HANDLE-TIMEOUT-TYPE=NONE; because this benchmark supplies no Composition connector, represent the required port as unconnected and set INIT-VALUE/NUMERICAL-VALUE-SPECIFICATION/VALUE=0.
+- R-PORT-PROTOTYPE Rp_HCU02_Poweroff: REQUIRED-INTERFACE-TREF /COM_Interface/SR_Interface_HCU02_Poweroff (DEST=SENDER-RECEIVER-INTERFACE); data element HCU02_Poweroff; NONQUEUED-RECEIVER-COM-SPEC with ALIVE-TIMEOUT=0.3 seconds and HANDLE-TIMEOUT-TYPE=NONE; because this benchmark supplies no Composition connector, represent the required port as unconnected and set INIT-VALUE/NUMERICAL-VALUE-SPECIFICATION/VALUE=0.
+
+Internal behavior: SWC-INTERNAL-BEHAVIOR IB_Com_Full_Baseline
+Runnables and events:
+- RUNNABLE-ENTITY RE_Com_Full_Baseline is started by exactly one TIMING-EVENT TE_Com_Full_Baseline with period 0.01 seconds.
+  - Read Rp_HCU01_TqCmd/HCU01_TqCmd through one DATA-RECEIVE-POINT-BY-ARGUMENTS VARIABLE-ACCESS VA_Com_Full_Baseline_Read_HCU01_TqCmd with a resolvable AUTOSAR-VARIABLE-IREF.
+  - Read Rp_HCU01_Shift/HCU01_Shift through one DATA-RECEIVE-POINT-BY-ARGUMENTS VARIABLE-ACCESS VA_Com_Full_Baseline_Read_HCU01_Shift with a resolvable AUTOSAR-VARIABLE-IREF.
+  - Read Rp_HCU02_Poweroff/HCU02_Poweroff through one DATA-RECEIVE-POINT-BY-ARGUMENTS VARIABLE-ACCESS VA_Com_Full_Baseline_Read_HCU02_Poweroff with a resolvable AUTOSAR-VARIABLE-IREF.
+  - Write Pp_MCU01_EmergShutDown/MCU01_EmergShutDown through one DATA-SEND-POINTS VARIABLE-ACCESS VA_Com_Full_Baseline_Write_MCU01_EmergShutDown with a resolvable AUTOSAR-VARIABLE-IREF.
+  - Write Pp_MCU02_MaxTor/MCU02_MaxTor through one DATA-SEND-POINTS VARIABLE-ACCESS VA_Com_Full_Baseline_Write_MCU02_MaxTor with a resolvable AUTOSAR-VARIABLE-IREF.
+  - Write Pp_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp through one DATA-SEND-POINTS VARIABLE-ACCESS VA_Com_Full_Baseline_Write_MCU03_NRF_IdcSamp with a resolvable AUTOSAR-VARIABLE-IREF.
+
+Deterministic obligations:
+- Exactly 3 P ports, 3 R ports, 1 runnables, 1 timing events, and 6 variable accesses.
+- Use the AUTOSAR 4.2.2 namespace, AR-PACKAGES/AR-PACKAGE/ELEMENTS containment, valid DEST values, valid multiplicities, and XSD element order.
+- Treat the interface catalog paths above as definitions supplied by the same hash-pinned validation context; do not invent alternate interfaces.
+- The supplied component-fragment context is authoritative for this benchmark: every listed R-PORT-PROTOTYPE is unconnected and its NONQUEUED-RECEIVER-COM-SPEC must contain INIT-VALUE/NUMERICAL-VALUE-SPECIFICATION/VALUE=0.
+- Do not add ECU, BSW, system mapping, network, deployment, mode, parameter, or client-server configuration.
+- Return only the complete XML document without Markdown or explanation.
+- If the request cannot be represented from the supplied context, fail explicitly; never substitute default requirements or an unrelated grammar.

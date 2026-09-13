@@ -1,6 +1,10 @@
+# Earlier Chinese manuscript source
+
+This directory retains the Chinese preparation draft. The current submission is [the English integrated manuscript](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/current/english/README.md). Earlier page numbers and red citation formatting belong to this preparation draft.
+
 # 中文论文 LaTeX 整合稿
 
-[位置索引](LOCATIONS.md) 列出全部 80 个稳定标签、中文标题、编号及当前 PDF 页码，可直接跳转到对应页。
+[位置索引](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/current/latex/LOCATIONS.md) 列出全部 80 个稳定标签、中文标题、编号及当前 PDF 页码，可直接跳转到对应页。
 
 `main.tex` 包含摘要、正文、附录 A—D 和统一参考文献调用。`main.pdf` 为同一源文件编译的阅读稿。图和表使用交叉引用；参考文献已采用 bibkey，编号按当前首次引用顺序生成。引文暂以红色上标显示，便于作者校阅。
 
@@ -17,20 +21,13 @@
 
 在本目录执行：
 
-```sh
-xelatex -interaction=nonstopmode -halt-on-error main.tex
-bibtex main
-xelatex -interaction=nonstopmode -halt-on-error main.tex
-xelatex -interaction=nonstopmode -halt-on-error main.tex
-```
+The tested current build is documented in [the command list](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
-也可以使用 `latexmk -xelatex main.tex`，或在 Overleaf 中选择 XeLaTeX。中文采用 TeX 发行版中的 Fandol 字体，西文采用 TeX Gyre 与 Latin Modern 字体；无需作者电脑上的私有字体。图中的中文已嵌入 PDF。
+也可以使用 the current documented build，或在 Overleaf 中选择 XeLaTeX。中文采用 TeX 发行版中的 Fandol 字体，西文采用 TeX Gyre 与 Latin Modern 字体；无需作者电脑上的私有字体。图中的中文已嵌入 PDF。
 
 本次也使用 Tectonic 0.17.0 编译验证：
 
-```sh
-tectonic --untrusted --keep-logs --keep-intermediates main.tex
-```
+The tested current build is documented in [the command list](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 类选项中的 `pdflatex` 用于选择官方模板的 PDF 链接兼容分支；本中文稿的实际编译引擎为 XeLaTeX 或 Tectonic，不使用 pdfLaTeX。模板、样式和图应与源文件一起保留。
 
@@ -46,8 +43,8 @@ tectonic --untrusted --keep-logs --keep-intermediates main.tex
 
 ## 本次参考文献修订
 
-[引用核对](引用核对/README.md)提供官方导出来源、原始 BibTeX、字段补全依据和当前引用位置；本轮修订五处文字及两项书目信息；[红色修改对照](引用核对/引文修改对照.html)供逐句审阅。
+[引用核对](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/current/latex/%E5%BC%95%E7%94%A8%E6%A0%B8%E5%AF%B9/README.md)提供官方导出来源、原始 BibTeX、字段补全依据和当前引用位置；本轮修订五处文字及两项书目信息；[红色修改对照](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/current/latex/%E5%BC%95%E7%94%A8%E6%A0%B8%E5%AF%B9/%E5%BC%95%E6%96%87%E4%BF%AE%E6%94%B9%E5%AF%B9%E7%85%A7.html)供逐句审阅。
 
 ## 实验图修订
 
-[图 7、8 的修改和术语说明](图7图8修改说明.md)记录英文标签、重复轨迹合并与数据对应。完整审稿包的 `paper/figure_sources/` 提供可移植绘图脚本及原始绘图数据。
+[图 7、8 的修改和术语说明](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/current/latex/%E5%9B%BE7%E5%9B%BE8%E4%BF%AE%E6%94%B9%E8%AF%B4%E6%98%8E.md)记录英文标签、重复轨迹合并与数据对应。完整审稿包的 `paper/figure_sources/` 提供可移植绘图脚本及原始绘图数据。

@@ -1,0 +1,430 @@
+{
+  "format": "reviewer.example.source-map.v1",
+  "scope": "Convenience copies and explicitly derived views of three retained worked examples. No model output is generated or repaired by this selection.",
+  "examples": {
+    "autosar": {
+      "case": "ASW-FULL-01",
+      "repetition": 1,
+      "repair": "off",
+      "attempt": 1
+    },
+    "railway": {
+      "task": "BAL-1-01",
+      "seed": 155921,
+      "unit_directory": "G0291",
+      "repair_branch": "GF"
+    },
+    "pil": {
+      "unit_id": "8|p3|1",
+      "original_ledger_line_1based": 229
+    }
+  },
+  "files": [
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/01_requirement.txt",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/01_requirement.txt",
+      "bytes": 4391,
+      "sha256": "1b3586d8e6e3df15efc302a45c074fb0ffcd5c5717d455a98628b6df97656c17",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Rendered task requirement",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/requirements/rendered/prompts/ASW-FULL-01.txt",
+        "member_sha256": "1b3586d8e6e3df15efc302a45c074fb0ffcd5c5717d455a98628b6df97656c17"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/02_processed_task_plan.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/02_processed_task_plan.json",
+      "bytes": 352679,
+      "sha256": "6140a22b53de5c387247d7ab93404495c6d662cdbdf3f58b54eb2741bbd05c0d",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Processed task plan retained by Phase 1",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/round1_data/round1_20260902_162824.json",
+        "member_sha256": "6140a22b53de5c387247d7ab93404495c6d662cdbdf3f58b54eb2741bbd05c0d"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/03_component_provider_schema.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/03_component_provider_schema.json",
+      "bytes": 507215,
+      "sha256": "2da28b11a1d26741514e13ee37addf6f8301aa447594495b65d01d4dfcc25340",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Retained component provider schema",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/debug/round2_schema_ASW_Com_Full_Baseline_provider_20260902_162833.json",
+        "member_sha256": "2da28b11a1d26741514e13ee37addf6f8301aa447594495b65d01d4dfcc25340"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/04_component_provider_raw.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/04_component_provider_raw.json",
+      "bytes": 1166,
+      "sha256": "ba3754bbda9e256895865c32132b6efcb5978cd67b772c9b74d3609b6b429dd4",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Retained component provider output",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/debug/round2_response_ASW_Com_Full_Baseline_provider_raw_20260902_162842_905303.json",
+        "member_sha256": "ba3754bbda9e256895865c32132b6efcb5978cd67b772c9b74d3609b6b429dd4"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/05_assembled_component_response.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/05_assembled_component_response.json",
+      "bytes": 8128,
+      "sha256": "6638de52952694abb15330123e4d05b16667c967d87c98cd0b01074ce2eec5c8",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Component representation after assembly",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/debug/round2_response_ASW_Com_Full_Baseline_20260902_162842_920579.json",
+        "member_sha256": "6638de52952694abb15330123e4d05b16667c967d87c98cd0b01074ce2eec5c8"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/06_component.arxml",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/06_component.arxml",
+      "bytes": 9028,
+      "sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Serialized component artifact",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/Components/ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+        "member_sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/07_artifact_validation.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/07_artifact_validation.json",
+      "bytes": 452637,
+      "sha256": "1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Recorded artifact and configured-rule checks",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_8f34364d_1788337723.json",
+        "member_sha256": "1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80"
+      }
+    },
+    {
+      "domain": "autosar",
+      "review_path": "inspection/examples/autosar/08_independent_evaluation.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/autosar/08_independent_evaluation.json",
+      "bytes": 33854,
+      "sha256": "2b13e53ef9bfb9f3a76976eda723e35c637633f8ac4d1dc992f3126f095321c9",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Recorded independent task and XSD evaluation",
+      "source": {
+        "repository_path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+        "archive_sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/independent_evaluation.json",
+        "member_sha256": "2b13e53ef9bfb9f3a76976eda723e35c637633f8ac4d1dc992f3126f095321c9"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/01_task_spec.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/01_task_spec.json",
+      "bytes": 10828,
+      "sha256": "1418c8461a4a9678c74882d64c08d896392ee56516c3e01e79dc22210ec6454b",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Original task obligations for BAL-1-01",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/task_spec.json",
+        "member_sha256": "1418c8461a4a9678c74882d64c08d896392ee56516c3e01e79dc22210ec6454b"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/02_initial_generation_request.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/02_initial_generation_request.json",
+      "bytes": 18914,
+      "sha256": "defc9fe0caf4240af8a1f422b04181c9d9d677253c573cd8a209ff7eb11cd9ee",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Compiled initial generation prompt and schema",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/shared_generation/shared_initial/request.json",
+        "member_sha256": "defc9fe0caf4240af8a1f422b04181c9d9d677253c573cd8a209ff7eb11cd9ee"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/03_initial_model.xmi",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/03_initial_model.xmi",
+      "bytes": 2164,
+      "sha256": "4288e1112484ac4db4c6989764b164c014bd20fc43f3bea87cc3f11fff94e875",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Original shared initial model",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/shared_generation/artifact/model.xmi",
+        "member_sha256": "4288e1112484ac4db4c6989764b164c014bd20fc43f3bea87cc3f11fff94e875"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/04_initial_validation.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/04_initial_validation.json",
+      "bytes": 8235,
+      "sha256": "5af4aa6d7173b2a068e7f9f4a3689d4718bd51c655dda9874800bddfcd5e0c0c",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Initial relational diagnostics",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/initial.validation.json",
+        "member_sha256": "5af4aa6d7173b2a068e7f9f4a3689d4718bd51c655dda9874800bddfcd5e0c0c"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/05_repair_request.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/05_repair_request.json",
+      "bytes": 23414,
+      "sha256": "ec0c98497056c77a1a4b2b2566660ffac7a2f368630b2099914e059765a89a72",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Compiled repair prompt and output schema",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/round_01/request.json",
+        "member_sha256": "ec0c98497056c77a1a4b2b2566660ffac7a2f368630b2099914e059765a89a72"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/06_repair_response.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/06_repair_response.json",
+      "bytes": 1165,
+      "sha256": "80223f84cf261908d2f6e3d83a15efd678d1106d026d6f98b37f5e4f22a7446c",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Received repair response; text contains the proposed slot update",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/round_01/response.json",
+        "member_sha256": "80223f84cf261908d2f6e3d83a15efd678d1106d026d6f98b37f5e4f22a7446c"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/07_repaired_model.xmi",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/07_repaired_model.xmi",
+      "bytes": 2164,
+      "sha256": "b651769f9f28cef23547d90f1b9b57ed4b3666a741f3a235890fd78fa77c4262",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Model serialized after the selected repair",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/final_artifact/model.xmi",
+        "member_sha256": "b651769f9f28cef23547d90f1b9b57ed4b3666a741f3a235890fd78fa77c4262"
+      }
+    },
+    {
+      "domain": "railway",
+      "review_path": "inspection/examples/railway/08_independent_final.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/railway/08_independent_final.json",
+      "bytes": 4750,
+      "sha256": "26d96504610635a9d66b7927f08f34d0c797d83c6701a3cd02b2e405bfeb4a98",
+      "operation": "byte_for_byte_archive_member",
+      "description": "Recorded final independent checks",
+      "source": {
+        "repository_path": "experiments/railway/archives/railway_evidence_02.zip",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/archives/railway_evidence_02.zip",
+        "archive_sha256": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+        "member": "frozen/release/paid_formal/units/G0291/GF/independent_final.json",
+        "member_sha256": "26d96504610635a9d66b7927f08f34d0c797d83c6701a3cd02b2e405bfeb4a98"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/01_case_facts.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/01_case_facts.json",
+      "bytes": 267,
+      "sha256": "4a4dc20e0fae5632eef1681384679c5442db09c276746b41b5c0325659c122ce",
+      "operation": "derived_selected_json_record",
+      "description": "Selected case-facts record",
+      "source": {
+        "repository_path": "experiments/pil/frozen/prepaid_freeze/data/inference_dataset_v41_en.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/prepaid_freeze/data/inference_dataset_v41_en.jsonl#L8",
+        "file_sha256": "0ebf7505bfb254764035bfad3c88081211487b26ea765b379a363706c0735fcd",
+        "line_1based": 8,
+        "original_line_bytes_including_terminator_sha256": "f497664963e4163ff91cf2908ff742c681008b350d5573fed3f50c80847e707f",
+        "selector": "record.id == 8",
+        "serialization": "UTF-8 JSON, indent=2, ensure_ascii=false, trailing LF"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/02_initial_prompt.txt",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/02_initial_prompt.txt",
+      "bytes": 4019,
+      "sha256": "f8d0aa7138ddba59507590e3a90d8abf6492d448bc8b6aea5d079fb304e0fa5b",
+      "operation": "derived_selected_string",
+      "description": "Decoded original prompt string",
+      "source": {
+        "repository_path": "experiments/pil/frozen/prepaid_freeze/PIL_V41_RENDERED_PROMPTS.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/prepaid_freeze/PIL_V41_RENDERED_PROMPTS.jsonl#L32",
+        "file_sha256": "473228cf97f44a9cc2142062775ec4fb042ff2235fdab58ad7db67e29c71f01a",
+        "line_1based": 32,
+        "original_line_bytes_including_terminator_sha256": "34b8ff3cc1c7d8f35ff30fdfefab7b0d61fd3653c7c7619c8ace21071316d801",
+        "selector": "record.case_id == 8 and record.arm == p3; field prompt",
+        "serialization": "JSON-decoded string encoded as UTF-8; no added newline",
+        "recorded_prompt_sha256": "f8d0aa7138ddba59507590e3a90d8abf6492d448bc8b6aea5d079fb304e0fa5b"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/03_decision_schema.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/03_decision_schema.json",
+      "bytes": 2096,
+      "sha256": "d753bb5e72d8e3b8e3d53adb7e772efb067d38ec420b532d270cc3cf7284d11e",
+      "operation": "byte_for_byte_repository_file",
+      "description": "Original decision schema",
+      "source": {
+        "repository_path": "experiments/pil/frozen/prepaid_freeze/schema/decision_schema_v4.json",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/prepaid_freeze/schema/decision_schema_v4.json",
+        "file_sha256": "d753bb5e72d8e3b8e3d53adb7e772efb067d38ec420b532d270cc3cf7284d11e"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/04_initial_answer.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/04_initial_answer.json",
+      "bytes": 810,
+      "sha256": "55e3a3014c3749abb6c4247fff83d9ac43e3e11d85cc6a199ba6a7527022caf8",
+      "operation": "derived_selected_string",
+      "description": "Decoded original initial answer string",
+      "source": {
+        "repository_path": "experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl#L229",
+        "file_sha256": "c0ba080cfbfab010372312ac1cd3bc9a9737dff54501a62b94f2545a09b114a0",
+        "line_1based": 229,
+        "original_line_bytes_including_terminator_sha256": "30c9868b9e53a7c2999615275f131476028f9c755ce60d44f9511a3a20b525d2",
+        "selector": "unit_id == 8|p3|1; field row.raw_text",
+        "serialization": "JSON-decoded response string encoded as UTF-8; no added newline"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/05_initial_audit.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/05_initial_audit.json",
+      "bytes": 505,
+      "sha256": "fc74456fcd862514cd8331d6b393bf1892f81bf023f38a862bcb2bce6b34f10d",
+      "operation": "derived_selected_json_value",
+      "description": "Selected initial diagnostic object",
+      "source": {
+        "repository_path": "experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl#L229",
+        "file_sha256": "c0ba080cfbfab010372312ac1cd3bc9a9737dff54501a62b94f2545a09b114a0",
+        "line_1based": 229,
+        "original_line_bytes_including_terminator_sha256": "30c9868b9e53a7c2999615275f131476028f9c755ce60d44f9511a3a20b525d2",
+        "selector": "unit_id == 8|p3|1; field row.internal_audit",
+        "serialization": "UTF-8 JSON, indent=2, ensure_ascii=false, trailing LF"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/06_repair_prompt.txt",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/06_repair_prompt.txt",
+      "bytes": 4204,
+      "sha256": "c05557cd92016b9d5e38276040b274232f7d04d67aa01e4af04c6d7f5034379a",
+      "operation": "derived_selected_string",
+      "description": "Decoded original repair prompt string",
+      "source": {
+        "repository_path": "experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl#L229",
+        "file_sha256": "c0ba080cfbfab010372312ac1cd3bc9a9737dff54501a62b94f2545a09b114a0",
+        "line_1based": 229,
+        "original_line_bytes_including_terminator_sha256": "30c9868b9e53a7c2999615275f131476028f9c755ce60d44f9511a3a20b525d2",
+        "selector": "unit_id == 8|p3|1; field row.repair.prompt",
+        "serialization": "JSON-decoded prompt string encoded as UTF-8; no added newline",
+        "recorded_prompt_sha256": "c05557cd92016b9d5e38276040b274232f7d04d67aa01e4af04c6d7f5034379a"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/07_repaired_answer.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/07_repaired_answer.json",
+      "bytes": 807,
+      "sha256": "547e67b7879c4202039c222dc80e00b72bf1074f422f9395577757ac2b23a551",
+      "operation": "derived_selected_string",
+      "description": "Decoded original repaired answer string",
+      "source": {
+        "repository_path": "experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl#L229",
+        "file_sha256": "c0ba080cfbfab010372312ac1cd3bc9a9737dff54501a62b94f2545a09b114a0",
+        "line_1based": 229,
+        "original_line_bytes_including_terminator_sha256": "30c9868b9e53a7c2999615275f131476028f9c755ce60d44f9511a3a20b525d2",
+        "selector": "unit_id == 8|p3|1; field row.repair.raw_text",
+        "serialization": "JSON-decoded response string encoded as UTF-8; no added newline"
+      }
+    },
+    {
+      "domain": "pil",
+      "review_path": "inspection/examples/pil/08_selected_ledger_record.json",
+      "review_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/examples/pil/08_selected_ledger_record.json",
+      "bytes": 14130,
+      "sha256": "4989b4618d0ea53590e2a7662cc20624e88cd144ac252911f398eccc7da30691",
+      "operation": "derived_selected_json_record",
+      "description": "Selected complete ledger record including final audit and release",
+      "source": {
+        "repository_path": "experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl",
+        "repository_url": "https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl#L229",
+        "file_sha256": "c0ba080cfbfab010372312ac1cd3bc9a9737dff54501a62b94f2545a09b114a0",
+        "line_1based": 229,
+        "original_line_bytes_including_terminator_sha256": "30c9868b9e53a7c2999615275f131476028f9c755ce60d44f9511a3a20b525d2",
+        "selector": "unit_id == 8|p3|1; complete selected ledger record",
+        "serialization": "UTF-8 JSON, indent=2, ensure_ascii=false, trailing LF"
+      }
+    }
+  ],
+  "verification": {
+    "files": 24,
+    "byte_for_byte_archive_members": 16,
+    "byte_for_byte_repository_files": 1,
+    "derived_PIL_views": 7,
+    "original_source_files_unchanged": true,
+    "all_written_bytes_verified": true
+  }
+}

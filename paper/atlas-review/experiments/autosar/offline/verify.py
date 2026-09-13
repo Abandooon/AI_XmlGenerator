@@ -1,6 +1,6 @@
 """Verify the frozen V20 release and recompute all 60 generation / 100 repair cells.
 
-Usage: python -I -B offline/verify.py --work-dir /path/to/new-empty-work-directory
+Command, prerequisites and expected results: docs/COMMANDS.md in the release.
 No provider request, repair, generation, or source mutation is performed.
 """
 from pathlib import Path
@@ -97,9 +97,22 @@ def build_runtime(release, work):
     return runtime, copied
 
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def run(work):
     started = time.monotonic()
-    work = work.resolve()
+    work = external_output(work)
     require(not work.exists() or (work.is_dir() and not any(work.iterdir())), '--work-dir must be a new or empty directory; no files will be overwritten')
     work.mkdir(parents=True, exist_ok=True)
     (work/'temp').mkdir()
