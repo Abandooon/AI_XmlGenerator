@@ -5,9 +5,10 @@
   "java": "1.8.0_504",
   "matplotlib": "3.11.1",
   "review_dependencies": "requirements-lock.txt",
-  "plot_dependencies": "paper/figure_sources/requirements-plot.txt",
+  "plot_dependencies": "analysis/figures/requirements-plot.txt",
   "installation_logs_sha256": {
     "pip-install.log": "384271246d4ef5b7f77403da063702d1d0b837725ef084a779f9d753c6c4ba37",
     "pip-plot-install.log": "d7c9f5a780b126dcd49a588f23783cf854c4db7217e88795c7b9958adf7664a5"
-  }
+  },
+  "execution_basis": "The pinned Python environment installed and tested in the preceding audit was reused. Environment creation was rechecked in a separate empty directory; dependency checks passed with --no-index against the installed environment, including the relocated plotting requirements."
 }

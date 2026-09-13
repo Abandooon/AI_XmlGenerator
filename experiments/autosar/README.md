@@ -1,6 +1,6 @@
 # AUTOSAR V20: portable offline reviewer package
 
-This package verifies the preserved V20 evidence and recomputes artifact checks for **60 generation runs (20 cases x 3 repetitions) and 100 controlled repair cells**. It does not call a model, start Neo4j, run a GPU workload, regenerate an artifact, or replay the original model interactions. The paper and original experiment files are unchanged.
+This package verifies the preserved V20 evidence and recomputes artifact checks for **60 generation runs (20 cases x 3 repetitions) and 100 controlled repair cells**. It does not call a model, start Neo4j, run a GPU workload, regenerate an artifact, or replay the original model interactions. The retained experimental members preserve their original bytes.
 
 ## Run
 
@@ -10,7 +10,7 @@ From this package directory, run one offline command:
 
 [Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
-`--work-dir` may be any new or empty directory. Allow at least 1 GiB of free space. The entrypoint verifies the frozen ZIP digest, safely extracts it there, checks all 9,673 manifest-listed file hashes, restores the runtime from frozen source files and the declared supplement, and writes fresh per-run reports plus `reviewer-work/verification.json`. It refuses to overwrite a nonempty work directory. Exit code 0 means every identity check and expected metric matched; failures raise an error or return exit code 1. The Python audit hook rejects network/subprocess attempts, reads outside the package/work/Python-installation roots, and writes outside the requested work directory. No result is sent anywhere.
+`--work-dir` may be any new or empty directory. Allow at least 1 GiB of free space. The entrypoint verifies the frozen ZIP digest, safely extracts it there, checks the 9,661 retained manifest-listed file hashes and the explicit 12-entry document exclusion list, restores the runtime from frozen source files and the declared supplement, and writes fresh per-run reports plus `reviewer-work/verification.json`. It refuses to overwrite a nonempty work directory. Exit code 0 means every identity check and expected metric matched; failures raise an error or return exit code 1. The Python audit hook rejects network/subprocess attempts, reads outside the package/work/Python-installation roots, and writes outside the requested work directory. No result is sent anywhere.
 
 The installed dependency environment is a prerequisite. The command itself is offline and does not run pip. The supplied `validation/` results document a separate execution after copying the package to another directory and running Python with isolated imports (`-I`).
 
@@ -18,7 +18,7 @@ The installed dependency environment is a prerequisite. The command itself is of
 
 | Path | Role |
 | --- | --- |
-| `frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip` | Unchanged original 58,759,873-byte archive; includes original evidence, code snapshots, requirements, baseline artifacts, and historical paper/reviewer materials. |
+| `frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip` | Selected experiment archive containing original evidence, code snapshots, requirements and baseline artifacts. The 12 document-related exclusions are recorded in `ARCHIVE_SELECTION.json`. |
 | `offline/verify.py` | New portable orchestration, identity gates, all-run recomputation, and report generation. |
 | `review.py` | Root wrapper for the same supported offline entrypoint. |
 | `frozen_code/` | Directly browseable original generator/assembler/repair/validator/evaluator source; `CODE_INDEX.json` binds each copy to its ZIP member and SHA-256. These are inspection copies, not a second runtime. |
@@ -30,7 +30,7 @@ The installed dependency environment is a prerequisite. The command itself is of
 | `validation/` | Package credential-scan disposition, executed verification summary, detailed reports archive, and relocation record. |
 | `PACKAGE_STATUS.json` | Machine-readable source, change, validation and limitation record. |
 
-The frozen ZIP SHA-256 is `3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01`. No archived member was removed or rewritten. All 9,673 entries of `RELEASE_MANIFEST.json` retain their original bytes; `RELEASE_MANIFEST.json` and `SHA256SUMS.txt` are the two additional ZIP files. This binds the preserved evidence to the supplied release, but hashes alone cannot prove historical execution.
+The original ZIP identity and the selected ZIP identity are recorded in [ARCHIVE_SELECTION.json](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/ARCHIVE_SELECTION.json). The current archive preserves 9,661 original manifest-listed members plus the unchanged historical manifest and checksum file. Twelve author-document entries are excluded. Verification checks this selection explicitly. This binds the preserved evidence to the supplied release, but hashes alone cannot prove historical execution.
 
 The original package was not self-contained: its analysis script imported an omitted `revalidate_phase12_run.py`, repair scripts imported an omitted `post_run_correction_identity.py`, the main XSD imported missing `xml.xsd`, and legacy scripts used author-specific absolute paths. The supported entrypoint resolves those packaging problems without editing frozen files. It restores 44 frozen runtime assets and the frozen `element_selection.py`; it sets the frozen evaluator's three path constants at runtime. Unneeded parent package markers are namespace packages, so the full repository's eager imports are not used. The validator verifies its own original implementation manifest on construction. Supplemental files have explicit new identities and are **not asserted to have been bound by the original V20 freeze**. The recovered legacy scripts remain historical source: they are not alternative portable entrypoints.
 
@@ -68,4 +68,4 @@ Detailed validation reports preserve the difference between an artifact profile 
 * The cases are curated, requirement-derived benchmark instances. Independent representation of YAML obligations helps check outputs, but this is not an independently sampled industrial evaluation set. Profile/reference checks and source traceability do not substitute for broader semantic or full-corpus conformance.
 * Historical absolute paths inside the unchanged archive/recovered scripts remain provenance strings. The supported offline command maps evidence paths to the newly extracted relative layout. It does not require those historical locations to exist.
 
-The package contains no new model results and makes no changes to the paper. These repairs close the offline packaging gap while preserving the limitations of the original evidence.
+The package contains no new model results. These repairs close the offline packaging gap while preserving the limitations of the original evidence.

@@ -1,6 +1,8 @@
 # ICM construction and an executed field trace
 
-This guide connects Section 3.3 and Appendix A.2 to the metamodel representation, constraint extractor, automatic linker and retained ICM. Section 4.2.2 and Appendix A.4 then follow one source-linked constraint into an actual ARXML artifact and its checks. The [crosswalk](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/PAPER_ARTIFACT_CROSSWALK.md) gives the corresponding LaTeX labels and reviewer comments.
+This guide follows a retained AUTOSAR constraint from its normative source and
+metamodel links to a task-bound period value and recorded artifact checks. It
+also locates the preparation code, published resources and aggregate check counts.
 
 ## Start with the read-only inspection
 
@@ -17,22 +19,22 @@ without API calls, database access, archive extraction or output files. Its
 `PASS` covers this binding replay and the specified evidence comparisons.
 XSD and rule outcomes are read from the original reports, not rerun here.
 
-## Locate M, C, A, P, and the execution resources
+## Locate the ICM resources and runtime checks
 
-The paper's `I = (M, C, A, P)` is an information model. Its parts are represented
-in several files and embedded records, rather than four independently generated
-models.
+Metamodel information, constraint records, element links and source provenance
+are stored in the files and embedded records below. The same table identifies
+the retrieval and checking resources used with them.
 
 | Part | Inspectable resource and locator | What it establishes |
 |---|---|---|
-| M: metamodel representation | [Unified metadata with inlines][metadata], for example `groups.TimingEvent` and `groups.RunnableEntity` | Types, properties, inheritance-related information, XML tags and mapping information available to the implementation. `groups.TimingEvent.elements[name=period]` maps `TimingEvent.period` to the `PERIOD` XML element and describes its unit as seconds. |
-| C: domain constraint records | [Published constraints][constraints], array element 698, selected by `id == "TPS_SWCT_01519"` | The retained source record, structured semantics, intended uses, verification policy, element targets, and quality flags for this constraint. |
-| A: links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record`; the [v2 binder][bind-v2] | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. The inspection command recomputes this complete binding record. |
-| P: source information | The constraint's `source.source`; the [selected source excerpt][excerpt], `normative_source` | Document name, section path, source line, retained original wording and its text hash. The excerpt also records its enclosing retained chapter file's byte hash. |
+| Metamodel representation | [Unified metadata with inlines][metadata], for example `groups.TimingEvent` and `groups.RunnableEntity` | Types, properties, inheritance-related information, XML tags and mapping information available to the implementation. `groups.TimingEvent.elements[name=period]` maps `TimingEvent.period` to the `PERIOD` XML element and describes its unit as seconds. |
+| Domain constraint records | [Published constraints][constraints], array element 698, selected by `id == "TPS_SWCT_01519"` | The retained source record, structured semantics, intended uses, verification policy, element targets, and quality flags for this constraint. |
+| Links to metamodel elements | The same record's `targets`; the [selected preparation excerpt][excerpt], `preparation_layers.binding_decisions.jsonl.record`; the [v2 binder][bind-v2] | Resolved class/XML targets, their roles and the binding result. This example includes `RunnableEntity`, `TimingEvent`, `SwcInternalBehavior`, and variants of `AtomicSwComponentType`. The inspection command recomputes this complete binding record. |
+| Source information | The constraint's `source.source`; the [selected source excerpt][excerpt], `normative_source` | Document name, section path, source line, retained original wording and its text hash. The excerpt also records its enclosing retained chapter file's byte hash. |
 | Quality and review state | The constraint's `quality`; [publication manifest][publication]; [publication code][publish] | Separate semantic, binding and derived review states. Their exact interpretation and counts are given below. |
 | Executable checks | [Validation plan][plan], select `constraint_id == "TPS_SWCT_01519"`; [plan compiler][compiler] | Registered rule, plugin, activation requirements, source hash and implementation metadata. The plan contains 554 configured rules, not 554 rules executed on every task. |
 | Retrieval | [Retrieval manifest][retrieval-manifest], [card construction][cards], [retriever][retriever] | A 1,085-card resource and the ranking policy. The retrieval dataset hash is an identity defined by this resource, not the byte hash of `constraints_v2.json`. |
-| Trace to one artifact | [Figure 6 data][figure-data], [AUTOSAR frozen archive][archive], and the inspection script | The actual task binding, enhanced schema, ARXML and recorded validation for ASW-FULL-01, repetition 1, with repair disabled. |
+| Trace to one artifact | [Periodic-runnable trace data][figure-data], [AUTOSAR experiment archive][archive], and the inspection script | The actual task binding, enhanced schema, ARXML and recorded validation for ASW-FULL-01, repetition 1, with repair disabled. |
 
 The full published constraint file has SHA-256
 `d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d`.
@@ -116,7 +118,7 @@ The normative rule says that periodic execution requires a TimingEvent with a
 desired period and a reference to the runnable. It does not prescribe a universal
 10 ms value. The `0.01` seconds value comes from this task.
 
-The members reside in the [frozen AUTOSAR archive][archive]. Its top-level
+The members reside in the [AUTOSAR experiment archive][archive]. Its top-level
 directory is `AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/`. Relative to it:
 
 - The task is `requirements/asw_cases_v3.yaml`, case `ASW-FULL-01`.
@@ -124,6 +126,11 @@ directory is `AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/`. Relative to it:
   `evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/`.
 - The execution plan is
   `code_snapshot/runtime_assets/src/generate_formal_constraints/v2/validation_plan.json`.
+
+The archive was repackaged to exclude author documents. The experiment members
+listed here retain their original bytes and paths. [Archive selection](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/ARCHIVE_SELECTION.json)
+records the exclusions and the distinction between the original and current
+whole-archive identities.
 
 Within that run directory, inspect these members in order:
 
@@ -242,15 +249,15 @@ python -B inspection/check_figure_evidence.py
 ```
 
 The [figure inspection](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/inspection/check_figure_evidence.py) compares the
-[Figure 7 plotting data](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/figure_sources/data/Fig7_vllm_intervention_data.json)
-with the original vLLM archive. It recalculates all 165,066 event hashes and
+[AUTOSAR-vLLM plotting data](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/analysis/figures/data/Fig7_vllm_intervention_data.json)
+with the retained vLLM archive members. It recalculates all 165,066 event hashes and
 previous-hash links, recovers the 516 recorded intervention positions and their
 source line numbers, checks identical trajectories across each case's three
 repetitions, and verifies the request and structural-acceptance data against
 the original request/postprocessing files. The event flags are re-extracted;
 historical logits and masks are not reconstructed.
 
-For [Figure 8](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/figure_sources/data/Fig8_railway_results_data.json), it
+For the [railway plotting data](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/analysis/figures/data/Fig8_railway_results_data.json), it
 reads 645 original railway score records and the three rejected-unit outcomes,
 recombines their recorded checks, and obtains 23/29/51 of 72 and 129/140/141 of
 144. It then reads the Terra archive's 72 endpoint rows and compares the original
@@ -273,7 +280,7 @@ count causes a nonzero exit and identifies the mismatching field.
 [retrieval-manifest]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/retrieval_manifest.json
 [cards]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/build_retrieval_cards.py
 [retriever]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/constraint_retriever.py
-[figure-data]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/paper/%E8%AE%BA%E6%96%87%E5%9B%BE/Fig6_icm_trace_data.json
+[figure-data]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/analysis/figures/data/Fig6_icm_trace_data.json
 [archive]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip
 [context]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/context_injector.py
 [extractor]: https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/llm_extractor.py

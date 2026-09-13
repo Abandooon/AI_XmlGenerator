@@ -22,15 +22,9 @@ from urllib.parse import unquote, urlsplit
 sys.dont_write_bytecode = True
 REPOSITORY = ("abandooon", "ai_xmlgenerator")
 FIXED_DOCUMENTS = (
-    "README.md", "paper/README.md", "paper/current/README.md",
-    "paper/current/english/README.md", "paper/current/english/LOCATIONS.md",
-    "paper/current/latex/README.md", "paper/current/latex/LOCATIONS.md",
-    "paper/REVIEW_RESPONSE_MATRIX.md", "paper/COMMENT_SOURCE_MAP.md",
-    "paper/figure_sources/README.md",
-    "inspection/examples/README.md",
-    "supporting/bibliography_compatibility/README.md",
-    "paper/current/english/TRANSLATION_REVIEW.md",
-    "validation/publication_review/COMMAND_AUDIT.md",
+    "README.md", "analysis/figures/README.md", "analysis/figures/TERMINOLOGY.md", "analysis/figures/data/Fig6_icm_trace_sources.md",
+    "supporting/reference_source_recheck/README.md",
+    "inspection/examples/README.md", "validation/publication_review/COMMAND_AUDIT.md",
 )
 
 

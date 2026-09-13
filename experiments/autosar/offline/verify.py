@@ -24,8 +24,8 @@ from post_run_correction_identity import (
 from revalidate_phase12_run import OfflineVerifier
 
 ARCHIVE_NAME = 'AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip'
-# Measured original ZIP digest (not derived from a mutable status report).
-ARCHIVE_SHA = '3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01'
+# Current selected ZIP digest (not derived from a mutable status report).
+ARCHIVE_SHA = 'afb8255562bea5e9dc3e19f1527a20b96374ad85f471a1a10563ec9d882bc4ec'
 RECOVERY_FIELDS = [
     'suppressed_phase1_selection_count', 'multi_anchor_expansion_count',
     'structured_anchor_index_repair_count', 'structured_anchor_chain_repair_count',
@@ -145,18 +145,24 @@ def run(work):
 
     release = extract_archive(PACKAGE/'frozen'/ARCHIVE_NAME, work/'extracted', ARCHIVE_SHA)
     manifest = read_json(release/'RELEASE_MANIFEST.json')
-    integrity = verify_file_map(release, manifest['files'])
-    require(not integrity['errors'] and integrity['checked'] == 9673, 'Release file identity failure')
+    selection = read_json(PACKAGE/'ARCHIVE_SELECTION.json')
+    require(selection['current']['sha256'] == ARCHIVE_SHA, 'Selection/archive identity mismatch')
+    excluded = {row['member'].split('/', 1)[1]: row['sha256'] for row in selection['excluded_members']}
+    require(len(manifest['files']) == 9673 and len(excluded) == 12, 'Original manifest/selection count mismatch')
+    require(all(manifest['files'].get(name) == digest for name, digest in excluded.items()), 'Excluded member identity mismatch')
+    retained = {name: digest for name, digest in manifest['files'].items() if name not in excluded}
+    integrity = verify_file_map(release, retained)
+    require(not integrity['errors'] and integrity['checked'] == 9661, 'Retained release file identity failure')
     require(canonical_valid(manifest), 'Release canonical hash mismatch')
     actual_files = {str(p.relative_to(release)).replace('\\', '/') for p in release.rglob('*') if p.is_file()}
-    require(actual_files == set(manifest['files']) | {'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}, 'Unexpected or missing ZIP members')
+    require(actual_files == set(retained) | {'RELEASE_MANIFEST.json', 'SHA256SUMS.txt'}, 'Unexpected or missing ZIP members')
     browseable = read_json(PACKAGE/'frozen_code/CODE_INDEX.json')
     for item in browseable['files']:
         require(item['sha256'] == manifest['files'][item['archive_relative_path']], 'Browseable code index is not bound to frozen release')
         require(sha256_file(under(PACKAGE, item['path'])) == item['sha256'], 'Browseable frozen source hash mismatch')
     runtime, sources = build_runtime(release, work)
     verifier = OfflineVerifier(release, runtime)
-    print('Frozen release: 9,673/9,673 hashes PASS; isolated runtime loaded.', flush=True)
+    print('Selected release: 9,661/9,661 hashes PASS; 12 author-document entries excluded; isolated runtime loaded.', flush=True)
 
     generation = read_json(release/'evidence/formal_v20/generation/experiment_results.json')
     schedule = read_json(release/'evidence/formal_v20/generation/experiment_schedule.json')
@@ -275,7 +281,7 @@ def run(work):
     checks = [{'metric':'generation.'+k,'actual':generation_metrics[k],'expected':v,'pass':generation_metrics[k]==v} for k,v in expected_generation.items()]
     checks += [{'metric':'repair.'+k,'actual':repair_metrics[k],'expected':v,'pass':repair_metrics[k]==v} for k,v in expected_repair.items()]
     checks += [{'metric':'formal_v20_admitted_phase2_singleton_and_saved_json_match','actual':sum(r['singleton'] and r['unique_json_equals_saved_parsed_response'] for r in phase2),'expected':120,'pass':len(phase2)==120 and all(r['singleton'] and r['unique_json_equals_saved_parsed_response'] for r in phase2)}]
-    result = {'schema_version':'autosar.reviewer.offline-verification.v1','decision':'PASS' if all(c['pass'] for c in checks) else 'FAIL','scope':'Revalidation of preserved V20 artifacts and logged metadata; not a replay of original model interactions.','archive_sha256':ARCHIVE_SHA,'release_file_identity':integrity,'release_manifest_canonical_valid':True,'generation_results_canonical_sha256':generation['content_sha256'],'repair_results_canonical_sha256':repair['content_sha256'],'runtime_sources':{'frozen':sum(s['identity']=='original_v20_freeze' for s in sources),'supplemental':sum(s['identity']=='supplemental_2026-09-09' for s in sources)},'generation':generation_metrics,'repair':repair_metrics,'phase2':{'scope':'Only the post-Phase1 admitted schemas in formal V20; no claim about arbitrary dynamic Phase2 or model-free Phase1.','schemas':len(phase2),'singleton_and_saved_json_match':sum(r['singleton'] and r['unique_json_equals_saved_parsed_response'] for r in phase2)},'checks':checks,'offline_execution':{'network_attempts_blocked':len(blocked),'subprocesses_started':0,'all_project_imports_under_work_dir':True,'writes_only_to_requested_work_dir':True},'environment':{'python':sys.version,'packages':{p:importlib.metadata.version(p) for p in ('lxml','jsonschema','PyYAML','z3-solver')}},'elapsed_seconds':round(time.monotonic()-started,3)}
+    result = {'schema_version':'autosar.reviewer.offline-verification.v1','decision':'PASS' if all(c['pass'] for c in checks) else 'FAIL','scope':'Revalidation of preserved V20 artifacts and logged metadata; not a replay of original model interactions.','archive_sha256':ARCHIVE_SHA,'archive_selection':{'original_sha256':selection['original']['sha256'],'excluded_members':len(excluded),'retained_member_bytes_unchanged':True},'release_file_identity':integrity,'release_manifest_canonical_valid':True,'generation_results_canonical_sha256':generation['content_sha256'],'repair_results_canonical_sha256':repair['content_sha256'],'runtime_sources':{'frozen':sum(s['identity']=='original_v20_freeze' for s in sources),'supplemental':sum(s['identity']=='supplemental_2026-09-09' for s in sources)},'generation':generation_metrics,'repair':repair_metrics,'phase2':{'scope':'Only the post-Phase1 admitted schemas in formal V20; no claim about arbitrary dynamic Phase2 or model-free Phase1.','schemas':len(phase2),'singleton_and_saved_json_match':sum(r['singleton'] and r['unique_json_equals_saved_parsed_response'] for r in phase2)},'checks':checks,'offline_execution':{'network_attempts_blocked':len(blocked),'subprocesses_started':0,'all_project_imports_under_work_dir':True,'writes_only_to_requested_work_dir':True},'environment':{'python':sys.version,'packages':{p:importlib.metadata.version(p) for p in ('lxml','jsonschema','PyYAML','z3-solver')}},'elapsed_seconds':round(time.monotonic()-started,3)}
     write_json(work/'reports/generation_rows.json', g_rows)
     write_json(work/'reports/repair_rows.json', r_rows)
     write_json(work/'reports/phase2_schema_rows.json', phase2)

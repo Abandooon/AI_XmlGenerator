@@ -3,7 +3,6 @@
   "package_date": "2026-09-09",
   "decision": "READY_FOR_OFFLINE_REVIEW",
   "entrypoint": "python -I -B review.py --work-dir <new-or-empty-directory>",
-  "paper_files_modified": false,
   "new_model_results_created": false,
   "original_evidence_modified": false,
   "singleton_design_changed": false,
@@ -13,7 +12,8 @@
       "bytes": 58759873,
       "sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
       "original_manifest_files": 9673,
-      "excluded_files": []
+      "excluded_files": [],
+      "historical_identity_only": true
     },
     "generation_results_canonical_sha256": "5da533af826edcabca4c08632ffdc684ef31de31a868046be96f70f851ec9ef6",
     "repair_results_canonical_sha256": "15b0cd2f2f65756ca6373e9abb7fcfdf68ca108e67bccb77bf329e89d111412c",
@@ -69,6 +69,14 @@
           "purpose": "Recovered legacy script for inspection only; never imported or executed by the corrected offline entrypoint."
         }
       ]
+    },
+    "current_archive": {
+      "sha256": "afb8255562bea5e9dc3e19f1527a20b96374ad85f471a1a10563ec9d882bc4ec",
+      "bytes": 58167748,
+      "path": "frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+      "selection": "ARCHIVE_SELECTION.json",
+      "excluded_document_members": 12,
+      "retained_manifest_files": 9661
     }
   },
   "added_or_corrected": [

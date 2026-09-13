@@ -1,6 +1,6 @@
 # Statistical analysis of the retained experiments
 
-The manuscript appendix contains the primary contrasts and the information needed to read them: Appendix C.2, Table C3 for railway models, and Appendix D.2, Table D3 for PIL decisions. This repository note retains the complete sensitivity analyses and test results. It is part of the reproducibility package, not a separately required manuscript supplement. No new experiment or model call was conducted to prepare this note.
+This note reports the complete paired analyses and sensitivity checks for the retained railway and PIL experiments. No new experiment or model call was conducted to prepare it.
 
 ## Units and interpretation
 

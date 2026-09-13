@@ -1,0 +1,108 @@
+{
+  "format": "experiment-archive-selection.v1",
+  "date": "2026-09-13",
+  "reason": "Exclude manuscript drafts, response documents and their document builders from the current code/data export.",
+  "original_manifests": "Retained verbatim as historical identities. Verification uses their file maps minus the explicit exclusions below.",
+  "archives": [
+    {
+      "path": "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip",
+      "original": {
+        "sha256": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+        "bytes": 58759873
+      },
+      "current": {
+        "sha256": "afb8255562bea5e9dc3e19f1527a20b96374ad85f471a1a10563ec9d882bc4ec",
+        "bytes": 58167748
+      },
+      "excluded_members": [
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/analysis_code/build_v20_paper_materials.py",
+          "bytes": 27976,
+          "sha256": "d6a786dfd06b3ae3292a66fa2a7df435d7741eea59bb00de142745d4e90f07fe"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/analysis_code/build_v20_reviewer_response_docx.py",
+          "bytes": 27356,
+          "sha256": "63b05c67366493fe5b10b4b3aacef670ca712fa9cff54e70d62e0041e2f47a68"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/ATLAS_constraint_production_methodology_and_reviewer_response.docx",
+          "bytes": 49304,
+          "sha256": "fe757a929c120616be29da420e677d9ac7a89fe1aa9709ac5b770cb136a0144c"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/ATLAS_constraint_production_methodology_and_reviewer_response.pdf",
+          "bytes": 487437,
+          "sha256": "5d9ec188fb19b5a3b916a4a0e2191300741ff384a15c1d035f718f3e75799dbe"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/ATLAS_new_evaluation_section.tex",
+          "bytes": 14829,
+          "sha256": "a3fb86466a6663c369e8043e8e902deea8ded7b410e2f931a119b4647e4c3634"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/ATLAS_remaining_sections.tex",
+          "bytes": 26073,
+          "sha256": "189b6ff67bc7ea098d43bc7344f3455f4a15bd706339701033d16ecf8748229c"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/ATLAS_SOSYM_V20_PAPER_AND_EVIDENCE_USE_GUIDE_2026-09-03.md",
+          "bytes": 4204,
+          "sha256": "1551c86311b24ea1b85caf9064bfce03c94eec9140f40cd4881547e6a1dad6b6"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/AUTHOR_RESPONSE_V20_TRAIN_BESSER_ADDENDUM.md",
+          "bytes": 4072,
+          "sha256": "cf9e1492d0a57fb4960f624da275e81fc5b3c2f21276ddf942f60f277db6453c"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md",
+          "bytes": 35428,
+          "sha256": "88fb2e4d7403b84c4b945a71660a7b702437df61e3da5a721b6626d3a6e1b0a8"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/AUTOSAR_V20_FORMAL_EXPERIMENT_RESULTS_AND_PAPER_BOUNDARY_2026-09-02.md",
+          "bytes": 4874,
+          "sha256": "0fe271c263cc63784de16db4172165b5d470ee28917cb14b832e7f871cd6fc3f"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/REVIEW_RESPONSE_MATRIX.md",
+          "bytes": 17059,
+          "sha256": "d734268addedfe2565145d228fba0d9aef5bfe214dbedba9b93f13dcce02048b"
+        },
+        {
+          "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/paper_and_reviewer_response/REVISION_STATUS.md",
+          "bytes": 5087,
+          "sha256": "b1a886ac45a2c362dcee3abff6465b1cab7fb14cfdd6a7080babcb690e44da85"
+        }
+      ],
+      "retained_member_count": 9663,
+      "retained_member_bytes_unchanged": true
+    },
+    {
+      "path": "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz",
+      "original": {
+        "sha256": "06a87e10f4703cd0aac4efcdda66ca10e989a1bc516ada7b95dfd3f1833c44bc",
+        "bytes": 20535513
+      },
+      "current": {
+        "sha256": "90ac3ba2123bfda1ccd8599a1b27583a1a7d2a7eea46b42900747ab21a93ee1f",
+        "bytes": 20037506
+      },
+      "excluded_members": [
+        {
+          "member": "atlas_vllm_uga_v6_3_4_formal_b1_evidence_2026-08-29/ATLAS_V6_3_4_PAPER_INSERT_DRAFT.tex",
+          "bytes": 4540,
+          "sha256": "88801eeca84ac57e2a758948fcae9ce839dd1b38c9b625136d97950a6acf22b4"
+        },
+        {
+          "member": "atlas_vllm_uga_v6_3_4_formal_b1_evidence_2026-08-29/ATLAS_V6_3_4_RESULTS_AND_CLAIM_BOUNDARIES.md",
+          "bytes": 14642,
+          "sha256": "4569e28520cfe30edf0800b29f0fd2d87bfe5f68667f3557b8f8448ef0dc6ea4"
+        }
+      ],
+      "retained_member_count": 1452,
+      "retained_member_bytes_unchanged": true
+    }
+  ]
+}
