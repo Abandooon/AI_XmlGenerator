@@ -1,0 +1,1161 @@
+{
+  "schema": "paper-data-field-map/1",
+  "manuscript": "paper/current/english/main.tex",
+  "scope": "All 19 tables classified; every Arabic numerical result cell in 13 numerical tables, plus explicitly mapped principal prose. Excludes citation IDs, legal articles, model versions, illustrative identifiers, setup values unless explicitly mapped.",
+  "tables": {
+    "tab:1": {
+      "kind": "nonnumeric",
+      "reason": "ICM fields; no experimental numerical measurements"
+    },
+    "tab:2": {
+      "kind": "nonnumeric",
+      "reason": "Uses of constraints; no experimental numerical measurements"
+    },
+    "tab:3": {
+      "kind": "nonnumeric",
+      "reason": "Adaptation interfaces; no experimental numerical measurements"
+    },
+    "tab:A2": {
+      "kind": "nonnumeric",
+      "reason": "Extraction setup; no experimental numerical measurements"
+    },
+    "tab:C1": {
+      "kind": "nonnumeric",
+      "reason": "Native query semantics; six-query inventory, no measured outcomes"
+    },
+    "tab:D1": {
+      "kind": "nonnumeric",
+      "reason": "Condition definitions; P0-P3 are identifiers, not measurements"
+    },
+    "tab:4": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^AUTOSAR engineering",
+          "metrics": [
+            "auto.cases",
+            "auto.repeats",
+            "auto.repair.core.n",
+            "auto.repair.sub.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^AUTOSAR-vLLM",
+          "metrics": [
+            "auto.cases",
+            "auto.repeats",
+            "vllm.total"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Railway model",
+          "metrics": [
+            "rail.cases",
+            "rail.repeats",
+            "terra.repeats"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Private international",
+          "metrics": [
+            "pil.cases",
+            "pil.repeats",
+            "pil.total"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:5": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Generation runs",
+          "metrics": [
+            "auto.pass",
+            "auto.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^ARXML files",
+          "metrics": [
+            "auto.xsd",
+            "auto.files"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Case structural",
+          "metrics": [
+            "auto.obligations"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Local references",
+          "metrics": [
+            "auto.references"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "workflow token usage",
+          "metrics": [
+            "auto.tokens"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Mean time",
+          "metrics": [
+            "auto.seconds.mean"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:6": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Basic prompting",
+          "metrics": [
+            "pil.p0.structure_valid",
+            "pil.p0.units",
+            "pil.p0.endpoint_success",
+            "pil.p0.units",
+            "pil.p0.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Retrieval augmentation",
+          "metrics": [
+            "pil.p1.structure_valid",
+            "pil.p1.units",
+            "pil.p1.endpoint_success",
+            "pil.p1.units",
+            "pil.p1.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Structural constraints",
+          "metrics": [
+            "pil.p2.structure_valid",
+            "pil.p2.units",
+            "pil.p2.endpoint_success",
+            "pil.p2.units",
+            "pil.p2.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Full checks",
+          "metrics": [
+            "pil.p3.structure_valid",
+            "pil.p3.units",
+            "pil.p3.endpoint_success",
+            "pil.p3.units",
+            "pil.p3.endpoint_success.pct"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:A1": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Period and",
+          "metrics": [
+            "auto.baseline.period",
+            "auto.baseline.timeout"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Initial value",
+          "metrics": [
+            "auto.baseline.init"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Minimal tier",
+          "metrics": [
+            "auto.tier.minimal"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^Standard tier",
+          "metrics": [
+            "auto.tier.standard",
+            "auto.standard.ports.min",
+            "auto.standard.ports.max"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^Full tier",
+          "metrics": [
+            "auto.tier.full",
+            "auto.full.runnables.min",
+            "auto.full.runnables.max"
+          ],
+          "all_cells": true
+        }
+      ]
+    },
+    "tab:A3": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Empty initial",
+          "metrics": [
+            "auto.mutation.empty_init_value.n",
+            "auto.mutation.empty_init_value.detected",
+            "auto.mutation.empty_init_value.pass"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Incorrect initial",
+          "metrics": [
+            "auto.mutation.wrong_init_value.n",
+            "auto.mutation.wrong_init_value.detected",
+            "auto.mutation.wrong_init_value.pass"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Missing event",
+          "metrics": [
+            "auto.mutation.missing_event_behavior_path.n",
+            "auto.mutation.missing_event_behavior_path.detected",
+            "auto.mutation.missing_event_behavior_path.pass"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Missing receiver",
+          "metrics": [
+            "auto.mutation.missing_required_comspec.n",
+            "auto.mutation.missing_required_comspec.detected",
+            "auto.mutation.missing_required_comspec.pass"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Incorrect XSD",
+          "metrics": [
+            "auto.mutation.wrong_xsd_order.n",
+            "auto.mutation.wrong_xsd_order.detected",
+            "auto.mutation.wrong_xsd_order.pass"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Total",
+          "metrics": [
+            "auto.repair.core.n",
+            "auto.repair.core.detected",
+            "auto.repair.core.pass"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:A4": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "Empty the provided-interface",
+          "metrics": [
+            "auto.mutation.empty_provided_interface_ref.pass",
+            "auto.mutation.empty_provided_interface_ref.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "Change the provided-interface",
+          "metrics": [
+            "auto.mutation.wrong_provided_interface_ref.pass",
+            "auto.mutation.wrong_provided_interface_ref.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "Delete the provided port",
+          "metrics": [
+            "auto.mutation.missing_provided_port.pass",
+            "auto.mutation.missing_provided_port.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "Delete the component name",
+          "metrics": [
+            "auto.mutation.missing_component_short_name.pass",
+            "auto.mutation.missing_component_short_name.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "Delete the required-interface",
+          "metrics": [
+            "auto.mutation.missing_required_interface_ref.pass",
+            "auto.mutation.missing_required_interface_ref.n"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:B1": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Minimal",
+          "metrics": [
+            "auto.tier.minimal",
+            "auto.repeats",
+            "vllm.U.minimal.pass",
+            "vllm.U.minimal.n",
+            "vllm.G.minimal.pass",
+            "vllm.G.minimal.n",
+            "vllm.A.minimal.pass",
+            "vllm.A.minimal.n"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^Standard",
+          "metrics": [
+            "auto.tier.standard",
+            "auto.repeats",
+            "vllm.U.standard.pass",
+            "vllm.U.standard.n",
+            "vllm.G.standard.pass",
+            "vllm.G.standard.n",
+            "vllm.A.standard.pass",
+            "vllm.A.standard.n"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^Full",
+          "metrics": [
+            "auto.tier.full",
+            "auto.repeats",
+            "vllm.U.full.pass",
+            "vllm.U.full.n",
+            "vllm.G.full.pass",
+            "vllm.G.full.n",
+            "vllm.A.full.pass",
+            "vllm.A.full.n"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^Total",
+          "metrics": [
+            "auto.cases",
+            "auto.repeats",
+            "vllm.U.pass",
+            "vllm.U.n",
+            "vllm.G.pass",
+            "vllm.G.n",
+            "vllm.A.pass",
+            "vllm.A.n"
+          ],
+          "all_cells": true
+        }
+      ]
+    },
+    "tab:B2": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Total output",
+          "metrics": [
+            "vllm.U.tokens",
+            "vllm.G.tokens",
+            "vllm.A.tokens"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Mean output",
+          "metrics": [
+            "vllm.U.tokens.mean",
+            "vllm.G.tokens.mean",
+            "vllm.A.tokens.mean"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Total request",
+          "metrics": [
+            "vllm.U.seconds",
+            "vllm.G.seconds",
+            "vllm.A.seconds"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Mean request",
+          "metrics": [
+            "vllm.U.seconds.mean",
+            "vllm.G.seconds.mean",
+            "vllm.A.seconds.mean"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:C2": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^Generation",
+          "metrics": [
+            "rail.cases",
+            "rail.G.G0.n",
+            "rail.G.G0.pass",
+            "rail.G.GS.pass",
+            "rail.G.GF.pass",
+            "rail.G.G0.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Fixed damage",
+          "metrics": [
+            "rail.R.coupled",
+            "rail.R.concurrent",
+            "rail.R.S.pass",
+            "rail.R.V.pass",
+            "rail.R.F.pass",
+            "rail.R.S.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Task-obligation",
+          "metrics": [
+            "rail.cases",
+            "rail.T.S.pass",
+            "rail.T.V.pass",
+            "rail.T.F.pass",
+            "rail.T.S.n"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Correctness preservation",
+          "metrics": [
+            "rail.CLEAN.inputs",
+            "rail.CLEAN.S.pass",
+            "rail.CLEAN.S.n"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:C3": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "resampling interval",
+          "metrics": [
+            "rail.stats.confidence"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Generated models.*initial generation",
+          "metrics": [
+            "rail.G.GF-G0.diff",
+            "rail.G.GF-G0.lo",
+            "rail.G.GF-G0.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Generated models.*self-repair",
+          "metrics": [
+            "rail.G.GF-GS.diff",
+            "rail.G.GF-GS.lo",
+            "rail.G.GF-GS.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Controlled damage.*self-repair",
+          "metrics": [
+            "rail.R.F-S.diff",
+            "rail.R.F-S.lo",
+            "rail.R.F-S.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Controlled damage.*localization.*repair with validation feedback &",
+          "metrics": [
+            "rail.R.F-V.diff",
+            "rail.R.F-V.lo",
+            "rail.R.F-V.hi"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:C4": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^G0,",
+          "metrics": [
+            "terra.Luna.G0.pass",
+            "terra.n",
+            "terra.Luna.G0.pct",
+            "terra.Terra.G0.pass",
+            "terra.n",
+            "terra.Terra.G0.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^GS,",
+          "metrics": [
+            "terra.Luna.GS.pass",
+            "terra.n",
+            "terra.Luna.GS.pct",
+            "terra.Terra.GS.pass",
+            "terra.n",
+            "terra.Terra.GS.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^GF,",
+          "metrics": [
+            "terra.Luna.GF.pass",
+            "terra.n",
+            "terra.Luna.GF.pct",
+            "terra.Terra.GF.pass",
+            "terra.n",
+            "terra.Terra.GF.pct"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:D2": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "^\\\\caption",
+          "metrics": [
+            "pil.p0.units"
+          ],
+          "all_cells": true
+        },
+        {
+          "pattern": "^P0 &",
+          "metrics": [
+            "pil.p0.structure_valid",
+            "pil.p0.structure_valid.pct",
+            "pil.p0.common_delivery_valid",
+            "pil.p0.common_delivery_valid.pct",
+            "pil.p0.system_release",
+            "pil.p0.system_release.pct",
+            "pil.p0.gold_correct",
+            "pil.p0.gold_correct.pct",
+            "pil.p0.endpoint_success",
+            "pil.p0.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^P1 &",
+          "metrics": [
+            "pil.p1.structure_valid",
+            "pil.p1.structure_valid.pct",
+            "pil.p1.common_delivery_valid",
+            "pil.p1.common_delivery_valid.pct",
+            "pil.p1.system_release",
+            "pil.p1.system_release.pct",
+            "pil.p1.gold_correct",
+            "pil.p1.gold_correct.pct",
+            "pil.p1.endpoint_success",
+            "pil.p1.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^P2 &",
+          "metrics": [
+            "pil.p2.structure_valid",
+            "pil.p2.structure_valid.pct",
+            "pil.p2.common_delivery_valid",
+            "pil.p2.common_delivery_valid.pct",
+            "pil.p2.system_release",
+            "pil.p2.system_release.pct",
+            "pil.p2.gold_correct",
+            "pil.p2.gold_correct.pct",
+            "pil.p2.endpoint_success",
+            "pil.p2.endpoint_success.pct"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^P3 &",
+          "metrics": [
+            "pil.p3.structure_valid",
+            "pil.p3.structure_valid.pct",
+            "pil.p3.common_delivery_valid",
+            "pil.p3.common_delivery_valid.pct",
+            "pil.p3.system_release",
+            "pil.p3.system_release.pct",
+            "pil.p3.gold_correct",
+            "pil.p3.gold_correct.pct",
+            "pil.p3.endpoint_success",
+            "pil.p3.endpoint_success.pct"
+          ],
+          "all_cells": false
+        }
+      ]
+    },
+    "tab:D3": {
+      "kind": "numeric",
+      "rows": [
+        {
+          "pattern": "resampling interval",
+          "metrics": [
+            "pil.stats.confidence"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Retrieval augmentation",
+          "metrics": [
+            "pil.p1-p0.diff",
+            "pil.p1-p0.lo",
+            "pil.p1-p0.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Structural constraints",
+          "metrics": [
+            "pil.p2-p1.diff",
+            "pil.p2-p1.lo",
+            "pil.p2-p1.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Full checks.*structural constraints",
+          "metrics": [
+            "pil.p3-p2.diff",
+            "pil.p3-p2.lo",
+            "pil.p3-p2.hi"
+          ],
+          "all_cells": false
+        },
+        {
+          "pattern": "^Full checks.*basic prompting",
+          "metrics": [
+            "pil.p3-p0.diff",
+            "pil.p3-p0.lo",
+            "pil.p3-p0.hi"
+          ],
+          "all_cells": false
+        }
+      ]
+    }
+  },
+  "prose": [
+    {
+      "label": "abstract",
+      "pattern": "^\\\\abstract\\{",
+      "metrics": [
+        "auto.cases",
+        "auto.pass",
+        "auto.files"
+      ],
+      "capture": "each of (\\d+) requirements.*All (\\d+) end-to-end.*all (\\d+) resulting"
+    },
+    {
+      "label": "sec:introduction",
+      "pattern": "^For AUTOSAR, we conducted",
+      "metrics": [
+        "auto.cases",
+        "auto.pass",
+        "auto.files",
+        "auto.repair.core.pass",
+        "auto.repair.sub.pass",
+        "rail.cases",
+        "rail.G.G0.n",
+        "rail.G.G0.pass",
+        "rail.G.GF.pass",
+        "pil.cases"
+      ]
+    },
+    {
+      "label": "sec:eval-4-1",
+      "pattern": "^The primary outcome in the AUTOSAR",
+      "metrics": [
+        "rail.G.G0.n",
+        "rail.cases"
+      ]
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^The AUTOSAR ICM contains",
+      "metrics": [
+        "icm.constraints",
+        "icm.links",
+        "icm.rules"
+      ]
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^Each of the 20 requirements",
+      "metrics": [
+        "auto.cases",
+        "auto.pass",
+        "auto.files"
+      ]
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^The controlled repair experiment separately",
+      "metrics": [
+        "auto.repair.core.n",
+        "auto.repair.core.tokens",
+        "auto.repair.sub.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-3",
+      "pattern": "^\\\\textbf\\{Constraints were observed",
+      "metrics": [
+        "vllm.bound_runs",
+        "vllm.bound.min",
+        "vllm.bound.max",
+        "vllm.bound",
+        "vllm.steps",
+        "vllm.bound.percent"
+      ]
+    },
+    {
+      "label": "sec:eval-4-3",
+      "pattern": "^All three conditions produced parseable",
+      "metrics": [
+        "vllm.U.pass",
+        "vllm.U.n",
+        "vllm.G.pass",
+        "vllm.G.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-3",
+      "pattern": "^The 60 paired outputs",
+      "metrics": [
+        "vllm.equal_pairs",
+        "vllm.G.seconds.mean",
+        "vllm.A.seconds.mean",
+        "vllm.overhead.percent"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4",
+      "pattern": "^As shown in Figure",
+      "metrics": [
+        "rail.G.G0.pass",
+        "rail.G.G0.n",
+        "rail.G.GS.pass",
+        "rail.G.GS.n",
+        "rail.G.GF.pass",
+        "rail.G.GF.n",
+        "rail.G.GF-G0.diff",
+        "rail.G.failed_models",
+        "rail.G.GS.recovered",
+        "rail.G.GF.recovered"
+      ]
+    },
+    {
+      "label": "fig:8",
+      "pattern": "^\\\\caption\\{Railway model results",
+      "metrics": [
+        "rail.G.G0.n",
+        "rail.R.S.n",
+        "terra.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4",
+      "pattern": "^The 21 failures",
+      "metrics": [
+        "rail.G.GF.fail",
+        "rail.G.remaining_models",
+        "rail.G.GF.stop.regression",
+        "rail.G.GF.stop.ABSTAIN",
+        "rail.G.GF.stop.no_finding_resolved",
+        "rail.G.GF.pass",
+        "rail.G.GF.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4",
+      "pattern": "^A supplementary experiment compared",
+      "metrics": [
+        "rail.R.S.pass",
+        "rail.R.S.n",
+        "rail.R.V.pass",
+        "rail.R.V.n",
+        "rail.R.F.pass",
+        "rail.R.F.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4-3",
+      "pattern": "^On the same 24 tasks",
+      "metrics": [
+        "terra.n",
+        "rail.seed1",
+        "terra.Luna.G0.pass",
+        "terra.Luna.GS.pass",
+        "terra.Luna.GF.pass",
+        "terra.Terra.G0.pass",
+        "terra.Terra.GS.pass",
+        "terra.Terra.GF.pass"
+      ]
+    },
+    {
+      "label": "sec:eval-4-5",
+      "pattern": "^The experiment compares four progressively",
+      "metrics": [
+        "pil.cases",
+        "pil.p0.units"
+      ]
+    },
+    {
+      "label": "sec:eval-4-5",
+      "pattern": "^Full checks improved the primary",
+      "metrics": [
+        "pil.p3-p2.diff",
+        "pil.stats.confidence",
+        "pil.p3-p2.lo",
+        "pil.p3-p2.hi",
+        "pil.repairs",
+        "pil.recovered",
+        "pil.induced"
+      ]
+    },
+    {
+      "label": "sec:conclusion",
+      "pattern": "^Experiments examined the method",
+      "metrics": [
+        "auto.pass",
+        "auto.files",
+        "auto.repair.core.pass",
+        "auto.repair.sub.pass",
+        "vllm.bound_runs",
+        "rail.G.G0.pass",
+        "rail.G.G0.n",
+        "rail.G.GF.pass"
+      ]
+    },
+    {
+      "label": "app:A-1",
+      "pattern": "^The normative basis for the initial",
+      "metrics": [
+        "auto.baseline.init",
+        "auto.cases",
+        "auto.required.p_ports",
+        "auto.required.r_ports",
+        "auto.required.runnables",
+        "auto.required.timing_events",
+        "auto.required.variable_accesses"
+      ]
+    },
+    {
+      "label": "app:A-1",
+      "pattern": "^The 60 generation runs produced",
+      "metrics": [
+        "auto.n",
+        "auto.components",
+        "auto.interfaces",
+        "auto.components.elements.min",
+        "auto.components.elements.max",
+        "auto.interfaces.elements.min",
+        "auto.xml.depth.max",
+        "auto.root_level",
+        "auto.largest.elements"
+      ]
+    },
+    {
+      "label": "app:A-2",
+      "pattern": "^The model generation experiment used",
+      "metrics": [
+        "icm.constraints",
+        "icm.links",
+        "icm.nodes",
+        "icm.relationships"
+      ]
+    },
+    {
+      "label": "app:A-2",
+      "pattern": "^The validation plan contains",
+      "metrics": [
+        "icm.rules",
+        "icm.rules.python",
+        "icm.rules.dsl"
+      ]
+    },
+    {
+      "label": "app:A-3",
+      "pattern": "^Controlled repair used reference",
+      "metrics": [
+        "auto.repair.core.n",
+        "auto.repair.sub.n"
+      ]
+    },
+    {
+      "label": "app:A-3",
+      "pattern": "^The reference file sets",
+      "metrics": [
+        "auto.repair.core.pass",
+        "auto.repair.core.n",
+        "auto.repair.sub.pass",
+        "auto.repair.sub.n",
+        "auto.repair.core.responses",
+        "auto.repair.core.tokens",
+        "auto.repair.sub.responses",
+        "auto.repair.sub.tokens"
+      ]
+    },
+    {
+      "label": "app:B-2",
+      "pattern": "^All 60 audited generations",
+      "metrics": [
+        "vllm.bound_runs",
+        "vllm.bound.min",
+        "vllm.bound.max",
+        "vllm.bound",
+        "vllm.steps",
+        "vllm.equal_pairs"
+      ]
+    },
+    {
+      "label": "app:B-2",
+      "pattern": "^Auditing added a mean",
+      "metrics": [
+        "vllm.overhead.mean",
+        "vllm.overhead.median",
+        "vllm.overhead.percent"
+      ]
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^Across the 48 fixed-damage",
+      "metrics": [
+        "rail.R.inputs",
+        "rail.R.S.stable",
+        "rail.R.V.stable"
+      ]
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^Of the 49 failed initial",
+      "metrics": [
+        "rail.G.failed",
+        "rail.G.failed_models",
+        "rail.G.GF.recovered",
+        "rail.G.remaining_models",
+        "rail.G.GF.stop.regression",
+        "rail.G.GF.stop.ABSTAIN",
+        "rail.G.GF.stop.no_finding_resolved",
+        "rail.G.missing"
+      ]
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^The 72 responses for G0",
+      "metrics": [
+        "rail.G.G0.responses",
+        "rail.G.G0.tokens",
+        "rail.G.G0.seconds",
+        "rail.G.GS.responses",
+        "rail.G.GS.tokens",
+        "rail.G.GS.seconds",
+        "rail.G.GF.responses",
+        "rail.G.GF.tokens",
+        "rail.G.GF.seconds",
+        "rail.total.responses",
+        "rail.total.tokens",
+        "rail.total.seconds"
+      ]
+    },
+    {
+      "label": "app:C-3",
+      "pattern": "^The 60 retained Terra responses",
+      "metrics": [
+        "terra.responses",
+        "terra.tokens",
+        "terra.input",
+        "terra.output"
+      ]
+    },
+    {
+      "label": "app:D-2",
+      "pattern": "^Mean citation F1 scores",
+      "metrics": [
+        "pil.p0.f1",
+        "pil.p1.f1",
+        "pil.p2.f1",
+        "pil.p3.f1",
+        "pil.p0.tokens.mean",
+        "pil.p1.tokens.mean",
+        "pil.p2.tokens.mean",
+        "pil.p3.tokens.mean"
+      ]
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^AUTOSAR describes automotive",
+      "metrics": [
+        "auto.cases",
+        "auto.tier.minimal",
+        "auto.tier.standard",
+        "auto.tier.full"
+      ],
+      "capture": "designed (\\d+) requirements.*produced (\\d+) minimal, (\\d+) standard, and (\\d+) full"
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^Constructing these models involves",
+      "metrics": [
+        "auto.xml.depth.max",
+        "auto.root_level"
+      ]
+    },
+    {
+      "label": "sec:eval-4-2",
+      "pattern": "^The existence of a period",
+      "metrics": [
+        "auto.baseline.period_ms",
+        "auto.baseline.period"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4",
+      "pattern": "^The railway experiment uses the existing",
+      "metrics": [
+        "rail.cases"
+      ]
+    },
+    {
+      "label": "sec:eval-4-4",
+      "pattern": "^Each task was run three times",
+      "metrics": [
+        "rail.G.G0.n"
+      ]
+    },
+    {
+      "label": "sec:eval-4-5",
+      "pattern": "^Two graduate students in private",
+      "metrics": [
+        "pil.cases"
+      ]
+    },
+    {
+      "label": "app:A-1",
+      "pattern": "^The 20 requirements were designed",
+      "metrics": [
+        "auto.cases"
+      ],
+      "capture": "^The (\\d+) requirements"
+    },
+    {
+      "label": "app:A-2",
+      "pattern": "^All 60 generation runs passed",
+      "metrics": [
+        "auto.pass"
+      ]
+    },
+    {
+      "label": "app:A-2",
+      "pattern": "^Post-generation validation first checks the actual",
+      "metrics": [
+        "auto.baseline.period_ms",
+        "auto.baseline.period"
+      ]
+    },
+    {
+      "label": "app:C-1",
+      "pattern": "^The experiment reused the Train",
+      "metrics": [
+        "rail.cases"
+      ]
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^For example, repair with validation feedback and self",
+      "metrics": [
+        "rail.G.GF.pass",
+        "rail.G.GF.n",
+        "rail.G.GS.pass",
+        "rail.G.GS.n",
+        "rail.G.GF-GS.diff"
+      ]
+    },
+    {
+      "label": "app:C-3",
+      "pattern": "^The second model was",
+      "metrics": [
+        "rail.seed1",
+        "terra.n"
+      ]
+    },
+    {
+      "label": "app:D-2",
+      "pattern": "^The P3 records that passed",
+      "metrics": [
+        "pil.p3.system_release",
+        "pil.p3.endpoint_success",
+        "pil.repairs",
+        "pil.recovered",
+        "pil.repaired_endpoint",
+        "pil.induced"
+      ]
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^Across the 48 fixed-damage",
+      "metrics": [
+        "rail.R.F.stable"
+      ],
+      "capture": "and (\\d+) inputs under each of V and F"
+    },
+    {
+      "label": "app:C-2",
+      "pattern": "^Results are paired by condition within each",
+      "metrics": [
+        "rail.cases",
+        "rail.stats.draws",
+        "rail.stats.confidence",
+        "rail.cases"
+      ],
+      "capture": "each of the (\\d+) tasks.*from ([\\d,]+) paired resamples.*= ([\\d.]+)\\\\%.*tasks is (\\d+)"
+    }
+  ]
+}

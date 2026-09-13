@@ -1,0 +1,42 @@
+{
+  "APPLICATION-SW-COMPONENT-TYPE": {
+    "SHORT-NAME": "ASW_Com_Full_Baseline",
+    "PORTS": {
+      "P-PORT-PROTOTYPE": {
+        "Pp_MCU01_EmergShutDown": {},
+        "Pp_MCU02_MaxTor": {},
+        "Pp_MCU03_NRF_IdcSamp": {}
+      },
+      "R-PORT-PROTOTYPE": {
+        "Rp_HCU01_Shift": {},
+        "Rp_HCU01_TqCmd": {},
+        "Rp_HCU02_Poweroff": {}
+      }
+    },
+    "SWC-INTERNAL-BEHAVIOR": {
+      "RUNNABLE-ENTITY": {
+        "RE_Com_Full_Baseline": {
+          "DATA-RECEIVE-POINT-BY-ARGUMENTS": {
+            "VARIABLE-ACCESS": {
+              "VA_Com_Full_Baseline_Read_HCU01_TqCmd": {},
+              "VA_Com_Full_Baseline_Read_HCU01_Shift": {},
+              "VA_Com_Full_Baseline_Read_HCU02_Poweroff": {}
+            }
+          },
+          "DATA-SEND-POINTS": {
+            "VARIABLE-ACCESS": {
+              "VA_Com_Full_Baseline_Write_MCU01_EmergShutDown": {},
+              "VA_Com_Full_Baseline_Write_MCU02_MaxTor": {},
+              "VA_Com_Full_Baseline_Write_MCU03_NRF_IdcSamp": {}
+            }
+          }
+        }
+      },
+      "EVENTS": {
+        "TIMING-EVENT": {
+          "TE_Com_Full_Baseline": {}
+        }
+      }
+    }
+  }
+}

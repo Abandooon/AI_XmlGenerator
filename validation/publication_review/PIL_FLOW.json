@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "raw_initial_answers_replayed": 720,
+  "raw_repair_answers_and_prompts_replayed": 62,
+  "schema_checker": "Independent finite-schema checker; only the frozen schema vocabulary is accepted",
+  "source_loading": "Named pure-function AST allowlists; generation modules and API clients are not imported",
+  "new_model_calls": 0,
+  "full_legal_accuracy": "NOT_ESTIMATED",
+  "arms": {
+    "p3": {
+      "units": 180,
+      "structure_valid": 180,
+      "common_delivery_valid": 180,
+      "system_release": 176,
+      "gold_correct": 144,
+      "endpoint_success": 143,
+      "responses": 242,
+      "tokens": 430616
+    },
+    "p1": {
+      "units": 180,
+      "structure_valid": 178,
+      "common_delivery_valid": 117,
+      "system_release": 178,
+      "gold_correct": 102,
+      "endpoint_success": 96,
+      "responses": 180,
+      "tokens": 263838
+    },
+    "p0": {
+      "units": 180,
+      "structure_valid": 180,
+      "common_delivery_valid": 91,
+      "system_release": 180,
+      "gold_correct": 74,
+      "endpoint_success": 73,
+      "responses": 180,
+      "tokens": 211931
+    },
+    "p2": {
+      "units": 180,
+      "structure_valid": 180,
+      "common_delivery_valid": 118,
+      "system_release": 180,
+      "gold_correct": 105,
+      "endpoint_success": 101,
+      "responses": 180,
+      "tokens": 314340
+    }
+  },
+  "negative_controls": [
+    {
+      "mutation": "final_decision",
+      "rejected": true,
+      "diagnostic": "25|p3|1: final selection differs"
+    },
+    {
+      "mutation": "system_release",
+      "rejected": true,
+      "diagnostic": "25|p3|1: release flag differs"
+    },
+    {
+      "mutation": "schema_status",
+      "rejected": true,
+      "diagnostic": "25|p3|1: schema status differs"
+    },
+    {
+      "mutation": "repair_prompt",
+      "rejected": true,
+      "diagnostic": "25|p3|1: reconstructed repair prompt differs"
+    }
+  ]
+}

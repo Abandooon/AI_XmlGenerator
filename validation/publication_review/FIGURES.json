@@ -1,0 +1,64 @@
+{
+  "inspection": "PASS",
+  "mode": "read-only original-evidence comparison",
+  "figure7": {
+    "status": "PASS",
+    "original_archive": "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz",
+    "event_lines_and_hashes_recomputed": 165066,
+    "all_plotted_positions_and_source_lines_match": true,
+    "identical_repetitions_per_case": 3,
+    "request_postprocess_pairs_read": 180,
+    "summary": {
+      "audit_requests": 60,
+      "requests_with_binding": 60,
+      "evaluable_steps": 54942,
+      "bound_steps": 516,
+      "binding_rate": 0.009391722179753195,
+      "bound_steps_min": 7,
+      "bound_steps_max": 10,
+      "case_count": 20,
+      "repetitions_per_case": 3,
+      "u_pass_runs": 45,
+      "g_pass_runs": 60,
+      "cases_improved": 5,
+      "cases_worsened": 0,
+      "cases_tied": 15,
+      "ga_output_and_token_identity_equal_pairs": 60
+    },
+    "scope": "Re-extraction of recorded binding flags, event hash chains and structural acceptance records. Historical logits and masks are not reconstructed."
+  },
+  "figure8": {
+    "status": "PASS",
+    "railway_archive_count": 5,
+    "original_railway_scores_read": 645,
+    "historical_generation_counts": [
+      23,
+      29,
+      51
+    ],
+    "generation_denominator": 72,
+    "controlled_damage_counts": [
+      129,
+      140,
+      141
+    ],
+    "damage_denominator": 144,
+    "original_Terra_result_member": "ATLAS_TERRA_SUPPLEMENT/continuation3/run/RESULTS.json",
+    "original_Terra_endpoints": 72,
+    "paired_CSV_sha256": "4c1c9bfa18f681a6b425231e44a6a1b8a24fa4952a65d3b30f5e2eb14732c7f7",
+    "paired_CSV_tasks": 24,
+    "same_task_Luna_seed": 104729,
+    "same_task_Luna_counts": [
+      6,
+      8,
+      13
+    ],
+    "Terra_counts": [
+      18,
+      22,
+      22
+    ],
+    "supplement_denominator": 24,
+    "scope": "Counts recomputed from original per-unit scores and endpoint rows, cross-checked against paired CSV and plotting data. Recorded check outcomes are recombined; EMF/VIATRA validators are not rerun."
+  }
+}

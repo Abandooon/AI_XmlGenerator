@@ -10,6 +10,19 @@ def sha_file(path):
         for block in iter(lambda:stream.read(1024*1024),b''):h.update(block)
     return h.hexdigest()
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work-dir',type=Path,help='New directory for extracted frozen inputs and fresh results. Must not already exist.')
@@ -22,7 +35,7 @@ def main():
     version=(checked.stderr or checked.stdout).strip()
     if checked.returncode or '1.8.' not in version:parser.error('This frozen native stack is qualified for Java 8; received '+version.splitlines()[0])
     if args.work_dir:
-        work=args.work_dir.resolve()
+        work=external_output(args.work_dir)
         if work.exists():parser.error('Refusing to overwrite existing work directory: '+str(work))
         work.mkdir(parents=True)
     else:work=Path(tempfile.mkdtemp(prefix='atlas_railway_review_'))

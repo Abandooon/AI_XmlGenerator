@@ -150,12 +150,27 @@ def run_tests(work):
     require(result.wasSuccessful(), f'Unit tests failed; see {work.name}/test_results.txt')
     return {'tests_run': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors), 'original_test_module': 'frozen/prepaid_freeze/tests_v2/test_pil_v4.py', 'release_test_module': 'tests/test_release.py', 'historical_locator_rebinding': 'Translation acceptance accepted_path is rebased in memory to the included workbook after verifying accepted_workbook_sha256; no score or review fields change.'}
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-dir', '--work-dir', dest='output_dir', type=Path, default=ROOT / 'verification/latest')
+    parser.add_argument('--output-dir', '--work-dir', dest='output_dir', type=Path, default=None, help='External output directory; defaults to a new system temporary directory')
     parser.add_argument('--node', default='node', help='Node.js executable name on PATH, or an explicit executable path')
     args = parser.parse_args()
-    work = args.output_dir.resolve()
+    work = external_output(args.output_dir) if args.output_dir else Path(tempfile.mkdtemp(prefix='pil_review_'))
+    if work.exists() and any(work.iterdir()):
+        parser.error('Use a new or empty external output directory')
     work.mkdir(parents=True, exist_ok=True)
     tempfile.tempdir = str(work)
     install_offline_guard(work)

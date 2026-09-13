@@ -1,0 +1,30 @@
+The prior decision failed the frozen deterministic audit.
+
+CASE FACTS:
+Parties A and B both reside in Italy but agreed that the Swedish courts would have jurisdiction. A nevertheless sues in Italy.
+
+RETRIEVED LEGAL EVIDENCE:
+[BRUSSELS_I_BIS:Art.25] Choice-of-court agreements
+Article 25 governs agreements conferring jurisdiction on a court or the courts of a Member State.
+
+[BRUSSELS_I_BIS:Art.25(1)] Choice-of-court agreements
+A choice-of-court agreement satisfying the stated formal and substantive conditions confers jurisdiction on the designated Member State court and is exclusive unless the parties agree otherwise.
+
+[BRUSSELS_I_BIS:Art.28(1)] Default of appearance
+If a defendant domiciled in one Member State is sued in another Member State and does not appear, the court must declare of its own motion that it lacks jurisdiction unless jurisdiction follows from the Regulation.
+
+[BRUSSELS_I_BIS:Art.30(2)] Related actions
+While the first-seised action is pending at first instance, another court may, on a party's application, decline jurisdiction if the first court has jurisdiction over the actions and its law permits consolidation.
+
+AUTHORITATIVE OUTPUT CONTRACT:
+{"$id":"schema/decision_schema_v4.json","$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":false,"properties":{"alternative_forum_types":{"items":{"enum":["exclusive","agreement","special","general","lis_pendens","related_actions","appearance"],"type":"string"},"type":"array","uniqueItems":true},"conclusion":{"enum":["Court_of_X_has_jurisdiction","Authority_of_X_has_jurisdiction","Stay_for_first_seised","May_stay_or_decline_for_related_actions","Decline_in_favor_of_chosen_court","No_EU_jurisdiction_use_member_state_law","Abstain_Insufficient_Info"],"type":"string"},"conditional_answer":{"type":"boolean"},"explicit_abstention":{"type":"boolean"},"forum":{"description":"The competent court, legal forum, or public authority; use 'none' only for explicit abstention.","minLength":1,"type":"string"},"forum_type":{"enum":["exclusive","agreement","special","general","lis_pendens","related_actions","appearance","none"],"type":"string"},"legal_basis":{"items":{"additionalProperties":false,"properties":{"instrument":{"enum":["BRUSSELS_I_BIS","EU_TRADE_MARK_REGULATION"],"type":"string"},"provision":{"pattern":"^Art\\.(\\d+)(\\(\\d+\\))?(\\([a-z]\\))?$","type":"string"}},"required":["instrument","provision"],"type":"object"},"type":"array"},"missing_facts":{"items":{"type":"string"},"type":"array"},"reasoning":{"minLength":1,"type":"string"}},"required":["conclusion","forum","forum_type","alternative_forum_types","conditional_answer","explicit_abstention","legal_basis","reasoning","missing_facts"],"type":"object"}
+
+PRIOR DECISION:
+{"alternative_forum_types": ["agreement"], "conclusion": "Decline_in_favor_of_chosen_court", "conditional_answer": false, "explicit_abstention": false, "forum": "Swedish courts", "forum_type": "exclusive", "legal_basis": [{"instrument": "BRUSSELS_I_BIS", "provision": "Art.25"}, {"instrument": "BRUSSELS_I_BIS", "provision": "Art.25(1)"}], "missing_facts": [], "reasoning": "The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on courts of a Member State is governed by that provision, and Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. Accordingly, the Italian court should decline jurisdiction in favor of the Swedish courts."}
+
+AUDIT FINDINGS:
+[{"code": "chosen_court_type_mismatch", "message": "Chosen-court decline requires forum_type=agreement.", "stage": "cross_field"}, {"code": "forum_type_basis_mismatch", "message": "forum_type=exclusive requires one of the declared basis prefixes: ['BRUSSELS_I_BIS:Art.24', 'EU_TRADE_MARK_REGULATION:Art.63', 'EU_TRADE_MARK_REGULATION:Art.124', 'EU_TRADE_MARK_REGULATION:Art.128'].", "stage": "precedence"}]
+
+Return one corrected JSON object under the same schema. Use the same facts and
+evidence only. Do not add an authority outside the retrieved evidence. This is
+the only permitted repair attempt.

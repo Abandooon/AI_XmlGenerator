@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "archive": {
+    "parts": 4,
+    "bytes": 157646776,
+    "sha256": "3382364e8c94a361a496987633c34b8733086d8e074e77bc46f5b069d5e11a7e",
+    "unchanged_original_zip": true
+  },
+  "package_integrity": {
+    "offline_only": true,
+    "pass": true,
+    "checks": {
+      "EXECUTION_SEAL.json": {
+        "files": 2087,
+        "errors": [],
+        "pass": true
+      },
+      "run/MANIFEST.json": {
+        "files": 145,
+        "errors": [],
+        "pass": true
+      },
+      "continuation/CONTINUATION_SEAL.json": {
+        "files": 4,
+        "errors": [],
+        "pass": true
+      },
+      "continuation/run/MANIFEST.json": {
+        "files": 830,
+        "errors": [],
+        "pass": true
+      },
+      "continuation2/plans/cap5/CONTINUATION_SEAL.json": {
+        "files": 749,
+        "errors": [],
+        "pass": true
+      },
+      "continuation2/run/MANIFEST.json": {
+        "files": 1447,
+        "errors": [],
+        "pass": true
+      },
+      "continuation3/plans/cap6/CONTINUATION_SEAL.json": {
+        "files": 69,
+        "errors": [],
+        "pass": true
+      },
+      "continuation3/run/MANIFEST.json": {
+        "files": 1436,
+        "errors": [],
+        "pass": true
+      },
+      "portable_python": {
+        "files": 960,
+        "errors": [],
+        "pass": true
+      },
+      "current_package": {
+        "files": 9433,
+        "errors": [],
+        "pass": true
+      }
+    }
+  },
+  "evidence_integrity": "PASS",
+  "study_completion": "COMPLETE",
+  "independent_report": "independent/terra_independent_audit.json",
+  "independent_report_sha256": "65c44338a56306b0f9947554892722ff42c752bd988cd5bf7a7fa6124bb91062",
+  "python_executable": "<python-3.12>",
+  "python_version": "3.12.14",
+  "java_executable": "<java-8>",
+  "java_version": "openjdk version \"1.8.0_504\"\nOpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)\nOpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)",
+  "bundled_windows_python_executed": false,
+  "bundled_java_required": false,
+  "network_or_model_calls": 0,
+  "scope": "Repackaging/replay only; original ZIP and scientific sources unchanged"
+}

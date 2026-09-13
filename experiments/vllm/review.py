@@ -21,9 +21,22 @@ def extract(archive,dst):
             need(target.is_relative_to(dst.resolve()),'unsafe_archive_path')
             need(member.isfile() or member.isdir(),'archive_link_or_special_file')
         tf.extractall(dst,filter='data')
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--work-dir',type=Path,required=True);args=p.parse_args()
-    work=args.work_dir.resolve();need(not work.exists() or not any(work.iterdir()),'work_dir_must_be_empty');work.mkdir(parents=True,exist_ok=True)
+    work=external_output(args.work_dir);need(not work.exists() or not any(work.iterdir()),'work_dir_must_be_empty');work.mkdir(parents=True,exist_ok=True)
     temporary=work/'temporary';temporary.mkdir();tempfile.tempdir=str(temporary)
     for key in ('TMP','TEMP','TMPDIR'):os.environ[key]=str(temporary)
     sys.dont_write_bytecode=True

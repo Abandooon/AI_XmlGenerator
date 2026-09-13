@@ -35,5 +35,21 @@ const corrected = rows.map(row => {
 assert.equal(corrected.length, 60);
 assert.deepEqual(changes, [{ case_id: 19, before: ['BRUSSELS_I_BIS:Art.62(1)'], after: ['BRUSSELS_I_BIS:Art.6(1)'] }]);
 assert(corrected.every(row => row.required_evidence.every(value => row.accepted_evidence.includes(value))));
-fs.writeFileSync(path.resolve(process.argv[outputArg + 1]), corrected.map(JSON.stringify).join('\n') + '\n');
+const outputPath = path.resolve(process.argv[outputArg + 1]);
+let releaseRoot = packageRoot;
+for (let current = packageRoot; ; current = path.dirname(current)) {
+  if (fs.existsSync(path.join(current, 'verify_release.py')) &&
+      fs.existsSync(path.join(current, 'RELEASE_MANIFEST.json'))) {
+    releaseRoot = current;
+    break;
+  }
+  if (path.dirname(current) === current) break;
+}
+const relativeOutput = path.relative(releaseRoot, outputPath);
+if (!relativeOutput || (!relativeOutput.startsWith('..' + path.sep) &&
+    relativeOutput !== '..' && !path.isAbsolute(relativeOutput))) {
+  throw new Error('Output must be outside the evidence release');
+}
+fs.mkdirSync(path.dirname(outputPath), {recursive: true});
+fs.writeFileSync(outputPath, corrected.map(JSON.stringify).join('\n') + '\n');
 process.stdout.write(JSON.stringify({ boundary_tests: cases.length, cases_regenerated: corrected.length, changes }) + '\n');

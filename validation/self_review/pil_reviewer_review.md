@@ -1,3 +1,5 @@
+> Historical audit record. Current supported commands and output locations are in [COMMANDS.md](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
+
 # PIL 与方法主张独立复核
 
 复核日期：2026-09-10。对象为桌面当前中文方法、实验正文、附录和根目录回复矩阵，以及已封存的 PIL 原始、勘误和专家补充材料。本报告不修改 Desktop 或仓库，不执行付费调用，不声称外部第三方专家认证，也不替代 Git 两分支同步验收。

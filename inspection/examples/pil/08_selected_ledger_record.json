@@ -1,0 +1,203 @@
+{
+  "schema_version": "atlas.pil.run_ledger.v4.1",
+  "schedule_sha256": "5a09d2794bef07522e44a6c78ab53c6e569484ff1ff9a74e4fed69f8bd1e8ab3",
+  "sequence": 228,
+  "prev_sha256": "6b62ae13f6af1eabe3cda771a731be6bf80121a9db0db25961b2f80d27c256d9",
+  "unit_id": "8|p3|1",
+  "case_id": 8,
+  "arm": "p3",
+  "replicate": 1,
+  "seed": 104729,
+  "prompt_sha256": "f8d0aa7138ddba59507590e3a90d8abf6492d448bc8b6aea5d079fb304e0fa5b",
+  "system_instructions_sha256": "1da528d88eff5083e62fc77114cf087e879b33d1e082fe7f6a4ae4edb861bba2",
+  "completed_at_utc": "2026-09-04T09:59:06.109298+00:00",
+  "provenance": {
+    "model_name": "gpt-5.6-luna",
+    "api_base_sha256": "f5a9a9ddfe1b4dac7276ccb59339acca10e9820aee221fc60ff1b349ad22d5b9",
+    "client_runtime_sha256": "b2afe269671902c97cd2090b326cef8c5af117b26d82780c19656cf1ef7e2565"
+  },
+  "row": {
+    "arm": "p3",
+    "arm_name": "RAG + strict schema + audit/one repair (L2/AGR)",
+    "seed": 104729,
+    "facts_sha256": "20835217d9c5f19f12c99f3abcf7a98b4a8a11e8f4252dc6df46817a6fba39d2",
+    "prompt_sha256": "f8d0aa7138ddba59507590e3a90d8abf6492d448bc8b6aea5d079fb304e0fa5b",
+    "retrieved_evidence": [
+      "BRUSSELS_I_BIS:Art.25",
+      "BRUSSELS_I_BIS:Art.25(1)",
+      "BRUSSELS_I_BIS:Art.28(1)",
+      "BRUSSELS_I_BIS:Art.30(2)"
+    ],
+    "raw_text": "{\"conclusion\":\"Decline_in_favor_of_chosen_court\",\"forum\":\"Swedish courts\",\"forum_type\":\"exclusive\",\"alternative_forum_types\":[\"agreement\"],\"conditional_answer\":false,\"explicit_abstention\":false,\"legal_basis\":[{\"instrument\":\"BRUSSELS_I_BIS\",\"provision\":\"Art.25\"},{\"instrument\":\"BRUSSELS_I_BIS\",\"provision\":\"Art.25(1)\"}],\"reasoning\":\"The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on courts of a Member State is governed by that provision, and Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. Accordingly, the Italian court should decline jurisdiction in favor of the Swedish courts.\",\"missing_facts\":[]}",
+    "parsed_decision": {
+      "conclusion": "Decline_in_favor_of_chosen_court",
+      "forum": "Swedish courts",
+      "forum_type": "exclusive",
+      "alternative_forum_types": [
+        "agreement"
+      ],
+      "conditional_answer": false,
+      "explicit_abstention": false,
+      "legal_basis": [
+        {
+          "instrument": "BRUSSELS_I_BIS",
+          "provision": "Art.25"
+        },
+        {
+          "instrument": "BRUSSELS_I_BIS",
+          "provision": "Art.25(1)"
+        }
+      ],
+      "reasoning": "The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on courts of a Member State is governed by that provision, and Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. Accordingly, the Italian court should decline jurisdiction in favor of the Swedish courts.",
+      "missing_facts": []
+    },
+    "final_decision": {
+      "conclusion": "Decline_in_favor_of_chosen_court",
+      "forum": "Swedish courts",
+      "forum_type": "agreement",
+      "alternative_forum_types": [
+        "exclusive"
+      ],
+      "conditional_answer": false,
+      "explicit_abstention": false,
+      "legal_basis": [
+        {
+          "instrument": "BRUSSELS_I_BIS",
+          "provision": "Art.25"
+        },
+        {
+          "instrument": "BRUSSELS_I_BIS",
+          "provision": "Art.25(1)"
+        }
+      ],
+      "reasoning": "The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on the courts of a Member State is governed by that provision. Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. The Italian court should therefore decline jurisdiction in favor of the Swedish courts.",
+      "missing_facts": []
+    },
+    "schema_status": "PASS",
+    "internal_audit": {
+      "status": "FAIL",
+      "findings": [
+        {
+          "code": "chosen_court_type_mismatch",
+          "stage": "cross_field",
+          "message": "Chosen-court decline requires forum_type=agreement."
+        },
+        {
+          "code": "forum_type_basis_mismatch",
+          "stage": "precedence",
+          "message": "forum_type=exclusive requires one of the declared basis prefixes: ['BRUSSELS_I_BIS:Art.24', 'EU_TRADE_MARK_REGULATION:Art.63', 'EU_TRADE_MARK_REGULATION:Art.124', 'EU_TRADE_MARK_REGULATION:Art.128']."
+        }
+      ]
+    },
+    "repair": {
+      "attempted": true,
+      "status": "PASS",
+      "prompt": "The prior decision failed the frozen deterministic audit.\n\nCASE FACTS:\nParties A and B both reside in Italy but agreed that the Swedish courts would have jurisdiction. A nevertheless sues in Italy.\n\nRETRIEVED LEGAL EVIDENCE:\n[BRUSSELS_I_BIS:Art.25] Choice-of-court agreements\nArticle 25 governs agreements conferring jurisdiction on a court or the courts of a Member State.\n\n[BRUSSELS_I_BIS:Art.25(1)] Choice-of-court agreements\nA choice-of-court agreement satisfying the stated formal and substantive conditions confers jurisdiction on the designated Member State court and is exclusive unless the parties agree otherwise.\n\n[BRUSSELS_I_BIS:Art.28(1)] Default of appearance\nIf a defendant domiciled in one Member State is sued in another Member State and does not appear, the court must declare of its own motion that it lacks jurisdiction unless jurisdiction follows from the Regulation.\n\n[BRUSSELS_I_BIS:Art.30(2)] Related actions\nWhile the first-seised action is pending at first instance, another court may, on a party's application, decline jurisdiction if the first court has jurisdiction over the actions and its law permits consolidation.\n\nAUTHORITATIVE OUTPUT CONTRACT:\n{\"$id\":\"schema/decision_schema_v4.json\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"alternative_forum_types\":{\"items\":{\"enum\":[\"exclusive\",\"agreement\",\"special\",\"general\",\"lis_pendens\",\"related_actions\",\"appearance\"],\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"conclusion\":{\"enum\":[\"Court_of_X_has_jurisdiction\",\"Authority_of_X_has_jurisdiction\",\"Stay_for_first_seised\",\"May_stay_or_decline_for_related_actions\",\"Decline_in_favor_of_chosen_court\",\"No_EU_jurisdiction_use_member_state_law\",\"Abstain_Insufficient_Info\"],\"type\":\"string\"},\"conditional_answer\":{\"type\":\"boolean\"},\"explicit_abstention\":{\"type\":\"boolean\"},\"forum\":{\"description\":\"The competent court, legal forum, or public authority; use 'none' only for explicit abstention.\",\"minLength\":1,\"type\":\"string\"},\"forum_type\":{\"enum\":[\"exclusive\",\"agreement\",\"special\",\"general\",\"lis_pendens\",\"related_actions\",\"appearance\",\"none\"],\"type\":\"string\"},\"legal_basis\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"instrument\":{\"enum\":[\"BRUSSELS_I_BIS\",\"EU_TRADE_MARK_REGULATION\"],\"type\":\"string\"},\"provision\":{\"pattern\":\"^Art\\\\.(\\\\d+)(\\\\(\\\\d+\\\\))?(\\\\([a-z]\\\\))?$\",\"type\":\"string\"}},\"required\":[\"instrument\",\"provision\"],\"type\":\"object\"},\"type\":\"array\"},\"missing_facts\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reasoning\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"conclusion\",\"forum\",\"forum_type\",\"alternative_forum_types\",\"conditional_answer\",\"explicit_abstention\",\"legal_basis\",\"reasoning\",\"missing_facts\"],\"type\":\"object\"}\n\nPRIOR DECISION:\n{\"alternative_forum_types\": [\"agreement\"], \"conclusion\": \"Decline_in_favor_of_chosen_court\", \"conditional_answer\": false, \"explicit_abstention\": false, \"forum\": \"Swedish courts\", \"forum_type\": \"exclusive\", \"legal_basis\": [{\"instrument\": \"BRUSSELS_I_BIS\", \"provision\": \"Art.25\"}, {\"instrument\": \"BRUSSELS_I_BIS\", \"provision\": \"Art.25(1)\"}], \"missing_facts\": [], \"reasoning\": \"The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on courts of a Member State is governed by that provision, and Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. Accordingly, the Italian court should decline jurisdiction in favor of the Swedish courts.\"}\n\nAUDIT FINDINGS:\n[{\"code\": \"chosen_court_type_mismatch\", \"message\": \"Chosen-court decline requires forum_type=agreement.\", \"stage\": \"cross_field\"}, {\"code\": \"forum_type_basis_mismatch\", \"message\": \"forum_type=exclusive requires one of the declared basis prefixes: ['BRUSSELS_I_BIS:Art.24', 'EU_TRADE_MARK_REGULATION:Art.63', 'EU_TRADE_MARK_REGULATION:Art.124', 'EU_TRADE_MARK_REGULATION:Art.128'].\", \"stage\": \"precedence\"}]\n\nReturn one corrected JSON object under the same schema. Use the same facts and\nevidence only. Do not add an authority outside the retrieved evidence. This is\nthe only permitted repair attempt.",
+      "prompt_sha256": "c05557cd92016b9d5e38276040b274232f7d04d67aa01e4af04c6d7f5034379a",
+      "prompt_language": "en",
+      "prompt_cjk_characters": 0,
+      "raw_text": "{\"conclusion\":\"Decline_in_favor_of_chosen_court\",\"forum\":\"Swedish courts\",\"forum_type\":\"agreement\",\"alternative_forum_types\":[\"exclusive\"],\"conditional_answer\":false,\"explicit_abstention\":false,\"legal_basis\":[{\"instrument\":\"BRUSSELS_I_BIS\",\"provision\":\"Art.25\"},{\"instrument\":\"BRUSSELS_I_BIS\",\"provision\":\"Art.25(1)\"}],\"reasoning\":\"The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on the courts of a Member State is governed by that provision. Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. The Italian court should therefore decline jurisdiction in favor of the Swedish courts.\",\"missing_facts\":[]}",
+      "decision": {
+        "conclusion": "Decline_in_favor_of_chosen_court",
+        "forum": "Swedish courts",
+        "forum_type": "agreement",
+        "alternative_forum_types": [
+          "exclusive"
+        ],
+        "conditional_answer": false,
+        "explicit_abstention": false,
+        "legal_basis": [
+          {
+            "instrument": "BRUSSELS_I_BIS",
+            "provision": "Art.25"
+          },
+          {
+            "instrument": "BRUSSELS_I_BIS",
+            "provision": "Art.25(1)"
+          }
+        ],
+        "reasoning": "The parties agreed that the Swedish courts would have jurisdiction. Under Brussels I bis Article 25, a choice-of-court agreement conferring jurisdiction on the courts of a Member State is governed by that provision. Article 25(1) provides that a qualifying agreement confers jurisdiction on the designated courts and is exclusive unless the parties agreed otherwise. The Italian court should therefore decline jurisdiction in favor of the Swedish courts.",
+        "missing_facts": []
+      },
+      "audit": {
+        "status": "PASS",
+        "findings": []
+      }
+    },
+    "system_release": true,
+    "usage": {
+      "input_tokens": 2699,
+      "total_tokens": 3280,
+      "output_tokens": 581
+    },
+    "external_call_count": 2,
+    "provider_schema_enforced": true,
+    "system_instructions_sha256": "1da528d88eff5083e62fc77114cf087e879b33d1e082fe7f6a4ae4edb861bba2",
+    "primary_prompt_language": "en",
+    "logical_request_count": 2,
+    "transport_request_count": 2,
+    "provider_responses": [
+      {
+        "requested_model": "gpt-5.6-luna",
+        "response_model": "gpt-5.6-luna-2026-07-09",
+        "response_id": "chatcmpl-EKKz9mN7AM9Fpydrptr8qvtp69bFe",
+        "created": 1788515935,
+        "system_fingerprint": null,
+        "service_tier": "default",
+        "finish_reason": "stop",
+        "seed": 104729,
+        "temperature": 1.0,
+        "reasoning_effort": "low",
+        "max_completion_tokens": 128000,
+        "usage": {
+          "input_tokens": 1315,
+          "output_tokens": 332,
+          "total_tokens": 1647
+        }
+      },
+      {
+        "requested_model": "gpt-5.6-luna",
+        "response_model": "gpt-5.6-luna-2026-07-09",
+        "response_id": "chatcmpl-EKKzEdnHur8MdzxhBoCAZ5bmoXTcd",
+        "created": 1788515940,
+        "system_fingerprint": null,
+        "service_tier": "default",
+        "finish_reason": "stop",
+        "seed": 104729,
+        "temperature": 1.0,
+        "reasoning_effort": "low",
+        "max_completion_tokens": 128000,
+        "usage": {
+          "input_tokens": 1384,
+          "output_tokens": 249,
+          "total_tokens": 1633
+        }
+      }
+    ],
+    "transport_attempts": [
+      {
+        "transport_attempt": 1,
+        "at_utc": "2026-09-04T09:59:01.993771+00:00",
+        "status": "RESPONSE_RECEIVED",
+        "response_id": "chatcmpl-EKKz9mN7AM9Fpydrptr8qvtp69bFe",
+        "response_model": "gpt-5.6-luna-2026-07-09",
+        "request_sha256": "e2fddcc2b3a997b7f280e3829479b27aea73faf87601f65811a94f962123efff",
+        "logical_request_stage": "initial"
+      },
+      {
+        "transport_attempt": 1,
+        "at_utc": "2026-09-04T09:59:06.107793+00:00",
+        "status": "RESPONSE_RECEIVED",
+        "response_id": "chatcmpl-EKKzEdnHur8MdzxhBoCAZ5bmoXTcd",
+        "response_model": "gpt-5.6-luna-2026-07-09",
+        "request_sha256": "390f1439677fbc81bd4795ae901434f314e1677ccd9eee4654008b77c48606a6",
+        "logical_request_stage": "repair"
+      }
+    ],
+    "unit_id": "8|p3|1",
+    "id": 8,
+    "mode": "p3",
+    "replicate": 1
+  },
+  "entry_sha256": "25da9e0b2ef474afbb86d1a1b2304eea5d9b3480f91173c366228eb8401ed1ec"
+}

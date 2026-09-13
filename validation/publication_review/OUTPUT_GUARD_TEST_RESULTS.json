@@ -1,0 +1,294 @@
+{
+  "status": "PASS",
+  "public_CLI_runs": 11,
+  "unique_entrypoints": 10,
+  "scope": "Direct nested-output rejection and isolated Python guard path normalization; no complete domain replay or paid generation. Frozen archive hashes compared, excluding concurrently edited source and documentation.",
+  "runtime_paths": {
+    "python": "<python-3.12>",
+    "node": "<node-24>",
+    "java8": "<java-8>",
+    "javac8": "<javac-8>"
+  },
+  "CLI_checks": [
+    {
+      "entry": "experiments/autosar/offline/verify.py",
+      "argv": [
+        "experiments/autosar/offline/verify.py",
+        "--work-dir",
+        "_output_guard_autosar_not_created"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_autosar_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.172,
+      "pass": true
+    },
+    {
+      "entry": "experiments/vllm/review.py",
+      "argv": [
+        "experiments/vllm/review.py",
+        "--work-dir",
+        "_output_guard_vllm_not_created"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_vllm_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.109,
+      "pass": true
+    },
+    {
+      "entry": "experiments/railway/review.py",
+      "argv": [
+        "experiments/railway/review.py",
+        "--work-dir",
+        "_output_guard_railway_not_created",
+        "--java",
+        "<java-8>"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_railway_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.204,
+      "pass": true
+    },
+    {
+      "entry": "experiments/railway/rebuild_native.py",
+      "argv": [
+        "experiments/railway/rebuild_native.py",
+        "--out",
+        "_output_guard_railway_rebuild_not_created",
+        "--payload",
+        "E:\\54239\\Documents\\REVIEWER_WALKTHROUGH_2026-09-13\\review-railway-java8\\railway\\payload",
+        "--javac",
+        "<javac-8>"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_railway_rebuild_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.343,
+      "pass": true
+    },
+    {
+      "entry": "experiments/railway_terra/review.py",
+      "argv": [
+        "experiments/railway_terra/review.py",
+        "--work-dir",
+        "_output_guard_terra_not_created",
+        "--java",
+        "<java-8>"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_terra_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.094,
+      "pass": true
+    },
+    {
+      "entry": "experiments/pil/tools/verify.py",
+      "argv": [
+        "experiments/pil/tools/verify.py",
+        "--output-dir",
+        "_output_guard_pil_not_created",
+        "--node",
+        "<node-24>"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_pil_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.344,
+      "pass": true
+    },
+    {
+      "entry": "experiments/pil/tools/verify.py",
+      "argv": [
+        "experiments/pil/tools/verify.py",
+        "--work-dir",
+        "_output_guard_pil_alias_not_created",
+        "--node",
+        "<node-24>"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_pil_alias_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.328,
+      "pass": true
+    },
+    {
+      "entry": "experiments/pil/corrections/code/correct_gold.mjs",
+      "argv": [
+        "experiments/pil/corrections/code/correct_gold.mjs",
+        "--output",
+        "_output_guard_correct_gold_not_created/corrected.jsonl"
+      ],
+      "runtime": "bundled_node",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_correct_gold_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.062,
+      "pass": true
+    },
+    {
+      "entry": "paper/figure_sources/scripts/plot_figure7.py",
+      "argv": [
+        "paper/figure_sources/scripts/plot_figure7.py",
+        "--output-dir",
+        "_output_guard_figure7_not_created"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_figure7_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 4.813,
+      "pass": true
+    },
+    {
+      "entry": "paper/figure_sources/scripts/plot_figure8.py",
+      "argv": [
+        "paper/figure_sources/scripts/plot_figure8.py",
+        "--output-dir",
+        "_output_guard_figure8_not_created"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 1,
+      "expected_error": "Output must be outside the evidence release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_figure8_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 1.125,
+      "pass": true
+    },
+    {
+      "entry": "inspection/build_paper.py",
+      "argv": [
+        "inspection/build_paper.py",
+        "--output-dir",
+        "_output_guard_paper_not_created"
+      ],
+      "runtime": "release_venv_python",
+      "exit_code": 2,
+      "expected_error": "Use a new or empty directory outside the release",
+      "expected_error_observed": true,
+      "candidate_directory": "_output_guard_paper_not_created",
+      "candidate_directory_created": false,
+      "elapsed_seconds": 0.109,
+      "pass": true
+    }
+  ],
+  "isolated_guard_checks": [
+    {
+      "entry": "experiments/autosar/offline/verify.py",
+      "definition_line": 101,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "experiments/vllm/review.py",
+      "definition_line": 25,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "experiments/railway/review.py",
+      "definition_line": 14,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "experiments/railway/rebuild_native.py",
+      "definition_line": 10,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "experiments/railway_terra/review.py",
+      "definition_line": 83,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "experiments/pil/tools/verify.py",
+      "definition_line": 154,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "paper/figure_sources/scripts/plot_figure7.py",
+      "definition_line": 20,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    },
+    {
+      "entry": "paper/figure_sources/scripts/plot_figure8.py",
+      "definition_line": 55,
+      "root_rejected": true,
+      "normalized_nested_rejected": true,
+      "external_sibling_accepted_without_writes": true
+    }
+  ],
+  "frozen_archive_hashes_before": {
+    "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+    "experiments/railway/archives/railway_evidence_01.zip": "6c6437244db5439d53a55067f3a27e4ab0db9ea4cb99bf36b602b46adda841f2",
+    "experiments/railway/archives/railway_evidence_02.zip": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+    "experiments/railway/archives/railway_evidence_03.zip": "ef74df05b37a98ff6dac204d33d0c3612e1c9d9d64cf9dd9989d7e209b5f118d",
+    "experiments/railway/archives/railway_evidence_04.zip": "ed6d6bd90f92d6e7fdd98e2a932c2cf29b4963a4cf9bce5a21384a46e18be10e",
+    "experiments/railway/archives/railway_evidence_05.zip": "eb1ac5b82d854d588c4b8dfae8a8f03ff0f7d730182684dc049538bfdeb7c6f3",
+    "experiments/railway_terra/archives/terra_complete.zip.part01": "700814f5a6d83745476f5e111e1ac0377e9a12c07440d6add9ad7446262f54e6",
+    "experiments/railway_terra/archives/terra_complete.zip.part02": "6b85d655bea0f7784c575d749ffe5ef78bbd433e7c8eb4001adfac06c6e438c9",
+    "experiments/railway_terra/archives/terra_complete.zip.part03": "df051e40d715d7c543cdc09c145fec3c2349fa1f08632e979f64687c6c8929a2",
+    "experiments/railway_terra/archives/terra_complete.zip.part04": "3a0f8b7eb8a5702bc780f8a8aba17cd9668d2a166dd39c91a1f6995a932054c1",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-bundle-20260829.tar.gz": "ff87d1cda488b8a0aecaf6b36f0f9c243ad1504772d59500a581f7cbf78fe0dd",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz": "06a87e10f4703cd0aac4efcdda66ca10e989a1bc516ada7b95dfd3f1833c44bc",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-run-2286c25d-a13-formal-b1-evidence.tar.gz": "2e10f10d19133c8ede0b69145a6a31098979eeff6f2898df353a5fd7a856db83",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-run-2286c25d-a13-qualification-evidence.tar.gz": "ac73d67d06c31bc3917e6a5e2b0c095a5665b4e715c67b4ba7eb08210bd69326"
+  },
+  "frozen_archive_hashes_after": {
+    "experiments/autosar/frozen/AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02.zip": "3e17cbe0bd5420e494dc527e51cd43746fda04ac3dd0fc459cef17b20b60cf01",
+    "experiments/railway/archives/railway_evidence_01.zip": "6c6437244db5439d53a55067f3a27e4ab0db9ea4cb99bf36b602b46adda841f2",
+    "experiments/railway/archives/railway_evidence_02.zip": "acf881681dd9ff0ad2db6f9b4f35e3b70966d7fef690d70399dbdf20660b9dab",
+    "experiments/railway/archives/railway_evidence_03.zip": "ef74df05b37a98ff6dac204d33d0c3612e1c9d9d64cf9dd9989d7e209b5f118d",
+    "experiments/railway/archives/railway_evidence_04.zip": "ed6d6bd90f92d6e7fdd98e2a932c2cf29b4963a4cf9bce5a21384a46e18be10e",
+    "experiments/railway/archives/railway_evidence_05.zip": "eb1ac5b82d854d588c4b8dfae8a8f03ff0f7d730182684dc049538bfdeb7c6f3",
+    "experiments/railway_terra/archives/terra_complete.zip.part01": "700814f5a6d83745476f5e111e1ac0377e9a12c07440d6add9ad7446262f54e6",
+    "experiments/railway_terra/archives/terra_complete.zip.part02": "6b85d655bea0f7784c575d749ffe5ef78bbd433e7c8eb4001adfac06c6e438c9",
+    "experiments/railway_terra/archives/terra_complete.zip.part03": "df051e40d715d7c543cdc09c145fec3c2349fa1f08632e979f64687c6c8929a2",
+    "experiments/railway_terra/archives/terra_complete.zip.part04": "3a0f8b7eb8a5702bc780f8a8aba17cd9668d2a166dd39c91a1f6995a932054c1",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-bundle-20260829.tar.gz": "ff87d1cda488b8a0aecaf6b36f0f9c243ad1504772d59500a581f7cbf78fe0dd",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-paper-evidence-20260829.tar.gz": "06a87e10f4703cd0aac4efcdda66ca10e989a1bc516ada7b95dfd3f1833c44bc",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-run-2286c25d-a13-formal-b1-evidence.tar.gz": "2e10f10d19133c8ede0b69145a6a31098979eeff6f2898df353a5fd7a856db83",
+    "experiments/vllm/archives/atlas-vllm-uga-v6-3-4-run-2286c25d-a13-qualification-evidence.tar.gz": "ac73d67d06c31bc3917e6a5e2b0c095a5665b4e715c67b4ba7eb08210bd69326"
+  },
+  "frozen_archives_unchanged": true,
+  "all_candidate_directories_absent": true
+}

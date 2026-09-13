@@ -23,7 +23,7 @@ Within each task, results are averaged over the relevant repetitions and damage 
 
 For natural generation, both intervals for each comparison lie above zero. For controlled damage, the localization-versus-self-repair comparison is sensitive to grouping; adding localization to the existing feedback configuration yields a small net difference and both intervals include zero. The compared configurations include their actual feedback, acceptance and stopping policies.
 
-Inspect [the retained statistical audit](../experiments/railway/results/train_statistics_audit.json), [the replay script](../experiments/railway/corrected/replay_statistics.py) and [the railway entry](../experiments/railway/README.md). Original schedules, paired records, generated XMI and source snapshots are in [the numbered evidence archives](../experiments/railway/archives/); the entry explains how to extract and verify them. The second-model study is separate: [paired tasks](../experiments/railway_terra/reports/paired_tasks.csv), [summary](../experiments/railway_terra/reports/CURRENT_RESULTS_SUMMARY.json) and [source index](../experiments/railway_terra/SOURCE_INDEX.json).
+Inspect [the retained statistical audit](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/results/train_statistics_audit.json), [the replay script](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/corrected/replay_statistics.py) and [the railway entry](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway/README.md). Original schedules, paired records, generated XMI and source snapshots are in [the numbered evidence archives](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS/experiments/railway/archives); the entry explains how to extract and verify them. The second-model study is separate: [paired tasks](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway_terra/reports/paired_tasks.csv), [summary](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway_terra/reports/CURRENT_RESULTS_SUMMARY.json) and [source index](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/railway_terra/SOURCE_INDEX.json).
 
 ## PIL decisions
 
@@ -42,15 +42,12 @@ Two-sided paired sign tests count improving and worsening cases and exclude ties
 
 The two full-check comparisons pass the adjusted sign tests. The retrieval-only comparison does not, and the isolated structural-constraint increment remains uncertain. This does not change the reported endpoint totals. Within the repair subset, 40 reference-compatibility recoveries and 42 final primary-endpoint successes describe different quantities.
 
-Inspect [the current analysis](../experiments/pil/corrections/expected/PIL_V41_ERRATUM1_ANALYSIS.json), [the formal ledger](../experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl), and [the PIL review entry](../experiments/pil/README.md). The entry links the frozen analyzer, inference inputs, reference labels and correction layer.
+Inspect [the current analysis](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/corrections/expected/PIL_V41_ERRATUM1_ANALYSIS.json), [the formal ledger](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/frozen/formal/PIL_V41_RUN_LEDGER.jsonl), and [the PIL review entry](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/experiments/pil/README.md). The entry links the frozen analyzer, inference inputs, reference labels and correction layer.
 
 ## Offline reproduction
 
-The root [README](../README.md) supplies the supported offline entry. It can check all five experiment tracks without new model calls. For a focused review, use the railway or PIL track and inspect the resulting statistical report; do not replace a recorded expected failure with a success merely because its replay matches.
+The root [README](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/README.md) supplies the supported offline entry. It can check all five experiment tracks without new model calls. For a focused review, use the railway or PIL track and inspect the resulting statistical report; do not replace a recorded expected failure with a success merely because its replay matches.
 
-```sh
-python verify_release.py --track railway --work-dir ../railway-review --java java
-python verify_release.py --track pil --work-dir ../pil-review --node node
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 Each output directory must be empty. Java 8 is required for the railway native verifier. The exact release files are identified by the root manifest.

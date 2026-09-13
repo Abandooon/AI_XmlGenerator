@@ -5,6 +5,7 @@ merged only after their positions and step counts have been checked for equality
 """
 from pathlib import Path
 from collections import defaultdict
+import tempfile
 import argparse
 import hashlib
 import json
@@ -15,13 +16,27 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     here = Path(__file__).resolve().parent
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path,
                         default=here.parent / "data/Fig7_vllm_intervention_data.json")
-    parser.add_argument("--output-dir", type=Path, default=here.parent / "output")
+    parser.add_argument("--output-dir", type=Path, default=None, help='External directory; defaults to a new system temporary directory')
     args = parser.parse_args()
+    args.output_dir = external_output(args.output_dir) if args.output_dir else Path(tempfile.mkdtemp(prefix="paper_figures_"))
     data = json.loads(args.data.read_text(encoding="utf-8"))
     grouped = defaultdict(list)
     for row in data["audit_requests"]:

@@ -1,0 +1,567 @@
+{
+  "inspection": "PASS (pure v2 binding replay and retained evidence consistency; no generation or validator rerun)",
+  "constraint_count": 1085,
+  "constraints_file_sha256": "d6b4ab4f6b5b29af2dd9007405c4fa626b0b219ca51fed5e720fe0de1a14048d",
+  "quality_counts": {
+    "semantic_status": {
+      "curated": 473,
+      "provisional": 612
+    },
+    "review_status": {
+      "approved": 472,
+      "needs_review": 613
+    },
+    "binding_status": {
+      "complete": 1052,
+      "not_applicable": 30,
+      "partial": 2,
+      "unresolved": 1
+    }
+  },
+  "program_derived_approved_status_matches": true,
+  "retrieval_manifest_card_count": 1085,
+  "retrieval_policy_source": "experiments/vllm/runtime/AI_XmlGenerator/src/llm_generation/knowledge/v2/constraint_retriever.py",
+  "retrieval_policy_note": "Source inspection: approved adds 5 ranking points; it is not an inclusion gate.",
+  "configured_rule_backends": {
+    "dsl": 154,
+    "python": 400
+  },
+  "binding_replay": {
+    "source": "experiments/vllm/runtime/AI_XmlGenerator/src/kg_builder/doc_constr_parser/v2/tools/bind_semantic_targets.py",
+    "constraint_id": "TPS_SWCT_01519",
+    "function": "bind_record(MetamodelIndex(metadata), semantic_record)",
+    "exact_retained_record_match": true,
+    "result": {
+      "schema_version": "2.0",
+      "id": "TPS_SWCT_01519",
+      "source_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+      "binding_status": "complete",
+      "targets": [
+        {
+          "target_index": 0,
+          "role": "context",
+          "class_name": "AtomicSwComponentType",
+          "property_name": null,
+          "evidence": "explicit source mention AtomicSwComponentType",
+          "binding_status": "resolved",
+          "declared_owner": null,
+          "class_is_abstract": true,
+          "class_xml_tags": [
+            "APPLICATION-SW-COMPONENT-TYPE",
+            "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+            "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+            "NV-BLOCK-SW-COMPONENT-TYPE",
+            "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+            "SERVICE-PROXY-SW-COMPONENT-TYPE",
+            "SERVICE-SW-COMPONENT-TYPE"
+          ],
+          "property_xml_tag": null,
+          "xml_wrapper_tag": null,
+          "path_variants": [
+            "APPLICATION-SW-COMPONENT-TYPE",
+            "COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE",
+            "ECU-ABSTRACTION-SW-COMPONENT-TYPE",
+            "NV-BLOCK-SW-COMPONENT-TYPE",
+            "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
+            "SERVICE-PROXY-SW-COMPONENT-TYPE",
+            "SERVICE-SW-COMPONENT-TYPE"
+          ],
+          "type_name": null,
+          "min_occurs": null,
+          "max_occurs": null,
+          "enum_values": [],
+          "candidates": [],
+          "issues": []
+        },
+        {
+          "target_index": 1,
+          "role": "context",
+          "class_name": "RunnableEntity",
+          "property_name": null,
+          "evidence": "explicit source mention RunnableEntity",
+          "binding_status": "resolved",
+          "declared_owner": null,
+          "class_is_abstract": false,
+          "class_xml_tags": [
+            "RUNNABLE-ENTITY"
+          ],
+          "property_xml_tag": null,
+          "xml_wrapper_tag": null,
+          "path_variants": [
+            "RUNNABLE-ENTITY"
+          ],
+          "type_name": null,
+          "min_occurs": null,
+          "max_occurs": null,
+          "enum_values": [],
+          "candidates": [],
+          "issues": []
+        },
+        {
+          "target_index": 2,
+          "role": "context",
+          "class_name": "SwcInternalBehavior",
+          "property_name": null,
+          "evidence": "explicit source mention SwcInternalBehavior",
+          "binding_status": "resolved",
+          "declared_owner": null,
+          "class_is_abstract": false,
+          "class_xml_tags": [
+            "SWC-INTERNAL-BEHAVIOR"
+          ],
+          "property_xml_tag": null,
+          "xml_wrapper_tag": null,
+          "path_variants": [
+            "SWC-INTERNAL-BEHAVIOR"
+          ],
+          "type_name": null,
+          "min_occurs": null,
+          "max_occurs": null,
+          "enum_values": [],
+          "candidates": [],
+          "issues": []
+        },
+        {
+          "target_index": 3,
+          "role": "context",
+          "class_name": "TimingEvent",
+          "property_name": null,
+          "evidence": "explicit source mention TimingEvent",
+          "binding_status": "resolved",
+          "declared_owner": null,
+          "class_is_abstract": false,
+          "class_xml_tags": [
+            "TIMING-EVENT"
+          ],
+          "property_xml_tag": null,
+          "xml_wrapper_tag": null,
+          "path_variants": [
+            "TIMING-EVENT"
+          ],
+          "type_name": null,
+          "min_occurs": null,
+          "max_occurs": null,
+          "enum_values": [],
+          "candidates": [],
+          "issues": []
+        }
+      ],
+      "issues": []
+    }
+  },
+  "original_validation_coverage": {
+    "reports": 60,
+    "configured_rules_per_report_excluding_XSD": 554,
+    "rules_with_checked_objects_per_report_range": [
+      11,
+      24
+    ],
+    "distinct_rules_with_checked_objects": 24,
+    "distinct_rule_ids_with_checked_objects": [
+      "TPS_SWCT_01111",
+      "TPS_SWCT_01447",
+      "TPS_SWCT_01519",
+      "constr_1090",
+      "constr_1100",
+      "constr_1141",
+      "constr_1196",
+      "constr_1201",
+      "constr_1227",
+      "constr_1244",
+      "constr_1290",
+      "constr_1291",
+      "constr_1323",
+      "constr_2007",
+      "constr_2028",
+      "constr_2029",
+      "constr_2031",
+      "constr_2035",
+      "constr_2036",
+      "constr_2038",
+      "constr_2039",
+      "constr_2040",
+      "constr_2041",
+      "constr_4082"
+    ],
+    "recorded_status_totals": {
+      "NOT_APPLICABLE": 29298,
+      "NOT_EVALUATED": 2640,
+      "PASS": 1302
+    },
+    "distinct_PASS_rule_ids": 25,
+    "PASS_without_checked_objects_note": "constr_1161 checks INDEX uniqueness; no INDEX objects yields a vacuous PASS and checked_count=0.",
+    "rows": [
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_8f34364d_1788337723.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R2/repair-off/attempt-001/atlas_output/ARXML/validation_4b4e4090_1788337859.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R3/repair-off/attempt-001/atlas_output/ARXML/validation_191f4067_1788337997.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-02/R1/repair-off/attempt-001/atlas_output/ARXML/validation_e8bc9f62_1788339497.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-02/R2/repair-off/attempt-001/atlas_output/ARXML/validation_bbdad703_1788339641.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-02/R3/repair-off/attempt-001/atlas_output/ARXML/validation_cde87584_1788339798.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-03/R1/repair-off/attempt-001/atlas_output/ARXML/validation_981b37a9_1788340709.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-03/R2/repair-off/attempt-001/atlas_output/ARXML/validation_16e788b1_1788340827.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-03/R3/repair-off/attempt-001/atlas_output/ARXML/validation_afa1eaca_1788340945.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 91
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-04/R1/repair-off/attempt-001/atlas_output/ARXML/validation_337a463b_1788341065.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-04/R2/repair-off/attempt-001/atlas_output/ARXML/validation_f5acf70c_1788341181.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-04/R3/repair-off/attempt-001/atlas_output/ARXML/validation_4c68739d_1788341298.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-05/R1/repair-off/attempt-001/atlas_output/ARXML/validation_2739f63c_1788341410.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-05/R2/repair-off/attempt-001/atlas_output/ARXML/validation_9f083824_1788341517.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-05/R3/repair-off/attempt-001/atlas_output/ARXML/validation_988bfdf5_1788341630.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 84
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-06/R1/repair-off/attempt-001/atlas_output/ARXML/validation_a247b203_1788341742.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 96
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-06/R2/repair-off/attempt-001/atlas_output/ARXML/validation_6144c0b1_1788341867.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 96
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-06/R3/repair-off/attempt-001/atlas_output/ARXML/validation_6b3a638e_1788341983.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 96
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-07/R1/repair-off/attempt-001/atlas_output/ARXML/validation_2817df06_1788342100.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-07/R2/repair-off/attempt-001/atlas_output/ARXML/validation_99262073_1788342214.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-07/R3/repair-off/attempt-001/atlas_output/ARXML/validation_3d5a4712_1788342323.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 86
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_cd6d02d6_1788277296.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-01/R2/repair-off/attempt-001/atlas_output/ARXML/validation_53cc938c_1788277460.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-01/R3/repair-off/attempt-001/atlas_output/ARXML/validation_301fb8b4_1788277625.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-02/R1/repair-off/attempt-001/atlas_output/ARXML/validation_8231da8f_1788277809.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-02/R2/repair-off/attempt-001/atlas_output/ARXML/validation_d0f837d7_1788277974.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-02/R3/repair-off/attempt-001/atlas_output/ARXML/validation_00e0a5c0_1788278142.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-03/R1/repair-off/attempt-001/atlas_output/ARXML/validation_846ac722_1788278305.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-03/R2/repair-off/attempt-001/atlas_output/ARXML/validation_cfb859c3_1788278475.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-03/R3/repair-off/attempt-001/atlas_output/ARXML/validation_829df239_1788278638.json",
+        "rules_with_checked_objects": 11,
+        "checked_rule_object_pairs": 11
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-04/R1/repair-off/attempt-001/atlas_output/ARXML/validation_8ef8f0d3_1788278808.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-04/R2/repair-off/attempt-001/atlas_output/ARXML/validation_5b83056a_1788278981.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-04/R3/repair-off/attempt-001/atlas_output/ARXML/validation_c2c53630_1788279161.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-05/R1/repair-off/attempt-001/atlas_output/ARXML/validation_72f306df_1788279352.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-05/R2/repair-off/attempt-001/atlas_output/ARXML/validation_3eb6dbde_1788280758.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-05/R3/repair-off/attempt-001/atlas_output/ARXML/validation_07565df1_1788280937.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-06/R1/repair-off/attempt-001/atlas_output/ARXML/validation_9651a50a_1788334478.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-06/R2/repair-off/attempt-001/atlas_output/ARXML/validation_e7fc028c_1788334567.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-MIN-06/R3/repair-off/attempt-001/atlas_output/ARXML/validation_74e64ad6_1788334656.json",
+        "rules_with_checked_objects": 15,
+        "checked_rule_object_pairs": 15
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-01/R1/repair-off/attempt-001/atlas_output/ARXML/validation_c1d06eb8_1788334756.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-01/R2/repair-off/attempt-001/atlas_output/ARXML/validation_6beed2f3_1788334898.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-01/R3/repair-off/attempt-001/atlas_output/ARXML/validation_530f8b89_1788335038.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-02/R1/repair-off/attempt-001/atlas_output/ARXML/validation_ef43d872_1788335184.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-02/R2/repair-off/attempt-001/atlas_output/ARXML/validation_e06e4645_1788335320.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-02/R3/repair-off/attempt-001/atlas_output/ARXML/validation_b11731de_1788335467.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-03/R1/repair-off/attempt-001/atlas_output/ARXML/validation_f04bddb2_1788335609.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-03/R2/repair-off/attempt-001/atlas_output/ARXML/validation_11fddcf6_1788335751.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-03/R3/repair-off/attempt-001/atlas_output/ARXML/validation_02eff968_1788335887.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-04/R1/repair-off/attempt-001/atlas_output/ARXML/validation_7ac389f0_1788336026.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-04/R2/repair-off/attempt-001/atlas_output/ARXML/validation_453436f3_1788336165.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-04/R3/repair-off/attempt-001/atlas_output/ARXML/validation_228c3fc5_1788336309.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-05/R1/repair-off/attempt-001/atlas_output/ARXML/validation_77b34221_1788336451.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 49
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-05/R2/repair-off/attempt-001/atlas_output/ARXML/validation_6c27887f_1788336592.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 49
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-05/R3/repair-off/attempt-001/atlas_output/ARXML/validation_2d786d84_1788336731.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 49
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-06/R1/repair-off/attempt-001/atlas_output/ARXML/validation_f6a9bb89_1788336872.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-06/R2/repair-off/attempt-001/atlas_output/ARXML/validation_e1c454d1_1788337017.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-06/R3/repair-off/attempt-001/atlas_output/ARXML/validation_916a1b21_1788337153.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 45
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-07/R1/repair-off/attempt-001/atlas_output/ARXML/validation_d266706a_1788337293.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-07/R2/repair-off/attempt-001/atlas_output/ARXML/validation_bfedbd61_1788337434.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      },
+      {
+        "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-STD-07/R3/repair-off/attempt-001/atlas_output/ARXML/validation_60e887c2_1788337582.json",
+        "rules_with_checked_objects": 24,
+        "checked_rule_object_pairs": 34
+      }
+    ]
+  },
+  "retained_graph_context": {
+    "member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/frozen_contract/FORMAL_NEO4J_CONTEXT.json",
+    "constraint_card_count": 1085,
+    "constraint_link_count": 6533,
+    "constraint_links_sha256": "87ccd8c0ced40d590b62e393bb6e98b9ac1b5d2f3fed2d90fd4b13715340bbe0",
+    "scope": "Values read from the retained Neo4j context; the 6533 graph relationships are not rebuilt or recounted by this command."
+  },
+  "representative_constraint": {
+    "id": "TPS_SWCT_01519",
+    "source_document": "chapter7.md",
+    "source_line": 134,
+    "source_text_sha256": "6adb7414191c8c584191b0c8c45bc6079de3c68f0353c7d1bda6224b9acf6702",
+    "quality": {
+      "semantic_status": "provisional",
+      "binding_status": "complete",
+      "review_status": "needs_review",
+      "issues": [
+        "triage_only_requires_deep_curation"
+      ]
+    },
+    "planned_implementation": {
+      "status": "implemented",
+      "plugin": "periodic_runnable_event",
+      "reason": "Periodic-execution intent is external; each intended RunnableEntity must be exactly bound in the manifest."
+    },
+    "formal_spec_status": "reviewed",
+    "executed_status": "PASS",
+    "applicable_count": 1,
+    "checked_count": 1
+  },
+  "field_trace": {
+    "case": "ASW-FULL-01",
+    "repetition": 1,
+    "repair": "off",
+    "metamodel_property": "groups.TimingEvent.elements[name=period]",
+    "requested_period_seconds": "0.01",
+    "schema_member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/debug/round2_schema_ASW_Com_Full_Baseline_enhanced_20260902_162833.json",
+    "schema_pointer": "/properties/APPLICATION-SW-COMPONENT-TYPE/properties/SWC-INTERNAL-BEHAVIOR/properties/EVENTS/properties/TIMING-EVENT/items/properties/PERIOD",
+    "period_schema": {
+      "type": "number",
+      "x-xml-tag": "PERIOD",
+      "x-atlas-instance-value-constraints": [
+        {
+          "anchors": [
+            {
+              "path_index": 2,
+              "short_name": "TE_Com_Full_Baseline"
+            }
+          ],
+          "value": "0.01"
+        }
+      ]
+    },
+    "runnable_declaration": "RE_Com_Full_Baseline",
+    "artifact_target": "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline",
+    "artifact_period": "0.01",
+    "artifact_member": "AUTOSAR_V20_FORMAL_EVIDENCE_FINAL_2026-09-02/evidence/formal_v20/generation/runs/gpt-5.6-luna/ASW-FULL-01/R1/repair-off/attempt-001/atlas_output/ARXML/Components/ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+    "artifact_sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f",
+    "recorded_xsd_files_passed": 7,
+    "recorded_task_period_obligation": {
+      "actual": [
+        "0.01"
+      ],
+      "code": "runnable_period",
+      "expected": 0.01,
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    "task_decision": "PASS",
+    "full_corpus_decision": "INCOMPLETE"
+  }
+}

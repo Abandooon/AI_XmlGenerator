@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "external_model_api_calls": 0,
+  "network_disabled_for_materialization": true,
+  "author_filesystem_access_blocked": true,
+  "requests": 180,
+  "end_to_end_pass_counts": {
+    "U": 45,
+    "G": 60,
+    "A": 60
+  },
+  "six_gate_differences": [],
+  "all_postprocess_scientific_fields_equal": true,
+  "analysis_bound_to_new_formal_result": true,
+  "arxml_files_byte_equal": 714,
+  "formal_outputs": {
+    "FORMAL_RESULT.json": {
+      "archived_content_sha256": "f97aa7d4fc75a9ecb8498136abb56f87ffd975acae0c123acab14aaf4245f02c",
+      "replayed_content_sha256": "1de2b72d6a0404ee6c19432dc96ee41d3856435b4e59246b8838a8c723dc8245",
+      "byte_identity_claimed": false,
+      "json_exact_equal": false,
+      "scientific_result_fields_equal": true,
+      "relocated_provenance_fields_compared_separately": [
+        "content_sha256",
+        "postprocess_files",
+        "postprocess_manifest_content_sha256",
+        "postprocess_manifest_file_sha256"
+      ]
+    },
+    "PAPER_ANALYSIS.json": {
+      "archived_content_sha256": "3deb4af8a8357047d92f555cd692cbd6271bab2c62ed7655ea4738c18c27f6a7",
+      "replayed_content_sha256": "2cc32f3bfa0b9d81073b6b8b05081c95c983de4af7ff8058354d11cda0a54097",
+      "byte_identity_claimed": false,
+      "json_exact_equal": false,
+      "scientific_result_fields_equal": true,
+      "relocated_provenance_fields_compared_separately": [
+        "content_sha256",
+        "formal_result_content_sha256",
+        "formal_result_file_sha256"
+      ]
+    }
+  },
+  "provenance_qualification": {
+    "runtime_tree_entries_verified": 572,
+    "individual_historical_sources_verified": 8,
+    "missing_historical_sources": [
+      {
+        "historical_path": "E:/54239/Documents/atlas_autosar_requirements_v3/rendered/run_manifest.json",
+        "expected_sha256": "0af861da7b10dfe80261080b58dba1c3758378d0a2a1bfe55b5084d90bc202b4",
+        "status": "not_retained; not certified"
+      },
+      {
+        "historical_path": "E:/54239/Documents/atlas_vllm_audit_2026-08-09/postprocess_uga_results_v026.py",
+        "expected_sha256": "717846d4884f852eb7faa206bb099eb113c4cc9eab5300eb5919bd22ea7ba4bc",
+        "status": "not_retained; not certified"
+      }
+    ],
+    "complete_historical_source_certificate": false,
+    "frozen_source_bytes_modified": false,
+    "relocation_only": true
+  },
+  "limitations": [
+    "Historical pre-mask logits and token-ID masks were not retained; observed binding booleans can be recounted, not regenerated.",
+    "Finite compiled contracts are separate from the dynamic Neo4j-backed AUTOSAR V20 pipeline."
+  ]
+}

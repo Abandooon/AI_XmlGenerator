@@ -2,10 +2,7 @@
 
 This is the 180-request local U/G/A decoding-mechanism experiment, separate from AUTOSAR V20's dynamic hosted-model pipeline. It uses finite precompiled contracts. No GPU, model weights, API key or Neo4j instance is needed to inspect or replay the saved outputs.
 
-```sh
-python -m pip install -r requirements.txt
-python -B review.py --work-dir /path/to/empty-vllm-review
-```
+[Tested commands, working directories and expected results](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md).
 
 Use Python 3.12. The output directory must be empty. The entry point verifies the release assets, extracts each original archive into a separate directory, relocates the frozen runtime, materializes all 180 outputs, invokes the frozen formal verifier and recomputes the frozen statistical analysis. Review approximately 0.6 GiB of uncompressed inputs and outputs. The full four-track command is in the repository README.
 

@@ -1,0 +1,47 @@
+You are deciding jurisdiction under the supplied PIL task.
+
+CASE FACTS:
+Parties A and B both reside in Italy but agreed that the Swedish courts would have jurisdiction. A nevertheless sues in Italy.
+
+RETRIEVED LEGAL EVIDENCE:
+[BRUSSELS_I_BIS:Art.25] Choice-of-court agreements
+Article 25 governs agreements conferring jurisdiction on a court or the courts of a Member State.
+
+[BRUSSELS_I_BIS:Art.25(1)] Choice-of-court agreements
+A choice-of-court agreement satisfying the stated formal and substantive conditions confers jurisdiction on the designated Member State court and is exclusive unless the parties agree otherwise.
+
+[BRUSSELS_I_BIS:Art.28(1)] Default of appearance
+If a defendant domiciled in one Member State is sued in another Member State and does not appear, the court must declare of its own motion that it lacks jurisdiction unless jurisdiction follows from the Regulation.
+
+[BRUSSELS_I_BIS:Art.30(2)] Related actions
+While the first-seised action is pending at first instance, another court may, on a party's application, decline jurisdiction if the first court has jurisdiction over the actions and its law permits consolidation.
+
+AUTHORITATIVE OUTPUT CONTRACT (the identical complete JSON Schema is shown to
+all four arms; only P2/P3 additionally enable provider-side enforcement):
+{"$id":"schema/decision_schema_v4.json","$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":false,"properties":{"alternative_forum_types":{"items":{"enum":["exclusive","agreement","special","general","lis_pendens","related_actions","appearance"],"type":"string"},"type":"array","uniqueItems":true},"conclusion":{"enum":["Court_of_X_has_jurisdiction","Authority_of_X_has_jurisdiction","Stay_for_first_seised","May_stay_or_decline_for_related_actions","Decline_in_favor_of_chosen_court","No_EU_jurisdiction_use_member_state_law","Abstain_Insufficient_Info"],"type":"string"},"conditional_answer":{"type":"boolean"},"explicit_abstention":{"type":"boolean"},"forum":{"description":"The competent court, legal forum, or public authority; use 'none' only for explicit abstention.","minLength":1,"type":"string"},"forum_type":{"enum":["exclusive","agreement","special","general","lis_pendens","related_actions","appearance","none"],"type":"string"},"legal_basis":{"items":{"additionalProperties":false,"properties":{"instrument":{"enum":["BRUSSELS_I_BIS","EU_TRADE_MARK_REGULATION"],"type":"string"},"provision":{"pattern":"^Art\\.(\\d+)(\\(\\d+\\))?(\\([a-z]\\))?$","type":"string"}},"required":["instrument","provision"],"type":"object"},"type":"array"},"missing_facts":{"items":{"type":"string"},"type":"array"},"reasoning":{"minLength":1,"type":"string"}},"required":["conclusion","forum","forum_type","alternative_forum_types","conditional_answer","explicit_abstention","legal_basis","reasoning","missing_facts"],"type":"object"}
+
+Return exactly one JSON object with these semantic fields:
+conclusion, forum, forum_type, alternative_forum_types, conditional_answer,
+explicit_abstention, legal_basis, reasoning, missing_facts.
+
+Use only atomic forum_type labels. Put concurrent or alternative bases in
+alternative_forum_types.
+
+Allowed conclusion labels:
+Court_of_X_has_jurisdiction, Authority_of_X_has_jurisdiction,
+Stay_for_first_seised, May_stay_or_decline_for_related_actions,
+Decline_in_favor_of_chosen_court,
+No_EU_jurisdiction_use_member_state_law, Abstain_Insufficient_Info.
+
+Allowed forum_type labels:
+exclusive, agreement, special, general, lis_pendens, related_actions,
+appearance, none.
+
+legal_basis is an array of objects containing an instrument and provision,
+for example {"instrument":"BRUSSELS_I_BIS","provision":"Art.29(1)"}.
+The allowed instrument labels are BRUSSELS_I_BIS and
+EU_TRADE_MARK_REGULATION. If the facts do not
+support a reliable answer, use conclusion=Abstain_Insufficient_Info,
+forum="none", forum_type="none", explicit_abstention=true, and name the
+missing facts. Write every natural-language string value in English. Do not
+wrap the JSON in Markdown fences.

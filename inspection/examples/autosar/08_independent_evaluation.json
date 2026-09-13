@@ -1,0 +1,930 @@
+{
+  "artifact_profile": {
+    "automatically_evaluated_rule_count": 26,
+    "decision": "PASS",
+    "full_corpus_not_evaluated_count": 50,
+    "independent_decision": "PASS",
+    "independent_valid": true,
+    "notes": [],
+    "profile_id": "autosar_component_arxml_only_v1",
+    "required_constraint_ids": [
+      "XSD",
+      "TPS_SWCT_01519",
+      "constr_1100"
+    ],
+    "required_statuses": {
+      "TPS_SWCT_01519": "PASS",
+      "XSD": "PASS",
+      "constr_1100": "PASS"
+    },
+    "schema_version": "1.0",
+    "selection_obligation_decision": "PASS",
+    "valid": true
+  },
+  "case_id": "ASW-FULL-01",
+  "case_sha256": "fdc489eb3dc7a45f7c10350992d4c73db10ee415584fa4746765f4017b692442",
+  "cohort": "primary",
+  "decision": "PASS",
+  "evaluator_sha256": "2e5f4dda22b575dbbed7ee7a1d30ca7bfa108c5bb88367205fc5a4596434b383",
+  "external_reference_not_evaluated_count": 0,
+  "full_corpus_decision": "INCOMPLETE",
+  "independent_profile_decision": "PASS",
+  "local_reference_failure_count": 0,
+  "plan_self_consistency_decision": "PASS",
+  "promotable": true,
+  "reference_integrity": [
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PROVIDED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_MCU01_EmergShutDown"
+    },
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PROVIDED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_MCU02_MaxTor"
+    },
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PROVIDED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "DATA-ELEMENT-REF",
+      "target": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+    },
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "REQUIRED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_HCU01_Shift"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "DATA-ELEMENT-REF",
+      "target": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+    },
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "REQUIRED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_HCU01_TqCmd"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "DATA-ELEMENT-REF",
+      "target": "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+    },
+    {
+      "dest": "SENDER-RECEIVER-INTERFACE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "REQUIRED-INTERFACE-TREF",
+      "target": "/COM_Interface/SR_Interface_HCU02_Poweroff"
+    },
+    {
+      "dest": "RUNNABLE-ENTITY",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "START-ON-EVENT-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/IB_Com_Full_Baseline/RE_Com_Full_Baseline"
+    },
+    {
+      "dest": "R-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Rp_HCU01_TqCmd"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+    },
+    {
+      "dest": "R-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Rp_HCU01_Shift"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+    },
+    {
+      "dest": "R-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Rp_HCU02_Poweroff"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+    },
+    {
+      "dest": "P-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Pp_MCU01_EmergShutDown"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown"
+    },
+    {
+      "dest": "P-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Pp_MCU02_MaxTor"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor"
+    },
+    {
+      "dest": "P-PORT-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "PORT-PROTOTYPE-REF",
+      "target": "/Components/ASW_Com_Full_Baseline/Pp_MCU03_NRF_IdcSamp"
+    },
+    {
+      "dest": "VARIABLE-DATA-PROTOTYPE",
+      "reason": "same-context target count is 1",
+      "source_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "status": "PASS",
+      "tag": "TARGET-DATA-PROTOTYPE-REF",
+      "target": "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp"
+    }
+  ],
+  "requirement_source_canonical_sha256": "dc4847e125c04b82b3a26154f678d45619f8f7ae8a599aa4865386908ec79e83",
+  "requirement_source_sha256": "3b61eb5926b5646a12f8767524192cd7ed65a39e27a37aa9672277058489e024",
+  "schema_version": "atlas.asw_v3.independent_evaluation.v1",
+  "structural_failure_count": 0,
+  "structural_obligations": [
+    {
+      "actual": [
+        "ASW_Com_Full_Baseline"
+      ],
+      "code": "component_identity",
+      "expected": [
+        "ASW_Com_Full_Baseline"
+      ],
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 3,
+      "code": "p_port_count",
+      "expected": 3,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 3,
+      "code": "r_port_count",
+      "expected": 3,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 1,
+      "code": "runnable_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 1,
+      "code": "timing_event_count_global",
+      "expected": 1,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 6,
+      "code": "variable_access_count",
+      "expected": 6,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": [
+        "Pp_MCU01_EmergShutDown",
+        "Pp_MCU02_MaxTor",
+        "Pp_MCU03_NRF_IdcSamp"
+      ],
+      "code": "p_port_names",
+      "expected": [
+        "Pp_MCU01_EmergShutDown",
+        "Pp_MCU02_MaxTor",
+        "Pp_MCU03_NRF_IdcSamp"
+      ],
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": [
+        "Rp_HCU01_Shift",
+        "Rp_HCU01_TqCmd",
+        "Rp_HCU02_Poweroff"
+      ],
+      "code": "r_port_names",
+      "expected": [
+        "Rp_HCU01_Shift",
+        "Rp_HCU01_TqCmd",
+        "Rp_HCU02_Poweroff"
+      ],
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_MCU01_EmergShutDown"
+      ],
+      "code": "provided_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_MCU01_EmergShutDown"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU01_EmergShutDown"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "provided_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU01_EmergShutDown"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_MCU02_MaxTor"
+      ],
+      "code": "provided_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_MCU02_MaxTor"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU02_MaxTor"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "provided_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU02_MaxTor"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp"
+      ],
+      "code": "provided_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU03_NRF_IdcSamp"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "provided_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Pp_MCU03_NRF_IdcSamp"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU01_TqCmd"
+      ],
+      "code": "required_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU01_TqCmd"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "required_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": 1,
+      "code": "nonqueued_comspec_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+      ],
+      "code": "comspec_data_element_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "code": "comspec_data_element_dest",
+      "expected": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "0.3"
+      ],
+      "code": "alive_timeout",
+      "expected": 0.3,
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "NONE"
+      ],
+      "code": "handle_timeout_type",
+      "expected": [
+        "NONE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "0"
+      ],
+      "code": "unconnected_numeric_init_value",
+      "expected": 0,
+      "status": "PASS",
+      "subject": "Rp_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU01_Shift"
+      ],
+      "code": "required_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU01_Shift"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "required_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": 1,
+      "code": "nonqueued_comspec_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+      ],
+      "code": "comspec_data_element_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "code": "comspec_data_element_dest",
+      "expected": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "0.3"
+      ],
+      "code": "alive_timeout",
+      "expected": 0.3,
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "NONE"
+      ],
+      "code": "handle_timeout_type",
+      "expected": [
+        "NONE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "0"
+      ],
+      "code": "unconnected_numeric_init_value",
+      "expected": 0,
+      "status": "PASS",
+      "subject": "Rp_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU02_Poweroff"
+      ],
+      "code": "required_interface_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU02_Poweroff"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "code": "required_interface_dest",
+      "expected": [
+        "SENDER-RECEIVER-INTERFACE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": 1,
+      "code": "nonqueued_comspec_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+      ],
+      "code": "comspec_data_element_ref",
+      "expected": [
+        "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "code": "comspec_data_element_dest",
+      "expected": [
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "0.3"
+      ],
+      "code": "alive_timeout",
+      "expected": 0.3,
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "NONE"
+      ],
+      "code": "handle_timeout_type",
+      "expected": [
+        "NONE"
+      ],
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "0"
+      ],
+      "code": "unconnected_numeric_init_value",
+      "expected": 0,
+      "status": "PASS",
+      "subject": "Rp_HCU02_Poweroff"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_MCU01_EmergShutDown"
+    },
+    {
+      "actual": [
+        "MCU01_EmergShutDown"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "MCU01_EmergShutDown"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_MCU01_EmergShutDown"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_MCU02_MaxTor"
+    },
+    {
+      "actual": [
+        "MCU02_MaxTor"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "MCU02_MaxTor"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_MCU02_MaxTor"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_MCU03_NRF_IdcSamp"
+    },
+    {
+      "actual": [
+        "MCU03_NRF_IdcSamp"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "MCU03_NRF_IdcSamp"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_MCU03_NRF_IdcSamp"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_HCU01_TqCmd"
+    },
+    {
+      "actual": [
+        "HCU01_TqCmd"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "HCU01_TqCmd"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_HCU01_TqCmd"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_HCU01_Shift"
+    },
+    {
+      "actual": [
+        "HCU01_Shift"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "HCU01_Shift"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_HCU01_Shift"
+    },
+    {
+      "actual": 1,
+      "code": "interface_definition_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "SR_Interface_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "HCU02_Poweroff"
+      ],
+      "code": "interface_data_element",
+      "expected": [
+        "HCU02_Poweroff"
+      ],
+      "status": "PASS",
+      "subject": "SR_Interface_HCU02_Poweroff"
+    },
+    {
+      "actual": [
+        "IB_Com_Full_Baseline"
+      ],
+      "code": "internal_behavior_identity",
+      "expected": [
+        "IB_Com_Full_Baseline"
+      ],
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": [
+        "RE_Com_Full_Baseline"
+      ],
+      "code": "runnable_names",
+      "expected": [
+        "RE_Com_Full_Baseline"
+      ],
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 1,
+      "code": "timing_event_count",
+      "expected": 1,
+      "status": "PASS",
+      "subject": null
+    },
+    {
+      "actual": 1,
+      "code": "runnable_timing_event",
+      "expected": 1,
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        "0.01"
+      ],
+      "code": "runnable_period",
+      "expected": 0.01,
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        "RUNNABLE-ENTITY"
+      ],
+      "code": "runnable_event_dest",
+      "expected": [
+        "RUNNABLE-ENTITY"
+      ],
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU01_Shift",
+          "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU01_TqCmd",
+          "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU02_Poweroff",
+          "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+        ]
+      ],
+      "code": "read_access_pairs",
+      "expected": [
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU01_Shift",
+          "/COM_Interface/SR_Interface_HCU01_Shift/HCU01_Shift"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU01_TqCmd",
+          "/COM_Interface/SR_Interface_HCU01_TqCmd/HCU01_TqCmd"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Rp_HCU02_Poweroff",
+          "/COM_Interface/SR_Interface_HCU02_Poweroff/HCU02_Poweroff"
+        ]
+      ],
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        "R-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "code": "read_access_dest_values",
+      "expected": [
+        "R-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "R-PORT-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU01_EmergShutDown",
+          "/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU02_MaxTor",
+          "/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU03_NRF_IdcSamp",
+          "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp"
+        ]
+      ],
+      "code": "write_access_pairs",
+      "expected": [
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU01_EmergShutDown",
+          "/COM_Interface/SR_Interface_MCU01_EmergShutDown/MCU01_EmergShutDown"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU02_MaxTor",
+          "/COM_Interface/SR_Interface_MCU02_MaxTor/MCU02_MaxTor"
+        ],
+        [
+          "/Components/ASW_Com_Full_Baseline/Pp_MCU03_NRF_IdcSamp",
+          "/COM_Interface/SR_Interface_MCU03_NRF_IdcSamp/MCU03_NRF_IdcSamp"
+        ]
+      ],
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [
+        "P-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "code": "write_access_dest_values",
+      "expected": [
+        "P-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE",
+        "P-PORT-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE",
+        "VARIABLE-DATA-PROTOTYPE"
+      ],
+      "status": "PASS",
+      "subject": "RE_Com_Full_Baseline"
+    },
+    {
+      "actual": [],
+      "code": "excluded_constructs_absent",
+      "expected": [],
+      "status": "PASS",
+      "subject": null
+    }
+  ],
+  "tier": "full",
+  "validation_file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_validation_8f34364d_1788337723.json",
+  "validation_sha256": "1314e479025e2808fd9f14a080327029fb88cec8abc1986056b0474c1af08a80",
+  "validation_status": "PASS",
+  "xsd": [
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_ASW_Com_Full_Baseline_8f34364d_1788337723.arxml",
+      "sha256": "062b4225e558ab0c794421a69af28adef0183188225e0a997dc92bbab33de95f",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_HCU01_Shift_8f34364d_1788337723.arxml",
+      "sha256": "aa60e40c53455e081f7fa5c921fe2b7af921a1dfeaa5c22f1db7bed9f33d3e76",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_HCU01_TqCmd_8f34364d_1788337723.arxml",
+      "sha256": "f2738264126ae526da77dfb92d3b2fa8b2f6b734b466a8f6a37971c57b610014",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_HCU02_Poweroff_8f34364d_1788337723.arxml",
+      "sha256": "3c0ae1242aa5a769960ca46e28cad9ecaa8020979d2250bcb9a079fbe2895925",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_MCU01_EmergShutDown_8f34364d_1788337723.arxml",
+      "sha256": "f1af74a3f2479af4e3793f1057e2e3670f0abb5ad1f98b66ea2d0aa70e7a4df8",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_MCU02_MaxTor_8f34364d_1788337723.arxml",
+      "sha256": "8c7bee656c81db86056118d53898231b5f4e70872289252838f9b9394fd0238b",
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "file": "E:\\54239\\Documents\\atlas_model_probe\\outputs\\luna-main-asw-v3-v20-20260901-formal-primary-r4\\generation\\runs\\gpt-5.6-luna\\ASW-FULL-01\\R1\\repair-off\\attempt-001\\generated_arxml\\asw_v3_primary_full_r1_repair_off\\asw_v3_primary_full_r1_repair_off_14_ASW_Com_Full_Baseline_SR_Interface_MCU03_NRF_IdcSamp_8f34364d_1788337723.arxml",
+      "sha256": "a47fa3d3b2f3fbec6b097d4a55760fc4c91724be85a7122badafe506f0ddfdcd",
+      "status": "PASS"
+    }
+  ],
+  "xsd_path": "E:\\git projects\\AI_XmlGenerator\\src\\validation\\data\\AUTOSAR_4-2-2.xsd",
+  "xsd_sha256": "3c89b2f16d1981eb04e12c7fbe035e7cd6fbd79965a47ff6cf6d6b878feb71ad"
+}

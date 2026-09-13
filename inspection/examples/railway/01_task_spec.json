@@ -1,0 +1,499 @@
+{
+  "task_id": "BAL-1-01",
+  "requirements": [
+    {
+      "id": "REQ-LAYOUT",
+      "text": "Configure the supplied engineering model of a directed six-segment chain. Preserve all physical connections, objects and unlisted fields. The JSON physical model is the exact directed layout. This is a configuration model, not a proof of physical train routing or operational safety."
+    },
+    {
+      "id": "REQ-SERVICE",
+      "text": "Create and keep active services r1 and r2. Service r1 starts at m_in and follows p1 on w1. Service r2 ends at m_out and follows the declared position objects. Every planned switch position is DIVERGING and must be preserved. Configure actual switch positions and route sensor requirements using the public typed domains; satisfy all six supplied Train queries. The exact r2 plan is p2 on w2."
+    },
+    {
+      "id": "REQ-BOUNDARY",
+      "text": "Select the exit of r1 from m_boundary or m_out and the entry of r2 from m_in or m_boundary. These are configuration choices; satisfy the supplied SemaphoreNeighbor relation wherever required sensors monitor adjacent track elements. Both permitted entry signals are GO."
+    },
+    {
+      "id": "REQ-MONITOR",
+      "text": "Sensor n1 must monitor w1 and t1; n2 must monitor w2 and t2; n3 must monitor t3. Existing sensors n4 and n6 monitor t4, and n5 monitors t5; preserve their monitoring. Additional monitoring by n1, n2 or n3 is permitted only within each public field domain and must satisfy the supplied constraints. Do not remove mandatory coverage to avoid a query violation."
+    },
+    {
+      "id": "REQ-FIELDS",
+      "text": "Each route must require at least two distinct permitted sensors. Repair declared segment lengths only to 20 or 40. Semantic assignment slots start unresolved; all listed obligations and the fixed structural plan must hold in the delivered native model."
+    }
+  ],
+  "physical_model": {
+    "elements": {
+      "regions": [
+        {
+          "id": "z1",
+          "sensors": [
+            "n1",
+            "n2",
+            "n3",
+            "n4",
+            "n5",
+            "n6"
+          ],
+          "elements": [
+            "t1",
+            "t2",
+            "t3",
+            "t4",
+            "t5",
+            "t6",
+            "w1",
+            "w2"
+          ]
+        }
+      ],
+      "routes": [],
+      "sensors": [
+        {
+          "id": "n1",
+          "monitors": null
+        },
+        {
+          "id": "n2",
+          "monitors": null
+        },
+        {
+          "id": "n3",
+          "monitors": null
+        },
+        {
+          "id": "n4",
+          "monitors": [
+            "t4"
+          ]
+        },
+        {
+          "id": "n5",
+          "monitors": [
+            "t5"
+          ]
+        },
+        {
+          "id": "n6",
+          "monitors": [
+            "t4"
+          ]
+        }
+      ],
+      "segments": [
+        {
+          "id": "t1",
+          "length": 40,
+          "connects_to": [
+            "t2"
+          ],
+          "monitored_by": [],
+          "semaphores": [
+            "m_in"
+          ]
+        },
+        {
+          "id": "t2",
+          "length": 40,
+          "connects_to": [
+            "t3"
+          ],
+          "monitored_by": [],
+          "semaphores": [
+            "m_boundary"
+          ]
+        },
+        {
+          "id": "t3",
+          "length": 40,
+          "connects_to": [
+            "t4"
+          ],
+          "monitored_by": [],
+          "semaphores": []
+        },
+        {
+          "id": "t4",
+          "length": 40,
+          "connects_to": [
+            "t5"
+          ],
+          "monitored_by": [],
+          "semaphores": []
+        },
+        {
+          "id": "t5",
+          "length": 40,
+          "connects_to": [
+            "t6"
+          ],
+          "monitored_by": [],
+          "semaphores": []
+        },
+        {
+          "id": "t6",
+          "length": 40,
+          "connects_to": [],
+          "monitored_by": [],
+          "semaphores": [
+            "m_out"
+          ]
+        }
+      ],
+      "switches": [
+        {
+          "id": "w1",
+          "current_position": null,
+          "connects_to": [
+            "t3"
+          ],
+          "monitored_by": [],
+          "positions": []
+        },
+        {
+          "id": "w2",
+          "current_position": null,
+          "connects_to": [
+            "t6"
+          ],
+          "monitored_by": [],
+          "positions": []
+        }
+      ],
+      "switch_positions": [],
+      "semaphores": [
+        {
+          "id": "m_in",
+          "signal": "GO"
+        },
+        {
+          "id": "m_boundary",
+          "signal": "GO"
+        },
+        {
+          "id": "m_out",
+          "signal": "STOP"
+        }
+      ]
+    }
+  },
+  "services": [
+    {
+      "id": "r1",
+      "requirement_id": "REQ-SERVICE",
+      "active": true,
+      "entry": "m_in",
+      "exit": null,
+      "requires": null,
+      "positions": [
+        {
+          "id": "p1",
+          "position": "DIVERGING",
+          "target": "w1"
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "requirement_id": "REQ-SERVICE",
+      "active": true,
+      "entry": null,
+      "exit": "m_out",
+      "requires": null,
+      "positions": [
+        {
+          "id": "p2",
+          "position": "DIVERGING",
+          "target": "w2"
+        }
+      ]
+    }
+  ],
+  "semantic_slots": [
+    {
+      "slot_id": "s01",
+      "path": [
+        "sensors",
+        "n1",
+        "monitors"
+      ],
+      "domain": [
+        "w1",
+        "t1",
+        "t4",
+        "t6"
+      ],
+      "requirement_id": "REQ-MONITOR",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s02",
+      "path": [
+        "sensors",
+        "n2",
+        "monitors"
+      ],
+      "domain": [
+        "w2",
+        "t2",
+        "t5",
+        "t6"
+      ],
+      "requirement_id": "REQ-MONITOR",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s03",
+      "path": [
+        "sensors",
+        "n3",
+        "monitors"
+      ],
+      "domain": [
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+        "t5",
+        "t6"
+      ],
+      "requirement_id": "REQ-MONITOR",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s04",
+      "path": [
+        "routes",
+        "r1",
+        "requires"
+      ],
+      "domain": [
+        "n1",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6"
+      ],
+      "requirement_id": "REQ-FIELDS",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s05",
+      "path": [
+        "routes",
+        "r2",
+        "requires"
+      ],
+      "domain": [
+        "n1",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6"
+      ],
+      "requirement_id": "REQ-FIELDS",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s06",
+      "path": [
+        "switches",
+        "w1",
+        "current_position"
+      ],
+      "domain": [
+        "FAILURE",
+        "STRAIGHT",
+        "DIVERGING"
+      ],
+      "requirement_id": "REQ-SERVICE",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s07",
+      "path": [
+        "switches",
+        "w2",
+        "current_position"
+      ],
+      "domain": [
+        "FAILURE",
+        "STRAIGHT",
+        "DIVERGING"
+      ],
+      "requirement_id": "REQ-SERVICE",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s08",
+      "path": [
+        "routes",
+        "r1",
+        "exit"
+      ],
+      "domain": [
+        "m_boundary",
+        "m_out"
+      ],
+      "requirement_id": "REQ-BOUNDARY",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s09",
+      "path": [
+        "routes",
+        "r2",
+        "entry"
+      ],
+      "domain": [
+        "m_in",
+        "m_boundary"
+      ],
+      "requirement_id": "REQ-BOUNDARY",
+      "generate": true,
+      "repair": true
+    },
+    {
+      "slot_id": "s10",
+      "path": [
+        "segments",
+        "t1",
+        "length"
+      ],
+      "domain": [
+        20,
+        40
+      ],
+      "requirement_id": "REQ-FIELDS",
+      "generate": false,
+      "repair": true
+    },
+    {
+      "slot_id": "s11",
+      "path": [
+        "segments",
+        "t2",
+        "length"
+      ],
+      "domain": [
+        20,
+        40
+      ],
+      "requirement_id": "REQ-FIELDS",
+      "generate": false,
+      "repair": true
+    },
+    {
+      "slot_id": "s12",
+      "path": [
+        "routes",
+        "r1",
+        "active"
+      ],
+      "domain": [
+        false,
+        true
+      ],
+      "requirement_id": "REQ-SERVICE",
+      "generate": false,
+      "repair": true
+    }
+  ],
+  "obligations": [
+    {
+      "id": "TASK_ACTIVE_R1",
+      "requirement_id": "REQ-SERVICE",
+      "path": [
+        "routes",
+        "r1",
+        "active"
+      ],
+      "operator": "equals",
+      "expected": true
+    },
+    {
+      "id": "TASK_ACTIVE_R2",
+      "requirement_id": "REQ-SERVICE",
+      "path": [
+        "routes",
+        "r2",
+        "active"
+      ],
+      "operator": "equals",
+      "expected": true
+    },
+    {
+      "id": "TASK_MONITOR_N1",
+      "requirement_id": "REQ-MONITOR",
+      "path": [
+        "sensors",
+        "n1",
+        "monitors"
+      ],
+      "operator": "contains_all",
+      "expected": [
+        "w1",
+        "t1"
+      ]
+    },
+    {
+      "id": "TASK_MONITOR_N2",
+      "requirement_id": "REQ-MONITOR",
+      "path": [
+        "sensors",
+        "n2",
+        "monitors"
+      ],
+      "operator": "contains_all",
+      "expected": [
+        "w2",
+        "t2"
+      ]
+    },
+    {
+      "id": "TASK_MONITOR_N3",
+      "requirement_id": "REQ-MONITOR",
+      "path": [
+        "sensors",
+        "n3",
+        "monitors"
+      ],
+      "operator": "contains_all",
+      "expected": [
+        "t3"
+      ]
+    },
+    {
+      "id": "TASK_POSITION_P1",
+      "requirement_id": "REQ-SERVICE",
+      "path": [
+        "switch_positions",
+        "p1",
+        "position"
+      ],
+      "operator": "equals",
+      "expected": "DIVERGING"
+    },
+    {
+      "id": "TASK_POSITION_P2",
+      "requirement_id": "REQ-SERVICE",
+      "path": [
+        "switch_positions",
+        "p2",
+        "position"
+      ],
+      "operator": "equals",
+      "expected": "DIVERGING"
+    }
+  ]
+}

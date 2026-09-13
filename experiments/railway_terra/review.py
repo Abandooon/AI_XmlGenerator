@@ -79,13 +79,26 @@ def run_logged(command, cwd, log_prefix, env):
     require(result.returncode == 0, "Offline subprocess failed: " + log_prefix.name)
     return result.stdout
 
+
+def external_output(path):
+    """Keep newly generated files outside the evidence release."""
+    path = Path(path).resolve()
+    release = next((p for p in Path(__file__).resolve().parents
+                    if (p / "verify_release.py").is_file()
+                    and (p / "RELEASE_MANIFEST.json").is_file()),
+                   Path(__file__).resolve().parent)
+    if path == release or path.is_relative_to(release):
+        raise ValueError("Output must be outside the evidence release")
+    return path
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--work-dir", required=True, type=Path, help="New directory outside this release")
     parser.add_argument("--java", default="java", help="External Java 8 executable or PATH name")
     args = parser.parse_args()
     require(sys.version_info >= (3, 10), "Python 3.10+ required; Python 3.12 used in qualification")
-    work = args.work_dir.resolve()
+    work = external_output(args.work_dir)
     require(not work.exists() and not work.is_relative_to(ROOT), "Work directory must be new and outside release")
     java = shutil.which(args.java)
     require(java is not None, "Java executable missing")
