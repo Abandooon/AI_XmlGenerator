@@ -1,6 +1,8 @@
 # Plot terminology
 
-| 中文 | English | Meaning in these experiments |
+This bilingual table maps the original figure labels to their English equivalents. Chinese is retained only in the source-term column for translation review.
+
+| Original Chinese term | English | Meaning in these experiments |
 | --- | --- | --- |
 | 解码中的干预 | Decoding interventions | A short mark identifies a step at which the unconstrained top-ranked token was disallowed by the generation constraints. |
 | 生成进度，按输出步数归一化 | Decoding progress (% of output steps) | Position is 100 × (zero-based source step + 1) / total steps. |

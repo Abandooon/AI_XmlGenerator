@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "date": "2026-09-14",
+  "scientific_evidence_base_commit": "26f1d19f8f6cce1e13616408d55abae896ecf1c8",
+  "scope": "Independent offline replay and Java 8 recompilation; no new model generation",
+  "environment": {
+    "python": "3.12.14",
+    "java": "Temurin 1.8.0_504-b01",
+    "jdk_zip_sha256": "ea43d46ede95b51e44a12c66711706cddc762e0a766c54bccea18954e902b2aa"
+  },
+  "network_or_model_calls_during_checks": 0,
+  "commands": {
+    "V05": {
+      "exit_code": 0,
+      "result": "RAILWAY_REPLAY.json",
+      "original_result_sha256": "493ffc165b38b34d915063500f67352dd66e103d4820512f81aa7ff08c64b87d"
+    },
+    "V06": {
+      "exit_code": 0,
+      "result": "TERRA_REPLAY.json",
+      "original_result_sha256": "d0edf5adead22798c74f2c0c17c725300e7ad88e268ff3ae189cebfe84ffcbc8",
+      "independent_result": "TERRA_INDEPENDENT.json",
+      "original_independent_sha256": "4c7240c7f29c32925efe00367f5166cd48818bc60976b11193b6e908446eb4cd"
+    },
+    "V09": {
+      "exit_code": 0,
+      "result": "NATIVE_REBUILD.json",
+      "original_result_sha256": "72d1d1e08c495e520b29d4d9c626a3c984582a920bb15a47cc5039223fff97b9",
+      "checker_sha256": "0d4292ce6020c0f8d0f2eb84677251cfa019c2cfa8096a239fd18a5390ca3c55"
+    },
+    "V15": {
+      "exit_code": 0,
+      "tests": 3,
+      "log": "REBUILD_TESTS.txt",
+      "test_source_sha256": "1a12ee827e2e87d6df7ac14a103ce235fd8f37e9075cff34b2493ea1c66475fd"
+    }
+  }
+}

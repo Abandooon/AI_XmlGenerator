@@ -21,6 +21,8 @@ This repository provides code, ICM records, prompts, generation constraints, gen
 | Decoding events and railway plots | [Data and plotting scripts](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/analysis/figures/README.md) |
 | Runnable checks and observed results | [Command list](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/COMMANDS.md); [execution audit](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/publication_review/COMMAND_AUDIT.md) |
 | Source identities and export selection | [Provenance](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/PROVENANCE.md); [archive selection](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/ARCHIVE_SELECTION.json) |
+| English reading guides for retained preparation records | [Documentation language guide](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/ENGLISH_REVIEW_GUIDE.md) |
+| Independent railway replay and native recompilation | [Completed audit](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/validation/review_closure_2026-09-14/RAILWAY_AUDIT.md) |
 
 ## Offline verification
 
