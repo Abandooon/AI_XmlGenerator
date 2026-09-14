@@ -1,5 +1,7 @@
-# 模型生成实验与复核材料
+# Model-generation experiments and review materials
 
-ICM、提示词、生成约束、生成制品、实验结果及五项离线复核入口见[实验材料导航](https://github.com/Abandooon/AI_XmlGenerator/blob/api_rag/paper/atlas-review/README.md)。该目录与 [ATLAS 分支](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS)根目录按同一发布清单同步。
+The [experiment evidence guide](https://github.com/Abandooon/AI_XmlGenerator/blob/api_rag/paper/atlas-review/README.md) provides ICM records, prompts, generation constraints, generated artifacts, results and offline checks for five experiment tracks. The export under `paper/atlas-review/` is synchronized byte for byte with the [ATLAS branch](https://github.com/Abandooon/AI_XmlGenerator/tree/ATLAS) under the same release manifest.
 
-历史实验的准确实现以材料中的冻结源码、归档与来源索引为准。该目录以外为开发工作树。论文、审稿回复和决定信保存在作者材料中，当前实验导出不包含这些文件。
+Use the frozen source snapshots, archives and provenance indexes to identify the implementations used in the historical experiments. Files outside the export belong to the development tree. Manuscripts, reviewer responses and decision letters are maintained separately by the authors. See the [material locations guide](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/MATERIALS_LAYOUT.md) for the current review entry points.
+
+IDE configuration and ordinary runtime logs are not versioned. Existing local development edits and private configuration are independent of the published reviewer export.

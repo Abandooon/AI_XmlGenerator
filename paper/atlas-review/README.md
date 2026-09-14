@@ -12,6 +12,8 @@ This repository provides code, ICM records, prompts, generation constraints, gen
 
 ## Inspect the materials
 
+The [material locations guide](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/MATERIALS_LAYOUT.md) identifies the current entries and distinguishes retained experimental evidence from temporary review outputs.
+
 | Material | Entry |
 | --- | --- |
 | Requirements and their design sources | [AUTOSAR provenance](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/AUTOSAR_REQUIREMENT_PROVENANCE_AND_DESIGN.md); [domain evidence map](https://github.com/Abandooon/AI_XmlGenerator/blob/ATLAS/docs/REVIEWER_EVIDENCE_MAP.md) |
